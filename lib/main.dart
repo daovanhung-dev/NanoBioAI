@@ -10,11 +10,11 @@ Future<void> main() async {
   // LOAD ENV
   await dotenv.load();
 
-  // INIT SUPABASE
-  await Supabase.initialize(
-    url: dotenv.env[dotenv.env['SUPABASE_URL']??""]!,
-    anonKey: dotenv.env[dotenv.env['SUPABASE_ANON_KEY']??""]!,
-  );
+  // // INIT SUPABASE
+  // await Supabase.initialize(
+  //   url: dotenv.env[dotenv.env['SUPABASE_URL']??""]!,
+  //   anonKey: dotenv.env[dotenv.env['SUPABASE_ANON_KEY']??""]!,
+  // );
 
   runApp(
     const BioAIApp(),

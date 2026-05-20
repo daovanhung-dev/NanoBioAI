@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/features/splash/presentation/pages/splash_page.dart';
 
 import 'route_guards.dart';
-import 'route_names.dart';
+import '../constants/routes/route_names.dart';
 import 'route_paths.dart';
 
 final appRouter = GoRouter(
@@ -14,7 +15,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: RoutePaths.splash,
       name: RouteNames.splash,
-      builder: (context, state) => const Placeholder(),
+      builder: (context, state) => SplashPage(),
     ),
 
     /// Login
