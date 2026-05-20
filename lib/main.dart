@@ -1,0 +1,22 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'app/app.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // LOAD ENV
+  await dotenv.load();
+
+  // INIT SUPABASE
+  await Supabase.initialize(
+    url: dotenv.env[dotenv.env['SUPABASE_URL']??""]!,
+    anonKey: dotenv.env[dotenv.env['SUPABASE_ANON_KEY']??""]!,
+  );
+
+  runApp(
+    const BioAIApp(),
+  );
+}

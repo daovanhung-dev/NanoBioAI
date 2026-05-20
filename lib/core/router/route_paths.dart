@@ -1,0 +1,29 @@
+abstract class RoutePaths {
+  static const splash = '/';
+  static const login = '/login';
+  static const register = '/register';
+  static const forgotPassword = '/forgot-password';
+
+  static const onboarding = '/onboarding';
+
+  static const dashboard = '/dashboard';
+
+  static const healthTracking = '/health-tracking';
+  static const nutrition = '/nutrition';
+  static const sleepTracking = '/sleep-tracking';
+  static const stressTracking = '/stress-tracking';
+
+  static const aiChat = '/ai-chat';
+  static const aiAnalysis = '/ai-analysis';
+
+  static const foodScanner = '/food-scanner';
+
+  static const goals = '/goals';
+
+  static const profile = '/profile';
+  static const settings = '/settings';
+
+  static const community = '/community';
+
+  static const admin = '/admin';
+}
