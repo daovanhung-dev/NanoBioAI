@@ -1,39 +1,29 @@
-abstract class RouteNames {
-  // Auth
-  static const splash = 'splash';
-  static const login = 'login';
-  static const register = 'register';
-  static const forgotPassword = 'forgotPassword';
+abstract class RoutePaths {
+  static const splash = '/';
+  static const login = '/login';
+  static const register = '/register';
+  static const forgotPassword = '/forgot-password';
 
-  // Onboarding
-  static const onboarding = 'onboarding';
+  static const onboarding = '/onboarding';
 
-  // Main
-  static const dashboard = 'dashboard';
+  static const dashboard = '/dashboard';
 
-  // Health
-  static const healthTracking = 'healthTracking';
-  static const nutrition = 'nutrition';
-  static const sleepTracking = 'sleepTracking';
-  static const stressTracking = 'stressTracking';
+  static const healthTracking = '/health-tracking';
+  static const nutrition = '/nutrition';
+  static const sleepTracking = '/sleep-tracking';
+  static const stressTracking = '/stress-tracking';
 
-  // AI
-  static const aiChat = 'aiChat';
-  static const aiAnalysis = 'aiAnalysis';
+  static const aiChat = '/ai-chat';
+  static const aiAnalysis = '/ai-analysis';
 
-  // Food
-  static const foodScanner = 'foodScanner';
+  static const foodScanner = '/food-scanner';
 
-  // Goal
-  static const goals = 'goals';
+  static const goals = '/goals';
 
-  // Profile
-  static const profile = 'profile';
-  static const settings = 'settings';
+  static const profile = '/profile';
+  static const settings = '/settings';
 
-  // Community
-  static const community = 'community';
+  static const community = '/community';
 
-  // Admin
-  static const admin = 'admin';
+  static const admin = '/admin';
 }

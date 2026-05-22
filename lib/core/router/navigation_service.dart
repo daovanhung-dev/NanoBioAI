@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'route_paths.dart';
+import '../constants/constant.dart';
 
 class AppNavigator {
 
@@ -23,5 +23,9 @@ class AppNavigator {
 
   static void back(BuildContext context) {
     context.pop();
+  }
+
+  static void goOnboarding(BuildContext context) {
+    context.go(RoutePaths.onboarding);
   }
 }

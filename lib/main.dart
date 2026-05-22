@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/core/core.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   // LOAD ENV
-  await dotenv.load();
+  await dotenv.load(fileName: ".env");
 
-  // // INIT SUPABASE
-  // await Supabase.initialize(
-  //   url: dotenv.env[dotenv.env['SUPABASE_URL']??""]!,
-  //   anonKey: dotenv.env[dotenv.env['SUPABASE_ANON_KEY']??""]!,
-  // );
-
-  runApp(
-    const BioAIApp(),
+  // INIT SUPABASE
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+
+  runApp(const ProviderScope(child: BioAIApp()));
 }

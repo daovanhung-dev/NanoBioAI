@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'route_paths.dart';
+import '../constants/constant.dart';
+
 
 class RouteGuards {
   static String? authGuard(BuildContext context, GoRouterState state) {
