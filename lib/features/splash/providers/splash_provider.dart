@@ -13,7 +13,7 @@ class SplashNotifier extends Notifier<SplashStatus> {
   }
 
   Future<void> initialize() async {
-    LogData().setupUI("Splash Notifier");
+
 
     state = SplashStatus.onboardingRequired;
 

@@ -9,7 +9,7 @@ class BioAIApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      LogData().setupUI("BioAI App");
+
 
     return MaterialApp.router(
       title: 'BioAI',
