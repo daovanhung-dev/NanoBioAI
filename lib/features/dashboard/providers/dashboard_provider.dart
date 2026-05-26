@@ -1,5 +1,6 @@
 // lib/features/dashboard/providers/dashboard_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/core/storage/localdb/models/meal_plan_model.dart';
 import 'package:nano_app/features/dashboard/data/datasources/dashboard_local_datasource.dart';
 import 'package:nano_app/features/dashboard/domain/repositories/dashboard_repository_impl.dart';
 
@@ -20,4 +21,12 @@ final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
 final dashboardProvider = FutureProvider<DashboardEntity>((ref) async {
   final repository = ref.read(dashboardRepositoryProvider);
   return repository.fetchDashboard();
+});
+
+final saveMealPlanProvider = FutureProvider<void>((ref) async {
+  final repository = ref.read(dashboardRepositoryProvider);
+  // Assuming you have a list of meal plans to save
+  // Replace this with your actual meal plan data
+  final mealPlans = <MealPlanModel>[];
+  return repository.saveMealPlan(mealPlans);
 });

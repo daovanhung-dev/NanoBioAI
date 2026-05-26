@@ -1,4 +1,6 @@
 // lib/features/dashboard/data/datasource/dashboard_local_datasource.dart
+import 'package:nano_app/core/storage/localdb/daos/meal_plan_dao.dart';
+import 'package:nano_app/core/storage/localdb/models/meal_plan_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 
@@ -11,14 +13,16 @@ class DashboardLocalDatasource {
     return DatabaseService.database;
   }
 
+  Future<void> saveMealPlan(List<MealPlanModel> mealPlans) async {
+    final db = await _db();
+    final dao_meal_plans = MealPlansDao(db);
+    await dao_meal_plans.insertMany(mealPlans);
+  }
+
   Future<DashboardEntity> fetchDashboard() async {
     final db = await _db();
 
-    final users = await db.query(
-      'users',
-      orderBy: 'created_at DESC',
-      limit: 1,
-    );
+    final users = await db.query('users', orderBy: 'created_at DESC', limit: 1);
 
     if (users.isEmpty) {
       throw Exception('Chưa có dữ liệu người dùng trong SQLite.');
@@ -34,7 +38,9 @@ class DashboardLocalDatasource {
       limit: 1,
     );
 
-    final profile = profileRows.isNotEmpty ? profileRows.first : <String, Object?>{};
+    final profile = profileRows.isNotEmpty
+        ? profileRows.first
+        : <String, Object?>{};
 
     final goalRows = await db.query(
       'health_goals',
@@ -57,7 +63,9 @@ class DashboardLocalDatasource {
       limit: 1,
     );
 
-    final lifestyle = habitRows.isNotEmpty ? habitRows.first : <String, Object?>{};
+    final lifestyle = habitRows.isNotEmpty
+        ? habitRows.first
+        : <String, Object?>{};
 
     final allergyRows = await db.query(
       'food_allergies',
@@ -66,7 +74,9 @@ class DashboardLocalDatasource {
       limit: 1,
     );
 
-    final allergy = allergyRows.isNotEmpty ? allergyRows.first : <String, Object?>{};
+    final allergy = allergyRows.isNotEmpty
+        ? allergyRows.first
+        : <String, Object?>{};
 
     final treatmentRows = await db.query(
       'medical_treatments',
@@ -75,7 +85,9 @@ class DashboardLocalDatasource {
       limit: 1,
     );
 
-    final treatment = treatmentRows.isNotEmpty ? treatmentRows.first : <String, Object?>{};
+    final treatment = treatmentRows.isNotEmpty
+        ? treatmentRows.first
+        : <String, Object?>{};
 
     final surveyRows = await db.query(
       'survey_answers',
@@ -104,8 +116,14 @@ class DashboardLocalDatasource {
       heightCm: _readDouble(profile, 'height_cm'),
       weightKg: _readDouble(profile, 'weight_kg'),
       bmi: _readDouble(profile, 'bmi'),
-      goals: goalRows.map((e) => _readString(e, 'goal_name')).where((e) => e.isNotEmpty).toList(),
-      conditions: conditionRows.map((e) => _readString(e, 'condition_name')).where((e) => e.isNotEmpty).toList(),
+      goals: goalRows
+          .map((e) => _readString(e, 'goal_name'))
+          .where((e) => e.isNotEmpty)
+          .toList(),
+      conditions: conditionRows
+          .map((e) => _readString(e, 'condition_name'))
+          .where((e) => e.isNotEmpty)
+          .toList(),
       habits: _readHabitsFromRow(lifestyle),
       sleepQuality: _readString(lifestyle, 'sleep_quality'),
       activityLevel: _readString(lifestyle, 'activity_level'),

@@ -11,18 +11,31 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  dio: ^5.7.0
-  shared_preferences: ^2.5.3
+
   cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_riverpod: ^3.3.1
+
+  # Navigation
+  go_router: ^17.2.3
+
+  # Network
+  dio: ^5.9.2
+  connectivity_plus: ^7.1.1
+
+  # Local Storage
+  shared_preferences: ^2.5.3
   sqflite: ^2.4.2
   path: ^1.9.1
   path_provider: ^2.1.5
+
+  # Supabase
   supabase_flutter: ^2.12.4
+
+  # Env
   flutter_dotenv: ^6.0.1
-  go_router: ^17.2.3
-  flutter_riverpod: ^3.3.1
-  dio: ^5.9.2
-  connectivity_plus: ^7.1.1
+  google_generative_ai: ^0.4.7
 
 dev_dependencies:
   flutter_test:
