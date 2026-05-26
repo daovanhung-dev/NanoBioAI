@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../constants/constant.dart';
 
 class AppNavigator {
-
   static void goDashboard(BuildContext context) {
     context.go(RoutePaths.dashboard);
   }
@@ -15,6 +14,14 @@ class AppNavigator {
 
   static void goProfile(BuildContext context) {
     context.go(RoutePaths.profile);
+  }
+
+  static void goMenu(BuildContext context) {
+    context.go(RoutePaths.menu);
+  }
+
+  static void goMealPlan(BuildContext context) {
+    context.go(RoutePaths.mealPlan);
   }
 
   static void goAIChat(BuildContext context) {

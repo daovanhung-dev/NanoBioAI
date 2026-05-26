@@ -12,6 +12,9 @@ abstract class RoutePaths {
   static const nutrition = '/nutrition';
   static const sleepTracking = '/sleep-tracking';
   static const stressTracking = '/stress-tracking';
+  static const menu = '/menu';
+  static const mealPlan = '/meal-plan';
+
 
   static const aiChat = '/ai-chat';
   static const aiAnalysis = '/ai-analysis';

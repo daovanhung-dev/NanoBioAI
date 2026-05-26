@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/features/auth/auth.dart';
 import 'package:nano_app/features/dashboard/dashboard.dart';
+import 'package:nano_app/features/dashboard/presentation/pages/menu_page.dart';
+import 'package:nano_app/features/meal_plan/dashboard/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/features/onboarding/onboarding.dart';
 import 'package:nano_app/features/splash/splash.dart';
 
@@ -47,6 +49,22 @@ final appRouter = GoRouter(
       path: RoutePaths.onboarding,
       name: RoutePaths.onboarding,
       builder: (context, state) => const OnboardingPage(),
+    ),
+
+    /// Menu
+    GoRoute(
+      path: RoutePaths.menu,
+      name: RoutePaths.menu,
+      redirect: RouteGuards.authGuard,
+      builder: (context, state) => const MainNavigationPage(),
+    ),
+
+    /// Meal Plan
+    GoRoute(
+      path: RoutePaths.mealPlan,
+      name: RoutePaths.mealPlan,
+      redirect: RouteGuards.authGuard,
+      builder: (context, state) => const MealPlanPage(),
     ),
 
     /// AI Chat

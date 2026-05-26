@@ -36,15 +36,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   @override
   void initState() {
 
-    //goi controler 
-    Future.microtask(() {
-    ref
-      .read(
-        DashboardController.,
-      )
-      .init();
-  });
-
     super.initState();
 
     _entryController = AnimationController(

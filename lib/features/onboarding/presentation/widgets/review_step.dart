@@ -257,7 +257,7 @@ class ReviewStep extends ConsumerWidget {
                       content: Text('Đã lưu thông tin sức khỏe thành công'),
                     ),
                   );
-                  AppNavigator.goDashboard(context);
+                  AppNavigator.goMenu(context);
                 }
               },
 
