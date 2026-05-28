@@ -55,7 +55,6 @@ final appRouter = GoRouter(
     GoRoute(
       path: RoutePaths.menu,
       name: RoutePaths.menu,
-      redirect: RouteGuards.authGuard,
       builder: (context, state) => const MainNavigationPage(),
     ),
 
@@ -63,7 +62,6 @@ final appRouter = GoRouter(
     GoRoute(
       path: RoutePaths.mealPlan,
       name: RoutePaths.mealPlan,
-      redirect: RouteGuards.authGuard,
       builder: (context, state) => const MealPlanPage(),
     ),
 

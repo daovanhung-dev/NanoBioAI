@@ -1,10 +1,33 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
-class OnboardingChip extends StatelessWidget {
+import '../../../../core/theme/theme.dart';
+
+class OnboardingChip extends StatefulWidget {
   final String label;
+
   final String emoji;
+
   final bool selected;
+
   final VoidCallback onTap;
+
+  final bool enabled;
+
+  final double? width;
+
+  final double? height;
+
+  final Gradient? selectedGradient;
+
+  final Color? selectedColor;
+
+  final EdgeInsetsGeometry? padding;
+
+  final Widget? trailing;
+
+  final IconData? icon;
 
   const OnboardingChip({
     super.key,
@@ -12,40 +35,254 @@ class OnboardingChip extends StatelessWidget {
     required this.emoji,
     required this.selected,
     required this.onTap,
+    this.enabled = true,
+    this.width,
+    this.height,
+    this.selectedGradient,
+    this.selectedColor,
+    this.padding,
+    this.trailing,
+    this.icon,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final bgColor = selected ? theme.colorScheme.primary : theme.colorScheme.surface;
-    final fgColor = selected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface;
+  State<OnboardingChip> createState() => _OnboardingChipState();
+}
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: selected ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.35),
-          ),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-              color: Colors.black.withOpacity(0.04),
+class _OnboardingChipState extends State<OnboardingChip>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  bool _hovered = false;
+
+  bool _pressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: AppDuration.normal,
+      lowerBound: 0.96,
+      upperBound: 1,
+      value: 1,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    if (!widget.enabled) return;
+
+    setState(() {
+      _pressed = true;
+    });
+
+    _controller.reverse();
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    if (!widget.enabled) return;
+
+    setState(() {
+      _pressed = false;
+    });
+
+    _controller.forward();
+  }
+
+  void _handleTapCancel() {
+    if (!widget.enabled) return;
+
+    setState(() {
+      _pressed = false;
+    });
+
+    _controller.forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool selected = widget.selected;
+
+    final Gradient activeGradient =
+        widget.selectedGradient ?? AppGradients.primary;
+
+    final Color activeColor = widget.selectedColor ?? AppColors.primary;
+
+    return MouseRegion(
+      cursor: widget.enabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      onEnter: (_) {
+        setState(() {
+          _hovered = true;
+        });
+      },
+      onExit: (_) {
+        setState(() {
+          _hovered = false;
+        });
+      },
+      child: GestureDetector(
+        onTap: widget.enabled ? widget.onTap : null,
+        onTapDown: _handleTapDown,
+        onTapUp: _handleTapUp,
+        onTapCancel: _handleTapCancel,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Transform.scale(scale: _controller.value, child: child);
+          },
+          child: AnimatedContainer(
+            duration: AppDuration.normal,
+            curve: Curves.easeOutCubic,
+            width: widget.width,
+            height: widget.height,
+            padding:
+                widget.padding ??
+                const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.md,
+                ),
+            decoration: BoxDecoration(
+              gradient: selected ? activeGradient : null,
+              color: selected ? null : Colors.white,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(
+                color: selected
+                    ? Colors.transparent
+                    : _hovered
+                    ? AppColors.primary
+                    : AppColors.border.withOpacity(0.55),
+                width: 1.4,
+              ),
+              boxShadow: selected
+                  ? [
+                      ...AppShadows.primary,
+                      BoxShadow(
+                        blurRadius: 24,
+                        spreadRadius: -6,
+                        offset: const Offset(0, 10),
+                        color: activeColor.withOpacity(0.32),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        blurRadius: _hovered ? 20 : 14,
+                        spreadRadius: -6,
+                        offset: const Offset(0, 10),
+                        color: Colors.black.withOpacity(_hovered ? 0.08 : 0.04),
+                      ),
+                    ],
             ),
-          ],
-        ),
-        child: Text(
-          '$emoji  $label',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: fgColor,
-            fontWeight: FontWeight.w600,
+            child: AnimatedOpacity(
+              duration: AppDuration.fast,
+              opacity: widget.enabled ? 1 : 0.5,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _EmojiContainer(emoji: widget.emoji, selected: selected),
+
+                  const SizedBox(width: AppSpacing.md),
+
+                  if (widget.icon != null) ...[
+                    Icon(
+                      widget.icon,
+                      size: 18,
+                      color: selected ? Colors.white : AppColors.primary,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                  ],
+
+                  Flexible(
+                    child: AnimatedDefaultTextStyle(
+                      duration: AppDuration.normal,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: selected ? Colors.white : AppColors.textPrimary,
+                        height: 1.2,
+                      ),
+                      child: Text(
+                        widget.label,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+
+                  if (widget.trailing != null) ...[
+                    const SizedBox(width: AppSpacing.md),
+                    widget.trailing!,
+                  ],
+
+                  if (selected) ...[
+                    const SizedBox(width: AppSpacing.md),
+                    const _SelectedIndicator(),
+                  ],
+                ],
+              ),
+            ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmojiContainer extends StatelessWidget {
+  final String emoji;
+
+  final bool selected;
+
+  const _EmojiContainer({required this.emoji, required this.selected});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: AppDuration.normal,
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: selected
+            ? Colors.white.withOpacity(0.14)
+            : AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Center(
+        child: AnimatedScale(
+          duration: AppDuration.normal,
+          scale: selected ? 1.08 : 1,
+          child: Text(emoji, style: const TextStyle(fontSize: 24)),
+        ),
+      ),
+    );
+  }
+}
+
+class _SelectedIndicator extends StatelessWidget {
+  const _SelectedIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.circular),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.16),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withOpacity(0.3)),
+          ),
+          child: const Icon(Icons.check_rounded, size: 16, color: Colors.white),
         ),
       ),
     );

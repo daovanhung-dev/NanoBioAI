@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/router/router.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
+import 'package:nano_app/shared/widgets/loading_genAI.dart';
 
 import '../controllers/onboarding_controller.dart';
 
@@ -248,16 +249,27 @@ class ReviewStep extends ConsumerWidget {
 
             child: ElevatedButton(
               onPressed: () async {
-                await controller.saveOnboarding();
-                await AppPrefs.setOnboardingCompleted(true);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AIGeneratingPage()),
+                );
 
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đã lưu thông tin sức khỏe thành công'),
-                    ),
-                  );
-                  AppNavigator.goMenu(context);
+                try {
+                  await controller.saveOnboarding();
+
+                  await AppPrefs.setOnboardingCompleted(true);
+
+                  if (context.mounted) {
+                    AppNavigator.goMenu(context);
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(e.toString())));
+                  }
                 }
               },
 

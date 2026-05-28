@@ -55,7 +55,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
     await Future.delayed(const Duration(seconds: 1));
 
     if (completed) {
-      AppNavigator.goDashboard(context);
+      AppNavigator.goMenu(context);
     } else {
       AppNavigator.goOnboarding(context);
     }

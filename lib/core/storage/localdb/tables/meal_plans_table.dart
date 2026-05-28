@@ -4,44 +4,40 @@ class MealPlansTable {
   static const createTable = '''
   CREATE TABLE meal_plans (
 
-    id TEXT PRIMARY KEY,
+  id TEXT PRIMARY KEY,
 
-    user_id TEXT,
+  user_id TEXT,
 
-    plan_date TEXT,
+  plan_date TEXT,
 
-    meal_type TEXT,
+  meal_type TEXT,
 
-    meal_name TEXT,
+  meal_name TEXT,
 
-    description TEXT,
+  description TEXT,
 
-    calories INTEGER,
+  calories INTEGER,
 
-    protein REAL,
+  protein REAL,
 
-    carbs REAL,
+  carbs REAL,
 
-    fat REAL,
+  fat REAL,
 
-    fiber REAL,
+  fiber REAL,
 
-    water_ml INTEGER,
+  water_ml INTEGER,
 
-    meal_order INTEGER,
+  meal_order INTEGER,
 
-    is_completed INTEGER DEFAULT 0,
+  is_completed INTEGER,
 
-    ai_generated INTEGER DEFAULT 1,
+  ai_generated INTEGER,
 
-    created_at TEXT,
+  created_at TEXT,
 
-    updated_at TEXT,
+  updated_at TEXT
 
-    FOREIGN KEY(user_id)
-    REFERENCES users(id)
-    ON DELETE CASCADE
-
-  )
+)
   ''';
 }

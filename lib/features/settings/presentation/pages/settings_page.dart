@@ -1,14 +1,390 @@
 import 'package:flutter/material.dart';
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+import 'package:nano_app/core/theme/theme.dart';
+
+class SettingsView extends StatelessWidget {
+  const SettingsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('settings page'),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.pagePadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildProfileCard(),
+                    const SizedBox(height: AppSpacing.xl),
+                    _buildSectionTitle('Tài khoản'),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildMenuCard(
+                      children: [
+                        _buildMenuItem(
+                          icon: Icons.person_rounded,
+                          title: 'Thông tin cá nhân',
+                          subtitle: 'Quản lý hồ sơ và dữ liệu sức khỏe',
+                        ),
+                        _divider(),
+                        _buildMenuItem(
+                          icon: Icons.lock_rounded,
+                          title: 'Bảo mật',
+                          subtitle: 'Mật khẩu, xác thực và quyền riêng tư',
+                        ),
+                        _divider(),
+                        _buildMenuItem(
+                          icon: Icons.notifications_rounded,
+                          title: 'Thông báo',
+                          subtitle: 'Nhắc nhở và thông báo hệ thống',
+                          trailing: Switch(
+                            value: true,
+                            activeColor: AppColors.primary,
+                            onChanged: (_) {},
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    _buildSectionTitle('Ứng dụng'),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildMenuCard(
+                      children: [
+                        _buildMenuItem(
+                          icon: Icons.dark_mode_rounded,
+                          title: 'Chế độ tối',
+                          subtitle: 'Tối ưu trải nghiệm ban đêm',
+                          trailing: Switch(
+                            value: false,
+                            activeColor: AppColors.primary,
+                            onChanged: (_) {},
+                          ),
+                        ),
+                        _divider(),
+                        _buildMenuItem(
+                          icon: Icons.language_rounded,
+                          title: 'Ngôn ngữ',
+                          subtitle: 'Tiếng Việt',
+                        ),
+                        _divider(),
+                        _buildMenuItem(
+                          icon: Icons.storage_rounded,
+                          title: 'Dung lượng',
+                          subtitle: 'Xóa cache và tối ưu bộ nhớ',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    _buildSectionTitle('AI & Sức khỏe'),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildMenuCard(
+                      children: [
+                        _buildMenuItem(
+                          icon: Icons.auto_awesome_rounded,
+                          title: 'AI Health Assistant',
+                          subtitle: 'Thiết lập trợ lý AI cá nhân',
+                        ),
+                        _divider(),
+                        _buildMenuItem(
+                          icon: Icons.favorite_rounded,
+                          title: 'Mục tiêu sức khỏe',
+                          subtitle: 'Theo dõi và cập nhật mục tiêu',
+                        ),
+                        _divider(),
+                        _buildMenuItem(
+                          icon: Icons.sync_rounded,
+                          title: 'Đồng bộ dữ liệu',
+                          subtitle: 'Realtime Sync với Supabase',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    _buildDangerCard(),
+                    const SizedBox(height: AppSpacing.xxxl),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cài đặt',
+                style: AppTextStyles.heading1.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Quản lý tài khoản và trải nghiệm ứng dụng',
+                style: AppTextStyles.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+        Container(
+          height: 58,
+          width: 58,
+          decoration: AppDecoration.gradient(
+            colors: const [
+              AppColors.primary,
+              AppColors.secondary,
+            ],
+            radius: AppRadius.circular,
+            shadows: AppShadows.primary,
+          ),
+          child: const Icon(
+            Icons.settings_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileCard() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: AppDecoration.gradient(
+        colors: const [
+          Color(0xFF2563EB),
+          Color(0xFF06B6D4),
+        ],
+        radius: AppRadius.xxl,
+        shadows: AppShadows.lg,
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 72,
+            width: 72,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(.18),
+              borderRadius: BorderRadius.circular(AppRadius.circular),
+            ),
+            child: const Icon(
+              Icons.person_rounded,
+              color: Colors.white,
+              size: 36,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Đào Văn Hùng',
+                  style: AppTextStyles.heading3.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'AI Health Premium',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(.9),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(.16),
+                    borderRadius: BorderRadius.circular(
+                      AppRadius.circular,
+                    ),
+                  ),
+                  child: Text(
+                    'Tài khoản đang hoạt động',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: Colors.white70,
+            size: 18,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: AppTextStyles.heading3.copyWith(
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  Widget _buildMenuCard({
+    required List<Widget> children,
+  }) {
+    return Container(
+      decoration: AppDecoration.card(
+        radius: AppRadius.xxl,
+        shadows: AppShadows.soft,
+      ),
+      child: Column(
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    Widget? trailing,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadius.xl),
+      onTap: () {},
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: [
+            Container(
+              height: 54,
+              width: 54,
+              decoration: BoxDecoration(
+                gradient: AppGradients.primary,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            trailing ??
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 18,
+                  color: AppColors.textHint,
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDangerCard() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: AppDecoration.card(
+        radius: AppRadius.xxl,
+        shadows: AppShadows.sm,
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: 72,
+            width: 72,
+            decoration: BoxDecoration(
+              color: AppColors.errorSoft,
+              borderRadius: BorderRadius.circular(
+                AppRadius.circular,
+              ),
+            ),
+            child: const Icon(
+              Icons.logout_rounded,
+              color: AppColors.error,
+              size: 34,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Đăng xuất',
+            style: AppTextStyles.heading3.copyWith(
+              color: AppColors.error,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Bạn có thể đăng nhập lại bất cứ lúc nào.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error,
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.md,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppRadius.lg,
+                  ),
+                ),
+              ),
+              onPressed: () {},
+              child: const Text(
+                'Đăng xuất tài khoản',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _divider() {
+    return const Divider(
+      height: 1,
+      thickness: 1,
+      color: AppColors.borderLight,
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/features/dashboard/presentation/controllers/dashboard_controller.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
 import '../../domain/repositories/onboarding_repository.dart';
@@ -273,21 +274,14 @@ class OnboardingController extends Notifier<OnboardingState> {
   }
 
   Future<void> saveOnboarding() async {
-    if (!state.canSave) {
-      state = state.copyWith(
-        savedLog: 'Thiếu dữ liệu bắt buộc hoặc chưa đồng ý cam kết.',
-      );
-      return;
-    }
-
-    state = state.copyWith(isSaving: true, savedLog: null);
-
     try {
       await _repository.save(state.toEntity());
       state = state.copyWith(
         isSaving: false,
         savedLog: 'Đã lưu onboarding xuống SQLite thành công.',
       );
+      print("gen meal plan by weeks to db");
+      await ref.read(dashboardControllerProvider.notifier).genMealByWeeksToDB();
     } catch (e) {
       state = state.copyWith(
         isSaving: false,

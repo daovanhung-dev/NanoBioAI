@@ -1,3 +1,4 @@
+import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -42,10 +43,7 @@ class DatabaseService {
   static Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
 
-    final path = join(
-      dbPath,
-      DatabaseConstants.databaseName,
-    );
+    final path = join(dbPath, DatabaseConstants.databaseName);
 
     return await openDatabase(
       path,
@@ -53,111 +51,65 @@ class DatabaseService {
       // DATABASE VERSION
       version: DatabaseVersion.currentVersion,
 
+      // CONFIG
+      onConfigure: (db) async {
+        // Disable foreign key constraints
+        await db.execute('PRAGMA foreign_keys = OFF');
+      },
+
       // CREATE DATABASE
       onCreate: (db, version) async {
         await _createTables(db);
       },
 
       // DATABASE UPGRADE
-      onUpgrade: (
-        db,
-        oldVersion,
-        newVersion,
-      ) async {
-        await MigrationManager.runMigrations(
-          db,
-          oldVersion,
-          newVersion,
-        );
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await MigrationManager.runMigrations(db, oldVersion, newVersion);
       },
 
-      // OPTIONAL
-      onConfigure: (db) async {
-        await db.execute(
-          'PRAGMA foreign_keys = ON',
-        );
+      // OPEN DATABASE
+      onOpen: (db) async {
+        await db.execute('PRAGMA foreign_keys = OFF');
       },
     );
   }
 
   /// Create all tables
-  static Future<void> _createTables(
-    Database db,
-  ) async {
-    // USERS
-    await db.execute(
-      UsersTable.createTable,
-    );
+  static Future<void> _createTables(Database db) async {
+    await db.execute(UsersTable.createTable);
 
-    // HEALTH PROFILES
-    await db.execute(
-      HealthProfilesTable.createTable,
-    );
+    await db.execute(HealthProfilesTable.createTable);
 
-    // HEALTH GOALS
-    await db.execute(
-      HealthGoalsTable.createTable,
-    );
+    await db.execute(HealthGoalsTable.createTable);
 
-    // HEALTH CONDITIONS
-    await db.execute(
-      HealthConditionsTable.createTable,
-    );
+    await db.execute(HealthConditionsTable.createTable);
 
-    // LIFESTYLE HABITS
-    await db.execute(
-      LifestyleHabitsTable.createTable,
-    );
+    await db.execute(LifestyleHabitsTable.createTable);
 
-    // FOOD ALLERGIES
-    await db.execute(
-      FoodAllergiesTable.createTable,
-    );
+    await db.execute(FoodAllergiesTable.createTable);
 
-    // MEDICAL TREATMENTS
-    await db.execute(
-      MedicalTreatmentsTable.createTable,
-    );
+    await db.execute(MedicalTreatmentsTable.createTable);
 
-    // HEALTH TRACKING LOGS
-    await db.execute(
-      HealthTrackingLogsTable.createTable,
-    );
+    await db.execute(HealthTrackingLogsTable.createTable);
 
-    // NUTRITION LOGS
-    await db.execute(
-      NutritionLogsTable.createTable,
-    );
+    await db.execute(NutritionLogsTable.createTable);
 
-    // AI INSIGHTS
-    await db.execute(
-      AIInsightsTable.createTable,
-    );
+    await db.execute(AIInsightsTable.createTable);
 
-    // AI RECOMMENDATIONS
-    await db.execute(
-      AIRecommendationsTable.createTable,
-    );
+    await db.execute(AIRecommendationsTable.createTable);
 
-    // NOTIFICATIONS
-    await db.execute(
-      NotificationsTable.createTable,
-    );
+    await db.execute(NotificationsTable.createTable);
 
-    // SURVEY ANSWERS
-    await db.execute(
-      SurveyAnswersTable.createTable,
-    );
+    await db.execute(SurveyAnswersTable.createTable);
+
+    await db.execute(MealPlansTable.createTable);
   }
 
   /// Delete database
   static Future<void> deleteDatabaseFile() async {
     final dbPath = await getDatabasesPath();
 
-    final path = join(
-      dbPath,
-      DatabaseConstants.databaseName,
-    );
+    final path = join(dbPath, DatabaseConstants.databaseName);
 
     await deleteDatabase(path);
 
