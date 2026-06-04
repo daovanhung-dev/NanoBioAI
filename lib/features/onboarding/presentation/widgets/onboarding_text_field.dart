@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nano_app/core/constants/app/app_duration.dart';
-import 'package:nano_app/core/constants/app/app_radius.dart';
-import 'package:nano_app/core/constants/ui/color_constants.dart';
-import 'package:nano_app/core/theme/app_text_styles.dart';
+
+import 'package:nano_app/core/theme/theme.dart';
 
 class OnboardingTextField extends StatefulWidget {
   final String label;
@@ -65,10 +63,12 @@ class OnboardingTextField extends StatefulWidget {
   });
 
   @override
-  State<OnboardingTextField> createState() => _OnboardingTextFieldState();
+  State<OnboardingTextField> createState() =>
+      _OnboardingTextFieldState();
 }
 
-class _OnboardingTextFieldState extends State<OnboardingTextField>
+class _OnboardingTextFieldState
+    extends State<OnboardingTextField>
     with SingleTickerProviderStateMixin {
   late final TextEditingController _controller;
 
@@ -76,15 +76,27 @@ class _OnboardingTextFieldState extends State<OnboardingTextField>
 
   late final AnimationController _animationController;
 
+  late final Animation<double> _scaleAnimation;
+
+  late final Animation<double> _glowAnimation;
+
   bool _isFocused = false;
 
   bool _obscure = false;
+
+  bool get _hasError =>
+      widget.errorText != null &&
+      widget.errorText!.trim().isNotEmpty;
+
+  bool get _isMultiline => widget.maxLines > 1;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = TextEditingController(text: widget.initialValue);
+    _controller = TextEditingController(
+      text: widget.initialValue,
+    );
 
     _focusNode = widget.focusNode ?? FocusNode();
 
@@ -92,26 +104,50 @@ class _OnboardingTextFieldState extends State<OnboardingTextField>
 
     _animationController = AnimationController(
       vsync: this,
-      duration: AppDuration.splash,
+      duration: AppDuration.input,
     );
 
-    _focusNode.addListener(() {
-      if (mounted) {
-        setState(() {
-          _isFocused = _focusNode.hasFocus;
-        });
+    _scaleAnimation = Tween<double>(
+      begin: 1,
+      end: 1.015,
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: AppAnimations.smoothCurve,
+      ),
+    );
 
-        if (_isFocused) {
-          _animationController.forward();
-        } else {
-          _animationController.reverse();
-        }
-      }
+    _glowAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: AppAnimations.smoothCurve,
+      ),
+    );
+
+    _focusNode.addListener(_handleFocusChanged);
+  }
+
+  void _handleFocusChanged() {
+    if (!mounted) return;
+
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
     });
+
+    if (_isFocused) {
+      _animationController.forward();
+    } else {
+      _animationController.reverse();
+    }
   }
 
   @override
-  void didUpdateWidget(covariant OnboardingTextField oldWidget) {
+  void didUpdateWidget(
+    covariant OnboardingTextField oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.initialValue != oldWidget.initialValue &&
@@ -122,6 +158,8 @@ class _OnboardingTextFieldState extends State<OnboardingTextField>
 
   @override
   void dispose() {
+    _focusNode.removeListener(_handleFocusChanged);
+
     if (widget.focusNode == null) {
       _focusNode.dispose();
     }
@@ -132,103 +170,172 @@ class _OnboardingTextFieldState extends State<OnboardingTextField>
     super.dispose();
   }
 
+  Color get _borderColor {
+    if (_hasError) {
+      return AppColors.error;
+    }
+
+    if (_isFocused) {
+      return AppColors.primary;
+    }
+
+    return AppColors.border;
+  }
+
+  Gradient get _activeGradient {
+    if (_hasError) {
+      return AppGradients.danger;
+    }
+
+    return AppGradients.primary;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bool hasError =
-        widget.errorText != null && widget.errorText!.isNotEmpty;
+    final screenWidth = MediaQuery.sizeOf(context).width;
 
-    final bool isMultiline = widget.maxLines > 1;
+    final horizontalPadding = AppSpacing.responsive(
+      AppSpacing.md,
+      screenWidth: screenWidth,
+    );
 
-    return AnimatedContainer(
-      duration: AppDuration.splash,
-      curve: Curves.easeOutCubic,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: [
-          BoxShadow(
-            color: _isFocused
-                ? AppColors.primary.withOpacity(0.12)
-                : Colors.black.withOpacity(0.035),
-            blurRadius: _isFocused ? 24 : 14,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+    final verticalPadding = _isMultiline
+        ? AppSpacing.responsive(
+            18,
+            screenWidth: screenWidth,
+          )
+        : AppSpacing.responsive(
+            16,
+            screenWidth: screenWidth,
+          );
+
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (_, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: child,
+        );
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 10),
-            child: AnimatedDefaultTextStyle(
-              duration: AppDuration.splash,
-              style: AppTextStyles.labelLarge.copyWith(
-                fontWeight: FontWeight.w700,
-                color: hasError
-                    ? AppColors.secondary
-                    : _isFocused
-                    ? AppColors.primary
-                    : AppColors.secondary,
-              ),
-              child: Text(widget.label),
+            padding: const EdgeInsets.only(
+              left: AppSpacing.xs,
+              bottom: AppSpacing.sm,
+            ),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: AppDuration.fast,
+                  width: 8,
+                  height: 8,
+                  decoration: AppDecoration.circle(
+                    gradient: _isFocused
+                        ? AppGradients.primary
+                        : null,
+                    color: _isFocused
+                        ? null
+                        : AppColors.border,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: AnimatedDefaultTextStyle(
+                    duration: AppDuration.fast,
+                    curve: AppAnimations.smoothCurve,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: _hasError
+                          ? AppColors.error
+                          : _isFocused
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    child: Text(widget.label),
+                  ),
+                ),
+              ],
             ),
           ),
 
           AnimatedContainer(
-            duration: AppDuration.splash,
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.all(1.2),
+            duration: AppDuration.input,
+            curve: AppAnimations.smoothCurve,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              gradient: _isFocused
-                  ? const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppColors.primary, AppColors.secondary],
-                    )
-                  : null,
-              border: Border.all(
-                color: hasError
-                    ? AppColors.primary
-                    : _isFocused
-                    ? Colors.transparent
-                    : AppColors.primary.withOpacity(0.65),
+              borderRadius: BorderRadius.circular(
+                AppRadius.xl,
               ),
-              color: Colors.white,
+              gradient: _isFocused
+                  ? _activeGradient
+                  : null,
+              boxShadow: [
+                ...(_isFocused
+                    ? AppShadows.primary
+                    : AppShadows.card),
+                BoxShadow(
+                  color: (_hasError
+                          ? AppColors.error
+                          : AppColors.primary)
+                      .withOpacity(
+                    0.12 * _glowAnimation.value,
+                  ),
+                  blurRadius: 28,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
+            padding: const EdgeInsets.all(1.4),
             child: AnimatedContainer(
-              duration: AppDuration.splash,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(AppRadius.lg - 1),
+              duration: AppDuration.input,
+              curve: AppAnimations.smoothCurve,
+              decoration: AppDecoration.container(
+                color: widget.enabled
+                    ? AppColors.surface
+                    : AppColors.cardAlt,
+                radius: AppRadius.xl,
+                border: Border.all(
+                  color: _isFocused
+                      ? Colors.transparent
+                      : _borderColor,
+                ),
               ),
               child: Row(
-                crossAxisAlignment: isMultiline
+                crossAxisAlignment: _isMultiline
                     ? CrossAxisAlignment.start
                     : CrossAxisAlignment.center,
                 children: [
                   if (widget.prefixIcon != null)
                     Padding(
                       padding: EdgeInsets.only(
-                        left: 16,
-                        top: isMultiline ? 18 : 0,
-                        right: 12,
+                        left: horizontalPadding,
+                        top: _isMultiline
+                            ? verticalPadding - 2
+                            : 0,
+                        right: AppSpacing.sm,
                       ),
                       child: AnimatedContainer(
-                        duration: AppDuration.splash,
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          color: _isFocused
-                              ? AppColors.primary
-                              : AppColors.primary,
-                        ),
+                        duration: AppDuration.fast,
+                        curve: AppAnimations.smoothCurve,
+                        width: 46,
+                        height: 46,
+                        decoration: _isFocused
+                            ? AppDecoration.primaryGradient(
+                                radius: AppRadius.lg,
+                              )
+                            : AppDecoration.container(
+                                color:
+                                    AppColors.primarySoft,
+                                radius: AppRadius.lg,
+                              ),
                         child: IconTheme(
                           data: IconThemeData(
                             color: _isFocused
                                 ? Colors.white
                                 : AppColors.primary,
-                            size: 20,
+                            size: 22,
                           ),
                           child: widget.prefixIcon!,
                         ),
@@ -248,14 +355,21 @@ class _OnboardingTextFieldState extends State<OnboardingTextField>
                       maxLength: widget.maxLength,
                       maxLines: widget.maxLines,
                       minLines: widget.maxLines,
-                      textInputAction: widget.textInputAction,
-                      inputFormatters: widget.inputFormatters,
-                      textCapitalization: widget.textCapitalization,
+                      textInputAction:
+                          widget.textInputAction,
+                      inputFormatters:
+                          widget.inputFormatters,
+                      textCapitalization:
+                          widget.textCapitalization,
                       cursorColor: AppColors.primary,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                        height: 1.45,
+                      style:
+                          AppTypography.readable(
+                        AppTextStyles.bodyLarge.copyWith(
+                          color:
+                              AppColors.textPrimary,
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
                       ),
                       onChanged: widget.onChanged,
                       decoration: InputDecoration(
@@ -263,46 +377,64 @@ class _OnboardingTextFieldState extends State<OnboardingTextField>
                         counterText: '',
                         isDense: true,
                         hintText: widget.hint,
-                        hintStyle: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w500,
-                          height: 1.5,
+                        hintStyle:
+                            AppTextStyles.bodyMedium
+                                .copyWith(
+                          color:
+                              AppColors.textHint,
+                          fontWeight:
+                              FontWeight.w500,
                         ),
                         contentPadding:
                             widget.contentPadding ??
-                            EdgeInsets.symmetric(
-                              horizontal: 0,
-                              vertical: isMultiline ? 20 : 18,
-                            ),
+                                EdgeInsets.symmetric(
+                                  horizontal: 0,
+                                  vertical:
+                                      verticalPadding,
+                                ),
                       ),
                     ),
                   ),
 
                   if (widget.obscureText)
                     Padding(
-                      padding: const EdgeInsets.only(right: 14),
+                      padding: EdgeInsets.only(
+                        right: horizontalPadding,
+                      ),
                       child: GestureDetector(
+                        behavior:
+                            HitTestBehavior.opaque,
                         onTap: () {
                           setState(() {
                             _obscure = !_obscure;
                           });
                         },
                         child: AnimatedContainer(
-                          duration: AppDuration.splash,
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            color: _isFocused
-                                ? AppColors.primary
-                                : AppColors.background,
-                          ),
+                          duration: AppDuration.fast,
+                          curve:
+                              AppAnimations.smoothCurve,
+                          width: 44,
+                          height: 44,
+                          decoration: _isFocused
+                              ? AppDecoration.glass(
+                                  radius:
+                                      AppRadius.lg,
+                                )
+                              : AppDecoration.container(
+                                  color: AppColors
+                                      .primarySoft,
+                                  radius:
+                                      AppRadius.lg,
+                                ),
                           child: Icon(
                             _obscure
-                                ? Icons.visibility_off_rounded
-                                : Icons.visibility_rounded,
-                            color: AppColors.primary,
+                                ? AppIcons
+                                    .visibilityOff
+                                : AppIcons
+                                    .visibility,
                             size: 20,
+                            color:
+                                AppColors.primary,
                           ),
                         ),
                       ),
@@ -310,7 +442,9 @@ class _OnboardingTextFieldState extends State<OnboardingTextField>
 
                   if (widget.suffixIcon != null)
                     Padding(
-                      padding: const EdgeInsets.only(right: 16),
+                      padding: EdgeInsets.only(
+                        right: horizontalPadding,
+                      ),
                       child: widget.suffixIcon!,
                     ),
                 ],
@@ -318,33 +452,70 @@ class _OnboardingTextFieldState extends State<OnboardingTextField>
             ),
           ),
 
-          if (widget.helperText != null || hasError)
-            Padding(
-              padding: const EdgeInsets.only(left: 8, top: 10),
-              child: Row(
-                children: [
-                  Icon(
-                    hasError
-                        ? Icons.error_outline_rounded
-                        : Icons.info_outline_rounded,
-                    size: 16,
-                    color: hasError ? AppColors.secondary : AppColors.secondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      hasError ? widget.errorText! : widget.helperText ?? '',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: hasError
-                            ? AppColors.secondary
-                            : AppColors.secondary,
-                        height: 1.45,
-                      ),
+          AnimatedSize(
+            duration: AppDuration.normal,
+            curve: AppAnimations.smoothCurve,
+            child: (_hasError ||
+                    widget.helperText != null)
+                ? Padding(
+                    padding: const EdgeInsets.only(
+                      top: AppSpacing.sm,
+                      left: AppSpacing.sm,
+                      right: AppSpacing.sm,
                     ),
-                  ),
-                ],
-              ),
-            ),
+                    child: Row(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration:
+                              AppDecoration.circle(
+                            color: _hasError
+                                ? AppColors
+                                    .errorSoft
+                                : AppColors
+                                    .primarySoft,
+                          ),
+                          child: Icon(
+                            _hasError
+                                ? AppIcons.error
+                                : AppIcons.info,
+                            size: 14,
+                            color: _hasError
+                                ? AppColors.error
+                                : AppColors
+                                    .primary,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: AppSpacing.sm,
+                        ),
+                        Expanded(
+                          child: Text(
+                            _hasError
+                                ? widget.errorText!
+                                : widget.helperText ??
+                                      '',
+                            style: AppTextStyles
+                                .bodySmall
+                                .copyWith(
+                              color: _hasError
+                                  ? AppColors.error
+                                  : AppColors
+                                      .textSecondary,
+                              fontWeight:
+                                  FontWeight.w500,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
     );

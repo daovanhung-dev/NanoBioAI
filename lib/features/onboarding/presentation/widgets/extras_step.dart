@@ -26,12 +26,12 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
 
     _backgroundController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 12),
+      duration: const Duration(seconds: 18),
     )..repeat();
 
     _floatingController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 6),
+      duration: const Duration(seconds: 7),
     )..repeat(reverse: true);
   }
 
@@ -50,14 +50,16 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
 
     final completedFields = _calculateCompletedFields(state);
 
+    final progress = completedFields / 6;
+
     return Stack(
       children: [
         Positioned.fill(
           child: AnimatedBuilder(
             animation: _backgroundController,
-            builder: (context, child) {
+            builder: (_, __) {
               return CustomPaint(
-                painter: _ExtrasBackgroundPainter(
+                painter: _BackgroundPainter(
                   animation: _backgroundController.value,
                 ),
               );
@@ -66,22 +68,22 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
         ),
 
         Positioned(
-          top: -100,
-          right: -70,
-          child: _FloatingOrb(
+          top: -120,
+          right: -80,
+          child: _FloatingGlow(
+            size: 280,
+            color: AppColors.primary.withOpacity(0.12),
             controller: _floatingController,
-            size: 260,
-            color: AppColors.secondary.withOpacity(0.08),
           ),
         ),
 
         Positioned(
           bottom: -140,
-          left: -80,
-          child: _FloatingOrb(
+          left: -90,
+          child: _FloatingGlow(
+            size: 340,
+            color: AppColors.secondary.withOpacity(0.12),
             controller: _floatingController,
-            size: 320,
-            color: AppColors.primary.withOpacity(0.08),
           ),
         ),
 
@@ -95,58 +97,70 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
               onNext: controller.nextStep,
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 40),
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.pagePadding,
+                  right: AppSpacing.pagePadding,
+                  bottom: AppSpacing.xxxl,
+                  top: AppSpacing.sm,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _AnimatedAppear(
+                    _Appear(
                       delay: 0,
-                      child: _HeaderSection(completedFields: completedFields),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    _AnimatedAppear(
-                      delay: 100,
-                      child: _HealthSummaryCard(
+                      child: _HeroSection(
+                        progress: progress,
                         completedFields: completedFields,
                       ),
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xl),
 
-                    const _SectionTitle(
-                      title: 'Thông tin dị ứng',
-                      subtitle:
-                          'Những thông tin này giúp BioAI tránh các thực phẩm không phù hợp.',
+                    _Appear(
+                      delay: 80,
+                      child: _AiStatusCard(
+                        completedFields: completedFields,
+                      ),
                     ),
 
-                    const SizedBox(height: 18),
+                    const SizedBox(height: AppSpacing.xl),
 
-                    _AnimatedAppear(
-                      delay: 200,
-                      child: _GlassCard(
+                    const _SectionHeader(
+                      title: 'Thông tin dị ứng',
+                      subtitle:
+                          'BioAI sẽ chủ động loại bỏ những thực phẩm không phù hợp.',
+                    ),
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    _Appear(
+                      delay: 140,
+                      child: _SurfaceCard(
                         child: Column(
                           children: [
-                            _InputWrapper(
-                              icon: Icons.no_food_rounded,
+                            _FieldTile(
+                              icon: AppIcons.warning,
+                              title: 'Dị ứng / thực phẩm cần tránh',
                               child: OnboardingTextField(
-                                label: 'Dị ứng hoặc kiêng thực phẩm',
-                                hint: 'Ví dụ: hải sản, sữa, đậu phộng...',
+                                label: 'Thông tin dị ứng',
+                                hint:
+                                    'Ví dụ: Hải sản, sữa, đậu phộng, gluten...',
                                 initialValue: state.allergyName,
                                 onChanged: controller.updateAllergyName,
                               ),
                             ),
 
-                            const SizedBox(height: 20),
+                            const SizedBox(height: AppSpacing.lg),
 
-                            _InputWrapper(
-                              icon: Icons.description_rounded,
+                            _FieldTile(
+                              icon: AppIcons.document,
+                              title: 'Ghi chú thêm',
                               child: OnboardingTextField(
-                                label: 'Ghi chú dị ứng',
-                                hint: 'Nếu có thêm mô tả...',
-                                initialValue: state.allergyNote,
+                                label: 'Mô tả thêm',
+                                hint:
+                                    'Mức độ dị ứng, thực phẩm cần hạn chế...',
                                 maxLines: 3,
+                                initialValue: state.allergyNote,
                                 onChanged: controller.updateAllergyNote,
                               ),
                             ),
@@ -155,52 +169,57 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                       ),
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xl),
 
-                    const _SectionTitle(
-                      title: 'Thông tin điều trị',
+                    const _SectionHeader(
+                      title: 'Điều trị & thuốc',
                       subtitle:
-                          'BioAI sẽ dựa vào dữ liệu này để đưa ra gợi ý phù hợp hơn.',
+                          'Những dữ liệu này giúp AI đưa ra gợi ý an toàn hơn.',
                     ),
 
-                    const SizedBox(height: 18),
+                    const SizedBox(height: AppSpacing.lg),
 
-                    _AnimatedAppear(
-                      delay: 300,
-                      child: _GlassCard(
+                    _Appear(
+                      delay: 220,
+                      child: _SurfaceCard(
                         child: Column(
                           children: [
-                            _InputWrapper(
-                              icon: Icons.medication_rounded,
+                            _FieldTile(
+                              icon: AppIcons.health,
+                              title: 'Điều trị hiện tại',
                               child: OnboardingTextField(
-                                label: 'Đang điều trị / thuốc đang dùng',
-                                hint: 'Nếu không có, để trống',
+                                label: 'Điều trị / theo dõi',
+                                hint:
+                                    'Ví dụ: Theo dõi huyết áp, tiểu đường...',
                                 initialValue: state.treatmentName,
                                 onChanged: controller.updateTreatmentName,
                               ),
                             ),
 
-                            const SizedBox(height: 20),
+                            const SizedBox(height: AppSpacing.lg),
 
-                            _InputWrapper(
-                              icon: Icons.local_hospital_rounded,
+                            _FieldTile(
+                              icon: AppIcons.nutrition,
+                              title: 'Thuốc đang sử dụng',
                               child: OnboardingTextField(
                                 label: 'Tên thuốc',
-                                hint: 'Nếu có',
+                                hint: 'Có thể bỏ trống nếu không có',
                                 initialValue: state.medicationName,
                                 onChanged: controller.updateMedicationName,
                               ),
                             ),
 
-                            const SizedBox(height: 20),
+                            const SizedBox(height: AppSpacing.lg),
 
-                            _InputWrapper(
-                              icon: Icons.edit_note_rounded,
+                            _FieldTile(
+                              icon: AppIcons.edit,
+                              title: 'Ghi chú điều trị',
                               child: OnboardingTextField(
-                                label: 'Ghi chú điều trị',
-                                hint: 'Ví dụ: đang theo dõi bác sĩ...',
-                                initialValue: state.treatmentNote,
+                                label: 'Thông tin bổ sung',
+                                hint:
+                                    'Ví dụ: Theo dõi định kỳ, bác sĩ khuyến nghị...',
                                 maxLines: 4,
+                                initialValue: state.treatmentNote,
                                 onChanged: controller.updateTreatmentNote,
                               ),
                             ),
@@ -209,44 +228,45 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                       ),
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xl),
 
-                    const _SectionTitle(
-                      title: 'Mối quan tâm sức khỏe',
+                    const _SectionHeader(
+                      title: 'Điều bạn quan tâm',
                       subtitle:
-                          'Hãy chia sẻ điều bạn lo lắng nhất để BioAI đồng hành cùng bạn.',
+                          'BioAI sẽ ưu tiên tối ưu theo những điều bạn lo lắng nhất.',
                     ),
 
-                    const SizedBox(height: 18),
+                    const SizedBox(height: AppSpacing.lg),
 
-                    _AnimatedAppear(
-                      delay: 400,
-                      child: _GlassCard(
+                    _Appear(
+                      delay: 320,
+                      child: _SurfaceCard(
                         child: OnboardingTextField(
-                          label: 'Điều bạn lo lắng nhất về sức khỏe',
-                          hint: 'Chia sẻ ngắn gọn...',
-                          initialValue: state.concernText,
+                          label: 'Mối quan tâm sức khỏe',
+                          hint:
+                              'Ví dụ: Stress, mất ngủ, thiếu năng lượng, giảm cân...',
                           maxLines: 5,
+                          initialValue: state.concernText,
                           onChanged: controller.updateConcernText,
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xl),
 
-                    _AnimatedAppear(
-                      delay: 500,
-                      child: _AgreementSection(
+                    _Appear(
+                      delay: 420,
+                      child: _CommitmentCard(
                         agreed: state.agreed,
                         onChanged: controller.setAgreed,
                       ),
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xl),
 
-                    _AnimatedAppear(
-                      delay: 600,
-                      child: _AIInsightCard(
+                    _Appear(
+                      delay: 520,
+                      child: _InsightCard(
                         completedFields: completedFields,
                         agreed: state.agreed,
                       ),
@@ -264,47 +284,37 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
   int _calculateCompletedFields(dynamic state) {
     int count = 0;
 
-    if (state.allergyName.toString().isNotEmpty) {
-      count++;
-    }
+    if (state.allergyName.toString().trim().isNotEmpty) count++;
 
-    if (state.allergyNote.toString().isNotEmpty) {
-      count++;
-    }
+    if (state.allergyNote.toString().trim().isNotEmpty) count++;
 
-    if (state.treatmentName.toString().isNotEmpty) {
-      count++;
-    }
+    if (state.treatmentName.toString().trim().isNotEmpty) count++;
 
-    if (state.medicationName.toString().isNotEmpty) {
-      count++;
-    }
+    if (state.medicationName.toString().trim().isNotEmpty) count++;
 
-    if (state.treatmentNote.toString().isNotEmpty) {
-      count++;
-    }
+    if (state.treatmentNote.toString().trim().isNotEmpty) count++;
 
-    if (state.concernText.toString().isNotEmpty) {
-      count++;
-    }
+    if (state.concernText.toString().trim().isNotEmpty) count++;
 
     return count;
   }
 }
 
-class _HeaderSection extends StatelessWidget {
+class _HeroSection extends StatelessWidget {
+  final double progress;
   final int completedFields;
 
-  const _HeaderSection({required this.completedFields});
+  const _HeroSection({
+    required this.progress,
+    required this.completedFields,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        gradient: AppGradients.primary,
-        boxShadow: AppShadows.primary,
+      decoration: AppDecoration.premiumGradient(
+        radius: AppRadius.xxl,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,14 +322,14 @@ class _HeaderSection extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.15),
+                width: 74,
+                height: 74,
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.circular,
+                  opacity: 0.16,
                 ),
                 child: const Icon(
-                  Icons.health_and_safety_rounded,
+                  AppIcons.health,
                   color: Colors.white,
                   size: 34,
                 ),
@@ -329,26 +339,27 @@ class _HeaderSection extends StatelessWidget {
 
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.circular),
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.circular,
+                  opacity: 0.12,
                 ),
                 child: Row(
                   children: [
                     const Icon(
-                      Icons.auto_awesome_rounded,
+                      AppIcons.star,
                       color: Colors.white,
                       size: 18,
                     ),
-                    const SizedBox(width: 8),
+
+                    const SizedBox(width: AppSpacing.xs),
+
                     Text(
-                      'BioAI',
+                      'BioAI Core',
                       style: AppTextStyles.labelLarge.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -357,42 +368,58 @@ class _HeaderSection extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xl),
 
           Text(
-            'Thông tin bổ sung',
+            'Hoàn thiện\nhồ sơ sức khỏe',
             style: AppTextStyles.displaySmall.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
-              height: 1.1,
+              height: 1.05,
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
 
           Text(
-            'Những thông tin này giúp BioAI tạo hồ sơ sức khỏe đầy đủ và chính xác hơn.',
+            'Những dữ liệu này giúp hệ thống AI xây dựng phân tích chính xác và cá nhân hóa hơn cho bạn.',
             style: AppTextStyles.bodyLarge.copyWith(
               color: Colors.white.withOpacity(0.92),
-              height: 1.6,
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xl),
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.circular),
+            child: LinearProgressIndicator(
+              minHeight: 10,
+              value: progress,
+              backgroundColor: Colors.white.withOpacity(0.14),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Colors.white,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.md),
 
           Row(
             children: [
               Expanded(
-                child: _MiniStat(
-                  title: 'Hoàn thành',
-                  value: '$completedFields mục',
+                child: _HeroInfo(
+                  title: 'Đã hoàn thành',
+                  value: '$completedFields/6',
                 ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
 
               const Expanded(
-                child: _MiniStat(title: 'AI Status', value: 'Đang tối ưu'),
+                child: _HeroInfo(
+                  title: 'AI Status',
+                  value: 'Ready',
+                ),
               ),
             ],
           ),
@@ -402,19 +429,22 @@ class _HeaderSection extends StatelessWidget {
   }
 }
 
-class _MiniStat extends StatelessWidget {
+class _HeroInfo extends StatelessWidget {
   final String title;
   final String value;
 
-  const _MiniStat({required this.title, required this.value});
+  const _HeroInfo({
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+      decoration: AppDecoration.glass(
+        radius: AppRadius.lg,
+        opacity: 0.12,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,15 +452,15 @@ class _MiniStat extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.bodySmall.copyWith(
-              color: Colors.white.withOpacity(0.82),
+              color: Colors.white.withOpacity(0.78),
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
 
           Text(
             value,
-            style: AppTextStyles.heading4.copyWith(
+            style: AppTextStyles.heading3.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w700,
             ),
@@ -441,37 +471,37 @@ class _MiniStat extends StatelessWidget {
   }
 }
 
-class _HealthSummaryCard extends StatelessWidget {
+class _AiStatusCard extends StatelessWidget {
   final int completedFields;
 
-  const _HealthSummaryCard({required this.completedFields});
+  const _AiStatusCard({
+    required this.completedFields,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: AppDecoration.glass(
-        opacity: 0.72,
-        blurRadius: 20,
         radius: AppRadius.xl,
+        opacity: 0.7,
       ),
       child: Row(
         children: [
           Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              gradient: AppGradients.primary,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+            width: 68,
+            height: 68,
+            decoration: AppDecoration.primaryGradient(
+              radius: AppRadius.lg,
             ),
             child: const Icon(
-              Icons.monitor_heart_rounded,
+              AppIcons.health,
               color: Colors.white,
-              size: 32,
+              size: 30,
             ),
           ),
 
-          const SizedBox(width: 18),
+          const SizedBox(width: AppSpacing.md),
 
           Expanded(
             child: Column(
@@ -484,13 +514,13 @@ class _HealthSummaryCard extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.xs),
 
                 Text(
                   completedFields == 0
-                      ? 'Hãy bổ sung thêm thông tin để AI phân tích chính xác hơn.'
-                      : 'BioAI đang xây dựng hồ sơ sức khỏe nâng cao cho bạn.',
-                  style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+                      ? 'Bắt đầu bổ sung dữ liệu để BioAI tạo hồ sơ sức khỏe cho bạn.'
+                      : 'BioAI đang xây dựng phân tích dinh dưỡng & sức khỏe nâng cao.',
+                  style: AppTextStyles.bodyMedium,
                 ),
               ],
             ),
@@ -501,11 +531,14 @@ class _HealthSummaryCard extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
+class _SectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _SectionTitle({required this.title, required this.subtitle});
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -514,42 +547,58 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
+          style: AppTextStyles.heading2.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.xs),
 
-        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.6)),
+        Text(
+          subtitle,
+          style: AppTextStyles.bodyMedium.copyWith(
+            height: 1.6,
+          ),
+        ),
       ],
     );
   }
 }
 
-class _GlassCard extends StatelessWidget {
+class _SurfaceCard extends StatelessWidget {
   final Widget child;
 
-  const _GlassCard({required this.child});
+  const _SurfaceCard({
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.88),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
-        boxShadow: AppShadows.soft,
+      decoration: AppDecoration.card(
+        radius: AppRadius.xl,
+        border: Border.all(
+          color: AppColors.border.withOpacity(0.6),
+        ),
+        shadows: AppShadows.soft,
+        gradient: AppGradients.surface,
       ),
       child: child,
     );
   }
 }
 
-class _InputWrapper extends StatelessWidget {
+class _FieldTile extends StatelessWidget {
   final IconData icon;
+  final String title;
   final Widget child;
 
-  const _InputWrapper({required this.icon, required this.child});
+  const _FieldTile({
+    required this.icon,
+    required this.title,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -557,52 +606,80 @@ class _InputWrapper extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            gradient: AppGradients.primary,
-            borderRadius: BorderRadius.circular(AppRadius.md),
+          width: 54,
+          height: 54,
+          decoration: AppDecoration.primaryGradient(
+            radius: AppRadius.lg,
           ),
-          child: Icon(icon, color: Colors.white),
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: 24,
+          ),
         ),
 
-        const SizedBox(width: 16),
+        const SizedBox(width: AppSpacing.md),
 
-        Expanded(child: child),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTextStyles.labelLarge.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.sm),
+
+              child,
+            ],
+          ),
+        ),
       ],
     );
   }
 }
 
-class _AgreementSection extends StatelessWidget {
+class _CommitmentCard extends StatelessWidget {
   final bool agreed;
   final ValueChanged<bool> onChanged;
 
-  const _AgreementSection({required this.agreed, required this.onChanged});
+  const _CommitmentCard({
+    required this.agreed,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: AppDuration.normal,
+      curve: AppAnimations.smoothCurve,
       padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        gradient: agreed ? AppGradients.primary : null,
-        color: agreed ? null : Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        border: Border.all(
-          color: agreed ? Colors.transparent : AppColors.border,
-        ),
-        boxShadow: agreed ? AppShadows.primary : AppShadows.soft,
-      ),
+      decoration: agreed
+          ? AppDecoration.primaryGradient(
+              radius: AppRadius.xxl,
+            )
+          : AppDecoration.card(
+              radius: AppRadius.xxl,
+              border: Border.all(
+                color: AppColors.border,
+              ),
+              shadows: AppShadows.soft,
+            ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Transform.scale(
-            scale: 1.2,
-            child: Switch(value: agreed, onChanged: onChanged),
+            scale: 1.1,
+            child: Switch(
+              value: agreed,
+              onChanged: onChanged,
+            ),
           ),
 
-          const SizedBox(width: 16),
+          const SizedBox(width: AppSpacing.md),
 
           Expanded(
             child: Column(
@@ -611,20 +688,22 @@ class _AgreementSection extends StatelessWidget {
                 Text(
                   'Cam kết đồng hành',
                   style: AppTextStyles.heading4.copyWith(
-                    color: agreed ? Colors.white : AppColors.textPrimary,
+                    color: agreed
+                        ? Colors.white
+                        : AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: AppSpacing.sm),
 
                 Text(
-                  'Sức khỏe được cải thiện nhờ thay đổi thói quen và sự kiên trì mỗi ngày.',
+                  'Sức khỏe không thay đổi chỉ sau một ngày, nhưng mỗi thói quen tốt hôm nay sẽ tạo nên một cơ thể khỏe mạnh hơn trong tương lai.',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: agreed
                         ? Colors.white.withOpacity(0.92)
                         : AppColors.textSecondary,
-                    height: 1.6,
+                    height: 1.7,
                   ),
                 ),
               ],
@@ -636,20 +715,21 @@ class _AgreementSection extends StatelessWidget {
   }
 }
 
-class _AIInsightCard extends StatelessWidget {
+class _InsightCard extends StatelessWidget {
   final int completedFields;
   final bool agreed;
 
-  const _AIInsightCard({required this.completedFields, required this.agreed});
+  const _InsightCard({
+    required this.completedFields,
+    required this.agreed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        gradient: AppGradients.primary,
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        boxShadow: AppShadows.primary,
+      decoration: AppDecoration.premiumGradient(
+        radius: AppRadius.xxl,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -657,20 +737,20 @@ class _AIInsightCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                width: 58,
+                height: 58,
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.lg,
+                  opacity: 0.12,
                 ),
                 child: const Icon(
-                  Icons.psychology_alt_rounded,
+                  AppIcons.stress,
                   color: Colors.white,
                   size: 28,
                 ),
               ),
 
-              const SizedBox(width: 16),
+              const SizedBox(width: AppSpacing.md),
 
               Expanded(
                 child: Column(
@@ -678,18 +758,18 @@ class _AIInsightCard extends StatelessWidget {
                   children: [
                     Text(
                       'AI Insight',
-                      style: AppTextStyles.heading4.copyWith(
+                      style: AppTextStyles.heading3.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
 
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xxs),
 
                     Text(
-                      'Đánh giá nâng cao',
+                      'Tổng quan hồ sơ BioAI',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white.withOpacity(0.82),
+                        color: Colors.white.withOpacity(0.84),
                       ),
                     ),
                   ],
@@ -698,28 +778,28 @@ class _AIInsightCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
 
           _InsightRow(
-            icon: Icons.health_and_safety_rounded,
+            icon: AppIcons.checkIn,
             title: 'Thông tin đã nhập',
-            value: '$completedFields',
+            value: '$completedFields mục',
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
           _InsightRow(
-            icon: Icons.handshake_rounded,
-            title: 'Cam kết',
+            icon: AppIcons.success,
+            title: 'Cam kết sức khỏe',
             value: agreed ? 'Đã đồng ý' : 'Chưa đồng ý',
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
           const _InsightRow(
-            icon: Icons.auto_graph_rounded,
-            title: 'AI Status',
-            value: 'Đang tối ưu',
+            icon: AppIcons.dashboard,
+            title: 'AI Engine',
+            value: 'Optimized',
           ),
         ],
       ),
@@ -740,48 +820,65 @@ class _InsightRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white, size: 20),
-
-        const SizedBox(width: 12),
-
-        Expanded(
-          child: Text(
-            title,
-            style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
-          ),
-        ),
-
-        Text(
-          value,
-          style: AppTextStyles.labelLarge.copyWith(
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      decoration: AppDecoration.glass(
+        radius: AppRadius.lg,
+        opacity: 0.08,
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
             color: Colors.white,
-            fontWeight: FontWeight.w700,
+            size: 20,
           ),
-        ),
-      ],
+
+          const SizedBox(width: AppSpacing.sm),
+
+          Expanded(
+            child: Text(
+              title,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: Colors.white,
+              ),
+            ),
+          ),
+
+          Text(
+            value,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _AnimatedAppear extends StatefulWidget {
+class _Appear extends StatefulWidget {
   final Widget child;
   final int delay;
 
-  const _AnimatedAppear({required this.child, required this.delay});
+  const _Appear({
+    required this.child,
+    required this.delay,
+  });
 
   @override
-  State<_AnimatedAppear> createState() => _AnimatedAppearState();
+  State<_Appear> createState() => _AppearState();
 }
 
-class _AnimatedAppearState extends State<_AnimatedAppear>
+class _AppearState extends State<_Appear>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
-  late final Animation<double> _opacity;
-
-  late final Animation<Offset> _offset;
+  late final Animation<double> _animation;
 
   @override
   void initState() {
@@ -789,21 +886,22 @@ class _AnimatedAppearState extends State<_AnimatedAppear>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: AppDuration.onboarding,
     );
 
-    _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: AppAnimations.smoothCurve,
+    );
 
-    _offset = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-
-    Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
+    Future.delayed(
+      Duration(milliseconds: widget.delay),
+      () {
+        if (mounted) {
+          _controller.forward();
+        }
+      },
+    );
   }
 
   @override
@@ -814,35 +912,33 @@ class _AnimatedAppearState extends State<_AnimatedAppear>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _opacity,
-      child: SlideTransition(position: _offset, child: widget.child),
+    return AppAnimations.fadeSlide(
+      animation: _animation,
+      child: widget.child,
     );
   }
 }
 
-class _FloatingOrb extends StatelessWidget {
+class _FloatingGlow extends StatelessWidget {
+  final double size;
+  final Color color;
   final AnimationController controller;
 
-  final double size;
-
-  final Color color;
-
-  const _FloatingOrb({
-    required this.controller,
+  const _FloatingGlow({
     required this.size,
     required this.color,
+    required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (context, child) {
+      builder: (_, child) {
         return Transform.translate(
           offset: Offset(
-            math.sin(controller.value * math.pi * 2) * 14,
-            math.cos(controller.value * math.pi * 2) * 14,
+            math.sin(controller.value * math.pi * 2) * 18,
+            math.cos(controller.value * math.pi * 2) * 18,
           ),
           child: child,
         );
@@ -850,20 +946,24 @@ class _FloatingOrb extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+        decoration: AppDecoration.circle(
+          color: color,
+        ),
       ),
     );
   }
 }
 
-class _ExtrasBackgroundPainter extends CustomPainter {
+class _BackgroundPainter extends CustomPainter {
   final double animation;
 
-  const _ExtrasBackgroundPainter({required this.animation});
+  const _BackgroundPainter({
+    required this.animation,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final rect = Offset.zero & size;
 
     final paint = Paint()
       ..shader = LinearGradient(
@@ -871,29 +971,40 @@ class _ExtrasBackgroundPainter extends CustomPainter {
         end: Alignment.bottomRight,
         colors: [
           AppColors.background,
-          AppColors.primarySoft.withOpacity(0.45),
+          AppColors.primarySoft.withOpacity(0.7),
           Colors.white,
+          AppColors.secondarySoft.withOpacity(0.45),
         ],
-        transform: GradientRotation(animation * math.pi),
+        transform: GradientRotation(
+          animation * math.pi,
+        ),
       ).createShader(rect);
 
     canvas.drawRect(rect, paint);
 
-    final gridPaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.03)
+    final linePaint = Paint()
+      ..color = AppColors.primary.withOpacity(0.04)
       ..strokeWidth = 1;
 
-    for (double i = 0; i < size.width; i += 40) {
-      canvas.drawLine(Offset(i, 0), Offset(i, size.height), gridPaint);
+    for (double x = 0; x < size.width; x += 42) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x, size.height),
+        linePaint,
+      );
     }
 
-    for (double i = 0; i < size.height; i += 40) {
-      canvas.drawLine(Offset(0, i), Offset(size.width, i), gridPaint);
+    for (double y = 0; y < size.height; y += 42) {
+      canvas.drawLine(
+        Offset(0, y),
+        Offset(size.width, y),
+        linePaint,
+      );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _ExtrasBackgroundPainter oldDelegate) {
+  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) {
     return oldDelegate.animation != animation;
   }
 }

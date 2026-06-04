@@ -13,35 +13,26 @@ class LifestyleStep extends ConsumerStatefulWidget {
   const LifestyleStep({super.key});
 
   @override
-  ConsumerState<LifestyleStep> createState() =>
-      _LifestyleStepState();
+  ConsumerState<LifestyleStep> createState() => _LifestyleStepState();
 }
 
-class _LifestyleStepState
-    extends ConsumerState<LifestyleStep>
+class _LifestyleStepState extends ConsumerState<LifestyleStep>
     with TickerProviderStateMixin {
-  late final AnimationController
-      _backgroundController;
-
-  late final AnimationController
-      _floatingController;
+  late final AnimationController _backgroundController;
+  late final AnimationController _floatingController;
 
   @override
   void initState() {
     super.initState();
 
-    _backgroundController =
-        AnimationController(
+    _backgroundController = AnimationController(
       vsync: this,
-      duration:
-          const Duration(seconds: 12),
+      duration: const Duration(seconds: 16),
     )..repeat();
 
-    _floatingController =
-        AnimationController(
+    _floatingController = AnimationController(
       vsync: this,
-      duration:
-          const Duration(seconds: 6),
+      duration: const Duration(seconds: 7),
     )..repeat(reverse: true);
   }
 
@@ -54,225 +45,159 @@ class _LifestyleStepState
 
   @override
   Widget build(BuildContext context) {
-    final state =
-        ref.watch(onboardingProvider);
+    final state = ref.watch(onboardingProvider);
 
-    final controller =
-        ref.read(
-      onboardingProvider.notifier,
-    );
+    final controller = ref.read(onboardingProvider.notifier);
 
-    final selectedHabits =
-        state.habits.length;
+    final selectedHabits = state.habits.length;
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: AnimatedBuilder(
-            animation:
-                _backgroundController,
-            builder:
-                (context, child) {
-              return CustomPaint(
-                painter:
-                    _LifestyleBackgroundPainter(
-                  animation:
-                      _backgroundController
-                          .value,
-                ),
-              );
-            },
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _backgroundController,
+              builder: (_, __) {
+                return CustomPaint(
+                  painter: _LifestyleBackgroundPainter(
+                    animation: _backgroundController.value,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
 
-        Positioned(
-          top: -120,
-          right: -70,
-          child: _FloatingOrb(
-            controller:
-                _floatingController,
-            size: 280,
-            color: AppColors.success
-                .withOpacity(0.08),
+          Positioned(
+            top: -120,
+            right: -80,
+            child: _FloatingOrb(
+              controller: _floatingController,
+              size: 300,
+              gradient: AppGradients.ai,
+            ),
           ),
-        ),
 
-        Positioned(
-          bottom: -160,
-          left: -90,
-          child: _FloatingOrb(
-            controller:
-                _floatingController,
-            size: 340,
-            color: AppColors.secondary
-                .withOpacity(0.08),
+          Positioned(
+            bottom: -140,
+            left: -90,
+            child: _FloatingOrb(
+              controller: _floatingController,
+              size: 340,
+              gradient: AppGradients.health,
+              reverse: true,
+            ),
           ),
-        ),
 
-        Positioned.fill(
-          child: SafeArea(
+          SafeArea(
             child: OnboardingStepShell(
               stepIndex: 4,
               title: '',
               subtitle: '',
-              onBack:
-                  controller.previousStep,
-              onNext:
-                  controller.nextStep,
+              onBack: controller.previousStep,
+              onNext: controller.nextStep,
               child: SingleChildScrollView(
-                physics:
-                    const BouncingScrollPhysics(),
-                padding:
-                    const EdgeInsets.only(
-                  bottom: 40,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.pagePadding,
+                  AppSpacing.sm,
+                  AppSpacing.pagePadding,
+                  AppSpacing.xxxl,
                 ),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _AnimatedAppear(
+                    _AppearAnimation(
                       delay: 0,
-                      child: _HeaderSection(
-                        selectedHabits:
-                            selectedHabits,
+                      child: _HeroSection(selectedHabits: selectedHabits),
+                    ),
+
+                    const SizedBox(height: AppSpacing.sectionSpacingLarge),
+
+                    _AppearAnimation(
+                      delay: 120,
+                      child: _LifestyleOverviewCard(
+                        selectedHabits: selectedHabits,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 28,
-                    ),
+                    const SizedBox(height: AppSpacing.sectionSpacingLarge),
 
-                    _AnimatedAppear(
-                      delay: 100,
-                      child:
-                          _LifestyleSummaryCard(
-                        selectedHabits:
-                            selectedHabits,
-                      ),
-                    ),
-
-                    const SizedBox(
-                      height: 28,
-                    ),
-
-                    const _SectionTitle(
-                      title:
-                          'Thói quen ăn uống',
-                      subtitle:
-                          'Phần này giúp BioAI hiểu cách bạn đang sinh hoạt mỗi ngày.',
-                    ),
-
-                    const SizedBox(
-                      height: 18,
-                    ),
-
-                    _AnimatedAppear(
+                    _AppearAnimation(
                       delay: 200,
-                      child:
-                          _HabitsGrid(
-                        state: state,
-                        controller:
-                            controller,
+                      child: _ModernSectionHeader(
+                        icon: AppIcons.nutrition,
+                        title: 'Lifestyle Habits',
+                        subtitle:
+                            'BioAI sẽ học từ hành vi sinh hoạt hằng ngày để cá nhân hóa kế hoạch sức khỏe.',
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 28,
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+
+                    _AppearAnimation(
+                      delay: 260,
+                      child: _HabitsGrid(state: state, controller: controller),
                     ),
 
-                    const _SectionTitle(
-                      title:
-                          'Giấc ngủ & vận động',
-                      subtitle:
-                          'Thông tin này giúp AI tối ưu kế hoạch sức khỏe cho bạn.',
+                    const SizedBox(height: AppSpacing.sectionSpacingLarge),
+
+                    _AppearAnimation(
+                      delay: 340,
+                      child: _ModernSectionHeader(
+                        icon: AppIcons.sleep,
+                        title: 'Sleep & Activity',
+                        subtitle:
+                            'Giấc ngủ, vận động và lượng nước sẽ ảnh hưởng trực tiếp tới AI Health Score.',
+                      ),
                     ),
 
-                    const SizedBox(
-                      height: 18,
-                    ),
+                    const SizedBox(height: AppSpacing.sectionSpacing),
 
-                    _AnimatedAppear(
-                      delay: 300,
-                      child: _GlassCard(
+                    _AppearAnimation(
+                      delay: 420,
+                      child: _GlassContainer(
                         child: Column(
                           children: [
                             _ModernDropdown(
-                              label:
-                                  'Giấc ngủ hiện tại',
-                              icon:
-                                  Icons
-                                      .bedtime_rounded,
-                              value:
-                                  state
-                                      .sleepQuality,
-                              items:
-                                  OnboardingCatalog
-                                      .sleepQualities,
-                              onChanged:
-                                  (value) {
-                                if (value !=
-                                    null) {
-                                  controller
-                                      .updateSleepQuality(
-                                    value,
-                                  );
+                              label: 'Giấc ngủ hiện tại',
+                              icon: AppIcons.sleep,
+                              gradient: AppGradients.sleep,
+                              value: state.sleepQuality,
+                              items: OnboardingCatalog.sleepQualities,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  controller.updateSleepQuality(value);
                                 }
                               },
                             ),
 
-                            const SizedBox(
-                              height: 20,
-                            ),
+                            const SizedBox(height: AppSpacing.formFieldSpacing),
 
                             _ModernDropdown(
-                              label:
-                                  'Mức độ vận động',
-                              icon:
-                                  Icons
-                                      .directions_run_rounded,
-                              value:
-                                  state
-                                      .activityLevel,
-                              items:
-                                  OnboardingCatalog
-                                      .activityLevels,
-                              onChanged:
-                                  (value) {
-                                if (value !=
-                                    null) {
-                                  controller
-                                      .updateActivityLevel(
-                                    value,
-                                  );
+                              label: 'Mức độ vận động',
+                              icon: AppIcons.fitness,
+                              gradient: AppGradients.health,
+                              value: state.activityLevel,
+                              items: OnboardingCatalog.activityLevels,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  controller.updateActivityLevel(value);
                                 }
                               },
                             ),
 
-                            const SizedBox(
-                              height: 20,
-                            ),
+                            const SizedBox(height: AppSpacing.formFieldSpacing),
 
                             _ModernDropdown(
-                              label:
-                                  'Lượng nước mỗi ngày',
-                              icon:
-                                  Icons
-                                      .water_drop_rounded,
-                              value:
-                                  state
-                                      .waterPerDay,
-                              items:
-                                  OnboardingCatalog
-                                      .waterIntakeOptions,
-                              onChanged:
-                                  (value) {
-                                if (value !=
-                                    null) {
-                                  controller
-                                      .updateWaterPerDay(
-                                    value,
-                                  );
+                              label: 'Lượng nước mỗi ngày',
+                              icon: AppIcons.water,
+                              gradient: AppGradients.info,
+                              value: state.waterPerDay,
+                              items: OnboardingCatalog.waterIntakeOptions,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  controller.updateWaterPerDay(value);
                                 }
                               },
                             ),
@@ -281,20 +206,14 @@ class _LifestyleStepState
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 28,
-                    ),
+                    const SizedBox(height: AppSpacing.sectionSpacingLarge),
 
-                    _AnimatedAppear(
-                      delay: 450,
-                      child:
-                          _LifestyleInsightCard(
-                        selectedHabits:
-                            selectedHabits,
-                        sleepQuality:
-                            state.sleepQuality,
-                        activityLevel:
-                            state.activityLevel,
+                    _AppearAnimation(
+                      delay: 520,
+                      child: _AIInsightCard(
+                        selectedHabits: selectedHabits,
+                        sleepQuality: state.sleepQuality,
+                        activityLevel: state.activityLevel,
                       ),
                     ),
                   ],
@@ -302,100 +221,67 @@ class _LifestyleStepState
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _HeaderSection
-    extends StatelessWidget {
+class _HeroSection extends StatelessWidget {
   final int selectedHabits;
 
-  const _HeaderSection({
-    required this.selectedHabits,
-  });
+  const _HeroSection({required this.selectedHabits});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.xl,
-      ),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.success,
-            AppColors.secondary,
-          ],
-        ),
-        borderRadius:
-            BorderRadius.circular(
-          AppRadius.xxl,
-        ),
-        boxShadow:
-            AppShadows.primary,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.containerPaddingXl),
+      decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white
-                      .withOpacity(0.14),
+                width: 78,
+                height: 78,
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.circular,
+                  opacity: 0.14,
                 ),
                 child: const Icon(
-                  Icons.spa_rounded,
+                  AppIcons.meditation,
                   color: Colors.white,
-                  size: 34,
+                  size: 38,
                 ),
               ),
 
               const Spacer(),
 
               Container(
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white
-                      .withOpacity(0.14),
-                  borderRadius:
-                      BorderRadius.circular(
-                    AppRadius.circular,
-                  ),
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.circular,
+                  opacity: 0.12,
                 ),
                 child: Row(
                   children: [
                     const Icon(
-                      Icons
-                          .auto_awesome_rounded,
-                      color: Colors.white,
+                      Icons.auto_awesome_rounded,
                       size: 18,
+                      color: Colors.white,
                     ),
 
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.iconTextSpacing),
 
                     Text(
-                      'BioAI',
-                      style:
-                          AppTextStyles
-                              .labelLarge
-                              .copyWith(
-                        color:
-                            Colors.white,
-                        fontWeight:
-                            FontWeight
-                                .w700,
+                      'AI Lifestyle',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -404,56 +290,46 @@ class _HeaderSection
             ],
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xl),
 
           Text(
-            'Thói quen sinh hoạt',
-            style:
-                AppTextStyles
-                    .displaySmall
-                    .copyWith(
+            'Lifestyle &\nHealthy Routine',
+            style: AppTextStyles.displayMedium.copyWith(
               color: Colors.white,
-              fontWeight:
-                  FontWeight.w800,
-              height: 1.1,
+              height: 1.05,
+              fontWeight: FontWeight.w800,
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
 
           Text(
-            'BioAI sẽ phân tích lối sống và thói quen hàng ngày để xây dựng kế hoạch sức khỏe tối ưu.',
-            style:
-                AppTextStyles
-                    .bodyLarge
-                    .copyWith(
-              color: Colors.white
-                  .withOpacity(0.92),
-              height: 1.6,
+            'BioAI phân tích toàn bộ thói quen sinh hoạt để xây dựng hệ thống chăm sóc sức khỏe AI-first cá nhân hóa.',
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: Colors.white.withOpacity(0.88),
+              height: 1.7,
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xl),
 
           Row(
             children: [
               Expanded(
-                child: _MiniStat(
-                  title:
-                      'Đã chọn',
-                  value:
-                      '$selectedHabits mục',
+                child: _HeroMetric(
+                  title: 'Habits',
+                  value: '$selectedHabits Selected',
+                  icon: AppIcons.health,
                 ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
 
               const Expanded(
-                child: _MiniStat(
-                  title:
-                      'AI Status',
-                  value:
-                      'Đang học',
+                child: _HeroMetric(
+                  title: 'AI Sync',
+                  value: 'Realtime',
+                  icon: AppIcons.chat,
                 ),
               ),
             ],
@@ -464,141 +340,55 @@ class _HeaderSection
   }
 }
 
-class _MiniStat
-    extends StatelessWidget {
+class _HeroMetric extends StatelessWidget {
   final String title;
-
   final String value;
+  final IconData icon;
 
-  const _MiniStat({
+  const _HeroMetric({
     required this.title,
     required this.value,
+    required this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.md,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white
-            .withOpacity(0.12),
-        borderRadius:
-            BorderRadius.circular(
-          AppRadius.lg,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style:
-                AppTextStyles
-                    .bodySmall
-                    .copyWith(
-              color: Colors.white
-                  .withOpacity(0.82),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          Text(
-            value,
-            style:
-                AppTextStyles
-                    .heading4
-                    .copyWith(
-              color: Colors.white,
-              fontWeight:
-                  FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LifestyleSummaryCard
-    extends StatelessWidget {
-  final int selectedHabits;
-
-  const _LifestyleSummaryCard({
-    required this.selectedHabits,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.lg,
-      ),
-      decoration:
-          AppDecoration.glass(
-        opacity: 0.72,
-        blurRadius: 20,
-        radius: AppRadius.xl,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+      decoration: AppDecoration.glass(opacity: 0.12, radius: AppRadius.xl),
       child: Row(
         children: [
           Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.success,
-                  AppColors.secondary,
-                ],
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                AppRadius.lg,
-              ),
+            width: 42,
+            height: 42,
+            decoration: AppDecoration.circle(
+              color: Colors.white.withOpacity(0.14),
             ),
-            child: const Icon(
-              Icons.favorite_rounded,
-              color: Colors.white,
-              size: 32,
-            ),
+            child: Icon(icon, color: Colors.white, size: 20),
           ),
 
-          const SizedBox(width: 18),
+          const SizedBox(width: AppSpacing.md),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'AI Lifestyle Analysis',
-                  style:
-                      AppTextStyles
-                          .heading4
-                          .copyWith(
-                    fontWeight:
-                        FontWeight.w700,
+                  title,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: Colors.white.withOpacity(0.72),
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
 
                 Text(
-                  selectedHabits == 0
-                      ? 'Hãy chọn các thói quen để AI hiểu rõ hơn về lối sống của bạn.'
-                      : 'BioAI đang xây dựng hồ sơ sinh hoạt và sức khỏe cá nhân hóa.',
-                  style:
-                      AppTextStyles
-                          .bodyMedium
-                          .copyWith(
-                    height: 1.5,
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -610,43 +400,103 @@ class _LifestyleSummaryCard
   }
 }
 
-class _SectionTitle
-    extends StatelessWidget {
-  final String title;
+class _LifestyleOverviewCard extends StatelessWidget {
+  final int selectedHabits;
 
+  const _LifestyleOverviewCard({required this.selectedHabits});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+      decoration: AppDecoration.premiumCard(),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: AppDecoration.gradient(
+              colors: const [AppColors.primary, AppColors.tertiary],
+              radius: AppRadius.xl,
+              shadows: AppShadows.primary,
+            ),
+            child: const Icon(AppIcons.health, color: Colors.white, size: 32),
+          ),
+
+          const SizedBox(width: AppSpacing.lg),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'AI Lifestyle Summary',
+                  style: AppTextStyles.heading3.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.sm),
+
+                Text(
+                  selectedHabits == 0
+                      ? 'Hãy chọn các thói quen để AI xây dựng hồ sơ sinh hoạt thông minh.'
+                      : 'BioAI đang đồng bộ dữ liệu lifestyle để tối ưu nutrition, sleep và health tracking.',
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.7),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModernSectionHeader extends StatelessWidget {
+  final IconData icon;
+  final String title;
   final String subtitle;
 
-  const _SectionTitle({
+  const _ModernSectionHeader({
+    required this.icon,
     required this.title,
     required this.subtitle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style:
-              AppTextStyles
-                  .heading3
-                  .copyWith(
-            fontWeight:
-                FontWeight.w700,
-          ),
+        Container(
+          width: 54,
+          height: 54,
+          decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
+          child: Icon(icon, color: Colors.white, size: 24),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(width: AppSpacing.md),
 
-        Text(
-          subtitle,
-          style:
-              AppTextStyles
-                  .bodyMedium
-                  .copyWith(
-            height: 1.6,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTextStyles.heading2.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.xs),
+
+              Text(
+                subtitle,
+                style: AppTextStyles.bodyMedium.copyWith(height: 1.65),
+              ),
+            ],
           ),
         ),
       ],
@@ -654,62 +504,47 @@ class _SectionTitle
   }
 }
 
-class _HabitsGrid
-    extends StatelessWidget {
+class _HabitsGrid extends StatelessWidget {
   final dynamic state;
-
   final dynamic controller;
 
-  const _HabitsGrid({
-    required this.state,
-    required this.controller,
-  });
+  const _HabitsGrid({required this.state, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 14,
-      runSpacing: 14,
-      children:
-          OnboardingCatalog.habits.map(
-        (item) {
-          final selected =
-              state.habits.contains(
-            item.code,
-          );
+      spacing: AppSpacing.md,
+      runSpacing: AppSpacing.md,
+      children: OnboardingCatalog.habits.map((item) {
+        final selected = state.habits.contains(item.code);
 
-          return HealthChip(
+        return AnimatedScale(
+          duration: AppDuration.fast,
+          scale: selected ? 1 : 0.96,
+          child: HealthChip(
             label: item.label,
             emoji: item.emoji,
             selected: selected,
-            onTap:
-                () => controller
-                    .toggleHabit(
-                  item.code,
-                ),
-          );
-        },
-      ).toList(),
+            onTap: () => controller.toggleHabit(item.code),
+          ),
+        );
+      }).toList(),
     );
   }
 }
 
-class _ModernDropdown
-    extends StatelessWidget {
+class _ModernDropdown extends StatelessWidget {
   final String label;
-
   final IconData icon;
-
+  final Gradient gradient;
   final String? value;
-
   final List<String> items;
-
-  final ValueChanged<String?>
-      onChanged;
+  final ValueChanged<String?> onChanged;
 
   const _ModernDropdown({
     required this.label,
     required this.icon,
+    required this.gradient,
     required this.value,
     required this.items,
     required this.onChanged,
@@ -718,107 +553,68 @@ class _ModernDropdown
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                gradient:
-                    AppGradients.primary,
-                borderRadius:
-                    BorderRadius.circular(
-                  AppRadius.md,
-                ),
+              width: 50,
+              height: 50,
+              decoration: AppDecoration.base(
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                shadows: AppShadows.md,
               ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 22,
-              ),
+              child: Icon(icon, color: Colors.white, size: 22),
             ),
 
-            const SizedBox(width: 14),
+            const SizedBox(width: AppSpacing.md),
 
             Expanded(
               child: Text(
                 label,
-                style:
-                    AppTextStyles
-                        .labelLarge
-                        .copyWith(
-                  fontWeight:
-                      FontWeight.w700,
+                style: AppTextStyles.labelLarge.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
           ],
         ),
 
-        const SizedBox(height: 14),
+        const SizedBox(height: AppSpacing.md),
 
         DropdownButtonFormField<String>(
-          value:
-              value != null &&
-                      value!.isNotEmpty
-                  ? value
-                  : null,
-          items:
-              items
-                  .map(
-                    (item) =>
-                        DropdownMenuItem<
-                          String
-                        >(
-                          value: item,
-                          child: Text(
-                            item,
-                          ),
-                        ),
-                  )
-                  .toList(),
+          value: value != null && value!.isNotEmpty ? value : null,
+          items: items
+              .map(
+                (item) => DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item, style: AppTextStyles.bodyMedium),
+                ),
+              )
+              .toList(),
           onChanged: onChanged,
+          icon: const Icon(AppIcons.expand, color: AppColors.textSecondary),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.white,
-            contentPadding:
-                const EdgeInsets.symmetric(
-              horizontal:
-                  AppSpacing.lg,
-              vertical:
-                  AppSpacing.md,
+            fillColor: AppColors.surface,
+            hintText: 'Select option',
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
             ),
             border: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(
-                AppRadius.lg,
-              ),
+              borderRadius: BorderRadius.circular(AppRadius.inputLarge),
               borderSide: BorderSide.none,
             ),
-            enabledBorder:
-                OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(
-                AppRadius.lg,
-              ),
-              borderSide: BorderSide(
-                color: AppColors.border
-                    .withOpacity(0.5),
-              ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.inputLarge),
+              borderSide: BorderSide(color: AppColors.border.withOpacity(0.8)),
             ),
-            focusedBorder:
-                OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(
-                AppRadius.lg,
-              ),
-              borderSide:
-                  const BorderSide(
-                color:
-                    AppColors.primary,
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.inputLarge),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
                 width: 1.5,
               ),
             ),
@@ -829,49 +625,31 @@ class _ModernDropdown
   }
 }
 
-class _GlassCard
-    extends StatelessWidget {
+class _GlassContainer extends StatelessWidget {
   final Widget child;
 
-  const _GlassCard({
-    required this.child,
-  });
+  const _GlassContainer({required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.lg,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white
-            .withOpacity(0.88),
-        borderRadius:
-            BorderRadius.circular(
-          AppRadius.xl,
-        ),
-        border: Border.all(
-          color: AppColors.border
-              .withOpacity(0.5),
-        ),
-        boxShadow:
-            AppShadows.soft,
+      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+      decoration: AppDecoration.glass(
+        opacity: 0.82,
+        radius: AppRadius.xxl,
+        shadows: AppShadows.soft,
       ),
       child: child,
     );
   }
 }
 
-class _LifestyleInsightCard
-    extends StatelessWidget {
+class _AIInsightCard extends StatelessWidget {
   final int selectedHabits;
-
   final String sleepQuality;
-
   final String activityLevel;
 
-  const _LifestyleInsightCard({
+  const _AIInsightCard({
     required this.selectedHabits,
     required this.sleepQuality,
     required this.activityLevel,
@@ -880,92 +658,51 @@ class _LifestyleInsightCard
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.xl,
-      ),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.success,
-            AppColors.secondary,
-          ],
-        ),
-        borderRadius:
-            BorderRadius.circular(
-          AppRadius.xxl,
-        ),
-        boxShadow:
-            AppShadows.primary,
+      padding: const EdgeInsets.all(AppSpacing.containerPaddingXl),
+      decoration: AppDecoration.base(
+        gradient: AppGradients.futuristic,
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
+        shadows: AppShadows.floating,
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
-                decoration:
-                    BoxDecoration(
-                  color: Colors.white
-                      .withOpacity(
-                    0.14,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    AppRadius.lg,
-                  ),
+                width: 62,
+                height: 62,
+                decoration: AppDecoration.glass(
+                  opacity: 0.12,
+                  radius: AppRadius.xl,
                 ),
                 child: const Icon(
-                  Icons
-                      .psychology_alt_rounded,
-                  color:
-                      Colors.white,
-                  size: 28,
+                  Icons.auto_awesome_rounded,
+                  color: Colors.white,
+                  size: 30,
                 ),
               ),
 
-              const SizedBox(
-                width: 16,
-              ),
+              const SizedBox(width: AppSpacing.md),
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'AI Lifestyle Insight',
-                      style:
-                          AppTextStyles
-                              .heading4
-                              .copyWith(
-                        color: Colors
-                            .white,
-                        fontWeight:
-                            FontWeight
-                                .w700,
+                      style: AppTextStyles.heading3.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 4,
-                    ),
+                    const SizedBox(height: 4),
 
                     Text(
-                      'Đánh giá lối sống',
-                      style:
-                          AppTextStyles
-                              .bodyMedium
-                              .copyWith(
-                        color: Colors
-                            .white
-                            .withOpacity(
-                          0.82,
-                        ),
+                      'Health behavior analytics',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Colors.white.withOpacity(0.82),
                       ),
                     ),
                   ],
@@ -974,41 +711,28 @@ class _LifestyleInsightCard
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
 
-          _InsightRow(
-            icon:
-                Icons.restaurant_rounded,
-            title:
-                'Thói quen đã chọn',
-            value:
-                '$selectedHabits',
+          _InsightTile(
+            icon: AppIcons.health,
+            title: 'Selected Habits',
+            value: '$selectedHabits',
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
-          _InsightRow(
-            icon:
-                Icons.bedtime_rounded,
-            title:
-                'Giấc ngủ',
-            value:
-                sleepQuality.isEmpty
-                    ? '--'
-                    : sleepQuality,
+          _InsightTile(
+            icon: AppIcons.sleep,
+            title: 'Sleep Quality',
+            value: sleepQuality.isEmpty ? '--' : sleepQuality,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
-          _InsightRow(
-            icon:
-                Icons.directions_run_rounded,
-            title:
-                'Vận động',
-            value:
-                activityLevel.isEmpty
-                    ? '--'
-                    : activityLevel,
+          _InsightTile(
+            icon: AppIcons.fitness,
+            title: 'Activity Level',
+            value: activityLevel.isEmpty ? '--' : activityLevel,
           ),
         ],
       ),
@@ -1016,15 +740,12 @@ class _LifestyleInsightCard
   }
 }
 
-class _InsightRow
-    extends StatelessWidget {
+class _InsightTile extends StatelessWidget {
   final IconData icon;
-
   final String title;
-
   final String value;
 
-  const _InsightRow({
+  const _InsightTile({
     required this.icon,
     required this.title,
     required this.value,
@@ -1032,116 +753,91 @@ class _InsightRow
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          color: Colors.white,
-          size: 20,
-        ),
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: AppDecoration.glass(opacity: 0.1, radius: AppRadius.xl),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: AppDecoration.circle(
+              color: Colors.white.withOpacity(0.12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 20),
+          ),
 
-        const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
 
-        Expanded(
-          child: Text(
-            title,
-            style:
-                AppTextStyles
-                    .bodyLarge
-                    .copyWith(
-              color: Colors.white,
+          Expanded(
+            child: Text(
+              title,
+              style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
             ),
           ),
-        ),
 
-        Text(
-          value,
-          style:
-              AppTextStyles
-                  .labelLarge
-                  .copyWith(
-            color: Colors.white,
-            fontWeight:
-                FontWeight.w700,
+          Text(
+            value,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _AnimatedAppear
-    extends StatefulWidget {
+class _AppearAnimation extends StatefulWidget {
   final Widget child;
-
   final int delay;
 
-  const _AnimatedAppear({
-    required this.child,
-    required this.delay,
-  });
+  const _AppearAnimation({required this.child, required this.delay});
 
   @override
-  State<_AnimatedAppear>
-      createState() =>
-          _AnimatedAppearState();
+  State<_AppearAnimation> createState() => _AppearAnimationState();
 }
 
-class _AnimatedAppearState
-    extends State<_AnimatedAppear>
-    with
-        SingleTickerProviderStateMixin {
-  late final AnimationController
-      _controller;
+class _AppearAnimationState extends State<_AppearAnimation>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
 
-  late final Animation<double>
-      _opacity;
-
-  late final Animation<Offset>
-      _offset;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _offset;
+  late final Animation<double> _scale;
 
   @override
   void initState() {
     super.initState();
 
-    _controller =
-        AnimationController(
+    _controller = AnimationController(
       vsync: this,
-      duration:
-          const Duration(
-        milliseconds: 700,
-      ),
+      duration: AppDuration.onboarding,
     );
 
     _opacity = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeOut,
+      curve: AppAnimations.smoothCurve,
     );
 
-    _offset =
-        Tween<Offset>(
-      begin:
-          const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve:
-            Curves.easeOutCubic,
-      ),
+    _offset = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: AppAnimations.decelerateCurve,
+          ),
+        );
+
+    _scale = Tween<double>(begin: 0.96, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: AppAnimations.smoothCurve),
     );
 
-    Future.delayed(
-      Duration(
-        milliseconds:
-            widget.delay,
-      ),
-      () {
-        if (mounted) {
-          _controller.forward();
-        }
-      },
-    );
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
   }
 
   @override
@@ -1151,58 +847,41 @@ class _AnimatedAppearState
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _opacity,
       child: SlideTransition(
         position: _offset,
-        child: widget.child,
+        child: ScaleTransition(scale: _scale, child: widget.child),
       ),
     );
   }
 }
 
-class _FloatingOrb
-    extends StatelessWidget {
-  final AnimationController
-      controller;
-
+class _FloatingOrb extends StatelessWidget {
+  final AnimationController controller;
   final double size;
-
-  final Color color;
+  final Gradient gradient;
+  final bool reverse;
 
   const _FloatingOrb({
     required this.controller,
     required this.size,
-    required this.color,
+    required this.gradient,
+    this.reverse = false,
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder:
-          (context, child) {
+      builder: (_, child) {
+        final value = reverse ? 1 - controller.value : controller.value;
+
         return Transform.translate(
           offset: Offset(
-            math.sin(
-                      controller
-                              .value *
-                          math.pi *
-                          2,
-                    ) *
-                    14,
-            math.cos(
-                      controller
-                              .value *
-                          math.pi *
-                          2,
-                    ) *
-                    14,
+            math.sin(value * math.pi * 2) * 18,
+            math.cos(value * math.pi * 2) * 18,
           ),
           child: child,
         );
@@ -1210,109 +889,50 @@ class _FloatingOrb
       child: Container(
         width: size,
         height: size,
-        decoration:
-            BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient),
       ),
     );
   }
 }
 
-class _LifestyleBackgroundPainter
-    extends CustomPainter {
+class _LifestyleBackgroundPainter extends CustomPainter {
   final double animation;
 
-  const _LifestyleBackgroundPainter({
-    required this.animation,
-  });
+  const _LifestyleBackgroundPainter({required this.animation});
 
   @override
-  void paint(
-    Canvas canvas,
-    Size size,
-  ) {
-    final rect =
-        Rect.fromLTWH(
-      0,
-      0,
-      size.width,
-      size.height,
-    );
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
 
-    final paint = Paint()
-      ..shader =
-          LinearGradient(
-        begin:
-            Alignment.topLeft,
-        end:
-            Alignment.bottomRight,
+    final backgroundPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
         colors: [
           AppColors.background,
-          AppColors.success
-              .withOpacity(0.08),
+          AppColors.primarySoft.withOpacity(0.65),
           Colors.white,
         ],
-        transform:
-            GradientRotation(
-          animation * math.pi,
-        ),
+        transform: GradientRotation(animation * math.pi),
       ).createShader(rect);
 
-    canvas.drawRect(
-      rect,
-      paint,
-    );
+    canvas.drawRect(rect, backgroundPaint);
 
-    final gridPaint =
-        Paint()
-          ..color = AppColors
-              .success
-              .withOpacity(
-                0.03,
-              )
-          ..strokeWidth = 1;
+    final gridPaint = Paint()
+      ..color = AppColors.primary.withOpacity(0.04)
+      ..strokeWidth = 1;
 
-    for (
-      double i = 0;
-      i < size.width;
-      i += 40
-    ) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(
-          i,
-          size.height,
-        ),
-        gridPaint,
-      );
+    for (double i = 0; i < size.width; i += 36) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), gridPaint);
     }
 
-    for (
-      double i = 0;
-      i < size.height;
-      i += 40
-    ) {
-      canvas.drawLine(
-        Offset(0, i),
-        Offset(
-          size.width,
-          i,
-        ),
-        gridPaint,
-      );
+    for (double i = 0; i < size.height; i += 36) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), gridPaint);
     }
   }
 
   @override
-  bool shouldRepaint(
-    covariant
-    _LifestyleBackgroundPainter
-        oldDelegate,
-  ) {
-    return oldDelegate
-            .animation !=
-        animation;
+  bool shouldRepaint(covariant _LifestyleBackgroundPainter oldDelegate) {
+    return oldDelegate.animation != animation;
   }
 }

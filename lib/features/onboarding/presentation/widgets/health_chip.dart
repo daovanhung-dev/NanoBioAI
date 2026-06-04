@@ -6,28 +6,24 @@ import '../../../../core/theme/theme.dart';
 
 class HealthChip extends StatefulWidget {
   final String label;
-
   final bool selected;
-
   final VoidCallback onTap;
 
   final String? emoji;
-
   final IconData? icon;
 
   final Gradient? gradient;
-
-  final Color? selectedColor;
+  final Color? activeColor;
 
   final bool enabled;
 
   final double? width;
-
   final double? height;
 
   final EdgeInsetsGeometry? padding;
 
   final Widget? trailing;
+  final Widget? badge;
 
   const HealthChip({
     super.key,
@@ -37,36 +33,45 @@ class HealthChip extends StatefulWidget {
     this.emoji,
     this.icon,
     this.gradient,
-    this.selectedColor,
+    this.activeColor,
     this.enabled = true,
     this.width,
     this.height,
     this.padding,
     this.trailing,
+    this.badge,
   });
 
   @override
-  State<HealthChip> createState() =>
-      _HealthChipState();
+  State<HealthChip> createState() => _HealthChipState();
 }
 
-class _HealthChipState
-    extends State<HealthChip>
+class _HealthChipState extends State<HealthChip>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+  late final AnimationController _pressController;
 
   bool _hovered = false;
-
   bool _pressed = false;
+
+  bool get _selected => widget.selected;
+
+  bool get _enabled => widget.enabled;
+
+  Gradient get _gradient =>
+      widget.gradient ??
+      (_selected ? AppGradients.ai : AppGradients.surface);
+
+  Color get _activeColor =>
+      widget.activeColor ?? AppColors.primary;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
+    _pressController = AnimationController(
       vsync: this,
-      duration: AppDuration.normal,
-      lowerBound: 0.96,
+      duration: AppDuration.press,
+      lowerBound: 0.965,
       upperBound: 1,
       value: 1,
     );
@@ -74,62 +79,36 @@ class _HealthChipState
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pressController.dispose();
     super.dispose();
   }
 
-  void _handleTapDown(
-    TapDownDetails details,
-  ) {
-    if (!widget.enabled) return;
+  void _animateDown() {
+    if (!_enabled) return;
 
     setState(() {
       _pressed = true;
     });
 
-    _controller.reverse();
+    _pressController.reverse();
   }
 
-  void _handleTapUp(
-    TapUpDetails details,
-  ) {
-    if (!widget.enabled) return;
+  void _animateUp() {
+    if (!_enabled) return;
 
     setState(() {
       _pressed = false;
     });
 
-    _controller.forward();
-  }
-
-  void _handleTapCancel() {
-    if (!widget.enabled) return;
-
-    setState(() {
-      _pressed = false;
-    });
-
-    _controller.forward();
+    _pressController.forward();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool selected =
-        widget.selected;
-
-    final Gradient activeGradient =
-        widget.gradient ??
-            AppGradients.primary;
-
-    final Color activeColor =
-        widget.selectedColor ??
-            AppColors.primary;
-
     return MouseRegion(
-      cursor:
-          widget.enabled
-              ? SystemMouseCursors.click
-              : SystemMouseCursors.basic,
+      cursor: _enabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.forbidden,
       onEnter: (_) {
         setState(() {
           _hovered = true;
@@ -141,216 +120,118 @@ class _HealthChipState
         });
       },
       child: GestureDetector(
-        onTap:
-            widget.enabled
-                ? widget.onTap
-                : null,
-        onTapDown: _handleTapDown,
-        onTapUp: _handleTapUp,
-        onTapCancel: _handleTapCancel,
+        onTap: _enabled ? widget.onTap : null,
+        onTapDown: (_) => _animateDown(),
+        onTapUp: (_) => _animateUp(),
+        onTapCancel: _animateUp,
+        behavior: HitTestBehavior.opaque,
         child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
+          animation: _pressController,
+          builder: (_, child) {
             return Transform.scale(
-              scale: _controller.value,
+              scale: _pressController.value,
               child: child,
             );
           },
           child: AnimatedContainer(
-            duration:
-                AppDuration.normal,
-            curve: Curves.easeOutCubic,
+            duration: AppDuration.normal,
+            curve: AppAnimations.smoothCurve,
             width: widget.width,
             height: widget.height,
             padding:
                 widget.padding ??
-                    const EdgeInsets.symmetric(
-                      horizontal:
-                          AppSpacing.lg,
-                      vertical:
-                          AppSpacing.md,
-                    ),
-            decoration: BoxDecoration(
-              gradient:
-                  selected
-                      ? activeGradient
-                      : null,
-              color:
-                  selected
-                      ? null
-                      : Colors.white,
-              borderRadius:
-                  BorderRadius.circular(
-                AppRadius.xl,
-              ),
-              border: Border.all(
-                color:
-                    selected
-                        ? Colors.transparent
-                        : _hovered
-                        ? AppColors.primary
-                        : AppColors.border
-                            .withOpacity(
-                              0.6,
-                            ),
-                width: 1.4,
-              ),
-              boxShadow:
-                  selected
-                      ? [
-                        ...AppShadows
-                            .primary,
-                        BoxShadow(
-                          blurRadius:
-                              24,
-                          spreadRadius:
-                              -6,
-                          offset:
-                              const Offset(
-                                0,
-                                10,
-                              ),
-                          color: activeColor
-                              .withOpacity(
-                                0.32,
-                              ),
-                        ),
-                      ]
-                      : [
-                        BoxShadow(
-                          blurRadius:
-                              _hovered
-                                  ? 20
-                                  : 14,
-                          spreadRadius:
-                              -6,
-                          offset:
-                              const Offset(
-                                0,
-                                10,
-                              ),
-                          color: Colors
-                              .black
-                              .withOpacity(
-                                _hovered
-                                    ? 0.08
-                                    : 0.04,
-                              ),
-                        ),
-                      ],
-            ),
+                const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.cardPadding,
+                  vertical: AppSpacing.medium,
+                ),
+            decoration: _buildDecoration(),
             child: AnimatedOpacity(
-              duration:
-                  AppDuration.fast,
-              opacity:
-                  widget.enabled
-                      ? 1
-                      : 0.5,
+              duration: AppDuration.fast,
+              opacity: _enabled ? 1 : 0.45,
               child: Row(
-                mainAxisSize:
-                    MainAxisSize.min,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (widget.emoji !=
-                      null) ...[
-                    _EmojiContainer(
-                      emoji:
-                          widget.emoji!,
-                      selected:
-                          selected,
+                  if (widget.emoji != null) ...[
+                    _EmojiAvatar(
+                      emoji: widget.emoji!,
+                      selected: _selected,
                     ),
-                    const SizedBox(
-                      width:
-                          AppSpacing.md,
-                    ),
+                    const SizedBox(width: AppSpacing.medium),
                   ],
 
-                  if (widget.icon !=
-                      null) ...[
-                    AnimatedContainer(
-                      duration:
-                          AppDuration.normal,
-                      width: 42,
-                      height: 42,
-                      decoration:
-                          BoxDecoration(
-                            color:
-                                selected
-                                    ? Colors
-                                        .white
-                                        .withOpacity(
-                                          0.16,
-                                        )
-                                    : AppColors
-                                        .primarySoft,
-                            borderRadius:
-                                BorderRadius.circular(
-                                  AppRadius.md,
-                                ),
-                          ),
-                      child: Icon(
-                        widget.icon,
-                        size: 20,
-                        color:
-                            selected
-                                ? Colors
-                                    .white
-                                : AppColors
-                                    .primary,
-                      ),
+                  if (widget.icon != null) ...[
+                    _IconAvatar(
+                      icon: widget.icon!,
+                      selected: _selected,
                     ),
-                    const SizedBox(
-                      width:
-                          AppSpacing.md,
-                    ),
+                    const SizedBox(width: AppSpacing.medium),
                   ],
 
-                  Flexible(
-                    child: AnimatedDefaultTextStyle(
-                      duration:
-                          AppDuration.normal,
-                      style: AppTextStyles
-                          .labelLarge
-                          .copyWith(
-                            fontWeight:
-                                FontWeight
-                                    .w700,
-                            color:
-                                selected
-                                    ? Colors
-                                        .white
-                                    : AppColors
-                                        .textPrimary,
-                            height: 1.2,
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        AnimatedDefaultTextStyle(
+                          duration: AppDuration.normal,
+                          curve: AppAnimations.smoothCurve,
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: _selected
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            height: 1.25,
                           ),
-                      child: Text(
-                        widget.label,
-                        maxLines: 2,
-                        overflow:
-                            TextOverflow
-                                .ellipsis,
-                      ),
+                          child: Text(
+                            widget.label,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+
+                        if (_selected) ...[
+                          const SizedBox(
+                            height: AppSpacing.xs,
+                          ),
+                          AnimatedOpacity(
+                            duration: AppDuration.normal,
+                            opacity: _selected ? 1 : 0,
+                            child: Text(
+                              'AI optimized',
+                              style: AppTextStyles.labelSmall
+                                  .copyWith(
+                                color: Colors.white
+                                    .withOpacity(0.82),
+                                fontWeight:
+                                    FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
 
-                  if (widget.trailing !=
-                      null) ...[
+                  if (widget.badge != null) ...[
                     const SizedBox(
-                      width:
-                          AppSpacing.md,
+                      width: AppSpacing.sm,
+                    ),
+                    widget.badge!,
+                  ],
+
+                  if (widget.trailing != null) ...[
+                    const SizedBox(
+                      width: AppSpacing.sm,
                     ),
                     widget.trailing!,
                   ],
 
-                  if (selected) ...[
-                    const SizedBox(
-                      width:
-                          AppSpacing.md,
-                    ),
-                    _SelectedIndicator(
-                      selected:
-                          selected,
-                    ),
-                  ],
+                  const SizedBox(width: AppSpacing.sm),
+
+                  _SelectionIndicator(
+                    visible: _selected,
+                  ),
                 ],
               ),
             ),
@@ -359,15 +240,54 @@ class _HealthChipState
       ),
     );
   }
+
+  BoxDecoration _buildDecoration() {
+    if (_selected) {
+      return AppDecoration.base(
+        gradient: _gradient,
+        borderRadius: BorderRadius.circular(
+          AppRadius.xl,
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.12),
+        ),
+        shadows: [
+          ...AppShadows.primary,
+          BoxShadow(
+            color: _activeColor.withOpacity(
+              _pressed ? 0.18 : 0.32,
+            ),
+            blurRadius: _hovered ? 34 : 24,
+            spreadRadius: -4,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      );
+    }
+
+    return AppDecoration.base(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(
+        AppRadius.xl,
+      ),
+      border: Border.all(
+        color: _hovered
+            ? AppColors.primary.withOpacity(0.3)
+            : AppColors.border,
+        width: _hovered ? 1.4 : 1,
+      ),
+      shadows: _hovered
+          ? AppShadows.soft
+          : AppShadows.card,
+    );
+  }
 }
 
-class _EmojiContainer
-    extends StatelessWidget {
+class _EmojiAvatar extends StatelessWidget {
   final String emoji;
-
   final bool selected;
 
-  const _EmojiContainer({
+  const _EmojiAvatar({
     required this.emoji,
     required this.selected,
   });
@@ -376,30 +296,26 @@ class _EmojiContainer
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: AppDuration.normal,
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color:
-            selected
-                ? Colors.white
-                    .withOpacity(0.14)
-                : AppColors.primarySoft,
-        borderRadius:
-            BorderRadius.circular(
-          AppRadius.lg,
-        ),
-      ),
+      curve: AppAnimations.smoothCurve,
+      width: 54,
+      height: 54,
+      decoration: selected
+          ? AppDecoration.glass(
+              radius: AppRadius.lg,
+              opacity: 0.14,
+            )
+          : AppDecoration.container(
+              color: AppColors.primarySoft,
+              radius: AppRadius.lg,
+            ),
       child: Center(
         child: AnimatedScale(
-          duration:
-              AppDuration.normal,
-          scale:
-              selected ? 1.08 : 1,
+          duration: AppDuration.normal,
+          scale: selected ? 1.08 : 1,
           child: Text(
             emoji,
-            style:
-                const TextStyle(
-              fontSize: 24,
+            style: const TextStyle(
+              fontSize: 26,
             ),
           ),
         ),
@@ -408,46 +324,90 @@ class _EmojiContainer
   }
 }
 
-class _SelectedIndicator
-    extends StatelessWidget {
+class _IconAvatar extends StatelessWidget {
+  final IconData icon;
   final bool selected;
 
-  const _SelectedIndicator({
+  const _IconAvatar({
+    required this.icon,
     required this.selected,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedScale(
-      duration:
-          AppDuration.normal,
-      scale: selected ? 1 : 0,
-      child: ClipRRect(
-        borderRadius:
-            BorderRadius.circular(
-          AppRadius.circular,
-        ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: 8,
-            sigmaY: 8,
-          ),
-          child: Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: Colors.white
-                  .withOpacity(0.16),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white
-                    .withOpacity(0.3),
-              ),
+    return AnimatedContainer(
+      duration: AppDuration.normal,
+      curve: AppAnimations.smoothCurve,
+      width: 54,
+      height: 54,
+      decoration: selected
+          ? AppDecoration.glass(
+              radius: AppRadius.lg,
+              opacity: 0.14,
+            )
+          : AppDecoration.container(
+              color: AppColors.primarySoft,
+              radius: AppRadius.lg,
             ),
-            child: const Icon(
-              Icons.check_rounded,
-              size: 16,
-              color: Colors.white,
+      child: Icon(
+        icon,
+        size: 24,
+        color: selected
+            ? Colors.white
+            : AppColors.primary,
+      ),
+    );
+  }
+}
+
+class _SelectionIndicator extends StatelessWidget {
+  final bool visible;
+
+  const _SelectionIndicator({
+    required this.visible,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      duration: AppDuration.normal,
+      curve: AppAnimations.bounceCurve,
+      scale: visible ? 1 : 0,
+      child: AnimatedOpacity(
+        duration: AppDuration.fast,
+        opacity: visible ? 1 : 0,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(
+            AppRadius.circular,
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: 10,
+              sigmaY: 10,
+            ),
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: AppDecoration.circle(
+                color: Colors.white.withOpacity(
+                  0.18,
+                ),
+                shadows: AppShadows.glass,
+              ),
+              child: Container(
+                margin: const EdgeInsets.all(2),
+                decoration: AppDecoration.circle(
+                  color: Colors.white.withOpacity(
+                    0.1,
+                  ),
+                  shadows: const [],
+                ),
+                child: const Icon(
+                  Icons.check_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
         ),

@@ -3,13 +3,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:nano_app/core/router/router.dart';
-import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/features/splash/providers/splash_provider.dart';
-import 'package:nano_app/features/splash/providers/splash_state.dart';
-import '../../../../core/constants/constant.dart';
+
+import '../../../../core/router/router.dart';
+import '../../../../core/storage/localdb/app_prefs.dart';
 import '../../../../core/theme/theme.dart';
+import '../../providers/splash_provider.dart';
+import '../../providers/splash_state.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({
@@ -26,36 +25,47 @@ class SplashPage extends ConsumerStatefulWidget {
 }
 
 class _SplashPageState extends ConsumerState<SplashPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  late final AnimationController _floatingController;
+  late final AnimationController _rotationController;
   late final AnimationController _pulseController;
 
   @override
   void initState() {
     super.initState();
 
-    _checkApp();
+    _floatingController = AnimationController(
+      vsync: this,
+      duration: AppDuration.xSlow,
+    )..repeat(reverse: true);
+
+    _rotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 18),
+    )..repeat();
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: AppDuration.slow,
+      duration: AppDuration.pulse,
     )..repeat(reverse: true);
 
-    Future.microtask(() {
-      ref.read(splashProvider.notifier).initialize();
+    Future.microtask(() async {
+      await ref.read(splashProvider.notifier).initialize();
+      await _handleRouting();
     });
   }
 
-  Future<void> _checkApp() async {
+  Future<void> _handleRouting() async {
     final completed = await AppPrefs.isOnboardingCompleted();
-
-    debugPrint('ONBOARDING COMPLETED: $completed');
 
     if (!mounted) return;
 
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(AppDuration.loading);
+
+    if (!mounted) return;
 
     if (completed) {
-      AppNavigator.goMenu(context);
+      AppNavigator.goDashboard(context);
     } else {
       AppNavigator.goOnboarding(context);
     }
@@ -63,217 +73,438 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
   @override
   void dispose() {
+    _floatingController.dispose();
+    _rotationController.dispose();
     _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<SplashStatus>(splashProvider, (previous, next) {
-      switch (next) {
-        case SplashStatus.onboarded:
-          AppNavigator.goDashboard(context);
-          break;
+    ref.listen<SplashStatus>(
+      splashProvider,
+      (previous, next) {
+        switch (next) {
+          case SplashStatus.onboarded:
+            AppNavigator.goDashboard(context);
+            break;
 
-        case SplashStatus.onboardingRequired:
-          AppNavigator.goOnboarding(context);
-          break;
+          case SplashStatus.onboardingRequired:
+            AppNavigator.goOnboarding(context);
+            break;
 
-        default:
-          break;
-      }
-    });
+          default:
+            break;
+        }
+      },
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.background,
-              AppColors.primarySoft,
-              AppColors.scaffold,
-            ],
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -40,
-              left: -30,
-              child: _Orb(
-                size: 180,
-                colors: [
-                  AppColors.primary.withOpacity(0.30),
-                  AppColors.primaryLight.withOpacity(0.08),
-                ],
-                controller: _pulseController,
-                dxFactor: 18,
-                dyFactor: 10,
-              ),
-            ),
+      body: Stack(
+        children: [
+          const _SplashBackground(),
 
-            Positioned(
-              bottom: -30,
-              right: -20,
-              child: _Orb(
-                size: 220,
-                colors: [
-                  AppColors.secondary.withOpacity(0.24),
-                  AppColors.info.withOpacity(0.06),
-                ],
-                controller: _pulseController,
-                dxFactor: -14,
-                dyFactor: -8,
-              ),
-            ),
-
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
-                child: const SizedBox.expand(),
-              ),
-            ),
-
-            SafeArea(
-              child: Center(
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: 0, end: 1),
-                  duration: AppDuration.slow,
-                  curve: Curves.easeOutCubic,
-
-                  builder: (context, value, child) {
-                    return Opacity(
-                      opacity: value,
-                      child: Transform.translate(
-                        offset: Offset(0, 24 * (1 - value)),
-                        child: child,
-                      ),
-                    );
-                  },
-
-                  child: _SplashCard(
-                    controller: _pulseController,
-                    title: widget.title,
-                    subtitle: widget.subtitle,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: AnimatedBuilder(
+                animation: _rotationController,
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: _rotationController.value * math.pi * 2,
+                    child: child,
+                  );
+                },
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: RadialGradient(
+                      radius: 1.2,
+                      center: Alignment.center,
+                      colors: [
+                        Color(0x1206B6D4),
+                        Colors.transparent,
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
+          ),
+
+          Positioned(
+            top: -120,
+            left: -80,
+            child: _AnimatedOrb(
+              controller: _floatingController,
+              size: 280,
+              gradient: AppGradients.ai,
+              opacity: 0.18,
+              xFactor: 28,
+              yFactor: 18,
+            ),
+          ),
+
+          Positioned(
+            bottom: -140,
+            right: -100,
+            child: _AnimatedOrb(
+              controller: _floatingController,
+              size: 340,
+              gradient: AppGradients.hero,
+              opacity: 0.14,
+              xFactor: -24,
+              yFactor: -16,
+            ),
+          ),
+
+          Positioned(
+            top: MediaQuery.paddingOf(context).top + 24,
+            left: 24,
+            right: 24,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: AppDecoration.glass(
+                    opacity: 0.18,
+                    radius: AppRadius.circular,
+                    borderColor: Colors.white.withOpacity(0.18),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: AppColors.success,
+                          shape: BoxShape.circle,
+                          boxShadow: AppShadows.success,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        'AI SYSTEM ACTIVE',
+                        style: AppTextStyles.overline.copyWith(
+                          color: AppColors.textSecondary,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.pagePaddingLarge,
+                ),
+                child: AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    final value =
+                        0.96 + (_pulseController.value * 0.04);
+
+                    return Transform.scale(
+                      scale: value,
+                      child: child,
+                    );
+                  },
+                  child: _MainSplashCard(
+                    title: widget.title,
+                    subtitle: widget.subtitle,
+                    pulseController: _pulseController,
+                    floatingController: _floatingController,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: 42,
+            left: 24,
+            right: 24,
+            child: Column(
+              children: [
+                const _ProgressLoader(),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Realtime AI-powered health ecosystem',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textMuted,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SplashBackground extends StatelessWidget {
+  const _SplashBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.background,
+            AppColors.primarySoft,
+            AppColors.secondarySoft,
+            AppColors.scaffold,
           ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _GridPainter(),
+            ),
+          ),
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: 6,
+                sigmaY: 6,
+              ),
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MainSplashCard extends StatelessWidget {
+  const _MainSplashCard({
+    required this.title,
+    required this.subtitle,
+    required this.pulseController,
+    required this.floatingController,
+  });
+
+  final String title;
+  final String subtitle;
+  final AnimationController pulseController;
+  final AnimationController floatingController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(
+        AppSpacing.containerPaddingXl,
+      ),
+      decoration: AppDecoration.glass(
+        opacity: 0.22,
+        radius: AppRadius.xxl,
+        borderColor: Colors.white.withOpacity(0.25),
+        shadows: AppShadows.xl,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: 18,
+            sigmaY: 18,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _AnimatedLogo(
+                pulseController: pulseController,
+                floatingController: floatingController,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: AppDecoration.gradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.12),
+                    AppColors.secondary.withOpacity(0.10),
+                  ],
+                  radius: AppRadius.circular,
+                ),
+                child: Text(
+                  'SMART HEALTH PLATFORM',
+                  style: AppTextStyles.overline.copyWith(
+                    color: AppColors.primaryDark,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              ShaderMask(
+                shaderCallback: (bounds) {
+                  return AppGradients.hero.createShader(bounds);
+                },
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.displayMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -1.2,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.7,
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+
+              Row(
+                children: const [
+                  Expanded(
+                    child: _FeatureCard(
+                      icon: AppIcons.health,
+                      title: 'Health',
+                      subtitle: 'Realtime Tracking',
+                      gradient: AppGradients.health,
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _FeatureCard(
+                      icon: AppIcons.ai,
+                      title: 'AI Insight',
+                      subtitle: 'Smart Analysis',
+                      gradient: AppGradients.ai,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              Row(
+                children: const [
+                  Expanded(
+                    child: _FeatureCard(
+                      icon: AppIcons.sleep,
+                      title: 'Sleep',
+                      subtitle: 'Recovery Score',
+                      gradient: AppGradients.sleep,
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _FeatureCard(
+                      icon: AppIcons.nutrition,
+                      title: 'Nutrition',
+                      subtitle: 'Meal Intelligence',
+                      gradient: AppGradients.energy,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+
+              const _LoadingIndicator(),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _SplashCard extends StatelessWidget {
-  const _SplashCard({
-    required this.controller,
-    required this.title,
-    required this.subtitle,
+class _AnimatedLogo extends StatelessWidget {
+  const _AnimatedLogo({
+    required this.pulseController,
+    required this.floatingController,
   });
 
-  final AnimationController controller;
-  final String title;
-  final String subtitle;
+  final AnimationController pulseController;
+  final AnimationController floatingController;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: controller,
+      animation: Listenable.merge([
+        pulseController,
+        floatingController,
+      ]),
       builder: (context, _) {
-        final pulse = 0.5 + (0.5 * math.sin(controller.value * 2 * math.pi));
-        final logoScale = 1.0 + (0.03 * pulse);
+        final pulse =
+            1 + (math.sin(pulseController.value * math.pi * 2) * 0.04);
 
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 24),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
-          decoration: AppDecoration.glass(
-            opacity: 0.18,
-            blurRadius: 16,
-            radius: AppRadius.xl,
-            borderColor: Colors.white.withOpacity(0.35),
-          ).copyWith(boxShadow: AppShadows.lg),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Transform.scale(
-                  scale: logoScale,
-                  child: Container(
-                    width: 92,
-                    height: 92,
-                    decoration: AppDecoration.circle(
-                      gradient: AppGradients.primary,
-                      shadows: AppShadows.primary,
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 68,
-                        height: 68,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.18),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.25),
-                            width: 1,
-                          ),
-                        ),
-                        child: const Icon(
-                          AppIcons.health,
-                          size: 34,
-                          color: Colors.white,
-                        ),
+        final dy =
+            math.sin(floatingController.value * math.pi * 2) * 8;
+
+        return Transform.translate(
+          offset: Offset(0, dy),
+          child: Transform.scale(
+            scale: pulse,
+            child: Container(
+              width: 132,
+              height: 132,
+              decoration: AppDecoration.circle(
+                gradient: AppGradients.futuristic,
+                shadows: AppShadows.primary,
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 108,
+                    height: 108,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.12),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.displaySmall.copyWith(
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.8,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Container(
-                  width: 160,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.50),
-                    borderRadius: BorderRadius.circular(AppRadius.circular),
-                    border: Border.all(
-                      color: AppColors.border.withOpacity(0.65),
+                  Container(
+                    width: 88,
+                    height: 88,
+                    decoration: AppDecoration.glass(
+                      opacity: 0.18,
+                      radius: AppRadius.circular,
+                      borderColor: Colors.white.withOpacity(0.25),
+                    ),
+                    child: const Icon(
+                      AppIcons.health,
+                      size: 42,
+                      color: Colors.white,
                     ),
                   ),
-                  child: const _LoadingDots(),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  'Personalized health companion',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.textHint,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -282,17 +513,78 @@ class _SplashCard extends StatelessWidget {
   }
 }
 
-class _LoadingDots extends StatelessWidget {
-  const _LoadingDots();
+class _FeatureCard extends StatelessWidget {
+  const _FeatureCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.gradient,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Gradient gradient;
 
   @override
   Widget build(BuildContext context) {
-    final controller = context
-        .findAncestorStateOfType<_SplashPageState>()
-        ?._pulseController;
+    return Container(
+      padding: const EdgeInsets.all(
+        AppSpacing.cardPadding,
+      ),
+      decoration: AppDecoration.glass(
+        opacity: 0.12,
+        radius: AppRadius.xl,
+        borderColor: Colors.white.withOpacity(0.14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: AppDecoration.circle(
+              gradient: gradient,
+              shadows: AppShadows.sm,
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            title,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            subtitle,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textMuted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingIndicator extends StatelessWidget {
+  const _LoadingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    final state =
+        context.findAncestorStateOfType<_SplashPageState>();
+
+    final controller = state?._pulseController;
 
     if (controller == null) {
-      return const SizedBox(height: 20);
+      return const SizedBox.shrink();
     }
 
     return AnimatedBuilder(
@@ -300,61 +592,149 @@ class _LoadingDots extends StatelessWidget {
       builder: (context, _) {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(3, (index) {
-            final phase = (controller.value + (index * 0.20)) % 1.0;
-            final wave =
-                0.35 + (0.65 * (0.5 + 0.5 * math.sin(phase * 2 * math.pi)));
+          children: List.generate(
+            4,
+            (index) {
+              final phase =
+                  (controller.value + (index * 0.15)) % 1;
 
-            return Container(
-              width: 9,
-              height: 9,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(wave),
-                shape: BoxShape.circle,
-              ),
-            );
-          }),
+              final scale =
+                  0.7 + (math.sin(phase * math.pi * 2) * 0.3);
+
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: AppGradients.primary,
+                    shape: BoxShape.circle,
+                    boxShadow: AppShadows.primary,
+                  ),
+                ),
+              );
+            },
+          ),
         );
       },
     );
   }
 }
 
-class _Orb extends StatelessWidget {
-  const _Orb({
-    required this.size,
-    required this.colors,
+class _ProgressLoader extends StatelessWidget {
+  const _ProgressLoader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 6,
+      decoration: BoxDecoration(
+        color: AppColors.borderLight,
+        borderRadius: BorderRadius.circular(
+          AppRadius.circular,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: const Duration(seconds: 2),
+        curve: Curves.easeInOut,
+        builder: (context, value, _) {
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: FractionallySizedBox(
+              widthFactor: value,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: AppGradients.hero,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AnimatedOrb extends StatelessWidget {
+  const _AnimatedOrb({
     required this.controller,
-    required this.dxFactor,
-    required this.dyFactor,
+    required this.size,
+    required this.gradient,
+    required this.opacity,
+    required this.xFactor,
+    required this.yFactor,
   });
 
-  final double size;
-  final List<Color> colors;
   final AnimationController controller;
-  final double dxFactor;
-  final double dyFactor;
+  final double size;
+  final Gradient gradient;
+  final double opacity;
+  final double xFactor;
+  final double yFactor;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
       builder: (context, child) {
-        final pulse = math.sin(controller.value * 2 * math.pi);
+        final value = math.sin(controller.value * math.pi * 2);
+
         return Transform.translate(
-          offset: Offset(dxFactor * pulse, dyFactor * pulse),
+          offset: Offset(
+            value * xFactor,
+            value * yFactor,
+          ),
           child: child,
         );
       },
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(colors: colors, stops: const [0.0, 1.0]),
+      child: Opacity(
+        opacity: opacity,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: gradient,
+          ),
         ),
       ),
     );
+  }
+}
+
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.primary.withOpacity(0.035)
+      ..strokeWidth = 1;
+
+    const gap = 36.0;
+
+    for (double x = 0; x < size.width; x += gap) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x, size.height),
+        paint,
+      );
+    }
+
+    for (double y = 0; y < size.height; y += gap) {
+      canvas.drawLine(
+        Offset(0, y),
+        Offset(size.width, y),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

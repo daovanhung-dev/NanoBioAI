@@ -27,12 +27,12 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
 
     _backgroundController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 12),
+      duration: AppDuration.onboarding,
     )..repeat();
 
     _floatingController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 6),
+      duration: const Duration(seconds: 5),
     )..repeat(reverse: true);
   }
 
@@ -46,10 +46,11 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(onboardingProvider);
-
     final controller = ref.read(onboardingProvider.notifier);
 
     final selectedCount = state.conditions.length;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final cardWidth = (screenWidth - 56) / 2;
 
     return Stack(
       children: [
@@ -58,7 +59,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
             animation: _backgroundController,
             builder: (context, child) {
               return CustomPaint(
-                painter: _ConditionsBackgroundPainter(
+                painter: _AnimatedHealthBackground(
                   animation: _backgroundController.value,
                 ),
               );
@@ -67,99 +68,130 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
         ),
 
         Positioned(
-          top: -100,
-          right: -60,
-          child: _FloatingOrb(
+          top: -120,
+          right: -80,
+          child: _FloatingGlow(
             controller: _floatingController,
             size: 260,
-            color: AppColors.error.withOpacity(0.08),
+            gradient: AppGradients.ai,
           ),
         ),
 
         Positioned(
-          bottom: -120,
-          left: -70,
-          child: _FloatingOrb(
+          bottom: -160,
+          left: -100,
+          child: _FloatingGlow(
             controller: _floatingController,
-            size: 300,
-            color: AppColors.warning.withOpacity(0.08),
+            size: 320,
+            gradient: AppGradients.health,
           ),
         ),
 
-        Positioned.fill(
-          child: SafeArea(
-            child: OnboardingStepShell(
-              stepIndex: 3,
-              title: '',
-              subtitle: '',
-              onBack: controller.previousStep,
-              onNext: controller.nextStep,
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _AnimatedAppear(
-                      delay: 0,
-                      child: _HeaderSection(selectedCount: selectedCount),
+        SafeArea(
+          child: OnboardingStepShell(
+            stepIndex: 3,
+            title: '',
+            subtitle: '',
+            onBack: controller.previousStep,
+            onNext: controller.nextStep,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(
+                bottom: AppSpacing.xxxl,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _AppearAnimation(
+                    delay: 0,
+                    child: _HeroCard(
+                      selectedCount: selectedCount,
                     ),
+                  ),
 
-                    const SizedBox(height: 28),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    _AnimatedAppear(
-                      delay: 100,
-                      child: _AIHealthAlertCard(selectedCount: selectedCount),
+                  _AppearAnimation(
+                    delay: 100,
+                    child: _SmartAnalysisCard(
+                      selectedCount: selectedCount,
                     ),
+                  ),
 
-                    const SizedBox(height: 28),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    const _SectionTitle(
-                      title: 'Tình trạng sức khỏe',
-                      subtitle:
-                          'Chọn đúng các vấn đề bạn đang gặp để BioAI hiểu cơ thể bạn tốt hơn.',
+                  const _SectionHeader(
+                    title: 'Tình trạng sức khỏe',
+                    subtitle:
+                        'BioAI sẽ sử dụng thông tin này để cá nhân hóa phân tích sức khỏe, dinh dưỡng và lối sống phù hợp với bạn.',
+                  ),
+
+                  const SizedBox(height: AppSpacing.lg),
+
+                  _AppearAnimation(
+                    delay: 200,
+                    child: Wrap(
+                      spacing: AppSpacing.md,
+                      runSpacing: AppSpacing.md,
+                      children: OnboardingCatalog.conditions.map((item) {
+                        final selected =
+                            state.conditions.contains(item.code);
+
+                        return _ConditionCard(
+                          width: cardWidth,
+                          emoji: item.emoji,
+                          label: item.label,
+                          selected: selected,
+                          onTap: () {
+                            controller.toggleCondition(item.code);
+                          },
+                        );
+                      }).toList(),
                     ),
+                  ),
 
-                    const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    _AnimatedAppear(
-                      delay: 200,
-                      child: _ConditionsGrid(
-                        state: state,
-                        controller: controller,
-                      ),
-                    ),
+                  const _SectionHeader(
+                    title: 'Thông tin bổ sung',
+                    subtitle:
+                        'Bạn có thể mô tả thêm tình trạng sức khỏe để AI hiểu bạn rõ hơn.',
+                  ),
 
-                    const SizedBox(height: 28),
+                  const SizedBox(height: AppSpacing.lg),
 
-                    const _SectionTitle(
-                      title: 'Tình trạng khác',
-                      subtitle:
-                          'Nếu bạn có vấn đề sức khỏe khác chưa được liệt kê.',
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    _AnimatedAppear(
-                      delay: 350,
-                      child: _GlassCard(
-                        child: OnboardingTextField(
-                          label: 'Tình trạng khác',
-                          hint: 'Nhập tình trạng sức khỏe khác...',
-                          initialValue: state.otherCondition,
-                          onChanged: controller.updateOtherCondition,
+                  _AppearAnimation(
+                    delay: 300,
+                    child: Container(
+                      decoration: AppDecoration.card(
+                        radius: AppRadius.xl,
+                        shadows: AppShadows.soft,
+                        border: Border.all(
+                          color: AppColors.border,
                         ),
                       ),
+                      padding: const EdgeInsets.all(
+                        AppSpacing.cardPaddingLarge,
+                      ),
+                      child: OnboardingTextField(
+                        label: 'Tình trạng khác',
+                        hint:
+                            'Ví dụ: đau đầu thường xuyên, dị ứng thực phẩm...',
+                        initialValue: state.otherCondition,
+                        onChanged: controller.updateOtherCondition,
+                      ),
                     ),
+                  ),
 
-                    const SizedBox(height: 28),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    _AnimatedAppear(
-                      delay: 450,
-                      child: _HealthInsightCard(selectedCount: selectedCount),
+                  _AppearAnimation(
+                    delay: 400,
+                    child: _HealthSummaryCard(
+                      selectedCount: selectedCount,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -169,19 +201,21 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
   }
 }
 
-class _HeaderSection extends StatelessWidget {
+class _HeroCard extends StatelessWidget {
   final int selectedCount;
 
-  const _HeaderSection({required this.selectedCount});
+  const _HeroCard({
+    required this.selectedCount,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        gradient: LinearGradient(colors: [AppColors.error, AppColors.warning]),
-        boxShadow: AppShadows.danger,
+      decoration: AppDecoration.premiumGradient(
+        radius: AppRadius.xxl,
+      ),
+      padding: const EdgeInsets.all(
+        AppSpacing.containerPaddingXl,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,41 +223,42 @@ class _HeaderSection extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.15),
+                width: 74,
+                height: 74,
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.circular,
                 ),
                 child: const Icon(
-                  Icons.favorite_rounded,
+                  AppIcons.health,
                   color: Colors.white,
                   size: 34,
                 ),
               ),
+
               const Spacer(),
+
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.circular),
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.circular,
                 ),
                 child: Row(
                   children: [
                     const Icon(
-                      Icons.psychology_alt_rounded,
+                      AppIcons.ai,
                       color: Colors.white,
                       size: 18,
                     ),
-                    const SizedBox(width: 8),
+
+                    const SizedBox(width: AppSpacing.xs),
+
                     Text(
-                      'BioAI',
+                      'AI Health',
                       style: AppTextStyles.labelLarge.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -232,37 +267,45 @@ class _HeaderSection extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xl),
 
           Text(
-            'Tình trạng sức khỏe',
+            'Hồ sơ sức khỏe cá nhân',
             style: AppTextStyles.displaySmall.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
-              height: 1.1,
+              height: 1.15,
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
 
           Text(
-            'BioAI sẽ dựa trên dữ liệu sức khỏe hiện tại để xây dựng hồ sơ AI cá nhân hóa.',
+            'BioAI phân tích tình trạng sức khỏe hiện tại để xây dựng hệ thống chăm sóc phù hợp với cơ thể và mục tiêu của bạn.',
             style: AppTextStyles.bodyLarge.copyWith(
               color: Colors.white.withOpacity(0.92),
-              height: 1.6,
+              height: 1.7,
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: AppSpacing.xl),
 
           Row(
             children: [
               Expanded(
-                child: _MiniStat(title: 'Đã chọn', value: '$selectedCount mục'),
+                child: _HeroMetric(
+                  title: 'Đã chọn',
+                  value: '$selectedCount mục',
+                ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _MiniStat(title: 'AI Status', value: 'Đang phân tích'),
+
+              const SizedBox(width: AppSpacing.md),
+
+              const Expanded(
+                child: _HeroMetric(
+                  title: 'AI Status',
+                  value: 'Đang phân tích',
+                ),
               ),
             ],
           ),
@@ -272,19 +315,23 @@ class _HeaderSection extends StatelessWidget {
   }
 }
 
-class _MiniStat extends StatelessWidget {
+class _HeroMetric extends StatelessWidget {
   final String title;
   final String value;
 
-  const _MiniStat({required this.title, required this.value});
+  const _HeroMetric({
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+      padding: const EdgeInsets.all(
+        AppSpacing.cardPadding,
+      ),
+      decoration: AppDecoration.glass(
+        radius: AppRadius.xl,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,10 +339,12 @@ class _MiniStat extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.bodySmall.copyWith(
-              color: Colors.white.withOpacity(0.82),
+              color: Colors.white.withOpacity(0.8),
             ),
           ),
-          const SizedBox(height: 8),
+
+          const SizedBox(height: AppSpacing.sm),
+
           Text(
             value,
             style: AppTextStyles.heading4.copyWith(
@@ -309,58 +358,66 @@ class _MiniStat extends StatelessWidget {
   }
 }
 
-class _AIHealthAlertCard extends StatelessWidget {
+class _SmartAnalysisCard extends StatelessWidget {
   final int selectedCount;
 
-  const _AIHealthAlertCard({required this.selectedCount});
+  const _SmartAnalysisCard({
+    required this.selectedCount,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: AppDecoration.glass(
-        opacity: 0.72,
-        blurRadius: 20,
+      decoration: AppDecoration.card(
         radius: AppRadius.xl,
+        shadows: AppShadows.cardRaised,
+        gradient: AppGradients.surface,
+      ),
+      padding: const EdgeInsets.all(
+        AppSpacing.cardPaddingLarge,
       ),
       child: Row(
         children: [
           Container(
             width: 72,
             height: 72,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.error, AppColors.warning],
-              ),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+            decoration: AppDecoration.gradient(
+              colors: const [
+                AppColors.primary,
+                AppColors.tertiary,
+              ],
+              radius: AppRadius.xl,
+              shadows: AppShadows.primary,
             ),
             child: const Icon(
-              Icons.monitor_heart_rounded,
+              AppIcons.heartRate,
               color: Colors.white,
-              size: 32,
+              size: 34,
             ),
           ),
 
-          const SizedBox(width: 18),
+          const SizedBox(width: AppSpacing.md),
 
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'AI Health Detection',
+                  'Phân tích thông minh',
                   style: AppTextStyles.heading4.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
 
                 Text(
                   selectedCount == 0
-                      ? 'Hãy chọn các tình trạng bạn đang gặp.'
-                      : 'BioAI đang tối ưu phân tích dựa trên dữ liệu sức khỏe của bạn.',
-                  style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+                      ? 'Hãy chọn các tình trạng bạn đang gặp để BioAI bắt đầu xây dựng hồ sơ sức khỏe.'
+                      : 'Dữ liệu sức khỏe đang được AI xử lý để tối ưu đề xuất dinh dưỡng và theo dõi sức khỏe.',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    height: 1.6,
+                  ),
                 ),
               ],
             ),
@@ -371,11 +428,14 @@ class _AIHealthAlertCard extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
+class _SectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _SectionTitle({required this.title, required this.subtitle});
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -384,109 +444,140 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
+          style: AppTextStyles.heading2.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
 
-        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.6)),
+        Text(
+          subtitle,
+          style: AppTextStyles.bodyMedium.copyWith(
+            height: 1.7,
+          ),
+        ),
       ],
     );
   }
 }
 
-class _ConditionsGrid extends StatelessWidget {
-  final dynamic state;
-  final dynamic controller;
+class _ConditionCard extends StatelessWidget {
+  final double width;
+  final String emoji;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
 
-  const _ConditionsGrid({required this.state, required this.controller});
+  const _ConditionCard({
+    required this.width,
+    required this.emoji,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 14,
-      runSpacing: 14,
-      children: OnboardingCatalog.conditions.map((item) {
-        final selected = state.conditions.contains(item.code);
-
-        return GestureDetector(
-          onTap: () => controller.toggleCondition(item.code),
-          child: AnimatedContainer(
-            duration: AppDuration.normal,
-            curve: Curves.easeOutCubic,
-            width: 160,
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              gradient: selected
-                  ? LinearGradient(colors: [AppColors.error, AppColors.warning])
-                  : null,
-              color: selected ? null : Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              border: Border.all(
-                color: selected ? Colors.transparent : AppColors.border,
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: AppDuration.normal,
+        curve: AppAnimations.emphasizedCurve,
+        width: width,
+        padding: const EdgeInsets.all(
+          AppSpacing.cardPaddingLarge,
+        ),
+        decoration: selected
+            ? AppDecoration.gradient(
+                colors: const [
+                  AppColors.primary,
+                  AppColors.tertiary,
+                ],
+                radius: AppRadius.xl,
+                shadows: AppShadows.primary,
+              )
+            : AppDecoration.card(
+                radius: AppRadius.xl,
+                shadows: AppShadows.card,
+                border: Border.all(
+                  color: AppColors.border,
+                ),
               ),
-              boxShadow: selected ? AppShadows.danger : AppShadows.xs,
+        child: Column(
+          children: [
+            AnimatedScale(
+              scale: selected ? 1.08 : 1,
+              duration: AppDuration.normal,
+              curve: AppAnimations.bounceCurve,
+              child: Text(
+                emoji,
+                style: const TextStyle(fontSize: 38),
+              ),
             ),
-            child: Column(
-              children: [
-                AnimatedScale(
-                  scale: selected ? 1.08 : 1,
-                  duration: AppDuration.normal,
-                  child: Text(item.emoji, style: const TextStyle(fontSize: 36)),
-                ),
 
-                const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
 
-                Text(
-                  item.label,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: selected ? Colors.white : AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.labelLarge.copyWith(
+                color: selected
+                    ? Colors.white
+                    : AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+                height: 1.4,
+              ),
             ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
 
-class _GlassCard extends StatelessWidget {
-  final Widget child;
+            const SizedBox(height: AppSpacing.md),
 
-  const _GlassCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.88),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
-        boxShadow: AppShadows.soft,
+            AnimatedContainer(
+              duration: AppDuration.fast,
+              width: 26,
+              height: 26,
+              decoration: AppDecoration.circle(
+                color: selected
+                    ? Colors.white
+                    : AppColors.primarySoft,
+              ),
+              child: Icon(
+                selected
+                    ? AppIcons.success
+                    : AppIcons.add,
+                color: selected
+                    ? AppColors.primary
+                    : AppColors.primary,
+                size: 16,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: child,
     );
   }
 }
 
-class _HealthInsightCard extends StatelessWidget {
+class _HealthSummaryCard extends StatelessWidget {
   final int selectedCount;
 
-  const _HealthInsightCard({required this.selectedCount});
+  const _HealthSummaryCard({
+    required this.selectedCount,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [AppColors.error, AppColors.warning]),
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        boxShadow: AppShadows.danger,
+      decoration: AppDecoration.gradient(
+        colors: const [
+          AppColors.textPrimary,
+          Color(0xFF1E293B),
+        ],
+        radius: AppRadius.xxl,
+        shadows: AppShadows.floating,
+      ),
+      padding: const EdgeInsets.all(
+        AppSpacing.containerPaddingXl,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -494,39 +585,38 @@ class _HealthInsightCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                width: 58,
+                height: 58,
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.xl,
                 ),
                 child: const Icon(
-                  Icons.psychology_alt_rounded,
+                  AppIcons.ai,
                   color: Colors.white,
                   size: 28,
                 ),
               ),
 
-              const SizedBox(width: 16),
+              const SizedBox(width: AppSpacing.md),
 
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'AI Insight',
+                      'AI Health Insight',
                       style: AppTextStyles.heading4.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
 
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xs),
 
                     Text(
-                      'Đánh giá sơ bộ',
+                      'Đánh giá sơ bộ hồ sơ sức khỏe',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white.withOpacity(0.82),
+                        color: Colors.white.withOpacity(0.75),
                       ),
                     ),
                   ],
@@ -535,28 +625,28 @@ class _HealthInsightCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
 
-          _InsightRow(
-            icon: Icons.favorite_rounded,
+          _SummaryRow(
+            icon: AppIcons.health,
             title: 'Tình trạng đã chọn',
             value: '$selectedCount',
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
-          const _InsightRow(
-            icon: Icons.auto_graph_rounded,
+          const _SummaryRow(
+            icon: AppIcons.autoGraph,
             title: 'AI Status',
             value: 'Đang xử lý',
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
-          const _InsightRow(
-            icon: Icons.health_and_safety_rounded,
-            title: 'Health Risk',
-            value: 'Đang đánh giá',
+          const _SummaryRow(
+            icon: AppIcons.success,
+            title: 'Health Sync',
+            value: 'Hoạt động',
           ),
         ],
       ),
@@ -564,12 +654,12 @@ class _HealthInsightCard extends StatelessWidget {
   }
 }
 
-class _InsightRow extends StatelessWidget {
+class _SummaryRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String value;
 
-  const _InsightRow({
+  const _SummaryRow({
     required this.icon,
     required this.title,
     required this.value,
@@ -579,14 +669,20 @@ class _InsightRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white, size: 20),
+        Icon(
+          icon,
+          color: Colors.white,
+          size: 20,
+        ),
 
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.sm),
 
         Expanded(
           child: Text(
             title,
-            style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: Colors.white,
+            ),
           ),
         ),
 
@@ -602,23 +698,25 @@ class _InsightRow extends StatelessWidget {
   }
 }
 
-class _AnimatedAppear extends StatefulWidget {
+class _AppearAnimation extends StatefulWidget {
   final Widget child;
   final int delay;
 
-  const _AnimatedAppear({required this.child, required this.delay});
+  const _AppearAnimation({
+    required this.child,
+    required this.delay,
+  });
 
   @override
-  State<_AnimatedAppear> createState() => _AnimatedAppearState();
+  State<_AppearAnimation> createState() =>
+      _AppearAnimationState();
 }
 
-class _AnimatedAppearState extends State<_AnimatedAppear>
+class _AppearAnimationState extends State<_AppearAnimation>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
-  late final Animation<double> _opacity;
-
-  late final Animation<Offset> _offset;
+  late final Animation<double> _animation;
 
   @override
   void initState() {
@@ -626,21 +724,22 @@ class _AnimatedAppearState extends State<_AnimatedAppear>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: AppDuration.slow,
     );
 
-    _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: AppAnimations.smoothCurve,
+    );
 
-    _offset = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-
-    Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
+    Future.delayed(
+      Duration(milliseconds: widget.delay),
+      () {
+        if (mounted) {
+          _controller.forward();
+        }
+      },
+    );
   }
 
   @override
@@ -651,24 +750,22 @@ class _AnimatedAppearState extends State<_AnimatedAppear>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _opacity,
-      child: SlideTransition(position: _offset, child: widget.child),
+    return AppAnimations.fadeSlide(
+      child: widget.child,
+      animation: _animation,
     );
   }
 }
 
-class _FloatingOrb extends StatelessWidget {
+class _FloatingGlow extends StatelessWidget {
   final AnimationController controller;
-
   final double size;
+  final Gradient gradient;
 
-  final Color color;
-
-  const _FloatingOrb({
+  const _FloatingGlow({
     required this.controller,
     required this.size,
-    required this.color,
+    required this.gradient,
   });
 
   @override
@@ -678,8 +775,8 @@ class _FloatingOrb extends StatelessWidget {
       builder: (context, child) {
         return Transform.translate(
           offset: Offset(
-            math.sin(controller.value * math.pi * 2) * 14,
-            math.cos(controller.value * math.pi * 2) * 14,
+            math.sin(controller.value * math.pi * 2) * 18,
+            math.cos(controller.value * math.pi * 2) * 18,
           ),
           child: child,
         );
@@ -687,50 +784,82 @@ class _FloatingOrb extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: gradient,
+        ),
       ),
     );
   }
 }
 
-class _ConditionsBackgroundPainter extends CustomPainter {
+class _AnimatedHealthBackground extends CustomPainter {
   final double animation;
 
-  const _ConditionsBackgroundPainter({required this.animation});
+  const _AnimatedHealthBackground({
+    required this.animation,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final rect = Offset.zero & size;
 
-    final paint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          AppColors.background,
-          AppColors.errorSoft.withOpacity(0.5),
-          Colors.white,
-        ],
-        transform: GradientRotation(animation * math.pi),
-      ).createShader(rect);
+    final backgroundPaint = Paint()
+      ..shader = AppGradients.onboarding
+          .createShader(rect);
 
-    canvas.drawRect(rect, paint);
+    canvas.drawRect(rect, backgroundPaint);
 
-    final gridPaint = Paint()
-      ..color = AppColors.error.withOpacity(0.03)
+    final linePaint = Paint()
+      ..color = AppColors.primary.withOpacity(0.04)
       ..strokeWidth = 1;
 
-    for (double i = 0; i < size.width; i += 40) {
-      canvas.drawLine(Offset(i, 0), Offset(i, size.height), gridPaint);
+    for (double x = 0; x < size.width; x += 34) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x, size.height),
+        linePaint,
+      );
     }
 
-    for (double i = 0; i < size.height; i += 40) {
-      canvas.drawLine(Offset(0, i), Offset(size.width, i), gridPaint);
+    for (double y = 0; y < size.height; y += 34) {
+      canvas.drawLine(
+        Offset(0, y),
+        Offset(size.width, y),
+        linePaint,
+      );
     }
+
+    final orbPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          AppColors.primary.withOpacity(0.10),
+          Colors.transparent,
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(
+            size.width * 0.8,
+            size.height * (0.2 + animation * 0.1),
+          ),
+          radius: 180,
+        ),
+      );
+
+    canvas.drawCircle(
+      Offset(
+        size.width * 0.8,
+        size.height * (0.2 + animation * 0.1),
+      ),
+      180,
+      orbPaint,
+    );
   }
 
   @override
-  bool shouldRepaint(covariant _ConditionsBackgroundPainter oldDelegate) {
+  bool shouldRepaint(
+    covariant _AnimatedHealthBackground oldDelegate,
+  ) {
     return oldDelegate.animation != animation;
   }
 }

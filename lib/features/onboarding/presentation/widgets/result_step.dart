@@ -7,314 +7,257 @@ import '../../../../core/theme/theme.dart';
 
 class ResultStep extends StatefulWidget {
   final double healthScore;
-
   final String userName;
-
   final String message;
-
   final VoidCallback? onContinue;
-
   final VoidCallback? onRestart;
 
   const ResultStep({
     super.key,
-    this.healthScore = 78,
+    this.healthScore = 82,
     this.userName = 'Bạn',
-    this.message =
-        'BioAI đã sẵn sàng đồng hành cùng bạn',
+    this.message = 'BioAI đã sẵn sàng đồng hành cùng bạn',
     this.onContinue,
     this.onRestart,
   });
 
   @override
-  State<ResultStep> createState() =>
-      _ResultStepState();
+  State<ResultStep> createState() => _ResultStepState();
 }
 
-class _ResultStepState
-    extends State<ResultStep>
-    with TickerProviderStateMixin {
-  late final AnimationController
-      _backgroundController;
+class _ResultStepState extends State<ResultStep> with TickerProviderStateMixin {
+  late final AnimationController _backgroundController;
+  late final AnimationController _floatingController;
+  late final AnimationController _scoreController;
 
-  late final AnimationController
-      _scoreController;
-
-  late final AnimationController
-      _floatingController;
-
-  late final Animation<double>
-      _scoreAnimation;
+  late final Animation<double> _scoreAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    _backgroundController =
-        AnimationController(
+    _backgroundController = AnimationController(
       vsync: this,
-      duration:
-          const Duration(seconds: 12),
+      duration: const Duration(seconds: 18),
     )..repeat();
 
-    _floatingController =
-        AnimationController(
+    _floatingController = AnimationController(
       vsync: this,
-      duration:
-          const Duration(seconds: 6),
+      duration: const Duration(seconds: 7),
     )..repeat(reverse: true);
 
-    _scoreController =
-        AnimationController(
+    _scoreController = AnimationController(
       vsync: this,
-      duration:
-          const Duration(seconds: 2),
+      duration: AppDuration.onboarding,
     );
 
-    _scoreAnimation =
-        Tween<double>(
-      begin: 0,
-      end: widget.healthScore,
-    ).animate(
+    _scoreAnimation = Tween<double>(begin: 0, end: widget.healthScore).animate(
       CurvedAnimation(
         parent: _scoreController,
-        curve:
-            Curves.easeOutCubic,
+        curve: AppAnimations.decelerateCurve,
       ),
     );
 
-    Future.delayed(
-      const Duration(
-        milliseconds: 300,
-      ),
-      () {
-        if (mounted) {
-          _scoreController.forward();
-        }
-      },
-    );
+    Future.delayed(const Duration(milliseconds: 250), () {
+      if (mounted) {
+        _scoreController.forward();
+      }
+    });
   }
 
   @override
   void dispose() {
     _backgroundController.dispose();
-    _scoreController.dispose();
     _floatingController.dispose();
+    _scoreController.dispose();
     super.dispose();
   }
 
+  bool get _excellent => widget.healthScore >= 80;
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: AnimatedBuilder(
-            animation:
-                _backgroundController,
-            builder:
-                (context, child) {
-              return CustomPaint(
-                painter:
-                    _ResultBackgroundPainter(
-                  animation:
-                      _backgroundController
-                          .value,
-                ),
-              );
-            },
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _backgroundController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: _BackgroundPainter(
+                    animation: _backgroundController.value,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
 
-        Positioned(
-          top: -120,
-          right: -80,
-          child: _FloatingOrb(
-            controller:
-                _floatingController,
-            size: 280,
-            color: AppColors.success
-                .withOpacity(0.08),
+          Positioned(
+            top: -140,
+            right: -80,
+            child: _FloatingGlow(
+              controller: _floatingController,
+              size: 320,
+              gradient: AppGradients.health,
+            ),
           ),
-        ),
 
-        Positioned(
-          bottom: -160,
-          left: -90,
-          child: _FloatingOrb(
-            controller:
-                _floatingController,
-            size: 340,
-            color: AppColors.primary
-                .withOpacity(0.08),
+          Positioned(
+            bottom: -180,
+            left: -120,
+            child: _FloatingGlow(
+              controller: _floatingController,
+              size: 380,
+              gradient: AppGradients.ai,
+              reverse: true,
+            ),
           ),
-        ),
 
-        Positioned.fill(
-          child: SafeArea(
+          SafeArea(
             child: SingleChildScrollView(
-              physics:
-                  const BouncingScrollPhysics(),
-              padding:
-                  const EdgeInsets.all(
-                24,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.pagePaddingLarge,
+                vertical: AppSpacing.pagePadding,
               ),
               child: Column(
                 children: [
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: AppSpacing.large),
 
-                  _AnimatedAppear(
+                  _AppearAnimation(
                     delay: 0,
-                    child:
-                        _SuccessHeader(
-                      userName:
-                          widget.userName,
+                    child: _HeroSection(userName: widget.userName),
+                  ),
+
+                  const SizedBox(height: AppSpacing.sectionSpacingLarge),
+
+                  _AppearAnimation(
+                    delay: 120,
+                    child: _ScoreCard(animation: _scoreAnimation),
+                  ),
+
+                  const SizedBox(height: AppSpacing.sectionSpacing),
+
+                  _AppearAnimation(
+                    delay: 220,
+                    child: _InsightPanel(score: widget.healthScore),
+                  ),
+
+                  const SizedBox(height: AppSpacing.sectionSpacing),
+
+                  _AppearAnimation(
+                    delay: 320,
+                    child: _JourneyPanel(message: widget.message),
+                  ),
+
+                  const SizedBox(height: AppSpacing.sectionSpacing),
+
+                  _AppearAnimation(
+                    delay: 420,
+                    child: const _ActivatedFeatures(),
+                  ),
+
+                  const SizedBox(height: AppSpacing.sectionSpacingLarge),
+
+                  _AppearAnimation(
+                    delay: 520,
+                    child: _BottomSection(
+                      onContinue: widget.onContinue,
+                      onRestart: widget.onRestart,
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 28,
-                  ),
-
-                  _AnimatedAppear(
-                    delay: 150,
-                    child:
-                        _HealthScoreCard(
-                      animation:
-                          _scoreAnimation,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 28,
-                  ),
-
-                  _AnimatedAppear(
-                    delay: 250,
-                    child:
-                        _AIInsightCard(
-                      score:
-                          widget
-                              .healthScore,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 28,
-                  ),
-
-                  _AnimatedAppear(
-                    delay: 350,
-                    child:
-                        _JourneyCard(
-                      message:
-                          widget.message,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 28,
-                  ),
-
-                  _AnimatedAppear(
-                    delay: 450,
-                    child:
-                        _FeaturePreviewCard(),
-                  ),
-
-                  const SizedBox(
-                    height: 32,
-                  ),
-
-                  _AnimatedAppear(
-                    delay: 550,
-                    child:
-                        _BottomActions(
-                      onContinue:
-                          widget
-                              .onContinue,
-                      onRestart:
-                          widget
-                              .onRestart,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 40,
-                  ),
+                  const SizedBox(height: AppSpacing.xxl),
                 ],
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _SuccessHeader
-    extends StatelessWidget {
+class _HeroSection extends StatelessWidget {
   final String userName;
 
-  const _SuccessHeader({
-    required this.userName,
-  });
+  const _HeroSection({required this.userName});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Container(
-          width: 110,
-          height: 110,
-          decoration: BoxDecoration(
+          width: 132,
+          height: 132,
+          decoration: AppDecoration.base(
+            gradient: AppGradients.hero,
             shape: BoxShape.circle,
-            gradient:
-                LinearGradient(
-              colors: [
-                AppColors.success,
-                AppColors.primary,
-              ],
+            shadows: AppShadows.floating,
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 102,
+                height: 102,
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.circular,
+                  opacity: 0.12,
+                ),
+              ),
+              const Icon(AppIcons.success, size: 58, color: Colors.white),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: AppDecoration.base(
+            color: AppColors.successSoft,
+            borderRadius: BorderRadius.circular(AppRadius.circular),
+          ),
+          child: Text(
+            'AI HEALTH ANALYSIS COMPLETED',
+            style: AppTextStyles.overline.copyWith(
+              color: AppColors.success,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
             ),
-            boxShadow:
-                AppShadows.primary,
-          ),
-          child: const Icon(
-            Icons.check_rounded,
-            color: Colors.white,
-            size: 54,
           ),
         ),
 
-        const SizedBox(height: 28),
+        const SizedBox(height: AppSpacing.lg),
 
-        Text(
-          'Hoàn tất hồ sơ',
-          textAlign:
-              TextAlign.center,
-          style:
-              AppTextStyles
-                  .displayMedium
-                  .copyWith(
-            fontWeight:
-                FontWeight.w800,
-            height: 1.1,
+        ShaderMask(
+          shaderCallback: (bounds) {
+            return AppGradients.hero.createShader(bounds);
+          },
+          child: Text(
+            'Hoàn tất hồ sơ',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.displayMedium.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              height: 1.05,
+            ),
           ),
         ),
 
-        const SizedBox(height: 14),
+        const SizedBox(height: AppSpacing.md),
 
         Text(
-          'Chúc mừng $userName! BioAI đã phân tích thành công dữ liệu sức khỏe của bạn.',
-          textAlign:
-              TextAlign.center,
-          style:
-              AppTextStyles
-                  .bodyLarge
-                  .copyWith(
-            color:
-                AppColors.textSecondary,
+          'Chúc mừng $userName! BioAI đã hoàn tất phân tích và cá nhân hóa hành trình chăm sóc sức khỏe cho bạn.',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.bodyLarge.copyWith(
+            color: AppColors.textSecondary,
             height: 1.7,
           ),
         ),
@@ -323,320 +266,226 @@ class _SuccessHeader
   }
 }
 
-class _HealthScoreCard
-    extends StatelessWidget {
-  final Animation<double>
-      animation;
+class _ScoreCard extends StatelessWidget {
+  final Animation<double> animation;
 
-  const _HealthScoreCard({
-    required this.animation,
-  });
+  const _ScoreCard({required this.animation});
 
   @override
   Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          decoration: AppDecoration.base(
+            gradient: AppGradients.glass,
+            borderRadius: BorderRadius.circular(AppRadius.xxl),
+            border: Border.all(color: Colors.white.withOpacity(0.5)),
+            shadows: AppShadows.soft,
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 68,
+                    height: 68,
+                    decoration: AppDecoration.primaryGradient(
+                      radius: AppRadius.xl,
+                    ),
+                    child: const Icon(
+                      AppIcons.heartRate,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+
+                  const SizedBox(width: AppSpacing.md),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Health Score',
+                          style: AppTextStyles.heading2.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppSpacing.xs),
+
+                        Text(
+                          'Chỉ số đánh giá sức khỏe toàn diện bởi AI',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: AppSpacing.xxxl),
+
+              AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  final value = animation.value.clamp(0, 100);
+
+                  return SizedBox(
+                    width: 250,
+                    height: 250,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          width: 250,
+                          height: 250,
+                          child: CircularProgressIndicator(
+                            value: value / 100,
+                            strokeWidth: 16,
+                            strokeCap: StrokeCap.round,
+                            backgroundColor: AppColors.border.withOpacity(0.3),
+                            valueColor: const AlwaysStoppedAnimation(
+                              AppColors.primary,
+                            ),
+                          ),
+                        ),
+
+                        Container(
+                          width: 188,
+                          height: 188,
+                          decoration: AppDecoration.base(
+                            color: Colors.white.withOpacity(0.9),
+                            shape: BoxShape.circle,
+                            shadows: AppShadows.sm,
+                          ),
+                        ),
+
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (bounds) {
+                                return AppGradients.primary.createShader(
+                                  bounds,
+                                );
+                              },
+                              child: Text(
+                                value.toInt().toString(),
+                                style: AppTextStyles.displayLarge.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: AppSpacing.xs),
+
+                            Text(
+                              '/100',
+                              style: AppTextStyles.heading4.copyWith(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: AppDecoration.gradient(
+                  colors: const [AppColors.success, AppColors.secondary],
+                  radius: AppRadius.circular,
+                  shadows: AppShadows.success,
+                ),
+                child: Text(
+                  'Realtime AI Monitoring Activated',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InsightPanel extends StatelessWidget {
+  final double score;
+
+  const _InsightPanel({required this.score});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool excellent = score >= 80;
+
+    final String status = excellent ? 'Tình trạng rất tốt' : 'Sức khỏe ổn định';
+
+    final String description = excellent
+        ? 'AI nhận thấy bạn đang duy trì trạng thái sức khỏe rất tích cực và ổn định.'
+        : 'BioAI đề xuất tiếp tục duy trì chế độ ăn uống và sinh hoạt lành mạnh hơn mỗi ngày.';
+
     return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.xxl,
-      ),
-      decoration:
-          AppDecoration.glass(
-        opacity: 0.88,
-        blurRadius: 24,
-        radius: AppRadius.xxl,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
                 width: 62,
                 height: 62,
-                decoration: BoxDecoration(
-                  gradient:
-                      AppGradients.primary,
-                  borderRadius:
-                      BorderRadius.circular(
-                    AppRadius.lg,
-                  ),
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.xl,
+                  opacity: 0.14,
                 ),
                 child: const Icon(
-                  Icons
-                      .monitor_heart_rounded,
-                  color:
-                      Colors.white,
+                  AppIcons.stress,
+                  color: Colors.white,
                   size: 30,
                 ),
               ),
 
-              const SizedBox(width: 16),
+              const SizedBox(width: AppSpacing.md),
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
-                  children: [
-                    Text(
-                      'Health Score',
-                      style:
-                          AppTextStyles
-                              .heading3
-                              .copyWith(
-                        fontWeight:
-                            FontWeight
-                                .w800,
-                      ),
-                    ),
-
-                    const SizedBox(
-                      height: 6,
-                    ),
-
-                    Text(
-                      'Đánh giá sức khỏe tổng quan bởi AI',
-                      style:
-                          AppTextStyles
-                              .bodyMedium
-                              .copyWith(
-                        color: AppColors
-                            .textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 40),
-
-          AnimatedBuilder(
-            animation: animation,
-            builder:
-                (context, child) {
-              return SizedBox(
-                width: 240,
-                height: 240,
-                child: Stack(
-                  alignment:
-                      Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 240,
-                      height: 240,
-                      child:
-                          CircularProgressIndicator(
-                        value:
-                            animation.value /
-                            100,
-                        strokeWidth:
-                            14,
-                        backgroundColor:
-                            AppColors
-                                .border
-                                .withOpacity(
-                                  0.25,
-                                ),
-                        valueColor:
-                            AlwaysStoppedAnimation(
-                          AppColors
-                              .primary,
-                        ),
-                      ),
-                    ),
-
-                    Column(
-                      mainAxisAlignment:
-                          MainAxisAlignment
-                              .center,
-                      children: [
-                        Text(
-                          animation.value
-                              .toInt()
-                              .toString(),
-                          style:
-                              AppTextStyles
-                                  .displayLarge
-                                  .copyWith(
-                            fontWeight:
-                                FontWeight
-                                    .w900,
-                            color:
-                                AppColors
-                                    .primary,
-                          ),
-                        ),
-
-                        Text(
-                          '/100',
-                          style:
-                              AppTextStyles
-                                  .heading4
-                                  .copyWith(
-                            color: AppColors
-                                .textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 28),
-
-          Container(
-            padding:
-                const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 12,
-            ),
-            decoration: BoxDecoration(
-              gradient:
-                  LinearGradient(
-                colors: [
-                  AppColors.success,
-                  AppColors.primary,
-                ],
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                999,
-              ),
-            ),
-            child: Text(
-              'AI Health Analysis Complete',
-              style:
-                  AppTextStyles
-                      .labelLarge
-                      .copyWith(
-                color: Colors.white,
-                fontWeight:
-                    FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AIInsightCard
-    extends StatelessWidget {
-  final double score;
-
-  const _AIInsightCard({
-    required this.score,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    String status = 'Ổn định';
-    String desc =
-        'Bạn đang có nền tảng sức khỏe khá tốt.';
-
-    if (score < 50) {
-      status = 'Cần cải thiện';
-      desc =
-          'BioAI khuyến nghị cải thiện chế độ sinh hoạt.';
-    } else if (score < 80) {
-      status = 'Khá tốt';
-      desc =
-          'Bạn đang duy trì sức khỏe ở mức ổn định.';
-    }
-
-    return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.xl,
-      ),
-      decoration: BoxDecoration(
-        gradient:
-            LinearGradient(
-          colors: [
-            AppColors.primary,
-            AppColors.secondary,
-          ],
-        ),
-        borderRadius:
-            BorderRadius.circular(
-          AppRadius.xxl,
-        ),
-        boxShadow:
-            AppShadows.primary,
-      ),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration:
-                    BoxDecoration(
-                  color: Colors.white
-                      .withOpacity(
-                    0.14,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    AppRadius.lg,
-                  ),
-                ),
-                child: const Icon(
-                  Icons
-                      .psychology_alt_rounded,
-                  color:
-                      Colors.white,
-                  size: 28,
-                ),
-              ),
-
-              const SizedBox(
-                width: 16,
-              ),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'AI Insight',
-                      style:
-                          AppTextStyles
-                              .heading4
-                              .copyWith(
-                        color: Colors
-                            .white,
-                        fontWeight:
-                            FontWeight
-                                .w800,
+                      style: AppTextStyles.heading3.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 4,
-                    ),
+                    const SizedBox(height: AppSpacing.xs),
 
                     Text(
-                      'Phân tích tổng quan',
-                      style:
-                          AppTextStyles
-                              .bodyMedium
-                              .copyWith(
-                        color: Colors
-                            .white
-                            .withOpacity(
-                          0.82,
-                        ),
+                      'Phân tích sức khỏe thông minh',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Colors.white.withOpacity(0.82),
                       ),
                     ),
                   ],
@@ -645,61 +494,43 @@ class _AIInsightCard
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
 
-          _InsightRow(
-            icon:
-                Icons.favorite_rounded,
-            title:
-                'Tình trạng sức khỏe',
+          _InsightTile(
+            icon: AppIcons.health,
+            title: 'Health Status',
             value: status,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
-          const _InsightRow(
-            icon:
-                Icons.auto_graph_rounded,
-            title:
-                'AI Tracking',
-            value:
-                'Đã kích hoạt',
+          const _InsightTile(
+            icon: AppIcons.notifications,
+            title: 'Realtime Tracking',
+            value: 'Enabled',
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
-          const _InsightRow(
-            icon:
-                Icons.shield_rounded,
-            title:
-                'Health Monitoring',
-            value:
-                'Realtime',
+          const _InsightTile(
+            icon: AppIcons.shield,
+            title: 'AI Protection',
+            value: 'Monitoring',
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
 
           Container(
-            padding:
-                const EdgeInsets.all(
-              AppSpacing.lg,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white
-                  .withOpacity(0.12),
-              borderRadius:
-                  BorderRadius.circular(
-                AppRadius.lg,
-              ),
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: AppDecoration.glass(
+              opacity: 0.12,
+              radius: AppRadius.xl,
             ),
             child: Text(
-              desc,
-              style:
-                  AppTextStyles
-                      .bodyLarge
-                      .copyWith(
+              description,
+              style: AppTextStyles.bodyLarge.copyWith(
                 color: Colors.white,
-                height: 1.6,
+                height: 1.7,
               ),
             ),
           ),
@@ -709,65 +540,49 @@ class _AIInsightCard
   }
 }
 
-class _JourneyCard
-    extends StatelessWidget {
+class _JourneyPanel extends StatelessWidget {
   final String message;
 
-  const _JourneyCard({
-    required this.message,
-  });
+  const _JourneyPanel({required this.message});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.xl,
-      ),
-      decoration:
-          AppDecoration.glass(
-        opacity: 0.88,
-        blurRadius: 22,
-        radius: AppRadius.xxl,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: AppDecoration.premiumCard(),
       child: Column(
         children: [
-          Text(
-            '🎉',
-            style:
-                const TextStyle(
-              fontSize: 72,
+          Container(
+            width: 92,
+            height: 92,
+            decoration: AppDecoration.base(
+              gradient: AppGradients.health,
+              shape: BoxShape.circle,
+              shadows: AppShadows.success,
+            ),
+            child: const Center(
+              child: Text('🌿', style: TextStyle(fontSize: 42)),
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
 
           Text(
             message,
-            textAlign:
-                TextAlign.center,
-            style:
-                AppTextStyles
-                    .displaySmall
-                    .copyWith(
-              fontWeight:
-                  FontWeight.w800,
-              height: 1.2,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.displaySmall.copyWith(
+              fontWeight: FontWeight.w800,
+              height: 1.15,
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.md),
 
           Text(
-            'Từ bây giờ BioAI sẽ đồng hành và đưa ra các gợi ý sức khỏe được cá nhân hóa riêng cho bạn.',
-            textAlign:
-                TextAlign.center,
-            style:
-                AppTextStyles
-                    .bodyLarge
-                    .copyWith(
-              color:
-                  AppColors.textSecondary,
+            'BioAI sẽ theo dõi, phân tích và đưa ra các gợi ý dinh dưỡng, giấc ngủ và sức khỏe phù hợp với cơ thể của bạn.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.textSecondary,
               height: 1.7,
             ),
           ),
@@ -777,67 +592,59 @@ class _JourneyCard
   }
 }
 
-class _FeaturePreviewCard
-    extends StatelessWidget {
+class _ActivatedFeatures extends StatelessWidget {
+  const _ActivatedFeatures();
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.xl,
-      ),
-      decoration:
-          AppDecoration.glass(
-        opacity: 0.88,
-        blurRadius: 22,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: AppDecoration.card(
         radius: AppRadius.xxl,
+        shadows: AppShadows.cardRaised,
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Tính năng đã kích hoạt',
-            style:
-                AppTextStyles
-                    .heading3
-                    .copyWith(
-              fontWeight:
-                  FontWeight.w800,
+            style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w800),
+          ),
+
+          const SizedBox(height: AppSpacing.xs),
+
+          Text(
+            'Các hệ thống AI và tracking đã sẵn sàng hoạt động.',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
 
-          const _FeatureTile(
-            icon:
-                Icons.restaurant_rounded,
-            title:
-                'Meal AI',
-            subtitle:
-                'Gợi ý thực đơn cá nhân hóa',
+          const _FeatureCard(
+            icon: AppIcons.nutrition,
+            title: 'Meal AI Recommendation',
+            subtitle: 'Gợi ý thực đơn cá nhân hóa',
+            gradient: AppGradients.energy,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
-          const _FeatureTile(
-            icon:
-                Icons.monitor_heart_rounded,
-            title:
-                'Health Tracking',
-            subtitle:
-                'Theo dõi sức khỏe realtime',
+          const _FeatureCard(
+            icon: AppIcons.sleep,
+            title: 'Sleep Tracking',
+            subtitle: 'Theo dõi chất lượng giấc ngủ',
+            gradient: AppGradients.sleep,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
-          const _FeatureTile(
-            icon:
-                Icons.psychology_alt_rounded,
-            title:
-                'AI Recommendations',
-            subtitle:
-                'Đề xuất cải thiện sức khỏe',
+          const _FeatureCard(
+            icon: AppIcons.health,
+            title: 'Realtime Health Tracking',
+            subtitle: 'Theo dõi sức khỏe thông minh',
+            gradient: AppGradients.health,
           ),
         ],
       ),
@@ -845,96 +652,78 @@ class _FeaturePreviewCard
   }
 }
 
-class _FeatureTile
-    extends StatelessWidget {
+class _FeatureCard extends StatelessWidget {
   final IconData icon;
-
   final String title;
-
   final String subtitle;
+  final Gradient gradient;
 
-  const _FeatureTile({
+  const _FeatureCard({
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.gradient,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.lg,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(
-          AppRadius.xl,
-        ),
-        border: Border.all(
-          color: AppColors.border
-              .withOpacity(0.4),
-        ),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: AppDecoration.container(
+        color: AppColors.cardAlt,
+        radius: AppRadius.xl,
+        border: Border.all(color: AppColors.border.withOpacity(0.5)),
       ),
       child: Row(
         children: [
           Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              gradient:
-                  AppGradients.primary,
-              borderRadius:
-                  BorderRadius.circular(
-                AppRadius.lg,
-              ),
+            width: 64,
+            height: 64,
+            decoration: AppDecoration.base(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              shadows: AppShadows.primary,
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-            ),
+            child: Icon(icon, color: Colors.white, size: 30),
           ),
 
-          const SizedBox(width: 18),
+          const SizedBox(width: AppSpacing.md),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style:
-                      AppTextStyles
-                          .labelLarge
-                          .copyWith(
-                    fontWeight:
-                        FontWeight.w800,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.xs),
 
                 Text(
                   subtitle,
-                  style:
-                      AppTextStyles
-                          .bodyMedium
-                          .copyWith(
-                    color: AppColors
-                        .textSecondary,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
 
-          const Icon(
-            Icons.check_circle_rounded,
-            color:
-                AppColors.success,
+          Container(
+            width: 36,
+            height: 36,
+            decoration: AppDecoration.base(
+              color: AppColors.successSoft,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              AppIcons.success,
+              color: AppColors.success,
+              size: 20,
+            ),
           ),
         ],
       ),
@@ -942,16 +731,11 @@ class _FeatureTile
   }
 }
 
-class _BottomActions
-    extends StatelessWidget {
+class _BottomSection extends StatelessWidget {
   final VoidCallback? onContinue;
-
   final VoidCallback? onRestart;
 
-  const _BottomActions({
-    this.onContinue,
-    this.onRestart,
-  });
+  const _BottomSection({this.onContinue, this.onRestart});
 
   @override
   Widget build(BuildContext context) {
@@ -961,73 +745,43 @@ class _BottomActions
           onTap: onContinue,
           child: Container(
             width: double.infinity,
-            height: 64,
-            decoration: BoxDecoration(
-              gradient:
-                  AppGradients.primary,
-              borderRadius:
-                  BorderRadius.circular(
-                AppRadius.xl,
-              ),
-              boxShadow:
-                  AppShadows.primary,
-            ),
+            height: 68,
+            decoration: AppDecoration.primaryGradient(radius: AppRadius.xl),
             child: Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Bắt đầu trải nghiệm',
-                  style:
-                      AppTextStyles
-                          .labelLarge
-                          .copyWith(
-                    color: Colors.white,
-                    fontWeight:
-                        FontWeight.w800,
+                  'Bắt đầu hành trình',
+                  style: AppTextStyles.button.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.sm),
 
-                const Icon(
-                  Icons
-                      .arrow_forward_rounded,
-                  color: Colors.white,
-                ),
+                const Icon(AppIcons.forward, color: Colors.white),
               ],
             ),
           ),
         ),
 
         if (onRestart != null) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
 
           GestureDetector(
             onTap: onRestart,
             child: Container(
               width: double.infinity,
-              height: 58,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.circular(
-                  AppRadius.xl,
-                ),
-                border: Border.all(
-                  color: AppColors
-                      .border,
-                ),
+              height: 62,
+              decoration: AppDecoration.outlined(
+                radius: AppRadius.xl,
+                borderColor: AppColors.border,
               ),
               child: Center(
                 child: Text(
                   'Làm lại khảo sát',
-                  style:
-                      AppTextStyles
-                          .labelLarge
-                          .copyWith(
-                    fontWeight:
-                        FontWeight.w700,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1039,15 +793,12 @@ class _BottomActions
   }
 }
 
-class _InsightRow
-    extends StatelessWidget {
+class _InsightTile extends StatelessWidget {
   final IconData icon;
-
   final String title;
-
   final String value;
 
-  const _InsightRow({
+  const _InsightTile({
     required this.icon,
     required this.title,
     required this.value,
@@ -1057,35 +808,22 @@ class _InsightRow
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: Colors.white,
-          size: 20,
-        ),
+        Icon(icon, color: Colors.white, size: 20),
 
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.sm),
 
         Expanded(
           child: Text(
             title,
-            style:
-                AppTextStyles
-                    .bodyLarge
-                    .copyWith(
-              color: Colors.white,
-            ),
+            style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
           ),
         ),
 
         Text(
           value,
-          style:
-              AppTextStyles
-                  .labelLarge
-                  .copyWith(
+          style: AppTextStyles.labelLarge.copyWith(
             color: Colors.white,
-            fontWeight:
-                FontWeight.w700,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1093,78 +831,37 @@ class _InsightRow
   }
 }
 
-class _AnimatedAppear
-    extends StatefulWidget {
+class _AppearAnimation extends StatefulWidget {
   final Widget child;
-
   final int delay;
 
-  const _AnimatedAppear({
-    required this.child,
-    required this.delay,
-  });
+  const _AppearAnimation({required this.child, required this.delay});
 
   @override
-  State<_AnimatedAppear>
-      createState() =>
-          _AnimatedAppearState();
+  State<_AppearAnimation> createState() => _AppearAnimationState();
 }
 
-class _AnimatedAppearState
-    extends State<_AnimatedAppear>
-    with
-        SingleTickerProviderStateMixin {
-  late final AnimationController
-      _controller;
-
-  late final Animation<double>
-      _opacity;
-
-  late final Animation<Offset>
-      _offset;
+class _AppearAnimationState extends State<_AppearAnimation>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
 
-    _controller =
-        AnimationController(
-      vsync: this,
-      duration:
-          const Duration(
-        milliseconds: 700,
-      ),
-    );
+    _controller = AnimationController(vsync: this, duration: AppDuration.slow);
 
-    _opacity = CurvedAnimation(
+    _animation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeOut,
+      curve: AppAnimations.emphasizedCurve,
     );
 
-    _offset =
-        Tween<Offset>(
-      begin:
-          const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve:
-            Curves.easeOutCubic,
-      ),
-    );
-
-    Future.delayed(
-      Duration(
-        milliseconds:
-            widget.delay,
-      ),
-      () {
-        if (mounted) {
-          _controller.forward();
-        }
-      },
-    );
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
   }
 
   @override
@@ -1174,168 +871,94 @@ class _AnimatedAppearState
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    return FadeTransition(
-      opacity: _opacity,
-      child: SlideTransition(
-        position: _offset,
-        child: widget.child,
-      ),
-    );
+  Widget build(BuildContext context) {
+    return AppAnimations.fadeSlide(child: widget.child, animation: _animation);
   }
 }
 
-class _FloatingOrb
-    extends StatelessWidget {
-  final AnimationController
-      controller;
-
+class _FloatingGlow extends StatelessWidget {
+  final AnimationController controller;
   final double size;
+  final Gradient gradient;
+  final bool reverse;
 
-  final Color color;
-
-  const _FloatingOrb({
+  const _FloatingGlow({
     required this.controller,
     required this.size,
-    required this.color,
+    required this.gradient,
+    this.reverse = false,
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder:
-          (context, child) {
+      builder: (context, child) {
+        final double x = math.sin(controller.value * math.pi * 2) * 24;
+
+        final double y = math.cos(controller.value * math.pi * 2) * 24;
+
         return Transform.translate(
-          offset: Offset(
-            math.sin(
-                      controller
-                              .value *
-                          math.pi *
-                          2,
-                    ) *
-                    16,
-            math.cos(
-                      controller
-                              .value *
-                          math.pi *
-                          2,
-                    ) *
-                    16,
-          ),
+          offset: Offset(reverse ? -x : x, reverse ? -y : y),
           child: child,
         );
       },
       child: Container(
         width: size,
         height: size,
-        decoration:
-            BoxDecoration(
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: color,
+          gradient: RadialGradient(
+            colors: [
+              (gradient as LinearGradient).colors.first.withOpacity(0.16),
+              Colors.transparent,
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _ResultBackgroundPainter
-    extends CustomPainter {
+class _BackgroundPainter extends CustomPainter {
   final double animation;
 
-  const _ResultBackgroundPainter({
-    required this.animation,
-  });
+  const _BackgroundPainter({required this.animation});
 
   @override
-  void paint(
-    Canvas canvas,
-    Size size,
-  ) {
-    final rect =
-        Rect.fromLTWH(
-      0,
-      0,
-      size.width,
-      size.height,
-    );
+  void paint(Canvas canvas, Size size) {
+    final Rect rect = Offset.zero & size;
 
-    final paint = Paint()
-      ..shader =
-          LinearGradient(
-        begin:
-            Alignment.topLeft,
-        end:
-            Alignment.bottomRight,
+    final Paint background = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        transform: GradientRotation(animation * math.pi * 2),
         colors: [
           AppColors.background,
-          AppColors.success
-              .withOpacity(0.08),
+          AppColors.primarySoft.withOpacity(0.35),
+          AppColors.secondarySoft.withOpacity(0.25),
           Colors.white,
         ],
-        transform:
-            GradientRotation(
-          animation * math.pi,
-        ),
       ).createShader(rect);
 
-    canvas.drawRect(
-      rect,
-      paint,
-    );
+    canvas.drawRect(rect, background);
 
-    final gridPaint =
-        Paint()
-          ..color = AppColors
-              .success
-              .withOpacity(
-                0.03,
-              )
-          ..strokeWidth = 1;
+    final Paint grid = Paint()
+      ..color = AppColors.primary.withOpacity(0.035)
+      ..strokeWidth = 1;
 
-    for (
-      double i = 0;
-      i < size.width;
-      i += 40
-    ) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(
-          i,
-          size.height,
-        ),
-        gridPaint,
-      );
+    for (double i = 0; i < size.width; i += 36) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), grid);
     }
 
-    for (
-      double i = 0;
-      i < size.height;
-      i += 40
-    ) {
-      canvas.drawLine(
-        Offset(0, i),
-        Offset(
-          size.width,
-          i,
-        ),
-        gridPaint,
-      );
+    for (double i = 0; i < size.height; i += 36) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), grid);
     }
   }
 
   @override
-  bool shouldRepaint(
-    covariant
-    _ResultBackgroundPainter
-        oldDelegate,
-  ) {
-    return oldDelegate
-            .animation !=
-        animation;
+  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) {
+    return oldDelegate.animation != animation;
   }
 }

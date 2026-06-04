@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/onboarding_constants.dart';
 import '../../../../core/theme/theme.dart';
 import '../controllers/onboarding_controller.dart';
 import 'onboarding_step_shell.dart';
@@ -17,21 +16,29 @@ class BasicInfoStep extends ConsumerStatefulWidget {
 }
 
 class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _backgroundController;
+  late final AnimationController _floatingController;
 
   @override
   void initState() {
     super.initState();
+
     _backgroundController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 18),
+      duration: const Duration(seconds: 20),
     )..repeat();
+
+    _floatingController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
     _backgroundController.dispose();
+    _floatingController.dispose();
     super.dispose();
   }
 
@@ -40,28 +47,79 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
 
-    final width = MediaQuery.sizeOf(context).width;
-    final isTablet = width >= 700;
+    final size = MediaQuery.sizeOf(context);
+    final width = size.width;
 
-    final completedFields = _completedFieldCount(state);
-    final progress = completedFields / 5.0;
+    final isTablet = width >= AppTypography.mobileBreakpoint;
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: AnimatedBuilder(
-            animation: _backgroundController,
-            builder: (context, child) {
-              return CustomPaint(
-                painter: _BackgroundPainter(
-                  animation: _backgroundController.value,
-                ),
-              );
-            },
+    final completed = _completedFields(state);
+    final progress = completed / 5;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _backgroundController,
+              builder: (_, __) {
+                return CustomPaint(
+                  painter: _OnboardingBackgroundPainter(
+                    animation: _backgroundController.value,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-        Positioned.fill(
-          child: SafeArea(
+
+          Positioned(
+            top: -120,
+            right: -100,
+            child: AnimatedBuilder(
+              animation: _floatingController,
+              builder: (_, __) {
+                return Transform.translate(
+                  offset: Offset(
+                    0,
+                    math.sin(_floatingController.value * math.pi) * 20,
+                  ),
+                  child: Container(
+                    width: 260,
+                    height: 260,
+                    decoration: AppDecoration.circle(
+                      gradient: AppGradients.primary,
+                      shadows: AppShadows.primary,
+                    ).copyWith(color: AppColors.primary.withOpacity(0.12)),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          Positioned(
+            bottom: -140,
+            left: -120,
+            child: AnimatedBuilder(
+              animation: _floatingController,
+              builder: (_, __) {
+                return Transform.translate(
+                  offset: Offset(
+                    0,
+                    -math.sin(_floatingController.value * math.pi) * 18,
+                  ),
+                  child: Container(
+                    width: 280,
+                    height: 280,
+                    decoration: AppDecoration.circle(
+                      gradient: AppGradients.ai,
+                    ).copyWith(color: AppColors.secondary.withOpacity(0.08)),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          SafeArea(
             child: OnboardingStepShell(
               stepIndex: 1,
               title: '',
@@ -70,50 +128,65 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
               onNext: controller.nextStep,
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 40),
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.pagePadding,
+                  AppSpacing.sm,
+                  AppSpacing.pagePadding,
+                  AppSpacing.xxxl,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _AnimatedAppear(delay: 0, child: const _HealthQuoteHero()),
-                    const SizedBox(height: 18),
-                    _AnimatedAppear(
-                      delay: 90,
-                      child: _ProfileProgressCard(
+                    _FadeSlideIn(delay: 0, child: _HeroCard()),
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    _FadeSlideIn(
+                      delay: 100,
+                      child: _ProgressCard(
+                        completed: completed,
                         progress: progress,
-                        completedFields: completedFields,
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    const _SectionTitle(
-                      title: 'Thông tin cá nhân',
-                      subtitle:
-                          'Chỉ cần điền những thông tin cơ bản để hệ thống cá nhân hóa trải nghiệm tốt hơn.',
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    _FadeSlideIn(
+                      delay: 160,
+                      child: _SectionHeader(
+                        title: 'Thông tin cơ bản',
+                        subtitle:
+                            'Hồ sơ càng đầy đủ, AI càng hiểu bạn hơn để cá nhân hóa trải nghiệm sức khỏe.',
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    _AnimatedAppear(
-                      delay: 150,
-                      child: _FormCard(
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    _FadeSlideIn(
+                      delay: 220,
+                      child: _GlassCard(
                         child: Column(
                           children: [
-                            _ProfessionalInputField(
-                              icon: Icons.person_rounded,
-                              label: 'Họ và tên',
-                              hint: 'Nhập họ và tên của bạn',
-                              helper:
-                                  'Dùng để hiển thị đúng tên trong hồ sơ cá nhân.',
+                            _ModernInput(
+                              icon: AppIcons.profile,
+                              title: 'Họ và tên',
+                              hint: 'Nguyễn Văn A',
                               initialValue: state.fullName,
-                              textCapitalization: TextCapitalization.words,
                               keyboardType: TextInputType.name,
+                              textCapitalization: TextCapitalization.words,
                               autofillHints: const [AutofillHints.name],
                               onChanged: controller.updateFullName,
                             ),
-                            const SizedBox(height: 18),
-                            _ProfessionalInputField(
-                              icon: Icons.cake_rounded,
-                              label: 'Năm sinh',
-                              hint: 'Ví dụ: 2000',
-                              helper: 'Chỉ nhập 4 chữ số.',
-                              initialValue: state.birthYear.toString(),
+
+                            const SizedBox(height: AppSpacing.lg),
+
+                            _ModernInput(
+                              icon: AppIcons.calendar,
+                              title: 'Năm sinh',
+                              hint: '2000',
+                              initialValue: state.birthYear == 0
+                                  ? ''
+                                  : state.birthYear.toString(),
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
@@ -125,169 +198,170 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    const _SectionTitle(
-                      title: 'Giới tính',
-                      subtitle:
-                          'Dùng để đưa ra gợi ý phù hợp hơn với hồ sơ của bạn.',
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    _FadeSlideIn(
+                      delay: 300,
+                      child: _SectionHeader(
+                        title: 'Giới tính',
+                        subtitle:
+                            'Thông tin này giúp BioAI phân tích chính xác hơn.',
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    _AnimatedAppear(
-                      delay: 230,
-                      child: _GenderSelector(
-                        currentGender: state.gender,
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    _FadeSlideIn(
+                      delay: 360,
+                      child: _GenderGrid(
+                        value: state.gender,
                         onChanged: controller.updateGender,
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    const _SectionTitle(
-                      title: 'Thông số cơ thể',
-                      subtitle:
-                          'Các chỉ số này giúp hệ thống tối ưu nội dung phù hợp hơn.',
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    _FadeSlideIn(
+                      delay: 420,
+                      child: _SectionHeader(
+                        title: 'Chỉ số cơ thể',
+                        subtitle:
+                            'Dữ liệu cơ bản giúp AI xây dựng kế hoạch phù hợp.',
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    _AnimatedAppear(
-                      delay: 310,
-                      child: _FormCard(
-                        child: Column(
-                          children: [
-                            isTablet
-                                ? Row(
-                                    children: [
-                                      Expanded(
-                                        child: _MetricField(
-                                          label: 'Chiều cao',
-                                          hint: 'Nhập chiều cao',
-                                          unit: 'cm',
-                                          icon: Icons.height_rounded,
-                                          value: state.heightCm.toStringAsFixed(
-                                            1,
-                                          ),
-                                          onChanged: controller.updateHeight,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: _MetricField(
-                                          label: 'Cân nặng',
-                                          hint: 'Nhập cân nặng',
-                                          unit: 'kg',
-                                          icon: Icons.monitor_weight_rounded,
-                                          value: state.weightKg.toStringAsFixed(
-                                            1,
-                                          ),
-                                          onChanged: controller.updateWeight,
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : Column(
-                                    children: [
-                                      _MetricField(
-                                        label: 'Chiều cao',
-                                        hint: 'Nhập chiều cao',
-                                        unit: 'cm',
-                                        icon: Icons.height_rounded,
-                                        value: state.heightCm.toStringAsFixed(
-                                          1,
-                                        ),
-                                        onChanged: controller.updateHeight,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      _MetricField(
-                                        label: 'Cân nặng',
-                                        hint: 'Nhập cân nặng',
-                                        unit: 'kg',
-                                        icon: Icons.monitor_weight_rounded,
-                                        value: state.weightKg.toStringAsFixed(
-                                          1,
-                                        ),
-                                        onChanged: controller.updateWeight,
-                                      ),
-                                    ],
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    _FadeSlideIn(
+                      delay: 480,
+                      child: _GlassCard(
+                        child: isTablet
+                            ? Row(
+                                children: [
+                                  Expanded(
+                                    child: _MetricInput(
+                                      icon: AppIcons.fitness,
+                                      title: 'Chiều cao',
+                                      unit: 'cm',
+                                      value: state.heightCm <= 0
+                                          ? ''
+                                          : state.heightCm.toStringAsFixed(1),
+                                      hint: '170',
+                                      onChanged: controller.updateHeight,
+                                    ),
                                   ),
-                          ],
-                        ),
+                                  const SizedBox(width: AppSpacing.lg),
+                                  Expanded(
+                                    child: _MetricInput(
+                                      icon: AppIcons.weight,
+                                      title: 'Cân nặng',
+                                      unit: 'kg',
+                                      value: state.weightKg <= 0
+                                          ? ''
+                                          : state.weightKg.toStringAsFixed(1),
+                                      hint: '65',
+                                      onChanged: controller.updateWeight,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  _MetricInput(
+                                    icon: AppIcons.fitness,
+                                    title: 'Chiều cao',
+                                    unit: 'cm',
+                                    value: state.heightCm <= 0
+                                        ? ''
+                                        : state.heightCm.toStringAsFixed(1),
+                                    hint: '170',
+                                    onChanged: controller.updateHeight,
+                                  ),
+
+                                  const SizedBox(height: AppSpacing.lg),
+
+                                  _MetricInput(
+                                    icon: AppIcons.weight,
+                                    title: 'Cân nặng',
+                                    unit: 'kg',
+                                    value: state.weightKg <= 0
+                                        ? ''
+                                        : state.weightKg.toStringAsFixed(1),
+                                    hint: '65',
+                                    onChanged: controller.updateWeight,
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    _AnimatedAppear(
-                      delay: 390,
-                      child: _BottomNote(
-                        progress: progress,
-                        completedFields: completedFields,
-                      ),
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    _FadeSlideIn(
+                      delay: 540,
+                      child: _TipCard(progress: progress),
                     ),
                   ],
                 ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  int _completedFieldCount(dynamic state) {
+  int _completedFields(dynamic state) {
     int count = 0;
+
     if (state.fullName.trim().isNotEmpty) count++;
     if (state.birthYear > 0) count++;
     if (state.gender.trim().isNotEmpty) count++;
     if (state.heightCm > 0) count++;
     if (state.weightKg > 0) count++;
+
     return count;
   }
 }
 
-class _HealthQuoteHero extends StatelessWidget {
-  const _HealthQuoteHero();
+class _HeroCard extends StatelessWidget {
+  const _HeroCard();
 
   @override
   Widget build(BuildContext context) {
+    final percent = int.parse(((2 / 7) * 100).toStringAsFixed(0));
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1D8CFF), Color(0xFF18A8E4)],
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1D8CFF).withOpacity(0.22),
-            blurRadius: 30,
-            offset: const Offset(0, 18),
-          ),
-        ],
-      ),
+      decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
       child: Stack(
         children: [
           Positioned(
-            top: -24,
-            right: -18,
+            top: -50,
+            right: -50,
             child: Container(
-              width: 130,
-              height: 130,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+              width: 180,
+              height: 180,
+              decoration: AppDecoration.circle(
                 color: Colors.white.withOpacity(0.08),
               ),
             ),
           ),
+
           Positioned(
-            bottom: -18,
-            left: -12,
+            bottom: -60,
+            left: -40,
             child: Container(
-              width: 92,
-              height: 92,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+              width: 140,
+              height: 140,
+              decoration: AppDecoration.circle(
                 color: Colors.white.withOpacity(0.06),
               ),
             ),
           ),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -296,36 +370,37 @@ class _HealthQuoteHero extends StatelessWidget {
                   Container(
                     width: 64,
                     height: 64,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.16),
-                      shape: BoxShape.circle,
+                    decoration: AppDecoration.glass(
+                      opacity: 0.16,
+                      radius: AppRadius.circular,
                     ),
                     child: const Icon(
-                      Icons.favorite_rounded,
+                      AppIcons.health,
                       color: Colors.white,
                       size: 30,
                     ),
                   ),
+
                   const Spacer(),
+
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.14),
-                      borderRadius: BorderRadius.circular(AppRadius.circular),
-                      border: Border.all(color: Colors.white.withOpacity(0.16)),
+                    decoration: AppDecoration.glass(
+                      opacity: 0.14,
+                      radius: AppRadius.circular,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(
                           Icons.auto_awesome_rounded,
+                          size: 16,
                           color: Colors.white,
-                          size: 18,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.xs),
                         Text(
                           'BioAI',
                           style: AppTextStyles.labelLarge.copyWith(
@@ -338,32 +413,47 @@ class _HealthQuoteHero extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 26),
+
+              const SizedBox(height: AppSpacing.xl),
+
               Text(
-                'Sức khỏe là nền tảng của mọi thành công',
+                'Hành trình sức khỏe\nbắt đầu từ hôm nay',
                 style: AppTextStyles.displaySmall.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
                   height: 1.1,
                 ),
               ),
-              const SizedBox(height: 12),
+
+              const SizedBox(height: AppSpacing.md),
+
               Text(
-                '“Chăm sóc cơ thể hôm nay là cách bạn chuẩn bị cho một tương lai bền vững hơn.”',
+                '“Mỗi lựa chọn nhỏ hôm nay sẽ tạo nên một cơ thể khỏe mạnh hơn trong tương lai.”',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: Colors.white.withOpacity(0.94),
-                  height: 1.55,
+                  color: Colors.white.withOpacity(0.92),
                   fontStyle: FontStyle.italic,
+                  height: 1.6,
                 ),
               ),
-              const SizedBox(height: 22),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: const [
-                  _QuoteChip(text: 'Cá nhân hóa'),
-                  _QuoteChip(text: 'Tối ưu trải nghiệm'),
-                  _QuoteChip(text: 'Thiết kế rõ ràng'),
+
+              const SizedBox(height: AppSpacing.xl),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _MiniInfo(
+                      title: '$percent%',
+                      subtitle: 'Hoàn thiện',
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  const Expanded(
+                    child: _MiniInfo(title: 'AI', subtitle: 'Cá nhân hóa'),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  const Expanded(
+                    child: _MiniInfo(title: '24/7', subtitle: 'Đồng hành'),
+                  ),
                 ],
               ),
             ],
@@ -374,141 +464,121 @@ class _HealthQuoteHero extends StatelessWidget {
   }
 }
 
-class _QuoteChip extends StatelessWidget {
-  final String text;
-
-  const _QuoteChip({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 44),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.14),
-          borderRadius: BorderRadius.circular(AppRadius.circular),
-          border: Border.all(color: Colors.white.withOpacity(0.12)),
-        ),
-        child: Text(
-          text,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileProgressCard extends StatelessWidget {
-  final double progress;
-  final int completedFields;
-
-  const _ProfileProgressCard({
-    required this.progress,
-    required this.completedFields,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final percent = (progress * 100).round();
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: AppDecoration.glass(
-        opacity: 0.82,
-        blurRadius: 18,
-        radius: AppRadius.xl,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: AppGradients.primary,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-            ),
-            child: const Icon(
-              Icons.verified_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Mức độ hoàn thiện hồ sơ',
-                  style: AppTextStyles.labelLarge.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Hiện tại hồ sơ đã hoàn thành $percent% • càng đầy đủ, gợi ý càng chính xác.',
-                  style: AppTextStyles.bodyMedium.copyWith(height: 1.4),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BottomNote extends StatelessWidget {
-  final double progress;
-  final int completedFields;
-
-  const _BottomNote({required this.progress, required this.completedFields});
-
-  @override
-  Widget build(BuildContext context) {
-    final percent = (progress * 100).round();
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.84),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
-        boxShadow: AppShadows.soft,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.info_outline_rounded,
-            size: 22,
-            color: AppColors.primary,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              completedFields < 5
-                  ? 'Bạn đã hoàn thành $percent% thông tin. Chỉ cần thêm vài mục nữa để tối ưu trải nghiệm cá nhân hóa.'
-                  : 'Hồ sơ đã gần như hoàn chỉnh. Hệ thống sẽ dùng dữ liệu này để tạo trải nghiệm phù hợp hơn cho bạn.',
-              style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
+class _MiniInfo extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _SectionTitle({required this.title, required this.subtitle});
+  const _MiniInfo({required this.title, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      decoration: AppDecoration.glass(opacity: 0.12, radius: AppRadius.lg),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: AppTextStyles.heading3.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            subtitle,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: Colors.white.withOpacity(0.9),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressCard extends StatelessWidget {
+  final int completed;
+  final double progress;
+
+  const _ProgressCard({required this.completed, required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = 29;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: AppDecoration.glass(opacity: 0.85, radius: AppRadius.xl),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
+                child: const Icon(AppIcons.success, color: Colors.white),
+              ),
+
+              const SizedBox(width: AppSpacing.md),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tiến độ hồ sơ',
+                      style: AppTextStyles.heading5.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.xs),
+
+                    Text(
+                      '2/7 thông tin đã hoàn thành',
+                      style: AppTextStyles.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+
+              Text(
+                '$percent%',
+                style: AppTextStyles.heading3.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppSpacing.lg),
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.circular),
+            child: LinearProgressIndicator(
+              value: 0.29,
+              minHeight: 10,
+              backgroundColor: AppColors.primarySoft,
+              valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  const _SectionHeader({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -517,40 +587,40 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
+          style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w800),
         ),
-        const SizedBox(height: 8),
-        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.55)),
+
+        const SizedBox(height: AppSpacing.sm),
+
+        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.6)),
       ],
     );
   }
 }
 
-class _FormCard extends StatelessWidget {
+class _GlassCard extends StatelessWidget {
   final Widget child;
 
-  const _FormCard({required this.child});
+  const _GlassCard({required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.94),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border.withOpacity(0.42)),
-        boxShadow: AppShadows.soft,
+      decoration: AppDecoration.glass(
+        opacity: 0.92,
+        radius: AppRadius.xl,
+        shadows: AppShadows.soft,
       ),
       child: child,
     );
   }
 }
 
-class _ProfessionalInputField extends StatelessWidget {
+class _ModernInput extends StatelessWidget {
   final IconData icon;
-  final String label;
+  final String title;
   final String hint;
-  final String helper;
   final String initialValue;
   final TextInputType keyboardType;
   final TextCapitalization textCapitalization;
@@ -558,11 +628,10 @@ class _ProfessionalInputField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final ValueChanged<String> onChanged;
 
-  const _ProfessionalInputField({
+  const _ModernInput({
     required this.icon,
-    required this.label,
+    required this.title,
     required this.hint,
-    required this.helper,
     required this.initialValue,
     required this.keyboardType,
     required this.onChanged,
@@ -573,104 +642,63 @@ class _ProfessionalInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            gradient: AppGradients.primary,
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
-          child: Icon(icon, color: Colors.white, size: 24),
+        Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: AppDecoration.primaryGradient(radius: AppRadius.md),
+              child: Icon(icon, color: Colors.white, size: 22),
+            ),
+
+            const SizedBox(width: AppSpacing.md),
+
+            Expanded(
+              child: Text(
+                title,
+                style: AppTextStyles.heading5.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: AppDecoration.outlined(
+                color: AppColors.primarySoft,
+                borderColor: AppColors.primary.withOpacity(0.2),
+                radius: AppRadius.circular,
+              ),
+              child: Text(
+                'Bắt buộc',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.primarySoft.withOpacity(0.42),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-            ),
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        label,
-                        style: AppTextStyles.labelLarge.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.10),
-                        borderRadius: BorderRadius.circular(AppRadius.circular),
-                      ),
-                      child: Text(
-                        'Bắt buộc',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  initialValue: initialValue,
-                  keyboardType: keyboardType,
-                  textCapitalization: textCapitalization,
-                  inputFormatters: inputFormatters,
-                  autofillHints: autofillHints,
-                  onChanged: onChanged,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: hint,
-                    helperText: helper,
-                    prefixIcon: Icon(icon, color: AppColors.primary),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 18,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      borderSide: BorderSide(
-                        color: AppColors.border.withOpacity(0.55),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      borderSide: BorderSide(
-                        color: AppColors.border.withOpacity(0.55),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      borderSide: const BorderSide(
-                        color: AppColors.primary,
-                        width: 1.6,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        TextFormField(
+          initialValue: initialValue,
+          keyboardType: keyboardType,
+          autofillHints: autofillHints,
+          textCapitalization: textCapitalization,
+          inputFormatters: inputFormatters,
+          onChanged: onChanged,
+          style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(icon, color: AppColors.primary),
           ),
         ),
       ],
@@ -678,20 +706,20 @@ class _ProfessionalInputField extends StatelessWidget {
   }
 }
 
-class _MetricField extends StatelessWidget {
-  final String label;
-  final String hint;
-  final String value;
-  final String unit;
+class _MetricInput extends StatelessWidget {
   final IconData icon;
+  final String title;
+  final String hint;
+  final String unit;
+  final String value;
   final ValueChanged<String> onChanged;
 
-  const _MetricField({
-    required this.label,
-    required this.hint,
-    required this.value,
-    required this.unit,
+  const _MetricInput({
     required this.icon,
+    required this.title,
+    required this.hint,
+    required this.unit,
+    required this.value,
     required this.onChanged,
   });
 
@@ -699,26 +727,45 @@ class _MetricField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.primarySoft.withOpacity(0.40),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+      decoration: AppDecoration.container(
+        color: AppColors.surface,
+        radius: AppRadius.lg,
+        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        shadows: AppShadows.xs,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: AppTextStyles.labelLarge.copyWith(
-                  fontWeight: FontWeight.w700,
+              Container(
+                width: 42,
+                height: 42,
+                decoration: AppDecoration.gradient(
+                  colors: [
+                    AppColors.primary.withOpacity(0.12),
+                    AppColors.secondary.withOpacity(0.08),
+                  ],
+                  radius: AppRadius.md,
+                ),
+                child: Icon(icon, color: AppColors.primary),
+              ),
+
+              const SizedBox(width: AppSpacing.sm),
+
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+
+          const SizedBox(height: AppSpacing.md),
+
           TextFormField(
             initialValue: value,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -729,47 +776,28 @@ class _MetricField extends StatelessWidget {
             style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w800),
             decoration: InputDecoration(
               hintText: hint,
-              suffixIcon: Container(
-                margin: const EdgeInsets.all(10),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(AppRadius.circular),
-                ),
-                child: Text(
-                  unit,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
+              suffixIconConstraints: const BoxConstraints(),
+              suffixIcon: Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.md),
+                child: Center(
+                  widthFactor: 1,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: AppDecoration.gradient(
+                      colors: [AppColors.primarySoft, AppColors.secondarySoft],
+                      radius: AppRadius.circular,
+                    ),
+                    child: Text(
+                      unit,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 18,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                borderSide: BorderSide(
-                  color: AppColors.border.withOpacity(0.55),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                borderSide: BorderSide(
-                  color: AppColors.border.withOpacity(0.55),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                borderSide: const BorderSide(
-                  color: AppColors.primary,
-                  width: 1.6,
                 ),
               ),
             ),
@@ -780,176 +808,196 @@ class _MetricField extends StatelessWidget {
   }
 }
 
-class _GenderSelector extends StatelessWidget {
-  final String currentGender;
+class _GenderGrid extends StatelessWidget {
+  final String value;
   final ValueChanged<String> onChanged;
 
-  const _GenderSelector({required this.currentGender, required this.onChanged});
+  const _GenderGrid({required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    final options = <_GenderOption>[
-      const _GenderOption(
+    final genders = [
+      (
         code: 'male',
-        label: 'Nam',
-        emoji: '👨',
+        title: 'Nam',
         icon: Icons.male_rounded,
+        gradient: AppGradients.primary,
       ),
-      const _GenderOption(
+      (
         code: 'female',
-        label: 'Nữ',
-        emoji: '👩',
+        title: 'Nữ',
         icon: Icons.female_rounded,
+        gradient: AppGradients.meditation,
       ),
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: options.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        mainAxisExtent: 118,
-      ),
-      itemBuilder: (context, index) {
-        final item = options[index];
-        final isSelected = currentGender == item.code;
+    return Row(
+      children: genders.map((item) {
+        final selected = value == item.code;
 
-        return Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => onChanged(item.code),
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            child: AnimatedContainer(
-              duration: AppDuration.normal,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: isSelected ? AppGradients.primary : null,
-                color: isSelected ? null : Colors.white,
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-                border: Border.all(
-                  color: isSelected
-                      ? Colors.transparent
-                      : AppColors.border.withOpacity(0.7),
-                ),
-                boxShadow: isSelected ? AppShadows.primary : AppShadows.xs,
-              ),
-              child: Row(
-                children: [
-                  AnimatedContainer(
-                    duration: AppDuration.normal,
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? Colors.white.withOpacity(0.18)
-                          : AppColors.primarySoft,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      item.icon,
-                      color: isSelected ? Colors.white : AppColors.primary,
-                      size: 26,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item.emoji, style: const TextStyle(fontSize: 18)),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.label,
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: isSelected
-                                ? Colors.white
-                                : AppColors.textPrimary,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  AnimatedScale(
-                    scale: isSelected ? 1 : 0.92,
-                    duration: AppDuration.normal,
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Colors.white.withOpacity(0.18)
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: item.code == 'male' ? AppSpacing.sm : 0,
+            ),
+            child: GestureDetector(
+              onTap: () => onChanged(item.code),
+              child: AnimatedContainer(
+                duration: AppDuration.normal,
+                curve: AppAnimations.smoothCurve,
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: selected
+                    ? AppDecoration.gradient(
+                        colors: item.gradient.colors,
+                        radius: AppRadius.xl,
+                        shadows: AppShadows.primary,
+                      )
+                    : AppDecoration.card(
+                        radius: AppRadius.xl,
+                        border: Border.all(color: AppColors.border),
+                        shadows: AppShadows.sm,
+                      ),
+                child: Column(
+                  children: [
+                    AnimatedContainer(
+                      duration: AppDuration.normal,
+                      width: 68,
+                      height: 68,
+                      decoration: AppDecoration.circle(
+                        color: selected
+                            ? Colors.white.withOpacity(0.14)
                             : AppColors.primarySoft,
-                        shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        isSelected
+                        item.icon,
+                        color: selected ? Colors.white : AppColors.primary,
+                        size: 34,
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.md),
+
+                    Text(
+                      item.title,
+                      style: AppTextStyles.heading4.copyWith(
+                        color: selected ? Colors.white : AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.sm),
+
+                    AnimatedContainer(
+                      duration: AppDuration.normal,
+                      width: 30,
+                      height: 30,
+                      decoration: AppDecoration.circle(
+                        color: selected
+                            ? Colors.white.withOpacity(0.18)
+                            : AppColors.primarySoft,
+                      ),
+                      child: Icon(
+                        selected
                             ? Icons.check_rounded
                             : Icons.radio_button_unchecked_rounded,
                         size: 18,
-                        color: isSelected ? Colors.white : AppColors.primary,
+                        color: selected ? Colors.white : AppColors.primary,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         );
-      },
+      }).toList(),
     );
   }
 }
 
-class _GenderOption {
-  final String code;
-  final String label;
-  final String emoji;
-  final IconData icon;
+class _TipCard extends StatelessWidget {
+  final double progress;
 
-  const _GenderOption({
-    required this.code,
-    required this.label,
-    required this.emoji,
-    required this.icon,
-  });
+  const _TipCard({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: AppDecoration.gradient(
+        colors: [AppColors.primarySoft, Colors.white],
+        radius: AppRadius.xl,
+        shadows: AppShadows.soft,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
+            child: const Icon(AppIcons.info, color: Colors.white),
+          ),
+
+          const SizedBox(width: AppSpacing.md),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'BioAI Insight',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.xs),
+
+                Text(
+                  progress < 1
+                      ? 'Hãy hoàn thành đầy đủ thông tin để AI xây dựng kế hoạch sức khỏe và dinh dưỡng chính xác hơn.'
+                      : 'Hồ sơ của bạn đã hoàn tất. BioAI đã sẵn sàng cá nhân hóa trải nghiệm sức khỏe dành riêng cho bạn.',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    height: 1.6,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _AnimatedAppear extends StatefulWidget {
+class _FadeSlideIn extends StatefulWidget {
   final Widget child;
   final int delay;
 
-  const _AnimatedAppear({required this.child, required this.delay});
+  const _FadeSlideIn({required this.child, required this.delay});
 
   @override
-  State<_AnimatedAppear> createState() => _AnimatedAppearState();
+  State<_FadeSlideIn> createState() => _FadeSlideInState();
 }
 
-class _AnimatedAppearState extends State<_AnimatedAppear>
+class _FadeSlideInState extends State<_FadeSlideIn>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _opacity;
-  late final Animation<Offset> _offset;
+  late final Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 650),
+    _controller = AnimationController(vsync: this, duration: AppDuration.slow);
+
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: AppAnimations.smoothCurve,
     );
-
-    _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-
-    _offset = Tween<Offset>(
-      begin: const Offset(0, 0.05),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     Future.delayed(Duration(milliseconds: widget.delay), () {
       if (mounted) {
@@ -966,51 +1014,49 @@ class _AnimatedAppearState extends State<_AnimatedAppear>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _opacity,
-      child: SlideTransition(position: _offset, child: widget.child),
-    );
+    return AppAnimations.fadeSlide(child: widget.child, animation: _animation);
   }
 }
 
-class _BackgroundPainter extends CustomPainter {
+class _OnboardingBackgroundPainter extends CustomPainter {
   final double animation;
 
-  const _BackgroundPainter({required this.animation});
+  const _OnboardingBackgroundPainter({required this.animation});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final rect = Offset.zero & size;
 
-    final paint = Paint()
+    final backgroundPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
           AppColors.background,
-          AppColors.primarySoft.withOpacity(0.32),
+          AppColors.primarySoft.withOpacity(0.8),
           Colors.white,
+          AppColors.secondarySoft.withOpacity(0.45),
         ],
-        transform: GradientRotation(animation * math.pi),
+        transform: GradientRotation(animation * math.pi * 2),
       ).createShader(rect);
 
-    canvas.drawRect(rect, paint);
+    canvas.drawRect(rect, backgroundPaint);
 
     final gridPaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.025)
+      ..color = AppColors.primary.withOpacity(0.03)
       ..strokeWidth = 1;
 
-    for (double i = 0; i < size.width; i += 42) {
-      canvas.drawLine(Offset(i, 0), Offset(i, size.height), gridPaint);
+    for (double x = 0; x < size.width; x += 40) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
     }
 
-    for (double i = 0; i < size.height; i += 42) {
-      canvas.drawLine(Offset(0, i), Offset(size.width, i), gridPaint);
+    for (double y = 0; y < size.height; y += 40) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) {
+  bool shouldRepaint(covariant _OnboardingBackgroundPainter oldDelegate) {
     return oldDelegate.animation != animation;
   }
 }

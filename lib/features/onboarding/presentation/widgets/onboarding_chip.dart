@@ -6,28 +6,22 @@ import '../../../../core/theme/theme.dart';
 
 class OnboardingChip extends StatefulWidget {
   final String label;
-
   final String emoji;
-
   final bool selected;
-
   final VoidCallback onTap;
 
   final bool enabled;
-
   final double? width;
-
   final double? height;
 
   final Gradient? selectedGradient;
-
   final Color? selectedColor;
 
   final EdgeInsetsGeometry? padding;
 
   final Widget? trailing;
-
   final IconData? icon;
+  final String? description;
 
   const OnboardingChip({
     super.key,
@@ -43,6 +37,7 @@ class OnboardingChip extends StatefulWidget {
     this.padding,
     this.trailing,
     this.icon,
+    this.description,
   });
 
   @override
@@ -54,8 +49,15 @@ class _OnboardingChipState extends State<OnboardingChip>
   late final AnimationController _controller;
 
   bool _hovered = false;
-
   bool _pressed = false;
+
+  bool get _selected => widget.selected;
+
+  Gradient get _activeGradient =>
+      widget.selectedGradient ?? AppGradients.primary;
+
+  Color get _activeColor =>
+      widget.selectedColor ?? AppColors.primary;
 
   @override
   void initState() {
@@ -63,8 +65,8 @@ class _OnboardingChipState extends State<OnboardingChip>
 
     _controller = AnimationController(
       vsync: this,
-      duration: AppDuration.normal,
-      lowerBound: 0.96,
+      duration: AppDuration.button,
+      lowerBound: 0.965,
       upperBound: 1,
       value: 1,
     );
@@ -76,155 +78,183 @@ class _OnboardingChipState extends State<OnboardingChip>
     super.dispose();
   }
 
-  void _handleTapDown(TapDownDetails details) {
+  void _animatePress(bool pressed) {
     if (!widget.enabled) return;
 
     setState(() {
-      _pressed = true;
+      _pressed = pressed;
     });
 
-    _controller.reverse();
-  }
-
-  void _handleTapUp(TapUpDetails details) {
-    if (!widget.enabled) return;
-
-    setState(() {
-      _pressed = false;
-    });
-
-    _controller.forward();
-  }
-
-  void _handleTapCancel() {
-    if (!widget.enabled) return;
-
-    setState(() {
-      _pressed = false;
-    });
-
-    _controller.forward();
+    if (pressed) {
+      _controller.reverse();
+    } else {
+      _controller.forward();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool selected = widget.selected;
-
-    final Gradient activeGradient =
-        widget.selectedGradient ?? AppGradients.primary;
-
-    final Color activeColor = widget.selectedColor ?? AppColors.primary;
+    final hasDescription =
+        widget.description != null &&
+        widget.description!.trim().isNotEmpty;
 
     return MouseRegion(
       cursor: widget.enabled
           ? SystemMouseCursors.click
           : SystemMouseCursors.basic,
-      onEnter: (_) {
-        setState(() {
-          _hovered = true;
-        });
-      },
-      onExit: (_) {
-        setState(() {
-          _hovered = false;
-        });
-      },
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
         onTap: widget.enabled ? widget.onTap : null,
-        onTapDown: _handleTapDown,
-        onTapUp: _handleTapUp,
-        onTapCancel: _handleTapCancel,
+        onTapDown: (_) => _animatePress(true),
+        onTapUp: (_) => _animatePress(false),
+        onTapCancel: () => _animatePress(false),
         child: AnimatedBuilder(
           animation: _controller,
-          builder: (context, child) {
-            return Transform.scale(scale: _controller.value, child: child);
+          builder: (_, child) {
+            return Transform.scale(
+              scale: _controller.value,
+              child: child,
+            );
           },
           child: AnimatedContainer(
             duration: AppDuration.normal,
-            curve: Curves.easeOutCubic,
+            curve: AppAnimations.smoothCurve,
             width: widget.width,
             height: widget.height,
             padding:
                 widget.padding ??
-                const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.md,
+                const EdgeInsets.all(
+                  AppSpacing.cardPadding,
                 ),
-            decoration: BoxDecoration(
-              gradient: selected ? activeGradient : null,
-              color: selected ? null : Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              border: Border.all(
-                color: selected
-                    ? Colors.transparent
-                    : _hovered
-                    ? AppColors.primary
-                    : AppColors.border.withOpacity(0.55),
-                width: 1.4,
-              ),
-              boxShadow: selected
-                  ? [
-                      ...AppShadows.primary,
-                      BoxShadow(
-                        blurRadius: 24,
-                        spreadRadius: -6,
-                        offset: const Offset(0, 10),
-                        color: activeColor.withOpacity(0.32),
-                      ),
-                    ]
-                  : [
-                      BoxShadow(
-                        blurRadius: _hovered ? 20 : 14,
-                        spreadRadius: -6,
-                        offset: const Offset(0, 10),
-                        color: Colors.black.withOpacity(_hovered ? 0.08 : 0.04),
-                      ),
-                    ],
-            ),
+            decoration: _buildDecoration(),
             child: AnimatedOpacity(
               duration: AppDuration.fast,
-              opacity: widget.enabled ? 1 : 0.5,
+              opacity: widget.enabled ? 1 : 0.45,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _EmojiContainer(emoji: widget.emoji, selected: selected),
+                  _LeadingSection(
+                    emoji: widget.emoji,
+                    selected: _selected,
+                    gradient: _activeGradient,
+                  ),
 
                   const SizedBox(width: AppSpacing.md),
 
-                  if (widget.icon != null) ...[
-                    Icon(
-                      widget.icon,
-                      size: 18,
-                      color: selected ? Colors.white : AppColors.primary,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            if (widget.icon != null) ...[
+                              AnimatedContainer(
+                                duration: AppDuration.fast,
+                                width: 28,
+                                height: 28,
+                                decoration: AppDecoration.circle(
+                                  color: _selected
+                                      ? Colors.white.withOpacity(
+                                          0.14,
+                                        )
+                                      : AppColors.primarySoft,
+                                ),
+                                child: Icon(
+                                  widget.icon,
+                                  size: 16,
+                                  color: _selected
+                                      ? Colors.white
+                                      : AppColors.primary,
+                                ),
+                              ),
 
-                  Flexible(
-                    child: AnimatedDefaultTextStyle(
-                      duration: AppDuration.normal,
-                      style: AppTextStyles.labelLarge.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: selected ? Colors.white : AppColors.textPrimary,
-                        height: 1.2,
-                      ),
-                      child: Text(
-                        widget.label,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                              const SizedBox(
+                                width: AppSpacing.sm,
+                              ),
+                            ],
+
+                            Expanded(
+                              child:
+                                  AnimatedDefaultTextStyle(
+                                duration:
+                                    AppDuration.normal,
+                                curve:
+                                    AppAnimations.smoothCurve,
+                                style:
+                                    AppTextStyles.heading5
+                                        .copyWith(
+                                  color: _selected
+                                      ? Colors.white
+                                      : AppColors
+                                          .textPrimary,
+                                  fontWeight:
+                                      FontWeight.w700,
+                                ),
+                                child: Text(
+                                  widget.label,
+                                  maxLines: 2,
+                                  overflow:
+                                      TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+
+                            if (widget.trailing != null)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(
+                                  left: AppSpacing.sm,
+                                ),
+                                child: widget.trailing!,
+                              ),
+
+                            const SizedBox(
+                              width: AppSpacing.sm,
+                            ),
+
+                            _SelectionIndicator(
+                              visible: _selected,
+                            ),
+                          ],
+                        ),
+
+                        if (hasDescription) ...[
+                          const SizedBox(
+                            height: AppSpacing.sm,
+                          ),
+
+                          AnimatedDefaultTextStyle(
+                            duration:
+                                AppDuration.normal,
+                            curve:
+                                AppAnimations.smoothCurve,
+                            style:
+                                AppTextStyles.bodySmall
+                                    .copyWith(
+                              color: _selected
+                                  ? Colors.white
+                                      .withOpacity(0.82)
+                                  : AppColors
+                                      .textSecondary,
+                              fontWeight:
+                                  FontWeight.w500,
+                              height: 1.45,
+                            ),
+                            child: Text(
+                              widget.description!,
+                              maxLines: 2,
+                              overflow:
+                                  TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-
-                  if (widget.trailing != null) ...[
-                    const SizedBox(width: AppSpacing.md),
-                    widget.trailing!,
-                  ],
-
-                  if (selected) ...[
-                    const SizedBox(width: AppSpacing.md),
-                    const _SelectedIndicator(),
-                  ],
                 ],
               ),
             ),
@@ -233,58 +263,148 @@ class _OnboardingChipState extends State<OnboardingChip>
       ),
     );
   }
+
+  BoxDecoration _buildDecoration() {
+    if (_selected) {
+      return AppDecoration.base(
+        gradient: _activeGradient,
+        borderRadius: BorderRadius.circular(
+          AppRadius.xl,
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.08),
+        ),
+        shadows: [
+          ...AppShadows.primary,
+          BoxShadow(
+            color: _activeColor.withOpacity(
+              _pressed ? 0.18 : 0.30,
+            ),
+            blurRadius: _hovered ? 34 : 24,
+            spreadRadius: -8,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      );
+    }
+
+    return AppDecoration.card(
+      color: Colors.white,
+      radius: AppRadius.xl,
+      border: Border.all(
+        color: _hovered
+            ? AppColors.primary.withOpacity(0.32)
+            : AppColors.border.withOpacity(0.7),
+        width: _hovered ? 1.4 : 1,
+      ),
+      shadows: _hovered
+          ? AppShadows.soft
+          : AppShadows.card,
+    );
+  }
 }
 
-class _EmojiContainer extends StatelessWidget {
+class _LeadingSection extends StatelessWidget {
   final String emoji;
-
   final bool selected;
+  final Gradient gradient;
 
-  const _EmojiContainer({required this.emoji, required this.selected});
+  const _LeadingSection({
+    required this.emoji,
+    required this.selected,
+    required this.gradient,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: AppDuration.normal,
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: selected
-            ? Colors.white.withOpacity(0.14)
-            : AppColors.primarySoft,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+      curve: AppAnimations.smoothCurve,
+      width: 62,
+      height: 62,
+      decoration: AppDecoration.base(
+        gradient: selected
+            ? AppGradients.glass
+            : AppGradients.primarySoft,
+        borderRadius: BorderRadius.circular(
+          AppRadius.lg,
+        ),
+        border: Border.all(
+          color: selected
+              ? Colors.white.withOpacity(0.12)
+              : AppColors.border.withOpacity(0.5),
+        ),
       ),
       child: Center(
         child: AnimatedScale(
           duration: AppDuration.normal,
-          scale: selected ? 1.08 : 1,
-          child: Text(emoji, style: const TextStyle(fontSize: 24)),
+          curve: AppAnimations.bounceCurve,
+          scale: selected ? 1.12 : 1,
+          child: Text(
+            emoji,
+            style: AppTextStyles.displaySmall.copyWith(
+              fontSize: 28,
+              height: 1,
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-class _SelectedIndicator extends StatelessWidget {
-  const _SelectedIndicator();
+class _SelectionIndicator extends StatelessWidget {
+  final bool visible;
+
+  const _SelectionIndicator({
+    required this.visible,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.circular),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.16),
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.3)),
-          ),
-          child: const Icon(Icons.check_rounded, size: 16, color: Colors.white),
-        ),
-      ),
+    return AnimatedSwitcher(
+      duration: AppDuration.normal,
+      switchInCurve: AppAnimations.smoothCurve,
+      switchOutCurve: AppAnimations.accelerateCurve,
+      child: visible
+          ? ClipRRect(
+              key: const ValueKey('selected'),
+              borderRadius: BorderRadius.circular(
+                AppRadius.circular,
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 12,
+                  sigmaY: 12,
+                ),
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: AppDecoration.circle(
+                    color: Colors.white.withOpacity(
+                      0.14,
+                    ),
+                    shadows: AppShadows.glass,
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.all(3),
+                    decoration: AppDecoration.circle(
+                      color: Colors.white,
+                    ),
+                    child: const Icon(
+                      AppIcons.checkIn,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : const SizedBox(
+              key: ValueKey('unselected'),
+              width: 30,
+              height: 30,
+            ),
     );
   }
 }

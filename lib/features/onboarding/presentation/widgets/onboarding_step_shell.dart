@@ -7,32 +7,22 @@ import '../../../../core/theme/theme.dart';
 
 class OnboardingStepShell extends StatefulWidget {
   final int stepIndex;
-
   final int totalSteps;
 
   final String title;
-
   final String subtitle;
 
   final Widget child;
-
   final Widget? footer;
 
   final VoidCallback? onBack;
-
   final VoidCallback? onNext;
 
   final String? nextLabel;
 
   final bool showBack;
-
   final bool isScrollable;
-
-  final bool showFloatingBackground;
-
   final bool safeArea;
-
-  final EdgeInsetsGeometry? padding;
 
   const OnboardingStepShell({
     super.key,
@@ -47,42 +37,30 @@ class OnboardingStepShell extends StatefulWidget {
     this.nextLabel,
     this.showBack = true,
     this.isScrollable = true,
-    this.showFloatingBackground = true,
     this.safeArea = true,
-    this.padding,
   });
 
   @override
-  State<OnboardingStepShell>
-      createState() =>
-          _OnboardingStepShellState();
+  State<OnboardingStepShell> createState() => _OnboardingStepShellState();
 }
 
-class _OnboardingStepShellState
-    extends State<OnboardingStepShell>
+class _OnboardingStepShellState extends State<OnboardingStepShell>
     with TickerProviderStateMixin {
-  late final AnimationController
-      _backgroundController;
-
-  late final AnimationController
-      _floatingController;
+  late final AnimationController _backgroundController;
+  late final AnimationController _floatingController;
 
   @override
   void initState() {
     super.initState();
 
-    _backgroundController =
-        AnimationController(
+    _backgroundController = AnimationController(
       vsync: this,
-      duration:
-          const Duration(seconds: 14),
+      duration: const Duration(seconds: 18),
     )..repeat();
 
-    _floatingController =
-        AnimationController(
+    _floatingController = AnimationController(
       vsync: this,
-      duration:
-          const Duration(seconds: 6),
+      duration: const Duration(seconds: 6),
     )..repeat(reverse: true);
   }
 
@@ -95,150 +73,126 @@ class _OnboardingStepShellState
 
   @override
   Widget build(BuildContext context) {
-    final progress =
-        (widget.stepIndex + 1) /
-            widget.totalSteps;
+    final progress = (widget.stepIndex + 1) / widget.totalSteps;
 
-    final content = Stack(
+    final body = Stack(
       children: [
-        if (widget
-            .showFloatingBackground) ...[
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation:
-                  _backgroundController,
-              builder:
-                  (context, child) {
-                return CustomPaint(
-                  painter:
-                      _ShellBackgroundPainter(
-                    animation:
-                        _backgroundController
-                            .value,
-                  ),
-                );
-              },
-            ),
+        Positioned.fill(
+          child: AnimatedBuilder(
+            animation: _backgroundController,
+            builder: (_, __) {
+              return CustomPaint(
+                painter: _BackgroundPainter(
+                  animation: _backgroundController.value,
+                ),
+              );
+            },
           ),
+        ),
 
-          Positioned(
-            top: -120,
-            right: -80,
-            child: _FloatingOrb(
-              controller:
-                  _floatingController,
-              size: 260,
-              color: AppColors.primary
-                  .withOpacity(0.08),
-            ),
+        Positioned(
+          top: -100,
+          right: -60,
+          child: _FloatingOrb(
+            controller: _floatingController,
+            size: 260,
+            gradient: AppGradients.primary,
           ),
+        ),
 
-          Positioned(
-            bottom: -140,
-            left: -90,
-            child: _FloatingOrb(
-              controller:
-                  _floatingController,
-              size: 320,
-              color: AppColors.secondary
-                  .withOpacity(0.08),
-            ),
+        Positioned(
+          bottom: -140,
+          left: -90,
+          child: _FloatingOrb(
+            controller: _floatingController,
+            size: 320,
+            gradient: AppGradients.ai,
+            reverse: true,
           ),
-        ],
+        ),
 
         Positioned.fill(
           child: Padding(
-            padding:
-                widget.padding ??
-                    const EdgeInsets.fromLTRB(
-                      20,
-                      16,
-                      20,
-                      20,
-                    ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.pagePadding,
+              vertical: AppSpacing.large,
+            ),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
               children: [
-                _AnimatedAppear(
+                _FadeSlideIn(
                   delay: 0,
                   child: _TopBar(
                     progress: progress,
-                    stepIndex:
-                        widget.stepIndex,
-                    totalSteps:
-                        widget.totalSteps,
-                    onBack:
-                        widget.showBack
-                            ? widget.onBack
-                            : null,
+                    stepIndex: widget.stepIndex,
+                    totalSteps: widget.totalSteps,
+                    showBack: widget.showBack,
+                    onBack: widget.onBack,
                   ),
                 ),
 
-                if (widget.title
-                    .isNotEmpty) ...[
-                  const SizedBox(
-                    height: 28,
-                  ),
-
-                  _AnimatedAppear(
-                    delay: 100,
-                    child: _HeaderSection(
-                      title:
-                          widget.title,
-                      subtitle:
-                          widget.subtitle,
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xl),
 
                 Expanded(
-                  child:
-                      widget.isScrollable
-                          ? SingleChildScrollView(
-                              physics:
-                                  const BouncingScrollPhysics(),
-                              child:
-                                  _AnimatedAppear(
-                                delay: 180,
-                                child:
-                                    widget.child,
+                  child: widget.isScrollable
+                      ? SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            children: [
+                              _FadeSlideIn(
+                                delay: 80,
+                                child: _HeroHeader(
+                                  title: widget.title,
+                                  subtitle: widget.subtitle,
+                                  progress: progress,
+                                ),
                               ),
-                            )
-                          : _AnimatedAppear(
-                              delay: 180,
-                              child:
-                                  widget.child,
+
+                              const SizedBox(
+                                height: AppSpacing.sectionSpacingLarge,
+                              ),
+
+                              _FadeSlideIn(delay: 160, child: widget.child),
+                            ],
+                          ),
+                        )
+                      : Column(
+                          children: [
+                            _FadeSlideIn(
+                              delay: 80,
+                              child: _HeroHeader(
+                                title: widget.title,
+                                subtitle: widget.subtitle,
+                                progress: progress,
+                              ),
                             ),
+
+                            const SizedBox(
+                              height: AppSpacing.sectionSpacingLarge,
+                            ),
+
+                            Expanded(
+                              child: _FadeSlideIn(
+                                delay: 160,
+                                child: widget.child,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
 
-                if (widget.footer !=
-                    null) ...[
-                  const SizedBox(
-                    height: 20,
-                  ),
+                if (widget.footer != null) ...[
+                  const SizedBox(height: AppSpacing.large),
                   widget.footer!,
                 ],
 
-                if (widget.onNext !=
-                        null &&
-                    widget.footer ==
-                        null) ...[
-                  const SizedBox(
-                    height: 24,
-                  ),
+                if (widget.onNext != null && widget.footer == null) ...[
+                  const SizedBox(height: AppSpacing.large),
 
-                  _AnimatedAppear(
-                    delay: 260,
-                    child: _ContinueButton(
-                      label:
-                          widget.nextLabel ??
-                              'Tiếp tục',
-                      onPressed:
-                          widget.onNext!,
+                  _FadeSlideIn(
+                    delay: 240,
+                    child: _PrimaryButton(
+                      label: widget.nextLabel ?? 'Tiếp tục',
+                      onPressed: widget.onNext!,
                     ),
                   ),
                 ],
@@ -250,111 +204,152 @@ class _OnboardingStepShellState
     );
 
     if (widget.safeArea) {
-      return SafeArea(
-        child: content,
-      );
+      return SafeArea(child: body);
     }
 
-    return content;
+    return body;
   }
 }
 
-class _HeaderSection
-    extends StatelessWidget {
+class _HeroHeader extends StatelessWidget {
   final String title;
-
   final String subtitle;
+  final double progress;
 
-  const _HeaderSection({
+  const _HeroHeader({
     required this.title,
     required this.subtitle,
+    required this.progress,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding:
-          const EdgeInsets.all(
-        AppSpacing.xl,
-      ),
-      decoration:
-          AppDecoration.glass(
-        opacity: 0.82,
-        blurRadius: 24,
-        radius: AppRadius.xxl,
-      ),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        children: [
-          Row(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.containerPaddingXl),
+          decoration: BoxDecoration(
+            gradient: AppGradients.glass,
+            borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+            border: Border.all(color: Colors.white.withOpacity(0.35)),
+            boxShadow: AppShadows.floating,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  gradient:
-                      AppGradients.primary,
-                  borderRadius:
-                      BorderRadius.circular(
-                    AppRadius.lg,
+              Row(
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: AppDecoration.primaryGradient(
+                      radius: AppRadius.xl,
+                    ),
+                    child: const Icon(
+                      AppIcons.health,
+                      size: 34,
+                      color: AppColors.textWhite,
+                    ),
                   ),
-                  boxShadow:
-                      AppShadows.primary,
-                ),
-                child: const Icon(
-                  Icons.auto_awesome_rounded,
-                  color: Colors.white,
-                  size: 28,
+
+                  const Spacer(),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    decoration: AppDecoration.glass(
+                      radius: AppRadius.circular,
+                      opacity: 0.18,
+                      borderColor: AppColors.primary.withOpacity(0.12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          AppIcons.chat,
+                          color: AppColors.primary,
+                          size: 18,
+                        ),
+
+                        const SizedBox(width: AppSpacing.iconTextSpacing),
+
+                        Text(
+                          'BioAI',
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+
+              Text(
+                title,
+                style: AppTextStyles.displaySmall.copyWith(
+                  fontWeight: FontWeight.w800,
+                  height: 1.08,
                 ),
               ),
 
-              const Spacer(),
+              const SizedBox(height: AppSpacing.md),
+
+              Text(
+                subtitle,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.7,
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
 
               Container(
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withOpacity(0.08),
-                  borderRadius:
-                      BorderRadius.circular(
-                    AppRadius.circular,
-                  ),
-                  border: Border.all(
-                    color: AppColors.primary
-                        .withOpacity(
-                      0.12,
-                    ),
-                  ),
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: AppDecoration.glass(
+                  radius: AppRadius.circular,
+                  opacity: 0.12,
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons
-                          .psychology_alt_rounded,
-                      color:
-                          AppColors.primary,
-                      size: 18,
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(AppRadius.circular),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 10,
+                          backgroundColor: AppColors.border,
+                          valueColor: const AlwaysStoppedAnimation(
+                            AppColors.primary,
+                          ),
+                        ),
+                      ),
                     ),
 
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.md),
 
-                    Text(
-                      'BioAI',
-                      style:
-                          AppTextStyles
-                              .labelMedium
-                              .copyWith(
-                        color:
-                            AppColors
-                                .primary,
-                        fontWeight:
-                            FontWeight
-                                .w700,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: AppDecoration.primaryGradient(
+                        radius: AppRadius.circular,
+                      ),
+                      child: Text(
+                        '${(progress * 100).round()}%',
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
@@ -362,35 +357,7 @@ class _HeaderSection
               ),
             ],
           ),
-
-          const SizedBox(height: 24),
-
-          Text(
-            title,
-            style:
-                AppTextStyles
-                    .displaySmall
-                    .copyWith(
-              fontWeight:
-                  FontWeight.w800,
-              height: 1.1,
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          Text(
-            subtitle,
-            style:
-                AppTextStyles
-                    .bodyLarge
-                    .copyWith(
-              color:
-                  AppColors.textSecondary,
-              height: 1.6,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -398,17 +365,16 @@ class _HeaderSection
 
 class _TopBar extends StatelessWidget {
   final double progress;
-
   final int stepIndex;
-
   final int totalSteps;
-
+  final bool showBack;
   final VoidCallback? onBack;
 
   const _TopBar({
     required this.progress,
     required this.stepIndex,
     required this.totalSteps,
+    required this.showBack,
     required this.onBack,
   });
 
@@ -416,102 +382,54 @@ class _TopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        if (onBack != null)
-          _GlassIconButton(
-            icon:
-                Icons.arrow_back_rounded,
-            onTap: onBack!,
-          )
+        if (showBack)
+          _GlassButton(icon: AppIcons.back, onTap: onBack)
         else
-          const SizedBox(
-            width: 54,
-          ),
+          const SizedBox(width: AppSpacing.touchTargetMin),
 
-        const SizedBox(width: 14),
+        const SizedBox(width: AppSpacing.md),
 
         Expanded(
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment
-                    .start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Text(
                     'Bước ${stepIndex + 1}/$totalSteps',
-                    style:
-                        AppTextStyles
-                            .labelLarge
-                            .copyWith(
-                      fontWeight:
-                          FontWeight
-                              .w700,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
 
                   const Spacer(),
 
                   Text(
-                    '${(progress * 100).round()}%',
-                    style:
-                        AppTextStyles
-                            .labelLarge
-                            .copyWith(
-                      color:
-                          AppColors
-                              .primary,
-                      fontWeight:
-                          FontWeight
-                              .w800,
+                    'Hồ sơ sức khỏe',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
 
-              ClipRRect(
-                borderRadius:
-                    BorderRadius.circular(
-                  999,
+              Container(
+                height: 6,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(AppRadius.circular),
                 ),
-                child: Stack(
-                  children: [
-                    Container(
-                      height: 12,
-                      decoration:
-                          BoxDecoration(
-                        color: AppColors
-                            .border
-                            .withOpacity(
-                              0.35,
-                            ),
-                      ),
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: progress,
+                  child: Container(
+                    decoration: AppDecoration.primaryGradient(
+                      radius: AppRadius.circular,
                     ),
-
-                    FractionallySizedBox(
-                      widthFactor: progress,
-                      child:
-                          AnimatedContainer(
-                        duration:
-                            AppDuration
-                                .normal,
-                        curve:
-                            Curves
-                                .easeOutCubic,
-                        height: 12,
-                        decoration:
-                            BoxDecoration(
-                          gradient:
-                              AppGradients
-                                  .primary,
-                          boxShadow:
-                              AppShadows
-                                  .primary,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -522,32 +440,22 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-class _ContinueButton
-    extends StatefulWidget {
+class _PrimaryButton extends StatefulWidget {
   final String label;
-
   final VoidCallback onPressed;
 
-  const _ContinueButton({
-    required this.label,
-    required this.onPressed,
-  });
+  const _PrimaryButton({required this.label, required this.onPressed});
 
   @override
-  State<_ContinueButton>
-      createState() =>
-          _ContinueButtonState();
+  State<_PrimaryButton> createState() => _PrimaryButtonState();
 }
 
-class _ContinueButtonState
-    extends State<_ContinueButton> {
+class _PrimaryButtonState extends State<_PrimaryButton> {
   bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      cursor:
-          SystemMouseCursors.click,
       onEnter: (_) {
         setState(() {
           _hovered = true;
@@ -558,75 +466,47 @@ class _ContinueButtonState
           _hovered = false;
         });
       },
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onPressed,
         child: AnimatedContainer(
-          duration:
-              AppDuration.normal,
-          curve: Curves.easeOutCubic,
+          duration: AppDuration.button,
+          curve: AppAnimations.smoothCurve,
           width: double.infinity,
-          height: 64,
-          decoration: BoxDecoration(
-            gradient:
-                AppGradients.primary,
-            borderRadius:
-                BorderRadius.circular(
-              AppRadius.xl,
-            ),
-            boxShadow:
-                _hovered
+          height: 62,
+          transform: Matrix4.translationValues(0, _hovered ? -2 : 0, 0),
+          decoration:
+              AppDecoration.primaryGradient(
+                radius: AppRadius.buttonLarge,
+              ).copyWith(
+                boxShadow: _hovered
                     ? [
-                      ...AppShadows
-                          .primary,
-                      BoxShadow(
-                        blurRadius: 28,
-                        spreadRadius: -8,
-                        offset:
-                            const Offset(
-                          0,
-                          16,
+                        ...AppShadows.primary,
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.22),
+                          blurRadius: 32,
+                          spreadRadius: -6,
+                          offset: const Offset(0, 18),
                         ),
-                        color: AppColors
-                            .primary
-                            .withOpacity(
-                          0.34,
-                        ),
-                      ),
-                    ]
+                      ]
                     : AppShadows.primary,
-          ),
+              ),
           child: Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 widget.label,
-                style:
-                    AppTextStyles
-                        .labelLarge
-                        .copyWith(
-                  color: Colors.white,
-                  fontWeight:
-                      FontWeight.w800,
+                style: AppTextStyles.button.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.iconTextSpacingLarge),
 
               AnimatedContainer(
-                duration:
-                    AppDuration.normal,
-                transform:
-                    Matrix4.translationValues(
-                  _hovered ? 4 : 0,
-                  0,
-                  0,
-                ),
-                child: const Icon(
-                  Icons
-                      .arrow_forward_rounded,
-                  color: Colors.white,
-                ),
+                duration: AppDuration.fast,
+                transform: Matrix4.translationValues(_hovered ? 5 : 0, 0, 0),
+                child: const Icon(AppIcons.forward, color: Colors.white),
               ),
             ],
           ),
@@ -636,32 +516,22 @@ class _ContinueButtonState
   }
 }
 
-class _GlassIconButton
-    extends StatefulWidget {
+class _GlassButton extends StatefulWidget {
   final IconData icon;
+  final VoidCallback? onTap;
 
-  final VoidCallback onTap;
-
-  const _GlassIconButton({
-    required this.icon,
-    required this.onTap,
-  });
+  const _GlassButton({required this.icon, required this.onTap});
 
   @override
-  State<_GlassIconButton>
-      createState() =>
-          _GlassIconButtonState();
+  State<_GlassButton> createState() => _GlassButtonState();
 }
 
-class _GlassIconButtonState
-    extends State<_GlassIconButton> {
+class _GlassButtonState extends State<_GlassButton> {
   bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      cursor:
-          SystemMouseCursors.click,
       onEnter: (_) {
         setState(() {
           _hovered = true;
@@ -672,110 +542,60 @@ class _GlassIconButtonState
           _hovered = false;
         });
       },
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration:
-              AppDuration.normal,
-          width: 54,
-          height: 54,
-          decoration:
-              AppDecoration.glass(
-            opacity:
-                _hovered ? 0.95 : 0.82,
-            blurRadius: 18,
+          duration: AppDuration.fast,
+          curve: AppAnimations.smoothCurve,
+          width: 52,
+          height: 52,
+          decoration: AppDecoration.glass(
             radius: AppRadius.lg,
-            borderColor:
-                _hovered
-                    ? AppColors.primary
-                    : AppColors.border
-                        .withOpacity(
-                          0.35,
-                        ),
+            opacity: _hovered ? 0.18 : 0.1,
+            borderColor: _hovered ? AppColors.primary : AppColors.border,
           ),
-          child: Icon(
-            widget.icon,
-            color:
-                AppColors.textPrimary,
-          ),
+          child: Icon(widget.icon, color: AppColors.textPrimary),
         ),
       ),
     );
   }
 }
 
-class _AnimatedAppear
-    extends StatefulWidget {
+class _FadeSlideIn extends StatefulWidget {
   final Widget child;
-
   final int delay;
 
-  const _AnimatedAppear({
-    required this.child,
-    required this.delay,
-  });
+  const _FadeSlideIn({required this.child, required this.delay});
 
   @override
-  State<_AnimatedAppear>
-      createState() =>
-          _AnimatedAppearState();
+  State<_FadeSlideIn> createState() => _FadeSlideInState();
 }
 
-class _AnimatedAppearState
-    extends State<_AnimatedAppear>
-    with
-        SingleTickerProviderStateMixin {
-  late final AnimationController
-      _controller;
-
-  late final Animation<double>
-      _opacity;
-
-  late final Animation<Offset>
-      _offset;
+class _FadeSlideInState extends State<_FadeSlideIn>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
 
-    _controller =
-        AnimationController(
+    _controller = AnimationController(
       vsync: this,
-      duration:
-          const Duration(
-        milliseconds: 700,
-      ),
+      duration: AppDuration.onboarding,
     );
 
-    _opacity = CurvedAnimation(
+    _animation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeOut,
+      curve: AppAnimations.decelerateCurve,
     );
 
-    _offset =
-        Tween<Offset>(
-      begin:
-          const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve:
-            Curves.easeOutCubic,
-      ),
-    );
-
-    Future.delayed(
-      Duration(
-        milliseconds:
-            widget.delay,
-      ),
-      () {
-        if (mounted) {
-          _controller.forward();
-        }
-      },
-    );
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
   }
 
   @override
@@ -785,58 +605,35 @@ class _AnimatedAppearState
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    return FadeTransition(
-      opacity: _opacity,
-      child: SlideTransition(
-        position: _offset,
-        child: widget.child,
-      ),
-    );
+  Widget build(BuildContext context) {
+    return AppAnimations.fadeSlide(child: widget.child, animation: _animation);
   }
 }
 
-class _FloatingOrb
-    extends StatelessWidget {
-  final AnimationController
-      controller;
-
+class _FloatingOrb extends StatelessWidget {
+  final AnimationController controller;
   final double size;
-
-  final Color color;
+  final Gradient gradient;
+  final bool reverse;
 
   const _FloatingOrb({
     required this.controller,
     required this.size,
-    required this.color,
+    required this.gradient,
+    this.reverse = false,
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder:
-          (context, child) {
+      builder: (_, child) {
+        final value = controller.value;
+
         return Transform.translate(
           offset: Offset(
-            math.sin(
-                      controller
-                              .value *
-                          math.pi *
-                          2,
-                    ) *
-                    16,
-            math.cos(
-                      controller
-                              .value *
-                          math.pi *
-                          2,
-                    ) *
-                    16,
+            math.sin(value * math.pi * 2) * (reverse ? -18 : 18),
+            math.cos(value * math.pi * 2) * 16,
           ),
           child: child,
         );
@@ -844,109 +641,46 @@ class _FloatingOrb
       child: Container(
         width: size,
         height: size,
-        decoration:
-            BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient),
       ),
     );
   }
 }
 
-class _ShellBackgroundPainter
-    extends CustomPainter {
+class _BackgroundPainter extends CustomPainter {
   final double animation;
 
-  const _ShellBackgroundPainter({
-    required this.animation,
-  });
+  const _BackgroundPainter({required this.animation});
 
   @override
-  void paint(
-    Canvas canvas,
-    Size size,
-  ) {
-    final rect =
-        Rect.fromLTWH(
-      0,
-      0,
-      size.width,
-      size.height,
-    );
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
 
-    final paint = Paint()
-      ..shader =
-          LinearGradient(
-        begin:
-            Alignment.topLeft,
-        end:
-            Alignment.bottomRight,
-        colors: [
-          AppColors.background,
-          AppColors.primarySoft
-              .withOpacity(0.06),
-          Colors.white,
-        ],
-        transform:
-            GradientRotation(
-          animation * math.pi,
-        ),
+    final backgroundPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        transform: GradientRotation(animation * math.pi),
+        colors: [AppColors.background, AppColors.primarySoft, Colors.white],
       ).createShader(rect);
 
-    canvas.drawRect(
-      rect,
-      paint,
-    );
+    canvas.drawRect(rect, backgroundPaint);
 
-    final gridPaint =
-        Paint()
-          ..color = AppColors
-              .primary
-              .withOpacity(
-                0.025,
-              )
-          ..strokeWidth = 1;
+    final linePaint = Paint()
+      ..color = AppColors.primary.withOpacity(0.035)
+      ..strokeWidth = 1;
 
-    for (
-      double i = 0;
-      i < size.width;
-      i += 42
-    ) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(
-          i,
-          size.height,
-        ),
-        gridPaint,
-      );
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), linePaint);
     }
 
-    for (
-      double i = 0;
-      i < size.height;
-      i += 42
-    ) {
-      canvas.drawLine(
-        Offset(0, i),
-        Offset(
-          size.width,
-          i,
-        ),
-        gridPaint,
-      );
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), linePaint);
     }
   }
 
   @override
-  bool shouldRepaint(
-    covariant
-    _ShellBackgroundPainter
-        oldDelegate,
-  ) {
-    return oldDelegate
-            .animation !=
-        animation;
+  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) {
+    return oldDelegate.animation != animation;
   }
 }

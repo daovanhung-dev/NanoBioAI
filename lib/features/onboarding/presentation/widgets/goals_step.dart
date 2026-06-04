@@ -27,12 +27,12 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
 
     _backgroundController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 12),
+      duration: AppDuration.loading,
     )..repeat();
 
     _floatingController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 6),
+      duration: const Duration(seconds: 7),
     )..repeat(reverse: true);
   }
 
@@ -48,42 +48,47 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
 
-    final selectedCount = state.goals.length;
-    final totalGoals = OnboardingCatalog.goals.length;
-    final progress = totalGoals == 0 ? 0.0 : selectedCount / totalGoals;
+    final goals = OnboardingCatalog.goals;
+    final selectedGoals = state.goals;
+    final selectedCount = selectedGoals.length;
+
+    final progress = goals.isEmpty ? 0.0 : selectedCount / goals.length;
 
     return Stack(
       children: [
         Positioned.fill(
           child: AnimatedBuilder(
             animation: _backgroundController,
-            builder: (context, child) {
+            builder: (_, __) {
               return CustomPaint(
-                painter: _GoalsBackgroundPainter(
+                painter: _BackgroundPainter(
                   animation: _backgroundController.value,
                 ),
               );
             },
           ),
         ),
+
         Positioned(
-          top: -100,
-          right: -80,
-          child: _FloatingOrb(
+          top: -80,
+          right: -50,
+          child: _FloatingBlur(
             controller: _floatingController,
-            size: 260,
-            color: AppColors.success.withOpacity(0.08),
+            size: 240,
+            gradient: AppGradients.ai,
           ),
         ),
+
         Positioned(
-          bottom: -140,
-          left: -80,
-          child: _FloatingOrb(
+          bottom: -120,
+          left: -60,
+          child: _FloatingBlur(
             controller: _floatingController,
-            size: 320,
-            color: AppColors.primary.withOpacity(0.08),
+            size: 300,
+            gradient: AppGradients.health,
           ),
         ),
+
         Positioned.fill(
           child: SafeArea(
             child: OnboardingStepShell(
@@ -94,59 +99,79 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
               onNext: controller.nextStep,
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 40),
+                padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _AnimatedAppear(
+                    _AppearAnimation(
                       delay: 0,
-                      child: _HeaderSection(
+                      child: _HeroSection(
                         selectedCount: selectedCount,
                         progress: progress,
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    _AnimatedAppear(
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    _AppearAnimation(
                       delay: 100,
-                      child: _GoalSummaryCard(
+                      child: _OverviewCard(
                         selectedCount: selectedCount,
                         progress: progress,
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    const _SectionTitle(
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    const _SectionHeader(
                       title: 'Mục tiêu sức khỏe',
                       subtitle:
-                          'Chọn một hoặc nhiều mục tiêu để BioAI cá nhân hóa lộ trình phù hợp.',
+                          'Lựa chọn các mục tiêu để BioAI xây dựng hành trình chăm sóc sức khỏe tối ưu dành riêng cho bạn.',
                     ),
-                    const SizedBox(height: 16),
-                    _AnimatedAppear(
+
+                    const SizedBox(height: AppSpacing.md),
+
+                    _AppearAnimation(
                       delay: 180,
                       child: _GoalsGrid(state: state, controller: controller),
                     ),
-                    const SizedBox(height: 28),
-                    const _SectionTitle(
-                      title: 'Mục tiêu bổ sung',
-                      subtitle: 'Nếu bạn có thêm mục tiêu cá nhân khác.',
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    const _SectionHeader(
+                      title: 'Mục tiêu cá nhân khác',
+                      subtitle:
+                          'Chia sẻ thêm để AI hiểu rõ hơn về nhu cầu của bạn.',
                     ),
-                    const SizedBox(height: 16),
-                    _AnimatedAppear(
-                      delay: 300,
-                      child: _GlassCard(
+
+                    const SizedBox(height: AppSpacing.md),
+
+                    _AppearAnimation(
+                      delay: 280,
+                      child: Container(
+                        padding: const EdgeInsets.all(
+                          AppSpacing.cardPaddingLarge,
+                        ),
+                        decoration: AppDecoration.glass(
+                          opacity: 0.92,
+                          radius: AppRadius.cardLarge,
+                        ),
                         child: OnboardingTextField(
-                          label: 'Mục tiêu khác',
-                          hint: 'Nếu có thêm mục tiêu...',
+                          label: 'Mục tiêu bổ sung',
+                          hint: 'Ví dụ: cải thiện tập trung, detox...',
                           initialValue: state.otherGoal,
                           onChanged: controller.updateOtherGoal,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    _AnimatedAppear(
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    _AppearAnimation(
                       delay: 420,
-                      child: _GoalInsightCard(
-                        selectedCount: selectedCount,
+                      child: _InsightCard(
                         progress: progress,
+                        selectedCount: selectedCount,
                       ),
                     ),
                   ],
@@ -160,102 +185,88 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
   }
 }
 
-class _HeaderSection extends StatelessWidget {
+class _HeroSection extends StatelessWidget {
   final int selectedCount;
   final double progress;
 
-  const _HeaderSection({required this.selectedCount, required this.progress});
+  const _HeroSection({required this.selectedCount, required this.progress});
 
   @override
   Widget build(BuildContext context) {
     final percent = (progress * 100).round();
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1D8CFF), Color(0xFF18A8E4)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1D8CFF).withOpacity(0.22),
-            blurRadius: 30,
-            offset: const Offset(0, 18),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.all(AppSpacing.containerPaddingXl),
+      decoration: AppDecoration.primaryGradient(radius: AppRadius.xxxl),
       child: Stack(
         children: [
           Positioned(
-            top: -20,
-            right: -18,
+            top: -40,
+            right: -30,
             child: Container(
-              width: 112,
-              height: 112,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
+              width: 150,
+              height: 150,
+              decoration: AppDecoration.circle(
                 color: Colors.white.withOpacity(0.08),
               ),
             ),
           ),
+
           Positioned(
-            bottom: -26,
-            left: -14,
+            bottom: -30,
+            left: -20,
             child: Container(
-              width: 86,
-              height: 86,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.06),
+              width: 100,
+              height: 100,
+              decoration: AppDecoration.circle(
+                color: Colors.white.withOpacity(0.05),
               ),
             ),
           ),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    width: 68,
-                    height: 68,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.15),
+                    width: 72,
+                    height: 72,
+                    decoration: AppDecoration.glass(
+                      opacity: 0.18,
+                      radius: AppRadius.circular,
                     ),
                     child: const Icon(
-                      Icons.flag_rounded,
+                      AppIcons.health,
                       color: Colors.white,
                       size: 34,
                     ),
                   ),
+
                   const Spacer(),
+
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.14),
-                      borderRadius: BorderRadius.circular(AppRadius.circular),
-                      border: Border.all(color: Colors.white.withOpacity(0.16)),
+                    decoration: AppDecoration.glass(
+                      opacity: 0.12,
+                      radius: AppRadius.circular,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(
-                          Icons.auto_awesome_rounded,
+                          AppIcons.star,
                           color: Colors.white,
-                          size: 18,
+                          size: 16,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.xs),
                         Text(
-                          'BioAI',
+                          'AI Personalized',
                           style: AppTextStyles.labelLarge.copyWith(
                             color: Colors.white,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
@@ -263,35 +274,41 @@ class _HeaderSection extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: AppSpacing.xl),
+
               Text(
-                'Mục tiêu sức khỏe',
+                'Thiết lập mục tiêu\nsức khỏe',
                 style: AppTextStyles.displaySmall.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
-                  height: 1.1,
+                  height: 1.08,
                 ),
               ),
-              const SizedBox(height: 12),
+
+              const SizedBox(height: AppSpacing.md),
+
               Text(
-                'BioAI sẽ xây dựng lộ trình cá nhân hóa dựa trên các mục tiêu sức khỏe của bạn.',
+                'BioAI sẽ sử dụng AI để xây dựng lộ trình dinh dưỡng, luyện tập và theo dõi sức khỏe dựa trên các mục tiêu bạn chọn.',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: Colors.white.withOpacity(0.94),
-                  height: 1.55,
+                  color: Colors.white.withOpacity(0.92),
+                  height: 1.6,
                 ),
               ),
-              const SizedBox(height: 22),
+
+              const SizedBox(height: AppSpacing.lg),
+
               Row(
                 children: [
                   Expanded(
-                    child: _MiniStat(
+                    child: _StatCard(
                       title: 'Đã chọn',
-                      value: '$selectedCount mục',
+                      value: '$selectedCount mục tiêu',
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(
-                    child: _MiniStat(title: 'Hoàn thiện', value: '$percent%'),
+                    child: _StatCard(title: 'Hoàn thành', value: '$percent%'),
                   ),
                 ],
               ),
@@ -303,30 +320,27 @@ class _HeaderSection extends StatelessWidget {
   }
 }
 
-class _MiniStat extends StatelessWidget {
+class _StatCard extends StatelessWidget {
   final String title;
   final String value;
 
-  const _MiniStat({required this.title, required this.value});
+  const _StatCard({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
+      decoration: AppDecoration.glass(opacity: 0.14, radius: AppRadius.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
             style: AppTextStyles.bodySmall.copyWith(
-              color: Colors.white.withOpacity(0.84),
+              color: Colors.white.withOpacity(0.82),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             value,
             style: AppTextStyles.heading4.copyWith(
@@ -340,76 +354,76 @@ class _MiniStat extends StatelessWidget {
   }
 }
 
-class _GoalSummaryCard extends StatelessWidget {
+class _OverviewCard extends StatelessWidget {
   final int selectedCount;
   final double progress;
 
-  const _GoalSummaryCard({required this.selectedCount, required this.progress});
+  const _OverviewCard({required this.selectedCount, required this.progress});
 
   @override
   Widget build(BuildContext context) {
     final percent = (progress * 100).round();
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: AppDecoration.glass(
-        opacity: 0.74,
-        blurRadius: 20,
-        radius: AppRadius.xl,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+      decoration: AppDecoration.premiumCard(),
       child: Row(
         children: [
           Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.success, AppColors.primary],
-              ),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+            width: 74,
+            height: 74,
+            decoration: AppDecoration.gradient(
+              colors: const [AppColors.primary, AppColors.secondary],
+              radius: AppRadius.xl,
+              shadows: AppShadows.primary,
             ),
             child: const Icon(
-              Icons.track_changes_rounded,
+              AppIcons.auto_awesome_rounded,
               color: Colors.white,
-              size: 32,
+              size: 34,
             ),
           ),
-          const SizedBox(width: 18),
+
+          const SizedBox(width: AppSpacing.md),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'AI Goal Tracking',
+                  'AI Goal Analysis',
                   style: AppTextStyles.heading4.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 8),
+
+                const SizedBox(height: AppSpacing.xs),
+
                 Text(
                   selectedCount == 0
-                      ? 'Hãy chọn mục tiêu để AI xây dựng lộ trình phù hợp.'
-                      : 'BioAI đang tối ưu lộ trình theo $selectedCount mục tiêu bạn đã chọn.',
-                  style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+                      ? 'Hãy chọn mục tiêu để BioAI bắt đầu cá nhân hóa trải nghiệm.'
+                      : 'BioAI đang tối ưu hệ thống dựa trên $selectedCount mục tiêu bạn đã chọn.',
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.6),
                 ),
-                const SizedBox(height: 12),
+
+                const SizedBox(height: AppSpacing.md),
+
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(AppRadius.circular),
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 8,
-                    backgroundColor: AppColors.primarySoft.withOpacity(0.35),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
+                    backgroundColor: AppColors.primarySoft,
+                    valueColor: const AlwaysStoppedAnimation(AppColors.primary),
                   ),
                 ),
-                const SizedBox(height: 10),
+
+                const SizedBox(height: AppSpacing.sm),
+
                 Text(
-                  '$percent% mục tiêu đã được định hướng',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
+                  'Mục tiêu đã chọn',
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.primary,
                   ),
                 ),
               ],
@@ -421,24 +435,29 @@ class _GoalSummaryCard extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
+class _SectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _SectionTitle({required this.title, required this.subtitle});
+  const _SectionHeader({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 8),
-        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.6)),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w700),
+          ),
+
+          const SizedBox(height: AppSpacing.sm),
+
+          Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.6)),
+        ],
+      ),
     );
   }
 }
@@ -452,112 +471,39 @@ class _GoalsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, constraints) {
+      builder: (_, constraints) {
         final width = constraints.maxWidth;
-        final crossAxisCount = width >= 700 ? 3 : 2;
-        final mainAxisExtent = width >= 700 ? 146.0 : 138.0;
+
+        int crossAxisCount = 2;
+
+        if (width >= 1200) {
+          crossAxisCount = 4;
+        } else if (width >= 800) {
+          crossAxisCount = 3;
+        }
 
         return GridView.builder(
           shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
           itemCount: OnboardingCatalog.goals.length,
+          physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            mainAxisSpacing: 14,
-            crossAxisSpacing: 14,
-            mainAxisExtent: mainAxisExtent,
+            crossAxisSpacing: AppSpacing.md,
+            mainAxisSpacing: AppSpacing.md,
+            mainAxisExtent: 158,
           ),
-          itemBuilder: (context, index) {
+          itemBuilder: (_, index) {
             final goal = OnboardingCatalog.goals[index];
+
             final selected = state.goals.contains(goal.code);
 
-            return Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => controller.toggleGoal(goal.code),
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-                child: AnimatedContainer(
-                  duration: AppDuration.normal,
-                  curve: Curves.easeOutCubic,
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    gradient: selected
-                        ? const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [AppColors.success, AppColors.primary],
-                          )
-                        : null,
-                    color: selected ? null : Colors.white,
-                    borderRadius: BorderRadius.circular(AppRadius.xl),
-                    border: Border.all(
-                      color: selected
-                          ? Colors.transparent
-                          : AppColors.border.withOpacity(0.72),
-                    ),
-                    boxShadow: selected ? AppShadows.primary : AppShadows.xs,
-                  ),
-                  child: Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: AnimatedScale(
-                          scale: selected ? 1 : 0.95,
-                          duration: AppDuration.normal,
-                          child: Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? Colors.white.withOpacity(0.18)
-                                  : AppColors.primarySoft,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              selected
-                                  ? Icons.check_rounded
-                                  : Icons.radio_button_unchecked_rounded,
-                              size: 18,
-                              color: selected
-                                  ? Colors.white
-                                  : AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AnimatedScale(
-                              scale: selected ? 1.08 : 1,
-                              duration: AppDuration.normal,
-                              child: Text(
-                                goal.emoji,
-                                style: const TextStyle(fontSize: 36),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              goal.label,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.labelLarge.copyWith(
-                                color: selected
-                                    ? Colors.white
-                                    : AppColors.textPrimary,
-                                fontWeight: FontWeight.w700,
-                                height: 1.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            return _GoalItem(
+              selected: selected,
+              emoji: goal.emoji,
+              label: goal.label,
+              onTap: () {
+                controller.toggleGoal(goal.code);
+              },
             );
           },
         );
@@ -566,44 +512,115 @@ class _GoalsGrid extends StatelessWidget {
   }
 }
 
-class _GlassCard extends StatelessWidget {
-  final Widget child;
+class _GoalItem extends StatelessWidget {
+  final bool selected;
+  final String emoji;
+  final String label;
+  final VoidCallback onTap;
 
-  const _GlassCard({required this.child});
+  const _GoalItem({
+    required this.selected,
+    required this.emoji,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.88),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
-        boxShadow: AppShadows.soft,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: AppDuration.card,
+          curve: AppAnimations.emphasizedCurve,
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
+          decoration: selected
+              ? AppDecoration.gradient(
+                  colors: const [AppColors.primary, AppColors.secondary],
+                  radius: AppRadius.cardLarge,
+                  shadows: AppShadows.primary,
+                )
+              : AppDecoration.card(
+                  radius: AppRadius.cardLarge,
+                  border: Border.all(color: AppColors.border),
+                  shadows: AppShadows.soft,
+                ),
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: AnimatedScale(
+                  scale: selected ? 1 : 0.92,
+                  duration: AppDuration.normal,
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: AppDecoration.circle(
+                      color: selected
+                          ? Colors.white.withOpacity(0.18)
+                          : AppColors.primarySoft,
+                    ),
+                    child: Icon(
+                      selected ? Icons.check_rounded : Icons.add_rounded,
+                      color: selected ? Colors.white : AppColors.primary,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ),
+
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedScale(
+                      duration: AppDuration.normal,
+                      scale: selected ? 1.12 : 1,
+                      child: Text(emoji, style: const TextStyle(fontSize: 40)),
+                    ),
+
+                    const SizedBox(height: AppSpacing.md),
+
+                    Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: selected ? Colors.white : AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: child,
     );
   }
 }
 
-class _GoalInsightCard extends StatelessWidget {
-  final int selectedCount;
+class _InsightCard extends StatelessWidget {
   final double progress;
+  final int selectedCount;
 
-  const _GoalInsightCard({required this.selectedCount, required this.progress});
+  const _InsightCard({required this.progress, required this.selectedCount});
 
   @override
   Widget build(BuildContext context) {
     final percent = (progress * 100).round();
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.success, AppColors.primary],
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        boxShadow: AppShadows.primary,
+      padding: const EdgeInsets.all(AppSpacing.containerPaddingXl),
+      decoration: AppDecoration.gradient(
+        colors: const [AppColors.success, AppColors.secondary],
+        radius: AppRadius.xxxl,
+        shadows: AppShadows.success,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -611,48 +628,53 @@ class _GoalInsightCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                width: 58,
+                height: 58,
+                decoration: AppDecoration.glass(
+                  opacity: 0.14,
+                  radius: AppRadius.xl,
                 ),
                 child: const Icon(
-                  Icons.psychology_alt_rounded,
+                  AppIcons.stress,
                   color: Colors.white,
                   size: 28,
                 ),
               ),
-              const SizedBox(width: 16),
+
+              const SizedBox(width: AppSpacing.md),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'AI Goal Insight',
+                      'AI Health Insight',
                       style: AppTextStyles.heading4.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 4),
+
+                    const SizedBox(height: AppSpacing.xxs),
+
                     Text(
-                      'Đánh giá mục tiêu của bạn',
+                      'Đánh giá định hướng sức khỏe',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white.withOpacity(0.82),
+                        color: Colors.white.withOpacity(0.84),
                       ),
                     ),
                   ],
                 ),
               ),
+
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(AppRadius.circular),
+                decoration: AppDecoration.glass(
+                  opacity: 0.12,
+                  radius: AppRadius.circular,
                 ),
                 child: Text(
                   '$percent%',
@@ -664,22 +686,28 @@ class _GoalInsightCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          _InsightRow(
-            icon: Icons.flag_rounded,
+
+          const SizedBox(height: AppSpacing.xl),
+
+          _InsightTile(
+            icon: AppIcons.flag,
             title: 'Mục tiêu đã chọn',
             value: '$selectedCount',
           ),
-          const SizedBox(height: 16),
-          const _InsightRow(
-            icon: Icons.auto_graph_rounded,
+
+          const SizedBox(height: AppSpacing.md),
+
+          const _InsightTile(
+            icon: AppIcons.health,
             title: 'AI Status',
-            value: 'Đang tối ưu',
+            value: 'Đang phân tích',
           ),
-          const SizedBox(height: 16),
-          const _InsightRow(
-            icon: Icons.health_and_safety_rounded,
-            title: 'Tracking',
+
+          const SizedBox(height: AppSpacing.md),
+
+          const _InsightTile(
+            icon: AppIcons.success,
+            title: 'Health Tracking',
             value: 'Đã kích hoạt',
           ),
         ],
@@ -688,12 +716,12 @@ class _GoalInsightCard extends StatelessWidget {
   }
 }
 
-class _InsightRow extends StatelessWidget {
+class _InsightTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String value;
 
-  const _InsightRow({
+  const _InsightTile({
     required this.icon,
     required this.title,
     required this.value,
@@ -703,14 +731,17 @@ class _InsightRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white, size: 20),
-        const SizedBox(width: 12),
+        Icon(icon, size: 20, color: Colors.white),
+
+        const SizedBox(width: AppSpacing.sm),
+
         Expanded(
           child: Text(
             title,
             style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
           ),
         ),
+
         Text(
           value,
           style: AppTextStyles.labelLarge.copyWith(
@@ -723,21 +754,22 @@ class _InsightRow extends StatelessWidget {
   }
 }
 
-class _AnimatedAppear extends StatefulWidget {
+class _AppearAnimation extends StatefulWidget {
   final Widget child;
   final int delay;
 
-  const _AnimatedAppear({required this.child, required this.delay});
+  const _AppearAnimation({required this.child, required this.delay});
 
   @override
-  State<_AnimatedAppear> createState() => _AnimatedAppearState();
+  State<_AppearAnimation> createState() => _AppearAnimationState();
 }
 
-class _AnimatedAppearState extends State<_AnimatedAppear>
+class _AppearAnimationState extends State<_AppearAnimation>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+
   late final Animation<double> _opacity;
-  late final Animation<Offset> _offset;
+  late final Animation<Offset> _slide;
 
   @override
   void initState() {
@@ -745,15 +777,21 @@ class _AnimatedAppearState extends State<_AnimatedAppear>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: AppDuration.onboarding,
     );
 
-    _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _opacity = CurvedAnimation(
+      parent: _controller,
+      curve: AppAnimations.smoothCurve,
+    );
 
-    _offset = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _slide = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: AppAnimations.decelerateCurve,
+          ),
+        );
 
     Future.delayed(Duration(milliseconds: widget.delay), () {
       if (mounted) {
@@ -772,31 +810,31 @@ class _AnimatedAppearState extends State<_AnimatedAppear>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _opacity,
-      child: SlideTransition(position: _offset, child: widget.child),
+      child: SlideTransition(position: _slide, child: widget.child),
     );
   }
 }
 
-class _FloatingOrb extends StatelessWidget {
+class _FloatingBlur extends StatelessWidget {
   final AnimationController controller;
   final double size;
-  final Color color;
+  final Gradient gradient;
 
-  const _FloatingOrb({
+  const _FloatingBlur({
     required this.controller,
     required this.size,
-    required this.color,
+    required this.gradient,
   });
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (context, child) {
+      builder: (_, child) {
         return Transform.translate(
           offset: Offset(
-            math.sin(controller.value * math.pi * 2) * 14,
-            math.cos(controller.value * math.pi * 2) * 14,
+            math.sin(controller.value * math.pi * 2) * 18,
+            math.cos(controller.value * math.pi * 2) * 18,
           ),
           child: child,
         );
@@ -804,20 +842,20 @@ class _FloatingOrb extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+        decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient),
       ),
     );
   }
 }
 
-class _GoalsBackgroundPainter extends CustomPainter {
+class _BackgroundPainter extends CustomPainter {
   final double animation;
 
-  const _GoalsBackgroundPainter({required this.animation});
+  const _BackgroundPainter({required this.animation});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final rect = Offset.zero & size;
 
     final paint = Paint()
       ..shader = LinearGradient(
@@ -825,7 +863,7 @@ class _GoalsBackgroundPainter extends CustomPainter {
         end: Alignment.bottomRight,
         colors: [
           AppColors.background,
-          AppColors.success.withOpacity(0.08),
+          AppColors.primarySoft.withOpacity(0.7),
           Colors.white,
         ],
         transform: GradientRotation(animation * math.pi),
@@ -834,20 +872,20 @@ class _GoalsBackgroundPainter extends CustomPainter {
     canvas.drawRect(rect, paint);
 
     final gridPaint = Paint()
-      ..color = AppColors.success.withOpacity(0.03)
+      ..color = AppColors.primary.withOpacity(0.035)
       ..strokeWidth = 1;
 
-    for (double i = 0; i < size.width; i += 40) {
+    for (double i = 0; i <= size.width; i += 42) {
       canvas.drawLine(Offset(i, 0), Offset(i, size.height), gridPaint);
     }
 
-    for (double i = 0; i < size.height; i += 40) {
+    for (double i = 0; i <= size.height; i += 42) {
       canvas.drawLine(Offset(0, i), Offset(size.width, i), gridPaint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _GoalsBackgroundPainter oldDelegate) {
+  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) {
     return oldDelegate.animation != animation;
   }
 }

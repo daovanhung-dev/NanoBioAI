@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/router/router.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/widgets/loading_genAI.dart';
 
 import '../controllers/onboarding_controller.dart';
@@ -9,347 +10,853 @@ import '../controllers/onboarding_controller.dart';
 class ReviewStep extends ConsumerWidget {
   const ReviewStep({super.key});
 
-  String _genderLabel(String value) {
-    switch (value) {
-      case 'male':
-        return 'Nam';
+  static const _sectionGap = SizedBox(height: AppSpacing.sectionSpacing);
 
-      case 'female':
-        return 'Nữ';
+  String _normalize(String value) {
+    final text = value.trim();
 
-      default:
-        return 'Khác';
+    if (text.isEmpty) {
+      return 'Chưa cập nhật';
     }
+
+    return text;
   }
 
-  String _goalLabel(String code) {
-    const labels = {
-      'lose_weight': 'Giảm cân',
-      'gain_weight': 'Tăng cân',
-      'lose_belly_fat': 'Giảm mỡ bụng',
-      'gain_muscle': 'Tăng cơ',
-      'improve_digestion': 'Cải thiện tiêu hóa',
-      'sleep_better': 'Ngủ ngon hơn',
-      'reduce_fatigue': 'Giảm mệt mỏi',
-      'increase_energy': 'Tăng năng lượng',
-      'beautify_skin': 'Làm đẹp da',
-      'immune_boost': 'Tăng đề kháng',
-      'stable_blood_sugar': 'Ổn định đường huyết',
-      'stable_blood_pressure': 'Ổn định huyết áp',
-      'joint_health': 'Cải thiện xương khớp',
-      'detox_body': 'Thanh lọc cơ thể',
-      'overall_health': 'Cải thiện sức khỏe tổng thể',
-    };
+  String _formatCode(String value) {
+    final raw = value.trim();
 
-    return labels[code] ?? code;
-  }
-
-  String _conditionLabel(String code) {
-    const labels = {
-      'stomach_pain': 'Đau dạ dày',
-      'constipation': 'Táo bón',
-      'bloating': 'Đầy hơi, khó tiêu',
-      'insomnia': 'Mất ngủ',
-      'stress': 'Stress, căng thẳng',
-      'joint_pain': 'Đau nhức xương khớp',
-      'high_blood_sugar': 'Đường huyết cao',
-      'blood_pressure_issue': 'Huyết áp cao/thấp',
-      'high_cholesterol': 'Mỡ máu cao',
-      'fatty_liver': 'Gan nhiễm mỡ',
-      'tired_always': 'Hay mệt mỏi',
-      'overweight': 'Thừa cân / béo phì',
-      'underweight': 'Gầy yếu / khó hấp thu',
-      'no_special_issue': 'Không có vấn đề đặc biệt',
-    };
-
-    return labels[code] ?? code;
-  }
-
-  String _habitLabel(String code) {
-    const labels = {
-      'skip_breakfast': 'Thường xuyên bỏ bữa sáng',
-      'eat_late': 'Ăn khuya',
-      'eat_sweet': 'Ăn nhiều đồ ngọt',
-      'eat_oily': 'Ăn nhiều dầu mỡ',
-      'low_vegetable': 'Ít ăn rau',
-      'low_water': 'Uống ít nước',
-      'fast_food': 'Ăn nhiều đồ ăn nhanh',
-      'alcohol': 'Uống rượu bia',
-      'coffee_high': 'Uống nhiều cà phê',
-    };
-
-    return labels[code] ?? code;
-  }
-
-  String _sleepLabel(String value) {
-    switch (value) {
-      case 'good':
-        return 'Ngủ tốt';
-
-      case 'normal':
-        return 'Bình thường';
-
-      case 'bad':
-        return 'Khó ngủ / ngủ kém';
-
-      default:
-        return value;
+    if (raw.isEmpty) {
+      return 'Chưa cập nhật';
     }
+
+    final normalized = raw.replaceAll('_', ' ').replaceAll(RegExp(r'\s+'), ' ');
+
+    return normalized
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) {
+            return word;
+          }
+
+          return '${word[0].toUpperCase()}${word.substring(1)}';
+        })
+        .join(' ');
   }
 
-  String _activityLabel(String value) {
-    switch (value) {
-      case 'low':
-        return 'Ít vận động';
+  String _number(double value, {String suffix = ''}) {
+    return '${value.toStringAsFixed(1)}$suffix';
+  }
 
-      case 'medium':
-        return 'Vận động vừa';
-
-      case 'high':
-        return 'Vận động nhiều';
-
-      default:
-        return value;
-    }
+  bool _hasValue(String value) {
+    return value.trim().isNotEmpty;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(onboardingProvider);
-
     final controller = ref.read(onboardingProvider.notifier);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+    final personalItems = <_ReviewInfo>[
+      _ReviewInfo(
+        title: 'Họ và tên',
+        value: _normalize(state.fullName),
+        icon: AppIcons.profile,
+      ),
+      _ReviewInfo(
+        title: 'Email',
+        value: _normalize(state.email),
+        icon: AppIcons.email,
+      ),
+      _ReviewInfo(
+        title: 'Số điện thoại',
+        value: _normalize(state.phone),
+        icon: AppIcons.call,
+      ),
+      _ReviewInfo(
+        title: 'Giới tính',
+        value: _formatCode(state.gender),
+        icon: AppIcons.account,
+      ),
+      _ReviewInfo(
+        title: 'Năm sinh',
+        value: state.birthYear.toString(),
+        icon: AppIcons.calendar,
+      ),
+      _ReviewInfo(
+        title: 'Nghề nghiệp',
+        value: _normalize(state.occupation),
+        icon: AppIcons.dashboard,
+      ),
+    ];
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final goals = <String>[
+      ...state.goals.map(_formatCode),
+      if (_hasValue(state.otherGoal)) _formatCode(state.otherGoal),
+    ];
 
-        children: [
-          const Text(
-            'Xem lại thông tin',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
+    final conditions = <String>[
+      ...state.conditions.map(_formatCode),
+      if (_hasValue(state.otherCondition)) _formatCode(state.otherCondition),
+    ];
 
-          const SizedBox(height: 24),
+    final habits = state.habits.map(_formatCode).toList();
 
-          _section(
-            title: 'Thông tin cá nhân',
+    final hasAllergy =
+        _hasValue(state.allergyName) || _hasValue(state.allergyNote);
+
+    final hasTreatment =
+        _hasValue(state.treatmentName) ||
+        _hasValue(state.medicationName) ||
+        _hasValue(state.treatmentNote);
+
+    return Container(
+      decoration: AppDecoration.base(gradient: AppGradients.onboarding),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.pagePadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _item('Họ và tên', state.fullName),
-
-              _item('Email', state.email),
-
-              _item('Số điện thoại', state.phone),
-
-              _item('Giới tính', _genderLabel(state.gender)),
-
-              _item('Năm sinh', state.birthYear.toString()),
-
-              _item('Nghề nghiệp', state.occupation),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          _section(
-            title: 'Thông tin cơ thể',
-            children: [
-              _item('Chiều cao', '${state.heightCm.toStringAsFixed(1)} cm'),
-
-              _item('Cân nặng', '${state.weightKg.toStringAsFixed(1)} kg'),
-
-              _item('BMI', state.bmi.toStringAsFixed(1)),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          _section(
-            title: 'Mục tiêu sức khỏe',
-            children: [
-              ...state.goals.map((goal) => _bullet(_goalLabel(goal))),
-
-              if (state.otherGoal.trim().isNotEmpty) _bullet(state.otherGoal),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          _section(
-            title: 'Tình trạng sức khỏe',
-            children: [
-              ...state.conditions.map(
-                (condition) => _bullet(_conditionLabel(condition)),
+              TweenAnimationBuilder<double>(
+                duration: AppDuration.normal,
+                tween: Tween(begin: 0, end: 1),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, 24 * (1 - value)),
+                      child: child,
+                    ),
+                  );
+                },
+                child: _HeroSection(
+                  name: _normalize(state.fullName),
+                  email: _normalize(state.email),
+                  bmi: state.bmi,
+                  gender: _formatCode(state.gender),
+                ),
               ),
 
-              if (state.otherCondition.trim().isNotEmpty)
-                _bullet(state.otherCondition),
-            ],
-          ),
+              _sectionGap,
 
-          const SizedBox(height: 20),
-
-          _section(
-            title: 'Lối sống',
-            children: [
-              ...state.habits.map((habit) => _bullet(_habitLabel(habit))),
-
-              _item('Chất lượng giấc ngủ', _sleepLabel(state.sleepQuality)),
-
-              _item('Mức vận động', _activityLabel(state.activityLevel)),
-
-              _item('Lượng nước / ngày', state.waterPerDay),
-            ],
-          ),
-
-          if (state.treatmentName.trim().isNotEmpty ||
-              state.medicationName.trim().isNotEmpty) ...[
-            const SizedBox(height: 20),
-
-            _section(
-              title: 'Dị ứng thực phẩm',
-              children: [
-                _item('Tên dị ứng', state.allergyName),
-
-                _item('Ghi chú', state.allergyNote),
-              ],
-            ),
-          ],
-
-          if (state.treatmentName.trim().isNotEmpty ||
-              state.medicationName.trim().isNotEmpty) ...[
-            const SizedBox(height: 20),
-
-            _section(
-              title: 'Điều trị hiện tại',
-              children: [
-                _item('Điều trị', state.treatmentName),
-
-                _item('Thuốc đang dùng', state.medicationName),
-
-                _item('Ghi chú', state.treatmentNote),
-              ],
-            ),
-          ],
-
-          const SizedBox(height: 20),
-
-          _section(
-            title: 'Mối quan tâm sức khỏe',
-            children: [
-              Text(state.concernText, style: const TextStyle(fontSize: 15)),
-            ],
-          ),
-
-          const SizedBox(height: 32),
-
-          SizedBox(
-            width: double.infinity,
-
-            child: ElevatedButton(
-              onPressed: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AIGeneratingPage()),
-                );
-
-                try {
-                  await controller.saveOnboarding();
-
-                  await AppPrefs.setOnboardingCompleted(true);
-
-                  if (context.mounted) {
-                    AppNavigator.goMenu(context);
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    Navigator.pop(context);
-
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(e.toString())));
-                  }
-                }
-              },
-
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-
-                child: Text('Hoàn tất khảo sát'),
+              _AnimatedSection(
+                delay: 80,
+                child: _SectionContainer(
+                  title: 'Thông tin cá nhân',
+                  subtitle: 'Thông tin hồ sơ cơ bản',
+                  icon: AppIcons.profile,
+                  child: Column(
+                    children: personalItems
+                        .map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.itemSpacing,
+                            ),
+                            child: _InfoTile(item: item),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
               ),
-            ),
+
+              _sectionGap,
+
+              _AnimatedSection(
+                delay: 140,
+                child: _SectionContainer(
+                  title: 'Chỉ số cơ thể',
+                  subtitle: 'Thông tin thể trạng hiện tại',
+                  icon: AppIcons.health,
+                  child: GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: AppSpacing.itemSpacing,
+                    mainAxisSpacing: AppSpacing.itemSpacing,
+                    childAspectRatio: 1.08,
+                    children: [
+                      _MetricCard(
+                        icon: AppIcons.steps,
+                        title: 'Chiều cao',
+                        value: _number(state.heightCm, suffix: ' cm'),
+                        gradient: AppGradients.primary,
+                      ),
+                      _MetricCard(
+                        icon: AppIcons.weight,
+                        title: 'Cân nặng',
+                        value: _number(state.weightKg, suffix: ' kg'),
+                        gradient: AppGradients.health,
+                      ),
+                      _MetricCard(
+                        icon: AppIcons.health,
+                        title: 'BMI',
+                        value: state.bmi.toStringAsFixed(1),
+                        gradient: AppGradients.ai,
+                      ),
+                      _MetricCard(
+                        icon: AppIcons.favorite,
+                        title: 'Đánh giá',
+                        value: _bmiLabel(state.bmi),
+                        gradient: AppGradients.premium,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              _sectionGap,
+
+              _AnimatedSection(
+                delay: 220,
+                child: _SectionContainer(
+                  title: 'Mục tiêu sức khỏe',
+                  subtitle: 'Danh sách mục tiêu',
+                  icon: AppIcons.star,
+                  child: _ChipGroup(items: goals),
+                ),
+              ),
+
+              _sectionGap,
+
+              _AnimatedSection(
+                delay: 300,
+                child: _SectionContainer(
+                  title: 'Tình trạng sức khỏe',
+                  subtitle: 'Thông tin sức khỏe hiện tại',
+                  icon: AppIcons.warning,
+                  child: _ChipGroup(items: conditions),
+                ),
+              ),
+
+              _sectionGap,
+
+              _AnimatedSection(
+                delay: 380,
+                child: _SectionContainer(
+                  title: 'Lối sống',
+                  subtitle: 'Thói quen sinh hoạt',
+                  icon: AppIcons.meditation,
+                  child: Column(
+                    children: [
+                      _ChipGroup(items: habits),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
+                      _LifestyleTile(
+                        icon: AppIcons.sleep,
+                        title: 'Chất lượng giấc ngủ',
+                        value: _formatCode(state.sleepQuality),
+                      ),
+                      const SizedBox(height: AppSpacing.itemSpacing),
+                      _LifestyleTile(
+                        icon: AppIcons.fitness,
+                        title: 'Mức vận động',
+                        value: _formatCode(state.activityLevel),
+                      ),
+                      const SizedBox(height: AppSpacing.itemSpacing),
+                      _LifestyleTile(
+                        icon: AppIcons.water,
+                        title: 'Lượng nước mỗi ngày',
+                        value: _normalize(state.waterPerDay),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              if (hasAllergy) ...[
+                _sectionGap,
+                _AnimatedSection(
+                  delay: 440,
+                  child: _SectionContainer(
+                    title: 'Dị ứng',
+                    subtitle: 'Thông tin dị ứng',
+                    icon: AppIcons.warning,
+                    child: Column(
+                      children: [
+                        _InfoTile(
+                          item: _ReviewInfo(
+                            title: 'Tên dị ứng',
+                            value: _normalize(state.allergyName),
+                            icon: AppIcons.warning,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.itemSpacing),
+                        _InfoTile(
+                          item: _ReviewInfo(
+                            title: 'Ghi chú',
+                            value: _normalize(state.allergyNote),
+                            icon: AppIcons.info,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+
+              if (hasTreatment) ...[
+                _sectionGap,
+                _AnimatedSection(
+                  delay: 500,
+                  child: _SectionContainer(
+                    title: 'Điều trị hiện tại',
+                    subtitle: 'Thông tin thuốc và điều trị',
+                    icon: AppIcons.health,
+                    child: Column(
+                      children: [
+                        _InfoTile(
+                          item: _ReviewInfo(
+                            title: 'Điều trị',
+                            value: _normalize(state.treatmentName),
+                            icon: AppIcons.health,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.itemSpacing),
+                        _InfoTile(
+                          item: _ReviewInfo(
+                            title: 'Thuốc đang dùng',
+                            value: _normalize(state.medicationName),
+                            icon: AppIcons.favorite,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.itemSpacing),
+                        _InfoTile(
+                          item: _ReviewInfo(
+                            title: 'Ghi chú',
+                            value: _normalize(state.treatmentNote),
+                            icon: AppIcons.info,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+
+              _sectionGap,
+
+              _AnimatedSection(
+                delay: 560,
+                child: _SectionContainer(
+                  title: 'Mối quan tâm sức khỏe',
+                  subtitle: 'Thông tin người dùng chia sẻ',
+                  icon: AppIcons.chat,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                    decoration: AppDecoration.container(
+                      color: AppColors.primarySoft,
+                      radius: AppRadius.lg,
+                    ),
+                    child: Text(
+                      _normalize(state.concernText),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textPrimary,
+                        height: 1.7,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+
+              SizedBox(
+                width: double.infinity,
+                child: DecoratedBox(
+                  decoration: AppDecoration.primaryGradient(
+                    radius: AppRadius.buttonLarge,
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AIGeneratingPage(),
+                        ),
+                      );
+
+                      try {
+                        await controller.saveOnboarding();
+
+                        await AppPrefs.setOnboardingCompleted(true);
+
+                        if (context.mounted) {
+                          AppNavigator.goMenu(context);
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          Navigator.pop(context);
+
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(e.toString())));
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.large,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppRadius.buttonLarge,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      'Hoàn tất khảo sát',
+                      style: AppTextStyles.button.copyWith(
+                        fontWeight: AppTypography.bold,
+                        fontSize: 17,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _section({required String title, required List<Widget> children}) {
+  static String _bmiLabel(double bmi) {
+    if (bmi < 18.5) {
+      return 'Thiếu cân';
+    }
+
+    if (bmi < 25) {
+      return 'Ổn định';
+    }
+
+    if (bmi < 30) {
+      return 'Thừa cân';
+    }
+
+    return 'Cần theo dõi';
+  }
+}
+
+class _AnimatedSection extends StatelessWidget {
+  const _AnimatedSection({required this.child, required this.delay});
+
+  final Widget child;
+  final int delay;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: AppDuration.normal.inMilliseconds),
+      tween: Tween(begin: 0, end: 1),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, widget) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 20 * (1 - value)),
+            child: widget,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+}
+
+class _HeroSection extends StatelessWidget {
+  const _HeroSection({
+    required this.name,
+    required this.email,
+    required this.bmi,
+    required this.gender,
+  });
+
+  final String name;
+  final String email;
+  final double bmi;
+  final String gender;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-
-      padding: const EdgeInsets.all(16),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-
+      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+      decoration: AppDecoration.primaryGradient(radius: AppRadius.cardLarge),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: AppDecoration.glass(radius: AppRadius.xl),
+            child: const Icon(AppIcons.health, size: 34, color: Colors.white),
           ),
-
-          const SizedBox(height: 12),
-
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _item(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          Expanded(
-            flex: 4,
-
-            child: Text(
-              '$label:',
-              style: const TextStyle(fontWeight: FontWeight.w600),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Xem lại hồ sơ sức khỏe',
+            style: AppTextStyles.heading2.copyWith(
+              color: Colors.white,
+              fontWeight: AppTypography.extraBold,
             ),
           ),
-
-          Expanded(flex: 6, child: Text(value)),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'AI sẽ sử dụng dữ liệu khảo sát để phân tích và cá nhân hóa trải nghiệm sức khỏe.',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Colors.white.withOpacity(0.92),
+              height: 1.7,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.cardPadding),
+            decoration: AppDecoration.glass(radius: AppRadius.xl),
+            child: Row(
+              children: [
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: AppDecoration.circle(
+                    color: Colors.white.withOpacity(0.14),
+                  ),
+                  child: const Icon(AppIcons.profile, color: Colors.white),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.heading4.copyWith(
+                          color: Colors.white,
+                          fontWeight: AppTypography.extraBold,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        email,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              _GlassPill(
+                icon: AppIcons.health,
+                text: 'BMI ${bmi.toStringAsFixed(1)}',
+              ),
+              _GlassPill(icon: AppIcons.profile, text: gender),
+            ],
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _bullet(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+class _SectionContainer extends StatelessWidget {
+  const _SectionContainer({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.child,
+  });
 
-      child: Row(
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+      decoration: AppDecoration.premiumCard(),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
-          const Text('• '),
-
-          Expanded(child: Text(text)),
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
+                child: Icon(icon, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.sectionTitle.copyWith(
+                        fontWeight: AppTypography.extraBold,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(subtitle, style: AppTextStyles.sectionSubtitle),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          child,
         ],
       ),
     );
   }
+}
+
+class _InfoTile extends StatelessWidget {
+  const _InfoTile({required this.item});
+
+  final _ReviewInfo item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+      decoration: AppDecoration.container(
+        color: AppColors.cardAlt,
+        radius: AppRadius.lg,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: AppDecoration.circle(color: AppColors.primarySoft),
+            child: Icon(item.icon, color: AppColors.primary),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.title, style: AppTextStyles.labelMedium),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  item.value,
+                  style: AppTextStyles.bodyEmphasis.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: AppTypography.semiBold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricCard extends StatelessWidget {
+  const _MetricCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.gradient,
+  });
+
+  final IconData icon;
+  final String title;
+  final String value;
+  final Gradient gradient;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+      decoration: AppDecoration.card(
+        gradient: gradient,
+        radius: AppRadius.xl,
+        shadows: AppShadows.primary,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: AppDecoration.glass(radius: AppRadius.lg),
+            child: Icon(icon, color: Colors.white),
+          ),
+          const Spacer(),
+          Text(
+            title,
+            style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            value,
+            style: AppTextStyles.heading4.copyWith(
+              color: Colors.white,
+              fontWeight: AppTypography.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LifestyleTile extends StatelessWidget {
+  const _LifestyleTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+      decoration: AppDecoration.container(
+        color: AppColors.surface,
+        radius: AppRadius.lg,
+        border: AppDecoration.border(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: AppDecoration.circle(color: AppColors.secondarySoft),
+            child: Icon(icon, color: AppColors.secondary),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppTextStyles.labelMedium),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  value,
+                  style: AppTextStyles.bodyEmphasis.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: AppTypography.semiBold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChipGroup extends StatelessWidget {
+  const _ChipGroup({required this.items});
+
+  final List<String> items;
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return Text('Chưa có dữ liệu', style: AppTextStyles.bodyMedium);
+    }
+
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: items.map((item) {
+        return Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.buttonPaddingHorizontal,
+            vertical: AppSpacing.buttonPaddingVertical,
+          ),
+          decoration: AppDecoration.gradient(
+            colors: [AppColors.primarySoft, Colors.white],
+            radius: AppRadius.circular,
+            shadows: AppShadows.xs,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(AppIcons.checkIn, size: 16, color: AppColors.primary),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                item,
+                style: AppTextStyles.chipLabel.copyWith(
+                  fontWeight: AppTypography.semiBold,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _GlassPill extends StatelessWidget {
+  const _GlassPill({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: AppDecoration.glass(radius: AppRadius.circular),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            text,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: Colors.white,
+              fontWeight: AppTypography.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewInfo {
+  const _ReviewInfo({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
+
+  final String title;
+  final String value;
+  final IconData icon;
 }

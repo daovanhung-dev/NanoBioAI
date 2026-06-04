@@ -3,71 +3,33 @@ import 'package:flutter/material.dart';
 /// ============================================================
 /// App Colors
 /// ------------------------------------------------------------
-/// - Clean Architecture Friendly
-/// - Scalable Design System
-/// - Ready for Light/Dark Theme
-/// - Semantic Naming
-/// - UI/UX Modern Style
+/// Scalable semantic color system for Flutter themes.
+/// - Backward compatible with existing code
+/// - Light/Dark ready
+/// - Semantic naming
+/// - Reusable across product types
 /// ============================================================
 class AppColors {
   AppColors._();
 
   // ============================================================
-  // BRAND COLORS
+  // BRAND
   // ============================================================
 
-  /// Main brand color
   static const Color primary = Color(0xFF3B82F6);
-
-  /// Hover / active / stronger state
   static const Color primaryDark = Color(0xFF2563EB);
-
-  /// Soft background / light state
   static const Color primaryLight = Color(0xFF93C5FD);
-
-  /// Extra soft primary background
   static const Color primarySoft = Color(0xFFEFF6FF);
 
-  /// Secondary accent
   static const Color secondary = Color(0xFF06B6D4);
+  static const Color secondaryDark = Color(0xFF0891B2);
+  static const Color secondaryLight = Color(0xFF67E8F9);
+  static const Color secondarySoft = Color(0xFFE0F7FA);
+
+  static const Color tertiary = Color(0xFF8B5CF6);
 
   // ============================================================
-  // BACKGROUND & SURFACE
-  // ============================================================
-
-  /// App background
-  static const Color background = Color(0xFFF8FAFC);
-
-  /// Scaffold background
-  static const Color scaffold = Color(0xFFF1F5F9);
-
-  /// Card / container surface
-  static const Color surface = Colors.white;
-
-  /// Elevated surface
-  static const Color surfaceElevated = Color(0xFFFFFFFF);
-
-  /// Modal / dialog background
-  static const Color modalBackground = Colors.white;
-
-  // ============================================================
-  // TEXT COLORS
-  // ============================================================
-
-  /// Main text
-  static const Color textPrimary = Color(0xFF0F172A);
-
-  /// Secondary text
-  static const Color textSecondary = Color(0xFF475569);
-
-  /// Hint / disabled text
-  static const Color textHint = Color(0xFF94A3B8);
-
-  /// Text on dark backgrounds
-  static const Color textWhite = Colors.white;
-
-  // ============================================================
-  // STATUS COLORS
+  // SEMANTIC STATUS
   // ============================================================
 
   static const Color success = Color(0xFF22C55E);
@@ -82,34 +44,104 @@ class AppColors {
   static const Color info = Color(0xFF0EA5E9);
   static const Color infoSoft = Color(0xFFE0F2FE);
 
-  // ============================================================
-  // BORDER & DIVIDER
-  // ============================================================
-
-  /// Default border
-  static const Color border = Color(0xFFE2E8F0);
-
-  /// Light border
-  static const Color borderLight = Color(0xFFF1F5F9);
-
-  /// Divider color
-  static const Color divider = Color(0xFFE5E7EB);
+  static const Color danger = error;
+  static const Color dangerSoft = errorSoft;
 
   // ============================================================
-  // COMPONENT COLORS
+  // LIGHT SURFACES
   // ============================================================
 
-  /// Card color
+  static const Color background = Color(0xFFF8FAFC);
+  static const Color scaffold = Color(0xFFF1F5F9);
+
+  static const Color surface = Colors.white;
+  static const Color surfaceElevated = Color(0xFFFFFFFF);
+  static const Color modalBackground = Colors.white;
+
   static const Color card = Colors.white;
-
-  /// Input background
+  static const Color cardAlt = Color(0xFFF8FAFC);
   static const Color inputBackground = Color(0xFFF8FAFC);
 
-  /// Disabled component
+  // ============================================================
+  // DARK SURFACES
+  // ============================================================
+
+  static const Color darkBackground = Color(0xFF0F172A);
+  static const Color darkScaffold = Color(0xFF0B1220);
+
+  static const Color darkSurface = Color(0xFF111827);
+  static const Color darkSurfaceElevated = Color(0xFF1E293B);
+  static const Color darkModalBackground = Color(0xFF111827);
+
+  static const Color darkCard = Color(0xFF1E293B);
+  static const Color darkCardAlt = Color(0xFF162033);
+  static const Color darkInputBackground = Color(0xFF0F172A);
+
+  // ============================================================
+  // TEXT
+  // ============================================================
+
+  static const Color textPrimary = Color(0xFF0F172A);
+  static const Color textSecondary = Color(0xFF475569);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color textHint = Color(0xFF94A3B8);
+  static const Color textDisabled = Color(0xFFCBD5E1);
+  static const Color textInverse = Colors.white;
+  static const Color textWhite = Colors.white;
+
+  static const Color darkTextPrimary = Colors.white;
+  static const Color darkTextSecondary = Color(0xFFCBD5E1);
+  static const Color darkTextMuted = Color(0xFF94A3B8);
+  static const Color darkTextHint = Color(0xFF64748B);
+  static const Color darkTextDisabled = Color(0xFF475569);
+  static const Color darkTextInverse = Color(0xFF0F172A);
+
+  // ============================================================
+  // BORDERS / DIVIDERS / OUTLINES
+  // ============================================================
+
+  static const Color border = Color(0xFFE2E8F0);
+  static const Color borderLight = Color(0xFFF1F5F9);
+  static const Color divider = Color(0xFFE5E7EB);
+  static const Color outline = Color(0xFFD8E0EA);
+
+  static const Color darkBorder = Color(0xFF334155);
+  static const Color darkBorderLight = Color(0xFF1E293B);
+  static const Color darkDivider = Color(0xFF334155);
+  static const Color darkOutline = Color(0xFF475569);
+
+  // ============================================================
+  // STATES / OVERLAYS
+  // ============================================================
+
+  static const Color overlay = Color(0x55000000);
+  static const Color overlayStrong = Color(0x88000000);
+  static const Color scrim = Color(0x66000000);
+
+  static const Color hover = Color(0x0F3B82F6);
+  static const Color pressed = Color(0x1A3B82F6);
+  static const Color focused = Color(0x223B82F6);
+  static const Color selected = Color(0x143B82F6);
   static const Color disabled = Color(0xFFCBD5E1);
 
-  /// Shadow overlay
-  static const Color overlay = Color(0x55000000);
+  static const Color darkOverlay = Color(0x99000000);
+  static const Color darkHover = Color(0x203B82F6);
+  static const Color darkPressed = Color(0x2A3B82F6);
+  static const Color darkFocused = Color(0x333B82F6);
+  static const Color darkSelected = Color(0x263B82F6);
+  static const Color darkDisabled = Color(0xFF475569);
+
+  // ============================================================
+  // NAV / ICON
+  // ============================================================
+
+  static const Color icon = Color(0xFF64748B);
+  static const Color iconSecondary = Color(0xFF94A3B8);
+  static const Color iconDisabled = Color(0xFFCBD5E1);
+
+  static const Color darkIcon = Color(0xFFCBD5E1);
+  static const Color darkIconSecondary = Color(0xFF94A3B8);
+  static const Color darkIconDisabled = Color(0xFF475569);
 
   // ============================================================
   // GRADIENTS
@@ -133,17 +165,49 @@ class AppColors {
     ],
   );
 
+  static const LinearGradient premiumGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF3B82F6),
+      Color(0xFF8B5CF6),
+    ],
+  );
+
+  static const LinearGradient successGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF22C55E),
+      Color(0xFF16A34A),
+    ],
+  );
+
   // ============================================================
-  // DARK MODE READY
+  // ALIASES FOR BACKWARD COMPATIBILITY
   // ============================================================
 
-  static const Color darkBackground = Color(0xFF0F172A);
-  static const Color darkSurface = Color(0xFF1E293B);
+  static const Color backgroundColor = background;
+  static const Color surfaceColor = surface;
+  static const Color cardColor = card;
+  static const Color modalColor = modalBackground;
+  static const Color borderColor = border;
+  static const Color dividerColor = divider;
+  static const Color overlayColor = overlay;
 
-  static const Color darkCard = Color(0xFF1E293B);
+  // Existing names already used in the theme file
+  static const Color scaffoldBackground = scaffold;
+  static const Color cardSurface = card;
+  static const Color textPrimaryColor = textPrimary;
+  static const Color textSecondaryColor = textSecondary;
+  static const Color textHintColor = textHint;
 
-  static const Color darkTextPrimary = Colors.white;
-  static const Color darkTextSecondary = Color(0xFFCBD5E1);
+  // ============================================================
+  // DARK THEME SET
+  // ============================================================
 
-  static const Color darkBorder = Color(0xFF334155);
+  static const Color darkPrimary = primaryLight;
+  static const Color darkSecondary = secondaryLight;
+  static const Color darkSurfaceCard = darkCard;
+  static const Color darkSurfaceInput = darkInputBackground;
 }
