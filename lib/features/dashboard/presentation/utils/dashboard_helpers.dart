@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nano_app/core/theme/theme.dart';
 
 String formatSteps(int steps) {
   if (steps >= 1000) {

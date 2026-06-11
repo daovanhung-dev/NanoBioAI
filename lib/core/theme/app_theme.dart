@@ -31,8 +31,6 @@ class AppTheme {
     );
 
     return baseTheme.copyWith(
-      useMaterial3: true,
-
       brightness: Brightness.light,
       colorScheme: colorScheme,
 
@@ -40,7 +38,6 @@ class AppTheme {
       canvasColor: AppColors.background,
       cardColor: AppColors.card,
       dividerColor: AppColors.divider,
-      indicatorColor: AppColors.primary,
 
       visualDensity: VisualDensity.standard,
       materialTapTargetSize: MaterialTapTargetSize.padded,
@@ -359,7 +356,7 @@ class AppTheme {
           TargetPlatform.fuchsia:
               ZoomPageTransitionsBuilder(),
         },
-      ),
+      ), tabBarTheme: TabBarThemeData(indicatorColor: AppColors.primary),
     );
   }
 

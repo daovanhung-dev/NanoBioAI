@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 import '../../enums/insight_type.dart';
-import '../../models/dashboard_mock_stats.dart';
 import 'insight_card.dart';
 import 'insight_data.dart';
 

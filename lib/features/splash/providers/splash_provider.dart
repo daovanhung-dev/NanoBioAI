@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/features/splash/providers/splash_state.dart';
-import 'package:nano_app/core/core.dart';
 
 final splashProvider = NotifierProvider<SplashNotifier, SplashStatus>(
   SplashNotifier.new,

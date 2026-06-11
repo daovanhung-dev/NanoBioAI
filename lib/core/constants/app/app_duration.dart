@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 abstract class AppDuration {
   static const splash = Duration(seconds: 2);

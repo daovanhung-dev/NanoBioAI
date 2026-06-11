@@ -45,7 +45,7 @@ class SettingsView extends StatelessWidget {
                           subtitle: 'Nhắc nhở và thông báo hệ thống',
                           trailing: Switch(
                             value: true,
-                            activeColor: AppColors.primary,
+                            activeThumbColor: AppColors.primary,
                             onChanged: (_) {},
                           ),
                         ),
@@ -62,7 +62,7 @@ class SettingsView extends StatelessWidget {
                           subtitle: 'Tối ưu trải nghiệm ban đêm',
                           trailing: Switch(
                             value: false,
-                            activeColor: AppColors.primary,
+                            activeThumbColor: AppColors.primary,
                             onChanged: (_) {},
                           ),
                         ),

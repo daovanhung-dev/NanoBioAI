@@ -1,7 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'package:nano_app/features/dashboard/presentation/models/dashboard_mock_stats.dart';
 import 'package:nano_app/features/dashboard/presentation/widgets/common/section_header.dart';
 import 'package:nano_app/features/dashboard/presentation/widgets/goals/goal_chips_grid.dart';

@@ -584,7 +584,7 @@ class _ModernDropdown extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
 
         DropdownButtonFormField<String>(
-          value: value != null && value!.isNotEmpty ? value : null,
+          initialValue: value != null && value!.isNotEmpty ? value : null,
           items: items
               .map(
                 (item) => DropdownMenuItem<String>(

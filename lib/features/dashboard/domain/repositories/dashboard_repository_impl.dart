@@ -17,6 +17,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
     return datasource.fetchDashboard();
   }
 
+  @override
   Future<void> saveMealPlan(List<MealPlanModel> mealPlans) {
     return datasource.saveMealPlan(mealPlans);
   }

@@ -12,7 +12,7 @@ class MealPlanDatasource {
 
   Future<List<MealPlanModel>> getMealByWeeks() async {
     final db = await _db();
-    final dao_meal_plans = MealPlansDao(db);
-    return dao_meal_plans.getAll();
+    final daoMealPlans = MealPlansDao(db);
+    return daoMealPlans.getAll();
   }
 }

@@ -15,8 +15,8 @@ class DashboardLocalDatasource {
 
   Future<void> saveMealPlan(List<MealPlanModel> mealPlans) async {
     final db = await _db();
-    final dao_meal_plans = MealPlansDao(db);
-    await dao_meal_plans.insertMany(mealPlans);
+    final daoMealPlans = MealPlansDao(db);
+    await daoMealPlans.insertMany(mealPlans);
   }
 
   Future<DashboardEntity> fetchDashboard() async {
