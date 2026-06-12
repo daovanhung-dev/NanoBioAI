@@ -498,7 +498,7 @@ class _InsightPanel extends StatelessWidget {
 
           _InsightTile(
             icon: AppIcons.health,
-            title: 'Health Status',
+            title: 'Tình trạng của bạn',
             value: status,
           ),
 
@@ -506,16 +506,16 @@ class _InsightPanel extends StatelessWidget {
 
           const _InsightTile(
             icon: AppIcons.notifications,
-            title: 'Realtime Tracking',
-            value: 'Enabled',
+            title: 'Mình cùng theo dõi',
+            value: 'Đã bật',
           ),
 
           const SizedBox(height: AppSpacing.md),
 
           const _InsightTile(
             icon: AppIcons.shield,
-            title: 'AI Protection',
-            value: 'Monitoring',
+            title: 'Gợi ý thận trọng',
+            value: 'Luôn lưu ý',
           ),
 
           const SizedBox(height: AppSpacing.xl),
@@ -624,8 +624,8 @@ class _ActivatedFeatures extends StatelessWidget {
 
           const _FeatureCard(
             icon: AppIcons.nutrition,
-            title: 'Meal AI Recommendation',
-            subtitle: 'Gợi ý thực đơn cá nhân hóa',
+            title: 'Thực đơn mình chuẩn bị cho bạn',
+            subtitle: 'Những món ăn phù hợp với mục tiêu của bạn',
             gradient: AppGradients.energy,
           ),
 
@@ -633,8 +633,8 @@ class _ActivatedFeatures extends StatelessWidget {
 
           const _FeatureCard(
             icon: AppIcons.sleep,
-            title: 'Sleep Tracking',
-            subtitle: 'Theo dõi chất lượng giấc ngủ',
+            title: 'Cùng chăm sóc giấc ngủ',
+            subtitle: 'Mình giúp bạn nhìn lại và ngủ ngon hơn',
             gradient: AppGradients.sleep,
           ),
 
@@ -642,8 +642,8 @@ class _ActivatedFeatures extends StatelessWidget {
 
           const _FeatureCard(
             icon: AppIcons.health,
-            title: 'Realtime Health Tracking',
-            subtitle: 'Theo dõi sức khỏe thông minh',
+            title: 'Sức khỏe mỗi ngày',
+            subtitle: 'Mình cùng bạn ghi nhận từng thay đổi nhỏ',
             gradient: AppGradients.health,
           ),
         ],

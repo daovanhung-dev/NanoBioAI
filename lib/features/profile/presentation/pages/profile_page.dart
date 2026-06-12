@@ -7,7 +7,10 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('profile page'),
+        child: Text(
+          'Hồ sơ của bạn đang được mình sắp xếp lại cho thật dễ xem. Mình sẽ sớm quay lại nhé.',
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

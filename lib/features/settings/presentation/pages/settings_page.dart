@@ -30,19 +30,21 @@ class SettingsView extends StatelessWidget {
                         _buildMenuItem(
                           icon: Icons.person_rounded,
                           title: 'Thông tin cá nhân',
-                          subtitle: 'Quản lý hồ sơ và dữ liệu sức khỏe',
+                          subtitle:
+                              'Cùng mình xem lại những điều bạn đã chia sẻ',
                         ),
                         _divider(),
                         _buildMenuItem(
                           icon: Icons.lock_rounded,
                           title: 'Bảo mật',
-                          subtitle: 'Mật khẩu, xác thực và quyền riêng tư',
+                          subtitle:
+                              'Giữ tài khoản và thông tin của bạn an toàn',
                         ),
                         _divider(),
                         _buildMenuItem(
                           icon: Icons.notifications_rounded,
                           title: 'Thông báo',
-                          subtitle: 'Nhắc nhở và thông báo hệ thống',
+                          subtitle: 'Chọn cách bạn muốn mình nhắc nhở',
                           trailing: Switch(
                             value: true,
                             activeThumbColor: AppColors.primary,
@@ -59,7 +61,8 @@ class SettingsView extends StatelessWidget {
                         _buildMenuItem(
                           icon: Icons.dark_mode_rounded,
                           title: 'Chế độ tối',
-                          subtitle: 'Tối ưu trải nghiệm ban đêm',
+                          subtitle:
+                              'Dịu mắt hơn khi bạn dùng ứng dụng vào buổi tối',
                           trailing: Switch(
                             value: false,
                             activeThumbColor: AppColors.primary,
@@ -76,7 +79,8 @@ class SettingsView extends StatelessWidget {
                         _buildMenuItem(
                           icon: Icons.storage_rounded,
                           title: 'Dung lượng',
-                          subtitle: 'Xóa cache và tối ưu bộ nhớ',
+                          subtitle:
+                              'Dọn bớt dữ liệu tạm để ứng dụng nhẹ nhàng hơn',
                         ),
                       ],
                     ),
@@ -87,20 +91,23 @@ class SettingsView extends StatelessWidget {
                       children: [
                         _buildMenuItem(
                           icon: Icons.auto_awesome_rounded,
-                          title: 'AI Health Assistant',
-                          subtitle: 'Thiết lập trợ lý AI cá nhân',
+                          title: 'Cách mình đồng hành với bạn',
+                          subtitle:
+                              'Điều chỉnh phong cách và mức độ hỗ trợ bạn mong muốn',
                         ),
                         _divider(),
                         _buildMenuItem(
                           icon: Icons.favorite_rounded,
                           title: 'Mục tiêu sức khỏe',
-                          subtitle: 'Theo dõi và cập nhật mục tiêu',
+                          subtitle:
+                              'Cập nhật điều bạn muốn chúng ta cùng đạt được',
                         ),
                         _divider(),
                         _buildMenuItem(
                           icon: Icons.sync_rounded,
-                          title: 'Đồng bộ dữ liệu',
-                          subtitle: 'Realtime Sync với Supabase',
+                          title: 'Dữ liệu của bạn',
+                          subtitle:
+                              'Kiểm tra cách thông tin được lưu giữ và bảo vệ',
                         ),
                       ],
                     ),
@@ -132,7 +139,7 @@ class SettingsView extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Quản lý tài khoản và trải nghiệm ứng dụng',
+                'Bạn muốn mình điều chỉnh trải nghiệm thế nào?',
                 style: AppTextStyles.bodyMedium,
               ),
             ],
@@ -142,10 +149,7 @@ class SettingsView extends StatelessWidget {
           height: 58,
           width: 58,
           decoration: AppDecoration.gradient(
-            colors: const [
-              AppColors.primary,
-              AppColors.secondary,
-            ],
+            colors: const [AppColors.primary, AppColors.secondary],
             radius: AppRadius.circular,
             shadows: AppShadows.primary,
           ),
@@ -163,10 +167,7 @@ class SettingsView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: AppDecoration.gradient(
-        colors: const [
-          Color(0xFF2563EB),
-          Color(0xFF06B6D4),
-        ],
+        colors: const [Color(0xFF2563EB), Color(0xFF06B6D4)],
         radius: AppRadius.xxl,
         shadows: AppShadows.lg,
       ),
@@ -212,12 +213,10 @@ class SettingsView extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(.16),
-                    borderRadius: BorderRadius.circular(
-                      AppRadius.circular,
-                    ),
+                    borderRadius: BorderRadius.circular(AppRadius.circular),
                   ),
                   child: Text(
-                    'Tài khoản đang hoạt động',
+                    'Mình đang đồng hành cùng bạn',
                     style: AppTextStyles.labelMedium.copyWith(
                       color: Colors.white,
                     ),
@@ -239,23 +238,17 @@ class SettingsView extends StatelessWidget {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: AppTextStyles.heading3.copyWith(
-        fontWeight: FontWeight.w700,
-      ),
+      style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
     );
   }
 
-  Widget _buildMenuCard({
-    required List<Widget> children,
-  }) {
+  Widget _buildMenuCard({required List<Widget> children}) {
     return Container(
       decoration: AppDecoration.card(
         radius: AppRadius.xxl,
         shadows: AppShadows.soft,
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
@@ -279,10 +272,7 @@ class SettingsView extends StatelessWidget {
                 gradient: AppGradients.primary,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-              ),
+              child: Icon(icon, color: Colors.white),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -291,16 +281,12 @@ class SettingsView extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.labelLarge.copyWith(
-                      fontSize: 15,
-                    ),
+                    style: AppTextStyles.labelLarge.copyWith(fontSize: 15),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      height: 1.5,
-                    ),
+                    style: AppTextStyles.bodySmall.copyWith(height: 1.5),
                   ),
                 ],
               ),
@@ -331,9 +317,7 @@ class SettingsView extends StatelessWidget {
             width: 72,
             decoration: BoxDecoration(
               color: AppColors.errorSoft,
-              borderRadius: BorderRadius.circular(
-                AppRadius.circular,
-              ),
+              borderRadius: BorderRadius.circular(AppRadius.circular),
             ),
             child: const Icon(
               Icons.logout_rounded,
@@ -344,13 +328,11 @@ class SettingsView extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(
             'Đăng xuất',
-            style: AppTextStyles.heading3.copyWith(
-              color: AppColors.error,
-            ),
+            style: AppTextStyles.heading3.copyWith(color: AppColors.error),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Bạn có thể đăng nhập lại bất cứ lúc nào.',
+            'Mình sẽ nhớ bạn. Bạn có thể quay lại bất cứ lúc nào.',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium,
           ),
@@ -360,19 +342,13 @@ class SettingsView extends StatelessWidget {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.md,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppRadius.lg,
-                  ),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
               ),
               onPressed: () {},
-              child: const Text(
-                'Đăng xuất tài khoản',
-              ),
+              child: const Text('Tạm dừng tại đây'),
             ),
           ),
         ],
@@ -381,10 +357,6 @@ class SettingsView extends StatelessWidget {
   }
 
   Widget _divider() {
-    return const Divider(
-      height: 1,
-      thickness: 1,
-      color: AppColors.borderLight,
-    );
+    return const Divider(height: 1, thickness: 1, color: AppColors.borderLight);
   }
 }

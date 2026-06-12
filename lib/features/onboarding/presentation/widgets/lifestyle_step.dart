@@ -127,9 +127,9 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep>
                       delay: 200,
                       child: _ModernSectionHeader(
                         icon: AppIcons.nutrition,
-                        title: 'Lifestyle Habits',
+                        title: 'Một ngày thường của bạn',
                         subtitle:
-                            'BioAI sẽ học từ hành vi sinh hoạt hằng ngày để cá nhân hóa kế hoạch sức khỏe.',
+                            'Những thói quen nhỏ giúp mình hiểu nhịp sống thật của bạn.',
                       ),
                     ),
 
@@ -146,9 +146,9 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep>
                       delay: 340,
                       child: _ModernSectionHeader(
                         icon: AppIcons.sleep,
-                        title: 'Sleep & Activity',
+                        title: 'Giấc ngủ, vận động và nước uống',
                         subtitle:
-                            'Giấc ngủ, vận động và lượng nước sẽ ảnh hưởng trực tiếp tới AI Health Score.',
+                            'Bạn chia sẻ tình hình hiện tại nhé, mình không phán xét đâu.',
                       ),
                     ),
 
@@ -598,7 +598,7 @@ class _ModernDropdown extends StatelessWidget {
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surface,
-            hintText: 'Select option',
+            hintText: 'Bạn chọn câu gần đúng nhất nhé',
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
               vertical: AppSpacing.md,
@@ -715,7 +715,7 @@ class _AIInsightCard extends StatelessWidget {
 
           _InsightTile(
             icon: AppIcons.health,
-            title: 'Selected Habits',
+            title: 'Thói quen đã chia sẻ',
             value: '$selectedHabits',
           ),
 
@@ -723,7 +723,7 @@ class _AIInsightCard extends StatelessWidget {
 
           _InsightTile(
             icon: AppIcons.sleep,
-            title: 'Sleep Quality',
+            title: 'Giấc ngủ của bạn',
             value: sleepQuality.isEmpty ? '--' : sleepQuality,
           ),
 
@@ -731,7 +731,7 @@ class _AIInsightCard extends StatelessWidget {
 
           _InsightTile(
             icon: AppIcons.fitness,
-            title: 'Activity Level',
+            title: 'Mức vận động',
             value: activityLevel.isEmpty ? '--' : activityLevel,
           ),
         ],

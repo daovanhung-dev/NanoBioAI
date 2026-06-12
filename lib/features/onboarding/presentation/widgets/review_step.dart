@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/router/router.dart';
-import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/widgets/loading_genAI.dart';
 
@@ -142,8 +141,8 @@ class ReviewStep extends ConsumerWidget {
               _AnimatedSection(
                 delay: 80,
                 child: _SectionContainer(
-                  title: 'Thông tin cá nhân',
-                  subtitle: 'Thông tin hồ sơ cơ bản',
+                  title: 'Mình đã hiểu bạn thế này',
+                  subtitle: 'Bạn xem lại thông tin cá nhân giúp mình nhé.',
                   icon: AppIcons.profile,
                   child: Column(
                     children: personalItems
@@ -165,8 +164,8 @@ class ReviewStep extends ConsumerWidget {
               _AnimatedSection(
                 delay: 140,
                 child: _SectionContainer(
-                  title: 'Chỉ số cơ thể',
-                  subtitle: 'Thông tin thể trạng hiện tại',
+                  title: 'Thể trạng hiện tại của bạn',
+                  subtitle: 'Đây là cơ sở để mình đưa ra gợi ý phù hợp hơn.',
                   icon: AppIcons.health,
                   child: GridView.count(
                     shrinkWrap: true,
@@ -210,8 +209,9 @@ class ReviewStep extends ConsumerWidget {
               _AnimatedSection(
                 delay: 220,
                 child: _SectionContainer(
-                  title: 'Mục tiêu sức khỏe',
-                  subtitle: 'Danh sách mục tiêu',
+                  title: 'Điều bạn muốn cùng mình cải thiện',
+                  subtitle:
+                      'Mình sẽ ưu tiên những mục tiêu này trong hành trình sắp tới.',
                   icon: AppIcons.star,
                   child: _ChipGroup(items: goals),
                 ),
@@ -222,8 +222,8 @@ class ReviewStep extends ConsumerWidget {
               _AnimatedSection(
                 delay: 300,
                 child: _SectionContainer(
-                  title: 'Tình trạng sức khỏe',
-                  subtitle: 'Thông tin sức khỏe hiện tại',
+                  title: 'Những điều mình cần lưu ý',
+                  subtitle: 'Mình sẽ cẩn thận hơn khi đưa ra gợi ý cho bạn.',
                   icon: AppIcons.warning,
                   child: _ChipGroup(items: conditions),
                 ),
@@ -234,8 +234,8 @@ class ReviewStep extends ConsumerWidget {
               _AnimatedSection(
                 delay: 380,
                 child: _SectionContainer(
-                  title: 'Lối sống',
-                  subtitle: 'Thói quen sinh hoạt',
+                  title: 'Nhịp sống hằng ngày của bạn',
+                  subtitle: 'Mỗi thói quen nhỏ đều giúp mình hiểu bạn rõ hơn.',
                   icon: AppIcons.meditation,
                   child: Column(
                     children: [
@@ -338,8 +338,8 @@ class ReviewStep extends ConsumerWidget {
               _AnimatedSection(
                 delay: 560,
                 child: _SectionContainer(
-                  title: 'Mối quan tâm sức khỏe',
-                  subtitle: 'Thông tin người dùng chia sẻ',
+                  title: 'Điều bạn đang băn khoăn',
+                  subtitle: 'Mình đã ghi nhớ để quan tâm đúng điều bạn cần.',
                   icon: AppIcons.chat,
                   child: Container(
                     width: double.infinity,
@@ -369,6 +369,29 @@ class ReviewStep extends ConsumerWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () async {
+                      if (!state.agreed) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Bạn hãy đồng ý với điều khoản để mình có thể bắt đầu đồng hành cùng bạn nhé.',
+                            ),
+                          ),
+                        );
+                        controller.goToStep(5);
+                        return;
+                      }
+
+                      if (!state.canSave) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Mình còn thiếu một vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -379,8 +402,6 @@ class ReviewStep extends ConsumerWidget {
                       try {
                         await controller.saveOnboarding();
 
-                        await AppPrefs.setOnboardingCompleted(true);
-
                         if (context.mounted) {
                           AppNavigator.goMenu(context);
                         }
@@ -388,9 +409,15 @@ class ReviewStep extends ConsumerWidget {
                         if (context.mounted) {
                           Navigator.pop(context);
 
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text(e.toString())));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                e is StateError
+                                    ? e.message.toString()
+                                    : 'Mình chưa thể hoàn tất lúc này. Bạn thử lại giúp mình nhé.',
+                              ),
+                            ),
+                          );
                         }
                       }
                     },
@@ -408,7 +435,7 @@ class ReviewStep extends ConsumerWidget {
                       ),
                     ),
                     child: Text(
-                      'Hoàn tất khảo sát',
+                      'Bắt đầu đồng hành cùng mình',
                       style: AppTextStyles.button.copyWith(
                         fontWeight: AppTypography.bold,
                         fontSize: 17,
@@ -781,7 +808,10 @@ class _ChipGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return Text('Chưa có dữ liệu', style: AppTextStyles.bodyMedium);
+      return Text(
+        'Bạn chưa chia sẻ mục này với mình.',
+        style: AppTextStyles.bodyMedium,
+      );
     }
 
     return Wrap(

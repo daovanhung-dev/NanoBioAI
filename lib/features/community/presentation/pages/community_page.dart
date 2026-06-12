@@ -7,7 +7,10 @@ class CommunityPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('community page'),
+        child: Text(
+          'Một không gian chia sẻ tích cực đang được chuẩn bị. Mình mong bạn sẽ thấy được đồng cảm ở đây.',
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

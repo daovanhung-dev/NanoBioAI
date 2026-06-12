@@ -7,7 +7,10 @@ class AiChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('ai_chat page'),
+        child: Text(
+          'Mình đang chuẩn bị một góc trò chuyện riêng để lắng nghe bạn. Hẹn bạn sớm nhé.',
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

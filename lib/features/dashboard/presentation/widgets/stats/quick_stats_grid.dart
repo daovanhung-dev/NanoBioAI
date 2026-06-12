@@ -21,7 +21,7 @@ class QuickStatsGrid extends StatelessWidget {
     final stats = [
       StatItem(
         icon: Icons.local_fire_department_rounded,
-        label: 'Calories',
+        label: 'Năng lượng',
         value: DashboardMockStats.calories.toInt().toString(),
         unit: 'kcal',
         color: const Color(0xFFF97316),

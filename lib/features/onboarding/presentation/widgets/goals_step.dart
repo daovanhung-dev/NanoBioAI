@@ -124,9 +124,9 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
                     const SizedBox(height: AppSpacing.xl),
 
                     const _SectionHeader(
-                      title: 'Mục tiêu sức khỏe',
+                      title: 'Bạn muốn mình giúp điều gì trước?',
                       subtitle:
-                          'Lựa chọn các mục tiêu để BioAI xây dựng hành trình chăm sóc sức khỏe tối ưu dành riêng cho bạn.',
+                          'Chọn những điều quan trọng với bạn, chúng ta sẽ đi từng bước cùng nhau.',
                     ),
 
                     const SizedBox(height: AppSpacing.md),
@@ -139,9 +139,9 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
                     const SizedBox(height: AppSpacing.xl),
 
                     const _SectionHeader(
-                      title: 'Mục tiêu cá nhân khác',
+                      title: 'Còn mong muốn nào bạn chưa thấy ở trên?',
                       subtitle:
-                          'Chia sẻ thêm để AI hiểu rõ hơn về nhu cầu của bạn.',
+                          'Bạn cứ kể thêm bằng lời của mình, mình sẽ ghi nhớ.',
                     ),
 
                     const SizedBox(height: AppSpacing.md),
@@ -158,7 +158,8 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
                         ),
                         child: OnboardingTextField(
                           label: 'Mục tiêu bổ sung',
-                          hint: 'Ví dụ: cải thiện tập trung, detox...',
+                          hint:
+                              'Ví dụ: Mình muốn tập trung tốt hơn và bớt mệt...',
                           initialValue: state.otherGoal,
                           onChanged: controller.updateOtherGoal,
                         ),
@@ -699,16 +700,16 @@ class _InsightCard extends StatelessWidget {
 
           const _InsightTile(
             icon: AppIcons.health,
-            title: 'AI Status',
-            value: 'Đang phân tích',
+            title: 'Mình đang',
+            value: 'Tìm hiểu mục tiêu',
           ),
 
           const SizedBox(height: AppSpacing.md),
 
           const _InsightTile(
             icon: AppIcons.success,
-            title: 'Health Tracking',
-            value: 'Đã kích hoạt',
+            title: 'Theo dõi cùng bạn',
+            value: 'Đang bật',
           ),
         ],
       ),

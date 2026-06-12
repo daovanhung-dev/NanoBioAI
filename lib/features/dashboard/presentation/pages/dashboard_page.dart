@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/dashboard/presentation/models/dashboard_mock_stats.dart';
@@ -34,7 +34,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
 
   @override
   void initState() {
-
     super.initState();
 
     _entryController = AnimationController(
@@ -123,8 +122,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       const SectionHeader(
-                        title: 'AI Insights',
-                        subtitle: 'Phân tích thời gian thực',
+                        title: 'Mình nhận thấy vài điều',
+                        subtitle: 'Những gợi ý nhỏ dành riêng cho bạn',
                         icon: Icons.auto_awesome_rounded,
                         iconColor: AppColors.primary,
                       ),
@@ -135,8 +134,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       const SectionHeader(
-                        title: 'Hành trình hôm nay',
-                        subtitle: 'Theo dõi hoạt động',
+                        title: 'Hôm nay của chúng ta',
+                        subtitle: 'Cùng nhìn lại những gì bạn đã làm',
                         icon: Icons.timeline_rounded,
                         iconColor: AppColors.secondary,
                       ),
@@ -144,8 +143,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                       DailyTimeline(events: DashboardMockStats.timeline),
                       const SizedBox(height: AppSpacing.lg),
                       const SectionHeader(
-                        title: 'Mục tiêu ngày',
-                        subtitle: 'Tiến độ & thành tích',
+                        title: 'Mình cùng cố thêm một chút nhé',
+                        subtitle: 'Tiến độ hôm nay của bạn',
                         icon: Icons.flag_rounded,
                         iconColor: Color(0xFF8B5CF6),
                       ),
@@ -153,8 +152,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                       GoalProgressSection(goals: DashboardMockStats.goals),
                       const SizedBox(height: AppSpacing.lg),
                       const SectionHeader(
-                        title: 'Smart Lifestyle',
-                        subtitle: 'Chất lượng cuộc sống',
+                        title: 'Nhịp sống của bạn',
+                        subtitle: 'Ngủ, vận động và chăm sóc bản thân',
                         icon: Icons.spa_rounded,
                         iconColor: Color(0xFF22C55E),
                       ),
@@ -167,8 +166,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       const SectionHeader(
-                        title: 'Mục tiêu sức khoẻ',
-                        subtitle: 'Kế hoạch cá nhân',
+                        title: 'Điều chúng ta đang hướng tới',
+                        subtitle: 'Mình vẫn nhớ những mục tiêu của bạn',
                         icon: Icons.track_changes_rounded,
                         iconColor: AppColors.primary,
                       ),

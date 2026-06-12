@@ -7,7 +7,10 @@ class StressTrackingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('stress_tracking page'),
+        child: Text(
+          'Mình đang hoàn thiện một nơi để bạn ghi lại cảm xúc và nhẹ lòng hơn mỗi ngày.',
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

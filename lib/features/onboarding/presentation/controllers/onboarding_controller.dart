@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/features/dashboard/presentation/controllers/dashboard_controller.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
@@ -274,18 +276,35 @@ class OnboardingController extends Notifier<OnboardingState> {
   }
 
   Future<void> saveOnboarding() async {
+    if (!state.agreed) {
+      throw StateError(
+        'Bạn cần đồng ý với điều khoản để mình có thể tiếp tục đồng hành cùng bạn.',
+      );
+    }
+
+    if (!state.canSave) {
+      throw StateError(
+        'Mình vẫn còn thiếu vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.',
+      );
+    }
+
+    if (state.isSaving) return;
+    state = state.copyWith(isSaving: true);
+
     try {
       await _repository.save(state.toEntity());
+      debugPrint('Generating the weekly meal plan');
+      await ref.read(dashboardControllerProvider.notifier).genMealByWeeksToDB();
+      await AppPrefs.setOnboardingCompleted(true);
+
       state = state.copyWith(
         isSaving: false,
-        savedLog: 'Đã lưu onboarding xuống SQLite thành công.',
+        savedLog: 'Mình đã lưu hồ sơ sức khỏe của bạn thành công.',
       );
-      print("gen meal plan by weeks to db");
-      await ref.read(dashboardControllerProvider.notifier).genMealByWeeksToDB();
     } catch (e) {
       state = state.copyWith(
         isSaving: false,
-        savedLog: 'Lỗi lưu onboarding: $e',
+        savedLog: 'Mình chưa thể lưu hồ sơ lúc này: $e',
       );
       rethrow;
     }

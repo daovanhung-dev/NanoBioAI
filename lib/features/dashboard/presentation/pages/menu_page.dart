@@ -37,25 +37,25 @@ class _MainNavigationPageState extends State<MainNavigationPage>
 
   final List<_NavItemData> _items = const [
     _NavItemData(
-      label: 'Trang chủ',
+      label: 'Hôm nay',
       icon: Icons.home_rounded,
       activeIcon: Icons.home_filled,
       gradient: [Color(0xFF2563EB), Color(0xFF60A5FA)],
     ),
     _NavItemData(
-      label: 'Thực đơn',
+      label: 'Ăn gì',
       icon: Icons.restaurant_menu_rounded,
       activeIcon: Icons.restaurant_rounded,
       gradient: [Color(0xFF06B6D4), Color(0xFF22D3EE)],
     ),
     _NavItemData(
-      label: 'AI Health',
+      label: 'Góc của bạn',
       icon: Icons.auto_awesome_mosaic_rounded,
       activeIcon: Icons.auto_awesome_rounded,
       gradient: [Color(0xFF7C3AED), Color(0xFFA855F7)],
     ),
     _NavItemData(
-      label: 'Cài đặt',
+      label: 'Tùy chỉnh',
       icon: Icons.settings_outlined,
       activeIcon: Icons.settings_rounded,
       gradient: [Color(0xFF0F172A), Color(0xFF334155)],

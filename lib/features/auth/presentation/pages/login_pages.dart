@@ -35,7 +35,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     ref.listen(loginControllerProvider, (previous, next) {
       next.whenOrNull(
         data: (_) {
-          context.go('/dashboard');
+          context.go('/menu');
         },
         error: (e, st) {
           ScaffoldMessenger.of(
@@ -110,7 +110,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     _BrandMark(compact: isCompact),
                                     SizedBox(height: isCompact ? 20 : 24),
                                     Text(
-                                      'Chào mừng trở lại',
+                                      'Mừng bạn quay lại',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: isCompact ? 22 : 26,
@@ -119,7 +119,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Đăng nhập để tiếp tục sử dụng trợ lý sức khỏe AI.',
+                                      'Mình vẫn ở đây và sẵn sàng tiếp tục hành trình sức khỏe cùng bạn.',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: isCompact ? 13 : 14,
@@ -139,11 +139,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                         final email = value?.trim() ?? '';
 
                                         if (email.isEmpty) {
-                                          return 'Vui lòng nhập email';
+                                          return 'Bạn cho mình xin email nhé.';
                                         }
 
                                         if (!email.contains('@')) {
-                                          return 'Email không hợp lệ';
+                                          return 'Email này có vẻ chưa đúng, bạn kiểm tra lại giúp mình nhé.';
                                         }
 
                                         return null;
@@ -153,7 +153,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     _InputField(
                                       controller: _passwordController,
                                       label: 'Mật khẩu',
-                                      hintText: 'Nhập mật khẩu',
+                                      hintText: 'Mật khẩu của bạn',
                                       prefixIcon: Icons.lock_rounded,
                                       obscureText: _obscurePassword,
                                       compact: isCompact,
@@ -174,11 +174,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                         final password = value ?? '';
 
                                         if (password.isEmpty) {
-                                          return 'Vui lòng nhập mật khẩu';
+                                          return 'Bạn chưa nhập mật khẩu rồi.';
                                         }
 
                                         if (password.length < 6) {
-                                          return 'Mật khẩu tối thiểu 6 ký tự';
+                                          return 'Mật khẩu cần ít nhất 6 ký tự nhé.';
                                         }
 
                                         return null;
@@ -210,7 +210,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                                     VisualDensity.compact,
                                               ),
                                             ),
-                                            const Text('Ghi nhớ đăng nhập'),
+                                            const Text(
+                                              'Nhớ mình trên thiết bị này',
+                                            ),
                                           ],
                                         ),
                                         TextButton(
@@ -221,7 +223,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                                 .shrinkWrap,
                                           ),
                                           onPressed: () {},
-                                          child: const Text('Quên mật khẩu?'),
+                                          child: const Text(
+                                            'Bạn quên mật khẩu à?',
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -279,7 +283,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                                     ),
                                               )
                                             : const Text(
-                                                'Đăng nhập',
+                                                'Mình tiếp tục nhé',
                                                 style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,

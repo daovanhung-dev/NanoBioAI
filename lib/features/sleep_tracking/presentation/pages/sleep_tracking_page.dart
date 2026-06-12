@@ -7,7 +7,10 @@ class SleepTrackingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('sleep_tracking page'),
+        child: Text(
+          'Mình đang chuẩn bị công cụ giúp bạn hiểu giấc ngủ của mình hơn. Chúng ta sẽ cùng ngủ ngon hơn nhé.',
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

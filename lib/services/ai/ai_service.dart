@@ -6,8 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:nano_app/core/storage/localdb/models/meal_plan_model.dart';
-
-import 'package:nano_app/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:nano_app/core/interfaces/health_data_interface.dart';
 
 import 'prompts/nutrition_prompt.dart';
 
@@ -44,7 +43,7 @@ class AIService {
   }
 
   Future<List<MealPlanModel>> generateMealPlan({
-    required DashboardEntity healthData,
+    required HealthDataInterface healthData,
   }) async {
     int retry = 0;
 

@@ -8,8 +8,8 @@ import 'package:nano_app/core/storage/localdb/database_service.dart';
 import '../../domain/entities/onboarding_entity.dart';
 import '../models/onboarding_model.dart';
 
-class OnboardingRemoteDatasource {
-  const OnboardingRemoteDatasource();
+class OnboardingLocalDatasource {
+  const OnboardingLocalDatasource();
 
   Future<Database> _db() async {
     return DatabaseService.database;

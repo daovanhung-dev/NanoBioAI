@@ -94,7 +94,19 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
               title: '',
               subtitle: '',
               onBack: controller.previousStep,
-              onNext: controller.nextStep,
+              onNext: () {
+                if (!state.agreed) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Bạn cần đồng ý với điều khoản sử dụng trước khi chúng ta tiếp tục nhé.',
+                      ),
+                    ),
+                  );
+                  return;
+                }
+                controller.nextStep();
+              },
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.only(
@@ -118,17 +130,15 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
 
                     _Appear(
                       delay: 80,
-                      child: _AiStatusCard(
-                        completedFields: completedFields,
-                      ),
+                      child: _AiStatusCard(completedFields: completedFields),
                     ),
 
                     const SizedBox(height: AppSpacing.xl),
 
                     const _SectionHeader(
-                      title: 'Thông tin dị ứng',
+                      title: 'Có món nào bạn cần tránh không?',
                       subtitle:
-                          'BioAI sẽ chủ động loại bỏ những thực phẩm không phù hợp.',
+                          'Bạn cứ chia sẻ thật kỹ, mình sẽ ghi nhớ để gợi ý món ăn an toàn hơn.',
                     ),
 
                     const SizedBox(height: AppSpacing.lg),
@@ -157,8 +167,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                               title: 'Ghi chú thêm',
                               child: OnboardingTextField(
                                 label: 'Mô tả thêm',
-                                hint:
-                                    'Mức độ dị ứng, thực phẩm cần hạn chế...',
+                                hint: 'Mức độ dị ứng, thực phẩm cần hạn chế...',
                                 maxLines: 3,
                                 initialValue: state.allergyNote,
                                 onChanged: controller.updateAllergyNote,
@@ -172,9 +181,9 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                     const SizedBox(height: AppSpacing.xl),
 
                     const _SectionHeader(
-                      title: 'Điều trị & thuốc',
+                      title: 'Bạn đang điều trị hoặc dùng thuốc gì không?',
                       subtitle:
-                          'Những dữ liệu này giúp AI đưa ra gợi ý an toàn hơn.',
+                          'Thông tin này giúp mình thận trọng hơn khi đồng hành cùng bạn.',
                     ),
 
                     const SizedBox(height: AppSpacing.lg),
@@ -189,8 +198,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                               title: 'Điều trị hiện tại',
                               child: OnboardingTextField(
                                 label: 'Điều trị / theo dõi',
-                                hint:
-                                    'Ví dụ: Theo dõi huyết áp, tiểu đường...',
+                                hint: 'Ví dụ: Theo dõi huyết áp, tiểu đường...',
                                 initialValue: state.treatmentName,
                                 onChanged: controller.updateTreatmentName,
                               ),
@@ -231,9 +239,9 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                     const SizedBox(height: AppSpacing.xl),
 
                     const _SectionHeader(
-                      title: 'Điều bạn quan tâm',
+                      title: 'Gần đây bạn lo lắng điều gì nhất?',
                       subtitle:
-                          'BioAI sẽ ưu tiên tối ưu theo những điều bạn lo lắng nhất.',
+                          'Bạn cứ nói như đang trò chuyện với mình, mình đang lắng nghe.',
                     ),
 
                     const SizedBox(height: AppSpacing.lg),
@@ -304,18 +312,13 @@ class _HeroSection extends StatelessWidget {
   final double progress;
   final int completedFields;
 
-  const _HeroSection({
-    required this.progress,
-    required this.completedFields,
-  });
+  const _HeroSection({required this.progress, required this.completedFields});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: AppDecoration.premiumGradient(
-        radius: AppRadius.xxl,
-      ),
+      decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -348,11 +351,7 @@ class _HeroSection extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      AppIcons.star,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+                    const Icon(AppIcons.star, color: Colors.white, size: 18),
 
                     const SizedBox(width: AppSpacing.xs),
 
@@ -396,9 +395,7 @@ class _HeroSection extends StatelessWidget {
               minHeight: 10,
               value: progress,
               backgroundColor: Colors.white.withOpacity(0.14),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Colors.white,
-              ),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ),
 
@@ -416,10 +413,7 @@ class _HeroSection extends StatelessWidget {
               const SizedBox(width: AppSpacing.md),
 
               const Expanded(
-                child: _HeroInfo(
-                  title: 'AI Status',
-                  value: 'Ready',
-                ),
+                child: _HeroInfo(title: 'Mình đã hiểu', value: 'Sẵn sàng'),
               ),
             ],
           ),
@@ -433,19 +427,13 @@ class _HeroInfo extends StatelessWidget {
   final String title;
   final String value;
 
-  const _HeroInfo({
-    required this.title,
-    required this.value,
-  });
+  const _HeroInfo({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: AppDecoration.glass(
-        radius: AppRadius.lg,
-        opacity: 0.12,
-      ),
+      decoration: AppDecoration.glass(radius: AppRadius.lg, opacity: 0.12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -474,31 +462,20 @@ class _HeroInfo extends StatelessWidget {
 class _AiStatusCard extends StatelessWidget {
   final int completedFields;
 
-  const _AiStatusCard({
-    required this.completedFields,
-  });
+  const _AiStatusCard({required this.completedFields});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: AppDecoration.glass(
-        radius: AppRadius.xl,
-        opacity: 0.7,
-      ),
+      decoration: AppDecoration.glass(radius: AppRadius.xl, opacity: 0.7),
       child: Row(
         children: [
           Container(
             width: 68,
             height: 68,
-            decoration: AppDecoration.primaryGradient(
-              radius: AppRadius.lg,
-            ),
-            child: const Icon(
-              AppIcons.health,
-              color: Colors.white,
-              size: 30,
-            ),
+            decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
+            child: const Icon(AppIcons.health, color: Colors.white, size: 30),
           ),
 
           const SizedBox(width: AppSpacing.md),
@@ -535,10 +512,7 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _SectionHeader({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionHeader({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -547,19 +521,12 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppTextStyles.heading2.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w700),
         ),
 
         const SizedBox(height: AppSpacing.xs),
 
-        Text(
-          subtitle,
-          style: AppTextStyles.bodyMedium.copyWith(
-            height: 1.6,
-          ),
-        ),
+        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.6)),
       ],
     );
   }
@@ -568,9 +535,7 @@ class _SectionHeader extends StatelessWidget {
 class _SurfaceCard extends StatelessWidget {
   final Widget child;
 
-  const _SurfaceCard({
-    required this.child,
-  });
+  const _SurfaceCard({required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -578,9 +543,7 @@ class _SurfaceCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: AppDecoration.card(
         radius: AppRadius.xl,
-        border: Border.all(
-          color: AppColors.border.withOpacity(0.6),
-        ),
+        border: Border.all(color: AppColors.border.withOpacity(0.6)),
         shadows: AppShadows.soft,
         gradient: AppGradients.surface,
       ),
@@ -608,14 +571,8 @@ class _FieldTile extends StatelessWidget {
         Container(
           width: 54,
           height: 54,
-          decoration: AppDecoration.primaryGradient(
-            radius: AppRadius.lg,
-          ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 24,
-          ),
+          decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
+          child: Icon(icon, color: Colors.white, size: 24),
         ),
 
         const SizedBox(width: AppSpacing.md),
@@ -646,10 +603,7 @@ class _CommitmentCard extends StatelessWidget {
   final bool agreed;
   final ValueChanged<bool> onChanged;
 
-  const _CommitmentCard({
-    required this.agreed,
-    required this.onChanged,
-  });
+  const _CommitmentCard({required this.agreed, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -658,14 +612,10 @@ class _CommitmentCard extends StatelessWidget {
       curve: AppAnimations.smoothCurve,
       padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: agreed
-          ? AppDecoration.primaryGradient(
-              radius: AppRadius.xxl,
-            )
+          ? AppDecoration.primaryGradient(radius: AppRadius.xxl)
           : AppDecoration.card(
               radius: AppRadius.xxl,
-              border: Border.all(
-                color: AppColors.border,
-              ),
+              border: Border.all(color: AppColors.border),
               shadows: AppShadows.soft,
             ),
       child: Row(
@@ -673,10 +623,7 @@ class _CommitmentCard extends StatelessWidget {
         children: [
           Transform.scale(
             scale: 1.1,
-            child: Switch(
-              value: agreed,
-              onChanged: onChanged,
-            ),
+            child: Switch(value: agreed, onChanged: onChanged),
           ),
 
           const SizedBox(width: AppSpacing.md),
@@ -686,11 +633,9 @@ class _CommitmentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Cam kết đồng hành',
+                  'Đồng ý với điều khoản sử dụng',
                   style: AppTextStyles.heading4.copyWith(
-                    color: agreed
-                        ? Colors.white
-                        : AppColors.textPrimary,
+                    color: agreed ? Colors.white : AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -698,7 +643,7 @@ class _CommitmentCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
 
                 Text(
-                  'Sức khỏe không thay đổi chỉ sau một ngày, nhưng mỗi thói quen tốt hôm nay sẽ tạo nên một cơ thể khỏe mạnh hơn trong tương lai.',
+                  'Tôi đã đọc, hiểu và đồng ý để BioAI sử dụng những thông tin tôi chia sẻ nhằm cá nhân hóa trải nghiệm chăm sóc sức khỏe.',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: agreed
                         ? Colors.white.withOpacity(0.92)
@@ -719,18 +664,13 @@ class _InsightCard extends StatelessWidget {
   final int completedFields;
   final bool agreed;
 
-  const _InsightCard({
-    required this.completedFields,
-    required this.agreed,
-  });
+  const _InsightCard({required this.completedFields, required this.agreed});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: AppDecoration.premiumGradient(
-        radius: AppRadius.xxl,
-      ),
+      decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -798,8 +738,8 @@ class _InsightCard extends StatelessWidget {
 
           const _InsightRow(
             icon: AppIcons.dashboard,
-            title: 'AI Engine',
-            value: 'Optimized',
+            title: 'Trợ lý của bạn',
+            value: 'Đã sẵn sàng',
           ),
         ],
       ),
@@ -825,26 +765,17 @@ class _InsightRow extends StatelessWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.md,
       ),
-      decoration: AppDecoration.glass(
-        radius: AppRadius.lg,
-        opacity: 0.08,
-      ),
+      decoration: AppDecoration.glass(radius: AppRadius.lg, opacity: 0.08),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 20,
-          ),
+          Icon(icon, color: Colors.white, size: 20),
 
           const SizedBox(width: AppSpacing.sm),
 
           Expanded(
             child: Text(
               title,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: Colors.white,
-              ),
+              style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
             ),
           ),
 
@@ -865,17 +796,13 @@ class _Appear extends StatefulWidget {
   final Widget child;
   final int delay;
 
-  const _Appear({
-    required this.child,
-    required this.delay,
-  });
+  const _Appear({required this.child, required this.delay});
 
   @override
   State<_Appear> createState() => _AppearState();
 }
 
-class _AppearState extends State<_Appear>
-    with SingleTickerProviderStateMixin {
+class _AppearState extends State<_Appear> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   late final Animation<double> _animation;
@@ -894,14 +821,11 @@ class _AppearState extends State<_Appear>
       curve: AppAnimations.smoothCurve,
     );
 
-    Future.delayed(
-      Duration(milliseconds: widget.delay),
-      () {
-        if (mounted) {
-          _controller.forward();
-        }
-      },
-    );
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
   }
 
   @override
@@ -912,10 +836,7 @@ class _AppearState extends State<_Appear>
 
   @override
   Widget build(BuildContext context) {
-    return AppAnimations.fadeSlide(
-      animation: _animation,
-      child: widget.child,
-    );
+    return AppAnimations.fadeSlide(animation: _animation, child: widget.child);
   }
 }
 
@@ -946,9 +867,7 @@ class _FloatingGlow extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: AppDecoration.circle(
-          color: color,
-        ),
+        decoration: AppDecoration.circle(color: color),
       ),
     );
   }
@@ -957,9 +876,7 @@ class _FloatingGlow extends StatelessWidget {
 class _BackgroundPainter extends CustomPainter {
   final double animation;
 
-  const _BackgroundPainter({
-    required this.animation,
-  });
+  const _BackgroundPainter({required this.animation});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -975,9 +892,7 @@ class _BackgroundPainter extends CustomPainter {
           Colors.white,
           AppColors.secondarySoft.withOpacity(0.45),
         ],
-        transform: GradientRotation(
-          animation * math.pi,
-        ),
+        transform: GradientRotation(animation * math.pi),
       ).createShader(rect);
 
     canvas.drawRect(rect, paint);
@@ -987,19 +902,11 @@ class _BackgroundPainter extends CustomPainter {
       ..strokeWidth = 1;
 
     for (double x = 0; x < size.width; x += 42) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        linePaint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), linePaint);
     }
 
     for (double y = 0; y < size.height; y += 42) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        linePaint,
-      );
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), linePaint);
     }
   }
 

@@ -58,7 +58,7 @@ class SmartLifestyleSection extends StatelessWidget {
             Expanded(
               child: LifestyleMetricCard(
                 icon: Icons.water_drop_rounded,
-                title: 'Hydration',
+                title: 'Nước uống',
                 value: waterPerDay,
                 detail:
                     '${DashboardMockStats.waterLiters}L / ${DashboardMockStats.waterGoal}L',

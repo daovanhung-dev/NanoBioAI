@@ -7,7 +7,10 @@ class NutritionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('nutrition page'),
+        child: Text(
+          'Mình đang hoàn thiện phần theo dõi dinh dưỡng để giúp bạn ăn đủ và thoải mái hơn.',
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

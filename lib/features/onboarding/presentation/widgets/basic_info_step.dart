@@ -154,9 +154,9 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
                     _FadeSlideIn(
                       delay: 160,
                       child: _SectionHeader(
-                        title: 'Thông tin cơ bản',
+                        title: 'Cho mình làm quen với bạn nhé',
                         subtitle:
-                            'Hồ sơ càng đầy đủ, AI càng hiểu bạn hơn để cá nhân hóa trải nghiệm sức khỏe.',
+                            'Bạn chia sẻ càng rõ, mình càng có thể chăm sóc bạn theo cách phù hợp.',
                       ),
                     ),
 
@@ -204,9 +204,9 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
                     _FadeSlideIn(
                       delay: 300,
                       child: _SectionHeader(
-                        title: 'Giới tính',
+                        title: 'Bạn muốn mình ghi nhận giới tính thế nào?',
                         subtitle:
-                            'Thông tin này giúp BioAI phân tích chính xác hơn.',
+                            'Thông tin này giúp các phân tích sức khỏe sát với bạn hơn.',
                       ),
                     ),
 
@@ -225,9 +225,9 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
                     _FadeSlideIn(
                       delay: 420,
                       child: _SectionHeader(
-                        title: 'Chỉ số cơ thể',
+                        title: 'Mình xin thêm một chút về thể trạng nhé',
                         subtitle:
-                            'Dữ liệu cơ bản giúp AI xây dựng kế hoạch phù hợp.',
+                            'Chiều cao và cân nặng giúp mình tính toán kế hoạch vừa sức với bạn.',
                       ),
                     ),
 

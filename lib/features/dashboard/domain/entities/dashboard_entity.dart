@@ -1,5 +1,7 @@
 // lib/features/dashboard/domain/entities/dashboard_entity.dart
-class DashboardEntity {
+import 'package:nano_app/core/interfaces/health_data_interface.dart';
+
+class DashboardEntity implements HealthDataInterface {
   final int userId;
 
   final String fullName;

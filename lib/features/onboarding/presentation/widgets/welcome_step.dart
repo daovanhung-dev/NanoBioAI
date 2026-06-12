@@ -86,7 +86,7 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
           showBack: false,
           title: '',
           subtitle: '',
-          nextLabel: 'Tiếp tục',
+          nextLabel: 'Mình sẵn sàng rồi',
           onNext: controller.nextStep,
           child: SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 40),
@@ -104,36 +104,36 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
                 const SizedBox(height: 28),
 
                 const _TitleSection(
-                  title: 'Ứng dụng sẽ hỗ trợ gì cho bạn?',
+                  title: 'Mình có thể giúp bạn những gì?',
                   subtitle:
-                      'BioAI giúp theo dõi sức khỏe mỗi ngày một cách đơn giản và dễ hiểu.',
+                      'Mình sẽ cùng bạn chăm sóc sức khỏe mỗi ngày, nhẹ nhàng và dễ hiểu.',
                 ),
 
                 const SizedBox(height: 18),
 
                 const _FeatureItem(
                   icon: Icons.monitor_heart_rounded,
-                  title: 'Theo dõi sức khỏe hằng ngày',
+                  title: 'Cùng nhìn lại sức khỏe mỗi ngày',
                   description:
-                      'Ghi lại cân nặng, giấc ngủ và tình trạng sức khỏe để tiện theo dõi.',
+                      'Mình giúp bạn ghi nhớ cân nặng, giấc ngủ và những thay đổi nhỏ của cơ thể.',
                 ),
 
                 const SizedBox(height: 14),
 
                 const _FeatureItem(
                   icon: Icons.restaurant_menu_rounded,
-                  title: 'Gợi ý ăn uống phù hợp',
+                  title: 'Nghĩ món ăn phù hợp cùng bạn',
                   description:
-                      'Đưa ra thực đơn dễ áp dụng và phù hợp với tình trạng sức khỏe.',
+                      'Thực đơn sẽ gần gũi, dễ áp dụng và tôn trọng tình trạng sức khỏe của bạn.',
                 ),
 
                 const SizedBox(height: 14),
 
                 const _FeatureItem(
                   icon: Icons.notifications_active_rounded,
-                  title: 'Nhắc nhở đúng giờ',
+                  title: 'Nhắc bạn chăm mình đúng lúc',
                   description:
-                      'Nhắc uống nước, nghỉ ngơi và đi ngủ đúng giờ mỗi ngày.',
+                      'Khi bận rộn, mình sẽ nhắc bạn uống nước, nghỉ ngơi và ngủ đủ.',
                 ),
 
                 const SizedBox(height: 28),

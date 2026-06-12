@@ -31,7 +31,7 @@ class DashboardMockStats {
       color: Color(0xFF3B82F6),
     ),
     GoalData(
-      label: 'Calories',
+      label: 'Năng lượng',
       current: 1840,
       target: 2200,
       unit: 'kcal',

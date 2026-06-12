@@ -96,34 +96,28 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
             onNext: controller.nextStep,
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(
-                bottom: AppSpacing.xxxl,
-              ),
+              padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _AppearAnimation(
                     delay: 0,
-                    child: _HeroCard(
-                      selectedCount: selectedCount,
-                    ),
+                    child: _HeroCard(selectedCount: selectedCount),
                   ),
 
                   const SizedBox(height: AppSpacing.xl),
 
                   _AppearAnimation(
                     delay: 100,
-                    child: _SmartAnalysisCard(
-                      selectedCount: selectedCount,
-                    ),
+                    child: _SmartAnalysisCard(selectedCount: selectedCount),
                   ),
 
                   const SizedBox(height: AppSpacing.xl),
 
                   const _SectionHeader(
-                    title: 'Tình trạng sức khỏe',
+                    title: 'Cơ thể bạn đang cảm thấy thế nào?',
                     subtitle:
-                        'BioAI sẽ sử dụng thông tin này để cá nhân hóa phân tích sức khỏe, dinh dưỡng và lối sống phù hợp với bạn.',
+                        'Bạn chọn những điều đang gặp phải để mình quan tâm và gợi ý cẩn thận hơn nhé.',
                   ),
 
                   const SizedBox(height: AppSpacing.lg),
@@ -134,8 +128,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
                       spacing: AppSpacing.md,
                       runSpacing: AppSpacing.md,
                       children: OnboardingCatalog.conditions.map((item) {
-                        final selected =
-                            state.conditions.contains(item.code);
+                        final selected = state.conditions.contains(item.code);
 
                         return _ConditionCard(
                           width: cardWidth,
@@ -153,9 +146,9 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
                   const SizedBox(height: AppSpacing.xl),
 
                   const _SectionHeader(
-                    title: 'Thông tin bổ sung',
+                    title: 'Có điều gì khác bạn muốn kể với mình không?',
                     subtitle:
-                        'Bạn có thể mô tả thêm tình trạng sức khỏe để AI hiểu bạn rõ hơn.',
+                        'Không cần dùng từ chuyên môn đâu, bạn cứ chia sẻ theo cách tự nhiên nhất.',
                   ),
 
                   const SizedBox(height: AppSpacing.lg),
@@ -166,9 +159,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
                       decoration: AppDecoration.card(
                         radius: AppRadius.xl,
                         shadows: AppShadows.soft,
-                        border: Border.all(
-                          color: AppColors.border,
-                        ),
+                        border: Border.all(color: AppColors.border),
                       ),
                       padding: const EdgeInsets.all(
                         AppSpacing.cardPaddingLarge,
@@ -187,9 +178,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
 
                   _AppearAnimation(
                     delay: 400,
-                    child: _HealthSummaryCard(
-                      selectedCount: selectedCount,
-                    ),
+                    child: _HealthSummaryCard(selectedCount: selectedCount),
                   ),
                 ],
               ),
@@ -204,19 +193,13 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
 class _HeroCard extends StatelessWidget {
   final int selectedCount;
 
-  const _HeroCard({
-    required this.selectedCount,
-  });
+  const _HeroCard({required this.selectedCount});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: AppDecoration.premiumGradient(
-        radius: AppRadius.xxl,
-      ),
-      padding: const EdgeInsets.all(
-        AppSpacing.containerPaddingXl,
-      ),
+      decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
+      padding: const EdgeInsets.all(AppSpacing.containerPaddingXl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -225,9 +208,7 @@ class _HeroCard extends StatelessWidget {
               Container(
                 width: 74,
                 height: 74,
-                decoration: AppDecoration.glass(
-                  radius: AppRadius.circular,
-                ),
+                decoration: AppDecoration.glass(radius: AppRadius.circular),
                 child: const Icon(
                   AppIcons.health,
                   color: Colors.white,
@@ -242,16 +223,10 @@ class _HeroCard extends StatelessWidget {
                   horizontal: AppSpacing.md,
                   vertical: AppSpacing.sm,
                 ),
-                decoration: AppDecoration.glass(
-                  radius: AppRadius.circular,
-                ),
+                decoration: AppDecoration.glass(radius: AppRadius.circular),
                 child: Row(
                   children: [
-                    const Icon(
-                      AppIcons.ai,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+                    const Icon(AppIcons.ai, color: Colors.white, size: 18),
 
                     const SizedBox(width: AppSpacing.xs),
 
@@ -302,10 +277,7 @@ class _HeroCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.md),
 
               const Expanded(
-                child: _HeroMetric(
-                  title: 'AI Status',
-                  value: 'Đang phân tích',
-                ),
+                child: _HeroMetric(title: 'Mình đang', value: 'Lắng nghe bạn'),
               ),
             ],
           ),
@@ -319,20 +291,13 @@ class _HeroMetric extends StatelessWidget {
   final String title;
   final String value;
 
-  const _HeroMetric({
-    required this.title,
-    required this.value,
-  });
+  const _HeroMetric({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(
-        AppSpacing.cardPadding,
-      ),
-      decoration: AppDecoration.glass(
-        radius: AppRadius.xl,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+      decoration: AppDecoration.glass(radius: AppRadius.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -361,9 +326,7 @@ class _HeroMetric extends StatelessWidget {
 class _SmartAnalysisCard extends StatelessWidget {
   final int selectedCount;
 
-  const _SmartAnalysisCard({
-    required this.selectedCount,
-  });
+  const _SmartAnalysisCard({required this.selectedCount});
 
   @override
   Widget build(BuildContext context) {
@@ -373,19 +336,14 @@ class _SmartAnalysisCard extends StatelessWidget {
         shadows: AppShadows.cardRaised,
         gradient: AppGradients.surface,
       ),
-      padding: const EdgeInsets.all(
-        AppSpacing.cardPaddingLarge,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
       child: Row(
         children: [
           Container(
             width: 72,
             height: 72,
             decoration: AppDecoration.gradient(
-              colors: const [
-                AppColors.primary,
-                AppColors.tertiary,
-              ],
+              colors: const [AppColors.primary, AppColors.tertiary],
               radius: AppRadius.xl,
               shadows: AppShadows.primary,
             ),
@@ -415,9 +373,7 @@ class _SmartAnalysisCard extends StatelessWidget {
                   selectedCount == 0
                       ? 'Hãy chọn các tình trạng bạn đang gặp để BioAI bắt đầu xây dựng hồ sơ sức khỏe.'
                       : 'Dữ liệu sức khỏe đang được AI xử lý để tối ưu đề xuất dinh dưỡng và theo dõi sức khỏe.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    height: 1.6,
-                  ),
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.6),
                 ),
               ],
             ),
@@ -432,10 +388,7 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _SectionHeader({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionHeader({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -444,19 +397,12 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppTextStyles.heading2.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w700),
         ),
 
         const SizedBox(height: AppSpacing.sm),
 
-        Text(
-          subtitle,
-          style: AppTextStyles.bodyMedium.copyWith(
-            height: 1.7,
-          ),
-        ),
+        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.7)),
       ],
     );
   }
@@ -485,24 +431,17 @@ class _ConditionCard extends StatelessWidget {
         duration: AppDuration.normal,
         curve: AppAnimations.emphasizedCurve,
         width: width,
-        padding: const EdgeInsets.all(
-          AppSpacing.cardPaddingLarge,
-        ),
+        padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
         decoration: selected
             ? AppDecoration.gradient(
-                colors: const [
-                  AppColors.primary,
-                  AppColors.tertiary,
-                ],
+                colors: const [AppColors.primary, AppColors.tertiary],
                 radius: AppRadius.xl,
                 shadows: AppShadows.primary,
               )
             : AppDecoration.card(
                 radius: AppRadius.xl,
                 shadows: AppShadows.card,
-                border: Border.all(
-                  color: AppColors.border,
-                ),
+                border: Border.all(color: AppColors.border),
               ),
         child: Column(
           children: [
@@ -510,10 +449,7 @@ class _ConditionCard extends StatelessWidget {
               scale: selected ? 1.08 : 1,
               duration: AppDuration.normal,
               curve: AppAnimations.bounceCurve,
-              child: Text(
-                emoji,
-                style: const TextStyle(fontSize: 38),
-              ),
+              child: Text(emoji, style: const TextStyle(fontSize: 38)),
             ),
 
             const SizedBox(height: AppSpacing.md),
@@ -522,9 +458,7 @@ class _ConditionCard extends StatelessWidget {
               label,
               textAlign: TextAlign.center,
               style: AppTextStyles.labelLarge.copyWith(
-                color: selected
-                    ? Colors.white
-                    : AppColors.textPrimary,
+                color: selected ? Colors.white : AppColors.textPrimary,
                 fontWeight: FontWeight.w700,
                 height: 1.4,
               ),
@@ -537,17 +471,11 @@ class _ConditionCard extends StatelessWidget {
               width: 26,
               height: 26,
               decoration: AppDecoration.circle(
-                color: selected
-                    ? Colors.white
-                    : AppColors.primarySoft,
+                color: selected ? Colors.white : AppColors.primarySoft,
               ),
               child: Icon(
-                selected
-                    ? AppIcons.success
-                    : AppIcons.add,
-                color: selected
-                    ? AppColors.primary
-                    : AppColors.primary,
+                selected ? AppIcons.success : AppIcons.add,
+                color: selected ? AppColors.primary : AppColors.primary,
                 size: 16,
               ),
             ),
@@ -561,24 +489,17 @@ class _ConditionCard extends StatelessWidget {
 class _HealthSummaryCard extends StatelessWidget {
   final int selectedCount;
 
-  const _HealthSummaryCard({
-    required this.selectedCount,
-  });
+  const _HealthSummaryCard({required this.selectedCount});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: AppDecoration.gradient(
-        colors: const [
-          AppColors.textPrimary,
-          Color(0xFF1E293B),
-        ],
+        colors: const [AppColors.textPrimary, Color(0xFF1E293B)],
         radius: AppRadius.xxl,
         shadows: AppShadows.floating,
       ),
-      padding: const EdgeInsets.all(
-        AppSpacing.containerPaddingXl,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.containerPaddingXl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -587,14 +508,8 @@ class _HealthSummaryCard extends StatelessWidget {
               Container(
                 width: 58,
                 height: 58,
-                decoration: AppDecoration.glass(
-                  radius: AppRadius.xl,
-                ),
-                child: const Icon(
-                  AppIcons.ai,
-                  color: Colors.white,
-                  size: 28,
-                ),
+                decoration: AppDecoration.glass(radius: AppRadius.xl),
+                child: const Icon(AppIcons.ai, color: Colors.white, size: 28),
               ),
 
               const SizedBox(width: AppSpacing.md),
@@ -637,16 +552,16 @@ class _HealthSummaryCard extends StatelessWidget {
 
           const _SummaryRow(
             icon: AppIcons.autoGraph,
-            title: 'AI Status',
-            value: 'Đang xử lý',
+            title: 'Mức độ thấu hiểu',
+            value: 'Đang cập nhật',
           ),
 
           const SizedBox(height: AppSpacing.md),
 
           const _SummaryRow(
             icon: AppIcons.success,
-            title: 'Health Sync',
-            value: 'Hoạt động',
+            title: 'Đồng hành sức khỏe',
+            value: 'Đang bật',
           ),
         ],
       ),
@@ -669,20 +584,14 @@ class _SummaryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: Colors.white,
-          size: 20,
-        ),
+        Icon(icon, color: Colors.white, size: 20),
 
         const SizedBox(width: AppSpacing.sm),
 
         Expanded(
           child: Text(
             title,
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: Colors.white,
-            ),
+            style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
           ),
         ),
 
@@ -702,14 +611,10 @@ class _AppearAnimation extends StatefulWidget {
   final Widget child;
   final int delay;
 
-  const _AppearAnimation({
-    required this.child,
-    required this.delay,
-  });
+  const _AppearAnimation({required this.child, required this.delay});
 
   @override
-  State<_AppearAnimation> createState() =>
-      _AppearAnimationState();
+  State<_AppearAnimation> createState() => _AppearAnimationState();
 }
 
 class _AppearAnimationState extends State<_AppearAnimation>
@@ -722,24 +627,18 @@ class _AppearAnimationState extends State<_AppearAnimation>
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: AppDuration.slow,
-    );
+    _controller = AnimationController(vsync: this, duration: AppDuration.slow);
 
     _animation = CurvedAnimation(
       parent: _controller,
       curve: AppAnimations.smoothCurve,
     );
 
-    Future.delayed(
-      Duration(milliseconds: widget.delay),
-      () {
-        if (mounted) {
-          _controller.forward();
-        }
-      },
-    );
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
   }
 
   @override
@@ -750,10 +649,7 @@ class _AppearAnimationState extends State<_AppearAnimation>
 
   @override
   Widget build(BuildContext context) {
-    return AppAnimations.fadeSlide(
-      child: widget.child,
-      animation: _animation,
-    );
+    return AppAnimations.fadeSlide(child: widget.child, animation: _animation);
   }
 }
 
@@ -784,10 +680,7 @@ class _FloatingGlow extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: gradient,
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient),
       ),
     );
   }
@@ -796,17 +689,14 @@ class _FloatingGlow extends StatelessWidget {
 class _AnimatedHealthBackground extends CustomPainter {
   final double animation;
 
-  const _AnimatedHealthBackground({
-    required this.animation,
-  });
+  const _AnimatedHealthBackground({required this.animation});
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
 
     final backgroundPaint = Paint()
-      ..shader = AppGradients.onboarding
-          .createShader(rect);
+      ..shader = AppGradients.onboarding.createShader(rect);
 
     canvas.drawRect(rect, backgroundPaint);
 
@@ -815,51 +705,36 @@ class _AnimatedHealthBackground extends CustomPainter {
       ..strokeWidth = 1;
 
     for (double x = 0; x < size.width; x += 34) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        linePaint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), linePaint);
     }
 
     for (double y = 0; y < size.height; y += 34) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        linePaint,
-      );
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), linePaint);
     }
 
     final orbPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          AppColors.primary.withOpacity(0.10),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(
-            size.width * 0.8,
-            size.height * (0.2 + animation * 0.1),
-          ),
-          radius: 180,
-        ),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [AppColors.primary.withOpacity(0.10), Colors.transparent],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(
+                size.width * 0.8,
+                size.height * (0.2 + animation * 0.1),
+              ),
+              radius: 180,
+            ),
+          );
 
     canvas.drawCircle(
-      Offset(
-        size.width * 0.8,
-        size.height * (0.2 + animation * 0.1),
-      ),
+      Offset(size.width * 0.8, size.height * (0.2 + animation * 0.1)),
       180,
       orbPaint,
     );
   }
 
   @override
-  bool shouldRepaint(
-    covariant _AnimatedHealthBackground oldDelegate,
-  ) {
+  bool shouldRepaint(covariant _AnimatedHealthBackground oldDelegate) {
     return oldDelegate.animation != animation;
   }
 }

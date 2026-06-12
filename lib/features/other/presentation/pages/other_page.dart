@@ -73,10 +73,7 @@ class HealthInsightsView extends StatelessWidget {
           height: 56,
           width: 56,
           decoration: AppDecoration.gradient(
-            colors: const [
-              AppColors.primary,
-              AppColors.secondary,
-            ],
+            colors: const [AppColors.primary, AppColors.secondary],
             radius: AppRadius.circular,
             shadows: AppShadows.primary,
           ),
@@ -94,10 +91,7 @@ class HealthInsightsView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: AppDecoration.gradient(
-        colors: const [
-          Color(0xFF2563EB),
-          Color(0xFF06B6D4),
-        ],
+        colors: const [Color(0xFF2563EB), Color(0xFF06B6D4)],
         radius: AppRadius.xl,
         shadows: AppShadows.lg,
       ),
@@ -181,10 +175,7 @@ class HealthInsightsView extends StatelessWidget {
               color: Colors.white.withOpacity(.14),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-            ),
+            child: Icon(icon, color: Colors.white),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -200,9 +191,7 @@ class HealthInsightsView extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: AppTextStyles.heading4.copyWith(
-                    color: Colors.white,
-                  ),
+                  style: AppTextStyles.heading4.copyWith(color: Colors.white),
                 ),
               ],
             ),
@@ -217,7 +206,7 @@ class HealthInsightsView extends StatelessWidget {
       children: [
         Expanded(
           child: _buildOverviewCard(
-            title: 'Calories',
+            title: 'Năng lượng',
             value: '1,840',
             unit: 'kcal',
             icon: Icons.local_fire_department_rounded,
@@ -264,16 +253,10 @@ class HealthInsightsView extends StatelessWidget {
               color: bg,
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
-            child: Icon(
-              icon,
-              color: color,
-            ),
+            child: Icon(icon, color: color),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(
-            title,
-            style: AppTextStyles.bodyMedium,
-          ),
+          Text(title, style: AppTextStyles.bodyMedium),
           const SizedBox(height: 4),
           RichText(
             text: TextSpan(
@@ -284,10 +267,7 @@ class HealthInsightsView extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                TextSpan(
-                  text: ' $unit',
-                  style: AppTextStyles.bodyMedium,
-                ),
+                TextSpan(text: ' $unit', style: AppTextStyles.bodyMedium),
               ],
             ),
           ),
@@ -318,9 +298,7 @@ class HealthInsightsView extends StatelessWidget {
                     value: 0.86,
                     strokeWidth: 10,
                     backgroundColor: AppColors.borderLight,
-                    valueColor: const AlwaysStoppedAnimation(
-                      AppColors.success,
-                    ),
+                    valueColor: const AlwaysStoppedAnimation(AppColors.success),
                   ),
                 ),
                 Column(
@@ -332,10 +310,7 @@ class HealthInsightsView extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    Text(
-                      'Điểm AI',
-                      style: AppTextStyles.bodySmall,
-                    ),
+                    Text('Điểm AI', style: AppTextStyles.bodySmall),
                   ],
                 ),
               ],
@@ -346,16 +321,11 @@ class HealthInsightsView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Tình trạng sức khỏe',
-                  style: AppTextStyles.heading3,
-                ),
+                Text('Tình trạng sức khỏe', style: AppTextStyles.heading3),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Bạn đang duy trì trạng thái ổn định. Hãy tiếp tục ngủ đúng giờ và tăng vận động nhẹ mỗi ngày.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    height: 1.6,
-                  ),
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.6),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Container(
@@ -387,10 +357,8 @@ class HealthInsightsView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'AI Insights',
-          style: AppTextStyles.heading3.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          'Mình nhận thấy',
+          style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.md),
         _buildInsightCard(
@@ -436,27 +404,18 @@ class HealthInsightsView extends StatelessWidget {
               color: bg,
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 28,
-            ),
+            child: Icon(icon, color: color, size: 28),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: AppTextStyles.heading4,
-                ),
+                Text(title, style: AppTextStyles.heading4),
                 const SizedBox(height: 6),
                 Text(
                   description,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    height: 1.5,
-                  ),
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                 ),
               ],
             ),
@@ -470,18 +429,12 @@ class HealthInsightsView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Đề xuất hôm nay',
-          style: AppTextStyles.heading3,
-        ),
+        Text('Đề xuất hôm nay', style: AppTextStyles.heading3),
         const SizedBox(height: AppSpacing.md),
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: AppDecoration.gradient(
-            colors: const [
-              Color(0xFF0F172A),
-              Color(0xFF1E293B),
-            ],
+            colors: const [Color(0xFF0F172A), Color(0xFF1E293B)],
             radius: AppRadius.xxl,
             shadows: AppShadows.lg,
           ),
@@ -489,20 +442,23 @@ class HealthInsightsView extends StatelessWidget {
             children: [
               _buildRecommendationItem(
                 icon: Icons.water_drop_rounded,
-                title: 'Uống thêm nước',
-                subtitle: 'Bạn còn thiếu khoảng 600ml hôm nay',
+                title: 'Mình uống thêm một cốc nước nhé',
+                subtitle:
+                    'Hôm nay bạn còn thiếu khoảng 600 ml, chia nhỏ ra sẽ dễ hơn.',
               ),
               const SizedBox(height: AppSpacing.md),
               _buildRecommendationItem(
                 icon: Icons.directions_walk_rounded,
-                title: 'Đi bộ nhẹ 20 phút',
-                subtitle: 'Giúp cải thiện tiêu hóa và giấc ngủ',
+                title: 'Mình đi bộ nhẹ 20 phút nhé',
+                subtitle:
+                    'Một vòng ngắn cũng có thể giúp tiêu hóa và giấc ngủ tốt hơn.',
               ),
               const SizedBox(height: AppSpacing.md),
               _buildRecommendationItem(
                 icon: Icons.self_improvement_rounded,
-                title: 'Thiền thư giãn',
-                subtitle: 'Giảm stress và cải thiện tập trung',
+                title: 'Cho mình 5 phút thở chậm nhé',
+                subtitle:
+                    'Bạn không cần làm hoàn hảo, chỉ cần cho tâm trí nghỉ một chút.',
               ),
             ],
           ),
@@ -525,10 +481,7 @@ class HealthInsightsView extends StatelessWidget {
             color: Colors.white.withOpacity(.08),
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-          ),
+          child: Icon(icon, color: Colors.white),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
@@ -537,16 +490,12 @@ class HealthInsightsView extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: Colors.white,
-                ),
+                style: AppTextStyles.labelLarge.copyWith(color: Colors.white),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: Colors.white70,
-                ),
+                style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
               ),
             ],
           ),
@@ -614,23 +563,15 @@ class HealthInsightsView extends StatelessWidget {
               color: color.withOpacity(.12),
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
-            child: Icon(
-              icon,
-              color: color,
-            ),
+            child: Icon(icon, color: color),
           ),
           const Spacer(),
           Text(
             value,
-            style: AppTextStyles.heading2.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
-          Text(
-            title,
-            style: AppTextStyles.bodyMedium,
-          ),
+          Text(title, style: AppTextStyles.bodyMedium),
         ],
       ),
     );
@@ -653,23 +594,10 @@ class HealthInsightsView extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(
-            icon: AppIcons.home,
-            label: 'Trang chủ',
-            active: true,
-          ),
-          _buildNavItem(
-            icon: AppIcons.health,
-            label: 'Sức khỏe',
-          ),
-          _buildNavItem(
-            icon: AppIcons.nutrition,
-            label: 'Dinh dưỡng',
-          ),
-          _buildNavItem(
-            icon: AppIcons.profile,
-            label: 'Hồ sơ',
-          ),
+          _buildNavItem(icon: AppIcons.home, label: 'Trang chủ', active: true),
+          _buildNavItem(icon: AppIcons.health, label: 'Sức khỏe'),
+          _buildNavItem(icon: AppIcons.nutrition, label: 'Dinh dưỡng'),
+          _buildNavItem(icon: AppIcons.profile, label: 'Hồ sơ'),
         ],
       ),
     );
@@ -683,10 +611,7 @@ class HealthInsightsView extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          icon,
-          color: active ? AppColors.primary : AppColors.textHint,
-        ),
+        Icon(icon, color: active ? AppColors.primary : AppColors.textHint),
         const SizedBox(height: 4),
         Text(
           label,

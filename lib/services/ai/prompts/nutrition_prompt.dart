@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:nano_app/core/interfaces/health_data_interface.dart';
 
 final nutritionPromptProvider = Provider<NutritionPrompt>((ref) {
   return NutritionPrompt();
@@ -9,7 +9,7 @@ class NutritionPrompt {
   static String _clean(List<String> items) =>
       items.where((e) => e.trim().isNotEmpty).join(', ');
 
-  static String generateMealPlan({required DashboardEntity healthData}) {
+  static String generateMealPlan({required HealthDataInterface healthData}) {
     final goals = _clean(healthData.goals);
     final conditions = _clean(healthData.conditions);
     final habits = _clean(healthData.habits);

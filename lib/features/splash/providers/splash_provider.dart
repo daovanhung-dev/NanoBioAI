@@ -12,12 +12,6 @@ class SplashNotifier extends Notifier<SplashStatus> {
   }
 
   Future<void> initialize() async {
-
-
-    state = SplashStatus.onboardingRequired;
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    final bool isLoggedIn = false;
+    state = SplashStatus.loading;
   }
 }

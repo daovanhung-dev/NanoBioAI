@@ -50,8 +50,9 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
                 if (meals.isEmpty) {
                   return MealEmptyView(
                     ui: ui,
-                    title: 'Chưa có thực đơn',
-                    subtitle: 'Hiện tại chưa có dữ liệu thực đơn để hiển thị.',
+                    title: 'Mình chưa chuẩn bị xong thực đơn',
+                    subtitle:
+                        'Bạn quay lại sau một chút nhé, mình đang chọn những món phù hợp.',
                   );
                 }
 
@@ -59,8 +60,9 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
                 if (availableDates.isEmpty) {
                   return MealEmptyView(
                     ui: ui,
-                    title: 'Chưa có ngày hợp lệ',
-                    subtitle: 'Dữ liệu thực đơn chưa sẵn sàng.',
+                    title: 'Mình chưa sắp được lịch ăn',
+                    subtitle:
+                        'Dữ liệu đang được chuẩn bị, bạn chờ mình một chút nhé.',
                   );
                 }
 
@@ -140,7 +142,7 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
                             hasScrollBody: false,
                             child: MealEmptyView(
                               ui: ui,
-                              title: 'Không có thực đơn',
+                              title: 'Hôm nay mình chưa có món để gợi ý',
                               subtitle:
                                   'Hãy chọn một ngày khác ở thanh chọn ngày bên trên.',
                             ),
@@ -360,7 +362,7 @@ class _MealPlanHeader extends StatelessWidget {
                   SizedBox(width: ui.smallGap),
                   Semantics(
                     button: true,
-                    label: 'Làm mới thực đơn',
+                    label: 'Giúp mình chuẩn bị lại thực đơn',
                     child: GestureDetector(
                       onTap: onRefresh,
                       child: Container(
