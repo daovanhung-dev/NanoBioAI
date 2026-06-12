@@ -53,7 +53,7 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
     final isTablet = width >= AppTypography.mobileBreakpoint;
 
     final completed = _completedFields(state);
-    final progress = completed / 5;
+    final progress = completed / 6;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -194,6 +194,19 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
                               ],
                               onChanged: controller.updateBirthYear,
                             ),
+
+                            const SizedBox(height: AppSpacing.lg),
+
+                            _ModernInput(
+                              icon: AppIcons.dashboard,
+                              title: 'Nghề nghiệp',
+                              hint: 'Nhân viên văn phòng',
+                              initialValue: state.occupation,
+                              keyboardType: TextInputType.text,
+                              textCapitalization: TextCapitalization.words,
+                              autofillHints: const [AutofillHints.jobTitle],
+                              onChanged: controller.updateOccupation,
+                            ),
                           ],
                         ),
                       ),
@@ -317,6 +330,7 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
 
     if (state.fullName.trim().isNotEmpty) count++;
     if (state.birthYear > 0) count++;
+    if (state.occupation.trim().isNotEmpty) count++;
     if (state.gender.trim().isNotEmpty) count++;
     if (state.heightCm > 0) count++;
     if (state.weightKg > 0) count++;

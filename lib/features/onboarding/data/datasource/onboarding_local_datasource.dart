@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:nano_app/core/storage/localdb/database_service.dart';
@@ -9,6 +10,8 @@ import '../../domain/entities/onboarding_entity.dart';
 import '../models/onboarding_model.dart';
 
 class OnboardingLocalDatasource {
+  static const _tag = 'ONBOARDING';
+  
   const OnboardingLocalDatasource();
 
   Future<Database> _db() async {
@@ -16,253 +19,309 @@ class OnboardingLocalDatasource {
   }
 
   Future<void> saveOnboarding(OnboardingEntity entity) async {
+    AppLogger.database(_tag, 'Start saving onboarding to SQLite');
+    AppLogger.info(_tag, 'Converting entity to model');
+    
     final model = OnboardingModel.fromEntity(entity);
 
     final db = await _db();
+    AppLogger.database(_tag, 'Database connection acquired');
 
     final now = DateTime.now().toIso8601String();
 
     late final String userId;
 
-    await db.transaction((txn) async {
-      /// =========================
-      /// USER
-      /// =========================
+    try {
+      await db.transaction((txn) async {
+        AppLogger.database(_tag, 'Transaction started');
 
-      final users = await txn.query(
-        'users',
-        where: 'email = ? OR phone = ?',
-        whereArgs: [model.email, model.phone],
-        limit: 1,
-      );
-
-      if (users.isNotEmpty) {
-        userId = users.first['id'] as String;
-
-        await txn.update(
+        /// =========================
+        /// USER
+        /// =========================
+        AppLogger.database(_tag, 'Querying existing user by email/phone');
+        
+        final users = await txn.query(
           'users',
-          {
-            'email': model.email,
-            'phone': model.phone,
+          where: 'email = ? OR phone = ?',
+          whereArgs: [model.email, model.phone],
+          limit: 1,
+        );
+
+        if (users.isNotEmpty) {
+          userId = users.first['id'] as String;
+          AppLogger.database(_tag, 'Existing user found: $userId');
+          AppLogger.database(_tag, 'Updating user record');
+
+          await txn.update(
+            'users',
+            {
+              'email': model.email,
+              'phone': model.phone,
+              'full_name': model.fullName,
+              'gender': model.gender,
+              'birth_year': model.birthYear,
+              'updated_at': now,
+            },
+            where: 'id = ?',
+            whereArgs: [userId],
+          );
+          
+          AppLogger.success(_tag, 'User record updated successfully');
+        } else {
+          // Generate a text primary key (timestamp-based) to match table schema (TEXT PK)
+          final generatedId = DateTime.now().millisecondsSinceEpoch.toString();
+          AppLogger.database(_tag, 'New user, generating ID: $generatedId');
+
+          await txn.insert('users', {
+            'id': generatedId,
+            'email': model.email.isEmpty ? null : model.email,
+            'phone': model.phone.isEmpty ? null : model.phone,
             'full_name': model.fullName,
             'gender': model.gender,
             'birth_year': model.birthYear,
+            'created_at': now,
             'updated_at': now,
-          },
-          where: 'id = ?',
+          });
+
+          userId = generatedId;
+          AppLogger.success(_tag, 'New user record inserted');
+        }
+
+        debugPrint('🔥 USER ID: $userId');
+        AppLogger.info(_tag, 'User ID: $userId');
+
+        /// =========================
+        /// DELETE OLD
+        /// =========================
+        AppLogger.database(_tag, 'Deleting old health data for user');
+
+        await txn.delete(
+          'health_profiles',
+          where: 'user_id = ?',
           whereArgs: [userId],
         );
-      } else {
-        // Generate a text primary key (timestamp-based) to match table schema (TEXT PK)
-        final generatedId = DateTime.now().millisecondsSinceEpoch.toString();
 
-        await txn.insert('users', {
-          'id': generatedId,
-          'email': model.email.isEmpty ? null : model.email,
-          'phone': model.phone.isEmpty ? null : model.phone,
-          'full_name': model.fullName,
-          'gender': model.gender,
-          'birth_year': model.birthYear,
-          'created_at': now,
-          'updated_at': now,
-        });
-
-        userId = generatedId;
-      }
-
-      debugPrint('🔥 USER ID: $userId');
-
-      /// =========================
-      /// DELETE OLD
-      /// =========================
-
-      await txn.delete(
-        'health_profiles',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      );
-
-      await txn.delete(
-        'health_goals',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      );
-
-      await txn.delete(
-        'health_conditions',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      );
-
-      await txn.delete(
-        'lifestyle_habits',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      );
-
-      await txn.delete(
-        'food_allergies',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      );
-
-      await txn.delete(
-        'medical_treatments',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      );
-
-      await txn.delete(
-        'survey_answers',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      );
-
-      /// =========================
-      /// HEALTH PROFILE
-      /// =========================
-
-      await txn.insert(
-        'health_profiles',
-        _healthProfileRow(model, userId, now),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-
-      /// =========================
-      /// GOALS
-      /// =========================
-
-      for (final row in _goalRows(model, userId, now)) {
-        await txn.insert(
+        await txn.delete(
           'health_goals',
-          row,
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          where: 'user_id = ?',
+          whereArgs: [userId],
         );
-      }
 
-      /// =========================
-      /// CONDITIONS
-      /// =========================
-
-      for (final row in _conditionRows(model, userId, now)) {
-        await txn.insert(
+        await txn.delete(
           'health_conditions',
-          row,
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          where: 'user_id = ?',
+          whereArgs: [userId],
         );
-      }
 
-      /// =========================
-      /// LIFESTYLE
-      /// =========================
+        await txn.delete(
+          'lifestyle_habits',
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        );
 
-      await txn.insert(
-        'lifestyle_habits',
-        _lifestyleRow(model, userId, now),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-
-      /// =========================
-      /// ALLERGY
-      /// =========================
-
-      if (model.hasAllergy) {
-        await txn.insert(
+        await txn.delete(
           'food_allergies',
-          _allergyRow(model, userId, now),
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          where: 'user_id = ?',
+          whereArgs: [userId],
         );
-      }
 
-      /// =========================
-      /// TREATMENT
-      /// =========================
-
-      if (model.hasTreatment) {
-        await txn.insert(
+        await txn.delete(
           'medical_treatments',
-          _treatmentRow(model, userId, now),
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          where: 'user_id = ?',
+          whereArgs: [userId],
         );
-      }
 
-      /// =========================
-      /// SURVEY
-      /// =========================
-
-      for (final row in _surveyRows(model, userId, now)) {
-        await txn.insert(
+        await txn.delete(
           'survey_answers',
-          row,
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        );
+        
+        AppLogger.success(_tag, 'Old health data deleted');
+
+        /// =========================
+        /// HEALTH PROFILE
+        /// =========================
+        AppLogger.database(_tag, 'Insert health_profiles');
+
+        await txn.insert(
+          'health_profiles',
+          _healthProfileRow(model, userId, now),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
-      }
-    });
+        
+        AppLogger.success(_tag, 'Health profile inserted');
 
-    /// =========================
-    /// DEBUG LOG
-    /// =========================
+        /// =========================
+        /// GOALS
+        /// =========================
+        final goalRows = _goalRows(model, userId, now);
+        AppLogger.database(_tag, 'Insert ${goalRows.length} health_goals');
 
-    final snapshot = <String, Object?>{
-      'users': await db.query(
-        'users',
-        where: 'id = ?',
-        whereArgs: [userId],
-        limit: 1,
-      ),
+        for (final row in goalRows) {
+          await txn.insert(
+            'health_goals',
+            row,
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+        
+        AppLogger.success(_tag, '${goalRows.length} goals inserted');
 
-      'health_profiles': await db.query(
-        'health_profiles',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      ),
+        /// =========================
+        /// CONDITIONS
+        /// =========================
+        final conditionRows = _conditionRows(model, userId, now);
+        AppLogger.database(_tag, 'Insert ${conditionRows.length} health_conditions');
 
-      'health_goals': await db.query(
-        'health_goals',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      ),
+        for (final row in conditionRows) {
+          await txn.insert(
+            'health_conditions',
+            row,
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+        
+        AppLogger.success(_tag, '${conditionRows.length} conditions inserted');
 
-      'health_conditions': await db.query(
-        'health_conditions',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      ),
+        /// =========================
+        /// LIFESTYLE
+        /// =========================
+        AppLogger.database(_tag, 'Insert lifestyle_habits');
 
-      'lifestyle_habits': await db.query(
-        'lifestyle_habits',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      ),
+        await txn.insert(
+          'lifestyle_habits',
+          _lifestyleRow(model, userId, now),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+        
+        AppLogger.success(_tag, 'Lifestyle habits inserted');
 
-      'food_allergies': await db.query(
-        'food_allergies',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      ),
+        /// =========================
+        /// ALLERGY
+        /// =========================
 
-      'medical_treatments': await db.query(
-        'medical_treatments',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      ),
+        if (model.hasAllergy) {
+          AppLogger.database(_tag, 'Insert food_allergies');
+          
+          await txn.insert(
+            'food_allergies',
+            _allergyRow(model, userId, now),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+          
+          AppLogger.success(_tag, 'Food allergy inserted');
+        } else {
+          AppLogger.info(_tag, 'No allergy data to insert');
+        }
 
-      'survey_answers': await db.query(
-        'survey_answers',
-        where: 'user_id = ?',
-        whereArgs: [userId],
-      ),
-    };
+        /// =========================
+        /// TREATMENT
+        /// =========================
 
-    debugPrint('╔══════════════════════════════════════════════');
+        if (model.hasTreatment) {
+          AppLogger.database(_tag, 'Insert medical_treatments');
+          
+          await txn.insert(
+            'medical_treatments',
+            _treatmentRow(model, userId, now),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+          
+          AppLogger.success(_tag, 'Medical treatment inserted');
+        } else {
+          AppLogger.info(_tag, 'No treatment data to insert');
+        }
 
-    debugPrint('║ ONBOARDING SAVED TO SQLITE');
+        /// =========================
+        /// SURVEY
+        /// =========================
+        final surveyRows = _surveyRows(model, userId, now);
+        AppLogger.database(_tag, 'Insert ${surveyRows.length} survey_answers');
 
-    debugPrint('╟─ userId: $userId');
+        for (final row in surveyRows) {
+          await txn.insert(
+            'survey_answers',
+            row,
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+        
+        AppLogger.success(_tag, '${surveyRows.length} survey answers inserted');
+        AppLogger.database(_tag, 'Transaction completed successfully');
+      });
 
-    debugPrint(const JsonEncoder.withIndent('  ').convert(snapshot));
+      /// =========================
+      /// DEBUG LOG
+      /// =========================
 
-    debugPrint('╚══════════════════════════════════════════════');
+      final snapshot = <String, Object?>{
+        'users': await db.query(
+          'users',
+          where: 'id = ?',
+          whereArgs: [userId],
+          limit: 1,
+        ),
+
+        'health_profiles': await db.query(
+          'health_profiles',
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        ),
+
+        'health_goals': await db.query(
+          'health_goals',
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        ),
+
+        'health_conditions': await db.query(
+          'health_conditions',
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        ),
+
+        'lifestyle_habits': await db.query(
+          'lifestyle_habits',
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        ),
+
+        'food_allergies': await db.query(
+          'food_allergies',
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        ),
+
+        'medical_treatments': await db.query(
+          'medical_treatments',
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        ),
+
+        'survey_answers': await db.query(
+          'survey_answers',
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        ),
+      };
+
+      debugPrint('╔══════════════════════════════════════════════');
+
+      debugPrint('║ ONBOARDING SAVED TO SQLITE');
+
+      debugPrint('╟─ userId: $userId');
+
+      debugPrint(const JsonEncoder.withIndent('  ').convert(snapshot));
+
+      debugPrint('╚══════════════════════════════════════════════');
+      
+      AppLogger.success(_tag, 'Onboarding data saved to SQLite successfully');
+      AppLogger.info(_tag, 'User ID: $userId');
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Failed to save onboarding to SQLite', e, st);
+      rethrow;
+    }
   }
 
   Map<String, Object?> _healthProfileRow(

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
+import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/features/dashboard/presentation/controllers/dashboard_controller.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
@@ -172,8 +173,13 @@ class OnboardingState {
 }
 
 class OnboardingController extends Notifier<OnboardingState> {
+  static const _tag = 'ONBOARDING';
+  DateTime? _startTime;
+
   @override
   OnboardingState build() {
+    _startTime = DateTime.now();
+    AppLogger.info(_tag, 'Controller initialized');
     return const OnboardingState();
   }
 
@@ -181,131 +187,348 @@ class OnboardingController extends Notifier<OnboardingState> {
       ref.read(onboardingRepositoryProvider);
 
   void nextStep() {
-    if (state.currentStep >= 6) return;
-    state = state.copyWith(currentStep: state.currentStep + 1);
+    if (state.currentStep >= 6) {
+      AppLogger.warning(_tag, 'Next Button Clicked - Already at final step');
+      return;
+    }
+    
+    final oldStep = state.currentStep;
+    final newStep = state.currentStep + 1;
+    
+    AppLogger.action(_tag, 'Next Button Clicked');
+    AppLogger.navigation(_tag, _stepName(oldStep), _stepName(newStep));
+    
+    state = state.copyWith(currentStep: newStep);
+    
+    AppLogger.info(_tag, 'Entered Step ${newStep + 1} - ${_stepTitle(newStep)}');
   }
 
   void previousStep() {
-    if (state.currentStep <= 0) return;
-    state = state.copyWith(currentStep: state.currentStep - 1);
+    if (state.currentStep <= 0) {
+      AppLogger.warning(_tag, 'Back Button Clicked - Already at first step');
+      return;
+    }
+    
+    final oldStep = state.currentStep;
+    final newStep = state.currentStep - 1;
+    
+    AppLogger.action(_tag, 'Back Button Clicked');
+    AppLogger.navigation(_tag, _stepName(oldStep), _stepName(newStep));
+    
+    state = state.copyWith(currentStep: newStep);
+    
+    AppLogger.info(_tag, 'Entered Step ${newStep + 1} - ${_stepTitle(newStep)}');
   }
 
   void goToStep(int step) {
     final safeStep = step.clamp(0, 6);
+    final oldStep = state.currentStep;
+    
+    AppLogger.action(_tag, 'Jump to Step ${safeStep + 1}');
+    AppLogger.navigation(_tag, _stepName(oldStep), _stepName(safeStep));
+    
     state = state.copyWith(currentStep: safeStep);
+    
+    AppLogger.info(_tag, 'Entered Step ${safeStep + 1} - ${_stepTitle(safeStep)}');
   }
 
-  void updateEmail(String value) => state = state.copyWith(email: value);
-  void updatePhone(String value) => state = state.copyWith(phone: value);
-  void updateFullName(String value) => state = state.copyWith(fullName: value);
+  String _stepName(int step) {
+    return 'OnboardingStep${step + 1}';
+  }
+
+  String _stepTitle(int step) {
+    const titles = [
+      'Welcome',
+      'Personal Information',
+      'Health Goals',
+      'Health Conditions',
+      'Lifestyle Habits',
+      'Extras (Allergy & Treatment)',
+      'Review & Submit',
+    ];
+    return titles[step];
+  }
+
+  void updateEmail(String value) {
+    AppLogger.form(_tag, 'email', value);
+    state = state.copyWith(email: value);
+  }
+
+  void updatePhone(String value) {
+    AppLogger.form(_tag, 'phone', value);
+    state = state.copyWith(phone: value);
+  }
+
+  void updateFullName(String value) {
+    AppLogger.form(_tag, 'fullName', value);
+    state = state.copyWith(fullName: value);
+  }
 
   void updateGender(String value) {
+    AppLogger.form(_tag, 'gender', value);
     state = state.copyWith(gender: value);
   }
 
   void updateBirthYear(String value) {
-    state = state.copyWith(birthYear: int.tryParse(value) ?? state.birthYear);
+    final year = int.tryParse(value) ?? state.birthYear;
+    AppLogger.form(_tag, 'birthYear', year);
+    state = state.copyWith(birthYear: year);
   }
 
-  void updateOccupation(String value) =>
-      state = state.copyWith(occupation: value);
+  void updateOccupation(String value) {
+    AppLogger.form(_tag, 'occupation', value);
+    state = state.copyWith(occupation: value);
+  }
 
   void updateHeight(String value) {
-    state = state.copyWith(heightCm: double.tryParse(value) ?? state.heightCm);
+    final height = double.tryParse(value) ?? state.heightCm;
+    AppLogger.form(_tag, 'heightCm', height);
+    state = state.copyWith(heightCm: height);
   }
 
   void updateWeight(String value) {
-    state = state.copyWith(weightKg: double.tryParse(value) ?? state.weightKg);
+    final weight = double.tryParse(value) ?? state.weightKg;
+    AppLogger.form(_tag, 'weightKg', weight);
+    AppLogger.info(_tag, 'BMI calculated: ${state.bmi.toStringAsFixed(2)}');
+    state = state.copyWith(weightKg: weight);
   }
 
-  void updateOtherGoal(String value) =>
-      state = state.copyWith(otherGoal: value);
-  void updateOtherCondition(String value) =>
-      state = state.copyWith(otherCondition: value);
+  void updateOtherGoal(String value) {
+    AppLogger.form(_tag, 'otherGoal', value);
+    state = state.copyWith(otherGoal: value);
+  }
 
-  void updateSleepQuality(String value) =>
-      state = state.copyWith(sleepQuality: value);
-  void updateActivityLevel(String value) =>
-      state = state.copyWith(activityLevel: value);
-  void updateWaterPerDay(String value) =>
-      state = state.copyWith(waterPerDay: value);
+  void updateOtherCondition(String value) {
+    AppLogger.form(_tag, 'otherCondition', value);
+    state = state.copyWith(otherCondition: value);
+  }
 
-  void updateAllergyName(String value) =>
-      state = state.copyWith(allergyName: value);
-  void updateAllergyNote(String value) =>
-      state = state.copyWith(allergyNote: value);
-  void updateTreatmentName(String value) =>
-      state = state.copyWith(treatmentName: value);
-  void updateMedicationName(String value) =>
-      state = state.copyWith(medicationName: value);
-  void updateTreatmentNote(String value) =>
-      state = state.copyWith(treatmentNote: value);
+  void updateSleepQuality(String value) {
+    AppLogger.form(_tag, 'sleepQuality', value);
+    state = state.copyWith(sleepQuality: value);
+  }
 
-  void updateConcernText(String value) =>
-      state = state.copyWith(concernText: value);
-  void setAgreed(bool value) => state = state.copyWith(agreed: value);
+  void updateActivityLevel(String value) {
+    AppLogger.form(_tag, 'activityLevel', value);
+    state = state.copyWith(activityLevel: value);
+  }
+
+  void updateWaterPerDay(String value) {
+    AppLogger.form(_tag, 'waterPerDay', value);
+    state = state.copyWith(waterPerDay: value);
+  }
+
+  void updateAllergyName(String value) {
+    AppLogger.form(_tag, 'allergyName', value);
+    state = state.copyWith(allergyName: value);
+  }
+
+  void updateAllergyNote(String value) {
+    AppLogger.form(_tag, 'allergyNote', value);
+    state = state.copyWith(allergyNote: value);
+  }
+
+  void updateTreatmentName(String value) {
+    AppLogger.form(_tag, 'treatmentName', value);
+    state = state.copyWith(treatmentName: value);
+  }
+
+  void updateMedicationName(String value) {
+    AppLogger.form(_tag, 'medicationName', value);
+    state = state.copyWith(medicationName: value);
+  }
+
+  void updateTreatmentNote(String value) {
+    AppLogger.form(_tag, 'treatmentNote', value);
+    state = state.copyWith(treatmentNote: value);
+  }
+
+  void updateConcernText(String value) {
+    AppLogger.form(_tag, 'concernText', value);
+    state = state.copyWith(concernText: value);
+  }
+
+  void setAgreed(bool value) {
+    AppLogger.form(_tag, 'agreed', value);
+    state = state.copyWith(agreed: value);
+  }
 
   void toggleGoal(String code) {
     final items = [...state.goals];
+    final action = items.contains(code) ? 'removed' : 'added';
+    
     if (items.contains(code)) {
       items.remove(code);
     } else {
       items.add(code);
     }
+    
+    AppLogger.form(_tag, 'selectedGoals', items);
+    AppLogger.info(_tag, 'Goal "$code" $action');
+    
     state = state.copyWith(goals: items);
   }
 
   void toggleCondition(String code) {
     final items = [...state.conditions];
+    final action = items.contains(code) ? 'removed' : 'added';
+    
     if (items.contains(code)) {
       items.remove(code);
     } else {
       items.add(code);
     }
+    
+    AppLogger.form(_tag, 'selectedConditions', items);
+    AppLogger.info(_tag, 'Condition "$code" $action');
+    
     state = state.copyWith(conditions: items);
   }
 
   void toggleHabit(String code) {
     final items = [...state.habits];
+    final action = items.contains(code) ? 'removed' : 'added';
+    
     if (items.contains(code)) {
       items.remove(code);
     } else {
       items.add(code);
     }
+    
+    AppLogger.form(_tag, 'selectedHabits', items);
+    AppLogger.info(_tag, 'Habit "$code" $action');
+    
     state = state.copyWith(habits: items);
   }
 
   Future<void> saveOnboarding() async {
+    AppLogger.separator(_tag);
+    AppLogger.action(_tag, 'Submit Button Clicked');
+    
+    // Validation checks
     if (!state.agreed) {
+      AppLogger.validation(
+        _tag,
+        'Terms Agreement',
+        false,
+        reason: 'User must agree to terms',
+      );
+      
+      AppLogger.error(
+        _tag,
+        'Onboarding Completed With Error',
+        StateError(
+          'Bạn cần đồng ý với điều khoản để mình có thể tiếp tục đồng hành cùng bạn.',
+        ),
+      );
+      
       throw StateError(
         'Bạn cần đồng ý với điều khoản để mình có thể tiếp tục đồng hành cùng bạn.',
       );
     }
+    
+    AppLogger.validation(_tag, 'Terms Agreement', true);
 
     if (!state.canSave) {
+      AppLogger.validation(
+        _tag,
+        'Required Fields',
+        false,
+        reason: 'Missing required fields',
+      );
+      
+      final missingFields = <String>[];
+      if (state.fullName.trim().isEmpty) missingFields.add('fullName');
+      if (state.gender.trim().isEmpty) missingFields.add('gender');
+      if (state.birthYear <= 1900) missingFields.add('birthYear');
+      if (state.occupation.trim().isEmpty) missingFields.add('occupation');
+      
+      AppLogger.info(_tag, 'Missing fields: ${missingFields.join(', ')}');
+      
+      AppLogger.error(
+        _tag,
+        'Onboarding Completed With Error',
+        StateError(
+          'Mình vẫn còn thiếu vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.',
+        ),
+      );
+      
       throw StateError(
         'Mình vẫn còn thiếu vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.',
       );
     }
+    
+    AppLogger.validation(_tag, 'Required Fields', true);
 
-    if (state.isSaving) return;
+    if (state.isSaving) {
+      AppLogger.warning(_tag, 'Save already in progress, ignoring duplicate call');
+      return;
+    }
+    
+    AppLogger.info(_tag, 'Starting onboarding save process...');
     state = state.copyWith(isSaving: true);
 
     try {
-      await _repository.save(state.toEntity());
-      debugPrint('Generating the weekly meal plan');
+      // Log the data being saved
+      final entity = state.toEntity();
+      AppLogger.info(_tag, 'Saving onboarding profile...');
+      AppLogger.info(_tag, 'User: ${entity.fullName} (${entity.email})');
+      AppLogger.info(_tag, 'BMI: ${entity.bmi.toStringAsFixed(2)}');
+      AppLogger.info(_tag, 'Goals: ${entity.goals.length} selected');
+      AppLogger.info(_tag, 'Conditions: ${entity.conditions.length} selected');
+      AppLogger.info(_tag, 'Habits: ${entity.habits.length} selected');
+      
+      await _repository.save(entity);
+      AppLogger.success(_tag, 'Onboarding profile saved successfully');
+      
+      AppLogger.info(_tag, 'Generating the weekly meal plan');
       await ref.read(dashboardControllerProvider.notifier).genMealByWeeksToDB();
+      
+      AppLogger.info(_tag, 'Setting onboarding completed flag');
       await AppPrefs.setOnboardingCompleted(true);
+      AppLogger.success(_tag, 'Onboarding completed flag set');
 
       state = state.copyWith(
         isSaving: false,
         savedLog: 'Mình đã lưu hồ sơ sức khỏe của bạn thành công.',
       );
-    } catch (e) {
+      
+      // Log completion summary
+      final duration = DateTime.now().difference(_startTime!);
+      AppLogger.separator(_tag);
+      AppLogger.success(_tag, 'Onboarding Completed Successfully');
+      
+      AppLogger.summary(_tag, 'ONBOARDING_SUMMARY', {
+        'Total Steps': 7,
+        'Completed Steps': 7,
+        'Duration': '${duration.inMinutes}m ${duration.inSeconds % 60}s',
+        'User ID': entity.email.isNotEmpty ? entity.email : entity.phone,
+        'Goals Count': entity.goals.length,
+        'Conditions Count': entity.conditions.length,
+        'Habits Count': entity.habits.length,
+        'Has Allergy': entity.hasAllergy,
+        'Has Treatment': entity.hasTreatment,
+        'Saved To Database': true,
+        'Meal Plan Generated': true,
+      });
+      AppLogger.separator(_tag);
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Save onboarding failed', e, st);
+      
       state = state.copyWith(
         isSaving: false,
         savedLog: 'Mình chưa thể lưu hồ sơ lúc này: $e',
       );
+      
+      AppLogger.separator(_tag);
+      AppLogger.error(_tag, 'Onboarding Completed With Error', e);
+      AppLogger.summary(_tag, 'ONBOARDING_SUMMARY', {
+        'Status': 'Failed',
+        'Error': e.toString(),
+        'Saved To Database': false,
+      });
+      AppLogger.separator(_tag);
+      
       rethrow;
     }
   }

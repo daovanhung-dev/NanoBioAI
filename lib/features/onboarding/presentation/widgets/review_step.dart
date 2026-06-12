@@ -382,10 +382,35 @@ class ReviewStep extends ConsumerWidget {
                       }
 
                       if (!state.canSave) {
+                        // Kiểm tra từng trường bắt buộc và tạo thông báo chi tiết
+                        final missingFields = <String>[];
+                        if (state.fullName.trim().isEmpty) {
+                          missingFields.add('Họ và tên');
+                        }
+                        if (state.gender.trim().isEmpty) {
+                          missingFields.add('Giới tính');
+                        }
+                        if (state.birthYear <= 1900) {
+                          missingFields.add('Năm sinh');
+                        }
+                        if (state.occupation.trim().isEmpty) {
+                          missingFields.add('Nghề nghiệp');
+                        }
+
+                        final message = missingFields.isEmpty
+                            ? 'Mình còn thiếu một vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.'
+                            : 'Bạn còn thiếu: ${missingFields.join(', ')}. Vui lòng quay lại bước 2 để điền đầy đủ nhé.';
+
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Mình còn thiếu một vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.',
+                          SnackBar(
+                            content: Text(message),
+                            duration: const Duration(seconds: 4),
+                            action: SnackBarAction(
+                              label: 'Quay lại',
+                              textColor: Colors.white,
+                              onPressed: () {
+                                controller.goToStep(1); // Quay về BasicInfoStep
+                              },
                             ),
                           ),
                         );
