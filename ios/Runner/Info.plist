@@ -45,5 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Camera permission -->
+	<key>NSCameraUsageDescription</key>
+	<string>Chúng tôi cần quyền truy cập máy ảnh để bạn có thể cập nhật ảnh đại diện của mình</string>
+	<!-- Photo library permission -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Chúng tôi cần quyền truy cập thư viện ảnh để bạn có thể chọn ảnh đại diện</string>
+	<!-- Face ID permission -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Chúng tôi sử dụng Face ID để bảo mật quyền truy cập vào ứng dụng của bạn</string>
 </dict>
 </plist>

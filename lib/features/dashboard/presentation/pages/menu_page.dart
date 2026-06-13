@@ -6,6 +6,7 @@ import 'package:nano_app/features/dashboard/presentation/pages/dashboard_page.da
 import 'package:nano_app/features/meal_plan/dashboard/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/features/other/presentation/pages/other_page.dart';
 import 'package:nano_app/features/settings/presentation/pages/settings_page.dart';
+import 'package:nano_app/shared/widgets/ai_chat_fab.dart';
 
 import '../../../../core/theme/theme.dart';
 
@@ -167,6 +168,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
           ),
         ],
       ),
+      floatingActionButton: const AIChatFAB(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.only(
           left: AppSpacing.md,

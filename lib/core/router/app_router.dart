@@ -6,6 +6,7 @@ import 'package:nano_app/features/dashboard/presentation/pages/menu_page.dart';
 import 'package:nano_app/features/meal_plan/dashboard/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/features/onboarding/onboarding.dart';
 import 'package:nano_app/features/splash/splash.dart';
+import 'package:nano_app/features/ai_chat/presentation/ai_chat_screen.dart';
 
 import 'route_guards.dart';
 import '../constants/routes/route_names.dart';
@@ -70,7 +71,7 @@ final appRouter = GoRouter(
       path: RoutePaths.aiChat,
       name: RoutePaths.aiChat,
       redirect: RouteGuards.authGuard,
-      builder: (context, state) => const Placeholder(),
+      builder: (context, state) => const AIChatScreen(),
     ),
 
     /// Nutrition
