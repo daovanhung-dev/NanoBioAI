@@ -27,6 +27,8 @@ class MealPlanModel {
 
   final int mealOrder;
 
+  final String cookingInstructions;
+
   final bool isCompleted;
 
   final bool aiGenerated;
@@ -49,6 +51,7 @@ class MealPlanModel {
     required this.fiber,
     required this.waterMl,
     required this.mealOrder,
+    this.cookingInstructions = '',
     required this.isCompleted,
     required this.aiGenerated,
     required this.createdAt,
@@ -70,6 +73,7 @@ class MealPlanModel {
       fiber: (map['fiber'] as num).toDouble(),
       waterMl: map['water_ml'],
       mealOrder: map['meal_order'],
+      cookingInstructions: map['cooking_instructions']?.toString() ?? '',
       isCompleted: map['is_completed'] == 1,
       aiGenerated: map['ai_generated'] == 1,
       createdAt: map['created_at'],
@@ -92,6 +96,7 @@ class MealPlanModel {
       fiber: (json['fiber'] as num).toDouble(),
       waterMl: json['water_ml'],
       mealOrder: json['meal_order'],
+      cookingInstructions: json['cooking_instructions']?.toString() ?? '',
       isCompleted: json['is_completed'] == true || json['is_completed'] == 1,
       aiGenerated: json['ai_generated'] == true || json['ai_generated'] == 1,
       createdAt: json['created_at'],
@@ -114,6 +119,7 @@ class MealPlanModel {
       'fiber': fiber,
       'water_ml': waterMl,
       'meal_order': mealOrder,
+      'cooking_instructions': cookingInstructions,
       'is_completed': isCompleted ? 1 : 0,
       'ai_generated': aiGenerated ? 1 : 0,
       'created_at': createdAt,
@@ -136,6 +142,7 @@ class MealPlanModel {
       'fiber': fiber,
       'water_ml': waterMl,
       'meal_order': mealOrder,
+      'cooking_instructions': cookingInstructions,
       'is_completed': isCompleted,
       'ai_generated': aiGenerated,
       'created_at': createdAt,
@@ -158,6 +165,7 @@ class MealPlanModel {
       fiber: fiber,
       waterMl: waterMl,
       mealOrder: mealOrder,
+      cookingInstructions: cookingInstructions,
       isCompleted: isCompleted,
       aiGenerated: aiGenerated,
       createdAt: createdAt,
@@ -180,6 +188,7 @@ class MealPlanModel {
       fiber: entity.fiber,
       waterMl: entity.waterMl,
       mealOrder: entity.mealOrder,
+      cookingInstructions: entity.cookingInstructions,
       isCompleted: entity.isCompleted,
       aiGenerated: entity.aiGenerated,
       createdAt: entity.createdAt,
@@ -201,6 +210,7 @@ class MealPlanModel {
     double? fiber,
     int? waterMl,
     int? mealOrder,
+    String? cookingInstructions,
     bool? isCompleted,
     bool? aiGenerated,
     String? createdAt,
@@ -220,6 +230,7 @@ class MealPlanModel {
       fiber: fiber ?? this.fiber,
       waterMl: waterMl ?? this.waterMl,
       mealOrder: mealOrder ?? this.mealOrder,
+      cookingInstructions: cookingInstructions ?? this.cookingInstructions,
       isCompleted: isCompleted ?? this.isCompleted,
       aiGenerated: aiGenerated ?? this.aiGenerated,
       createdAt: createdAt ?? this.createdAt,

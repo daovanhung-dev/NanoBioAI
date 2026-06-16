@@ -24,6 +24,8 @@ Không thêm key ngoài schema.
 Giá trị số phải là number, không phải string.
 Ngày theo định dạng YYYY-MM-DD.
 
+Truong cooking_instructions la chuoi tieng Viet ngan, gom 2-4 buoc che bien.
+
 Schema:
 [
   {
@@ -40,6 +42,7 @@ Schema:
     "fiber": 6,
     "water_ml": 300,
     "meal_order": 1,
+    "cooking_instructions": "Buoc 1... Buoc 2...",
     "is_completed": 0,
     "ai_generated": 1,
     "created_at": "2026-05-24T08:00:00Z",

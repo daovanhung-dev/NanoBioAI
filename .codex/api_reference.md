@@ -107,8 +107,38 @@ Important contract:
 
 - Prompt says create 7-day meal plan, starting tomorrow.
 - Schema expects meal records, 3 meals/day: breakfast/lunch/dinner.
+- Schema includes `cooking_instructions` for 2-4 short preparation/cooking steps per meal.
 - JSON keys use snake_case.
 - Numeric values must be numbers, not strings.
+- `DashboardController.genMealByWeeksToDB(requireComplete: true)` throws unless Gemini returns exactly 21 meal records.
+
+## Gemini daily health task service
+
+File: `services/ai/ai_service.dart`
+
+Public method:
+
+```dart
+Future<List<DailyHealthTaskModel>> generateDailyHealthTasks({
+  required DailyHealthProfileEntity profile,
+  required DateTime startDate,
+  int days = 7,
+})
+```
+
+Behavior:
+
+1. Retry up to 3 attempts.
+2. Ask Gemini to return only valid JSON array.
+3. Default contract is 7 days, starting from the provided `startDate`.
+4. Each day must contain exactly one task per category: `water`, `body`, `mind`, `brain`.
+5. `DailyHealthAiTaskNormalizer` validates exactly 28 tasks for default 7 days and normalizes stable ids:
+   - `id = daily_${userId}_${date}_ai_${category}`
+   - `task_code = ai_${category}`
+   - `source = ai`
+   - `current_value = 0`
+   - `is_completed = false`
+6. On final failure returns `[]`; onboarding completion then fails because datasource requires 28 tasks.
 
 ## Nutrition prompt
 
@@ -138,6 +168,7 @@ Prompt currently includes:
 - activity
 - water
 - concern
+- `cooking_instructions` in schema.
 
 ## Gemini AI chat service
 

@@ -11,6 +11,9 @@ class MigrationManager {
     if (oldVersion < 2) {
       await _migrateToV2(db);
     }
+    if (oldVersion < 3) {
+      await _migrateToV3(db);
+    }
   }
 
   static Future<void> _migrateToV2(Database db) async {
@@ -31,6 +34,15 @@ class MigrationManager {
       'CREATE UNIQUE INDEX IF NOT EXISTS '
       'idx_health_tracking_logs_user_date '
       'ON health_tracking_logs(user_id, log_date)',
+    );
+  }
+
+  static Future<void> _migrateToV3(Database db) async {
+    await _addColumnIfMissing(
+      db,
+      tableName: 'meal_plans',
+      columnName: 'cooking_instructions',
+      definition: 'TEXT',
     );
   }
 

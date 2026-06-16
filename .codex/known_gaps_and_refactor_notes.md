@@ -2,25 +2,26 @@
 
 ## High-priority architecture debt
 
-### 1. Onboarding -> Dashboard direct dependency
+### 1. Onboarding completion orchestration
 
 Current:
 
-- `OnboardingController` imports `features/dashboard/presentation/controllers/dashboard_controller.dart`.
-- `saveOnboarding()` calls `dashboardControllerProvider.notifier.genMealByWeeksToDB()`.
+- `OnboardingController` calls `onboardingCompletionCallbackProvider`.
+- `main.dart` overrides that callback and calls dashboard meal generation plus daily health task seeding.
 
 Problem:
 
-- Cross-feature controller dependency.
-- Harder to test onboarding independently.
+- Orchestration is no longer a direct onboarding -> dashboard import, but still lives in app boot instead of a named use-case/service.
+- Callback has required-complete semantics: if meal/task generation fails, onboarding does not set completed.
 
 Refactor direction:
 
-- Move orchestration to provider/app layer or a use-case/service.
-- Possible callback/event approach.
-- Preserve: onboarding completion must still generate meal plan and set onboarding flag.
+- Consider moving callback body into a named onboarding completion use-case/service for testability.
+- Preserve: onboarding completion must generate meal plan + daily tasks before setting onboarding flag.
 
 ### 2. Meal plan nested feature structure
+
+Status update: resolved in current code. `meal_plan` is now flat under `features/meal_plan/{data,domain,presentation,providers}`. The old nested `meal_plan/dashboard` block below is historical context only.
 
 Current:
 
@@ -48,37 +49,35 @@ Refactor requires import updates in router, menu page, dashboard, tests/docs.
 
 Current:
 
-- `core/storage/localdb/models/meal_plan_model.dart`
+- `features/meal_plan/data/models/meal_plan_model.dart`
 
 Problem:
 
-- Feature-specific model in core.
-- Presentation and services import core storage model directly.
+- Feature-specific model has been moved out of core.
+- `AIService` and dashboard repository still import the feature data model directly.
 
 Possible direction:
 
-- Move model to `features/meal_plan/data/models/meal_plan_model.dart`.
-- Or create domain `MealPlanEntity` and keep storage model in feature data layer.
-- Preserve all fields and serialization methods.
+- Longer term: make `AIService` return DTOs/entities or move generation into feature/service boundary if strict clean architecture is needed.
+- Preserve all fields and serialization methods, including `cookingInstructions`.
 
 ### 4. MealPlan presentation imports data layer
 
 Current:
 
-- `MealPlanController` imports `data/datasources/meal_datasource.dart`.
-- Providers for datasource/repository are declared inside controller file.
+- `MealPlanController` reads `mealPlanRepositoryProvider`.
+- Datasource/repository providers live in `features/meal_plan/providers/meal_plan_provider.dart`.
 
 Better:
 
-- Move datasource/repository providers to `features/meal_plan/providers`.
-- Controller should depend on repository abstraction.
+- This part is largely resolved. Keep it that way when editing meal plan.
 
 ### 5. Duplicate providers
 
 Duplicates:
 
 - `onboardingProvider` in both controller and providers folder.
-- `mealDataSource` and `mealPlanRepositoryProvider` in both meal plan providers file and controller file.
+- Meal plan provider duplication appears resolved in current code.
 
 Refactor carefully because imports may reference either one. Use `rg "onboardingProvider|mealDataSource|mealPlanRepositoryProvider" lib test`.
 
@@ -176,6 +175,12 @@ If implementing real tracking:
 
 AI chat repository keeps history in memory. This is documented as privacy-first in feature docs, but if user expects history after restart, add encrypted/local persistence deliberately.
 
+### Daily health tracking scope
+
+- Daily tracking page currently focuses on today's tasks.
+- Onboarding seeds AI tasks for 7 days starting tomorrow, but UI does not yet provide a date selector/history view for future days.
+- Rule-based `DailyHealthTaskGenerator` still generates today's tasks if no task rows exist.
+
 ## Stale docs/tests notes
 
 `docs/issues/bug_architecture.md` says AI circular dependency is resolved. That matches code.
@@ -204,18 +209,17 @@ If these providers become active, update `.env.example`.
 - AI services debug-print raw AI response; be careful with privacy.
 - Onboarding debug-prints SQLite snapshot; useful during dev, risky in production logs.
 - Many DAOs have TODO only.
-- Migration manager empty.
+- Migration manager has v2 and v3; add real migrations for future schema changes.
 - Some UI files are huge (`MealPlanPage`, onboarding steps, AI chat screen).
 
 ## Suggested refactor order
 
 1. Add/adjust tests or run preservation baseline.
 2. Fix data IDs and `concernText` persistence if onboarding save is failing or needed.
-3. Remove onboarding -> dashboard controller dependency by orchestration service/callback.
-4. Flatten meal_plan folder.
-5. Move/introduce MealPlan entity/model in feature layer.
-6. Consolidate duplicate providers.
-7. Wire Settings repository/controller if settings work is next.
-8. Replace mock dashboard data with real logs when tracking features start.
+3. Move onboarding completion callback body into a named use-case/service.
+4. Consolidate remaining duplicate providers.
+5. Wire Settings repository/controller if settings work is next.
+6. Add daily tracking date selector/history if users need future seeded tasks before the day arrives.
+7. Replace mock dashboard data with real logs when tracking features start.
 
 Keep each refactor small. Run preservation tests after each architectural boundary change.

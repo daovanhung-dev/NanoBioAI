@@ -30,6 +30,8 @@ class MealPlansTable {
 
   meal_order INTEGER,
 
+  cooking_instructions TEXT,
+
   is_completed INTEGER,
 
   ai_generated INTEGER,

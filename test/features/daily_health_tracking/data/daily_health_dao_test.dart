@@ -60,6 +60,44 @@ void main() {
     expect(tasks.single.currentValue, 2000);
   });
 
+  test('DailyHealthTasksDao stores seven days of generated tasks', () async {
+    final dao = DailyHealthTasksDao(db);
+    const categories = ['water', 'body', 'mind', 'brain'];
+    final tasks = [
+      for (var day = 17; day <= 23; day++)
+        for (final category in categories)
+          DailyHealthTaskModel(
+            id: 'daily_u1_2026-06-$day-ai-$category',
+            userId: 'u1',
+            taskDate: '2026-06-$day',
+            taskCode: 'ai_$category',
+            category: category,
+            title: '$category task',
+            description: '$category description',
+            targetValue: category == 'water' ? 2000 : 1,
+            currentValue: 0,
+            unit: category == 'water' ? 'ml' : 'lan',
+            isCompleted: false,
+            sortOrder: categories.indexOf(category) + 1,
+            source: 'ai',
+            encouragement: 'Nice',
+            createdAt: '2026-06-16T08:00:00',
+            updatedAt: '2026-06-16T08:00:00',
+          ),
+    ];
+
+    await dao.upsertMany(tasks);
+
+    final restored = await dao.getByUserAndDate(
+      userId: 'u1',
+      taskDate: '2026-06-20',
+    );
+
+    expect(tasks, hasLength(28));
+    expect(restored, hasLength(4));
+    expect(restored.map((task) => task.category).toSet(), categories.toSet());
+  });
+
   test('HealthTrackingLogsDao upserts daily log by user and date', () async {
     final dao = HealthTrackingLogsDao(db);
     const log = HealthTrackingLogModel(

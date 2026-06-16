@@ -21,6 +21,7 @@ Trong code hien tai, repository implementation thuong dat ngay trong `domain/rep
 - Load `.env`.
 - Init Supabase.
 - Wrap app bang `ProviderScope`.
+- Override `onboardingCompletionCallbackProvider` de orchestration sau onboarding: generate 21 meal records va 28 daily health tasks truoc khi onboarding completed.
 
 `lib/app/app.dart`
 
@@ -89,7 +90,8 @@ Provider quan trong:
 | `onboardingProvider` | `features/onboarding/presentation/controllers/onboarding_controller.dart` va `features/onboarding/providers/onboarding_provider.dart` | `NotifierProvider<OnboardingController, OnboardingState>` |
 | `dashboardProvider` | `features/dashboard/providers/dashboard_provider.dart` | `FutureProvider<DashboardEntity>` |
 | `dashboardControllerProvider` | `features/dashboard/presentation/controllers/dashboard_controller.dart` | `AsyncNotifierProvider<DashboardController, void>` |
-| `mealPlanControllerProvider` | `features/meal_plan/dashboard/presentation/controllers/meal_plan_controller.dart` | `AsyncNotifierProvider<MealPlanController, List<MealPlanModel>>` |
+| `mealPlanControllerProvider` | `features/meal_plan/presentation/controllers/meal_plan_controller.dart` | `AsyncNotifierProvider<MealPlanController, List<MealPlanEntity>>` |
+| `dailyHealthTrackingControllerProvider` | `features/daily_health_tracking/providers/daily_health_tracking_provider.dart` | `AsyncNotifierProvider<DailyHealthTrackingController, DailyHealthTrackingState>` |
 | `aiChatControllerProvider` | `features/ai_chat/presentation/controllers/ai_chat_controller.dart` | `NotifierProvider<AIChatController, AIChatState>` |
 | `aiServiceProvider` | `services/ai/ai_service.dart` | `Provider<AIService>` |
 | `aiChatServiceProvider` | `services/ai/ai_chat_service.dart` | `Provider<AIChatService>` |
@@ -97,7 +99,7 @@ Provider quan trong:
 Can de y duplicate provider:
 
 - `onboardingProvider` duoc khai bao ca trong controller va trong `features/onboarding/providers/onboarding_provider.dart`.
-- `mealDataSource` va `mealPlanRepositoryProvider` duoc khai bao ca trong `features/meal_plan/dashboard/providers/meal_plan_provider.dart` va `presentation/controllers/meal_plan_controller.dart`.
+- `meal_plan` providers hien o `features/meal_plan/providers/meal_plan_provider.dart`; controller doc repository abstraction qua provider nay.
 
 ## Layer boundaries hien tai
 
@@ -109,12 +111,12 @@ Dang dung tot:
 
 Dang lech/tech debt:
 
-- `OnboardingController` import truc tiep `DashboardController` va goi `dashboardControllerProvider.notifier.genMealByWeeksToDB()` khi save onboarding.
-- `meal_plan` co folder long: `features/meal_plan/dashboard/...`, khong flat.
-- `MealPlanModel` nam trong `core/storage/localdb/models`, trong khi la model dac thu meal plan.
-- `MealPlanController` import data datasource truc tiep trong presentation.
+- `OnboardingController` goi `onboardingCompletionCallbackProvider`; `main.dart` override callback nay de orchestration sau onboarding.
+- `meal_plan` da flat o `features/meal_plan/{data,domain,presentation,providers}`.
+- `MealPlanModel` nam trong `features/meal_plan/data/models/meal_plan_model.dart`.
+- `AIService` van tra feature data models (`MealPlanModel`, `DailyHealthTaskModel`), nen service layer con biet chi tiet data model cua feature.
 - `DashboardRepositoryImpl` nam trong `domain/repositories/`, nhung comment lai noi `data/repositories`.
-- `DashboardController` co `print()` debug va doc `nutritionPromptProvider` nhung khong dung bien `prompt`.
+- `DashboardController.genMealByWeeksToDB({bool requireComplete = false})` co mode bat buoc du 21 meal records cho onboarding completion.
 
 ## Main navigation
 

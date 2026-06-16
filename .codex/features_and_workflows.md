@@ -14,7 +14,7 @@
 8. Zalo Special Care Group: kenh cham soc ngoai app.
 9. Health Knowledge Base: bai viet/video suc khoe.
 
-Code hien tai moi thuc hien ro nhat module 1, mot phan module 2/3, mot phan module 7, dashboard UI cho module 5/6 o muc mock/hien thi.
+Code hien tai thuc hien ro module 1, meal plan 7 ngay cho module 2/3, daily health tracking local cho module 5, mot phan module 7, dashboard UI co real health data ket hop mock stats.
 
 ## Authentication
 
@@ -78,11 +78,12 @@ Save flow in `OnboardingController.saveOnboarding()`:
 4. Convert `OnboardingState` -> `OnboardingEntity`.
 5. `OnboardingRepository.save(entity)`.
 6. `OnboardingLocalDatasource.saveOnboarding(entity)` luu SQLite transaction.
-7. Goi truc tiep `dashboardControllerProvider.notifier.genMealByWeeksToDB()`.
-8. `AppPrefs.setOnboardingCompleted(true)`.
-9. Set `savedLog` success/error.
+7. Goi `onboardingCompletionCallbackProvider`.
+8. Callback trong `main.dart` bat buoc generate/save 21 meal records va 28 daily health tasks.
+9. Chi khi callback thanh cong moi goi `AppPrefs.setOnboardingCompleted(true)`.
+10. Set `savedLog` success/error.
 
-Can giu khi refactor: onboarding completion van phai trigger meal generation va set onboarding completed flag.
+Can giu khi refactor: onboarding completion van phai trigger meal generation + daily task generation truoc khi set onboarding completed flag. Neu generation/save loi thi onboarding khong completed.
 
 ## Dashboard
 
@@ -113,26 +114,30 @@ UI sections:
 
 Meal generation orchestration:
 
-`DashboardController.genMealByWeeksToDB()`:
+`DashboardController.genMealByWeeksToDB({bool requireComplete = false})`:
 
 1. Read `dashboardRepositoryProvider`.
 2. `repository.fetchDashboard()`.
 3. Read `AIService` tu `aiServiceProvider`.
 4. `aiService.generateMealPlan(healthData: dashboardData)`.
-5. `repository.saveMealPlan(mealPlan)`.
+5. Neu `requireComplete == true`, throw neu khong du 21 meal records.
+6. `repository.saveMealPlan(mealPlan)`.
 
-Luu y: method co `print()` debug va read `nutritionPromptProvider` nhung bien `prompt` khong dung.
+Luu y: onboarding callback goi method nay voi `requireComplete: true`.
 
 ## Meal Plan
 
 Files chinh:
 
-- `features/meal_plan/dashboard/presentation/pages/meal_plan_page.dart`
-- `features/meal_plan/dashboard/presentation/controllers/meal_plan_controller.dart`
-- `features/meal_plan/dashboard/data/datasources/meal_datasource.dart`
-- `features/meal_plan/dashboard/domain/repositories/meal_plan_repository.dart`
-- `features/meal_plan/dashboard/domain/repositories/meal_plan_repository_impl.dart`
-- `features/meal_plan/dashboard/providers/meal_plan_provider.dart`
+- `features/meal_plan/presentation/pages/meal_plan_page.dart`
+- `features/meal_plan/presentation/controllers/meal_plan_controller.dart`
+- `features/meal_plan/data/datasources/meal_plan_local_datasource.dart`
+- `features/meal_plan/data/daos/meal_plan_dao.dart`
+- `features/meal_plan/data/models/meal_plan_model.dart`
+- `features/meal_plan/domain/entities/meal_plan_entity.dart`
+- `features/meal_plan/domain/repositories/meal_plan_repository.dart`
+- `features/meal_plan/domain/repositories/meal_plan_repository_impl.dart`
+- `features/meal_plan/providers/meal_plan_provider.dart`
 
 Current behavior:
 
@@ -147,16 +152,35 @@ Current behavior:
 Meal card hien:
 
 - meal type/name/description.
+- `cooking_instructions`/`cookingInstructions` neu co, hien trong section "Cach che bien".
 - calories, water, protein, carbs, fat, fiber.
 - status badges.
 - responsive helper `_MealPlanResponsiveUi`.
 
 Tech debt:
 
-- Folder nested `meal_plan/dashboard`.
-- Providers duplicate.
-- Presentation import datasource.
-- `MealPlanModel` nam o core storage.
+- AI prompt/code van la 7 ngay, trong khi DD noi 30 ngay.
+- `MealPlanModel` la data model feature, nhung `AIService` va dashboard repository van import truc tiep data model nay.
+
+## Daily Health Tracking
+
+Files chinh:
+
+- `features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart`
+- `features/daily_health_tracking/presentation/controllers/daily_health_tracking_controller.dart`
+- `features/daily_health_tracking/data/datasources/daily_health_tracking_local_datasource.dart`
+- `features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart`
+- `features/daily_health_tracking/data/models/daily_health_task_model.dart`
+- `features/daily_health_tracking/data/models/daily_health_ai_task_normalizer.dart`
+- `features/daily_health_tracking/domain/services/daily_health_task_generator.dart`
+- `features/daily_health_tracking/providers/daily_health_tracking_provider.dart`
+
+Current behavior:
+
+- Page hien task cua hom nay, score va progress theo 4 category `water/body/mind/brain`.
+- Neu hom nay chua co task, datasource dung `DailyHealthTaskGenerator` rule-based de tao task local tu profile.
+- Sau onboarding, `main.dart` dung Gemini qua `AIService.generateDailyHealthTasks(...)` de seed truoc 7 ngay bat dau tu ngay mai.
+- AI task response duoc normalize/validate: dung 28 tasks, moi ngay du 4 category, id stable `daily_${userId}_${date}_ai_${category}`, `source = ai`, `current_value = 0`, `is_completed = false`.
 
 ## AI Chat
 

@@ -943,6 +943,11 @@ class _MealPlanCardState extends State<MealPlanCard> {
                               ),
                             ),
 
+                            if (meal.cookingInstructions.trim().isNotEmpty) ...[
+                              SizedBox(height: ui.cardGap),
+                              _CookingInstructionsBox(ui: ui, meal: meal),
+                            ],
+
                             SizedBox(height: ui.cardGap),
 
                             // Divider
@@ -1010,6 +1015,56 @@ class _MealPlanCardState extends State<MealPlanCard> {
 // ─────────────────────────────────────────────────────────────────────────────
 // INLINE TAG  (time / calories / water — replaces MealTimeHighlight banner)
 // ─────────────────────────────────────────────────────────────────────────────
+
+class _CookingInstructionsBox extends StatelessWidget {
+  final _MealPlanResponsiveUi ui;
+  final MealPlanEntity meal;
+
+  const _CookingInstructionsBox({required this.ui, required this.meal});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(ui.smallPadding + 2),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft.withValues(alpha: .55),
+        borderRadius: BorderRadius.circular(ui.radiusMd),
+        border: Border.all(color: AppColors.primary.withValues(alpha: .12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.soup_kitchen_rounded,
+                size: 17,
+                color: AppColors.primary,
+              ),
+              SizedBox(width: ui.xsGap),
+              Text(
+                'Cach che bien',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: ui.xsGap),
+          Text(
+            meal.cookingInstructions.trim(),
+            style: AppTextStyles.bodySmall.copyWith(
+              height: 1.45,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _InlineTag extends StatelessWidget {
   final IconData icon;

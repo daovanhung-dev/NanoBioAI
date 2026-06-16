@@ -18,7 +18,7 @@ class DashboardController extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
 
-  Future<void> genMealByWeeksToDB() async {
+  Future<void> genMealByWeeksToDB({bool requireComplete = false}) async {
     AppLogger.action(_tag, 'Generate weekly meal plan');
     final repository = ref.read(dashboardRepositoryProvider);
 
@@ -31,6 +31,10 @@ class DashboardController extends AsyncNotifier<void> {
       healthData: dashboardData,
     );
     AppLogger.info(_tag, 'Generated ${mealPlan.length} meal plan records');
+
+    if (requireComplete && mealPlan.length != 21) {
+      throw StateError('Expected 21 meal plan records, got ${mealPlan.length}');
+    }
 
     await repository.saveMealPlan(mealPlan);
     AppLogger.success(_tag, 'Saved meal plan to DB successfully');

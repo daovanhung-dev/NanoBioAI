@@ -10,6 +10,12 @@ Current test tree:
 - `test/core/theme/foundation/motion_test.dart`
 - `test/core/theme/foundation/gradient_test.dart`
 - `test/core/theme/primitives/button_test.dart`
+- `test/core/storage/localdb/migration_manager_test.dart`
+- `test/features/daily_health_tracking/domain/daily_health_task_generator_test.dart`
+- `test/features/daily_health_tracking/data/daily_health_task_model_test.dart`
+- `test/features/daily_health_tracking/data/daily_health_dao_test.dart`
+- `test/features/daily_health_tracking/data/daily_health_ai_task_normalizer_test.dart`
+- `test/features/meal_plan/data/meal_plan_model_test.dart`
 - `test/features/settings/domain/validators/settings_validator_test.dart`
 - `test/features/settings/data/datasources/settings_local_datasource_test.dart`
 - `test/services/biometric/biometric_service_test.dart`
@@ -37,10 +43,7 @@ Current expected reality:
 - Some checks are already fixed/stale:
   - AIService no longer imports DashboardEntity; it uses `HealthDataInterface`.
   - Onboarding datasource is now `onboarding_local_datasource.dart`.
-- Some still fail:
-  - Onboarding still imports DashboardController.
-  - `meal_plan/dashboard` nested structure still exists.
-  - `MealPlanModel` still lives in core.
+- Some checks may now be stale because onboarding orchestration moved to callback, meal_plan is flat, and `MealPlanModel` moved to feature data. Treat failures in this file as architecture backlog signals, not default regression.
 
 Use this test as a target after architecture refactor, not as a required green test today unless user explicitly asks to fix architecture.
 
@@ -55,6 +58,8 @@ Use this test as a target after architecture refactor, not as a required green t
 - Onboarding saves all health tables.
 - Dashboard reads all health tables.
 - `MealPlanModel` fields and serialization remain.
+- `MealPlanModel.cookingInstructions` maps `cooking_instructions`.
+- Daily health AI normalizer keeps 7 days x 4 categories.
 - `AppPrefs.setOnboardingCompleted(true)` remains.
 - `DashboardController.genMealByWeeksToDB()` orchestration remains.
 - Provider API surfaces remain available.
@@ -115,6 +120,18 @@ Run settings tests:
 flutter test test/features/settings
 ```
 
+Run daily health tracking tests:
+
+```powershell
+flutter test test/features/daily_health_tracking
+```
+
+Run meal model and migration tests:
+
+```powershell
+flutter test test/features/meal_plan/data/meal_plan_model_test.dart test/core/storage/localdb/migration_manager_test.dart
+```
+
 Run theme tests:
 
 ```powershell
@@ -149,7 +166,7 @@ For narrow changes:
 - Read the feature folder first.
 - Preserve public provider names if tests/docs mention them.
 - Keep DB serialization contract stable.
-- Run targeted tests plus `flutter analyze` if feasible.
+- Run targeted tests plus `flutter analyze` if feasible. Current repo has pre-existing analyzer warnings/infos, so record whether failures are new or existing.
 
 For architecture refactor:
 

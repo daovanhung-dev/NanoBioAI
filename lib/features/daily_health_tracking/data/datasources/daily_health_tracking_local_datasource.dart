@@ -22,6 +22,25 @@ class DailyHealthTrackingLocalDatasource {
 
   Future<Database> _db() async => DatabaseService.database;
 
+  Future<DailyHealthProfileEntity> fetchLatestProfile() async {
+    final db = await _db();
+    return _fetchLatestProfile(db);
+  }
+
+  Future<void> seedGeneratedTasks(
+    List<DailyHealthTaskModel> tasks, {
+    bool requireComplete = false,
+    DateTime? startDate,
+    int days = 7,
+  }) async {
+    if (requireComplete) {
+      _validateGeneratedTasks(tasks, startDate: startDate, days: days);
+    }
+
+    final db = await _db();
+    await DailyHealthTasksDao(db).upsertMany(tasks);
+  }
+
   Future<DailyHealthSummaryEntity> getTodaySummary({
     bool forceReload = false,
   }) async {
@@ -226,5 +245,32 @@ class DailyHealthTrackingLocalDatasource {
     final month = value.month.toString().padLeft(2, '0');
     final day = value.day.toString().padLeft(2, '0');
     return '${value.year}-$month-$day';
+  }
+
+  void _validateGeneratedTasks(
+    List<DailyHealthTaskModel> tasks, {
+    required DateTime? startDate,
+    required int days,
+  }) {
+    const categories = {'water', 'body', 'mind', 'brain'};
+    final expectedCount = days * categories.length;
+    if (tasks.length != expectedCount) {
+      throw StateError(
+        'Expected $expectedCount daily health tasks, got ${tasks.length}',
+      );
+    }
+
+    if (startDate == null) return;
+
+    for (var dayIndex = 0; dayIndex < days; dayIndex++) {
+      final date = _dateKey(startDate.add(Duration(days: dayIndex)));
+      final found = tasks
+          .where((task) => task.taskDate == date)
+          .map((task) => task.category)
+          .toSet();
+      if (!found.containsAll(categories)) {
+        throw StateError('Missing daily health categories for $date');
+      }
+    }
   }
 }

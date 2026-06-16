@@ -8,11 +8,11 @@ Database service:
 
 - `lib/core/storage/localdb/database_service.dart`
 - DB name: `bioai.db`
-- Version: `DatabaseVersion.currentVersion = 1`
+- Version: `DatabaseVersion.currentVersion = 3`
 - `DatabaseService.database` lazy singleton.
 - `onConfigure` va `onOpen`: `PRAGMA foreign_keys = OFF`.
 - `onCreate`: tao tat ca bang.
-- `onUpgrade`: goi `MigrationManager.runMigrations`, hien dang placeholder.
+- `onUpgrade`: goi `MigrationManager.runMigrations`.
 
 Important: foreign key constraints dang bi tat, du schema co khai bao `FOREIGN KEY`.
 
@@ -115,10 +115,31 @@ Columns:
 - `fiber REAL`
 - `water_ml INTEGER`
 - `meal_order INTEGER`
+- `cooking_instructions TEXT`
 - `is_completed INTEGER`
 - `ai_generated INTEGER`
 - `created_at TEXT`
 - `updated_at TEXT`
+
+### `daily_health_tasks`
+
+- `id TEXT PRIMARY KEY`
+- `user_id TEXT`
+- `task_date TEXT NOT NULL`
+- `task_code TEXT NOT NULL`
+- `category TEXT NOT NULL`
+- `title TEXT NOT NULL`
+- `description TEXT`
+- `target_value REAL`
+- `current_value REAL DEFAULT 0`
+- `unit TEXT`
+- `is_completed INTEGER DEFAULT 0`
+- `sort_order INTEGER DEFAULT 0`
+- `source TEXT`
+- `encouragement TEXT`
+- `created_at TEXT`
+- `updated_at TEXT`
+- `UNIQUE(user_id, task_date, task_code)`
 
 ### Other tables
 
@@ -144,13 +165,13 @@ Columns:
 
 ## Model/DAO status
 
-Most localdb models are placeholders with only `id`, except `MealPlanModel`.
+Most localdb models are placeholders with only `id`, except meal plan and daily health tracking models.
 
 Important working model:
 
-`core/storage/localdb/models/meal_plan_model.dart`
+`features/meal_plan/data/models/meal_plan_model.dart`
 
-- Fields: id, userId, planDate, mealType, mealName, description, calories, protein, carbs, fat, fiber, waterMl, mealOrder, isCompleted, aiGenerated, createdAt, updatedAt.
+- Fields: id, userId, planDate, mealType, mealName, description, calories, protein, carbs, fat, fiber, waterMl, mealOrder, cookingInstructions, isCompleted, aiGenerated, createdAt, updatedAt.
 - `fromMap` for DB rows.
 - `fromJson` for AI JSON response.
 - `toMap` stores boolean as 1/0 for SQLite.
@@ -159,7 +180,7 @@ Important working model:
 
 Important working DAO:
 
-`core/storage/localdb/daos/meal_plan_dao.dart`
+`features/meal_plan/data/daos/meal_plan_dao.dart`
 
 - `insert`
 - `insertMany` via batch and `ConflictAlgorithm.replace`
@@ -170,6 +191,12 @@ Important working DAO:
 - `updateCompleted`
 - `delete`
 - `deleteByUserId`
+
+Daily health tracking:
+
+- `features/daily_health_tracking/data/models/daily_health_task_model.dart` maps `daily_health_tasks`.
+- `features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart` supports `upsertMany`, `getByUserAndDate`, `updateTask`, `deleteByUserAndDate`.
+- `features/daily_health_tracking/data/models/daily_health_ai_task_normalizer.dart` normalizes Gemini JSON to 7 days x 4 categories, with stable ids and `source = ai`.
 
 Other DAO files mostly TODO and return empty list.
 
@@ -244,13 +271,19 @@ After onboarding save:
 
 ```txt
 OnboardingController.saveOnboarding()
-  -> DashboardController.genMealByWeeksToDB()
+  -> onboardingCompletionCallbackProvider()
+  -> DashboardController.genMealByWeeksToDB(requireComplete: true)
   -> DashboardRepository.fetchDashboard()
   -> AIService.generateMealPlan(healthData)
   -> DashboardRepository.saveMealPlan(mealPlans)
   -> DashboardLocalDatasource.saveMealPlan()
   -> MealPlansDao.insertMany()
   -> meal_plans
+  -> DailyHealthTrackingLocalDatasource.fetchLatestProfile()
+  -> AIService.generateDailyHealthTasks(profile, startDate tomorrow, days 7)
+  -> DailyHealthTrackingLocalDatasource.seedGeneratedTasks(requireComplete: true)
+  -> DailyHealthTasksDao.upsertMany()
+  -> daily_health_tasks
 ```
 
 Meal plan page reads:
@@ -310,8 +343,9 @@ Defaults:
 
 ## Migration status
 
-- `database_version.dart`: current version 1.
-- `migration_manager.dart`: placeholder, no migrations implemented.
+- `database_version.dart`: current version 3.
+- v2 creates `daily_health_tasks`, adds `log_date` and `updated_at` to `health_tracking_logs`, and creates unique user/date index.
+- v3 adds `meal_plans.cooking_instructions TEXT`.
 - `migration_v1.dart`: empty.
 
 If changing schema, add real migration and bump `DatabaseVersion.currentVersion`.

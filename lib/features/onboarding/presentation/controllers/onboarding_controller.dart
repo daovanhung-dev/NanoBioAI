@@ -493,7 +493,7 @@ class OnboardingController extends Notifier<OnboardingState> {
       await _repository.save(entity);
       AppLogger.success(_tag, 'Onboarding profile saved successfully');
 
-      AppLogger.info(_tag, 'Generating the weekly meal plan');
+      AppLogger.info(_tag, 'Generating onboarding meal plan and daily tasks');
       final onCompletionCallback = ref.read(
         onboardingCompletionCallbackProvider,
       );
@@ -525,6 +525,7 @@ class OnboardingController extends Notifier<OnboardingState> {
         'Has Treatment': entity.hasTreatment,
         'Saved To Database': true,
         'Meal Plan Generated': true,
+        'Daily Health Tasks Generated': true,
       });
       AppLogger.separator(_tag);
     } catch (e, st) {
