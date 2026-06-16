@@ -1,79 +1,139 @@
 # Architecture
 
-## Loại kiến trúc
-**Feature-first + Clean Architecture** — mỗi feature tự đóng gói theo 3 layer.
+## Mau kien truc thuc te
 
-## Stack kỹ thuật
-- **Framework**: Flutter (Dart SDK ^3.9.2)
-- **State Management**: Riverpod 3 (`flutter_riverpod ^3.3.1`)
-- **Navigation**: GoRouter (`go_router ^17.2.3`)
-- **Local DB**: SQLite via `sqflite ^2.4.2`
-- **Remote Auth**: Supabase (`supabase_flutter ^2.12.4`)
-- **AI**: Google Gemini (`google_generative_ai ^0.4.7`, model: `gemini-2.5-flash`)
-- **HTTP**: Dio (dùng trong AI service)
-- **Preferences**: `shared_preferences`
-- **Env**: `flutter_dotenv`
+Du an theo huong Feature-first + Clean Architecture, nhung chua dong nhat hoan toan. Mau ly tuong:
 
-## Layers trong mỗi Feature
-
-```
-presentation/
-  ├── pages/        ← màn hình UI
-  ├── controllers/  ← StateNotifier / AsyncNotifier (Riverpod)
-  └── widgets/      ← widget riêng của feature
-
-domain/
-  ├── entities/     ← plain Dart object, không phụ thuộc framework
-  └── repositories/ ← abstract + impl (chứa impl luôn tại đây)
-
-data/
-  ├── datasources/  ← tương tác SQLite / Supabase
-  └── models/       ← extends entity, có fromJson/fromMap
-
-providers/           ← Riverpod Provider wiring datasource → repo → controller
+```txt
+UI Page/Widget
+  -> Riverpod Provider/Controller
+  -> Repository interface/implementation
+  -> Datasource
+  -> SQLite / Supabase / AI service
 ```
 
-## Luồng dữ liệu chính
+Trong code hien tai, repository implementation thuong dat ngay trong `domain/repositories/` thay vi `data/repositories/`. Day la quy uoc dang duoc dung o nhieu feature, du co lech voi Clean Architecture truyen thong.
 
-```
-UI (Page)
-  ↓ watch/read
-Provider (Riverpod)
-  ↓
-Controller (Notifier / AsyncNotifier)
-  ↓
-Repository (abstract + impl)
-  ↓
-Datasource (SQLite / Supabase)
-  ↓
-Local: DatabaseService (sqflite)  |  Remote: Supabase.instance.client
-```
+## App boot
 
-## Cấu trúc thư mục gốc
+`lib/main.dart`
 
-```
-lib/
-├── main.dart           ← entry point: load .env → init Supabase → ProviderScope
-├── app/app.dart        ← BioAIApp: MaterialApp.router + AppTheme + appRouter
-├── core/               ← constants, network, router, storage, theme, utils
-├── features/           ← mỗi feature = 1 thư mục độc lập
-├── services/           ← AI service, Supabase service
-└── shared/             ← widgets dùng chung
-```
+- Load `.env`.
+- Init Supabase.
+- Wrap app bang `ProviderScope`.
 
-## Quan hệ layer / module
+`lib/app/app.dart`
 
-- `features/*` → depends on `core/`, `services/`
-- `features/*` KHÔNG import lẫn nhau trực tiếp (ngoại lệ: `onboarding_controller` gọi `dashboardControllerProvider` sau khi save để trigger `genMealByWeeksToDB`)
-- `services/ai` → được inject qua Riverpod Provider, không phụ thuộc feature cụ thể
-- `core/storage/localdb` → singleton `DatabaseService`, dùng toàn hệ thống
+- `MaterialApp.router`.
+- `AppTheme.lightTheme`.
+- `appRouter`.
 
-## Quyết định kiến trúc nổi bật
+## Navigation
 
-| Quyết định | Lý do |
-|---|---|
-| SQLite làm primary storage | Offline-first, không cần internet để dùng app |
-| Supabase chỉ cho auth | Giảm dependency cloud, dữ liệu nhạy cảm giữ local |
-| Gemini AI cho meal plan | Tạo kế hoạch cá nhân hóa dựa trên health profile |
-| Riverpod Notifier (gen3) | Type-safe, không dùng `StateProvider` legacy |
-| Repository pattern | Dễ mock test, tách biệt data source |
+File chinh:
+
+- `lib/core/constants/routes/route_names.dart`
+- `lib/core/router/app_router.dart`
+- `lib/core/router/route_guards.dart`
+- `lib/core/router/navigation_service.dart`
+- `lib/core/router/transitions.dart`
+
+Route hien co:
+
+| Path | Widget | Guard |
+| --- | --- | --- |
+| `/` | `SplashPage` | none |
+| `/login` | `LoginPage` | `guestGuard` |
+| `/register` | `Placeholder` | none |
+| `/dashboard` | `DashboardPage` | auth guard dang comment |
+| `/onboarding` | `OnboardingPage` | none |
+| `/menu` | `MainNavigationPage` | none |
+| `/meal-plan` | `MealPlanPage` | none |
+| `/ai-chat` | `AIChatScreen` | `authGuard` |
+| `/nutrition` | `Placeholder` | `authGuard` |
+| `/profile` | `Placeholder` | `authGuard` |
+
+`RouteGuards` doc Supabase session:
+
+- `authGuard`: neu `Supabase.instance.client.auth.currentUser == null` thi redirect `/login`.
+- `guestGuard`: neu da login thi redirect `/dashboard`.
+
+Luu y: `SplashPage` khong kiem tra Supabase auth, chi xem `AppPrefs.isOnboardingCompleted()` roi di `/menu` hoac `/onboarding`.
+
+## Splash flow
+
+`SplashPage`:
+
+1. Khoi tao animation.
+2. Goi `splashProvider.notifier.initialize()`.
+3. Doc `AppPrefs.isOnboardingCompleted()`.
+4. Delay theo `AppDuration.loading`.
+5. Neu completed -> `AppNavigator.goMenu(context)`.
+6. Neu chua -> `AppNavigator.goOnboarding(context)`.
+
+`SplashNotifier` hien chi set `SplashStatus.loading`; enum co `initial`, `loading`, `onboarded`, `onboardingRequired`.
+
+## Riverpod patterns
+
+Co nhieu the he song song:
+
+- Moi hon: `NotifierProvider`, `AsyncNotifierProvider`, `FutureProvider`, `Provider`.
+- Cu hon: `StateNotifierProvider` tu `flutter_riverpod/legacy` trong auth.
+
+Provider quan trong:
+
+| Provider | File | Type / Purpose |
+| --- | --- | --- |
+| `splashProvider` | `features/splash/providers/splash_provider.dart` | `NotifierProvider<SplashNotifier, SplashStatus>` |
+| `loginControllerProvider` | `features/auth/providers/auth_provider.dart` | legacy `StateNotifierProvider<LoginController, AsyncValue<void>>` |
+| `onboardingProvider` | `features/onboarding/presentation/controllers/onboarding_controller.dart` va `features/onboarding/providers/onboarding_provider.dart` | `NotifierProvider<OnboardingController, OnboardingState>` |
+| `dashboardProvider` | `features/dashboard/providers/dashboard_provider.dart` | `FutureProvider<DashboardEntity>` |
+| `dashboardControllerProvider` | `features/dashboard/presentation/controllers/dashboard_controller.dart` | `AsyncNotifierProvider<DashboardController, void>` |
+| `mealPlanControllerProvider` | `features/meal_plan/dashboard/presentation/controllers/meal_plan_controller.dart` | `AsyncNotifierProvider<MealPlanController, List<MealPlanModel>>` |
+| `aiChatControllerProvider` | `features/ai_chat/presentation/controllers/ai_chat_controller.dart` | `NotifierProvider<AIChatController, AIChatState>` |
+| `aiServiceProvider` | `services/ai/ai_service.dart` | `Provider<AIService>` |
+| `aiChatServiceProvider` | `services/ai/ai_chat_service.dart` | `Provider<AIChatService>` |
+
+Can de y duplicate provider:
+
+- `onboardingProvider` duoc khai bao ca trong controller va trong `features/onboarding/providers/onboarding_provider.dart`.
+- `mealDataSource` va `mealPlanRepositoryProvider` duoc khai bao ca trong `features/meal_plan/dashboard/providers/meal_plan_provider.dart` va `presentation/controllers/meal_plan_controller.dart`.
+
+## Layer boundaries hien tai
+
+Dang dung tot:
+
+- `AIService.generateMealPlan` nhan `HealthDataInterface`, khong phu thuoc truc tiep `DashboardEntity`.
+- `DashboardEntity implements HealthDataInterface`.
+- `OnboardingLocalDatasource` da duoc doi ten dung local, doc/ghi SQLite.
+
+Dang lech/tech debt:
+
+- `OnboardingController` import truc tiep `DashboardController` va goi `dashboardControllerProvider.notifier.genMealByWeeksToDB()` khi save onboarding.
+- `meal_plan` co folder long: `features/meal_plan/dashboard/...`, khong flat.
+- `MealPlanModel` nam trong `core/storage/localdb/models`, trong khi la model dac thu meal plan.
+- `MealPlanController` import data datasource truc tiep trong presentation.
+- `DashboardRepositoryImpl` nam trong `domain/repositories/`, nhung comment lai noi `data/repositories`.
+- `DashboardController` co `print()` debug va doc `nutritionPromptProvider` nhung khong dung bien `prompt`.
+
+## Main navigation
+
+`MainNavigationPage` trong `features/dashboard/presentation/pages/menu_page.dart` la shell 4 tab:
+
+1. `DashboardPage` - label `Hôm nay`.
+2. `MealPlanPage` - label `Ăn gì`.
+3. `HealthInsightsView` tu `features/other/presentation/pages/other_page.dart` - label `Góc của bạn`.
+4. `SettingsView` - label `Tùy chỉnh`.
+
+Shell co `AIChatFAB` o goc duoi phai, day sang `/ai-chat`.
+
+## Barrel exports
+
+- `features/auth/auth.dart` export login page.
+- `features/dashboard/dashboard.dart` export dashboard page.
+- `features/onboarding/onboarding.dart` export onboarding page.
+- `features/splash/splash.dart` export splash page.
+- `features/ai_chat/ai_chat.dart` export screen/controller/providers/entity.
+- `core/core.dart` chi export app_router va route_names.
+
+Dung barrel co san neu feature da co, nhung can coi lai vi nhieu barrel chua export du public API.

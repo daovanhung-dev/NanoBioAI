@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/features/auth/auth.dart';
 import 'package:nano_app/features/dashboard/dashboard.dart';
 import 'package:nano_app/features/dashboard/presentation/pages/menu_page.dart';
-import 'package:nano_app/features/meal_plan/dashboard/presentation/pages/meal_plan_page.dart';
+import 'package:nano_app/features/meal_plan/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/features/onboarding/onboarding.dart';
 import 'package:nano_app/features/splash/splash.dart';
 import 'package:nano_app/features/ai_chat/presentation/ai_chat_screen.dart';

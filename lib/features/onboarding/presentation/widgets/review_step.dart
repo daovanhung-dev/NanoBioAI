@@ -4,7 +4,7 @@ import 'package:nano_app/core/router/router.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/widgets/loading_genAI.dart';
 
-import '../controllers/onboarding_controller.dart';
+import '../../providers/onboarding_provider.dart';
 
 class ReviewStep extends ConsumerWidget {
   const ReviewStep({super.key});

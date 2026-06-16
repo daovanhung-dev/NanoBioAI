@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:nano_app/core/storage/localdb/models/meal_plan_model.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
+import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 
 import 'prompts/nutrition_prompt.dart';
 

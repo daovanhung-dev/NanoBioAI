@@ -1,5 +1,5 @@
 // lib/features/dashboard/domain/repositories/dashboard_repository.dart
-import 'package:nano_app/core/storage/localdb/models/meal_plan_model.dart';
+import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 
 import '../entities/dashboard_entity.dart';
 

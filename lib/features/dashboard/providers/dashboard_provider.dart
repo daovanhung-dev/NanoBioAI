@@ -1,8 +1,8 @@
 // lib/features/dashboard/providers/dashboard_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/core/storage/localdb/models/meal_plan_model.dart';
 import 'package:nano_app/features/dashboard/data/datasources/dashboard_local_datasource.dart';
 import 'package:nano_app/features/dashboard/domain/repositories/dashboard_repository_impl.dart';
+import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 
 import '../domain/entities/dashboard_entity.dart';
 import '../domain/repositories/dashboard_repository.dart';
@@ -12,7 +12,6 @@ final dashboardDatasourceProvider = Provider<DashboardLocalDatasource>((ref) {
 });
 
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
-  print("Creating DashboardRepositoryImpl with datasource");
   return DashboardRepositoryImpl(
     datasource: ref.read(dashboardDatasourceProvider),
   );

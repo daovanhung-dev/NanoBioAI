@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
+import 'features/dashboard/presentation/controllers/dashboard_controller.dart';
+import 'features/onboarding/providers/onboarding_completion_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,5 +18,18 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
-  runApp(const ProviderScope(child: BioAIApp()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        onboardingCompletionCallbackProvider.overrideWith((ref) {
+          return () async {
+            await ref
+                .read(dashboardControllerProvider.notifier)
+                .genMealByWeeksToDB();
+          };
+        }),
+      ],
+      child: const BioAIApp(),
+    ),
+  );
 }

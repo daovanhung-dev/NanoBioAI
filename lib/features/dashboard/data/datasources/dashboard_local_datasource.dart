@@ -1,8 +1,8 @@
 // lib/features/dashboard/data/datasource/dashboard_local_datasource.dart
-import 'package:nano_app/core/storage/localdb/daos/meal_plan_dao.dart';
-import 'package:nano_app/core/storage/localdb/models/meal_plan_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
+import 'package:nano_app/features/meal_plan/data/daos/meal_plan_dao.dart';
+import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 
 import '../../domain/entities/dashboard_entity.dart';
 

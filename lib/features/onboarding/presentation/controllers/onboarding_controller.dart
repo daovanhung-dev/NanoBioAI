@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
-import 'package:nano_app/features/dashboard/presentation/controllers/dashboard_controller.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
 import '../../domain/repositories/onboarding_repository.dart';
+import '../../providers/onboarding_completion_provider.dart';
 import '../../providers/repository_providers.dart';
 
 class OnboardingState {
@@ -191,16 +191,19 @@ class OnboardingController extends Notifier<OnboardingState> {
       AppLogger.warning(_tag, 'Next Button Clicked - Already at final step');
       return;
     }
-    
+
     final oldStep = state.currentStep;
     final newStep = state.currentStep + 1;
-    
+
     AppLogger.action(_tag, 'Next Button Clicked');
     AppLogger.navigation(_tag, _stepName(oldStep), _stepName(newStep));
-    
+
     state = state.copyWith(currentStep: newStep);
-    
-    AppLogger.info(_tag, 'Entered Step ${newStep + 1} - ${_stepTitle(newStep)}');
+
+    AppLogger.info(
+      _tag,
+      'Entered Step ${newStep + 1} - ${_stepTitle(newStep)}',
+    );
   }
 
   void previousStep() {
@@ -208,28 +211,34 @@ class OnboardingController extends Notifier<OnboardingState> {
       AppLogger.warning(_tag, 'Back Button Clicked - Already at first step');
       return;
     }
-    
+
     final oldStep = state.currentStep;
     final newStep = state.currentStep - 1;
-    
+
     AppLogger.action(_tag, 'Back Button Clicked');
     AppLogger.navigation(_tag, _stepName(oldStep), _stepName(newStep));
-    
+
     state = state.copyWith(currentStep: newStep);
-    
-    AppLogger.info(_tag, 'Entered Step ${newStep + 1} - ${_stepTitle(newStep)}');
+
+    AppLogger.info(
+      _tag,
+      'Entered Step ${newStep + 1} - ${_stepTitle(newStep)}',
+    );
   }
 
   void goToStep(int step) {
     final safeStep = step.clamp(0, 6);
     final oldStep = state.currentStep;
-    
+
     AppLogger.action(_tag, 'Jump to Step ${safeStep + 1}');
     AppLogger.navigation(_tag, _stepName(oldStep), _stepName(safeStep));
-    
+
     state = state.copyWith(currentStep: safeStep);
-    
-    AppLogger.info(_tag, 'Entered Step ${safeStep + 1} - ${_stepTitle(safeStep)}');
+
+    AppLogger.info(
+      _tag,
+      'Entered Step ${safeStep + 1} - ${_stepTitle(safeStep)}',
+    );
   }
 
   String _stepName(int step) {
@@ -356,55 +365,55 @@ class OnboardingController extends Notifier<OnboardingState> {
   void toggleGoal(String code) {
     final items = [...state.goals];
     final action = items.contains(code) ? 'removed' : 'added';
-    
+
     if (items.contains(code)) {
       items.remove(code);
     } else {
       items.add(code);
     }
-    
+
     AppLogger.form(_tag, 'selectedGoals', items);
     AppLogger.info(_tag, 'Goal "$code" $action');
-    
+
     state = state.copyWith(goals: items);
   }
 
   void toggleCondition(String code) {
     final items = [...state.conditions];
     final action = items.contains(code) ? 'removed' : 'added';
-    
+
     if (items.contains(code)) {
       items.remove(code);
     } else {
       items.add(code);
     }
-    
+
     AppLogger.form(_tag, 'selectedConditions', items);
     AppLogger.info(_tag, 'Condition "$code" $action');
-    
+
     state = state.copyWith(conditions: items);
   }
 
   void toggleHabit(String code) {
     final items = [...state.habits];
     final action = items.contains(code) ? 'removed' : 'added';
-    
+
     if (items.contains(code)) {
       items.remove(code);
     } else {
       items.add(code);
     }
-    
+
     AppLogger.form(_tag, 'selectedHabits', items);
     AppLogger.info(_tag, 'Habit "$code" $action');
-    
+
     state = state.copyWith(habits: items);
   }
 
   Future<void> saveOnboarding() async {
     AppLogger.separator(_tag);
     AppLogger.action(_tag, 'Submit Button Clicked');
-    
+
     // Validation checks
     if (!state.agreed) {
       AppLogger.validation(
@@ -413,7 +422,7 @@ class OnboardingController extends Notifier<OnboardingState> {
         false,
         reason: 'User must agree to terms',
       );
-      
+
       AppLogger.error(
         _tag,
         'Onboarding Completed With Error',
@@ -421,12 +430,12 @@ class OnboardingController extends Notifier<OnboardingState> {
           'Bạn cần đồng ý với điều khoản để mình có thể tiếp tục đồng hành cùng bạn.',
         ),
       );
-      
+
       throw StateError(
         'Bạn cần đồng ý với điều khoản để mình có thể tiếp tục đồng hành cùng bạn.',
       );
     }
-    
+
     AppLogger.validation(_tag, 'Terms Agreement', true);
 
     if (!state.canSave) {
@@ -436,15 +445,15 @@ class OnboardingController extends Notifier<OnboardingState> {
         false,
         reason: 'Missing required fields',
       );
-      
+
       final missingFields = <String>[];
       if (state.fullName.trim().isEmpty) missingFields.add('fullName');
       if (state.gender.trim().isEmpty) missingFields.add('gender');
       if (state.birthYear <= 1900) missingFields.add('birthYear');
       if (state.occupation.trim().isEmpty) missingFields.add('occupation');
-      
+
       AppLogger.info(_tag, 'Missing fields: ${missingFields.join(', ')}');
-      
+
       AppLogger.error(
         _tag,
         'Onboarding Completed With Error',
@@ -452,19 +461,22 @@ class OnboardingController extends Notifier<OnboardingState> {
           'Mình vẫn còn thiếu vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.',
         ),
       );
-      
+
       throw StateError(
         'Mình vẫn còn thiếu vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.',
       );
     }
-    
+
     AppLogger.validation(_tag, 'Required Fields', true);
 
     if (state.isSaving) {
-      AppLogger.warning(_tag, 'Save already in progress, ignoring duplicate call');
+      AppLogger.warning(
+        _tag,
+        'Save already in progress, ignoring duplicate call',
+      );
       return;
     }
-    
+
     AppLogger.info(_tag, 'Starting onboarding save process...');
     state = state.copyWith(isSaving: true);
 
@@ -477,13 +489,16 @@ class OnboardingController extends Notifier<OnboardingState> {
       AppLogger.info(_tag, 'Goals: ${entity.goals.length} selected');
       AppLogger.info(_tag, 'Conditions: ${entity.conditions.length} selected');
       AppLogger.info(_tag, 'Habits: ${entity.habits.length} selected');
-      
+
       await _repository.save(entity);
       AppLogger.success(_tag, 'Onboarding profile saved successfully');
-      
+
       AppLogger.info(_tag, 'Generating the weekly meal plan');
-      await ref.read(dashboardControllerProvider.notifier).genMealByWeeksToDB();
-      
+      final onCompletionCallback = ref.read(
+        onboardingCompletionCallbackProvider,
+      );
+      await onCompletionCallback();
+
       AppLogger.info(_tag, 'Setting onboarding completed flag');
       await AppPrefs.setOnboardingCompleted(true);
       AppLogger.success(_tag, 'Onboarding completed flag set');
@@ -492,12 +507,12 @@ class OnboardingController extends Notifier<OnboardingState> {
         isSaving: false,
         savedLog: 'Mình đã lưu hồ sơ sức khỏe của bạn thành công.',
       );
-      
+
       // Log completion summary
       final duration = DateTime.now().difference(_startTime!);
       AppLogger.separator(_tag);
       AppLogger.success(_tag, 'Onboarding Completed Successfully');
-      
+
       AppLogger.summary(_tag, 'ONBOARDING_SUMMARY', {
         'Total Steps': 7,
         'Completed Steps': 7,
@@ -514,12 +529,12 @@ class OnboardingController extends Notifier<OnboardingState> {
       AppLogger.separator(_tag);
     } catch (e, st) {
       AppLogger.error(_tag, 'Save onboarding failed', e, st);
-      
+
       state = state.copyWith(
         isSaving: false,
         savedLog: 'Mình chưa thể lưu hồ sơ lúc này: $e',
       );
-      
+
       AppLogger.separator(_tag);
       AppLogger.error(_tag, 'Onboarding Completed With Error', e);
       AppLogger.summary(_tag, 'ONBOARDING_SUMMARY', {
@@ -528,13 +543,8 @@ class OnboardingController extends Notifier<OnboardingState> {
         'Saved To Database': false,
       });
       AppLogger.separator(_tag);
-      
+
       rethrow;
     }
   }
 }
-
-final onboardingProvider =
-    NotifierProvider<OnboardingController, OnboardingState>(
-      OnboardingController.new,
-    );

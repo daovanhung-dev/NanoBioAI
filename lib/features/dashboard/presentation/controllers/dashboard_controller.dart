@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:nano_app/core/storage/localdb/models/meal_plan_model.dart';
+import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 
 import 'package:nano_app/features/dashboard/domain/entities/dashboard_entity.dart';
 
@@ -8,36 +9,30 @@ import 'package:nano_app/features/dashboard/providers/dashboard_provider.dart';
 
 import 'package:nano_app/services/ai/ai_service.dart';
 
-import 'package:nano_app/services/ai/prompts/nutrition_prompt.dart';
-
 final dashboardControllerProvider =
     AsyncNotifierProvider<DashboardController, void>(DashboardController.new);
 
 class DashboardController extends AsyncNotifier<void> {
+  static const _tag = 'DASHBOARD_CONTROLLER';
+
   @override
   Future<void> build() async {}
 
   Future<void> genMealByWeeksToDB() async {
-    print("gen meal plan by weeks to DB function called");
-    print("1");
+    AppLogger.action(_tag, 'Generate weekly meal plan');
     final repository = ref.read(dashboardRepositoryProvider);
-    print("2");
 
     final DashboardEntity dashboardData = await repository.fetchDashboard();
-    print("3");
-
-    final prompt = ref.read(nutritionPromptProvider);
-    print("4");
+    AppLogger.info(_tag, 'Dashboard data fetched for meal generation');
 
     final AIService aiService = ref.read(aiServiceProvider);
-    print("5");
 
     final List<MealPlanModel> mealPlan = await aiService.generateMealPlan(
       healthData: dashboardData,
     );
-    print("6");
+    AppLogger.info(_tag, 'Generated ${mealPlan.length} meal plan records');
 
     await repository.saveMealPlan(mealPlan);
-    print("Saved meal plan to DB successfully");
+    AppLogger.success(_tag, 'Saved meal plan to DB successfully');
   }
 }

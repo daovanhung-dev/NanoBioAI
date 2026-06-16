@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/theme.dart';
-import '../controllers/onboarding_controller.dart';
+import '../../providers/onboarding_provider.dart';
 import 'onboarding_step_shell.dart';
 
 class BasicInfoStep extends ConsumerStatefulWidget {
