@@ -51,6 +51,7 @@ dev_dependencies:
   rename: ^3.0.2
   mockito: ^5.4.4
   build_runner: ^2.4.8
+  sqflite_common_ffi: ^2.3.6
 
 flutter:
   uses-material-design: true

@@ -1,4 +1,5 @@
 import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/daily_health_tasks_table.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -91,6 +92,8 @@ class DatabaseService {
     await db.execute(MedicalTreatmentsTable.createTable);
 
     await db.execute(HealthTrackingLogsTable.createTable);
+
+    await db.execute(DailyHealthTasksTable.createTable);
 
     await db.execute(NutritionLogsTable.createTable);
 

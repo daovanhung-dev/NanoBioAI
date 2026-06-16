@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nano_app/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:nano_app/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart';
 import 'package:nano_app/features/meal_plan/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/features/other/presentation/pages/other_page.dart';
 import 'package:nano_app/features/settings/presentation/pages/settings_page.dart';
@@ -30,7 +30,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   int _currentIndex = 0;
 
   final List<Widget> _pages = const [
-    DashboardPage(),
+    DailyHealthTrackingPage(),
     MealPlanPage(),
     HealthInsightsView(),
     SettingsView(),

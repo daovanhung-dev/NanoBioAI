@@ -14,8 +14,11 @@ class HealthTrackingLogsTable {
     steps_count INTEGER,
     mood TEXT,
 
+    log_date TEXT,
     created_at TEXT,
+    updated_at TEXT,
 
+    UNIQUE(user_id, log_date),
     FOREIGN KEY(user_id) REFERENCES users(id)
     ON DELETE CASCADE
   )
