@@ -50,6 +50,7 @@ Route hien co:
 | `/onboarding` | `OnboardingPage` | none |
 | `/menu` | `MainNavigationPage` | none |
 | `/meal-plan` | `MealPlanPage` | none |
+| `/health-tracking` | `DailyHealthTrackingPage` | none |
 | `/ai-chat` | `AIChatScreen` | `authGuard` |
 | `/nutrition` | `Placeholder` | `authGuard` |
 | `/profile` | `Placeholder` | `authGuard` |
@@ -87,7 +88,7 @@ Provider quan trong:
 | --- | --- | --- |
 | `splashProvider` | `features/splash/providers/splash_provider.dart` | `NotifierProvider<SplashNotifier, SplashStatus>` |
 | `loginControllerProvider` | `features/auth/providers/auth_provider.dart` | legacy `StateNotifierProvider<LoginController, AsyncValue<void>>` |
-| `onboardingProvider` | `features/onboarding/presentation/controllers/onboarding_controller.dart` va `features/onboarding/providers/onboarding_provider.dart` | `NotifierProvider<OnboardingController, OnboardingState>` |
+| `onboardingProvider` | `features/onboarding/providers/onboarding_provider.dart` | `NotifierProvider<OnboardingController, OnboardingState>` |
 | `dashboardProvider` | `features/dashboard/providers/dashboard_provider.dart` | `FutureProvider<DashboardEntity>` |
 | `dashboardControllerProvider` | `features/dashboard/presentation/controllers/dashboard_controller.dart` | `AsyncNotifierProvider<DashboardController, void>` |
 | `mealPlanControllerProvider` | `features/meal_plan/presentation/controllers/meal_plan_controller.dart` | `AsyncNotifierProvider<MealPlanController, List<MealPlanEntity>>` |
@@ -96,9 +97,9 @@ Provider quan trong:
 | `aiServiceProvider` | `services/ai/ai_service.dart` | `Provider<AIService>` |
 | `aiChatServiceProvider` | `services/ai/ai_chat_service.dart` | `Provider<AIChatService>` |
 
-Can de y duplicate provider:
+Provider status after 2026-06-16 cleanup:
 
-- `onboardingProvider` duoc khai bao ca trong controller va trong `features/onboarding/providers/onboarding_provider.dart`.
+- `onboardingProvider` duplication appears resolved in current code; controller imports no provider declaration.
 - `meal_plan` providers hien o `features/meal_plan/providers/meal_plan_provider.dart`; controller doc repository abstraction qua provider nay.
 
 ## Layer boundaries hien tai

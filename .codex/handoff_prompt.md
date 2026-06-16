@@ -36,7 +36,7 @@ Key flows:
 Be careful with:
 - Do not read/write .env secrets into docs.
 - Do not break onboarding -> meal generation + daily task generation -> saved local data -> completed flag behavior.
-- Watch duplicate providers: onboardingProvider and meal plan providers.
+- Provider duplication was mostly cleaned up on 2026-06-16; still run rg before changing onboarding/meal plan provider names.
 - MealPlanModel is feature-specific under features/meal_plan/data/models.
 - meal_plan folder is flat under features/meal_plan.
 - Settings has interfaces/datasources but no repository implementation/controller; UI is mostly hardcoded.

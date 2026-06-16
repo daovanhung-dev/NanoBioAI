@@ -38,6 +38,27 @@ class DailyHealthTasksDao {
     return maps.map(DailyHealthTaskModel.fromMap).toList();
   }
 
+  Future<List<DailyHealthTaskModel>> getAll() async {
+    AppLogger.database(_tag, 'Query all daily health tasks');
+    final maps = await db.query(
+      DailyHealthTasksTable.tableName,
+      orderBy: 'task_date ASC, sort_order ASC, created_at ASC',
+    );
+    return maps.map(DailyHealthTaskModel.fromMap).toList();
+  }
+
+  Future<DailyHealthTaskModel?> getById(String id) async {
+    AppLogger.database(_tag, 'Query task id=$id');
+    final maps = await db.query(
+      DailyHealthTasksTable.tableName,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return DailyHealthTaskModel.fromMap(maps.first);
+  }
+
   Future<void> updateTask(DailyHealthTaskModel task) async {
     AppLogger.database(_tag, 'Update task ${task.taskCode}');
     await db.update(

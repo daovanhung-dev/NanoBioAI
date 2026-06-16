@@ -72,14 +72,14 @@ Better:
 
 - This part is largely resolved. Keep it that way when editing meal plan.
 
-### 5. Duplicate providers
+### 5. Provider consolidation status
 
-Duplicates:
+Status after 2026-06-16 cleanup:
 
-- `onboardingProvider` in both controller and providers folder.
-- Meal plan provider duplication appears resolved in current code.
+- `onboardingProvider` duplication appears resolved in current code; the public declaration is in `features/onboarding/providers/onboarding_provider.dart`.
+- Meal plan provider duplication appears resolved; datasource/repository providers live in `features/meal_plan/providers/meal_plan_provider.dart`.
 
-Refactor carefully because imports may reference either one. Use `rg "onboardingProvider|mealDataSource|mealPlanRepositoryProvider" lib test`.
+Still inspect before changing provider surfaces because preservation tests and UI imports depend on names. Use `rg "onboardingProvider|mealDataSource|mealPlanRepositoryProvider" lib test`.
 
 ## Data correctness gaps
 
@@ -217,7 +217,7 @@ If these providers become active, update `.env.example`.
 1. Add/adjust tests or run preservation baseline.
 2. Fix data IDs and `concernText` persistence if onboarding save is failing or needed.
 3. Move onboarding completion callback body into a named use-case/service.
-4. Consolidate remaining duplicate providers.
+4. Keep provider surfaces stable; consolidate only if a fresh `rg` shows real duplication.
 5. Wire Settings repository/controller if settings work is next.
 6. Add daily tracking date selector/history if users need future seeded tasks before the day arrives.
 7. Replace mock dashboard data with real logs when tracking features start.

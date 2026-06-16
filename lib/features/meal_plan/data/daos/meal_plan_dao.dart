@@ -53,6 +53,18 @@ class MealPlansDao {
     }).toList();
   }
 
+  Future<MealPlanModel?> getById(String id) async {
+    final maps = await db.query(
+      'meal_plans',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (maps.isEmpty) return null;
+    return MealPlanModel.fromMap(maps.first);
+  }
+
   // =========================================================
   // GET BY USER
   // =========================================================
