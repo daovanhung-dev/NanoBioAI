@@ -8,8 +8,6 @@ import 'package:nano_app/core/theme/app_gradients.dart';
 import 'package:nano_app/core/theme/app_shadows.dart';
 import 'package:nano_app/core/theme/app_text_styles.dart';
 
-import '../../core/theme/app_theme.dart'; // barrel export của tất cả theme tokens
-
 class AIGeneratingPage extends StatefulWidget {
   const AIGeneratingPage({super.key});
 
@@ -73,9 +71,10 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
 
-    _breatheScale = Tween<double>(begin: 0.93, end: 1.07).animate(
-      CurvedAnimation(parent: _breatheCtrl, curve: Curves.easeInOut),
-    );
+    _breatheScale = Tween<double>(
+      begin: 0.93,
+      end: 1.07,
+    ).animate(CurvedAnimation(parent: _breatheCtrl, curve: Curves.easeInOut));
 
     // ── Ripple 1 ─────────────────────────────────────────────────
     _rippleCtrl = AnimationController(
@@ -83,12 +82,14 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       duration: const Duration(milliseconds: 2200),
     )..repeat();
 
-    _rippleScale = Tween<double>(begin: 1.0, end: 2.2).animate(
-      CurvedAnimation(parent: _rippleCtrl, curve: Curves.easeOut),
-    );
-    _rippleOpacity = Tween<double>(begin: 0.45, end: 0.0).animate(
-      CurvedAnimation(parent: _rippleCtrl, curve: Curves.easeOut),
-    );
+    _rippleScale = Tween<double>(
+      begin: 1.0,
+      end: 2.2,
+    ).animate(CurvedAnimation(parent: _rippleCtrl, curve: Curves.easeOut));
+    _rippleOpacity = Tween<double>(
+      begin: 0.45,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _rippleCtrl, curve: Curves.easeOut));
 
     // ── Ripple 2 (offset 1.1 s) ──────────────────────────────────
     _ripple2Ctrl = AnimationController(
@@ -99,12 +100,14 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       if (mounted) _ripple2Ctrl.repeat();
     });
 
-    _ripple2Scale = Tween<double>(begin: 1.0, end: 2.2).animate(
-      CurvedAnimation(parent: _ripple2Ctrl, curve: Curves.easeOut),
-    );
-    _ripple2Opacity = Tween<double>(begin: 0.30, end: 0.0).animate(
-      CurvedAnimation(parent: _ripple2Ctrl, curve: Curves.easeOut),
-    );
+    _ripple2Scale = Tween<double>(
+      begin: 1.0,
+      end: 2.2,
+    ).animate(CurvedAnimation(parent: _ripple2Ctrl, curve: Curves.easeOut));
+    _ripple2Opacity = Tween<double>(
+      begin: 0.30,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _ripple2Ctrl, curve: Curves.easeOut));
 
     // ── Dots (sequential, 420 ms) ─────────────────────────────────
     _dotTimer = Timer.periodic(const Duration(milliseconds: 420), (_) {
@@ -139,9 +142,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: Column(
             children: [
               const Spacer(flex: 3),
@@ -245,8 +246,9 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                 height: orbSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.secondary
-                      .withOpacity(_ripple2Opacity.value * 0.6),
+                  color: AppColors.secondary.withOpacity(
+                    _ripple2Opacity.value * 0.6,
+                  ),
                 ),
               ),
             ),
@@ -262,8 +264,9 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                 height: orbSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary
-                      .withOpacity(_rippleOpacity.value * 0.7),
+                  color: AppColors.primary.withOpacity(
+                    _rippleOpacity.value * 0.7,
+                  ),
                 ),
               ),
             ),
@@ -344,10 +347,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'Đang suy nghĩ',
-            style: AppTextStyles.labelLarge,
-          ),
+          Text('Đang suy nghĩ', style: AppTextStyles.labelLarge),
           const SizedBox(width: AppSpacing.xs),
           _buildDots(),
         ],
@@ -388,13 +388,13 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         return FadeTransition(
           opacity: animation,
           child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.18),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOut,
-            )),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(0, 0.18),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(parent: animation, curve: Curves.easeOut),
+                ),
             child: child,
           ),
         );
@@ -405,11 +405,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              thought.icon,
-              size: 15,
-              color: AppColors.textHint,
-            ),
+            Icon(thought.icon, size: 15, color: AppColors.textHint),
             const SizedBox(width: AppSpacing.xs),
             Flexible(
               child: Text(

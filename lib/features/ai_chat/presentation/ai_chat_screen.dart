@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -166,10 +164,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen>
               opacity: 0.9,
               radius: AppRadius.circular,
             ),
-            child: const Icon(
-              Icons.refresh_rounded,
-              color: AppColors.primary,
-            ),
+            child: const Icon(Icons.refresh_rounded, color: AppColors.primary),
           ),
           onPressed: () {
             ref.read(aiChatControllerProvider.notifier).clearChat();
@@ -195,20 +190,14 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen>
               shape: BoxShape.circle,
               shadows: AppShadows.floating,
             ),
-            child: const Icon(
-              AppIcons.aiChat,
-              size: 60,
-              color: Colors.white,
-            ),
+            child: const Icon(AppIcons.aiChat, size: 60, color: Colors.white),
           ),
 
           const SizedBox(height: AppSpacing.xl),
 
           Text(
             'Xin chào! Mình là BioAI',
-            style: AppTextStyles.heading2.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w800),
           ),
 
           const SizedBox(height: AppSpacing.md),
@@ -248,10 +237,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen>
         final message = messages[index];
         final isUser = message.role == MessageRole.user;
 
-        return _MessageBubble(
-          message: message,
-          isUser: isUser,
-        );
+        return _MessageBubble(message: message, isUser: isUser);
       },
     );
   }
@@ -262,9 +248,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen>
       decoration: BoxDecoration(
         color: AppColors.surface.withOpacity(0.98),
         border: Border(
-          top: BorderSide(
-            color: AppColors.border.withOpacity(0.5),
-          ),
+          top: BorderSide(color: AppColors.border.withOpacity(0.5)),
         ),
       ),
       child: SafeArea(
@@ -314,14 +298,8 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen>
                         color: AppColors.disabled,
                         radius: AppRadius.circular,
                       )
-                    : AppDecoration.primaryGradient(
-                        radius: AppRadius.circular,
-                      ),
-                child: Icon(
-                  Icons.send_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
+                    : AppDecoration.primaryGradient(radius: AppRadius.circular),
+                child: Icon(Icons.send_rounded, color: Colors.white, size: 22),
               ),
             ),
           ],
@@ -335,18 +313,16 @@ class _MessageBubble extends StatelessWidget {
   final ChatMessageEntity message;
   final bool isUser;
 
-  const _MessageBubble({
-    required this.message,
-    required this.isUser,
-  });
+  const _MessageBubble({required this.message, required this.isUser});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
@@ -413,10 +389,7 @@ class _MessageBubble extends StatelessWidget {
             ),
           ),
 
-          if (isUser) ...[
-            const SizedBox(width: AppSpacing.sm),
-            _buildAvatar(),
-          ],
+          if (isUser) ...[const SizedBox(width: AppSpacing.sm), _buildAvatar()],
         ],
       ),
     );
@@ -485,11 +458,7 @@ class _TypingIndicatorState extends State<_TypingIndicator>
               gradient: AppGradients.ai,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              AppIcons.aiChat,
-              color: Colors.white,
-              size: 20,
-            ),
+            child: const Icon(AppIcons.aiChat, color: Colors.white, size: 20),
           ),
 
           const SizedBox(width: AppSpacing.sm),
@@ -578,11 +547,7 @@ class _SuggestedQuestions extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      AppIcons.aiChat,
-                      size: 16,
-                      color: AppColors.primary,
-                    ),
+                    Icon(AppIcons.aiChat, size: 16, color: AppColors.primary),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
                       question,
@@ -622,10 +587,7 @@ class _AnimatedBackground extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF8FAFC),
-                    Color(0xFFEFF6FF),
-                  ],
+                  colors: [Color(0xFFF8FAFC), Color(0xFFEFF6FF)],
                 ),
               ),
             ),
