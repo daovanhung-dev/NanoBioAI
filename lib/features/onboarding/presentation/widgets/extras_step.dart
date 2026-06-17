@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,78 +13,217 @@ class ExtrasStep extends ConsumerStatefulWidget {
   ConsumerState<ExtrasStep> createState() => _ExtrasStepState();
 }
 
-class _ExtrasStepState extends ConsumerState<ExtrasStep>
-    with TickerProviderStateMixin {
-  late final AnimationController _backgroundController;
-  late final AnimationController _floatingController;
+class _ExtrasStepState extends ConsumerState<ExtrasStep> {
+  static const List<_OptionItem> _allergyOptions = [
+    _OptionItem(
+      icon: AppIcons.success,
+      title: 'Không có gì đặc biệt',
+      subtitle: 'Hiện tại bạn chưa cần tránh món nào rõ ràng.',
+      value: 'Không có gì đặc biệt',
+      isExclusive: true,
+    ),
+    _OptionItem(
+      icon: AppIcons.warning,
+      title: 'Hải sản',
+      subtitle: 'Tôm, cua, cá biển hoặc các món liên quan.',
+      value: 'Hải sản',
+    ),
+    _OptionItem(
+      icon: AppIcons.nutrition,
+      title: 'Sữa / lactose',
+      subtitle: 'Sữa, phô mai, kem hoặc sản phẩm từ sữa.',
+      value: 'Sữa / lactose',
+    ),
+    _OptionItem(
+      icon: AppIcons.food,
+      title: 'Đậu phộng / các loại hạt',
+      subtitle: 'Đậu phộng, hạnh nhân, óc chó...',
+      value: 'Đậu phộng / các loại hạt',
+    ),
+    _OptionItem(
+      icon: AppIcons.restaurant,
+      title: 'Gluten / bột mì',
+      subtitle: 'Bánh mì, mì sợi, thực phẩm chứa gluten.',
+      value: 'Gluten / bột mì',
+    ),
+    _OptionItem(
+      icon: AppIcons.meal,
+      title: 'Trứng',
+      subtitle: 'Trứng gà, trứng vịt hoặc món có trứng.',
+      value: 'Trứng',
+    ),
+    _OptionItem(
+      icon: AppIcons.fruits,
+      title: 'Đậu nành',
+      subtitle: 'Sữa đậu nành, đậu phụ, nước tương...',
+      value: 'Đậu nành',
+    ),
+    _OptionItem(
+      icon: AppIcons.warning,
+      title: 'Món cay / nhiều dầu',
+      subtitle: 'Các món dễ làm bạn khó chịu hoặc đầy bụng.',
+      value: 'Món cay / nhiều dầu',
+    ),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
+  static const List<_OptionItem> _treatmentOptions = [
+    _OptionItem(
+      icon: AppIcons.success,
+      title: 'Không điều trị hiện tại',
+      subtitle: 'Bạn chưa có phác đồ hoặc theo dõi y tế cố định.',
+      value: 'Không điều trị hiện tại',
+      isExclusive: true,
+    ),
+    _OptionItem(
+      icon: AppIcons.heartRate,
+      title: 'Theo dõi huyết áp',
+      subtitle: 'Cần chú ý muối, nhịp sinh hoạt và vận động.',
+      value: 'Theo dõi huyết áp',
+    ),
+    _OptionItem(
+      icon: AppIcons.blood,
+      title: 'Theo dõi đường huyết',
+      subtitle: 'Cần cân bằng tinh bột, bữa ăn và giờ ăn.',
+      value: 'Theo dõi đường huyết',
+    ),
+    _OptionItem(
+      icon: AppIcons.nutrition,
+      title: 'Dạ dày / tiêu hóa',
+      subtitle: 'Dễ đầy bụng, đau dạ dày hoặc khó tiêu.',
+      value: 'Dạ dày / tiêu hóa',
+    ),
+    _OptionItem(
+      icon: AppIcons.health,
+      title: 'Tim mạch',
+      subtitle: 'Cần chăm sóc bền bỉ và theo dõi đều đặn.',
+      value: 'Tim mạch',
+    ),
+    _OptionItem(
+      icon: AppIcons.sleep,
+      title: 'Giấc ngủ',
+      subtitle: 'Mất ngủ, ngủ không sâu hoặc hay mệt mỏi.',
+      value: 'Giấc ngủ',
+    ),
+    _OptionItem(
+      icon: AppIcons.fitness,
+      title: 'Cơ xương khớp',
+      subtitle: 'Đau lưng, đau gối hoặc hạn chế vận động.',
+      value: 'Cơ xương khớp',
+    ),
+  ];
 
-    _backgroundController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 18),
-    )..repeat();
+  static const List<_OptionItem> _medicationOptions = [
+    _OptionItem(
+      icon: AppIcons.success,
+      title: 'Không dùng thuốc thường xuyên',
+      subtitle: 'Hiện tại bạn chưa có thuốc dùng cố định.',
+      value: 'Không dùng thuốc thường xuyên',
+      isExclusive: true,
+    ),
+    _OptionItem(
+      icon: AppIcons.heartRate,
+      title: 'Thuốc huyết áp',
+      subtitle: 'Nami sẽ lưu ý hơn khi gợi ý thói quen hằng ngày.',
+      value: 'Thuốc huyết áp',
+    ),
+    _OptionItem(
+      icon: AppIcons.blood,
+      title: 'Thuốc đường huyết',
+      subtitle: 'Thông tin này giúp bữa ăn được cân nhắc kỹ hơn.',
+      value: 'Thuốc đường huyết',
+    ),
+    _OptionItem(
+      icon: AppIcons.nutrition,
+      title: 'Thuốc dạ dày',
+      subtitle: 'Cần chú ý món cay, chua hoặc quá nhiều dầu.',
+      value: 'Thuốc dạ dày',
+    ),
+    _OptionItem(
+      icon: AppIcons.favorite,
+      title: 'Vitamin / khoáng chất',
+      subtitle: 'Các sản phẩm bổ sung đang dùng hằng ngày.',
+      value: 'Vitamin / khoáng chất',
+    ),
+    _OptionItem(
+      icon: AppIcons.warning,
+      title: 'Thuốc dị ứng',
+      subtitle: 'Thông tin này giúp Nami thận trọng hơn.',
+      value: 'Thuốc dị ứng',
+    ),
+    _OptionItem(
+      icon: AppIcons.health,
+      title: 'Thuốc giảm đau',
+      subtitle: 'Dùng định kỳ hoặc khi có triệu chứng.',
+      value: 'Thuốc giảm đau',
+    ),
+    _OptionItem(
+      icon: AppIcons.sleep,
+      title: 'Thuốc hỗ trợ ngủ',
+      subtitle: 'Nami sẽ lưu ý hơn về lịch nghỉ ngơi.',
+      value: 'Thuốc hỗ trợ ngủ',
+    ),
+  ];
 
-    _floatingController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 7),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _backgroundController.dispose();
-    _floatingController.dispose();
-    super.dispose();
-  }
+  static const List<_OptionItem> _concernOptions = [
+    _OptionItem(
+      icon: AppIcons.stress,
+      title: 'Căng thẳng',
+      subtitle: 'Bạn đang thấy áp lực hoặc khó thả lỏng.',
+      value: 'Căng thẳng',
+    ),
+    _OptionItem(
+      icon: AppIcons.sleep,
+      title: 'Ngủ chưa sâu',
+      subtitle: 'Khó ngủ, thức giấc hoặc dậy vẫn mệt.',
+      value: 'Ngủ chưa sâu',
+    ),
+    _OptionItem(
+      icon: AppIcons.health,
+      title: 'Thiếu năng lượng',
+      subtitle: 'Dễ uể oải, khó tập trung hoặc nhanh mệt.',
+      value: 'Thiếu năng lượng',
+    ),
+    _OptionItem(
+      icon: AppIcons.nutrition,
+      title: 'Ăn uống thất thường',
+      subtitle: 'Bỏ bữa, ăn muộn hoặc khó duy trì bữa đều.',
+      value: 'Ăn uống thất thường',
+    ),
+    _OptionItem(
+      icon: AppIcons.weight,
+      title: 'Kiểm soát cân nặng',
+      subtitle: 'Bạn muốn giảm, tăng hoặc giữ cân lành mạnh.',
+      value: 'Kiểm soát cân nặng',
+    ),
+    _OptionItem(
+      icon: AppIcons.fitness,
+      title: 'Ít vận động',
+      subtitle: 'Bạn muốn bắt đầu nhẹ nhàng, không ép sức.',
+      value: 'Ít vận động',
+    ),
+    _OptionItem(
+      icon: AppIcons.water,
+      title: 'Hay quên uống nước',
+      subtitle: 'Nami có thể nhắc bạn chăm cơ thể đều hơn.',
+      value: 'Hay quên uống nước',
+    ),
+    _OptionItem(
+      icon: AppIcons.monitoring,
+      title: 'Lo lắng chỉ số sức khỏe',
+      subtitle: 'Bạn muốn theo dõi cơ thể kỹ hơn mỗi ngày.',
+      value: 'Lo lắng chỉ số sức khỏe',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(onboardingProvider);
-
     final controller = ref.read(onboardingProvider.notifier);
-
     final completedFields = _calculateCompletedFields(state);
-
-    final progress = completedFields / 6;
 
     return Stack(
       children: [
-        Positioned.fill(
-          child: AnimatedBuilder(
-            animation: _backgroundController,
-            builder: (_, __) {
-              return CustomPaint(
-                painter: _BackgroundPainter(
-                  animation: _backgroundController.value,
-                ),
-              );
-            },
-          ),
-        ),
-
-        Positioned(
-          top: -120,
-          right: -80,
-          child: _FloatingGlow(
-            size: 280,
-            color: AppColors.primary.withOpacity(0.12),
-            controller: _floatingController,
-          ),
-        ),
-
-        Positioned(
-          bottom: -140,
-          left: -90,
-          child: _FloatingGlow(
-            size: 340,
-            color: AppColors.secondary.withOpacity(0.12),
-            controller: _floatingController,
-          ),
-        ),
-
+        const Positioned.fill(child: _SoftBackground()),
         Positioned.fill(
           child: OnboardingStepShell(
             stepIndex: 5,
@@ -99,187 +236,179 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                      'Bạn cần đồng ý với điều khoản sử dụng trước khi chúng ta tiếp tục nhé.',
+                      'Nami cần bạn xác nhận đồng ý trước khi mình tiếp tục chăm sóc hồ sơ sức khỏe nhé.',
                     ),
                   ),
                 );
                 return;
               }
+
               controller.nextStep();
             },
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(
-                left: AppSpacing.pagePadding,
-                right: AppSpacing.pagePadding,
-                bottom: AppSpacing.xxxl,
-                top: AppSpacing.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _Appear(
-                    delay: 0,
-                    child: _HeroSection(
-                      progress: progress,
-                      completedFields: completedFields,
-                    ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final maxContentWidth = constraints.maxWidth >= 900
+                    ? 820.0
+                    : constraints.maxWidth;
+
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    constraints.maxWidth >= 720
+                        ? AppSpacing.pagePaddingLarge
+                        : AppSpacing.pagePadding,
+                    AppSpacing.sm,
+                    constraints.maxWidth >= 720
+                        ? AppSpacing.pagePaddingLarge
+                        : AppSpacing.pagePadding,
+                    AppSpacing.xxxl,
                   ),
-
-                  const SizedBox(height: AppSpacing.xl),
-
-                  _Appear(
-                    delay: 80,
-                    child: _AiStatusCard(completedFields: completedFields),
-                  ),
-
-                  const SizedBox(height: AppSpacing.xl),
-
-                  const _SectionHeader(
-                    title: 'Có món nào bạn cần tránh không?',
-                    subtitle:
-                        'Bạn cứ chia sẻ thật kỹ, mình sẽ ghi nhớ để gợi ý món ăn an toàn hơn.',
-                  ),
-
-                  const SizedBox(height: AppSpacing.lg),
-
-                  _Appear(
-                    delay: 140,
-                    child: _SurfaceCard(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxContentWidth),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _FieldTile(
+                          _HeroSection(completedFields: completedFields),
+                          const SizedBox(height: AppSpacing.xl),
+                          _NamiStatusCard(completedFields: completedFields),
+                          const SizedBox(height: AppSpacing.xl),
+                          const _SectionHeader(
                             icon: AppIcons.warning,
-                            title: 'Dị ứng / thực phẩm cần tránh',
-                            child: OnboardingTextField(
-                              label: 'Thông tin dị ứng',
-                              hint: 'Ví dụ: Hải sản, sữa, đậu phộng, gluten...',
-                              initialValue: state.allergyName,
-                              onChanged: controller.updateAllergyName,
+                            title: 'Có món nào bạn muốn Nami lưu ý không?',
+                            subtitle:
+                                'Bạn có thể chọn nhanh trước. Nếu có điều gì rất riêng, cứ ghi thêm, Nami sẽ tôn trọng điều đó.',
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          _SurfaceCard(
+                            child: Column(
+                              children: [
+                                _NamiChoiceField(
+                                  icon: AppIcons.warning,
+                                  label: 'Thực phẩm cần tránh',
+                                  hint: 'Chọn dị ứng hoặc món bạn muốn hạn chế',
+                                  value: state.allergyName,
+                                  options: _allergyOptions,
+                                  sheetTitle:
+                                      'Món nào Nami nên tránh cho bạn?',
+                                  sheetSubtitle:
+                                      'Chọn những mục phù hợp. Bạn vẫn có thể tự nhập nếu danh sách chưa đủ.',
+                                  onChanged: controller.updateAllergyName,
+                                ),
+                                const SizedBox(height: AppSpacing.lg),
+                                _FieldTile(
+                                  icon: AppIcons.document,
+                                  title: 'Nói thêm với Nami',
+                                  subtitle:
+                                      'Ví dụ mức độ dị ứng, món ăn từng làm bạn khó chịu, hoặc cách bạn muốn được nhắc.',
+                                  child: OnboardingTextField(
+                                    label: 'Ghi chú riêng',
+                                    hint:
+                                        'Ví dụ: Dị ứng nhẹ với tôm, vẫn ăn được cá; không hợp đồ quá cay...',
+                                    maxLines: 3,
+                                    initialValue: state.allergyNote,
+                                    onChanged: controller.updateAllergyNote,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-
-                          const SizedBox(height: AppSpacing.lg),
-
-                          _FieldTile(
-                            icon: AppIcons.document,
-                            title: 'Ghi chú thêm',
-                            child: OnboardingTextField(
-                              label: 'Mô tả thêm',
-                              hint: 'Mức độ dị ứng, thực phẩm cần hạn chế...',
-                              maxLines: 3,
-                              initialValue: state.allergyNote,
-                              onChanged: controller.updateAllergyNote,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: AppSpacing.xl),
-
-                  const _SectionHeader(
-                    title: 'Bạn đang điều trị hoặc dùng thuốc gì không?',
-                    subtitle:
-                        'Thông tin này giúp mình thận trọng hơn khi đồng hành cùng bạn.',
-                  ),
-
-                  const SizedBox(height: AppSpacing.lg),
-
-                  _Appear(
-                    delay: 220,
-                    child: _SurfaceCard(
-                      child: Column(
-                        children: [
-                          _FieldTile(
+                          const SizedBox(height: AppSpacing.xl),
+                          const _SectionHeader(
                             icon: AppIcons.health,
-                            title: 'Điều trị hiện tại',
-                            child: OnboardingTextField(
-                              label: 'Điều trị / theo dõi',
-                              hint: 'Ví dụ: Theo dõi huyết áp, tiểu đường...',
-                              initialValue: state.treatmentName,
-                              onChanged: controller.updateTreatmentName,
+                            title: 'Hiện tại cơ thể bạn cần được chăm sóc gì?',
+                            subtitle:
+                                'Nami hỏi phần này để gợi ý nhẹ nhàng và an toàn hơn, không để bạn phải tự xoay xở một mình.',
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          _SurfaceCard(
+                            child: Column(
+                              children: [
+                                _NamiChoiceField(
+                                  icon: AppIcons.health,
+                                  label: 'Tình trạng đang theo dõi',
+                                  hint:
+                                      'Chọn điều bạn đang điều trị hoặc quan tâm',
+                                  value: state.treatmentName,
+                                  options: _treatmentOptions,
+                                  sheetTitle:
+                                      'Bạn đang theo dõi điều gì gần đây?',
+                                  sheetSubtitle:
+                                      'Không cần chia sẻ quá nhiều nếu bạn chưa sẵn sàng. Chọn nhanh là đủ để Nami hiểu hơn.',
+                                  onChanged: controller.updateTreatmentName,
+                                ),
+                                const SizedBox(height: AppSpacing.lg),
+                                _NamiChoiceField(
+                                  icon: AppIcons.nutrition,
+                                  label: 'Thuốc / sản phẩm đang dùng',
+                                  hint:
+                                      'Chọn nhóm thuốc hoặc sản phẩm bổ sung nếu có',
+                                  value: state.medicationName,
+                                  options: _medicationOptions,
+                                  sheetTitle:
+                                      'Bạn đang dùng thuốc hoặc sản phẩm nào?',
+                                  sheetSubtitle:
+                                      'Thông tin này chỉ để Nami thận trọng hơn khi cá nhân hóa gợi ý chăm sóc.',
+                                  onChanged: controller.updateMedicationName,
+                                ),
+                                const SizedBox(height: AppSpacing.lg),
+                                _FieldTile(
+                                  icon: AppIcons.edit,
+                                  title: 'Ghi chú điều trị',
+                                  subtitle:
+                                      'Nếu bác sĩ có dặn gì quan trọng, bạn có thể ghi lại ở đây để Nami nhớ giúp.',
+                                  child: OnboardingTextField(
+                                    label: 'Thông tin bổ sung',
+                                    hint:
+                                        'Ví dụ: Tái khám định kỳ, hạn chế muối, không vận động quá sức...',
+                                    maxLines: 4,
+                                    initialValue: state.treatmentNote,
+                                    onChanged: controller.updateTreatmentNote,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-
-                          const SizedBox(height: AppSpacing.lg),
-
-                          _FieldTile(
-                            icon: AppIcons.nutrition,
-                            title: 'Thuốc đang sử dụng',
-                            child: OnboardingTextField(
-                              label: 'Tên thuốc',
-                              hint: 'Có thể bỏ trống nếu không có',
-                              initialValue: state.medicationName,
-                              onChanged: controller.updateMedicationName,
+                          const SizedBox(height: AppSpacing.xl),
+                          const _SectionHeader(
+                            icon: AppIcons.stress,
+                            title: 'Gần đây bạn muốn Nami quan tâm điều gì trước?',
+                            subtitle:
+                                'Không cần hoàn hảo ngay từ đầu. Mình sẽ cùng bạn điều chỉnh dần từng chút một.',
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          _SurfaceCard(
+                            child: _NamiChoiceField(
+                              icon: AppIcons.stress,
+                              label: 'Mối quan tâm hiện tại',
+                              hint: 'Chọn một vài điều đang làm bạn bận tâm',
+                              value: state.concernText,
+                              options: _concernOptions,
+                              sheetTitle:
+                                  'Điều gì đang làm bạn bận tâm nhất?',
+                              sheetSubtitle:
+                                  'Bạn có thể chọn nhiều mục. Nếu muốn nói bằng lời của mình, hãy dùng phần tự nhập.',
+                              onChanged: controller.updateConcernText,
                             ),
                           ),
-
+                          const SizedBox(height: AppSpacing.xl),
+                          _CareNoteCard(completedFields: completedFields),
                           const SizedBox(height: AppSpacing.lg),
-
-                          _FieldTile(
-                            icon: AppIcons.edit,
-                            title: 'Ghi chú điều trị',
-                            child: OnboardingTextField(
-                              label: 'Thông tin bổ sung',
-                              hint:
-                                  'Ví dụ: Theo dõi định kỳ, bác sĩ khuyến nghị...',
-                              maxLines: 4,
-                              initialValue: state.treatmentNote,
-                              onChanged: controller.updateTreatmentNote,
-                            ),
+                          _CommitmentCard(
+                            agreed: state.agreed,
+                            onChanged: controller.setAgreed,
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          _SummaryCard(
+                            completedFields: completedFields,
+                            agreed: state.agreed,
                           ),
                         ],
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: AppSpacing.xl),
-
-                  const _SectionHeader(
-                    title: 'Gần đây bạn lo lắng điều gì nhất?',
-                    subtitle:
-                        'Bạn cứ nói như đang trò chuyện với mình, mình đang lắng nghe.',
-                  ),
-
-                  const SizedBox(height: AppSpacing.lg),
-
-                  _Appear(
-                    delay: 320,
-                    child: _SurfaceCard(
-                      child: OnboardingTextField(
-                        label: 'Mối quan tâm sức khỏe',
-                        hint:
-                            'Ví dụ: Stress, mất ngủ, thiếu năng lượng, giảm cân...',
-                        maxLines: 5,
-                        initialValue: state.concernText,
-                        onChanged: controller.updateConcernText,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: AppSpacing.xl),
-
-                  _Appear(
-                    delay: 420,
-                    child: _CommitmentCard(
-                      agreed: state.agreed,
-                      onChanged: controller.setAgreed,
-                    ),
-                  ),
-
-                  const SizedBox(height: AppSpacing.xl),
-
-                  _Appear(
-                    delay: 520,
-                    child: _InsightCard(
-                      completedFields: completedFields,
-                      agreed: state.agreed,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ),
@@ -291,129 +420,48 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
     int count = 0;
 
     if (state.allergyName.toString().trim().isNotEmpty) count++;
-
     if (state.allergyNote.toString().trim().isNotEmpty) count++;
-
     if (state.treatmentName.toString().trim().isNotEmpty) count++;
-
     if (state.medicationName.toString().trim().isNotEmpty) count++;
-
     if (state.treatmentNote.toString().trim().isNotEmpty) count++;
-
     if (state.concernText.toString().trim().isNotEmpty) count++;
 
     return count;
   }
 }
 
-class _HeroSection extends StatelessWidget {
-  final double progress;
-  final int completedFields;
-
-  const _HeroSection({required this.progress, required this.completedFields});
+class _SoftBackground extends StatelessWidget {
+  const _SoftBackground();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: AppGradients.onboarding),
+      child: Stack(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 74,
-                height: 74,
-                decoration: AppDecoration.glass(
-                  radius: AppRadius.circular,
-                  opacity: 0.16,
-                ),
-                child: const Icon(
-                  AppIcons.health,
-                  color: Colors.white,
-                  size: 34,
-                ),
-              ),
-
-              const Spacer(),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: AppDecoration.glass(
-                  radius: AppRadius.circular,
-                  opacity: 0.12,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(AppIcons.star, color: Colors.white, size: 18),
-
-                    const SizedBox(width: AppSpacing.xs),
-
-                    Text(
-                      'BioAI Core',
-                      style: AppTextStyles.labelLarge.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: AppSpacing.xl),
-
-          Text(
-            'Hoàn thiện\nhồ sơ sức khỏe',
-            style: AppTextStyles.displaySmall.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-              height: 1.05,
+          Positioned(
+            top: -96,
+            right: -72,
+            child: _GlowCircle(
+              size: 240,
+              color: AppColors.primarySoft,
             ),
           ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          Text(
-            'Những dữ liệu này giúp hệ thống AI xây dựng phân tích chính xác và cá nhân hóa hơn cho bạn.',
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: Colors.white.withOpacity(0.92),
+          Positioned(
+            bottom: -120,
+            left: -88,
+            child: _GlowCircle(
+              size: 300,
+              color: AppColors.secondarySoft,
             ),
           ),
-
-          const SizedBox(height: AppSpacing.xl),
-
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.circular),
-            child: LinearProgressIndicator(
-              minHeight: 10,
-              value: progress,
-              backgroundColor: Colors.white.withOpacity(0.14),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+          Positioned(
+            top: 220,
+            left: -120,
+            child: _GlowCircle(
+              size: 220,
+              color: AppColors.infoSoft,
             ),
-          ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          Row(
-            children: [
-              Expanded(
-                child: _HeroInfo(
-                  title: 'Đã hoàn thành',
-                  value: '$completedFields/6',
-                ),
-              ),
-
-              const SizedBox(width: AppSpacing.md),
-
-              const Expanded(
-                child: _HeroInfo(title: 'Mình đã hiểu', value: 'Sẵn sàng'),
-              ),
-            ],
           ),
         ],
       ),
@@ -421,33 +469,131 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
-class _HeroInfo extends StatelessWidget {
-  final String title;
-  final String value;
+class _GlowCircle extends StatelessWidget {
+  const _GlowCircle({
+    required this.size,
+    required this.color,
+  });
 
-  const _HeroInfo({required this.title, required this.value});
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: AppDecoration.circle(
+          color: color.withOpacity(0.72),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroSection extends StatelessWidget {
+  const _HeroSection({required this.completedFields});
+
+  final int completedFields;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: AppDecoration.glass(radius: AppRadius.lg, opacity: 0.12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: Colors.white.withOpacity(0.78),
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 420;
+
+          final avatar = Container(
+            width: compact ? 58 : 70,
+            height: compact ? 58 : 70,
+            decoration: AppDecoration.glass(
+              radius: AppRadius.circular,
+              opacity: 0.16,
             ),
-          ),
+            child: Icon(
+              AppIcons.aiHealth,
+              color: AppColors.textWhite,
+              size: compact ? 28 : 34,
+            ),
+          );
 
-          const SizedBox(height: AppSpacing.xs),
+          final badge = _HeroBadge(
+            icon: AppIcons.shield,
+            label: 'Riêng tư & tôn trọng',
+          );
 
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.md,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                alignment: WrapAlignment.spaceBetween,
+                children: [
+                  avatar,
+                  badge,
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Text(
+                'Nami muốn hiểu bạn hơn một chút',
+                style: AppTextStyles.displaySmall.copyWith(
+                  color: AppColors.textWhite,
+                  fontWeight: FontWeight.w800,
+                  height: 1.08,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Những chia sẻ ở bước này giúp Nami chăm sóc bữa ăn, thói quen và lời nhắc của bạn tinh tế hơn. Bạn có thể chọn nhanh, bỏ qua điều chưa chắc, rồi chỉnh lại sau.',
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.textWhite.withOpacity(0.92),
+                  height: 1.65,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _HeroInfoWrap(completedFields: completedFields),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _HeroBadge extends StatelessWidget {
+  const _HeroBadge({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: AppDecoration.glass(
+        radius: AppRadius.circular,
+        opacity: 0.14,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.textWhite, size: 18),
+          const SizedBox(width: AppSpacing.xs),
           Text(
-            value,
-            style: AppTextStyles.heading3.copyWith(
-              color: Colors.white,
+            label,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.textWhite,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -457,45 +603,144 @@ class _HeroInfo extends StatelessWidget {
   }
 }
 
-class _AiStatusCard extends StatelessWidget {
+class _HeroInfoWrap extends StatelessWidget {
+  const _HeroInfoWrap({required this.completedFields});
+
   final int completedFields;
 
-  const _AiStatusCard({required this.completedFields});
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = AppSpacing.md;
+        final columns = constraints.maxWidth >= 520 ? 2 : 1;
+        final itemWidth = ((constraints.maxWidth - spacing * (columns - 1)) /
+                columns)
+            .clamp(150.0, 360.0)
+            .toDouble();
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            SizedBox(
+              width: itemWidth,
+              child: _HeroInfo(
+                icon: AppIcons.checkIn,
+                title: 'Nami đã hiểu',
+                value: '$completedFields nhóm thông tin',
+              ),
+            ),
+            SizedBox(
+              width: itemWidth,
+              child: const _HeroInfo(
+                icon: AppIcons.favorite,
+                title: 'Nhịp độ',
+                value: 'Nhẹ nhàng, không ép buộc',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _HeroInfo extends StatelessWidget {
+  const _HeroInfo({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String title;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: AppDecoration.glass(radius: AppRadius.xl, opacity: 0.7),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: AppDecoration.glass(
+        radius: AppRadius.lg,
+        opacity: 0.12,
+      ),
       child: Row(
         children: [
-          Container(
-            width: 68,
-            height: 68,
-            decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
-            child: const Icon(AppIcons.health, color: Colors.white, size: 30),
+          Icon(icon, color: AppColors.textWhite, size: 22),
+          const SizedBox(width: AppSpacing.sm),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textWhite.withOpacity(0.78),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  value,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.textWhite,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
 
+class _NamiStatusCard extends StatelessWidget {
+  const _NamiStatusCard({required this.completedFields});
+
+  final int completedFields;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasData = completedFields > 0;
+
+    return _SurfaceCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
+            child: const Icon(
+              AppIcons.ai,
+              color: AppColors.textWhite,
+              size: 28,
+            ),
+          ),
           const SizedBox(width: AppSpacing.md),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'AI Health Summary',
+                  hasData
+                      ? 'Nami đã bắt đầu ghi nhớ điều quan trọng'
+                      : 'Mình bắt đầu thật nhẹ thôi nhé',
                   style: AppTextStyles.heading4.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-
                 const SizedBox(height: AppSpacing.xs),
-
                 Text(
-                  completedFields == 0
-                      ? 'Bắt đầu bổ sung dữ liệu để BioAI tạo hồ sơ sức khỏe cho bạn.'
-                      : 'BioAI đang xây dựng phân tích dinh dưỡng & sức khỏe nâng cao.',
-                  style: AppTextStyles.bodyMedium,
+                  hasData
+                      ? 'Bạn đã chia sẻ $completedFields nhóm thông tin. Nami sẽ dùng chúng để gợi ý chăm sóc cá nhân hơn, không máy móc.'
+                      : 'Bạn có thể chọn nhanh bằng các thẻ gợi ý bên dưới. Điều nào chưa chắc thì mình để sau cũng được.',
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.6),
                 ),
               ],
             ),
@@ -507,41 +752,73 @@ class _AiStatusCard extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
   final String title;
   final String subtitle;
 
-  const _SectionHeader({required this.title, required this.subtitle});
-
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w700),
+        Container(
+          width: AppSpacing.touchTargetMin,
+          height: AppSpacing.touchTargetMin,
+          decoration: AppDecoration.card(
+            radius: AppRadius.lg,
+            border: Border.all(color: AppColors.border.withOpacity(0.72)),
+            shadows: AppShadows.xs,
+            gradient: AppGradients.surface,
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 24),
         ),
-
-        const SizedBox(height: AppSpacing.xs),
-
-        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.6)),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTextStyles.heading3.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                subtitle,
+                style: AppTextStyles.bodyMedium.copyWith(height: 1.6),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 }
 
 class _SurfaceCard extends StatelessWidget {
-  final Widget child;
+  const _SurfaceCard({
+    required this.child,
+    this.padding,
+  });
 
-  const _SurfaceCard({required this.child});
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      width: double.infinity,
+      padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
       decoration: AppDecoration.card(
         radius: AppRadius.xl,
-        border: Border.all(color: AppColors.border.withOpacity(0.6)),
+        border: Border.all(color: AppColors.border.withOpacity(0.72)),
         shadows: AppShadows.soft,
         gradient: AppGradients.surface,
       ),
@@ -551,30 +828,231 @@ class _SurfaceCard extends StatelessWidget {
 }
 
 class _FieldTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Widget child;
-
   const _FieldTile({
     required this.icon,
     required this.title,
+    required this.subtitle,
     required this.child,
   });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 420;
+
+        final iconBox = Container(
+          width: compact ? 48 : 54,
+          height: compact ? 48 : 54,
+          decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
+          child: Icon(
+            icon,
+            color: AppColors.textWhite,
+            size: compact ? 22 : 24,
+          ),
+        );
+
+        final content = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: AppTextStyles.labelLarge.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              subtitle,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            child,
+          ],
+        );
+
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              iconBox,
+              const SizedBox(height: AppSpacing.md),
+              content,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            iconBox,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(child: content),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _NamiChoiceField extends StatelessWidget {
+  const _NamiChoiceField({
+    required this.icon,
+    required this.label,
+    required this.hint,
+    required this.value,
+    required this.options,
+    required this.sheetTitle,
+    required this.sheetSubtitle,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String label;
+  final String hint;
+  final String value;
+  final List<_OptionItem> options;
+  final String sheetTitle;
+  final String sheetSubtitle;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedValues = _parseValues(value);
+    final hasValue = selectedValues.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.labelLarge.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            onTap: () => _openPicker(context),
+            child: AnimatedContainer(
+              duration: AppDuration.normal,
+              curve: AppAnimations.smoothCurve,
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: AppDecoration.card(
+                color: hasValue ? AppColors.primarySoft : AppColors.card,
+                radius: AppRadius.xl,
+                border: Border.all(
+                  color: hasValue
+                      ? AppColors.primary.withOpacity(0.42)
+                      : AppColors.border,
+                ),
+                shadows: hasValue ? AppShadows.primary : AppShadows.xs,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ChoiceFieldHeader(
+                    icon: icon,
+                    title: hasValue ? 'Nami đã ghi nhớ' : 'Chạm để chọn nhanh',
+                    subtitle: hasValue ? 'Bạn có thể sửa lại bất cứ lúc nào' : hint,
+                    selected: hasValue,
+                  ),
+                  if (hasValue) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: selectedValues.map((item) {
+                        return _SelectedPill(
+                          label: item,
+                          onDeleted: () {
+                            final nextValues = List<String>.from(selectedValues)
+                              ..remove(item);
+                            onChanged(nextValues.join(', '));
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openPicker(BuildContext context) async {
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return _ChoiceBottomSheet(
+          title: sheetTitle,
+          subtitle: sheetSubtitle,
+          currentValue: value,
+          options: options,
+        );
+      },
+    );
+
+    if (result != null) {
+      onChanged(result);
+    }
+  }
+}
+
+class _ChoiceFieldHeader extends StatelessWidget {
+  const _ChoiceFieldHeader({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 54,
-          height: 54,
-          decoration: AppDecoration.primaryGradient(radius: AppRadius.lg),
-          child: Icon(icon, color: Colors.white, size: 24),
+        AnimatedContainer(
+          duration: AppDuration.fast,
+          curve: AppAnimations.smoothCurve,
+          width: AppSpacing.touchTargetMin,
+          height: AppSpacing.touchTargetMin,
+          decoration: selected
+              ? AppDecoration.primaryGradient(radius: AppRadius.lg)
+              : AppDecoration.input(
+                  color: AppColors.inputBackground,
+                  radius: AppRadius.lg,
+                  borderColor: AppColors.border,
+                ),
+          child: Icon(
+            icon,
+            color: selected ? AppColors.textWhite : AppColors.primary,
+            size: 22,
+          ),
         ),
-
         const SizedBox(width: AppSpacing.md),
-
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,78 +1060,673 @@ class _FieldTile extends StatelessWidget {
               Text(
                 title,
                 style: AppTextStyles.labelLarge.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
                 ),
               ),
-
-              const SizedBox(height: AppSpacing.sm),
-
-              child,
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                subtitle,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.45,
+                ),
+              ),
             ],
           ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Icon(
+          AppIcons.expand,
+          color: selected ? AppColors.primary : AppColors.textHint,
         ),
       ],
     );
   }
 }
 
+class _ChoiceBottomSheet extends StatefulWidget {
+  const _ChoiceBottomSheet({
+    required this.title,
+    required this.subtitle,
+    required this.currentValue,
+    required this.options,
+  });
+
+  final String title;
+  final String subtitle;
+  final String currentValue;
+  final List<_OptionItem> options;
+
+  @override
+  State<_ChoiceBottomSheet> createState() => _ChoiceBottomSheetState();
+}
+
+class _ChoiceBottomSheetState extends State<_ChoiceBottomSheet> {
+  late final TextEditingController _customController;
+  late final Set<String> _selectedValues;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final currentValues = _parseValues(widget.currentValue);
+    final optionValues = widget.options.map((item) => item.value).toSet();
+
+    _selectedValues = currentValues
+        .where((item) => optionValues.contains(item))
+        .toSet();
+
+    final customValues = currentValues
+        .where((item) => !optionValues.contains(item))
+        .join(', ');
+
+    _customController = TextEditingController(text: customValues);
+  }
+
+  @override
+  void dispose() {
+    _customController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return FractionallySizedBox(
+      heightFactor: 0.9,
+      child: AnimatedPadding(
+        duration: AppDuration.fast,
+        curve: AppAnimations.smoothCurve,
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: Container(
+          decoration: AppDecoration.bottomSheet(),
+          child: Column(
+            children: [
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                width: 48,
+                height: 5,
+                decoration: AppDecoration.container(
+                  color: AppColors.border,
+                  radius: AppRadius.circular,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration:
+                          AppDecoration.primaryGradient(radius: AppRadius.lg),
+                      child: const Icon(
+                        AppIcons.ai,
+                        color: AppColors.textWhite,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.title,
+                            style: AppTextStyles.heading3.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            widget.subtitle,
+                            style:
+                                AppTextStyles.bodyMedium.copyWith(height: 1.55),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(AppIcons.close),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                  ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final columns = constraints.maxWidth >= 720
+                          ? 3
+                          : constraints.maxWidth >= 460
+                              ? 2
+                              : 1;
+                      const spacing = AppSpacing.sm;
+                      final itemWidth =
+                          ((constraints.maxWidth - spacing * (columns - 1)) /
+                                  columns)
+                              .clamp(150.0, 280.0)
+                              .toDouble();
+
+                      return Wrap(
+                        spacing: spacing,
+                        runSpacing: spacing,
+                        children: [
+                          for (final option in widget.options)
+                            SizedBox(
+                              width: itemWidth,
+                              child: _BottomSheetOptionTile(
+                                option: option,
+                                selected:
+                                    _selectedValues.contains(option.value),
+                                onTap: () => _toggleOption(option),
+                              ),
+                            ),
+                          SizedBox(
+                            width: constraints.maxWidth,
+                            child: _CustomInputBox(
+                              controller: _customController,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+              _BottomSheetActions(
+                hasSelection: _selectedValues.isNotEmpty ||
+                    _customController.text.trim().isNotEmpty,
+                onClear: () {
+                  setState(() {
+                    _selectedValues.clear();
+                    _customController.clear();
+                  });
+                },
+                onDone: () {
+                  Navigator.of(context).pop(_composeValue());
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _toggleOption(_OptionItem option) {
+    setState(() {
+      if (option.isExclusive) {
+        _selectedValues
+          ..clear()
+          ..add(option.value);
+        return;
+      }
+
+      final exclusiveValues = widget.options
+          .where((item) => item.isExclusive)
+          .map((item) => item.value)
+          .toSet();
+
+      _selectedValues.removeWhere(exclusiveValues.contains);
+
+      if (_selectedValues.contains(option.value)) {
+        _selectedValues.remove(option.value);
+      } else {
+        _selectedValues.add(option.value);
+      }
+    });
+  }
+
+  String _composeValue() {
+    final values = <String>[..._selectedValues];
+    final customText = _customController.text.trim();
+
+    if (customText.isNotEmpty) {
+      values.addAll(_parseValues(customText));
+    }
+
+    return values
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toSet()
+        .join(', ');
+  }
+}
+
+class _BottomSheetOptionTile extends StatelessWidget {
+  const _BottomSheetOptionTile({
+    required this.option,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _OptionItem option;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      scale: selected ? 0.98 : 1,
+      duration: AppDuration.tap,
+      curve: AppAnimations.smoothCurve,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          child: AnimatedContainer(
+            duration: AppDuration.fast,
+            curve: AppAnimations.smoothCurve,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: selected
+                ? AppDecoration.card(
+                    color: AppColors.primarySoft,
+                    radius: AppRadius.lg,
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.5),
+                      width: 1.4,
+                    ),
+                    shadows: AppShadows.primary,
+                  )
+                : AppDecoration.card(
+                    color: AppColors.card,
+                    radius: AppRadius.lg,
+                    border: Border.all(color: AppColors.border),
+                    shadows: AppShadows.xs,
+                  ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: AppSpacing.touchTargetMin,
+                  height: AppSpacing.touchTargetMin,
+                  decoration: selected
+                      ? AppDecoration.primaryGradient(radius: AppRadius.md)
+                      : AppDecoration.input(
+                          color: AppColors.inputBackground,
+                          radius: AppRadius.md,
+                          borderColor: AppColors.border,
+                        ),
+                  child: Icon(
+                    option.icon,
+                    color: selected ? AppColors.textWhite : AppColors.primary,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        option.title,
+                        style: AppTextStyles.labelLarge.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        option.subtitle,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Icon(
+                  selected ? AppIcons.success : AppIcons.add,
+                  color: selected ? AppColors.primary : AppColors.textHint,
+                  size: 22,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomInputBox extends StatelessWidget {
+  const _CustomInputBox({required this.controller});
+
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: AppDecoration.card(
+        color: AppColors.cardAlt,
+        radius: AppRadius.lg,
+        border: Border.all(color: AppColors.border),
+        shadows: AppShadows.xs,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(AppIcons.edit, color: AppColors.primary, size: 20),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                'Khác / Tự nhập',
+                style: AppTextStyles.labelLarge.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextField(
+            controller: controller,
+            minLines: 1,
+            maxLines: 3,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textPrimary,
+            ),
+            decoration: InputDecoration(
+              hintText:
+                  'Viết thêm điều Nami chưa liệt kê, cách nhau bằng dấu phẩy nếu có nhiều mục...',
+              prefixIcon: const Icon(AppIcons.edit),
+              filled: true,
+              fillColor: AppColors.card,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.input),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1.5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BottomSheetActions extends StatelessWidget {
+  const _BottomSheetActions({
+    required this.hasSelection,
+    required this.onClear,
+    required this.onDone,
+  });
+
+  final bool hasSelection;
+  final VoidCallback onClear;
+  final VoidCallback onDone;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        border: Border(
+          top: BorderSide(color: AppColors.border.withOpacity(0.72)),
+        ),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 420;
+
+          final clearButton = TextButton.icon(
+            onPressed: hasSelection ? onClear : null,
+            icon: const Icon(AppIcons.close),
+            label: const Text('Bỏ chọn'),
+          );
+
+          final doneButton = ElevatedButton.icon(
+            onPressed: onDone,
+            icon: const Icon(AppIcons.success),
+            label: const Text('Nami ghi nhớ'),
+          );
+
+          if (compact) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                doneButton,
+                const SizedBox(height: AppSpacing.sm),
+                clearButton,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              clearButton,
+              const Spacer(),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 180),
+                child: doneButton,
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SelectedPill extends StatelessWidget {
+  const _SelectedPill({
+    required this.label,
+    this.onDeleted,
+  });
+
+  final String label;
+  final VoidCallback? onDeleted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: AppDecoration.container(
+        color: AppColors.card,
+        radius: AppRadius.circular,
+        border: Border.all(color: AppColors.primary.withOpacity(0.28)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(AppIcons.success, size: 16, color: AppColors.primary),
+          const SizedBox(width: AppSpacing.xs),
+          Flexible(
+            child: Text(
+              label,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          if (onDeleted != null) ...[
+            const SizedBox(width: AppSpacing.xs),
+            GestureDetector(
+              onTap: onDeleted,
+              child: const Icon(
+                AppIcons.close,
+                size: 16,
+                color: AppColors.textHint,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CareNoteCard extends StatelessWidget {
+  const _CareNoteCard({required this.completedFields});
+
+  final int completedFields;
+
+  @override
+  Widget build(BuildContext context) {
+    final message = completedFields == 0
+        ? 'Bạn chưa cần điền hết ngay. Chỉ cần chia sẻ điều quan trọng nhất, Nami sẽ cùng bạn hoàn thiện dần.'
+        : 'Nami sẽ dùng những thông tin này để cá nhân hóa gợi ý. Khi có dấu hiệu bất thường, bạn vẫn nên ưu tiên lời khuyên từ bác sĩ.';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: AppDecoration.card(
+        color: AppColors.infoSoft,
+        radius: AppRadius.xl,
+        border: Border.all(color: AppColors.info.withOpacity(0.22)),
+        shadows: AppShadows.xs,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: AppSpacing.touchTargetMin,
+            height: AppSpacing.touchTargetMin,
+            decoration: AppDecoration.circle(
+              color: AppColors.card.withOpacity(0.82),
+            ),
+            child: const Icon(AppIcons.info, color: AppColors.info),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Một lời nhắc nhỏ từ Nami',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  message,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.6,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CommitmentCard extends StatelessWidget {
+  const _CommitmentCard({
+    required this.agreed,
+    required this.onChanged,
+  });
+
   final bool agreed;
   final ValueChanged<bool> onChanged;
-
-  const _CommitmentCard({required this.agreed, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: AppDuration.normal,
       curve: AppAnimations.smoothCurve,
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: agreed
           ? AppDecoration.primaryGradient(radius: AppRadius.xxl)
           : AppDecoration.card(
               radius: AppRadius.xxl,
               border: Border.all(color: AppColors.border),
               shadows: AppShadows.soft,
+              gradient: AppGradients.surface,
             ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final switchControl = Transform.scale(
-            scale: 1.05,
-            child: Switch(value: agreed, onChanged: onChanged),
+          final compact = constraints.maxWidth < 420;
+
+          final switchControl = Switch(
+            value: agreed,
+            onChanged: onChanged,
           );
 
           final textContent = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Đồng ý với điều khoản sử dụng',
+                agreed
+                    ? 'Cảm ơn bạn, Nami đã sẵn sàng đồng hành'
+                    : 'Cho phép Nami cá nhân hóa trải nghiệm nhé',
                 style: AppTextStyles.heading4.copyWith(
-                  color: agreed ? Colors.white : AppColors.textPrimary,
-                  fontWeight: FontWeight.w700,
+                  color: agreed ? AppColors.textWhite : AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-
               const SizedBox(height: AppSpacing.sm),
-
               Text(
-                'Tôi đã đọc, hiểu và đồng ý để BioAI sử dụng những thông tin tôi chia sẻ nhằm cá nhân hóa trải nghiệm chăm sóc sức khỏe.',
+                'Mình chỉ dùng thông tin bạn chia sẻ để tạo gợi ý chăm sóc phù hợp hơn. Bạn luôn có thể thay đổi lại sau.',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: agreed
-                      ? Colors.white.withOpacity(0.92)
+                      ? AppColors.textWhite.withOpacity(0.92)
                       : AppColors.textSecondary,
-                  height: 1.7,
+                  height: 1.65,
                 ),
               ),
             ],
           );
 
-          if (constraints.maxWidth < 320) {
+          if (compact) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 switchControl,
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 textContent,
               ],
             );
@@ -673,15 +1746,19 @@ class _CommitmentCard extends StatelessWidget {
   }
 }
 
-class _InsightCard extends StatelessWidget {
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.completedFields,
+    required this.agreed,
+  });
+
   final int completedFields;
   final bool agreed;
-
-  const _InsightCard({required this.completedFields, required this.agreed});
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
       child: Column(
@@ -694,35 +1771,32 @@ class _InsightCard extends StatelessWidget {
                 height: 58,
                 decoration: AppDecoration.glass(
                   radius: AppRadius.lg,
-                  opacity: 0.12,
+                  opacity: 0.14,
                 ),
                 child: const Icon(
-                  AppIcons.stress,
-                  color: Colors.white,
+                  AppIcons.favorite,
+                  color: AppColors.textWhite,
                   size: 28,
                 ),
               ),
-
               const SizedBox(width: AppSpacing.md),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'AI Insight',
+                      'Nami đã gần hiểu đủ để bắt đầu',
                       style: AppTextStyles.heading3.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                        color: AppColors.textWhite,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-
                     const SizedBox(height: AppSpacing.xxs),
-
                     Text(
-                      'Tổng quan hồ sơ BioAI',
+                      'Bước tiếp theo sẽ nhẹ nhàng hơn vì mình đã có ngữ cảnh về bạn.',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white.withOpacity(0.84),
+                        color: AppColors.textWhite.withOpacity(0.84),
+                        height: 1.5,
                       ),
                     ),
                   ],
@@ -730,29 +1804,10 @@ class _InsightCard extends StatelessWidget {
               ),
             ],
           ),
-
-          const SizedBox(height: AppSpacing.xl),
-
-          _InsightRow(
-            icon: AppIcons.checkIn,
-            title: 'Thông tin đã nhập',
-            value: '$completedFields mục',
-          ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          _InsightRow(
-            icon: AppIcons.success,
-            title: 'Cam kết sức khỏe',
-            value: agreed ? 'Đã đồng ý' : 'Chưa đồng ý',
-          ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          const _InsightRow(
-            icon: AppIcons.dashboard,
-            title: 'Trợ lý của bạn',
-            value: 'Đã sẵn sàng',
+          const SizedBox(height: AppSpacing.lg),
+          _SummaryRows(
+            completedFields: completedFields,
+            agreed: agreed,
           ),
         ],
       ),
@@ -760,48 +1815,105 @@ class _InsightCard extends StatelessWidget {
   }
 }
 
-class _InsightRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
+class _SummaryRows extends StatelessWidget {
+  const _SummaryRows({
+    required this.completedFields,
+    required this.agreed,
+  });
 
-  const _InsightRow({
+  final int completedFields;
+  final bool agreed;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = AppSpacing.sm;
+        final columns = constraints.maxWidth >= 620 ? 3 : 1;
+        final itemWidth = ((constraints.maxWidth - spacing * (columns - 1)) /
+                columns)
+            .clamp(150.0, 280.0)
+            .toDouble();
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            SizedBox(
+              width: itemWidth,
+              child: _SummaryItem(
+                icon: AppIcons.checkIn,
+                title: 'Đã chia sẻ',
+                value: '$completedFields mục',
+              ),
+            ),
+            SizedBox(
+              width: itemWidth,
+              child: _SummaryItem(
+                icon: AppIcons.shield,
+                title: 'Đồng ý',
+                value: agreed ? 'Đã xác nhận' : 'Chưa xác nhận',
+              ),
+            ),
+            SizedBox(
+              width: itemWidth,
+              child: const _SummaryItem(
+                icon: AppIcons.aiChat,
+                title: 'Trợ lý',
+                value: 'Nami sẵn sàng',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SummaryItem extends StatelessWidget {
+  const _SummaryItem({
     required this.icon,
     required this.title,
     required this.value,
   });
 
+  final IconData icon;
+  final String title;
+  final String value;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.md,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: AppDecoration.glass(
+        radius: AppRadius.lg,
+        opacity: 0.1,
       ),
-      decoration: AppDecoration.glass(radius: AppRadius.lg, opacity: 0.08),
       child: Row(
         children: [
-          Icon(icon, color: Colors.white, size: 20),
-
+          Icon(icon, color: AppColors.textWhite, size: 20),
           const SizedBox(width: AppSpacing.sm),
-
           Expanded(
-            child: Text(
-              title,
-              style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
-            ),
-          ),
-
-          Flexible(
-            child: Text(
-              value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.end,
-              style: AppTextStyles.labelLarge.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textWhite.withOpacity(0.74),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.textWhite,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -810,126 +1922,26 @@ class _InsightRow extends StatelessWidget {
   }
 }
 
-class _Appear extends StatefulWidget {
-  final Widget child;
-  final int delay;
-
-  const _Appear({required this.child, required this.delay});
-
-  @override
-  State<_Appear> createState() => _AppearState();
-}
-
-class _AppearState extends State<_Appear> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  late final Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: AppDuration.onboarding,
-    );
-
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: AppAnimations.smoothCurve,
-    );
-
-    Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AppAnimations.fadeSlide(animation: _animation, child: widget.child);
-  }
-}
-
-class _FloatingGlow extends StatelessWidget {
-  final double size;
-  final Color color;
-  final AnimationController controller;
-
-  const _FloatingGlow({
-    required this.size,
-    required this.color,
-    required this.controller,
+class _OptionItem {
+  const _OptionItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    this.isExclusive = false,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (_, child) {
-        return Transform.translate(
-          offset: Offset(
-            math.sin(controller.value * math.pi * 2) * 18,
-            math.cos(controller.value * math.pi * 2) * 18,
-          ),
-          child: child,
-        );
-      },
-      child: Container(
-        width: size,
-        height: size,
-        decoration: AppDecoration.circle(color: color),
-      ),
-    );
-  }
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String value;
+  final bool isExclusive;
 }
 
-class _BackgroundPainter extends CustomPainter {
-  final double animation;
-
-  const _BackgroundPainter({required this.animation});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-
-    final paint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          AppColors.background,
-          AppColors.primarySoft.withOpacity(0.7),
-          Colors.white,
-          AppColors.secondarySoft.withOpacity(0.45),
-        ],
-        transform: GradientRotation(animation * math.pi),
-      ).createShader(rect);
-
-    canvas.drawRect(rect, paint);
-
-    final linePaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.04)
-      ..strokeWidth = 1;
-
-    for (double x = 0; x < size.width; x += 42) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), linePaint);
-    }
-
-    for (double y = 0; y < size.height; y += 42) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), linePaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _BackgroundPainter oldDelegate) {
-    return oldDelegate.animation != animation;
-  }
+List<String> _parseValues(String value) {
+  return value
+      .split(RegExp(r'[,;]'))
+      .map((item) => item.trim())
+      .where((item) => item.isNotEmpty)
+      .toList();
 }
