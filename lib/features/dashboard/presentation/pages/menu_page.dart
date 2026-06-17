@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nano_app/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:nano_app/features/features_hub/presentation/pages/features_hub_page.dart';
 import 'package:nano_app/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/features/other/presentation/pages/other_page.dart';
@@ -30,7 +31,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   int _currentIndex = 0;
 
   final List<Widget> _pages = const [
-    LifestyleSchedulePage(),
+    DashboardPage(),//LifestyleSchedulePage(),
     FeaturesHubPage(),
     HealthInsightsView(),
     SettingsView(),
@@ -38,7 +39,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
 
   final List<_NavItemData> _items = const [
     _NavItemData(
-      label: 'Hôm nay',
+      label: 'Trang chủ',
       icon: Icons.home_rounded,
       activeIcon: Icons.home_filled,
       gradient: [Color(0xFF2563EB), Color(0xFF60A5FA)],
