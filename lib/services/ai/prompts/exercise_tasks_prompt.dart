@@ -14,7 +14,7 @@ class ExerciseTasksPrompt {
 
     return '''
 Ban la chuyen gia huan luyen suc khoe ca nhan.
-Viet hoan toan bang tieng Viet.
+Viet hoan toan bang tieng Viet có dấu.
 Tao lich bai tap the duc cho $days ngay, bat dau tu ${_dateKey(startDate)} den ${_dateKey(endDate)}.
 Moi ngay bat buoc co dung 2 bai tap van dong an toan, phu hop tinh trang suc khoe va muc do hoat dong.
 Tong so object bat buoc la $expectedCount.

@@ -17,7 +17,7 @@ class MealPlanPrompt {
 
     return '''
 Ban la chuyen gia dinh duong.
-Viet hoan toan bang tieng Viet.
+Viet hoan toan bang tieng Viet có dấu.
 Tao thuc don $days ngay, bat dau tu ${_dateKey(startDate)} den ${_dateKey(endDate)}.
 Moi ngay dung 5 bua, sap xep theo tung ngay va theo dung thu tu:
 - breakfast start_time 07:00 end_time 07:30 meal_order 1
