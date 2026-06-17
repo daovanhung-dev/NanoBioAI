@@ -16,7 +16,7 @@ class ResultStep extends StatefulWidget {
     super.key,
     this.healthScore = 82,
     this.userName = 'Bạn',
-    this.message = 'BioAI đã sẵn sàng đồng hành cùng bạn',
+    this.message = 'Hệ thống đã sẵn sàng đồng hành cùng bạn',
     this.onContinue,
     this.onRestart,
   });
@@ -72,8 +72,6 @@ class _ResultStepState extends State<ResultStep> with TickerProviderStateMixin {
     _scoreController.dispose();
     super.dispose();
   }
-
-  bool get _excellent => widget.healthScore >= 80;
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +223,7 @@ class _HeroSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.circular),
           ),
           child: Text(
-            'AI HEALTH ANALYSIS COMPLETED',
+            'PHÂN TÍCH SỨC KHỎE ĐÃ HOÀN TẤT',
             style: AppTextStyles.overline.copyWith(
               color: AppColors.success,
               fontWeight: FontWeight.w800,
@@ -254,7 +252,7 @@ class _HeroSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
 
         Text(
-          'Chúc mừng $userName! BioAI đã hoàn tất phân tích và cá nhân hóa hành trình chăm sóc sức khỏe cho bạn.',
+          'Chúc mừng $userName! Hệ thống đã hoàn tất phân tích và cá nhân hóa hành trình chăm sóc sức khỏe cho bạn.',
           textAlign: TextAlign.center,
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.textSecondary,
@@ -282,7 +280,7 @@ class _ScoreCard extends StatelessWidget {
           decoration: AppDecoration.base(
             gradient: AppGradients.glass,
             borderRadius: BorderRadius.circular(AppRadius.xxl),
-            border: Border.all(color: Colors.white.withOpacity(0.5)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
             shadows: AppShadows.soft,
           ),
           child: Column(
@@ -309,7 +307,7 @@ class _ScoreCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Health Score',
+                          'Điểm sức khỏe',
                           style: AppTextStyles.heading2.copyWith(
                             fontWeight: FontWeight.w800,
                           ),
@@ -318,7 +316,7 @@ class _ScoreCard extends StatelessWidget {
                         const SizedBox(height: AppSpacing.xs),
 
                         Text(
-                          'Chỉ số đánh giá sức khỏe toàn diện bởi AI',
+                          'Chỉ số đánh giá sức khỏe toàn diện bởi hệ thống thông minh',
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -349,7 +347,9 @@ class _ScoreCard extends StatelessWidget {
                             value: value / 100,
                             strokeWidth: 16,
                             strokeCap: StrokeCap.round,
-                            backgroundColor: AppColors.border.withOpacity(0.3),
+                            backgroundColor: AppColors.border.withValues(
+                              alpha: 0.3,
+                            ),
                             valueColor: const AlwaysStoppedAnimation(
                               AppColors.primary,
                             ),
@@ -360,7 +360,7 @@ class _ScoreCard extends StatelessWidget {
                           width: 188,
                           height: 188,
                           decoration: AppDecoration.base(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                             shadows: AppShadows.sm,
                           ),
@@ -414,7 +414,7 @@ class _ScoreCard extends StatelessWidget {
                   shadows: AppShadows.success,
                 ),
                 child: Text(
-                  'Realtime AI Monitoring Activated',
+                  'Theo dõi sức khỏe thời gian thực đã bật',
                   style: AppTextStyles.labelLarge.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -441,8 +441,8 @@ class _InsightPanel extends StatelessWidget {
     final String status = excellent ? 'Tình trạng rất tốt' : 'Sức khỏe ổn định';
 
     final String description = excellent
-        ? 'AI nhận thấy bạn đang duy trì trạng thái sức khỏe rất tích cực và ổn định.'
-        : 'BioAI đề xuất tiếp tục duy trì chế độ ăn uống và sinh hoạt lành mạnh hơn mỗi ngày.';
+        ? 'Hệ thống nhận thấy bạn đang duy trì trạng thái sức khỏe rất tích cực và ổn định.'
+        : 'Hệ thống đề xuất tiếp tục duy trì chế độ ăn uống và sinh hoạt lành mạnh hơn mỗi ngày.';
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -473,7 +473,7 @@ class _InsightPanel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'AI Insight',
+                      'Nhận định sức khỏe',
                       style: AppTextStyles.heading3.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -485,7 +485,7 @@ class _InsightPanel extends StatelessWidget {
                     Text(
                       'Phân tích sức khỏe thông minh',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white.withOpacity(0.82),
+                        color: Colors.white.withValues(alpha: 0.82),
                       ),
                     ),
                   ],
@@ -579,7 +579,7 @@ class _JourneyPanel extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
 
           Text(
-            'BioAI sẽ theo dõi, phân tích và đưa ra các gợi ý dinh dưỡng, giấc ngủ và sức khỏe phù hợp với cơ thể của bạn.',
+            'Hệ thống sẽ theo dõi, phân tích và đưa ra các gợi ý dinh dưỡng, giấc ngủ và sức khỏe phù hợp với cơ thể của bạn.',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
               color: AppColors.textSecondary,
@@ -614,7 +614,7 @@ class _ActivatedFeatures extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
 
           Text(
-            'Các hệ thống AI và tracking đã sẵn sàng hoạt động.',
+            'Các hệ thống phân tích và theo dõi đã sẵn sàng hoạt động.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -672,7 +672,7 @@ class _FeatureCard extends StatelessWidget {
       decoration: AppDecoration.container(
         color: AppColors.cardAlt,
         radius: AppRadius.xl,
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -910,7 +910,7 @@ class _FloatingGlow extends StatelessWidget {
           shape: BoxShape.circle,
           gradient: RadialGradient(
             colors: [
-              (gradient as LinearGradient).colors.first.withOpacity(0.16),
+              (gradient as LinearGradient).colors.first.withValues(alpha: 0.16),
               Colors.transparent,
             ],
           ),
@@ -936,8 +936,8 @@ class _BackgroundPainter extends CustomPainter {
         transform: GradientRotation(animation * math.pi * 2),
         colors: [
           AppColors.background,
-          AppColors.primarySoft.withOpacity(0.35),
-          AppColors.secondarySoft.withOpacity(0.25),
+          AppColors.primarySoft.withValues(alpha: 0.35),
+          AppColors.secondarySoft.withValues(alpha: 0.25),
           Colors.white,
         ],
       ).createShader(rect);
@@ -945,7 +945,7 @@ class _BackgroundPainter extends CustomPainter {
     canvas.drawRect(rect, background);
 
     final Paint grid = Paint()
-      ..color = AppColors.primary.withOpacity(0.035)
+      ..color = AppColors.primary.withValues(alpha: 0.035)
       ..strokeWidth = 1;
 
     for (double i = 0; i < size.width; i += 36) {

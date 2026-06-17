@@ -12,6 +12,7 @@ import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 
 import 'ai_json_parser.dart';
+import 'ai_exceptions.dart';
 import 'prompts/exercise_tasks_prompt.dart';
 import 'prompts/meal_plan_prompt.dart';
 
@@ -43,6 +44,7 @@ class AIService {
     int days = 7,
   }) async {
     int retry = 0;
+    var hasOverloadedError = false;
 
     while (retry < 3) {
       try {
@@ -62,8 +64,16 @@ class AIService {
         );
       } catch (e, stackTrace) {
         retry++;
+        hasOverloadedError =
+            hasOverloadedError || AIOverloadedException.matches(e);
         _logRetryError('AI MEAL GENERATE ERROR', e, stackTrace);
-        if (retry >= 3) return [];
+        if (retry >= 3) {
+          if (hasOverloadedError) {
+            throw const AIOverloadedException();
+          }
+
+          return [];
+        }
         await Future.delayed(Duration(seconds: retry * 2));
       }
     }
@@ -77,6 +87,7 @@ class AIService {
     int days = 7,
   }) async {
     int retry = 0;
+    var hasOverloadedError = false;
 
     while (retry < 3) {
       try {
@@ -96,8 +107,16 @@ class AIService {
         );
       } catch (e, stackTrace) {
         retry++;
+        hasOverloadedError =
+            hasOverloadedError || AIOverloadedException.matches(e);
         _logRetryError('AI EXERCISE GENERATE ERROR', e, stackTrace);
-        if (retry >= 3) return [];
+        if (retry >= 3) {
+          if (hasOverloadedError) {
+            throw const AIOverloadedException();
+          }
+
+          return [];
+        }
         await Future.delayed(Duration(seconds: retry * 2));
       }
     }

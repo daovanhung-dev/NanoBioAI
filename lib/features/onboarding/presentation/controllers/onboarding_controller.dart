@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/services/ai/ai_exceptions.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
 import '../../domain/repositories/onboarding_repository.dart';
@@ -531,10 +531,11 @@ class OnboardingController extends Notifier<OnboardingState> {
     } catch (e, st) {
       AppLogger.error(_tag, 'Save onboarding failed', e, st);
 
-      state = state.copyWith(
-        isSaving: false,
-        savedLog: 'Mình chưa thể lưu hồ sơ lúc này: $e',
-      );
+      final message = e is AIOverloadedException
+          ? AIOverloadedException.userMessage
+          : 'Mình chưa thể lưu hồ sơ lúc này: $e';
+
+      state = state.copyWith(isSaving: false, savedLog: message);
 
       AppLogger.separator(_tag);
       AppLogger.error(_tag, 'Onboarding Completed With Error', e);

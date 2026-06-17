@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/router/router.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/services/ai/ai_exceptions.dart';
 import 'package:nano_app/shared/widgets/loading_genAI.dart';
 
 import '../../providers/onboarding_provider.dart';
@@ -467,15 +468,15 @@ class ReviewStep extends ConsumerWidget {
                         if (context.mounted) {
                           Navigator.pop(context);
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                e is StateError
-                                    ? e.message.toString()
-                                    : 'Mình chưa thể hoàn tất lúc này. Bạn thử lại giúp mình nhé.',
-                              ),
-                            ),
-                          );
+                          final message = e is AIOverloadedException
+                              ? AIOverloadedException.userMessage
+                              : e is StateError
+                              ? e.message.toString()
+                              : 'Mình chưa thể hoàn tất lúc này. Bạn thử lại giúp mình nhé.';
+
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(message)));
                         }
                       }
                     },

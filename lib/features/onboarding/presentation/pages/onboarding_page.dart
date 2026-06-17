@@ -22,19 +22,26 @@ class OnboardingPage extends ConsumerWidget {
 
     AppLogger.info(_tag, 'Rendering step ${state.currentStep + 1}/7');
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 260),
-        child: switch (state.currentStep) {
-          0 => const WelcomeStep(),
-          1 => const BasicInfoStep(),
-          2 => const GoalsStep(),
-          3 => const ConditionsStep(),
-          4 => const LifestyleStep(),
-          5 => const ExtrasStep(),
-          _ => const ReviewStep(),
-        },
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop || state.currentStep <= 0) return;
+        ref.read(onboardingProvider.notifier).previousStep();
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 260),
+          child: switch (state.currentStep) {
+            0 => const WelcomeStep(),
+            1 => const BasicInfoStep(),
+            2 => const GoalsStep(),
+            3 => const ConditionsStep(),
+            4 => const LifestyleStep(),
+            5 => const ExtrasStep(),
+            _ => const ReviewStep(),
+          },
+        ),
       ),
     );
   }

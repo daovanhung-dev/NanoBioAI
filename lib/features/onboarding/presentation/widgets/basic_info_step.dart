@@ -92,7 +92,7 @@ class _BasicInfoStepState extends ConsumerState<BasicInfoStep>
               ],
               SafeArea(
                 child: OnboardingStepShell(
-                  stepIndex: 2,
+                  stepIndex: 1,
                   title: '',
                   subtitle: '',
                   onBack: controller.previousStep,
@@ -195,7 +195,7 @@ class _ProfileForm extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionHeader(
-          eyebrow: 'Bước 3',
+          eyebrow: 'Bước 2',
           title: 'Nami muốn hiểu bạn hơn một chút',
           subtitle:
               'Bạn chỉ cần chọn hoặc nhập nhanh vài thông tin cơ bản. Nami sẽ dùng những dữ liệu này để gợi ý chăm sóc sức khỏe gần gũi và vừa vặn hơn.',
