@@ -5,6 +5,7 @@ class NotificationActionIds {
 }
 
 class ReminderSourceTypes {
+  static const lifestyleScheduleItem = 'lifestyle_schedule_item';
   static const meal = 'meal';
   static const dailyTask = 'daily_task';
 }

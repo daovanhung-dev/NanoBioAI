@@ -30,6 +30,10 @@ class MealPlansTable {
 
   meal_order INTEGER,
 
+  start_time TEXT,
+
+  end_time TEXT,
+
   cooking_instructions TEXT,
 
   is_completed INTEGER,

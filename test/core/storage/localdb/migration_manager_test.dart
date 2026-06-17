@@ -76,4 +76,94 @@ void main() {
     expect(indexNames, contains('idx_notifications_source'));
     expect(indexNames, contains('idx_notifications_notification_id'));
   });
+
+  test(
+    'migration v5 creates lifestyle schedule table and indexes once',
+    () async {
+      await MigrationManager.runMigrations(db, 4, 5);
+      await MigrationManager.runMigrations(db, 4, 5);
+
+      final tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type = 'table'",
+      );
+      final tableNames = tables.map((table) => table['name']).toList();
+
+      expect(tableNames, contains('lifestyle_schedule_items'));
+
+      final columns = await db.rawQuery(
+        'PRAGMA table_info(lifestyle_schedule_items)',
+      );
+      final names = columns.map((column) => column['name']).toList();
+
+      const expectedColumns = [
+        'id',
+        'user_id',
+        'schedule_date',
+        'start_time',
+        'end_time',
+        'title',
+        'description',
+        'category',
+        'source_type',
+        'source_id',
+        'target_value',
+        'current_value',
+        'unit',
+        'is_completed',
+        'sort_order',
+        'ai_generated',
+        'encouragement',
+        'created_at',
+        'updated_at',
+      ];
+
+      for (final columnName in expectedColumns) {
+        expect(names, contains(columnName));
+        expect(names.where((name) => name == columnName), hasLength(1));
+      }
+
+      final indexes = await db.rawQuery(
+        'PRAGMA index_list(lifestyle_schedule_items)',
+      );
+      final indexNames = indexes.map((index) => index['name']).toList();
+
+      expect(indexNames, contains('idx_lifestyle_schedule_user_date'));
+      expect(indexNames, contains('idx_lifestyle_schedule_source'));
+    },
+  );
+
+  test('migration v6 adds meal times and daily score once', () async {
+    await db.execute('''
+      CREATE TABLE meal_plans (
+        id TEXT PRIMARY KEY,
+        meal_name TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE health_tracking_logs (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        log_date TEXT
+      )
+    ''');
+
+    await MigrationManager.runMigrations(db, 5, 6);
+    await MigrationManager.runMigrations(db, 5, 6);
+
+    final mealColumns = await db.rawQuery('PRAGMA table_info(meal_plans)');
+    final mealNames = mealColumns.map((column) => column['name']).toList();
+
+    expect(mealNames, contains('start_time'));
+    expect(mealNames, contains('end_time'));
+    expect(mealNames.where((name) => name == 'start_time'), hasLength(1));
+    expect(mealNames.where((name) => name == 'end_time'), hasLength(1));
+
+    final logColumns = await db.rawQuery(
+      'PRAGMA table_info(health_tracking_logs)',
+    );
+    final logNames = logColumns.map((column) => column['name']).toList();
+
+    expect(logNames, contains('daily_score'));
+    expect(logNames.where((name) => name == 'daily_score'), hasLength(1));
+  });
 }

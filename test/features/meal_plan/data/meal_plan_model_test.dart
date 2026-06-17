@@ -17,6 +17,8 @@ void main() {
       'fiber': 6,
       'water_ml': 300,
       'meal_order': 1,
+      'start_time': '07:00',
+      'end_time': '07:30',
       'cooking_instructions': 'Cook oats. Add fruit.',
       'is_completed': 0,
       'ai_generated': 1,
@@ -27,6 +29,10 @@ void main() {
     final model = MealPlanModel.fromJson(json);
 
     expect(model.cookingInstructions, 'Cook oats. Add fruit.');
+    expect(model.startTime, '07:00');
+    expect(model.endTime, '07:30');
+    expect(model.toMap()['start_time'], '07:00');
+    expect(model.toJson()['end_time'], '07:30');
     expect(model.toMap()['cooking_instructions'], 'Cook oats. Add fruit.');
     expect(model.toJson()['cooking_instructions'], 'Cook oats. Add fruit.');
     expect(model.toEntity().cookingInstructions, 'Cook oats. Add fruit.');
@@ -58,6 +64,8 @@ void main() {
       final model = MealPlanModel.fromMap(map);
 
       expect(model.cookingInstructions, '');
+      expect(model.startTime, '07:00');
+      expect(model.endTime, '07:30');
     },
   );
 }

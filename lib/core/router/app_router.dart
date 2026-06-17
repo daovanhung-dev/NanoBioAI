@@ -4,6 +4,7 @@ import 'package:nano_app/features/auth/auth.dart';
 import 'package:nano_app/features/dashboard/dashboard.dart';
 import 'package:nano_app/features/dashboard/presentation/pages/menu_page.dart';
 import 'package:nano_app/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart';
+import 'package:nano_app/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/features/meal_plan/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/features/onboarding/onboarding.dart';
 import 'package:nano_app/features/splash/splash.dart';
@@ -72,6 +73,13 @@ final appRouter = GoRouter(
       path: RoutePaths.healthTracking,
       name: RoutePaths.healthTracking,
       builder: (context, state) => const DailyHealthTrackingPage(),
+    ),
+
+    /// Lifestyle Schedule
+    GoRoute(
+      path: RoutePaths.lifestyleSchedule,
+      name: RoutePaths.lifestyleSchedule,
+      builder: (context, state) => const LifestyleSchedulePage(),
     ),
 
     /// AI Chat

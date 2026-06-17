@@ -12,6 +12,8 @@ class MealPlanEntity {
   final double fiber;
   final int waterMl;
   final int mealOrder;
+  final String startTime;
+  final String endTime;
   final String cookingInstructions;
   final bool isCompleted;
   final bool aiGenerated;
@@ -32,6 +34,8 @@ class MealPlanEntity {
     required this.fiber,
     required this.waterMl,
     required this.mealOrder,
+    this.startTime = '',
+    this.endTime = '',
     this.cookingInstructions = '',
     required this.isCompleted,
     required this.aiGenerated,
@@ -53,6 +57,8 @@ class MealPlanEntity {
     double? fiber,
     int? waterMl,
     int? mealOrder,
+    String? startTime,
+    String? endTime,
     String? cookingInstructions,
     bool? isCompleted,
     bool? aiGenerated,
@@ -73,6 +79,8 @@ class MealPlanEntity {
       fiber: fiber ?? this.fiber,
       waterMl: waterMl ?? this.waterMl,
       mealOrder: mealOrder ?? this.mealOrder,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
       cookingInstructions: cookingInstructions ?? this.cookingInstructions,
       isCompleted: isCompleted ?? this.isCompleted,
       aiGenerated: aiGenerated ?? this.aiGenerated,

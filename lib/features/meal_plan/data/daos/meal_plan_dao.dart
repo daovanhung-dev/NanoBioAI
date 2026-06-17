@@ -46,7 +46,10 @@ class MealPlansDao {
   // =========================================================
 
   Future<List<MealPlanModel>> getAll() async {
-    final maps = await db.query('meal_plans', orderBy: 'plan_date ASC');
+    final maps = await db.query(
+      'meal_plans',
+      orderBy: 'plan_date ASC, meal_order ASC',
+    );
 
     return maps.map((map) {
       return MealPlanModel.fromMap(map);
@@ -77,7 +80,7 @@ class MealPlansDao {
 
       whereArgs: [userId],
 
-      orderBy: 'plan_date ASC',
+      orderBy: 'plan_date ASC, meal_order ASC',
     );
 
     return maps.map((map) {

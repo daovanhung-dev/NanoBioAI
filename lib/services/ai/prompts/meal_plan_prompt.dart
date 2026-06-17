@@ -1,29 +1,29 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
 
-final nutritionPromptProvider = Provider<NutritionPrompt>((ref) {
-  return NutritionPrompt();
-});
+class MealPlanPrompt {
+  const MealPlanPrompt._();
 
-class NutritionPrompt {
-  static String _clean(List<String> items) =>
-      items.where((e) => e.trim().isNotEmpty).join(', ');
-
-  static String generateMealPlan({required HealthDataInterface healthData}) {
+  static String generate({required HealthDataInterface healthData}) {
     final goals = _clean(healthData.goals);
     final conditions = _clean(healthData.conditions);
     final habits = _clean(healthData.habits);
 
     return '''
-Bạn là chuyên gia dinh dưỡng.
-Viết hoàn toàn bằng tiếng Việt.
-Tạo thực đơn 7 ngày, bắt đầu từ ngày mai.
-Mỗi ngày 3 bữa: breakfast, lunch, dinner.
-Trả về DUY NHẤT JSON hợp lệ, không markdown, không giải thích, không text thừa.
-Không thêm key ngoài schema.
-Giá trị số phải là number, không phải string.
-Ngày theo định dạng YYYY-MM-DD.
-
+Ban la chuyen gia dinh duong.
+Viet hoan toan bang tieng Viet.
+Tao thuc don 7 ngay, bat dau tu ngay mai.
+Moi ngay dung 5 bua:
+- breakfast start_time 07:00 end_time 07:30 meal_order 1
+- morning_snack start_time 09:30 end_time 09:45 meal_order 2
+- lunch start_time 12:00 end_time 12:45 meal_order 3
+- afternoon_snack start_time 15:30 end_time 15:45 meal_order 4
+- dinner start_time 18:30 end_time 19:15 meal_order 5
+Tong so object bat buoc la 35.
+Tra ve DUY NHAT JSON hop le, khong markdown, khong giai thich, khong text thua.
+Khong them key ngoai schema.
+Gia tri so phai la number, khong phai string.
+Ngay theo dinh dang YYYY-MM-DD.
+Gio theo dinh dang HH:mm local time, dung dung cac moc gio theo meal_type.
 Truong cooking_instructions la chuoi tieng Viet ngan, gom 2-4 buoc che bien.
 
 Schema:
@@ -33,6 +33,8 @@ Schema:
     "user_id": "1",
     "plan_date": "2026-05-24",
     "meal_type": "breakfast",
+    "start_time": "07:00",
+    "end_time": "07:30",
     "meal_name": "string",
     "description": "string",
     "calories": 350,
@@ -50,7 +52,7 @@ Schema:
   }
 ]
 
-Dữ liệu người dùng:
+Du lieu nguoi dung:
 name: ${healthData.fullName}
 bmi: ${healthData.bmi}
 goals: ${goals.isEmpty ? 'none' : goals}
@@ -62,4 +64,7 @@ water: ${healthData.waterPerDay}
 concern: ${healthData.concernText}
 ''';
   }
+
+  static String _clean(List<String> items) =>
+      items.where((item) => item.trim().isNotEmpty).join(', ');
 }

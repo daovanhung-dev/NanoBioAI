@@ -32,8 +32,8 @@ class DashboardController extends AsyncNotifier<void> {
     );
     AppLogger.info(_tag, 'Generated ${mealPlan.length} meal plan records');
 
-    if (requireComplete && mealPlan.length != 21) {
-      throw StateError('Expected 21 meal plan records, got ${mealPlan.length}');
+    if (requireComplete && mealPlan.length != 35) {
+      throw StateError('Expected 35 meal plan records, got ${mealPlan.length}');
     }
 
     await repository.saveMealPlan(mealPlan);

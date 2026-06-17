@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../tables/daily_health_tasks_table.dart';
+import '../tables/lifestyle_schedule_items_table.dart';
 
 class MigrationManager {
   static Future<void> runMigrations(
@@ -16,6 +17,12 @@ class MigrationManager {
     }
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 4)) {
       await _migrateToV4(db);
+    }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 5)) {
+      await _migrateToV5(db);
+    }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 6)) {
+      await _migrateToV6(db);
     }
   }
 
@@ -113,6 +120,33 @@ class MigrationManager {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_notifications_notification_id '
       'ON notifications(notification_id)',
+    );
+  }
+
+  static Future<void> _migrateToV5(Database db) async {
+    await db.execute(LifestyleScheduleItemsTable.createTable);
+    await db.execute(LifestyleScheduleItemsTable.createDateIndex);
+    await db.execute(LifestyleScheduleItemsTable.createSourceIndex);
+  }
+
+  static Future<void> _migrateToV6(Database db) async {
+    await _addColumnIfMissing(
+      db,
+      tableName: 'meal_plans',
+      columnName: 'start_time',
+      definition: 'TEXT',
+    );
+    await _addColumnIfMissing(
+      db,
+      tableName: 'meal_plans',
+      columnName: 'end_time',
+      definition: 'TEXT',
+    );
+    await _addColumnIfMissing(
+      db,
+      tableName: 'health_tracking_logs',
+      columnName: 'daily_score',
+      definition: 'INTEGER',
     );
   }
 

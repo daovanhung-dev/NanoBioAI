@@ -705,8 +705,12 @@ class _MealPlanCardState extends State<MealPlanCard> {
     switch (type.toLowerCase().trim()) {
       case 'breakfast':
         return 'Bữa sáng';
+      case 'morning_snack':
+        return 'Bua phu sang';
       case 'lunch':
         return 'Bữa trưa';
+      case 'afternoon_snack':
+        return 'Bua phu chieu';
       case 'dinner':
         return 'Bữa tối';
       case 'snack':
@@ -727,12 +731,23 @@ class _MealPlanCardState extends State<MealPlanCard> {
     }
   }
 
-  static String _timeLabel(String type, int order) {
+  static String _timeLabel(MealPlanEntity meal) {
+    if (meal.startTime.isNotEmpty && meal.endTime.isNotEmpty) {
+      return '${meal.startTime} - ${meal.endTime}';
+    }
+    if (meal.startTime.isNotEmpty) return meal.startTime;
+
+    final type = meal.mealType;
+    final order = meal.mealOrder;
     switch (type.toLowerCase().trim()) {
       case 'breakfast':
         return '06:30 – 08:00';
+      case 'morning_snack':
+        return '09:30 - 09:45';
       case 'lunch':
         return '11:30 – 13:00';
+      case 'afternoon_snack':
+        return '15:30 - 15:45';
       case 'dinner':
         return '18:00 – 19:30';
       case 'snack':
@@ -755,8 +770,12 @@ class _MealPlanCardState extends State<MealPlanCard> {
     switch (type.toLowerCase().trim()) {
       case 'breakfast':
         return const Color(0xFFF59E0B); // amber
+      case 'morning_snack':
+        return const Color(0xFFEC4899); // pink
       case 'lunch':
         return const Color(0xFF10B981); // emerald
+      case 'afternoon_snack':
+        return const Color(0xFF06B6D4); // cyan
       case 'dinner':
         return const Color(0xFF6366F1); // indigo
       case 'snack':
@@ -779,8 +798,12 @@ class _MealPlanCardState extends State<MealPlanCard> {
     switch (type.toLowerCase().trim()) {
       case 'breakfast':
         return Icons.wb_sunny_rounded;
+      case 'morning_snack':
+        return Icons.cookie_rounded;
       case 'lunch':
         return Icons.lunch_dining_rounded;
+      case 'afternoon_snack':
+        return Icons.local_cafe_rounded;
       case 'dinner':
         return Icons.dinner_dining_rounded;
       case 'snack':
@@ -795,7 +818,7 @@ class _MealPlanCardState extends State<MealPlanCard> {
     final ui = widget.ui;
     final meal = widget.meal;
     final label = _mealLabel(meal.mealType, meal.mealOrder);
-    final time = _timeLabel(meal.mealType, meal.mealOrder);
+    final time = _timeLabel(meal);
     final accent = _accentColor(meal.mealType, meal.mealOrder);
     final icon = _mealIcon(meal.mealType);
 

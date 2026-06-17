@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app/app.dart';
 import 'features/daily_health_tracking/providers/daily_health_tracking_provider.dart';
 import 'features/dashboard/presentation/controllers/dashboard_controller.dart';
+import 'features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart';
+import 'features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 import 'features/onboarding/providers/onboarding_completion_provider.dart';
 import 'services/ai/ai_service.dart';
 
@@ -35,14 +37,26 @@ Future<void> main() async {
             final profile = await dailyDatasource.fetchLatestProfile();
             final now = DateTime.now();
             final startDate = DateTime(now.year, now.month, now.day + 1);
-            final tasks = await ref
-                .read(aiServiceProvider)
-                .generateDailyHealthTasks(
-                  profile: profile,
-                  startDate: startDate,
-                );
-            await dailyDatasource.seedGeneratedTasks(
-              tasks,
+            final aiService = ref.read(aiServiceProvider);
+            final exercises = await aiService.generateExerciseTasks(
+              profile: profile,
+              startDate: startDate,
+            );
+
+            final scheduleDatasource = ref.read(
+              lifestyleScheduleLocalDatasourceProvider,
+            );
+            final meals = await scheduleDatasource
+                .getMealPlansForScheduleSeed();
+            final schedule = const LifestyleScheduleTimelineBuilder().generate(
+              profile: profile,
+              meals: meals,
+              exercises: exercises,
+              startDate: startDate,
+              createdAt: DateTime.now().toIso8601String(),
+            );
+            await scheduleDatasource.seedGeneratedSchedule(
+              schedule,
               requireComplete: true,
               startDate: startDate,
             );

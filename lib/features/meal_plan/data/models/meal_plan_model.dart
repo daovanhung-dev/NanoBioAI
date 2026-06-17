@@ -27,6 +27,10 @@ class MealPlanModel {
 
   final int mealOrder;
 
+  final String startTime;
+
+  final String endTime;
+
   final String cookingInstructions;
 
   final bool isCompleted;
@@ -51,6 +55,8 @@ class MealPlanModel {
     required this.fiber,
     required this.waterMl,
     required this.mealOrder,
+    this.startTime = '',
+    this.endTime = '',
     this.cookingInstructions = '',
     required this.isCompleted,
     required this.aiGenerated,
@@ -73,6 +79,14 @@ class MealPlanModel {
       fiber: (map['fiber'] as num).toDouble(),
       waterMl: map['water_ml'],
       mealOrder: map['meal_order'],
+      startTime: _readTime(
+        map['start_time'],
+        fallback: _defaultStartTime(map['meal_type']?.toString() ?? ''),
+      ),
+      endTime: _readTime(
+        map['end_time'],
+        fallback: _defaultEndTime(map['meal_type']?.toString() ?? ''),
+      ),
       cookingInstructions: map['cooking_instructions']?.toString() ?? '',
       isCompleted: map['is_completed'] == 1,
       aiGenerated: map['ai_generated'] == 1,
@@ -96,6 +110,14 @@ class MealPlanModel {
       fiber: (json['fiber'] as num).toDouble(),
       waterMl: json['water_ml'],
       mealOrder: json['meal_order'],
+      startTime: _readTime(
+        json['start_time'],
+        fallback: _defaultStartTime(json['meal_type']?.toString() ?? ''),
+      ),
+      endTime: _readTime(
+        json['end_time'],
+        fallback: _defaultEndTime(json['meal_type']?.toString() ?? ''),
+      ),
       cookingInstructions: json['cooking_instructions']?.toString() ?? '',
       isCompleted: json['is_completed'] == true || json['is_completed'] == 1,
       aiGenerated: json['ai_generated'] == true || json['ai_generated'] == 1,
@@ -119,6 +141,8 @@ class MealPlanModel {
       'fiber': fiber,
       'water_ml': waterMl,
       'meal_order': mealOrder,
+      'start_time': startTime,
+      'end_time': endTime,
       'cooking_instructions': cookingInstructions,
       'is_completed': isCompleted ? 1 : 0,
       'ai_generated': aiGenerated ? 1 : 0,
@@ -142,6 +166,8 @@ class MealPlanModel {
       'fiber': fiber,
       'water_ml': waterMl,
       'meal_order': mealOrder,
+      'start_time': startTime,
+      'end_time': endTime,
       'cooking_instructions': cookingInstructions,
       'is_completed': isCompleted,
       'ai_generated': aiGenerated,
@@ -165,6 +191,8 @@ class MealPlanModel {
       fiber: fiber,
       waterMl: waterMl,
       mealOrder: mealOrder,
+      startTime: startTime,
+      endTime: endTime,
       cookingInstructions: cookingInstructions,
       isCompleted: isCompleted,
       aiGenerated: aiGenerated,
@@ -188,6 +216,8 @@ class MealPlanModel {
       fiber: entity.fiber,
       waterMl: entity.waterMl,
       mealOrder: entity.mealOrder,
+      startTime: entity.startTime,
+      endTime: entity.endTime,
       cookingInstructions: entity.cookingInstructions,
       isCompleted: entity.isCompleted,
       aiGenerated: entity.aiGenerated,
@@ -210,6 +240,8 @@ class MealPlanModel {
     double? fiber,
     int? waterMl,
     int? mealOrder,
+    String? startTime,
+    String? endTime,
     String? cookingInstructions,
     bool? isCompleted,
     bool? aiGenerated,
@@ -230,11 +262,53 @@ class MealPlanModel {
       fiber: fiber ?? this.fiber,
       waterMl: waterMl ?? this.waterMl,
       mealOrder: mealOrder ?? this.mealOrder,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
       cookingInstructions: cookingInstructions ?? this.cookingInstructions,
       isCompleted: isCompleted ?? this.isCompleted,
       aiGenerated: aiGenerated ?? this.aiGenerated,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
+  }
+
+  static String _readTime(Object? value, {required String fallback}) {
+    final text = value?.toString().trim() ?? '';
+    if (RegExp(r'^\d{2}:\d{2}$').hasMatch(text)) return text;
+    return fallback;
+  }
+
+  static String _defaultStartTime(String mealType) {
+    switch (mealType.trim().toLowerCase()) {
+      case 'breakfast':
+        return '07:00';
+      case 'morning_snack':
+        return '09:30';
+      case 'lunch':
+        return '12:00';
+      case 'afternoon_snack':
+        return '15:30';
+      case 'dinner':
+        return '18:30';
+      default:
+        return '';
+    }
+  }
+
+  static String _defaultEndTime(String mealType) {
+    switch (mealType.trim().toLowerCase()) {
+      case 'breakfast':
+        return '07:30';
+      case 'morning_snack':
+        return '09:45';
+      case 'lunch':
+        return '12:45';
+      case 'afternoon_snack':
+        return '15:45';
+      case 'dinner':
+        return '19:15';
+      default:
+        return '';
+    }
   }
 }

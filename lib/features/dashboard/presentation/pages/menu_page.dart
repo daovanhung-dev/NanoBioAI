@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nano_app/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart';
-import 'package:nano_app/features/meal_plan/presentation/pages/meal_plan_page.dart';
+import 'package:nano_app/features/features_hub/presentation/pages/features_hub_page.dart';
+import 'package:nano_app/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/features/other/presentation/pages/other_page.dart';
 import 'package:nano_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:nano_app/shared/widgets/ai_chat_fab.dart';
@@ -30,8 +30,8 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   int _currentIndex = 0;
 
   final List<Widget> _pages = const [
-    DailyHealthTrackingPage(),
-    MealPlanPage(),
+    LifestyleSchedulePage(),
+    FeaturesHubPage(),
     HealthInsightsView(),
     SettingsView(),
   ];
@@ -44,9 +44,9 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       gradient: [Color(0xFF2563EB), Color(0xFF60A5FA)],
     ),
     _NavItemData(
-      label: 'Ăn gì',
-      icon: Icons.restaurant_menu_rounded,
-      activeIcon: Icons.restaurant_rounded,
+      label: 'Tính năng',
+      icon: Icons.widgets_rounded,
+      activeIcon: Icons.dashboard_customize_rounded,
       gradient: [Color(0xFF06B6D4), Color(0xFF22D3EE)],
     ),
     _NavItemData(
