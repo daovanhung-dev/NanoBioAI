@@ -88,199 +88,197 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
         ),
 
         Positioned.fill(
-          child: SafeArea(
-            child: OnboardingStepShell(
-              stepIndex: 5,
-              title: '',
-              subtitle: '',
-              onBack: controller.previousStep,
-              onNext: () {
-                if (!state.agreed) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Bạn cần đồng ý với điều khoản sử dụng trước khi chúng ta tiếp tục nhé.',
-                      ),
+          child: OnboardingStepShell(
+            stepIndex: 5,
+            title: '',
+            subtitle: '',
+            isScrollable: false,
+            onBack: controller.previousStep,
+            onNext: () {
+              if (!state.agreed) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Bạn cần đồng ý với điều khoản sử dụng trước khi chúng ta tiếp tục nhé.',
                     ),
-                  );
-                  return;
-                }
-                controller.nextStep();
-              },
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(
-                  left: AppSpacing.pagePadding,
-                  right: AppSpacing.pagePadding,
-                  bottom: AppSpacing.xxxl,
-                  top: AppSpacing.sm,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _Appear(
-                      delay: 0,
-                      child: _HeroSection(
-                        progress: progress,
-                        completedFields: completedFields,
-                      ),
+                  ),
+                );
+                return;
+              }
+              controller.nextStep();
+            },
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(
+                left: AppSpacing.pagePadding,
+                right: AppSpacing.pagePadding,
+                bottom: AppSpacing.xxxl,
+                top: AppSpacing.sm,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Appear(
+                    delay: 0,
+                    child: _HeroSection(
+                      progress: progress,
+                      completedFields: completedFields,
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    _Appear(
-                      delay: 80,
-                      child: _AiStatusCard(completedFields: completedFields),
-                    ),
+                  _Appear(
+                    delay: 80,
+                    child: _AiStatusCard(completedFields: completedFields),
+                  ),
 
-                    const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    const _SectionHeader(
-                      title: 'Có món nào bạn cần tránh không?',
-                      subtitle:
-                          'Bạn cứ chia sẻ thật kỹ, mình sẽ ghi nhớ để gợi ý món ăn an toàn hơn.',
-                    ),
+                  const _SectionHeader(
+                    title: 'Có món nào bạn cần tránh không?',
+                    subtitle:
+                        'Bạn cứ chia sẻ thật kỹ, mình sẽ ghi nhớ để gợi ý món ăn an toàn hơn.',
+                  ),
 
-                    const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.lg),
 
-                    _Appear(
-                      delay: 140,
-                      child: _SurfaceCard(
-                        child: Column(
-                          children: [
-                            _FieldTile(
-                              icon: AppIcons.warning,
-                              title: 'Dị ứng / thực phẩm cần tránh',
-                              child: OnboardingTextField(
-                                label: 'Thông tin dị ứng',
-                                hint:
-                                    'Ví dụ: Hải sản, sữa, đậu phộng, gluten...',
-                                initialValue: state.allergyName,
-                                onChanged: controller.updateAllergyName,
-                              ),
+                  _Appear(
+                    delay: 140,
+                    child: _SurfaceCard(
+                      child: Column(
+                        children: [
+                          _FieldTile(
+                            icon: AppIcons.warning,
+                            title: 'Dị ứng / thực phẩm cần tránh',
+                            child: OnboardingTextField(
+                              label: 'Thông tin dị ứng',
+                              hint: 'Ví dụ: Hải sản, sữa, đậu phộng, gluten...',
+                              initialValue: state.allergyName,
+                              onChanged: controller.updateAllergyName,
                             ),
+                          ),
 
-                            const SizedBox(height: AppSpacing.lg),
+                          const SizedBox(height: AppSpacing.lg),
 
-                            _FieldTile(
-                              icon: AppIcons.document,
-                              title: 'Ghi chú thêm',
-                              child: OnboardingTextField(
-                                label: 'Mô tả thêm',
-                                hint: 'Mức độ dị ứng, thực phẩm cần hạn chế...',
-                                maxLines: 3,
-                                initialValue: state.allergyNote,
-                                onChanged: controller.updateAllergyNote,
-                              ),
+                          _FieldTile(
+                            icon: AppIcons.document,
+                            title: 'Ghi chú thêm',
+                            child: OnboardingTextField(
+                              label: 'Mô tả thêm',
+                              hint: 'Mức độ dị ứng, thực phẩm cần hạn chế...',
+                              maxLines: 3,
+                              initialValue: state.allergyNote,
+                              onChanged: controller.updateAllergyNote,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    const _SectionHeader(
-                      title: 'Bạn đang điều trị hoặc dùng thuốc gì không?',
-                      subtitle:
-                          'Thông tin này giúp mình thận trọng hơn khi đồng hành cùng bạn.',
-                    ),
+                  const _SectionHeader(
+                    title: 'Bạn đang điều trị hoặc dùng thuốc gì không?',
+                    subtitle:
+                        'Thông tin này giúp mình thận trọng hơn khi đồng hành cùng bạn.',
+                  ),
 
-                    const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.lg),
 
-                    _Appear(
-                      delay: 220,
-                      child: _SurfaceCard(
-                        child: Column(
-                          children: [
-                            _FieldTile(
-                              icon: AppIcons.health,
-                              title: 'Điều trị hiện tại',
-                              child: OnboardingTextField(
-                                label: 'Điều trị / theo dõi',
-                                hint: 'Ví dụ: Theo dõi huyết áp, tiểu đường...',
-                                initialValue: state.treatmentName,
-                                onChanged: controller.updateTreatmentName,
-                              ),
+                  _Appear(
+                    delay: 220,
+                    child: _SurfaceCard(
+                      child: Column(
+                        children: [
+                          _FieldTile(
+                            icon: AppIcons.health,
+                            title: 'Điều trị hiện tại',
+                            child: OnboardingTextField(
+                              label: 'Điều trị / theo dõi',
+                              hint: 'Ví dụ: Theo dõi huyết áp, tiểu đường...',
+                              initialValue: state.treatmentName,
+                              onChanged: controller.updateTreatmentName,
                             ),
+                          ),
 
-                            const SizedBox(height: AppSpacing.lg),
+                          const SizedBox(height: AppSpacing.lg),
 
-                            _FieldTile(
-                              icon: AppIcons.nutrition,
-                              title: 'Thuốc đang sử dụng',
-                              child: OnboardingTextField(
-                                label: 'Tên thuốc',
-                                hint: 'Có thể bỏ trống nếu không có',
-                                initialValue: state.medicationName,
-                                onChanged: controller.updateMedicationName,
-                              ),
+                          _FieldTile(
+                            icon: AppIcons.nutrition,
+                            title: 'Thuốc đang sử dụng',
+                            child: OnboardingTextField(
+                              label: 'Tên thuốc',
+                              hint: 'Có thể bỏ trống nếu không có',
+                              initialValue: state.medicationName,
+                              onChanged: controller.updateMedicationName,
                             ),
+                          ),
 
-                            const SizedBox(height: AppSpacing.lg),
+                          const SizedBox(height: AppSpacing.lg),
 
-                            _FieldTile(
-                              icon: AppIcons.edit,
-                              title: 'Ghi chú điều trị',
-                              child: OnboardingTextField(
-                                label: 'Thông tin bổ sung',
-                                hint:
-                                    'Ví dụ: Theo dõi định kỳ, bác sĩ khuyến nghị...',
-                                maxLines: 4,
-                                initialValue: state.treatmentNote,
-                                onChanged: controller.updateTreatmentNote,
-                              ),
+                          _FieldTile(
+                            icon: AppIcons.edit,
+                            title: 'Ghi chú điều trị',
+                            child: OnboardingTextField(
+                              label: 'Thông tin bổ sung',
+                              hint:
+                                  'Ví dụ: Theo dõi định kỳ, bác sĩ khuyến nghị...',
+                              maxLines: 4,
+                              initialValue: state.treatmentNote,
+                              onChanged: controller.updateTreatmentNote,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    const _SectionHeader(
-                      title: 'Gần đây bạn lo lắng điều gì nhất?',
-                      subtitle:
-                          'Bạn cứ nói như đang trò chuyện với mình, mình đang lắng nghe.',
-                    ),
+                  const _SectionHeader(
+                    title: 'Gần đây bạn lo lắng điều gì nhất?',
+                    subtitle:
+                        'Bạn cứ nói như đang trò chuyện với mình, mình đang lắng nghe.',
+                  ),
 
-                    const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.lg),
 
-                    _Appear(
-                      delay: 320,
-                      child: _SurfaceCard(
-                        child: OnboardingTextField(
-                          label: 'Mối quan tâm sức khỏe',
-                          hint:
-                              'Ví dụ: Stress, mất ngủ, thiếu năng lượng, giảm cân...',
-                          maxLines: 5,
-                          initialValue: state.concernText,
-                          onChanged: controller.updateConcernText,
-                        ),
+                  _Appear(
+                    delay: 320,
+                    child: _SurfaceCard(
+                      child: OnboardingTextField(
+                        label: 'Mối quan tâm sức khỏe',
+                        hint:
+                            'Ví dụ: Stress, mất ngủ, thiếu năng lượng, giảm cân...',
+                        maxLines: 5,
+                        initialValue: state.concernText,
+                        onChanged: controller.updateConcernText,
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    _Appear(
-                      delay: 420,
-                      child: _CommitmentCard(
-                        agreed: state.agreed,
-                        onChanged: controller.setAgreed,
-                      ),
+                  _Appear(
+                    delay: 420,
+                    child: _CommitmentCard(
+                      agreed: state.agreed,
+                      onChanged: controller.setAgreed,
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    _Appear(
-                      delay: 520,
-                      child: _InsightCard(
-                        completedFields: completedFields,
-                        agreed: state.agreed,
-                      ),
+                  _Appear(
+                    delay: 520,
+                    child: _InsightCard(
+                      completedFields: completedFields,
+                      agreed: state.agreed,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -618,43 +616,58 @@ class _CommitmentCard extends StatelessWidget {
               border: Border.all(color: AppColors.border),
               shadows: AppShadows.soft,
             ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Transform.scale(
-            scale: 1.1,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final switchControl = Transform.scale(
+            scale: 1.05,
             child: Switch(value: agreed, onChanged: onChanged),
-          ),
+          );
 
-          const SizedBox(width: AppSpacing.md),
+          final textContent = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Đồng ý với điều khoản sử dụng',
+                style: AppTextStyles.heading4.copyWith(
+                  color: agreed ? Colors.white : AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
 
-          Expanded(
-            child: Column(
+              const SizedBox(height: AppSpacing.sm),
+
+              Text(
+                'Tôi đã đọc, hiểu và đồng ý để BioAI sử dụng những thông tin tôi chia sẻ nhằm cá nhân hóa trải nghiệm chăm sóc sức khỏe.',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: agreed
+                      ? Colors.white.withOpacity(0.92)
+                      : AppColors.textSecondary,
+                  height: 1.7,
+                ),
+              ),
+            ],
+          );
+
+          if (constraints.maxWidth < 320) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Đồng ý với điều khoản sử dụng',
-                  style: AppTextStyles.heading4.copyWith(
-                    color: agreed ? Colors.white : AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.sm),
-
-                Text(
-                  'Tôi đã đọc, hiểu và đồng ý để BioAI sử dụng những thông tin tôi chia sẻ nhằm cá nhân hóa trải nghiệm chăm sóc sức khỏe.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: agreed
-                        ? Colors.white.withOpacity(0.92)
-                        : AppColors.textSecondary,
-                    height: 1.7,
-                  ),
-                ),
+                switchControl,
+                const SizedBox(height: AppSpacing.md),
+                textContent,
               ],
-            ),
-          ),
-        ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              switchControl,
+              const SizedBox(width: AppSpacing.md),
+              Expanded(child: textContent),
+            ],
+          );
+        },
       ),
     );
   }
@@ -779,11 +792,16 @@ class _InsightRow extends StatelessWidget {
             ),
           ),
 
-          Text(
-            value,
-            style: AppTextStyles.labelLarge.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+              style: AppTextStyles.labelLarge.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

@@ -60,9 +60,18 @@ class LifestyleScheduleLocalDatasource {
     );
   }
 
-  Future<List<MealPlanModel>> getMealPlansForScheduleSeed() async {
+  Future<List<MealPlanModel>> getMealPlansForScheduleSeed({
+    required String userId,
+    required DateTime startDate,
+    int days = 7,
+  }) async {
     final db = await _db();
-    return MealPlansDao(db).getAll();
+    final endDate = startDate.add(Duration(days: days - 1));
+    return MealPlansDao(db).getByUserIdAndDateRange(
+      userId: userId,
+      startDate: _dateKey(startDate),
+      endDate: _dateKey(endDate),
+    );
   }
 
   Future<LifestyleScheduleItemEntity> updateItemCompletion({

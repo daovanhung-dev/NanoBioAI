@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/router/router.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/widgets/loading_genAI.dart';
@@ -21,7 +22,7 @@ class ReviewStep extends ConsumerWidget {
     return text;
   }
 
-  String _formatCode(String value) {
+  String _formatFallback(String value) {
     final raw = value.trim();
 
     if (raw.isEmpty) {
@@ -40,6 +41,22 @@ class ReviewStep extends ConsumerWidget {
           return '${word[0].toUpperCase()}${word.substring(1)}';
         })
         .join(' ');
+  }
+
+  String _choiceLabel(List<OnboardingChoiceOption> options, String code) {
+    final normalizedCode = code.trim();
+
+    if (normalizedCode.isEmpty) {
+      return 'Chưa cập nhật';
+    }
+
+    for (final option in options) {
+      if (option.code == normalizedCode) {
+        return option.label;
+      }
+    }
+
+    return _formatFallback(normalizedCode);
   }
 
   String _number(double value, {String suffix = ''}) {
@@ -61,19 +78,21 @@ class ReviewStep extends ConsumerWidget {
         value: _normalize(state.fullName),
         icon: AppIcons.profile,
       ),
-      _ReviewInfo(
-        title: 'Email',
-        value: _normalize(state.email),
-        icon: AppIcons.email,
-      ),
-      _ReviewInfo(
-        title: 'Số điện thoại',
-        value: _normalize(state.phone),
-        icon: AppIcons.call,
-      ),
+      if (_hasValue(state.email))
+        _ReviewInfo(
+          title: 'Email',
+          value: _normalize(state.email),
+          icon: AppIcons.email,
+        ),
+      if (_hasValue(state.phone))
+        _ReviewInfo(
+          title: 'Số điện thoại',
+          value: _normalize(state.phone),
+          icon: AppIcons.call,
+        ),
       _ReviewInfo(
         title: 'Giới tính',
-        value: _formatCode(state.gender),
+        value: _choiceLabel(OnboardingCatalog.genders, state.gender),
         icon: AppIcons.account,
       ),
       _ReviewInfo(
@@ -89,16 +108,26 @@ class ReviewStep extends ConsumerWidget {
     ];
 
     final goals = <String>[
-      ...state.goals.map(_formatCode),
-      if (_hasValue(state.otherGoal)) _formatCode(state.otherGoal),
+      ...state.goals.map((code) => _choiceLabel(OnboardingCatalog.goals, code)),
+      if (_hasValue(state.otherGoal)) _normalize(state.otherGoal),
     ];
 
     final conditions = <String>[
-      ...state.conditions.map(_formatCode),
-      if (_hasValue(state.otherCondition)) _formatCode(state.otherCondition),
+      ...state.conditions.map(
+        (code) => _choiceLabel(OnboardingCatalog.conditions, code),
+      ),
+      if (_hasValue(state.otherCondition)) _normalize(state.otherCondition),
     ];
 
-    final habits = state.habits.map(_formatCode).toList();
+    final habits = state.habits
+        .map((code) => _choiceLabel(OnboardingCatalog.habits, code))
+        .toList();
+
+    final contactLine = _hasValue(state.email)
+        ? _normalize(state.email)
+        : _hasValue(state.phone)
+        ? _normalize(state.phone)
+        : 'Hồ sơ sức khỏe cá nhân';
 
     final hasAllergy =
         _hasValue(state.allergyName) || _hasValue(state.allergyNote);
@@ -116,6 +145,10 @@ class ReviewStep extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _ReviewTopBar(onBack: controller.previousStep),
+
+              const SizedBox(height: AppSpacing.lg),
+
               TweenAnimationBuilder<double>(
                 duration: AppDuration.normal,
                 tween: Tween(begin: 0, end: 1),
@@ -130,9 +163,9 @@ class ReviewStep extends ConsumerWidget {
                 },
                 child: _HeroSection(
                   name: _normalize(state.fullName),
-                  email: _normalize(state.email),
+                  email: contactLine,
                   bmi: state.bmi,
-                  gender: _formatCode(state.gender),
+                  gender: _choiceLabel(OnboardingCatalog.genders, state.gender),
                 ),
               ),
 
@@ -244,13 +277,13 @@ class ReviewStep extends ConsumerWidget {
                       _LifestyleTile(
                         icon: AppIcons.sleep,
                         title: 'Chất lượng giấc ngủ',
-                        value: _formatCode(state.sleepQuality),
+                        value: _normalize(state.sleepQuality),
                       ),
                       const SizedBox(height: AppSpacing.itemSpacing),
                       _LifestyleTile(
                         icon: AppIcons.fitness,
                         title: 'Mức vận động',
-                        value: _formatCode(state.activityLevel),
+                        value: _normalize(state.activityLevel),
                       ),
                       const SizedBox(height: AppSpacing.itemSpacing),
                       _LifestyleTile(
@@ -490,6 +523,77 @@ class ReviewStep extends ConsumerWidget {
     }
 
     return 'Cần theo dõi';
+  }
+}
+
+class _ReviewTopBar extends StatelessWidget {
+  const _ReviewTopBar({required this.onBack});
+
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onBack,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: Container(
+              width: AppSpacing.touchTargetMin,
+              height: AppSpacing.touchTargetMin,
+              decoration: AppDecoration.glass(
+                radius: AppRadius.lg,
+                opacity: 0.18,
+                borderColor: AppColors.border,
+              ),
+              child: const Icon(AppIcons.back, color: AppColors.textPrimary),
+            ),
+          ),
+        ),
+
+        const SizedBox(width: AppSpacing.md),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Bước 7/7',
+                    style: AppTextStyles.labelLarge.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Xem lại hồ sơ',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: AppSpacing.sm),
+
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.circular),
+                child: const LinearProgressIndicator(
+                  value: 1,
+                  minHeight: 6,
+                  backgroundColor: AppColors.border,
+                  valueColor: AlwaysStoppedAnimation(AppColors.primary),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 

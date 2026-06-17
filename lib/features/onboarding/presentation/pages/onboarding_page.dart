@@ -24,19 +24,17 @@ class OnboardingPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 260),
-          child: switch (state.currentStep) {
-            0 => const WelcomeStep(),
-            1 => const BasicInfoStep(),
-            2 => const GoalsStep(),
-            3 => const ConditionsStep(),
-            4 => const LifestyleStep(),
-            5 => const ExtrasStep(),
-            _ => const ReviewStep(),
-          },
-        ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        child: switch (state.currentStep) {
+          0 => const WelcomeStep(),
+          1 => const BasicInfoStep(),
+          2 => const GoalsStep(),
+          3 => const ConditionsStep(),
+          4 => const LifestyleStep(),
+          5 => const ExtrasStep(),
+          _ => const ReviewStep(),
+        },
       ),
     );
   }

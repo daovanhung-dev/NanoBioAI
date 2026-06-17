@@ -16,6 +16,22 @@ class DashboardLocalDatasource {
   Future<void> saveMealPlan(List<MealPlanModel> mealPlans) async {
     final db = await _db();
     final daoMealPlans = MealPlansDao(db);
+    final userId = mealPlans.isEmpty ? null : mealPlans.first.userId;
+    final dates =
+        mealPlans
+            .map((meal) => meal.planDate)
+            .where((date) => date.isNotEmpty)
+            .toList()
+          ..sort();
+
+    if (userId != null && userId.isNotEmpty && dates.isNotEmpty) {
+      await daoMealPlans.deleteByUserIdAndDateRange(
+        userId: userId,
+        startDate: dates.first,
+        endDate: dates.last,
+      );
+    }
+
     await daoMealPlans.insertMany(mealPlans);
   }
 

@@ -87,101 +87,97 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep>
           ),
         ),
 
-        SafeArea(
-          child: OnboardingStepShell(
-            stepIndex: 3,
-            title: '',
-            subtitle: '',
-            onBack: controller.previousStep,
-            onNext: controller.nextStep,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _AppearAnimation(
-                    delay: 0,
-                    child: _HeroCard(selectedCount: selectedCount),
+        OnboardingStepShell(
+          stepIndex: 3,
+          title: '',
+          subtitle: '',
+          isScrollable: false,
+          onBack: controller.previousStep,
+          onNext: controller.nextStep,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _AppearAnimation(
+                  delay: 0,
+                  child: _HeroCard(selectedCount: selectedCount),
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                _AppearAnimation(
+                  delay: 100,
+                  child: _SmartAnalysisCard(selectedCount: selectedCount),
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                const _SectionHeader(
+                  title: 'Cơ thể bạn đang cảm thấy thế nào?',
+                  subtitle:
+                      'Bạn chọn những điều đang gặp phải để mình quan tâm và gợi ý cẩn thận hơn nhé.',
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                _AppearAnimation(
+                  delay: 200,
+                  child: Wrap(
+                    spacing: AppSpacing.md,
+                    runSpacing: AppSpacing.md,
+                    children: OnboardingCatalog.conditions.map((item) {
+                      final selected = state.conditions.contains(item.code);
+
+                      return _ConditionCard(
+                        width: cardWidth,
+                        emoji: item.emoji,
+                        label: item.label,
+                        selected: selected,
+                        onTap: () {
+                          controller.toggleCondition(item.code);
+                        },
+                      );
+                    }).toList(),
                   ),
+                ),
 
-                  const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.xl),
 
-                  _AppearAnimation(
-                    delay: 100,
-                    child: _SmartAnalysisCard(selectedCount: selectedCount),
-                  ),
+                const _SectionHeader(
+                  title: 'Có điều gì khác bạn muốn kể với mình không?',
+                  subtitle:
+                      'Không cần dùng từ chuyên môn đâu, bạn cứ chia sẻ theo cách tự nhiên nhất.',
+                ),
 
-                  const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.lg),
 
-                  const _SectionHeader(
-                    title: 'Cơ thể bạn đang cảm thấy thế nào?',
-                    subtitle:
-                        'Bạn chọn những điều đang gặp phải để mình quan tâm và gợi ý cẩn thận hơn nhé.',
-                  ),
-
-                  const SizedBox(height: AppSpacing.lg),
-
-                  _AppearAnimation(
-                    delay: 200,
-                    child: Wrap(
-                      spacing: AppSpacing.md,
-                      runSpacing: AppSpacing.md,
-                      children: OnboardingCatalog.conditions.map((item) {
-                        final selected = state.conditions.contains(item.code);
-
-                        return _ConditionCard(
-                          width: cardWidth,
-                          emoji: item.emoji,
-                          label: item.label,
-                          selected: selected,
-                          onTap: () {
-                            controller.toggleCondition(item.code);
-                          },
-                        );
-                      }).toList(),
+                _AppearAnimation(
+                  delay: 300,
+                  child: Container(
+                    decoration: AppDecoration.card(
+                      radius: AppRadius.xl,
+                      shadows: AppShadows.soft,
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+                    child: OnboardingTextField(
+                      label: 'Tình trạng khác',
+                      hint: 'Ví dụ: đau đầu thường xuyên, dị ứng thực phẩm...',
+                      initialValue: state.otherCondition,
+                      onChanged: controller.updateOtherCondition,
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.xl),
 
-                  const _SectionHeader(
-                    title: 'Có điều gì khác bạn muốn kể với mình không?',
-                    subtitle:
-                        'Không cần dùng từ chuyên môn đâu, bạn cứ chia sẻ theo cách tự nhiên nhất.',
-                  ),
-
-                  const SizedBox(height: AppSpacing.lg),
-
-                  _AppearAnimation(
-                    delay: 300,
-                    child: Container(
-                      decoration: AppDecoration.card(
-                        radius: AppRadius.xl,
-                        shadows: AppShadows.soft,
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      padding: const EdgeInsets.all(
-                        AppSpacing.cardPaddingLarge,
-                      ),
-                      child: OnboardingTextField(
-                        label: 'Tình trạng khác',
-                        hint:
-                            'Ví dụ: đau đầu thường xuyên, dị ứng thực phẩm...',
-                        initialValue: state.otherCondition,
-                        onChanged: controller.updateOtherCondition,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: AppSpacing.xl),
-
-                  _AppearAnimation(
-                    delay: 400,
-                    child: _HealthSummaryCard(selectedCount: selectedCount),
-                  ),
-                ],
-              ),
+                _AppearAnimation(
+                  delay: 400,
+                  child: _HealthSummaryCard(selectedCount: selectedCount),
+                ),
+              ],
             ),
           ),
         ),

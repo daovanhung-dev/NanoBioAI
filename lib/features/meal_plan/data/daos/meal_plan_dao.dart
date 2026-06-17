@@ -108,6 +108,23 @@ class MealPlansDao {
     }).toList();
   }
 
+  Future<List<MealPlanModel>> getByUserIdAndDateRange({
+    required String userId,
+    required String startDate,
+    required String endDate,
+  }) async {
+    final maps = await db.query(
+      'meal_plans',
+      where: 'user_id = ? AND plan_date >= ? AND plan_date <= ?',
+      whereArgs: [userId, startDate, endDate],
+      orderBy: 'plan_date ASC, meal_order ASC',
+    );
+
+    return maps.map((map) {
+      return MealPlanModel.fromMap(map);
+    }).toList();
+  }
+
   // =========================================================
   // UPDATE
   // =========================================================
@@ -162,5 +179,17 @@ class MealPlansDao {
 
   Future<void> deleteByUserId(String userId) async {
     await db.delete('meal_plans', where: 'user_id = ?', whereArgs: [userId]);
+  }
+
+  Future<void> deleteByUserIdAndDateRange({
+    required String userId,
+    required String startDate,
+    required String endDate,
+  }) async {
+    await db.delete(
+      'meal_plans',
+      where: 'user_id = ? AND plan_date >= ? AND plan_date <= ?',
+      whereArgs: [userId, startDate, endDate],
+    );
   }
 }

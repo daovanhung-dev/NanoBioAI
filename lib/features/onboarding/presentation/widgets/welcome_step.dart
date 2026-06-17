@@ -84,6 +84,7 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
           stepIndex: 0,
           totalSteps: 7,
           showBack: false,
+          isScrollable: false,
           title: '',
           subtitle: '',
           nextLabel: 'Mình sẵn sàng rồi',

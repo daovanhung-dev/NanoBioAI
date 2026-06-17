@@ -90,93 +90,92 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
         ),
 
         Positioned.fill(
-          child: SafeArea(
-            child: OnboardingStepShell(
-              stepIndex: 2,
-              title: '',
-              subtitle: '',
-              onBack: controller.previousStep,
-              onNext: controller.nextStep,
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _AppearAnimation(
-                      delay: 0,
-                      child: _HeroSection(
-                        selectedCount: selectedCount,
-                        progress: progress,
+          child: OnboardingStepShell(
+            stepIndex: 2,
+            title: '',
+            subtitle: '',
+            isScrollable: false,
+            onBack: controller.previousStep,
+            onNext: controller.nextStep,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _AppearAnimation(
+                    delay: 0,
+                    child: _HeroSection(
+                      selectedCount: selectedCount,
+                      progress: progress,
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.lg),
+
+                  _AppearAnimation(
+                    delay: 100,
+                    child: _OverviewCard(
+                      selectedCount: selectedCount,
+                      progress: progress,
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  const _SectionHeader(
+                    title: 'Bạn muốn mình giúp điều gì trước?',
+                    subtitle:
+                        'Chọn những điều quan trọng với bạn, chúng ta sẽ đi từng bước cùng nhau.',
+                  ),
+
+                  const SizedBox(height: AppSpacing.md),
+
+                  _AppearAnimation(
+                    delay: 180,
+                    child: _GoalsGrid(state: state, controller: controller),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  const _SectionHeader(
+                    title: 'Còn mong muốn nào bạn chưa thấy ở trên?',
+                    subtitle:
+                        'Bạn cứ kể thêm bằng lời của mình, mình sẽ ghi nhớ.',
+                  ),
+
+                  const SizedBox(height: AppSpacing.md),
+
+                  _AppearAnimation(
+                    delay: 280,
+                    child: Container(
+                      padding: const EdgeInsets.all(
+                        AppSpacing.cardPaddingLarge,
+                      ),
+                      decoration: AppDecoration.glass(
+                        opacity: 0.92,
+                        radius: AppRadius.cardLarge,
+                      ),
+                      child: OnboardingTextField(
+                        label: 'Mục tiêu bổ sung',
+                        hint:
+                            'Ví dụ: Mình muốn tập trung tốt hơn và bớt mệt...',
+                        initialValue: state.otherGoal,
+                        onChanged: controller.updateOtherGoal,
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.xl),
 
-                    _AppearAnimation(
-                      delay: 100,
-                      child: _OverviewCard(
-                        selectedCount: selectedCount,
-                        progress: progress,
-                      ),
+                  _AppearAnimation(
+                    delay: 420,
+                    child: _InsightCard(
+                      progress: progress,
+                      selectedCount: selectedCount,
                     ),
-
-                    const SizedBox(height: AppSpacing.xl),
-
-                    const _SectionHeader(
-                      title: 'Bạn muốn mình giúp điều gì trước?',
-                      subtitle:
-                          'Chọn những điều quan trọng với bạn, chúng ta sẽ đi từng bước cùng nhau.',
-                    ),
-
-                    const SizedBox(height: AppSpacing.md),
-
-                    _AppearAnimation(
-                      delay: 180,
-                      child: _GoalsGrid(state: state, controller: controller),
-                    ),
-
-                    const SizedBox(height: AppSpacing.xl),
-
-                    const _SectionHeader(
-                      title: 'Còn mong muốn nào bạn chưa thấy ở trên?',
-                      subtitle:
-                          'Bạn cứ kể thêm bằng lời của mình, mình sẽ ghi nhớ.',
-                    ),
-
-                    const SizedBox(height: AppSpacing.md),
-
-                    _AppearAnimation(
-                      delay: 280,
-                      child: Container(
-                        padding: const EdgeInsets.all(
-                          AppSpacing.cardPaddingLarge,
-                        ),
-                        decoration: AppDecoration.glass(
-                          opacity: 0.92,
-                          radius: AppRadius.cardLarge,
-                        ),
-                        child: OnboardingTextField(
-                          label: 'Mục tiêu bổ sung',
-                          hint:
-                              'Ví dụ: Mình muốn tập trung tốt hơn và bớt mệt...',
-                          initialValue: state.otherGoal,
-                          onChanged: controller.updateOtherGoal,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.xl),
-
-                    _AppearAnimation(
-                      delay: 420,
-                      child: _InsightCard(
-                        progress: progress,
-                        selectedCount: selectedCount,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

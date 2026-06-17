@@ -89,135 +89,134 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep>
             ),
           ),
 
-          SafeArea(
-            child: OnboardingStepShell(
-              stepIndex: 4,
-              title: '',
-              subtitle: '',
-              onBack: controller.previousStep,
-              onNext: controller.nextStep,
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.pagePadding,
-                  AppSpacing.sm,
-                  AppSpacing.pagePadding,
-                  AppSpacing.xxxl,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _AppearAnimation(
-                      delay: 0,
-                      child: _HeroSection(selectedHabits: selectedHabits),
+          OnboardingStepShell(
+            stepIndex: 4,
+            title: '',
+            subtitle: '',
+            isScrollable: false,
+            onBack: controller.previousStep,
+            onNext: controller.nextStep,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pagePadding,
+                AppSpacing.sm,
+                AppSpacing.pagePadding,
+                AppSpacing.xxxl,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _AppearAnimation(
+                    delay: 0,
+                    child: _HeroSection(selectedHabits: selectedHabits),
+                  ),
+
+                  const SizedBox(height: AppSpacing.sectionSpacingLarge),
+
+                  _AppearAnimation(
+                    delay: 120,
+                    child: _LifestyleOverviewCard(
+                      selectedHabits: selectedHabits,
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.sectionSpacingLarge),
+                  const SizedBox(height: AppSpacing.sectionSpacingLarge),
 
-                    _AppearAnimation(
-                      delay: 120,
-                      child: _LifestyleOverviewCard(
-                        selectedHabits: selectedHabits,
+                  _AppearAnimation(
+                    delay: 200,
+                    child: _ModernSectionHeader(
+                      icon: AppIcons.nutrition,
+                      title: 'Một ngày thường của bạn',
+                      subtitle:
+                          'Những thói quen nhỏ giúp mình hiểu nhịp sống thật của bạn.',
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.sectionSpacing),
+
+                  _AppearAnimation(
+                    delay: 260,
+                    child: _HabitsGrid(state: state, controller: controller),
+                  ),
+
+                  const SizedBox(height: AppSpacing.sectionSpacingLarge),
+
+                  _AppearAnimation(
+                    delay: 340,
+                    child: _ModernSectionHeader(
+                      icon: AppIcons.sleep,
+                      title: 'Giấc ngủ, vận động và nước uống',
+                      subtitle:
+                          'Bạn chia sẻ tình hình hiện tại nhé, mình không phán xét đâu.',
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.sectionSpacing),
+
+                  _AppearAnimation(
+                    delay: 420,
+                    child: _GlassContainer(
+                      child: Column(
+                        children: [
+                          _ModernDropdown(
+                            label: 'Giấc ngủ hiện tại',
+                            icon: AppIcons.sleep,
+                            gradient: AppGradients.sleep,
+                            value: state.sleepQuality,
+                            items: OnboardingCatalog.sleepQualities,
+                            onChanged: (value) {
+                              if (value != null) {
+                                controller.updateSleepQuality(value);
+                              }
+                            },
+                          ),
+
+                          const SizedBox(height: AppSpacing.formFieldSpacing),
+
+                          _ModernDropdown(
+                            label: 'Mức độ vận động',
+                            icon: AppIcons.fitness,
+                            gradient: AppGradients.health,
+                            value: state.activityLevel,
+                            items: OnboardingCatalog.activityLevels,
+                            onChanged: (value) {
+                              if (value != null) {
+                                controller.updateActivityLevel(value);
+                              }
+                            },
+                          ),
+
+                          const SizedBox(height: AppSpacing.formFieldSpacing),
+
+                          _ModernDropdown(
+                            label: 'Lượng nước mỗi ngày',
+                            icon: AppIcons.water,
+                            gradient: AppGradients.info,
+                            value: state.waterPerDay,
+                            items: OnboardingCatalog.waterIntakeOptions,
+                            onChanged: (value) {
+                              if (value != null) {
+                                controller.updateWaterPerDay(value);
+                              }
+                            },
+                          ),
+                        ],
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.sectionSpacingLarge),
+                  const SizedBox(height: AppSpacing.sectionSpacingLarge),
 
-                    _AppearAnimation(
-                      delay: 200,
-                      child: _ModernSectionHeader(
-                        icon: AppIcons.nutrition,
-                        title: 'Một ngày thường của bạn',
-                        subtitle:
-                            'Những thói quen nhỏ giúp mình hiểu nhịp sống thật của bạn.',
-                      ),
+                  _AppearAnimation(
+                    delay: 520,
+                    child: _AIInsightCard(
+                      selectedHabits: selectedHabits,
+                      sleepQuality: state.sleepQuality,
+                      activityLevel: state.activityLevel,
                     ),
-
-                    const SizedBox(height: AppSpacing.sectionSpacing),
-
-                    _AppearAnimation(
-                      delay: 260,
-                      child: _HabitsGrid(state: state, controller: controller),
-                    ),
-
-                    const SizedBox(height: AppSpacing.sectionSpacingLarge),
-
-                    _AppearAnimation(
-                      delay: 340,
-                      child: _ModernSectionHeader(
-                        icon: AppIcons.sleep,
-                        title: 'Giấc ngủ, vận động và nước uống',
-                        subtitle:
-                            'Bạn chia sẻ tình hình hiện tại nhé, mình không phán xét đâu.',
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.sectionSpacing),
-
-                    _AppearAnimation(
-                      delay: 420,
-                      child: _GlassContainer(
-                        child: Column(
-                          children: [
-                            _ModernDropdown(
-                              label: 'Giấc ngủ hiện tại',
-                              icon: AppIcons.sleep,
-                              gradient: AppGradients.sleep,
-                              value: state.sleepQuality,
-                              items: OnboardingCatalog.sleepQualities,
-                              onChanged: (value) {
-                                if (value != null) {
-                                  controller.updateSleepQuality(value);
-                                }
-                              },
-                            ),
-
-                            const SizedBox(height: AppSpacing.formFieldSpacing),
-
-                            _ModernDropdown(
-                              label: 'Mức độ vận động',
-                              icon: AppIcons.fitness,
-                              gradient: AppGradients.health,
-                              value: state.activityLevel,
-                              items: OnboardingCatalog.activityLevels,
-                              onChanged: (value) {
-                                if (value != null) {
-                                  controller.updateActivityLevel(value);
-                                }
-                              },
-                            ),
-
-                            const SizedBox(height: AppSpacing.formFieldSpacing),
-
-                            _ModernDropdown(
-                              label: 'Lượng nước mỗi ngày',
-                              icon: AppIcons.water,
-                              gradient: AppGradients.info,
-                              value: state.waterPerDay,
-                              items: OnboardingCatalog.waterIntakeOptions,
-                              onChanged: (value) {
-                                if (value != null) {
-                                  controller.updateWaterPerDay(value);
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.sectionSpacingLarge),
-
-                    _AppearAnimation(
-                      delay: 520,
-                      child: _AIInsightCard(
-                        selectedHabits: selectedHabits,
-                        sleepQuality: state.sleepQuality,
-                        activityLevel: state.activityLevel,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -584,12 +583,31 @@ class _ModernDropdown extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
 
         DropdownButtonFormField<String>(
+          isExpanded: true,
           initialValue: value != null && value!.isNotEmpty ? value : null,
+          selectedItemBuilder: (context) {
+            return items.map((item) {
+              return Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  item,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyMedium,
+                ),
+              );
+            }).toList();
+          },
           items: items
               .map(
                 (item) => DropdownMenuItem<String>(
                   value: item,
-                  child: Text(item, style: AppTextStyles.bodyMedium),
+                  child: Text(
+                    item,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyMedium,
+                  ),
                 ),
               )
               .toList(),

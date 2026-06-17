@@ -8,6 +8,7 @@ import 'package:nano_app/core/interfaces/health_data_interface.dart';
 import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
 import 'package:nano_app/features/lifestyle_schedule/data/models/exercise_task_model.dart';
 import 'package:nano_app/features/lifestyle_schedule/data/models/exercise_tasks_ai_normalizer.dart';
+import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 
 import 'ai_json_parser.dart';
@@ -37,17 +38,28 @@ class AIService {
 
   Future<List<MealPlanModel>> generateMealPlan({
     required HealthDataInterface healthData,
+    required String userId,
+    required DateTime startDate,
+    int days = 7,
   }) async {
     int retry = 0;
 
     while (retry < 3) {
       try {
-        final prompt = MealPlanPrompt.generate(healthData: healthData);
+        final prompt = MealPlanPrompt.generate(
+          healthData: healthData,
+          startDate: startDate,
+          days: days,
+        );
         final decoded = await _generateJsonArray(prompt);
 
-        return decoded.map<MealPlanModel>((item) {
-          return MealPlanModel.fromJson(Map<String, dynamic>.from(item));
-        }).toList();
+        return const MealPlanAiNormalizer().normalize(
+          items: decoded,
+          userId: userId,
+          startDate: startDate,
+          days: days,
+          createdAt: DateTime.now().toIso8601String(),
+        );
       } catch (e, stackTrace) {
         retry++;
         _logRetryError('AI MEAL GENERATE ERROR', e, stackTrace);

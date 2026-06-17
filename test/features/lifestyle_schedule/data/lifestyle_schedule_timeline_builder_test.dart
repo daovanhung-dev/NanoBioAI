@@ -3,6 +3,7 @@ import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_he
 import 'package:nano_app/features/lifestyle_schedule/data/models/exercise_task_model.dart';
 import 'package:nano_app/features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart';
 import 'package:nano_app/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart';
+import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 
 void main() {
@@ -67,38 +68,31 @@ void main() {
 }
 
 List<MealPlanModel> _meals(DateTime startDate) {
-  const mealTypes = [
-    ('breakfast', '07:00', '07:30'),
-    ('morning_snack', '09:30', '09:45'),
-    ('lunch', '12:00', '12:45'),
-    ('afternoon_snack', '15:30', '15:45'),
-    ('dinner', '18:30', '19:15'),
-  ];
+  return const MealPlanAiNormalizer().normalize(
+    items: _mealItems(DateTime(2025, 1, 1)),
+    userId: 'u1',
+    startDate: startDate,
+    createdAt: '2026-06-16T08:00:00',
+  );
+}
+
+List<Map<String, Object?>> _mealItems(DateTime aiStartDate) {
   return [
     for (var day = 0; day < 7; day++)
-      for (var index = 0; index < mealTypes.length; index++)
-        MealPlanModel(
-          id: 'meal-${day + 1}-${mealTypes[index].$1}',
-          userId: 'u1',
-          planDate: _dateKey(startDate.add(Duration(days: day))),
-          mealType: mealTypes[index].$1,
-          mealName: 'Meal',
-          description: 'Description',
-          calories: 300,
-          protein: 10,
-          carbs: 30,
-          fat: 8,
-          fiber: 4,
-          waterMl: 300,
-          mealOrder: index + 1,
-          startTime: mealTypes[index].$2,
-          endTime: mealTypes[index].$3,
-          cookingInstructions: 'Cook',
-          isCompleted: false,
-          aiGenerated: true,
-          createdAt: '2026-06-16T08:00:00',
-          updatedAt: '2026-06-16T08:00:00',
-        ),
+      for (final slot in MealPlanAiNormalizer.mealSlots)
+        {
+          'plan_date': _dateKey(aiStartDate.add(Duration(days: day))),
+          'meal_type': slot.type,
+          'meal_name': 'Meal',
+          'description': 'Description',
+          'calories': 300,
+          'protein': 10,
+          'carbs': 30,
+          'fat': 8,
+          'fiber': 4,
+          'water_ml': 300,
+          'cooking_instructions': 'Cook',
+        },
   ];
 }
 

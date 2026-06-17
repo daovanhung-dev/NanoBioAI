@@ -74,6 +74,8 @@ class _OnboardingStepShellState extends State<OnboardingStepShell>
   @override
   Widget build(BuildContext context) {
     final progress = (widget.stepIndex + 1) / widget.totalSteps;
+    final hasHero =
+        widget.title.trim().isNotEmpty || widget.subtitle.trim().isNotEmpty;
 
     final body = Stack(
       children: [
@@ -138,6 +140,28 @@ class _OnboardingStepShellState extends State<OnboardingStepShell>
                           physics: const BouncingScrollPhysics(),
                           child: Column(
                             children: [
+                              if (hasHero) ...[
+                                _FadeSlideIn(
+                                  delay: 80,
+                                  child: _HeroHeader(
+                                    title: widget.title,
+                                    subtitle: widget.subtitle,
+                                    progress: progress,
+                                  ),
+                                ),
+
+                                const SizedBox(
+                                  height: AppSpacing.sectionSpacingLarge,
+                                ),
+                              ],
+
+                              _FadeSlideIn(delay: 160, child: widget.child),
+                            ],
+                          ),
+                        )
+                      : Column(
+                          children: [
+                            if (hasHero) ...[
                               _FadeSlideIn(
                                 delay: 80,
                                 child: _HeroHeader(
@@ -150,25 +174,7 @@ class _OnboardingStepShellState extends State<OnboardingStepShell>
                               const SizedBox(
                                 height: AppSpacing.sectionSpacingLarge,
                               ),
-
-                              _FadeSlideIn(delay: 160, child: widget.child),
                             ],
-                          ),
-                        )
-                      : Column(
-                          children: [
-                            _FadeSlideIn(
-                              delay: 80,
-                              child: _HeroHeader(
-                                title: widget.title,
-                                subtitle: widget.subtitle,
-                                progress: progress,
-                              ),
-                            ),
-
-                            const SizedBox(
-                              height: AppSpacing.sectionSpacingLarge,
-                            ),
 
                             Expanded(
                               child: _FadeSlideIn(

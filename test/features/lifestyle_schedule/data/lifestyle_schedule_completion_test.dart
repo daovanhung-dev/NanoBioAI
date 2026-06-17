@@ -193,13 +193,35 @@ void main() {
     ).getByUserAndDate(userId: 'u1', logDate: '2026-06-17');
     expect(log!.dailyScore, 100);
   });
+
+  test('schedule seed meals are filtered by user and generated week', () async {
+    final dao = MealPlansDao(db);
+    await dao.insert(_meal(id: 'in-start', planDate: '2026-06-18'));
+    await dao.insert(_meal(id: 'in-end', planDate: '2026-06-24'));
+    await dao.insert(_meal(id: 'old', planDate: '2026-06-17'));
+    await dao.insert(_meal(id: 'after', planDate: '2026-06-25'));
+    await dao.insert(
+      _meal(id: 'other-user', userId: 'u2', planDate: '2026-06-18'),
+    );
+
+    final meals = await datasource.getMealPlansForScheduleSeed(
+      userId: 'u1',
+      startDate: DateTime(2026, 6, 18),
+    );
+
+    expect(meals.map((meal) => meal.id), ['in-start', 'in-end']);
+  });
 }
 
-MealPlanModel _meal({required String id}) {
+MealPlanModel _meal({
+  required String id,
+  String userId = 'u1',
+  String planDate = '2026-06-17',
+}) {
   return MealPlanModel(
     id: id,
-    userId: 'u1',
-    planDate: '2026-06-17',
+    userId: userId,
+    planDate: planDate,
     mealType: 'breakfast',
     mealName: 'Meal',
     description: 'Description',
