@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
 
+import 'dev_database_viewer_page.dart';
+
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
@@ -81,6 +83,26 @@ class SettingsView extends StatelessWidget {
                           title: 'Dung lượng',
                           subtitle:
                               'Dọn bớt dữ liệu tạm để ứng dụng nhẹ nhàng hơn',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    _buildSectionTitle('Dev'),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildMenuCard(
+                      children: [
+                        _buildMenuItem(
+                          icon: Icons.developer_mode_rounded,
+                          title: 'Database',
+                          subtitle:
+                              'Xem toàn bộ bảng, cấu trúc cột và dữ liệu SQLite local',
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const DevDatabaseViewerPage(),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -257,10 +279,11 @@ class SettingsView extends StatelessWidget {
     required String title,
     required String subtitle,
     Widget? trailing,
+    VoidCallback? onTap,
   }) {
     return InkWell(
       borderRadius: BorderRadius.circular(AppRadius.xl),
-      onTap: () {},
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Row(

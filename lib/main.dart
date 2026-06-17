@@ -11,6 +11,7 @@ import 'features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_buil
 import 'features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 import 'features/onboarding/providers/onboarding_completion_provider.dart';
 import 'services/ai/ai_service.dart';
+import 'services/notifications/notification_bootstrap.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,9 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+
+  // INIT LOCAL NOTIFICATIONS
+  await NotificationBootstrap.initialize();
 
   runApp(
     ProviderScope(
@@ -87,6 +91,21 @@ Future<void> main() async {
               startDate: startDate,
               days: days,
             );
+
+            try {
+              await NotificationBootstrap.scheduleGeneratedReminders();
+              AppLogger.success(
+                tag,
+                'Scheduled local reminder notifications',
+              );
+            } catch (error, stackTrace) {
+              AppLogger.error(
+                tag,
+                'Failed to schedule reminder notifications. Onboarding data remains completed.',
+                error,
+                stackTrace,
+              );
+            }
           };
         }),
       ],

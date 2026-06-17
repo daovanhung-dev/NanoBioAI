@@ -4,6 +4,13 @@ class NotificationActionIds {
   static const skipped = 'skipped';
 }
 
+class NotificationChannels {
+  static const reminderId = 'bioai_reminder_channel';
+  static const reminderName = 'Nhắc nhiệm vụ sức khỏe';
+  static const reminderDescription =
+      'Nhắc bạn hoàn thành bữa ăn, vận động và các nhiệm vụ chăm sóc sức khỏe hằng ngày.';
+}
+
 class ReminderSourceTypes {
   static const lifestyleScheduleItem = 'lifestyle_schedule_item';
   static const meal = 'meal';
