@@ -92,24 +92,32 @@ class NotificationActionHandler {
       }
 
       final respondedAt = _now().toIso8601String();
-      await notificationsDao.updateActionStatus(
-        id: notification.id,
-        actionStatus: _actionStatusFor(normalizedActionId!),
-        respondedAt: respondedAt,
-        updatedAt: respondedAt,
-      );
-
       if (normalizedActionId == NotificationActionIds.skipped) {
+        await notificationsDao.updateActionStatus(
+          id: notification.id,
+          actionStatus: NotificationActionStatuses.skipped,
+          respondedAt: respondedAt,
+          updatedAt: respondedAt,
+        );
         return;
       }
 
-      await _markSourceDone(
+      final sourceUpdated = await _tryMarkSourceDone(
         sourceType: parsedPayload.sourceType.isNotEmpty
             ? parsedPayload.sourceType
             : notification.sourceType ?? '',
         sourceId: parsedPayload.sourceId.isNotEmpty
             ? parsedPayload.sourceId
             : notification.sourceId ?? '',
+        updatedAt: respondedAt,
+      );
+
+      await notificationsDao.updateActionStatus(
+        id: notification.id,
+        actionStatus: sourceUpdated
+            ? NotificationActionStatuses.done
+            : NotificationActionStatuses.actionFailed,
+        respondedAt: respondedAt,
         updatedAt: respondedAt,
       );
     } on FormatException catch (error, stackTrace) {
@@ -124,59 +132,73 @@ class NotificationActionHandler {
     }
   }
 
+  Future<bool> _tryMarkSourceDone({
+    required String sourceType,
+    required String sourceId,
+    required String updatedAt,
+  }) async {
+    try {
+      return await _markSourceDone(
+        sourceType: sourceType,
+        sourceId: sourceId,
+        updatedAt: updatedAt,
+      );
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        _tag,
+        'Failed to mark notification source as done',
+        error,
+        stackTrace,
+      );
+      return false;
+    }
+  }
+
   bool _isSupportedAction(String? actionId) {
     return actionId == NotificationActionIds.done ||
         actionId == NotificationActionIds.skipped;
   }
 
-  String _actionStatusFor(String actionId) {
-    if (actionId == NotificationActionIds.done) {
-      return NotificationActionStatuses.done;
-    }
-    return NotificationActionStatuses.skipped;
-  }
-
-  Future<void> _markSourceDone({
+  Future<bool> _markSourceDone({
     required String sourceType,
     required String sourceId,
     required String updatedAt,
   }) async {
     if (sourceType == ReminderSourceTypes.meal) {
-      await _markMealDone(sourceId);
-      return;
+      return _markMealDone(sourceId);
     }
 
     if (sourceType == ReminderSourceTypes.lifestyleScheduleItem) {
-      await _markLifestyleScheduleItemDone(sourceId);
-      return;
+      return _markLifestyleScheduleItemDone(sourceId);
     }
 
     if (sourceType == ReminderSourceTypes.dailyTask) {
-      await _markDailyTaskDone(sourceId, updatedAt);
-      return;
+      return _markDailyTaskDone(sourceId, updatedAt);
     }
 
     AppLogger.warning(
       _tag,
       'Unsupported notification source type=$sourceType id=$sourceId',
     );
+    return false;
   }
 
-  Future<void> _markMealDone(String sourceId) async {
+  Future<bool> _markMealDone(String sourceId) async {
     final meal = await mealPlansDao.getById(sourceId);
     if (meal == null) {
       AppLogger.warning(_tag, 'Meal source not found: $sourceId');
-      return;
+      return false;
     }
 
     await mealPlansDao.updateCompleted(id: sourceId, isCompleted: true);
+    return true;
   }
 
-  Future<void> _markDailyTaskDone(String sourceId, String updatedAt) async {
+  Future<bool> _markDailyTaskDone(String sourceId, String updatedAt) async {
     final task = await dailyHealthTasksDao.getById(sourceId);
     if (task == null) {
       AppLogger.warning(_tag, 'Daily task source not found: $sourceId');
-      return;
+      return false;
     }
 
     await dailyHealthTasksDao.updateTask(
@@ -186,18 +208,20 @@ class NotificationActionHandler {
         updatedAt: updatedAt,
       ),
     );
+    return true;
   }
 
-  Future<void> _markLifestyleScheduleItemDone(String sourceId) async {
+  Future<bool> _markLifestyleScheduleItemDone(String sourceId) async {
     final item = await lifestyleScheduleItemsDao.getById(sourceId);
     if (item == null) {
       AppLogger.warning(_tag, 'Schedule source not found: $sourceId');
-      return;
+      return false;
     }
 
     await lifestyleScheduleDatasource.updateItemCompletion(
       item: item.toEntity(),
       isCompleted: true,
     );
+    return true;
   }
 }

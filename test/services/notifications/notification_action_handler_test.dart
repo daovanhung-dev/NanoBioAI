@@ -122,6 +122,55 @@ void main() {
     expect(schedule!.isCompleted, isFalse);
   });
 
+  test('done with missing schedule source records action failure', () async {
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-missing-schedule',
+        notificationId: 401,
+        sourceId: 'missing-schedule',
+      ),
+    );
+
+    await handler.handleAction(
+      actionId: NotificationActionIds.done,
+      notificationId: 401,
+      payload: _payload(notificationId: 401, sourceId: 'missing-schedule'),
+    );
+
+    final notification = await notificationsDao.getByNotificationId(401);
+
+    expect(notification, isNotNull);
+    expect(notification!.actionStatus, NotificationActionStatuses.actionFailed);
+    expect(notification.isRead, isTrue);
+  });
+
+  test('done with unsupported source records action failure', () async {
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-unsupported-source',
+        notificationId: 402,
+        sourceType: 'unknown_source',
+        sourceId: 'unknown-source-id',
+      ),
+    );
+
+    await handler.handleAction(
+      actionId: NotificationActionIds.done,
+      notificationId: 402,
+      payload: _payload(
+        notificationId: 402,
+        sourceType: 'unknown_source',
+        sourceId: 'unknown-source-id',
+      ),
+    );
+
+    final notification = await notificationsDao.getByNotificationId(402);
+
+    expect(notification, isNotNull);
+    expect(notification!.actionStatus, NotificationActionStatuses.actionFailed);
+    expect(notification.isRead, isTrue);
+  });
+
   test('invalid payload does not crash or update notification', () async {
     await notificationsDao.insert(
       _notification(id: 'n-invalid', notificationId: 301),
@@ -147,6 +196,8 @@ void main() {
 NotificationModel _notification({
   required String id,
   required int notificationId,
+  String sourceType = ReminderSourceTypes.lifestyleScheduleItem,
+  String sourceId = 'schedule-1',
 }) {
   return NotificationModel(
     id: id,
@@ -154,21 +205,29 @@ NotificationModel _notification({
     title: 'Reminder',
     body: 'Time to check in',
     type: NotificationTypes.reminder,
-    sourceType: ReminderSourceTypes.lifestyleScheduleItem,
-    sourceId: 'schedule-1',
+    sourceType: sourceType,
+    sourceId: sourceId,
     scheduledAt: '2026-06-17T07:00:00.000',
     notificationId: notificationId,
     actionStatus: NotificationActionStatuses.pending,
-    payload: _payload(notificationId: notificationId, sourceId: 'schedule-1'),
+    payload: _payload(
+      notificationId: notificationId,
+      sourceType: sourceType,
+      sourceId: sourceId,
+    ),
     createdAt: '2026-06-16T08:00:00.000',
     updatedAt: '2026-06-16T08:00:00.000',
   );
 }
 
-String _payload({required int notificationId, required String sourceId}) {
+String _payload({
+  required int notificationId,
+  String sourceType = ReminderSourceTypes.lifestyleScheduleItem,
+  required String sourceId,
+}) {
   return NotificationPayload(
     notificationId: notificationId,
-    sourceType: ReminderSourceTypes.lifestyleScheduleItem,
+    sourceType: sourceType,
     sourceId: sourceId,
     scheduledAt: '2026-06-17T07:00:00.000',
   ).toJsonString();

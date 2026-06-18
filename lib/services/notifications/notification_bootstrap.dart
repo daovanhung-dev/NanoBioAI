@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -14,6 +15,7 @@ import 'reminder_schedule_service.dart';
 
 @pragma('vm:entry-point')
 void bioAiNotificationBackgroundResponse(NotificationResponse response) {
+  DartPluginRegistrant.ensureInitialized();
   unawaited(NotificationBootstrap.handleNotificationResponse(response));
 }
 

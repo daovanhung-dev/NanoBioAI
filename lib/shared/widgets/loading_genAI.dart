@@ -424,7 +424,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
 
   Widget _buildFooter() {
     return Text(
-      'Phản hồi thường mất 5–15 giây',
+      'Phản hồi thường mất 5–15 phút. Vui lòng không đóng ứng dụng trong khi chờ.',
       style: AppTextStyles.caption,
       textAlign: TextAlign.center,
     );

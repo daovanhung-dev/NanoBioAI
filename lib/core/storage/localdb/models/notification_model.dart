@@ -132,4 +132,5 @@ class NotificationActionStatuses {
   static const skipped = 'skipped';
   static const permissionDenied = 'permission_denied';
   static const scheduleFailed = 'schedule_failed';
+  static const actionFailed = 'action_failed';
 }

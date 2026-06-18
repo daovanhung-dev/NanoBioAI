@@ -295,7 +295,7 @@ class _HeroPanel extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Nami đã lấy dữ liệu mới nhất từ SQLite để cùng bạn nhìn lại hôm nay.',
+            'Nami đã lấy dữ liệu mới nhất từ hệ thống để cùng bạn nhìn lại hôm nay.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.white.withOpacity(0.88),
               height: 1.45,
@@ -392,7 +392,7 @@ class _HealthScorePanel extends StatelessWidget {
                 Text(
                   score == 0
                       ? 'Khi bạn ghi log sức khỏe, hoàn thành nhiệm vụ hoặc bữa ăn, điểm hôm nay sẽ tự cập nhật.'
-                      : 'Điểm này được tính từ log sức khỏe, nhiệm vụ hằng ngày, bữa ăn và dữ liệu nước/ngủ trong SQLite.',
+                      : 'Điểm này được tính từ log sức khỏe, nhiệm vụ hằng ngày, bữa ăn và dữ liệu nước/ngủ trong hệ thống.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     height: 1.45,
                     color: Theme.of(
@@ -532,7 +532,7 @@ class _TodayMetricsGrid extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Dữ liệu hôm nay',
-          subtitle: 'Tất cả chỉ số bên dưới được đọc từ SQLite',
+          subtitle: 'Tất cả chỉ số bên dưới được đọc từ hệ thống',
           icon: Icons.query_stats_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -621,7 +621,7 @@ class _InsightSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Nami nhận thấy',
-          subtitle: 'Insight và đề xuất được lấy từ bảng AI trong SQLite',
+          subtitle: 'Gợi ý của AI và đề xuất được lấy từ AI trong hệ thống',
           icon: Icons.auto_awesome_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -651,7 +651,7 @@ class _InsightSection extends StatelessWidget {
         if (insights.isEmpty && recommendations.isEmpty)
           const _EmptyDataCard(
             icon: Icons.auto_awesome_outlined,
-            title: 'Chưa có insight AI trong SQLite',
+            title: 'Chưa có insight AI trong hệ thống',
             message:
                 'Khi bảng ai_insights hoặc ai_recommendations có dữ liệu, phần này sẽ tự hiển thị.',
           )
@@ -780,7 +780,7 @@ class _TimelineSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Hôm nay của chúng ta',
-          subtitle: 'Bữa ăn, nhiệm vụ và thông báo được gom từ SQLite',
+          subtitle: 'Bữa ăn, nhiệm vụ và thông báo được gom từ hệ thống',
           icon: Icons.timeline_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -889,7 +889,7 @@ class _GoalProgressSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Tiến độ mục tiêu',
-          subtitle: 'Đọc từ health_goals và tiến độ nhiệm vụ hôm nay',
+          subtitle: 'Nâng cao sức khỏe mỗi ngày cùng Nami nha',
           icon: Icons.flag_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -900,8 +900,8 @@ class _GoalProgressSection extends StatelessWidget {
                 ? 'Chưa có mục tiêu sức khỏe'
                 : 'Chưa có tiến độ nhiệm vụ hôm nay',
             message: fallbackGoals.isEmpty
-                ? 'Hãy hoàn thành onboarding để lưu mục tiêu vào bảng health_goals.'
-                : 'Mục tiêu đã có, nhưng hôm nay chưa có daily_health_tasks để tính tiến độ.',
+                ? 'Hãy hoàn thành onboarding để lưu mục tiêu vào hệ thống.'
+                : 'Mục tiêu đã có, nhưng hôm nay chưa có tiến độ.',
           )
         else
           _DashboardCard(
@@ -988,7 +988,7 @@ class _LifestyleSection extends StatelessWidget {
         const _SectionTitle(
           title: 'Nhịp sống của bạn',
           subtitle:
-              'Dữ liệu từ health_profiles, lifestyle_habits và conditions',
+              'Dữ liệu được Nami tổng hợp từ các log sức khỏe, nhiệm vụ và bữa ăn trong hệ thống nè, bạn cố lên',
           icon: Icons.spa_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1321,7 +1321,7 @@ class _SyncBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Đang đồng bộ dữ liệu động từ SQLite...',
+                'Đang đồng bộ dữ liệu động từ hệ thống...',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +14,7 @@ import 'features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 import 'features/onboarding/providers/onboarding_completion_provider.dart';
 import 'services/ai/ai_service.dart';
 import 'services/notifications/notification_bootstrap.dart';
+import 'services/notifications/notification_lifecycle_refresher.dart';
 import 'services/notifications/notification_startup_scheduler.dart';
 
 Future<void> main() async {
@@ -31,13 +30,13 @@ Future<void> main() async {
 
   // INIT LOCAL NOTIFICATIONS
   await NotificationBootstrap.initialize();
-  unawaited(
-    NotificationStartupScheduler(
+  NotificationLifecycleRefresher(
+    startupScheduler: NotificationStartupScheduler(
       isOnboardingCompleted: AppPrefs.isOnboardingCompleted,
       scheduleGeneratedReminders:
           NotificationBootstrap.scheduleGeneratedReminders,
-    ).refreshGeneratedReminders(),
-  );
+    ),
+  ).start();
 
   runApp(
     ProviderScope(
