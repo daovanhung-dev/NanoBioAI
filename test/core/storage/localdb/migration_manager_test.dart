@@ -166,4 +166,42 @@ void main() {
     expect(logNames, contains('daily_score'));
     expect(logNames.where((name) => name == 'daily_score'), hasLength(1));
   });
+
+  test('migration v7 adds live metrics and subscription tier once', () async {
+    await db.execute('''
+      CREATE TABLE users (
+        id TEXT PRIMARY KEY,
+        full_name TEXT
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE health_tracking_logs (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        log_date TEXT
+      )
+    ''');
+
+    await MigrationManager.runMigrations(db, 6, 7);
+    await MigrationManager.runMigrations(db, 6, 7);
+
+    final userColumns = await db.rawQuery('PRAGMA table_info(users)');
+    final userNames = userColumns.map((column) => column['name']).toList();
+
+    expect(userNames, contains('subscription_tier'));
+    expect(
+      userNames.where((name) => name == 'subscription_tier'),
+      hasLength(1),
+    );
+
+    final logColumns = await db.rawQuery(
+      'PRAGMA table_info(health_tracking_logs)',
+    );
+    final logNames = logColumns.map((column) => column['name']).toList();
+
+    expect(logNames, contains('heart_rate_bpm'));
+    expect(logNames, contains('oxygen_saturation'));
+    expect(logNames.where((name) => name == 'heart_rate_bpm'), hasLength(1));
+    expect(logNames.where((name) => name == 'oxygen_saturation'), hasLength(1));
+  });
 }

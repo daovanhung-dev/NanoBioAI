@@ -8,6 +8,8 @@ class HealthTrackingLogModel {
   final double? sleepHours;
   final int? stressLevel;
   final int stepsCount;
+  final int? heartRateBpm;
+  final double? oxygenSaturation;
   final int? dailyScore;
   final String? mood;
   final String createdAt;
@@ -23,6 +25,8 @@ class HealthTrackingLogModel {
     this.sleepHours,
     this.stressLevel,
     this.stepsCount = 0,
+    this.heartRateBpm,
+    this.oxygenSaturation,
     this.dailyScore,
     this.mood,
     required this.createdAt,
@@ -41,6 +45,8 @@ class HealthTrackingLogModel {
       sleepHours: _readDouble(map['sleep_hours']),
       stressLevel: _readInt(map['stress_level']),
       stepsCount: _readInt(map['steps_count']) ?? 0,
+      heartRateBpm: _readInt(map['heart_rate_bpm']),
+      oxygenSaturation: _readDouble(map['oxygen_saturation']),
       dailyScore: _readInt(map['daily_score']),
       mood: map['mood']?.toString(),
       createdAt: map['created_at']?.toString() ?? '',
@@ -60,6 +66,8 @@ class HealthTrackingLogModel {
       'sleep_hours': sleepHours,
       'stress_level': stressLevel,
       'steps_count': stepsCount,
+      'heart_rate_bpm': heartRateBpm,
+      'oxygen_saturation': oxygenSaturation,
       'daily_score': dailyScore,
       'mood': mood,
       'created_at': createdAt,
@@ -83,6 +91,8 @@ class HealthTrackingLogModel {
     double? sleepHours,
     int? stressLevel,
     int? stepsCount,
+    int? heartRateBpm,
+    double? oxygenSaturation,
     int? dailyScore,
     String? mood,
     String? createdAt,
@@ -98,6 +108,8 @@ class HealthTrackingLogModel {
       sleepHours: sleepHours ?? this.sleepHours,
       stressLevel: stressLevel ?? this.stressLevel,
       stepsCount: stepsCount ?? this.stepsCount,
+      heartRateBpm: heartRateBpm ?? this.heartRateBpm,
+      oxygenSaturation: oxygenSaturation ?? this.oxygenSaturation,
       dailyScore: dailyScore ?? this.dailyScore,
       mood: mood ?? this.mood,
       createdAt: createdAt ?? this.createdAt,

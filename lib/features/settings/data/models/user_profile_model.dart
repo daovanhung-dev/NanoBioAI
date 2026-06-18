@@ -17,6 +17,7 @@ class UserProfileModel extends UserProfileEntity {
     required super.heightCm,
     required super.weightKg,
     required super.bmi,
+    super.subscriptionTier = 'free',
     super.avatarUrl,
   });
 
@@ -37,6 +38,7 @@ class UserProfileModel extends UserProfileEntity {
       heightCm: (map['height_cm'] as num).toDouble(),
       weightKg: (map['weight_kg'] as num).toDouble(),
       bmi: (map['bmi'] as num).toDouble(),
+      subscriptionTier: map['subscription_tier'] as String? ?? 'free',
       avatarUrl: map['avatar_url'] as String?,
     );
   }
@@ -54,6 +56,7 @@ class UserProfileModel extends UserProfileEntity {
       heightCm: entity.heightCm,
       weightKg: entity.weightKg,
       bmi: entity.bmi,
+      subscriptionTier: entity.subscriptionTier,
       avatarUrl: entity.avatarUrl,
     );
   }
@@ -73,6 +76,7 @@ class UserProfileModel extends UserProfileEntity {
       'height_cm': heightCm,
       'weight_kg': weightKg,
       'bmi': bmi,
+      'subscription_tier': subscriptionTier,
       'avatar_url': avatarUrl,
     };
   }
@@ -103,6 +107,7 @@ class UserProfileModel extends UserProfileEntity {
       heightCm: heightCm,
       weightKg: weightKg,
       bmi: calculateBmi(heightCm, weightKg),
+      subscriptionTier: subscriptionTier,
       avatarUrl: avatarUrl,
     );
   }
@@ -116,6 +121,7 @@ class UserProfileModel extends UserProfileEntity {
       'phone': phone.isEmpty ? null : phone,
       'gender': gender,
       'birth_year': birthYear,
+      'subscription_tier': subscriptionTier,
       'avatar_url': avatarUrl,
     };
   }

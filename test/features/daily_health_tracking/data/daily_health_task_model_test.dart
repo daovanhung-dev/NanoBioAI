@@ -40,6 +40,8 @@ void main() {
       logDate: '2026-06-16',
       waterMl: 750,
       stepsCount: 1200,
+      heartRateBpm: 72,
+      oxygenSaturation: 98.4,
       createdAt: '2026-06-16T08:00:00',
       updatedAt: '2026-06-16T09:00:00',
     );
@@ -47,9 +49,13 @@ void main() {
     final map = model.toMap();
     expect(map['log_date'], '2026-06-16');
     expect(map['water_ml'], 750);
+    expect(map['heart_rate_bpm'], 72);
+    expect(map['oxygen_saturation'], 98.4);
 
     final restored = HealthTrackingLogModel.fromJson(map);
     expect(restored.logDate, '2026-06-16');
     expect(restored.stepsCount, 1200);
+    expect(restored.heartRateBpm, 72);
+    expect(restored.oxygenSaturation, 98.4);
   });
 }

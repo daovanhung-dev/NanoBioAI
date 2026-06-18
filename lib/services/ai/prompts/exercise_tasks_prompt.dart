@@ -1,5 +1,5 @@
-import 'package:nano_app/features/lifestyle_schedule/data/models/exercise_tasks_ai_normalizer.dart';
 import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
+import 'package:nano_app/features/lifestyle_schedule/data/models/exercise_tasks_ai_normalizer.dart';
 
 class ExerciseTasksPrompt {
   const ExerciseTasksPrompt._();
@@ -13,44 +13,41 @@ class ExerciseTasksPrompt {
     final expectedCount = days * ExerciseTasksAiNormalizer.exercisesPerDay;
 
     return '''
-Ban la chuyen gia huan luyen suc khoe ca nhan.
-Viet hoan toan bang tieng Viet có dấu.
-Tao lich bai tap the duc cho $days ngay, bat dau tu ${_dateKey(startDate)} den ${_dateKey(endDate)}.
-Moi ngay bat buoc co dung 2 bai tap van dong an toan, phu hop tinh trang suc khoe va muc do hoat dong.
-Tong so object bat buoc la $expectedCount.
-Tra ve DUY NHAT JSON hop le, khong markdown, khong giai thich, khong text thua.
-Khong them key ngoai schema.
-Ngay theo dinh dang YYYY-MM-DD.
-Gio theo HH:mm local time.
-Gia tri so phai la number, khong phai string.
-Khong chan doan y te, khong dua bai tap nguy hiem; neu co tinh trang suc khoe thi uu tien bai tap nhe.
+Bạn là huấn luyện viên sức khỏe cá nhân.
+Tạo lịch vận động $days ngày, từ ${_dateKey(startDate)} đến ${_dateKey(endDate)}.
+Tổng số object bắt buộc: $expectedCount.
 
-Goi y thoi diem:
-- Bai tap sang: 08:00-08:25 hoac phu hop sau bua sang.
-- Bai tap chieu: 17:30-18:00 hoac phu hop truoc bua toi.
+Yêu cầu:
+- Mỗi ngày đúng 2 bài tập an toàn, nhẹ đến vừa, phù hợp hồ sơ người dùng.
+- schedule_date dùng định dạng YYYY-MM-DD; start_time và end_time dùng HH:mm.
+- Bài sáng nên nằm khoảng 08:00-08:25; bài chiều nên nằm khoảng 17:30-18:00.
+- Field title, description, unit, encouragement phải là tiếng Việt có dấu.
+- title tối đa 8 từ; description tối đa 20 từ; encouragement tối đa 18 từ.
+- target_value phải là số dương.
+- Không chẩn đoán y tế, không đưa bài tập nguy hiểm.
 
-Schema:
+Cấu trúc mỗi object:
 [
   {
     "schedule_date": "${_dateKey(startDate)}",
     "start_time": "08:00",
     "end_time": "08:25",
-    "title": "string",
-    "description": "string",
+    "title": "Đi bộ thư giãn",
+    "description": "Đi bộ chậm, giữ nhịp thở đều và thả lỏng vai.",
     "target_value": 1,
-    "unit": "lan",
-    "encouragement": "string"
+    "unit": "lần",
+    "encouragement": "Bạn đang chăm sóc cơ thể rất tốt."
   }
 ]
 
-Du lieu nguoi dung:
-name: ${profile.fullName}
-goals: ${profile.goals.isEmpty ? 'none' : profile.goals.join(', ')}
-conditions: ${profile.conditions.isEmpty ? 'none' : profile.conditions.join(', ')}
-habits: ${profile.habits.isEmpty ? 'none' : profile.habits.join(', ')}
-sleep: ${profile.sleepQuality}
-activity: ${profile.activityLevel}
-water: ${profile.waterPerDay}
+Hồ sơ người dùng:
+- Tên: ${profile.fullName}
+- Mục tiêu: ${profile.goals.isEmpty ? 'Không có' : profile.goals.join(', ')}
+- Tình trạng sức khỏe: ${profile.conditions.isEmpty ? 'Không có' : profile.conditions.join(', ')}
+- Thói quen: ${profile.habits.isEmpty ? 'Không có' : profile.habits.join(', ')}
+- Giấc ngủ: ${profile.sleepQuality}
+- Hoạt động: ${profile.activityLevel}
+- Lượng nước: ${profile.waterPerDay}
 ''';
   }
 

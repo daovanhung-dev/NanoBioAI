@@ -10,6 +10,7 @@ class UsersTable {
     avatar_url TEXT,
     gender TEXT,
     birth_year INTEGER,
+    subscription_tier TEXT DEFAULT 'free',
     created_at TEXT,
     updated_at TEXT
   )

@@ -24,6 +24,9 @@ class MigrationManager {
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 6)) {
       await _migrateToV6(db);
     }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 7)) {
+      await _migrateToV7(db);
+    }
   }
 
   static bool _shouldRunMigration(
@@ -147,6 +150,27 @@ class MigrationManager {
       tableName: 'health_tracking_logs',
       columnName: 'daily_score',
       definition: 'INTEGER',
+    );
+  }
+
+  static Future<void> _migrateToV7(Database db) async {
+    await _addColumnIfMissing(
+      db,
+      tableName: 'health_tracking_logs',
+      columnName: 'heart_rate_bpm',
+      definition: 'INTEGER',
+    );
+    await _addColumnIfMissing(
+      db,
+      tableName: 'health_tracking_logs',
+      columnName: 'oxygen_saturation',
+      definition: 'REAL',
+    );
+    await _addColumnIfMissing(
+      db,
+      tableName: 'users',
+      columnName: 'subscription_tier',
+      definition: "TEXT DEFAULT 'free'",
     );
   }
 

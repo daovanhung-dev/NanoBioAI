@@ -7,10 +7,12 @@ import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 import '../../domain/entities/dashboard_entity.dart';
 
 class DashboardLocalDatasource {
-  const DashboardLocalDatasource();
+  final Database? database;
+
+  const DashboardLocalDatasource({this.database});
 
   Future<Database> _db() async {
-    return DatabaseService.database;
+    return database ?? DatabaseService.database;
   }
 
   Future<void> saveMealPlan(List<MealPlanModel> mealPlans) async {
@@ -128,6 +130,9 @@ class DashboardLocalDatasource {
       phone: _readString(user, 'phone'),
       gender: _readString(user, 'gender'),
       birthYear: _readInt(user, 'birth_year'),
+      subscriptionTier: _readString(user, 'subscription_tier').isEmpty
+          ? 'free'
+          : _readString(user, 'subscription_tier'),
       occupation: _readString(profile, 'occupation'),
       heightCm: _readDouble(profile, 'height_cm'),
       weightKg: _readDouble(profile, 'weight_kg'),

@@ -6,6 +6,7 @@ class UserModel {
   final String? avatarUrl;
   final String? gender;
   final int? birthYear;
+  final String subscriptionTier;
   final String? createdAt;
   final String? updatedAt;
 
@@ -17,6 +18,7 @@ class UserModel {
     this.avatarUrl,
     this.gender,
     this.birthYear,
+    this.subscriptionTier = 'free',
     this.createdAt,
     this.updatedAt,
   });
@@ -30,12 +32,14 @@ class UserModel {
       avatarUrl: _readString(map['avatar_url']),
       gender: _readString(map['gender']),
       birthYear: _readInt(map['birth_year']),
+      subscriptionTier: _readString(map['subscription_tier']) ?? 'free',
       createdAt: _readString(map['created_at']),
       updatedAt: _readString(map['updated_at']),
     );
   }
 
-  factory UserModel.fromJson(Map<String, Object?> json) => UserModel.fromMap(json);
+  factory UserModel.fromJson(Map<String, Object?> json) =>
+      UserModel.fromMap(json);
 
   Map<String, Object?> toMap() {
     return {
@@ -46,6 +50,7 @@ class UserModel {
       'avatar_url': avatarUrl,
       'gender': gender,
       'birth_year': birthYear,
+      'subscription_tier': subscriptionTier,
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
@@ -61,6 +66,7 @@ class UserModel {
     String? avatarUrl,
     String? gender,
     int? birthYear,
+    String? subscriptionTier,
     String? createdAt,
     String? updatedAt,
   }) {
@@ -72,6 +78,7 @@ class UserModel {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       gender: gender ?? this.gender,
       birthYear: birthYear ?? this.birthYear,
+      subscriptionTier: subscriptionTier ?? this.subscriptionTier,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -89,19 +96,4 @@ int? _readInt(Object? value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
   return int.tryParse(value.toString());
-}
-
-double? _readDouble(Object? value) {
-  if (value == null) return null;
-  if (value is double) return value;
-  if (value is num) return value.toDouble();
-  return double.tryParse(value.toString());
-}
-
-bool _readBool(Object? value) {
-  if (value == null) return false;
-  if (value is bool) return value;
-  if (value is num) return value != 0;
-  final normalized = value.toString().trim().toLowerCase();
-  return normalized == '1' || normalized == 'true' || normalized == 'yes';
 }

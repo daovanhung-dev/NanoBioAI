@@ -105,13 +105,20 @@ void main() {
       userId: 'u1',
       logDate: '2026-06-16',
       waterMl: 500,
+      heartRateBpm: 70,
+      oxygenSaturation: 98.1,
       createdAt: '2026-06-16T08:00:00',
       updatedAt: '2026-06-16T08:00:00',
     );
 
     await dao.upsertByUserAndDate(log);
     await dao.upsertByUserAndDate(
-      log.copyWith(waterMl: 1000, updatedAt: '2026-06-16T09:00:00'),
+      log.copyWith(
+        waterMl: 1000,
+        heartRateBpm: 74,
+        oxygenSaturation: 98.6,
+        updatedAt: '2026-06-16T09:00:00',
+      ),
     );
 
     final restored = await dao.getByUserAndDate(
@@ -121,5 +128,7 @@ void main() {
 
     expect(restored, isNotNull);
     expect(restored!.waterMl, 1000);
+    expect(restored.heartRateBpm, 74);
+    expect(restored.oxygenSaturation, 98.6);
   });
 }

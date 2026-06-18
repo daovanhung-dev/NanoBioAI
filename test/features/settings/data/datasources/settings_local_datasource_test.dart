@@ -6,53 +6,60 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('SettingsLocalDatasource - Profile Operations', () {
-    test('getUserProfile should combine users and health_profiles data', () async {
-      // This test verifies the datasource structure and expected behavior
-      // In real integration tests, we would use an actual database
-      
-      const datasource = SettingsLocalDatasource();
-      
-      // Verify the datasource can be instantiated
-      expect(datasource, isA<SettingsLocalDatasource>());
-    });
+    test(
+      'getUserProfile should combine users and health_profiles data',
+      () async {
+        // This test verifies the datasource structure and expected behavior
+        // In real integration tests, we would use an actual database
 
-    test('updateUserProfile should update both users and health_profiles tables', () {
-      // This test documents the expected behavior:
-      // - Should separate fields for users table vs health_profiles table
-      // - Should update updated_at timestamp
-      // - Should use transaction for atomic updates
-      
-      const datasource = SettingsLocalDatasource();
-      expect(datasource, isA<SettingsLocalDatasource>());
-      
-      // Expected users table fields
-      const usersFields = [
-        'full_name',
-        'email',
-        'phone',
-        'gender',
-        'birth_year',
-        'avatar_url',
-      ];
-      
-      // Expected health_profiles table fields
-      const healthProfileFields = [
-        'occupation',
-        'height_cm',
-        'weight_kg',
-        'bmi',
-      ];
-      
-      // Verify field separation is documented
-      expect(usersFields.length, equals(6));
-      expect(healthProfileFields.length, equals(4));
-    });
+        const datasource = SettingsLocalDatasource();
+
+        // Verify the datasource can be instantiated
+        expect(datasource, isA<SettingsLocalDatasource>());
+      },
+    );
+
+    test(
+      'updateUserProfile should update both users and health_profiles tables',
+      () {
+        // This test documents the expected behavior:
+        // - Should separate fields for users table vs health_profiles table
+        // - Should update updated_at timestamp
+        // - Should use transaction for atomic updates
+
+        const datasource = SettingsLocalDatasource();
+        expect(datasource, isA<SettingsLocalDatasource>());
+
+        // Expected users table fields
+        const usersFields = [
+          'full_name',
+          'email',
+          'phone',
+          'gender',
+          'birth_year',
+          'avatar_url',
+          'subscription_tier',
+        ];
+
+        // Expected health_profiles table fields
+        const healthProfileFields = [
+          'occupation',
+          'height_cm',
+          'weight_kg',
+          'bmi',
+        ];
+
+        // Verify field separation is documented
+        expect(usersFields.length, equals(7));
+        expect(healthProfileFields.length, equals(4));
+      },
+    );
 
     test('updateAvatar should only update avatar_url in users table', () {
       // This test verifies the method signature and expected behavior
       const datasource = SettingsLocalDatasource();
       expect(datasource, isA<SettingsLocalDatasource>());
-      
+
       // Avatar update should be simpler than full profile update
       // Should only touch users table, not health_profiles
     });
@@ -92,17 +99,20 @@ void main() {
       expect(result, equals(value));
     });
 
-    test('getBoolPreference should return default value when key not found', () async {
-      const datasource = SettingsLocalDatasource();
-      const key = 'nonexistent_key';
-      const defaultValue = true;
+    test(
+      'getBoolPreference should return default value when key not found',
+      () async {
+        const datasource = SettingsLocalDatasource();
+        const key = 'nonexistent_key';
+        const defaultValue = true;
 
-      final result = await datasource.getBoolPreference(
-        key,
-        defaultValue: defaultValue,
-      );
-      expect(result, equals(defaultValue));
-    });
+        final result = await datasource.getBoolPreference(
+          key,
+          defaultValue: defaultValue,
+        );
+        expect(result, equals(defaultValue));
+      },
+    );
 
     test('saveStringPreference should save string value', () async {
       const datasource = SettingsLocalDatasource();
@@ -129,17 +139,20 @@ void main() {
       expect(result, equals(value));
     });
 
-    test('getStringPreference should return default value when key not found', () async {
-      const datasource = SettingsLocalDatasource();
-      const key = 'nonexistent_key';
-      const defaultValue = 'default_value';
+    test(
+      'getStringPreference should return default value when key not found',
+      () async {
+        const datasource = SettingsLocalDatasource();
+        const key = 'nonexistent_key';
+        const defaultValue = 'default_value';
 
-      final result = await datasource.getStringPreference(
-        key,
-        defaultValue: defaultValue,
-      );
-      expect(result, equals(defaultValue));
-    });
+        final result = await datasource.getStringPreference(
+          key,
+          defaultValue: defaultValue,
+        );
+        expect(result, equals(defaultValue));
+      },
+    );
 
     test('clearAllPreferences should remove all stored preferences', () async {
       const datasource = SettingsLocalDatasource();
@@ -171,7 +184,7 @@ void main() {
       // - Should use getTemporaryDirectory() from path_provider
       // - Should recursively calculate file sizes
       // - Should return 0 on error
-      
+
       const datasource = SettingsLocalDatasource();
       expect(datasource, isA<SettingsLocalDatasource>());
     });
@@ -181,7 +194,7 @@ void main() {
       // - Should use getTemporaryDirectory() from path_provider
       // - Should recursively delete files and directories
       // - Should handle errors gracefully
-      
+
       const datasource = SettingsLocalDatasource();
       expect(datasource, isA<SettingsLocalDatasource>());
     });
@@ -191,7 +204,7 @@ void main() {
       // - Should delete from meal_plans table
       // - Should filter by user_id
       // - Should return count of deleted rows
-      
+
       const datasource = SettingsLocalDatasource();
       expect(datasource, isA<SettingsLocalDatasource>());
     });
@@ -203,14 +216,14 @@ void main() {
       // - Database errors should be caught and rethrown
       // - Should log errors via AppLogger
       // - Should maintain data integrity with transactions
-      
+
       const datasource = SettingsLocalDatasource();
       expect(datasource, isA<SettingsLocalDatasource>());
     });
 
     test('should separate users and health_profiles fields correctly', () {
       // This test documents the field separation logic:
-      
+
       // Users table fields
       const usersTableFields = {
         'full_name': 'John Doe',
@@ -219,8 +232,9 @@ void main() {
         'gender': 'male',
         'birth_year': 1990,
         'avatar_url': '/path/to/avatar.png',
+        'subscription_tier': 'premium',
       };
-      
+
       // Health profiles table fields
       const healthProfilesTableFields = {
         'occupation': 'Engineer',
@@ -228,11 +242,11 @@ void main() {
         'weight_kg': 70.0,
         'bmi': 22.86,
       };
-      
+
       // Verify field counts
-      expect(usersTableFields.length, equals(6));
+      expect(usersTableFields.length, equals(7));
       expect(healthProfilesTableFields.length, equals(4));
-      
+
       // Verify no overlap
       final usersKeys = usersTableFields.keys.toSet();
       final healthKeys = healthProfilesTableFields.keys.toSet();
@@ -243,10 +257,10 @@ void main() {
       // This test documents timestamp format requirements:
       // - updated_at should use DateTime.now().toIso8601String()
       // - This ensures consistent timestamp format across all operations
-      
+
       final now = DateTime.now();
       final iso8601 = now.toIso8601String();
-      
+
       // Verify ISO8601 format is parseable
       expect(() => DateTime.parse(iso8601), returnsNormally);
       expect(DateTime.parse(iso8601), isA<DateTime>());
@@ -257,7 +271,7 @@ void main() {
     test('should use consistent preference keys as per design', () {
       // This test documents the expected SharedPreferences keys
       // from the design document
-      
+
       const expectedKeys = {
         'theme_mode': 'String (light|dark)',
         'language_code': 'String (vi|en)',
@@ -270,7 +284,7 @@ void main() {
         'ai_personality': 'String (professional|friendly|motivational)',
         'data_privacy_mode': 'String (local|cloud)',
       };
-      
+
       // Verify we have all documented keys
       expect(expectedKeys.length, equals(10));
       expect(expectedKeys.containsKey('theme_mode'), isTrue);
@@ -282,7 +296,7 @@ void main() {
   group('SettingsLocalDatasource - Database Tables', () {
     test('should query correct tables for user profile', () {
       // This test documents the database schema usage:
-      
+
       // Users table columns
       const usersColumns = [
         'id',
@@ -292,10 +306,11 @@ void main() {
         'avatar_url',
         'gender',
         'birth_year',
+        'subscription_tier',
         'created_at',
         'updated_at',
       ];
-      
+
       // Health profiles table columns
       const healthProfilesColumns = [
         'id',
@@ -309,9 +324,9 @@ void main() {
         'created_at',
         'updated_at',
       ];
-      
+
       // Verify expected columns are documented
-      expect(usersColumns.length, equals(9));
+      expect(usersColumns.length, equals(10));
       expect(healthProfilesColumns.length, equals(10));
       expect(healthProfilesColumns.contains('user_id'), isTrue);
     });
@@ -320,10 +335,10 @@ void main() {
       // This test documents the query pattern:
       // - All queries should filter by user_id
       // - Should use parameterized queries to prevent SQL injection
-      
+
       const expectedWhereClause = 'user_id = ?';
       const expectedWhereArgs = ['userId'];
-      
+
       expect(expectedWhereClause, contains('user_id'));
       expect(expectedWhereArgs.length, equals(1));
     });
@@ -335,7 +350,7 @@ void main() {
       // - All errors should be logged with AppLogger.error
       // - Tag should be 'SETTINGS_LOCAL_DS'
       // - Errors should be rethrown after logging
-      
+
       const expectedTag = 'SETTINGS_LOCAL_DS';
       expect(expectedTag, equals('SETTINGS_LOCAL_DS'));
     });
@@ -345,7 +360,7 @@ void main() {
       // - Wrap operations in try-catch
       // - Log errors with stack traces
       // - Rethrow errors for upper layers to handle
-      
+
       const datasource = SettingsLocalDatasource();
       expect(datasource, isA<SettingsLocalDatasource>());
     });

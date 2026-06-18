@@ -166,16 +166,19 @@ class DashboardDynamicLocalDatasource {
       limit: 5,
     );
 
-    return rows.map((row) {
-      return DashboardInsightItem(
-        id: _readString(row['id']) ?? '',
-        type: _readString(row['insight_type']) ?? 'health',
-        title: _readString(row['title']) ?? 'Insight sức khỏe',
-        content: _readString(row['content']) ?? '',
-        riskLevel: _readString(row['risk_level']) ?? 'info',
-        createdAt: _readString(row['created_at']),
-      );
-    }).where((item) => item.content.trim().isNotEmpty).toList();
+    return rows
+        .map((row) {
+          return DashboardInsightItem(
+            id: _readString(row['id']) ?? '',
+            type: _readString(row['insight_type']) ?? 'health',
+            title: _readString(row['title']) ?? 'Insight sức khỏe',
+            content: _readString(row['content']) ?? '',
+            riskLevel: _readString(row['risk_level']) ?? 'info',
+            createdAt: _readString(row['created_at']),
+          );
+        })
+        .where((item) => item.content.trim().isNotEmpty)
+        .toList();
   }
 
   Future<List<DashboardRecommendationItem>> _latestRecommendations(
@@ -189,17 +192,20 @@ class DashboardDynamicLocalDatasource {
       limit: 5,
     );
 
-    return rows.map((row) {
-      return DashboardRecommendationItem(
-        id: _readString(row['id']) ?? '',
-        type: _readString(row['recommendation_type']) ?? 'health',
-        title: _readString(row['title']) ?? 'Đề xuất sức khỏe',
-        description: _readString(row['description']) ?? '',
-        actionText: _readString(row['action_text']) ?? '',
-        isRead: _readBool(row['is_read']),
-        createdAt: _readString(row['created_at']),
-      );
-    }).where((item) => item.description.trim().isNotEmpty).toList();
+    return rows
+        .map((row) {
+          return DashboardRecommendationItem(
+            id: _readString(row['id']) ?? '',
+            type: _readString(row['recommendation_type']) ?? 'health',
+            title: _readString(row['title']) ?? 'Đề xuất sức khỏe',
+            description: _readString(row['description']) ?? '',
+            actionText: _readString(row['action_text']) ?? '',
+            isRead: _readBool(row['is_read']),
+            createdAt: _readString(row['created_at']),
+          );
+        })
+        .where((item) => item.description.trim().isNotEmpty)
+        .toList();
   }
 
   Future<List<DashboardGoalProgressItem>> _goalProgress(
@@ -214,7 +220,9 @@ class DashboardDynamicLocalDatasource {
     );
 
     final completedTasks = todayTasks.where((task) => task.isCompleted).length;
-    final progress = todayTasks.isEmpty ? 0.0 : completedTasks / todayTasks.length;
+    final progress = todayTasks.isEmpty
+        ? 0.0
+        : completedTasks / todayTasks.length;
     final subtitle = todayTasks.isEmpty
         ? 'Chưa có nhiệm vụ hôm nay để đo tiến độ'
         : '$completedTasks/${todayTasks.length} nhiệm vụ hôm nay đã hoàn thành';
@@ -262,7 +270,8 @@ class DashboardDynamicLocalDatasource {
         .fold<double>(0, (sum, task) => sum + task.currentValue);
 
     final waterMl = _readInt(todayLog?['water_ml']) ?? waterFromTasks.round();
-    final dailyScore = _readInt(todayLog?['daily_score']) ??
+    final dailyScore =
+        _readInt(todayLog?['daily_score']) ??
         _estimateDailyScore(
           completedTasks: completedTasks,
           totalTasks: tasks.length,
@@ -283,6 +292,8 @@ class DashboardDynamicLocalDatasource {
       stepsCount: _readInt(todayLog?['steps_count']) ?? 0,
       sleepHours: _readDouble(todayLog?['sleep_hours']) ?? 0,
       stressLevel: _readInt(todayLog?['stress_level']) ?? 0,
+      heartRateBpm: _readInt(todayLog?['heart_rate_bpm']),
+      oxygenSaturation: _readDouble(todayLog?['oxygen_saturation']),
       dailyScore: dailyScore,
       nutritionLogCount: nutritionLogs.length,
     );

@@ -35,6 +35,9 @@ class UserProfileEntity {
   /// User's Body Mass Index (calculated from height and weight)
   final double bmi;
 
+  /// Account or app plan tier stored on the local users table.
+  final String subscriptionTier;
+
   /// Optional URL or local path to the user's avatar image
   final String? avatarUrl;
 
@@ -49,6 +52,7 @@ class UserProfileEntity {
     required this.heightCm,
     required this.weightKg,
     required this.bmi,
+    this.subscriptionTier = 'free',
     this.avatarUrl,
   });
 
@@ -64,6 +68,7 @@ class UserProfileEntity {
     double? heightCm,
     double? weightKg,
     double? bmi,
+    String? subscriptionTier,
     String? avatarUrl,
   }) {
     return UserProfileEntity(
@@ -77,6 +82,7 @@ class UserProfileEntity {
       heightCm: heightCm ?? this.heightCm,
       weightKg: weightKg ?? this.weightKg,
       bmi: bmi ?? this.bmi,
+      subscriptionTier: subscriptionTier ?? this.subscriptionTier,
       avatarUrl: avatarUrl ?? this.avatarUrl,
     );
   }
@@ -96,6 +102,7 @@ class UserProfileEntity {
         other.heightCm == heightCm &&
         other.weightKg == weightKg &&
         other.bmi == bmi &&
+        other.subscriptionTier == subscriptionTier &&
         other.avatarUrl == avatarUrl;
   }
 
@@ -112,6 +119,7 @@ class UserProfileEntity {
       heightCm,
       weightKg,
       bmi,
+      subscriptionTier,
       avatarUrl,
     );
   }
@@ -121,6 +129,6 @@ class UserProfileEntity {
     return 'UserProfileEntity(id: $id, fullName: $fullName, email: $email, '
         'phone: $phone, gender: $gender, birthYear: $birthYear, '
         'occupation: $occupation, heightCm: $heightCm, weightKg: $weightKg, '
-        'bmi: $bmi, avatarUrl: $avatarUrl)';
+        'bmi: $bmi, subscriptionTier: $subscriptionTier, avatarUrl: $avatarUrl)';
   }
 }

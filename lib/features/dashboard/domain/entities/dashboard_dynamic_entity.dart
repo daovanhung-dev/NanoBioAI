@@ -60,6 +60,8 @@ class DashboardDailyMetrics {
   final int stepsCount;
   final double sleepHours;
   final int stressLevel;
+  final int? heartRateBpm;
+  final double? oxygenSaturation;
   final int dailyScore;
   final int nutritionLogCount;
 
@@ -74,26 +76,32 @@ class DashboardDailyMetrics {
     required this.stepsCount,
     required this.sleepHours,
     required this.stressLevel,
+    this.heartRateBpm,
+    this.oxygenSaturation,
     required this.dailyScore,
     required this.nutritionLogCount,
   });
 
   const DashboardDailyMetrics.empty()
-      : completedTasks = 0,
-        totalTasks = 0,
-        completedMeals = 0,
-        totalMeals = 0,
-        caloriesLogged = 0,
-        caloriesPlanned = 0,
-        waterMl = 0,
-        stepsCount = 0,
-        sleepHours = 0,
-        stressLevel = 0,
-        dailyScore = 0,
-        nutritionLogCount = 0;
+    : completedTasks = 0,
+      totalTasks = 0,
+      completedMeals = 0,
+      totalMeals = 0,
+      caloriesLogged = 0,
+      caloriesPlanned = 0,
+      waterMl = 0,
+      stepsCount = 0,
+      sleepHours = 0,
+      stressLevel = 0,
+      heartRateBpm = null,
+      oxygenSaturation = null,
+      dailyScore = 0,
+      nutritionLogCount = 0;
 
-  double get taskCompletionRate => totalTasks == 0 ? 0 : completedTasks / totalTasks;
-  double get mealCompletionRate => totalMeals == 0 ? 0 : completedMeals / totalMeals;
+  double get taskCompletionRate =>
+      totalTasks == 0 ? 0 : completedTasks / totalTasks;
+  double get mealCompletionRate =>
+      totalMeals == 0 ? 0 : completedMeals / totalMeals;
 
   bool get hasAnyData =>
       totalTasks > 0 ||
@@ -104,6 +112,8 @@ class DashboardDailyMetrics {
       stepsCount > 0 ||
       sleepHours > 0 ||
       stressLevel > 0 ||
+      heartRateBpm != null ||
+      oxygenSaturation != null ||
       dailyScore > 0 ||
       nutritionLogCount > 0;
 }

@@ -12,6 +12,8 @@ class HealthTrackingLogsTable {
     sleep_hours REAL,
     stress_level INTEGER,
     steps_count INTEGER,
+    heart_rate_bpm INTEGER,
+    oxygen_saturation REAL,
     daily_score INTEGER,
     mood TEXT,
 

@@ -16,49 +16,46 @@ class MealPlanPrompt {
     final expectedCount = days * MealPlanAiNormalizer.mealsPerDay;
 
     return '''
-Ban la chuyen gia dinh duong.
-Viet hoan toan bang tieng Viet có dấu.
-Tao thuc don $days ngay, bat dau tu ${_dateKey(startDate)} den ${_dateKey(endDate)}.
-Moi ngay dung 5 bua, sap xep theo tung ngay va theo dung thu tu:
-- breakfast start_time 07:00 end_time 07:30 meal_order 1
-- morning_snack start_time 09:30 end_time 09:45 meal_order 2
-- lunch start_time 12:00 end_time 12:45 meal_order 3
-- afternoon_snack start_time 15:30 end_time 15:45 meal_order 4
-- dinner start_time 18:30 end_time 19:15 meal_order 5
-Tong so object bat buoc la $expectedCount.
-Tra ve DUY NHAT JSON hop le, khong markdown, khong giai thich, khong text thua.
-Khong them key ngoai schema.
-Gia tri so phai la number, khong phai string.
-Truong cooking_instructions la chuoi tieng Viet ngan, gom 2-4 buoc che bien.
-App se tu gan id, user_id, plan_date, start_time, end_time, meal_order, is_completed, ai_generated, created_at, updated_at.
-Ban chi can tra dung meal_type va noi dung bua an.
+Bạn là chuyên gia dinh dưỡng.
+Tạo thực đơn $days ngày, từ ${_dateKey(startDate)} đến ${_dateKey(endDate)}.
+Tổng số object bắt buộc: $expectedCount.
 
-Schema:
+Yêu cầu:
+- Mỗi ngày đúng 5 bữa theo thứ tự: breakfast, morning_snack, lunch, afternoon_snack, dinner.
+- Chỉ dùng các field trong cấu trúc bên dưới; ứng dụng sẽ tự gán ngày, giờ, thứ tự và id.
+- Field meal_type phải giữ đúng enum kỹ thuật đã nêu.
+- Field meal_name, description, cooking_instructions phải là tiếng Việt có dấu.
+- description tối đa 18 từ, nêu món chính và lợi ích ngắn gọn.
+- cooking_instructions tối đa 35 từ, gồm 2 đến 3 bước ngắn.
+- calories, protein, carbs, fat, fiber, water_ml phải là số.
+- Ưu tiên món Việt Nam, dễ nấu, phù hợp mục tiêu và tình trạng sức khỏe.
+
+Cấu trúc mỗi object:
 [
   {
     "meal_type": "breakfast",
-    "meal_name": "string",
-    "description": "string",
+    "meal_name": "Cháo yến mạch trứng gà",
+    "description": "Bữa sáng giàu đạm, nhẹ bụng và hỗ trợ no lâu.",
     "calories": 350,
     "protein": 12.5,
     "carbs": 45,
     "fat": 8,
     "fiber": 6,
     "water_ml": 300,
-    "cooking_instructions": "Buoc 1... Buoc 2..."
+    "cooking_instructions": "Bước 1 nấu yến mạch mềm. Bước 2 thêm trứng và rau xanh."
   }
 ]
 
-Du lieu nguoi dung:
-name: ${healthData.fullName}
-bmi: ${healthData.bmi}
-goals: ${goals.isEmpty ? 'none' : goals}
-conditions: ${conditions.isEmpty ? 'none' : conditions}
-habits: ${habits.isEmpty ? 'none' : habits}
-sleep: ${healthData.sleepQuality}
-activity: ${healthData.activityLevel}
-water: ${healthData.waterPerDay}
-concern: ${healthData.concernText}
+Hồ sơ người dùng:
+- Tên: ${healthData.fullName}
+- BMI: ${healthData.bmi}
+- Mục tiêu: ${goals.isEmpty ? 'Không có' : goals}
+- Tình trạng sức khỏe: ${conditions.isEmpty ? 'Không có' : conditions}
+- Thói quen: ${habits.isEmpty ? 'Không có' : habits}
+- Giấc ngủ: ${healthData.sleepQuality}
+- Hoạt động: ${healthData.activityLevel}
+- Lượng nước: ${healthData.waterPerDay}
+- Mối quan tâm: ${healthData.concernText}
 ''';
   }
 

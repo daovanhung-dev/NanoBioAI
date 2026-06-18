@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nano_app/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:nano_app/features/features_hub/presentation/pages/features_hub_page.dart';
-import 'package:nano_app/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/features/other/presentation/pages/other_page.dart';
 import 'package:nano_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:nano_app/shared/widgets/ai_chat_fab.dart';
@@ -31,7 +30,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   int _currentIndex = 0;
 
   final List<Widget> _pages = const [
-    DashboardPage(),//LifestyleSchedulePage(),
+    DashboardPage(), //LifestyleSchedulePage(),
     FeaturesHubPage(),
     HealthInsightsView(),
     SettingsView(),

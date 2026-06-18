@@ -1,52 +1,102 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
+import 'package:nano_app/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:nano_app/features/dashboard/providers/dashboard_dynamic_provider.dart';
+import 'package:nano_app/features/dashboard/providers/dashboard_provider.dart';
 
-class HealthInsightsView extends StatelessWidget {
+class HealthInsightsView extends ConsumerWidget {
   const HealthInsightsView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardAsync = ref.watch(dashboardProvider);
+    final dynamicAsync = ref.watch(dashboardDynamicProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.pagePadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildAiSummaryCard(),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildTodayOverview(),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildHealthScore(),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildInsightSection(),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildRecommendationSection(),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildTrackingGrid(size),
-                    const SizedBox(height: AppSpacing.xxxl),
-                  ],
+        child: dashboardAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => _StateMessage(
+            icon: Icons.error_outline_rounded,
+            title: 'Chưa có dữ liệu hồ sơ',
+            message: error.toString(),
+            onRetry: () => ref.invalidate(dashboardProvider),
+          ),
+          data: (dashboard) {
+            final dynamicData =
+                dynamicAsync.value ?? DashboardDynamicEntity.empty();
+            return RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(dashboardProvider);
+                ref.invalidate(dashboardDynamicProvider);
+                await Future.wait<Object?>([
+                  ref.read(dashboardProvider.future),
+                  ref.read(dashboardDynamicProvider.future),
+                ]);
+              },
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
                 ),
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.pagePadding,
+                      AppSpacing.pagePadding,
+                      AppSpacing.pagePadding,
+                      128,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        _Header(dashboard: dashboard),
+                        const SizedBox(height: AppSpacing.lg),
+                        if (dynamicAsync.isLoading) const _SyncBanner(),
+                        _SummaryCard(
+                          dashboard: dashboard,
+                          metrics: dynamicData.metrics,
+                          insights: dynamicData.insights,
+                          recommendations: dynamicData.recommendations,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        _TodayOverview(metrics: dynamicData.metrics),
+                        const SizedBox(height: AppSpacing.lg),
+                        _HealthScoreCard(metrics: dynamicData.metrics),
+                        const SizedBox(height: AppSpacing.lg),
+                        _InsightSection(insights: dynamicData.insights),
+                        const SizedBox(height: AppSpacing.lg),
+                        _RecommendationSection(
+                          recommendations: dynamicData.recommendations,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        _TrackingGrid(
+                          dashboard: dashboard,
+                          metrics: dynamicData.metrics,
+                        ),
+                      ]),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
-      bottomNavigationBar: _buildBottomBar(),
     );
   }
+}
 
-  Widget _buildHeader() {
+class _Header extends StatelessWidget {
+  final DashboardEntity dashboard;
+
+  const _Header({required this.dashboard});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = _shortName(dashboard.fullName);
     return Row(
       children: [
         Expanded(
@@ -54,14 +104,14 @@ class HealthInsightsView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Xin chào Hùng 👋',
+                name.isEmpty ? 'Xin chào' : 'Xin chào $name',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                'Phân tích sức khỏe AI',
+                'Góc sức khỏe của bạn',
                 style: AppTextStyles.heading1.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
@@ -86,8 +136,29 @@ class HealthInsightsView extends StatelessWidget {
       ],
     );
   }
+}
 
-  Widget _buildAiSummaryCard() {
+class _SummaryCard extends StatelessWidget {
+  final DashboardEntity dashboard;
+  final DashboardDailyMetrics metrics;
+  final List<DashboardInsightItem> insights;
+  final List<DashboardRecommendationItem> recommendations;
+
+  const _SummaryCard({
+    required this.dashboard,
+    required this.metrics,
+    required this.insights,
+    required this.recommendations,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final message = insights.isNotEmpty
+        ? insights.first.content
+        : recommendations.isNotEmpty
+        ? recommendations.first.description
+        : 'Chưa có insight AI trong SQLite. Khi dữ liệu được tạo, phần này sẽ tự cập nhật.';
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: AppDecoration.gradient(
@@ -98,54 +169,51 @@ class HealthInsightsView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: 6,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.18),
-              borderRadius: BorderRadius.circular(AppRadius.circular),
-            ),
-            child: Text(
-              'AI HEALTH REPORT',
-              style: AppTextStyles.labelMedium.copyWith(
-                color: Colors.white,
-                letterSpacing: 1,
-              ),
+          Text(
+            'Báo cáo từ dữ liệu local',
+            style: AppTextStyles.labelMedium.copyWith(
+              color: Colors.white,
+              letterSpacing: 1,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Cơ thể của bạn đang có xu hướng phục hồi tốt.',
+            _scoreTitle(metrics.dailyScore),
             style: AppTextStyles.heading2.copyWith(
               color: Colors.white,
-              height: 1.4,
+              height: 1.35,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'AI phát hiện chất lượng giấc ngủ và lượng nước đã cải thiện đáng kể trong 7 ngày gần đây.',
+            message,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: Colors.white.withOpacity(.9),
+              color: Colors.white.withValues(alpha: .9),
+              height: 1.45,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
           Row(
             children: [
               Expanded(
-                child: _buildInfoChip(
+                child: _InfoChip(
                   icon: Icons.favorite_rounded,
                   title: 'Nhịp tim',
-                  value: '72 BPM',
+                  value: metrics.heartRateBpm == null
+                      ? '--'
+                      : '${metrics.heartRateBpm} bpm',
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: _buildInfoChip(
-                  icon: Icons.bolt_rounded,
-                  title: 'Năng lượng',
-                  value: 'Tốt',
+                child: _InfoChip(
+                  icon: Icons.bloodtype_rounded,
+                  title: 'SpO2',
+                  value: metrics.oxygenSaturation == null
+                      ? '--'
+                      : '${metrics.oxygenSaturation!.toStringAsFixed(1)}%',
                 ),
               ),
             ],
@@ -154,29 +222,30 @@ class HealthInsightsView extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildInfoChip({
-    required IconData icon,
-    required String title,
-    required String value,
-  }) {
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+
+  const _InfoChip({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(.12),
+        color: Colors.white.withValues(alpha: .12),
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
         children: [
-          Container(
-            height: 42,
-            width: 42,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.14),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Icon(icon, color: Colors.white),
-          ),
+          Icon(icon, color: Colors.white),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -191,6 +260,8 @@ class HealthInsightsView extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.heading4.copyWith(color: Colors.white),
                 ),
               ],
@@ -200,15 +271,26 @@ class HealthInsightsView extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildTodayOverview() {
+class _TodayOverview extends StatelessWidget {
+  final DashboardDailyMetrics metrics;
+
+  const _TodayOverview({required this.metrics});
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(
-          child: _buildOverviewCard(
+          child: _OverviewCard(
             title: 'Năng lượng',
-            value: '1,840',
-            unit: 'kcal',
+            value: metrics.caloriesLogged > 0
+                ? _formatInt(metrics.caloriesLogged)
+                : metrics.caloriesPlanned > 0
+                ? _formatInt(metrics.caloriesPlanned)
+                : '--',
+            unit: metrics.caloriesLogged > 0 ? 'kcal' : 'kcal dự kiến',
             icon: Icons.local_fire_department_rounded,
             color: AppColors.warning,
             bg: AppColors.warningSoft,
@@ -216,9 +298,11 @@ class HealthInsightsView extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: _buildOverviewCard(
+          child: _OverviewCard(
             title: 'Nước',
-            value: '2.4',
+            value: metrics.waterMl > 0
+                ? (metrics.waterMl / 1000).toStringAsFixed(1)
+                : '--',
             unit: 'L',
             icon: Icons.water_drop_rounded,
             color: AppColors.info,
@@ -228,21 +312,28 @@ class HealthInsightsView extends StatelessWidget {
       ],
     );
   }
+}
 
-  Widget _buildOverviewCard({
-    required String title,
-    required String value,
-    required String unit,
-    required IconData icon,
-    required Color color,
-    required Color bg,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: AppDecoration.card(
-        radius: AppRadius.xl,
-        shadows: AppShadows.sm,
-      ),
+class _OverviewCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final String unit;
+  final IconData icon;
+  final Color color;
+  final Color bg;
+
+  const _OverviewCard({
+    required this.title,
+    required this.value,
+    required this.unit,
+    required this.icon,
+    required this.color,
+    required this.bg,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -258,59 +349,53 @@ class HealthInsightsView extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(title, style: AppTextStyles.bodyMedium),
           const SizedBox(height: 4),
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: value,
-                  style: AppTextStyles.heading2.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                TextSpan(text: ' $unit', style: AppTextStyles.bodyMedium),
-              ],
-            ),
+          Text(
+            '$value $unit',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w800),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildHealthScore() {
-    return Container(
+class _HealthScoreCard extends StatelessWidget {
+  final DashboardDailyMetrics metrics;
+
+  const _HealthScoreCard({required this.metrics});
+
+  @override
+  Widget build(BuildContext context) {
+    final score = metrics.dailyScore;
+    final progress = score <= 0 ? 0.0 : score / 100;
+    return _SurfaceCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: AppDecoration.card(
-        radius: AppRadius.xxl,
-        shadows: AppShadows.soft,
-      ),
       child: Row(
         children: [
           SizedBox(
-            height: 120,
-            width: 120,
+            height: 112,
+            width: 112,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                SizedBox(
-                  height: 120,
-                  width: 120,
-                  child: CircularProgressIndicator(
-                    value: 0.86,
-                    strokeWidth: 10,
-                    backgroundColor: AppColors.borderLight,
-                    valueColor: const AlwaysStoppedAnimation(AppColors.success),
-                  ),
+                CircularProgressIndicator(
+                  value: progress,
+                  strokeWidth: 10,
+                  backgroundColor: AppColors.borderLight,
+                  valueColor: const AlwaysStoppedAnimation(AppColors.success),
                 ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '86',
+                      score <= 0 ? '--' : '$score',
                       style: AppTextStyles.displaySmall.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    Text('Điểm AI', style: AppTextStyles.bodySmall),
+                    Text('điểm', style: AppTextStyles.bodySmall),
                   ],
                 ),
               ],
@@ -321,29 +406,14 @@ class HealthInsightsView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Tình trạng sức khỏe', style: AppTextStyles.heading3),
+                Text('Tình trạng hôm nay', style: AppTextStyles.heading3),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Bạn đang duy trì trạng thái ổn định. Hãy tiếp tục ngủ đúng giờ và tăng vận động nhẹ mỗi ngày.',
-                  style: AppTextStyles.bodyMedium.copyWith(height: 1.6),
+                  _scoreMessage(score),
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.55),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.successSoft,
-                    borderRadius: BorderRadius.circular(AppRadius.circular),
-                  ),
-                  child: Text(
-                    'Ổn định & tích cực',
-                    style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.success,
-                    ),
-                  ),
-                ),
+                _StatusPill(label: _scoreLabel(score)),
               ],
             ),
           ),
@@ -351,208 +421,185 @@ class HealthInsightsView extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildInsightSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Mình nhận thấy',
-          style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildInsightCard(
-          icon: Icons.bedtime_rounded,
-          color: AppColors.primary,
-          bg: AppColors.primarySoft,
-          title: 'Giấc ngủ cải thiện',
-          description:
-              'Thời lượng ngủ trung bình tăng thêm 1.2 giờ trong tuần này.',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildInsightCard(
-          icon: Icons.restaurant_rounded,
-          color: AppColors.warning,
-          bg: AppColors.warningSoft,
-          title: 'Dinh dưỡng chưa cân bằng',
-          description:
-              'AI phát hiện lượng protein đang thấp hơn mức khuyến nghị.',
-        ),
-      ],
-    );
-  }
+class _InsightSection extends StatelessWidget {
+  final List<DashboardInsightItem> insights;
 
-  Widget _buildInsightCard({
-    required IconData icon,
-    required Color color,
-    required Color bg,
-    required String title,
-    required String description,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: AppDecoration.card(
-        radius: AppRadius.xl,
-        shadows: AppShadows.sm,
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 58,
-            width: 58,
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-            ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: AppTextStyles.heading4),
-                const SizedBox(height: 6),
-                Text(
-                  description,
-                  style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  const _InsightSection({required this.insights});
 
-  Widget _buildRecommendationSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Đề xuất hôm nay', style: AppTextStyles.heading3),
-        const SizedBox(height: AppSpacing.md),
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: AppDecoration.gradient(
-            colors: const [Color(0xFF0F172A), Color(0xFF1E293B)],
-            radius: AppRadius.xxl,
-            shadows: AppShadows.lg,
-          ),
-          child: Column(
-            children: [
-              _buildRecommendationItem(
-                icon: Icons.water_drop_rounded,
-                title: 'Mình uống thêm một cốc nước nhé',
-                subtitle:
-                    'Hôm nay bạn còn thiếu khoảng 600 ml, chia nhỏ ra sẽ dễ hơn.',
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _buildRecommendationItem(
-                icon: Icons.directions_walk_rounded,
-                title: 'Mình đi bộ nhẹ 20 phút nhé',
-                subtitle:
-                    'Một vòng ngắn cũng có thể giúp tiêu hóa và giấc ngủ tốt hơn.',
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _buildRecommendationItem(
-                icon: Icons.self_improvement_rounded,
-                title: 'Cho mình 5 phút thở chậm nhé',
-                subtitle:
-                    'Bạn không cần làm hoàn hảo, chỉ cần cho tâm trí nghỉ một chút.',
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecommendationItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Row(
-      children: [
-        Container(
-          height: 54,
-          width: 54,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.08),
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-          ),
-          child: Icon(icon, color: Colors.white),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
+  @override
+  Widget build(BuildContext context) {
+    return _Section(
+      title: 'Mình nhận thấy',
+      emptyTitle: 'Chưa có insight AI trong SQLite',
+      emptyMessage: 'Khi ai_insights có dữ liệu, phần này sẽ tự hiển thị.',
+      children: insights.map((item) {
+        return _SurfaceCard(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: AppTextStyles.labelLarge.copyWith(color: Colors.white),
+              Icon(
+                _riskIcon(item.riskLevel),
+                color: _riskColor(item.riskLevel),
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.title, style: AppTextStyles.heading4),
+                    const SizedBox(height: 6),
+                    Text(
+                      item.content,
+                      style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
+}
 
-  Widget _buildTrackingGrid(Size size) {
-    return GridView.count(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      crossAxisCount: size.width < 700 ? 2 : 4,
-      mainAxisSpacing: AppSpacing.md,
-      crossAxisSpacing: AppSpacing.md,
-      childAspectRatio: 1,
-      children: [
-        _buildTrackingCard(
-          title: 'Stress',
-          value: 'Low',
-          icon: Icons.psychology_rounded,
-          color: AppColors.secondary,
-        ),
-        _buildTrackingCard(
-          title: 'Ngủ',
-          value: '7.8h',
-          icon: Icons.bedtime_rounded,
-          color: AppColors.primary,
-        ),
-        _buildTrackingCard(
-          title: 'Steps',
-          value: '8,420',
-          icon: Icons.directions_walk_rounded,
-          color: AppColors.success,
-        ),
-        _buildTrackingCard(
-          title: 'BMI',
-          value: '22.1',
-          icon: Icons.monitor_weight_rounded,
-          color: AppColors.warning,
-        ),
-      ],
+class _RecommendationSection extends StatelessWidget {
+  final List<DashboardRecommendationItem> recommendations;
+
+  const _RecommendationSection({required this.recommendations});
+
+  @override
+  Widget build(BuildContext context) {
+    return _Section(
+      title: 'Đề xuất hôm nay',
+      emptyTitle: 'Chưa có đề xuất AI trong SQLite',
+      emptyMessage:
+          'Khi ai_recommendations có dữ liệu, phần này sẽ tự hiển thị.',
+      children: recommendations.map((item) {
+        return _SurfaceCard(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                item.isRead
+                    ? Icons.lightbulb_outline_rounded
+                    : Icons.lightbulb_rounded,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.title, style: AppTextStyles.heading4),
+                    const SizedBox(height: 6),
+                    Text(
+                      item.description,
+                      style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+                    ),
+                    if (item.actionText.trim().isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        item.actionText,
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
+}
 
-  Widget _buildTrackingCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: AppDecoration.card(
-        radius: AppRadius.xl,
-        shadows: AppShadows.sm,
+class _TrackingGrid extends StatelessWidget {
+  final DashboardEntity dashboard;
+  final DashboardDailyMetrics metrics;
+
+  const _TrackingGrid({required this.dashboard, required this.metrics});
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      _TrackingItem(
+        title: 'Stress',
+        value: metrics.stressLevel > 0
+            ? _stressLabel(metrics.stressLevel)
+            : '--',
+        icon: Icons.psychology_rounded,
+        color: AppColors.secondary,
       ),
+      _TrackingItem(
+        title: 'Ngủ',
+        value: metrics.sleepHours > 0
+            ? '${metrics.sleepHours.toStringAsFixed(1)}h'
+            : '--',
+        icon: Icons.bedtime_rounded,
+        color: AppColors.primary,
+      ),
+      _TrackingItem(
+        title: 'Bước',
+        value: metrics.stepsCount > 0 ? _formatInt(metrics.stepsCount) : '--',
+        icon: Icons.directions_walk_rounded,
+        color: AppColors.success,
+      ),
+      _TrackingItem(
+        title: 'BMI',
+        value: dashboard.bmi > 0 ? dashboard.bmi.toStringAsFixed(1) : '--',
+        icon: Icons.monitor_weight_rounded,
+        color: AppColors.warning,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth < 700 ? 2 : 4;
+        return GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: items.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            mainAxisSpacing: AppSpacing.md,
+            crossAxisSpacing: AppSpacing.md,
+            childAspectRatio: 1,
+          ),
+          itemBuilder: (context, index) => _TrackingCard(item: items[index]),
+        );
+      },
+    );
+  }
+}
+
+class _TrackingItem {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _TrackingItem({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+}
+
+class _TrackingCard extends StatelessWidget {
+  final _TrackingItem item;
+
+  const _TrackingCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -560,66 +607,256 @@ class HealthInsightsView extends StatelessWidget {
             height: 50,
             width: 50,
             decoration: BoxDecoration(
-              color: color.withOpacity(.12),
+              color: item.color.withValues(alpha: .12),
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
-            child: Icon(icon, color: color),
+            child: Icon(item.icon, color: item.color),
           ),
           const Spacer(),
           Text(
-            value,
+            item.value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.heading2.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
-          Text(title, style: AppTextStyles.bodyMedium),
+          Text(item.title, style: AppTextStyles.bodyMedium),
         ],
       ),
     );
   }
+}
 
-  Widget _buildBottomBar() {
+class _Section extends StatelessWidget {
+  final String title;
+  final String emptyTitle;
+  final String emptyMessage;
+  final List<Widget> children;
+
+  const _Section({
+    required this.title,
+    required this.emptyTitle,
+    required this.emptyMessage,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        if (children.isEmpty)
+          _StateMessage(
+            icon: Icons.auto_awesome_outlined,
+            title: emptyTitle,
+            message: emptyMessage,
+          )
+        else
+          ...children.expand(
+            (child) => [child, const SizedBox(height: AppSpacing.md)],
+          ),
+      ],
+    );
+  }
+}
+
+class _SurfaceCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  const _SurfaceCard({
+    required this.child,
+    this.padding = const EdgeInsets.all(AppSpacing.md),
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      height: 86,
+      width: double.infinity,
+      padding: padding,
+      decoration: AppDecoration.card(
+        radius: AppRadius.xl,
+        shadows: AppShadows.sm,
+      ),
+      child: child,
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  final String label;
+
+  const _StatusPill({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
+        horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: AppShadows.sm,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xl),
+        color: AppColors.successSoft,
+        borderRadius: BorderRadius.circular(AppRadius.circular),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.labelLarge.copyWith(color: AppColors.success),
+      ),
+    );
+  }
+}
+
+class _SyncBanner extends StatelessWidget {
+  const _SyncBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: _SurfaceCard(
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                'Đang đọc dữ liệu mới nhất từ SQLite...',
+                style: AppTextStyles.bodySmall,
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _StateMessage extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final VoidCallback? onRetry;
+
+  const _StateMessage({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildNavItem(icon: AppIcons.home, label: 'Trang chủ', active: true),
-          _buildNavItem(icon: AppIcons.health, label: 'Sức khỏe'),
-          _buildNavItem(icon: AppIcons.nutrition, label: 'Dinh dưỡng'),
-          _buildNavItem(icon: AppIcons.profile, label: 'Hồ sơ'),
+          Icon(icon, color: AppColors.primary),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppTextStyles.heading4),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+                ),
+                if (onRetry != null) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  TextButton.icon(
+                    onPressed: onRetry,
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Thử lại'),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    bool active = false,
-  }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: active ? AppColors.primary : AppColors.textHint),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: AppTextStyles.labelSmall.copyWith(
-            color: active ? AppColors.primary : AppColors.textHint,
-          ),
-        ),
-      ],
-    );
+String _shortName(String value) {
+  final text = value.trim();
+  if (text.isEmpty) return '';
+  return text.split(RegExp(r'\s+')).last;
+}
+
+String _formatInt(int value) {
+  final text = value.toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < text.length; i++) {
+    final fromEnd = text.length - i;
+    buffer.write(text[i]);
+    if (fromEnd > 1 && fromEnd % 3 == 1) buffer.write(',');
+  }
+  return buffer.toString();
+}
+
+String _scoreTitle(int score) {
+  if (score <= 0) return 'Chưa đủ dữ liệu để tổng hợp hôm nay';
+  if (score >= 85) return 'Hôm nay của bạn rất ổn';
+  if (score >= 65) return 'Bạn đang đi đúng hướng';
+  if (score >= 40) return 'Mình cùng cải thiện nhẹ nhé';
+  return 'Hôm nay cần thêm chút chăm sóc';
+}
+
+String _scoreMessage(int score) {
+  if (score <= 0) {
+    return 'Điểm sẽ được cập nhật khi có log sức khỏe, nhiệm vụ, bữa ăn hoặc dữ liệu nước/ngủ trong SQLite.';
+  }
+  return 'Điểm này được tính từ log sức khỏe, nhiệm vụ hằng ngày, bữa ăn và dữ liệu nước/ngủ trong SQLite.';
+}
+
+String _scoreLabel(int score) {
+  if (score <= 0) return 'Chưa có dữ liệu';
+  if (score >= 85) return 'Rất tốt';
+  if (score >= 65) return 'Ổn định';
+  if (score >= 40) return 'Cần chú ý';
+  return 'Ưu tiên chăm sóc';
+}
+
+String _stressLabel(int value) {
+  if (value <= 33) return 'Thấp';
+  if (value <= 66) return 'Vừa';
+  return 'Cao';
+}
+
+IconData _riskIcon(String riskLevel) {
+  switch (riskLevel.toLowerCase()) {
+    case 'high':
+    case 'danger':
+      return Icons.warning_rounded;
+    case 'medium':
+    case 'warning':
+      return Icons.info_rounded;
+    default:
+      return Icons.check_circle_rounded;
+  }
+}
+
+Color _riskColor(String riskLevel) {
+  switch (riskLevel.toLowerCase()) {
+    case 'high':
+    case 'danger':
+      return AppColors.error;
+    case 'medium':
+    case 'warning':
+      return AppColors.warning;
+    default:
+      return AppColors.success;
   }
 }

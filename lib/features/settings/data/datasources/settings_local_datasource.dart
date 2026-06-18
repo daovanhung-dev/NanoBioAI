@@ -31,7 +31,8 @@ class SettingsLocalDatasource {
   ///
   /// Returns a Map containing all fields from both tables, or null if user not found.
   /// The returned map includes:
-  /// - id, full_name, email, phone, gender, birth_year, avatar_url (from users)
+  /// - id, full_name, email, phone, gender, birth_year, avatar_url,
+  ///   subscription_tier (from users)
   /// - occupation, height_cm, weight_kg, bmi (from health_profiles)
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     AppLogger.database(_tag, 'Getting user profile for userId: $userId');
@@ -78,6 +79,7 @@ class SettingsLocalDatasource {
         'gender': user['gender'],
         'birth_year': user['birth_year'],
         'avatar_url': user['avatar_url'],
+        'subscription_tier': user['subscription_tier'] ?? 'free',
         'occupation': profile['occupation'],
         'height_cm': profile['height_cm'],
         'weight_kg': profile['weight_kg'],
@@ -97,7 +99,8 @@ class SettingsLocalDatasource {
   /// The data map should contain fields to update. This method automatically
   /// separates fields that belong to the users table vs health_profiles table.
   ///
-  /// Users table fields: full_name, email, phone, gender, birth_year, avatar_url
+  /// Users table fields: full_name, email, phone, gender, birth_year,
+  /// avatar_url, subscription_tier
   /// Health profiles fields: occupation, height_cm, weight_kg, bmi
   Future<void> updateUserProfile(
     String userId,
@@ -129,6 +132,9 @@ class SettingsLocalDatasource {
         }
         if (data.containsKey('avatar_url')) {
           usersFields['avatar_url'] = data['avatar_url'];
+        }
+        if (data.containsKey('subscription_tier')) {
+          usersFields['subscription_tier'] = data['subscription_tier'];
         }
 
         // Update users table if there are fields to update
@@ -198,10 +204,7 @@ class SettingsLocalDatasource {
 
       final count = await db.update(
         'users',
-        {
-          'avatar_url': avatarUrl,
-          'updated_at': now,
-        },
+        {'avatar_url': avatarUrl, 'updated_at': now},
         where: 'id = ?',
         whereArgs: [userId],
       );
