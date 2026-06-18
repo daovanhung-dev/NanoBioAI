@@ -6,9 +6,14 @@ import 'package:nano_app/features/dashboard/presentation/pages/menu_page.dart';
 import 'package:nano_app/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart';
 import 'package:nano_app/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/features/meal_plan/presentation/pages/meal_plan_page.dart';
+import 'package:nano_app/features/nutrition/presentation/pages/nutrition_page.dart';
 import 'package:nano_app/features/onboarding/onboarding.dart';
+import 'package:nano_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:nano_app/features/splash/splash.dart';
 import 'package:nano_app/features/ai_chat/presentation/ai_chat_screen.dart';
+import 'package:nano_app/features/community/presentation/pages/community_page.dart';
+import 'package:nano_app/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart';
+import 'package:nano_app/features/stress_tracking/presentation/pages/stress_tracking_page.dart';
 
 import 'route_guards.dart';
 import '../constants/routes/route_names.dart';
@@ -82,6 +87,20 @@ final appRouter = GoRouter(
       builder: (context, state) => const LifestyleSchedulePage(),
     ),
 
+    /// Sleep Tracking
+    GoRoute(
+      path: RoutePaths.sleepTracking,
+      name: RoutePaths.sleepTracking,
+      builder: (context, state) => const SleepTrackingPage(),
+    ),
+
+    /// Stress Tracking
+    GoRoute(
+      path: RoutePaths.stressTracking,
+      name: RoutePaths.stressTracking,
+      builder: (context, state) => const StressTrackingPage(),
+    ),
+
     /// AI Chat
     GoRoute(
       path: RoutePaths.aiChat,
@@ -95,7 +114,7 @@ final appRouter = GoRouter(
       path: RoutePaths.nutrition,
       name: RoutePaths.nutrition,
       redirect: RouteGuards.authGuard,
-      builder: (context, state) => const Placeholder(),
+      builder: (context, state) => const NutritionPage(),
     ),
 
     /// Profile
@@ -103,7 +122,14 @@ final appRouter = GoRouter(
       path: RoutePaths.profile,
       name: RoutePaths.profile,
       redirect: RouteGuards.authGuard,
-      builder: (context, state) => const Placeholder(),
+      builder: (context, state) => const ProfilePage(),
+    ),
+
+    /// Community
+    GoRoute(
+      path: RoutePaths.community,
+      name: RoutePaths.community,
+      builder: (context, state) => const CommunityPage(),
     ),
   ],
 );
