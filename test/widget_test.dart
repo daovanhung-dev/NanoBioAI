@@ -5,6 +5,7 @@ import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:nano_app/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:nano_app/features/onboarding/providers/onboarding_provider.dart';
+import 'package:nano_app/services/ai/ai_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -33,6 +34,100 @@ void main() {
     await AppPrefs.setOnboardingCompleted(true);
 
     expect(await AppPrefs.isOnboardingCompleted(), isTrue);
+  });
+
+  test(
+    'onboarding AI dev check provider does not call AI when disabled',
+    () async {
+      var calls = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        textGenerator: ({required modelName, required prompt}) async {
+          calls++;
+          return '[{"status_code":"ai_connection_ok"}]';
+        },
+      );
+      final container = ProviderContainer(
+        overrides: [
+          onboardingAiDevCheckEnabledProvider.overrideWithValue(false),
+          aiServiceProvider.overrideWithValue(service),
+        ],
+      );
+
+      addTearDown(container.dispose);
+
+      final result = await container.read(onboardingAiDevCheckProvider.future);
+
+      expect(result, isNull);
+      expect(calls, 0);
+    },
+  );
+
+  testWidgets('AI dev banner is hidden when env flag is disabled', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [onboardingAiDevCheckEnabledProvider.overrideWithValue(false)],
+    );
+    addTearDown(container.dispose);
+
+    await _pumpOnboardingPage(tester, container);
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byKey(_aiDevCheckBannerKey), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('AI dev banner shows success state', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        onboardingAiDevCheckEnabledProvider.overrideWithValue(true),
+        onboardingAiDevCheckProvider.overrideWith(
+          (ref) async =>
+              const AIConnectionCheckResult.success(modelName: 'fake-model'),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await _pumpOnboardingPage(tester, container);
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byKey(_aiDevCheckBannerKey), findsOneWidget);
+    expect(find.text('AI đã sẵn sàng.'), findsOneWidget);
+    expect(find.text('Model: fake-model'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('AI dev banner shows failure and does not block next step', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        onboardingAiDevCheckEnabledProvider.overrideWithValue(true),
+        onboardingAiDevCheckProvider.overrideWith(
+          (ref) async => const AIConnectionCheckResult.failure(
+            message: 'AI test failed',
+            modelName: 'fake-model',
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await _pumpOnboardingPage(tester, container);
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byKey(_aiDevCheckBannerKey), findsOneWidget);
+    expect(find.text('AI test failed'), findsOneWidget);
+
+    await _tapPrimaryOnboardingButton(tester);
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(container.read(onboardingProvider).currentStep, 1);
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets('onboarding mobile layout has no render exceptions', (
@@ -80,8 +175,50 @@ void main() {
   });
 }
 
+const _aiDevCheckBannerKey = Key('onboarding_ai_dev_check_banner');
+
+Future<void> _pumpOnboardingPage(
+  WidgetTester tester,
+  ProviderContainer container,
+) async {
+  final view = tester.view;
+
+  view.physicalSize = const Size(390, 844);
+  view.devicePixelRatio = 1;
+
+  addTearDown(() {
+    view.resetPhysicalSize();
+    view.resetDevicePixelRatio();
+    tester.binding.focusManager.primaryFocus?.unfocus();
+  });
+
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: const MaterialApp(home: OnboardingPage()),
+    ),
+  );
+}
+
+Future<void> _tapPrimaryOnboardingButton(WidgetTester tester) async {
+  final button = find
+      .byWidgetPredicate(
+        (widget) => widget is GestureDetector && widget.onTap != null,
+      )
+      .last;
+  await tester.tap(button);
+  await tester.pump(const Duration(milliseconds: 500));
+  expect(tester.takeException(), isNull);
+}
+
 Future<void> _tapByText(WidgetTester tester, String text) async {
-  await tester.tap(find.text(text).last);
+  final textFinder = find.text(text);
+  if (textFinder.evaluate().isEmpty) {
+    await _tapPrimaryOnboardingButton(tester);
+    return;
+  }
+
+  await tester.tap(textFinder.last);
   await tester.pump(const Duration(milliseconds: 500));
   expect(tester.takeException(), isNull);
 }

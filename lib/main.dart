@@ -1,11 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
-import 'core/utils/logger/app_logger.dart';
+import 'core/storage/localdb/app_prefs.dart';
 import 'core/storage/localdb/datasources/ai_catalog_local_datasource.dart';
+import 'core/utils/logger/app_logger.dart';
 import 'features/daily_health_tracking/providers/daily_health_tracking_provider.dart';
 import 'features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart';
@@ -13,6 +16,7 @@ import 'features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 import 'features/onboarding/providers/onboarding_completion_provider.dart';
 import 'services/ai/ai_service.dart';
 import 'services/notifications/notification_bootstrap.dart';
+import 'services/notifications/notification_startup_scheduler.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +31,13 @@ Future<void> main() async {
 
   // INIT LOCAL NOTIFICATIONS
   await NotificationBootstrap.initialize();
+  unawaited(
+    NotificationStartupScheduler(
+      isOnboardingCompleted: AppPrefs.isOnboardingCompleted,
+      scheduleGeneratedReminders:
+          NotificationBootstrap.scheduleGeneratedReminders,
+    ).refreshGeneratedReminders(),
+  );
 
   runApp(
     ProviderScope(

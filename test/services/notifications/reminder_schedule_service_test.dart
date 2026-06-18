@@ -66,6 +66,47 @@ void main() {
     expect(scheduler.scheduled.single.scheduledAt, DateTime(2026, 6, 17, 12));
   });
 
+  test('uses schedule item title and description as reminder copy', () async {
+    await scheduleItemsDao.upsertMany([
+      _item(
+        id: 'details',
+        title: 'Uống nước',
+        description: 'Đến giờ uống 250 ml nước theo lịch trình hôm nay.',
+      ),
+    ]);
+
+    await service.scheduleGeneratedReminders();
+
+    final scheduled = scheduler.scheduled.single;
+    final row = (await notificationsDao.getAll()).single;
+
+    expect(scheduled.title, 'Uống nước');
+    expect(scheduled.body, 'Đến giờ uống 250 ml nước theo lịch trình hôm nay.');
+    expect(row.title, scheduled.title);
+    expect(row.body, scheduled.body);
+  });
+
+  test(
+    'uses Vietnamese fallback copy when schedule item copy is empty',
+    () async {
+      await scheduleItemsDao.upsertMany([
+        _item(
+          id: 'fallback-copy',
+          title: ' ',
+          description: ' ',
+          encouragement: ' ',
+        ),
+      ]);
+
+      await service.scheduleGeneratedReminders();
+
+      final scheduled = scheduler.scheduled.single;
+
+      expect(scheduled.title, 'Nhắc việc sức khỏe');
+      expect(scheduled.body, 'Mở app để cập nhật tiến độ hôm nay');
+    },
+  );
+
   test('encodes stable payload and notification id', () async {
     await scheduleItemsDao.upsertMany([_item(id: 'schedule-stable')]);
 
@@ -169,6 +210,9 @@ LifestyleScheduleItemModel _item({
   required String id,
   String scheduleDate = '2026-06-17',
   String startTime = '12:00',
+  String title = 'Timeline task',
+  String description = 'Time to check in',
+  String encouragement = 'Nice',
   bool isCompleted = false,
 }) {
   return LifestyleScheduleItemModel(
@@ -177,8 +221,8 @@ LifestyleScheduleItemModel _item({
     scheduleDate: scheduleDate,
     startTime: startTime,
     endTime: '',
-    title: 'Timeline task',
-    description: 'Time to check in',
+    title: title,
+    description: description,
     category: LifestyleScheduleCategories.meal,
     sourceType: LifestyleScheduleSourceTypes.mealPlan,
     sourceId: 'meal-$id',
@@ -188,7 +232,7 @@ LifestyleScheduleItemModel _item({
     isCompleted: isCompleted,
     sortOrder: 1,
     aiGenerated: true,
-    encouragement: 'Nice',
+    encouragement: encouragement,
     createdAt: '2026-06-16T08:00:00.000',
     updatedAt: '2026-06-16T08:00:00.000',
   );

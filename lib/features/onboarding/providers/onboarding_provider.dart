@@ -10,6 +10,10 @@ final onboardingProvider =
     );
 
 final onboardingAiDevCheckEnabledProvider = Provider<bool>((ref) {
+  if (!dotenv.isInitialized) {
+    return false;
+  }
+
   final value = dotenv.env['ONBOARDING_AI_DEV_CHECK_ENABLED'];
   return value?.trim().toLowerCase() == 'true';
 });

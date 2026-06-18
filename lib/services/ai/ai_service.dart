@@ -43,10 +43,9 @@ class AIConnectionCheckResult {
     this.modelName,
   });
 
-  const AIConnectionCheckResult.success({required String modelName})
+  const AIConnectionCheckResult.success({required this.modelName})
     : success = true,
-      message = 'AI đã sẵn sàng.',
-      modelName = modelName;
+      message = 'AI đã sẵn sàng.';
 
   const AIConnectionCheckResult.failure({required this.message, this.modelName})
     : success = false;

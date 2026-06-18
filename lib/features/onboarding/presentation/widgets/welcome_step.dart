@@ -215,7 +215,7 @@ class _AiDevCheckBannerFrame extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: color.withOpacity(0.24)),
+        border: Border.all(color: color.withValues(alpha: 0.24)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,7 +248,7 @@ class _AiDevCheckBannerFrame extends StatelessWidget {
                   Text(
                     'Model: ${modelName!.trim()}',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: color.withOpacity(0.82),
+                      color: color.withValues(alpha: 0.82),
                       height: 1.3,
                     ),
                   ),

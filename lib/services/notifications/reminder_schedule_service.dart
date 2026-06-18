@@ -199,12 +199,12 @@ class ReminderScheduleService {
 
     final title = item.title.trim().isNotEmpty
         ? item.title
-        : 'Nhac viec suc khoe';
+        : 'Nhắc việc sức khỏe';
     final body = item.description.trim().isNotEmpty
         ? item.description
         : item.encouragement.trim().isNotEmpty
         ? item.encouragement
-        : 'Mo app de cap nhat tien do hom nay';
+        : 'Mở app để cập nhật tiến độ hôm nay';
 
     return _ReminderCandidate(
       userId: item.userId,

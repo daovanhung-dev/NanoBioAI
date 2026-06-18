@@ -94,11 +94,16 @@ class LocalReminderNotificationScheduler
 
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        final result = await _plugin
+        final androidPlugin = _plugin
             .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin
-            >()
-            ?.requestNotificationsPermission();
+            >();
+
+        final result = await androidPlugin?.requestNotificationsPermission();
+        if (!(result ?? true)) return false;
+
+        await _requestExactAlarmAccess(androidPlugin);
+
         return result ?? true;
 
       case TargetPlatform.iOS:
@@ -124,6 +129,41 @@ class LocalReminderNotificationScheduler
     }
   }
 
+  Future<void> _requestExactAlarmAccess(
+    AndroidFlutterLocalNotificationsPlugin? androidPlugin,
+  ) async {
+    if (androidPlugin == null) {
+      AppLogger.warning(
+        _tag,
+        'Cannot resolve Android notification plugin. Exact reminders may fall back to inexact delivery.',
+      );
+      return;
+    }
+
+    try {
+      final canScheduleExact = await androidPlugin
+          .canScheduleExactNotifications();
+
+      if (canScheduleExact ?? false) return;
+
+      final granted = await androidPlugin.requestExactAlarmsPermission();
+      if (granted ?? false) {
+        AppLogger.info(_tag, 'Android exact alarm access granted');
+        return;
+      }
+
+      AppLogger.warning(
+        _tag,
+        'Android exact alarm access was not granted. Reminders will use inexact delivery.',
+      );
+    } catch (error) {
+      AppLogger.warning(
+        _tag,
+        'Cannot request exact alarm access. Reminders will use inexact delivery. Error: $error',
+      );
+    }
+  }
+
   @override
   Future<void> scheduleReminder({
     required int id,
@@ -143,6 +183,8 @@ class LocalReminderNotificationScheduler
       );
       return;
     }
+
+    final androidScheduleMode = await _resolveAndroidScheduleMode();
 
     await _plugin.zonedSchedule(
       id,
@@ -179,7 +221,7 @@ class LocalReminderNotificationScheduler
           categoryIdentifier: NotificationActionIds.categoryId,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: androidScheduleMode,
       payload: payload,
     );
 
@@ -187,6 +229,46 @@ class LocalReminderNotificationScheduler
       _tag,
       'Scheduled reminder id=$id at=${scheduledAt.toIso8601String()}',
     );
+  }
+
+  Future<AndroidScheduleMode> _resolveAndroidScheduleMode() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return AndroidScheduleMode.inexactAllowWhileIdle;
+    }
+
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+
+    if (androidPlugin == null) {
+      AppLogger.warning(
+        _tag,
+        'Cannot resolve Android notification plugin. Falling back to inexact reminders.',
+      );
+      return AndroidScheduleMode.inexactAllowWhileIdle;
+    }
+
+    try {
+      final canScheduleExact = await androidPlugin
+          .canScheduleExactNotifications();
+
+      if (canScheduleExact ?? false) {
+        return AndroidScheduleMode.exactAllowWhileIdle;
+      }
+
+      AppLogger.warning(
+        _tag,
+        'Exact alarm access is not available. Falling back to inexact reminders.',
+      );
+    } catch (error) {
+      AppLogger.warning(
+        _tag,
+        'Cannot check exact alarm access. Falling back to inexact reminders. Error: $error',
+      );
+    }
+
+    return AndroidScheduleMode.inexactAllowWhileIdle;
   }
 
   @override

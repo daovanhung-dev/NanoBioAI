@@ -1067,7 +1067,7 @@ class _CookingInstructionsBox extends StatelessWidget {
               ),
               SizedBox(width: ui.xsGap),
               Text(
-                'Cach che bien',
+                'Cách chế biến',
                 style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w800,
