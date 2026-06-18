@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 /// Foundation radius scale for the design system.
-/// 
+///
 /// Provides consistent border radius values following a progressive scale.
 /// These are primitive values that should be referenced by semantic tokens.
-/// 
+///
 /// Scale levels:
 /// - `radius0`: No radius (sharp corners)
 /// - `radius4`: Subtle rounding for small elements
@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 /// - `radius16`: Large rounding for cards
 /// - `radius24`: Extra large rounding for dialogs
 /// - `radiusFull`: Circular elements (pills, avatars, badges)
-/// 
+///
 /// **Validates: Requirements 1.4**
 @immutable
 class RadiusFoundation {

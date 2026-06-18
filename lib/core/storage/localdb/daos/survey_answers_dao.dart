@@ -35,7 +35,12 @@ class SurveyAnswersDao {
   }
 
   Future<SurveyAnswerModel?> getById(String id) async {
-    final maps = await db.query(tableName, where: 'id = ?', whereArgs: [id], limit: 1);
+    final maps = await db.query(
+      tableName,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
     if (maps.isEmpty) return null;
     return SurveyAnswerModel.fromMap(maps.first);
   }
@@ -71,7 +76,9 @@ class SurveyAnswersDao {
     );
     return {
       for (final row in rows)
-        if (row['question_code'] != null) row['question_code'].toString(): row['answer_value']?.toString() ?? ''
+        if (row['question_code'] != null)
+          row['question_code'].toString():
+              row['answer_value']?.toString() ?? '',
     };
   }
 

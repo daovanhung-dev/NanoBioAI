@@ -86,13 +86,8 @@ class AppDuration {
   // HELPERS
   // ============================================================
 
-  static Duration scale(
-    Duration duration, {
-    double factor = 1,
-  }) {
-    return Duration(
-      milliseconds: (duration.inMilliseconds * factor).round(),
-    );
+  static Duration scale(Duration duration, {double factor = 1}) {
+    return Duration(milliseconds: (duration.inMilliseconds * factor).round());
   }
 
   static Duration adaptive({
@@ -107,8 +102,7 @@ class AppDuration {
     return normal;
   }
 
-  static const Duration reducedMotionDuration =
-      Duration(milliseconds: 120);
+  static const Duration reducedMotionDuration = Duration(milliseconds: 120);
 
   static Duration clamp(
     Duration duration, {

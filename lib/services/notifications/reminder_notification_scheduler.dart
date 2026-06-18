@@ -27,9 +27,9 @@ class LocalReminderNotificationScheduler
     FlutterLocalNotificationsPlugin? plugin,
     void Function(NotificationResponse response)? onForegroundResponse,
     void Function(NotificationResponse response)? onBackgroundResponse,
-  })  : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
-        _onForegroundResponse = onForegroundResponse,
-        _onBackgroundResponse = onBackgroundResponse;
+  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin(),
+       _onForegroundResponse = onForegroundResponse,
+       _onBackgroundResponse = onBackgroundResponse;
 
   static const _tag = 'LOCAL_REMINDER_SCHEDULER';
 
@@ -96,30 +96,25 @@ class LocalReminderNotificationScheduler
       case TargetPlatform.android:
         final result = await _plugin
             .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>()
+              AndroidFlutterLocalNotificationsPlugin
+            >()
             ?.requestNotificationsPermission();
         return result ?? true;
 
       case TargetPlatform.iOS:
         final result = await _plugin
             .resolvePlatformSpecificImplementation<
-                IOSFlutterLocalNotificationsPlugin>()
-            ?.requestPermissions(
-              alert: true,
-              badge: true,
-              sound: true,
-            );
+              IOSFlutterLocalNotificationsPlugin
+            >()
+            ?.requestPermissions(alert: true, badge: true, sound: true);
         return result ?? true;
 
       case TargetPlatform.macOS:
         final result = await _plugin
             .resolvePlatformSpecificImplementation<
-                MacOSFlutterLocalNotificationsPlugin>()
-            ?.requestPermissions(
-              alert: true,
-              badge: true,
-              sound: true,
-            );
+              MacOSFlutterLocalNotificationsPlugin
+            >()
+            ?.requestPermissions(alert: true, badge: true, sound: true);
         return result ?? true;
 
       case TargetPlatform.fuchsia:

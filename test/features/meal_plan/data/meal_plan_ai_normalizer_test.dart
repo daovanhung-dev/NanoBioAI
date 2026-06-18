@@ -1,10 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
+import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 
 void main() {
-  test('normalizes AI dates and ids into deterministic weekly meals', () {
+  const catalog = AiCatalogBundle(
+    meals: AiCatalogSeedData.meals,
+    exercises: AiCatalogSeedData.exercises,
+    scheduleTasks: AiCatalogSeedData.scheduleTasks,
+  );
+
+  test('normalizes AI codes into deterministic weekly meals', () {
     final meals = const MealPlanAiNormalizer().normalize(
-      items: _items(DateTime(2025, 1, 1)),
+      items: _items(),
+      catalog: catalog,
       userId: 'u1',
       startDate: DateTime(2026, 6, 18),
       createdAt: '2026-06-17T08:00:00',
@@ -18,6 +27,10 @@ void main() {
     expect(meals.first.mealOrder, 1);
     expect(meals.first.startTime, '07:00');
     expect(meals.first.endTime, '07:30');
+    expect(meals.first.mealName, 'Cháo yến mạch trứng gà');
+    expect(meals.first.description, contains('Bữa sáng'));
+    expect(meals.first.cookingInstructions, contains('Nấu'));
+    expect(meals.first.mealName, isNot(contains('Bua')));
     expect(meals.first.isCompleted, isFalse);
     expect(meals.first.aiGenerated, isTrue);
 
@@ -32,17 +45,16 @@ void main() {
       'afternoon_snack',
       'dinner',
     ]);
-
-    expect(meals[5].id, 'meal_u1_2026-06-19_1');
-    expect(meals[5].planDate, '2026-06-19');
   });
 
-  test('throws when AI response is missing a meal record', () {
-    final items = _items(DateTime(2025, 1, 1))..removeLast();
+  test('throws when AI response contains a display text field', () {
+    final items = _items();
+    items.first['meal_name'] = 'Com khong dau';
 
     expect(
       () => const MealPlanAiNormalizer().normalize(
         items: items,
+        catalog: catalog,
         userId: 'u1',
         startDate: DateTime(2026, 6, 18),
         createdAt: '2026-06-17T08:00:00',
@@ -51,53 +63,66 @@ void main() {
     );
   });
 
-  test('throws when AI response is missing meal_type', () {
-    final items = _items(DateTime(2025, 1, 1));
-    items.first.remove('meal_type');
+  test('throws when AI response uses an unknown meal code', () {
+    final items = _items();
+    items.first['meal_code'] = 'unknown_meal';
 
     expect(
       () => const MealPlanAiNormalizer().normalize(
         items: items,
+        catalog: catalog,
         userId: 'u1',
         startDate: DateTime(2026, 6, 18),
         createdAt: '2026-06-17T08:00:00',
       ),
       throwsFormatException,
+    );
+  });
+
+  test('fallback creates a complete valid chunk from catalog', () {
+    final fallback = const MealPlanAiNormalizer().fallbackCodeItems(
+      catalog: catalog,
+      startDay: 3,
+      days: 2,
+      usedCodeCounts: const {'br_oat_egg': 1, 'ms_banana_yogurt': 1},
+    );
+
+    final valid = const MealPlanAiNormalizer().validateCodeItems(
+      items: fallback,
+      catalog: catalog,
+      startDay: 3,
+      days: 2,
+      usedCodeCounts: const {},
+    );
+
+    expect(valid, hasLength(10));
+    expect(valid.map((item) => item['day']).toSet(), {3, 4});
+    expect(
+      valid.where((item) => item['meal_type'] == 'breakfast'),
+      hasLength(2),
     );
   });
 }
 
-List<Map<String, Object?>> _items(DateTime aiStartDate) {
+List<Map<String, Object?>> _items() {
+  final byType = <String, List<String>>{
+    for (final slot in MealPlanAiNormalizer.mealSlots)
+      slot.type: AiCatalogSeedData.meals
+          .where((item) => item.mealType == slot.type)
+          .map((item) => item.code)
+          .toList(),
+  };
+
   return [
-    for (var day = 0; day < 7; day++)
+    for (var day = 1; day <= 7; day++)
       for (final slot in MealPlanAiNormalizer.mealSlots)
         {
-          'id': 'ai-id-$day-${slot.type}',
-          'user_id': 'wrong-user',
-          'plan_date': _dateKey(aiStartDate.add(Duration(days: day))),
+          'day': day,
           'meal_type': slot.type,
-          'start_time': '00:00',
-          'end_time': '00:01',
-          'meal_name': 'Meal ${slot.order}',
-          'description': 'Description ${slot.order}',
-          'calories': 300 + slot.order,
-          'protein': 10.0,
-          'carbs': 30.0,
-          'fat': 8.0,
-          'fiber': 4.0,
-          'water_ml': 300,
-          'meal_order': 99,
-          'cooking_instructions': 'Cook',
-          'is_completed': 1,
-          'ai_generated': 0,
-          'created_at': '2025-01-01T00:00:00',
-          'updated_at': '2025-01-01T00:00:00',
+          'meal_code':
+              byType[slot.type]![(day - 1) % byType[slot.type]!.length],
+          'portion_level': 'standard',
+          'priority': slot.order,
         },
   ];
-}
-
-String _dateKey(DateTime value) {
-  final month = value.month.toString().padLeft(2, '0');
-  final day = value.day.toString().padLeft(2, '0');
-  return '${value.year}-$month-$day';
 }

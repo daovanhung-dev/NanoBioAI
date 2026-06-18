@@ -1,4 +1,5 @@
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
+import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 
 class MealPlanPrompt {
@@ -7,44 +8,47 @@ class MealPlanPrompt {
   static String generate({
     required HealthDataInterface healthData,
     required DateTime startDate,
+    required int startDay,
     required int days,
+    required List<MealCatalogItemModel> catalog,
+    required List<String> usedMealCodes,
   }) {
     final goals = _clean(healthData.goals);
     final conditions = _clean(healthData.conditions);
     final habits = _clean(healthData.habits);
-    final endDate = startDate.add(Duration(days: days - 1));
+    final chunkStartDate = startDate.add(Duration(days: startDay - 1));
+    final chunkEndDate = chunkStartDate.add(Duration(days: days - 1));
+    final endDay = startDay + days - 1;
     final expectedCount = days * MealPlanAiNormalizer.mealsPerDay;
 
     return '''
-Bạn là chuyên gia dinh dưỡng.
-Tạo thực đơn $days ngày, từ ${_dateKey(startDate)} đến ${_dateKey(endDate)}.
+Bạn là bộ chọn mã thực đơn cho ứng dụng BioAI.
+Chọn thực đơn cho ngày $startDay đến ngày $endDay, tương ứng ${_dateKey(chunkStartDate)} đến ${_dateKey(chunkEndDate)}.
 Tổng số object bắt buộc: $expectedCount.
 
-Yêu cầu:
-- Mỗi ngày đúng 5 bữa theo thứ tự: breakfast, morning_snack, lunch, afternoon_snack, dinner.
-- Chỉ dùng các field trong cấu trúc bên dưới; ứng dụng sẽ tự gán ngày, giờ, thứ tự và id.
-- Field meal_type phải giữ đúng enum kỹ thuật đã nêu.
-- Field meal_name, description, cooking_instructions phải là tiếng Việt có dấu.
-- description tối đa 18 từ, nêu món chính và lợi ích ngắn gọn.
-- cooking_instructions tối đa 35 từ, gồm 2 đến 3 bước ngắn.
-- calories, protein, carbs, fat, fiber, water_ml phải là số.
-- Ưu tiên món Việt Nam, dễ nấu, phù hợp mục tiêu và tình trạng sức khỏe.
+Schema mỗi object:
+{
+  "day": 1,
+  "meal_type": "breakfast",
+  "meal_code": "br_oat_egg",
+  "portion_level": "standard",
+  "priority": 1
+}
 
-Cấu trúc mỗi object:
-[
-  {
-    "meal_type": "breakfast",
-    "meal_name": "Cháo yến mạch trứng gà",
-    "description": "Bữa sáng giàu đạm, nhẹ bụng và hỗ trợ no lâu.",
-    "calories": 350,
-    "protein": 12.5,
-    "carbs": 45,
-    "fat": 8,
-    "fiber": 6,
-    "water_ml": 300,
-    "cooking_instructions": "Bước 1 nấu yến mạch mềm. Bước 2 thêm trứng và rau xanh."
-  }
-]
+Quy tắc:
+- day phải là số từ $startDay đến $endDay.
+- Mỗi ngày bắt buộc đủ 5 meal_type theo thứ tự: breakfast, morning_snack, lunch, afternoon_snack, dinner.
+- meal_code phải nằm trong danh sách allowed đúng meal_type.
+- Không tự tạo meal_code mới.
+- Không trả về meal_name, description, cooking_instructions, title, unit hoặc encouragement.
+- portion_level chỉ dùng một trong: small, standard, large.
+- Tránh dùng lại các mã đã dùng nếu còn lựa chọn phù hợp.
+
+Mã đã dùng trước đó:
+${usedMealCodes.isEmpty ? 'Không có' : usedMealCodes.join(', ')}
+
+Allowed meal codes:
+${_allowedMealCodes(catalog)}
 
 Hồ sơ người dùng:
 - Tên: ${healthData.fullName}
@@ -57,6 +61,20 @@ Hồ sơ người dùng:
 - Lượng nước: ${healthData.waterPerDay}
 - Mối quan tâm: ${healthData.concernText}
 ''';
+  }
+
+  static String _allowedMealCodes(List<MealCatalogItemModel> catalog) {
+    final buffer = StringBuffer();
+    for (final slot in MealPlanAiNormalizer.mealSlots) {
+      final codes =
+          catalog
+              .where((item) => item.mealType == slot.type)
+              .map((item) => item.code)
+              .toList()
+            ..sort();
+      buffer.writeln('- ${slot.type}: ${codes.join(', ')}');
+    }
+    return buffer.toString().trim();
   }
 
   static String _clean(List<String> items) =>

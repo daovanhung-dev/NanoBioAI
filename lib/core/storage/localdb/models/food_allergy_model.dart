@@ -23,7 +23,8 @@ class FoodAllergyModel {
     );
   }
 
-  factory FoodAllergyModel.fromJson(Map<String, Object?> json) => FoodAllergyModel.fromMap(json);
+  factory FoodAllergyModel.fromJson(Map<String, Object?> json) =>
+      FoodAllergyModel.fromMap(json);
 
   Map<String, Object?> toMap() {
     return {

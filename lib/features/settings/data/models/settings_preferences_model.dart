@@ -29,7 +29,8 @@ class SettingsPreferencesModel extends SettingsPreferencesEntity {
   static const String keyMealReminderEnabled = 'meal_reminder_enabled';
   static const String keyMealReminderTime = 'meal_reminder_time';
   static const String keyGoalReminderEnabled = 'goal_reminder_enabled';
-  static const String keyAiChatNotificationEnabled = 'ai_chat_notification_enabled';
+  static const String keyAiChatNotificationEnabled =
+      'ai_chat_notification_enabled';
   static const String keyAiPersonality = 'ai_personality';
   static const String keyDataPrivacyMode = 'data_privacy_mode';
 
@@ -50,14 +51,17 @@ class SettingsPreferencesModel extends SettingsPreferencesEntity {
       mealReminderEnabled: prefs.getBool(keyMealReminderEnabled) ?? false,
       mealReminderTime: prefs.getString(keyMealReminderTime),
       goalReminderEnabled: prefs.getBool(keyGoalReminderEnabled) ?? false,
-      aiChatNotificationEnabled: prefs.getBool(keyAiChatNotificationEnabled) ?? false,
+      aiChatNotificationEnabled:
+          prefs.getBool(keyAiChatNotificationEnabled) ?? false,
       aiPersonality: prefs.getString(keyAiPersonality) ?? 'friendly',
       dataPrivacyMode: prefs.getString(keyDataPrivacyMode) ?? 'local',
     );
   }
 
   /// Creates a SettingsPreferencesModel from a SettingsPreferencesEntity.
-  factory SettingsPreferencesModel.fromEntity(SettingsPreferencesEntity entity) {
+  factory SettingsPreferencesModel.fromEntity(
+    SettingsPreferencesEntity entity,
+  ) {
     return SettingsPreferencesModel(
       isDarkMode: entity.isDarkMode,
       languageCode: entity.languageCode,

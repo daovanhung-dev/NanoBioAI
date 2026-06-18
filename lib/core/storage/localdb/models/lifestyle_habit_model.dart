@@ -53,7 +53,8 @@ class LifestyleHabitModel {
     );
   }
 
-  factory LifestyleHabitModel.fromJson(Map<String, Object?> json) => LifestyleHabitModel.fromMap(json);
+  factory LifestyleHabitModel.fromJson(Map<String, Object?> json) =>
+      LifestyleHabitModel.fromMap(json);
 
   Map<String, Object?> toMap() {
     return {

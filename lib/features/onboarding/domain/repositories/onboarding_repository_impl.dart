@@ -6,12 +6,10 @@ import 'onboarding_repository.dart';
 
 class OnboardingRepositoryImpl implements OnboardingRepository {
   static const _tag = 'ONBOARDING_REPO';
-  
+
   final OnboardingLocalDatasource localDatasource;
 
-  OnboardingRepositoryImpl({
-    required this.localDatasource,
-  });
+  OnboardingRepositoryImpl({required this.localDatasource});
 
   @override
   Future<void> save(OnboardingEntity entity) async {

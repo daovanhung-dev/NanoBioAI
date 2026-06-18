@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
 import 'core/utils/logger/app_logger.dart';
+import 'core/storage/localdb/datasources/ai_catalog_local_datasource.dart';
 import 'features/daily_health_tracking/providers/daily_health_tracking_provider.dart';
 import 'features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart';
@@ -64,6 +65,8 @@ Future<void> main() async {
             final scheduleDatasource = ref.read(
               lifestyleScheduleLocalDatasourceProvider,
             );
+            final catalog = await const AiCatalogLocalDatasource()
+                .loadActiveBundle();
             final meals = await scheduleDatasource.getMealPlansForScheduleSeed(
               userId: profile.userId,
               startDate: startDate,
@@ -77,6 +80,7 @@ Future<void> main() async {
               profile: profile,
               meals: meals,
               exercises: exercises,
+              catalog: catalog,
               startDate: startDate,
               days: days,
               createdAt: DateTime.now().toIso8601String(),
@@ -94,10 +98,7 @@ Future<void> main() async {
 
             try {
               await NotificationBootstrap.scheduleGeneratedReminders();
-              AppLogger.success(
-                tag,
-                'Scheduled local reminder notifications',
-              );
+              AppLogger.success(tag, 'Scheduled local reminder notifications');
             } catch (error, stackTrace) {
               AppLogger.error(
                 tag,

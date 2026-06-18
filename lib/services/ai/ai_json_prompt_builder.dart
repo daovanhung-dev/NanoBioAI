@@ -11,7 +11,8 @@ Quy tắc bắt buộc:
 - Không thêm chữ trước hoặc sau mảng.
 - Không thêm khóa ngoài schema.
 - Giá trị số phải là số, không phải chuỗi.
-- Nội dung người dùng nhìn thấy phải là tiếng Việt có dấu.
+- Không tự tạo mã ngoài danh sách allowed.
+- Không trả về text hiển thị cuối cùng như tên món, mô tả, hướng dẫn, tiêu đề, đơn vị hoặc lời động viên.
 
 $prompt
 ''';

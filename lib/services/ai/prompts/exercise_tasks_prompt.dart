@@ -1,3 +1,4 @@
+import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
 import 'package:nano_app/features/lifestyle_schedule/data/models/exercise_tasks_ai_normalizer.dart';
 
@@ -7,38 +8,49 @@ class ExerciseTasksPrompt {
   static String generate({
     required DailyHealthProfileEntity profile,
     required DateTime startDate,
+    required int startDay,
     required int days,
+    required List<ExerciseCatalogItemModel> catalog,
+    required List<String> usedExerciseCodes,
   }) {
-    final endDate = startDate.add(Duration(days: days - 1));
+    final chunkStartDate = startDate.add(Duration(days: startDay - 1));
+    final chunkEndDate = chunkStartDate.add(Duration(days: days - 1));
+    final endDay = startDay + days - 1;
     final expectedCount = days * ExerciseTasksAiNormalizer.exercisesPerDay;
 
     return '''
-Bạn là huấn luyện viên sức khỏe cá nhân.
-Tạo lịch vận động $days ngày, từ ${_dateKey(startDate)} đến ${_dateKey(endDate)}.
+Bạn là bộ chọn mã vận động cho ứng dụng BioAI.
+Chọn bài tập cho ngày $startDay đến ngày $endDay, tương ứng ${_dateKey(chunkStartDate)} đến ${_dateKey(chunkEndDate)}.
 Tổng số object bắt buộc: $expectedCount.
 
-Yêu cầu:
-- Mỗi ngày đúng 2 bài tập an toàn, nhẹ đến vừa, phù hợp hồ sơ người dùng.
-- schedule_date dùng định dạng YYYY-MM-DD; start_time và end_time dùng HH:mm.
-- Bài sáng nên nằm khoảng 08:00-08:25; bài chiều nên nằm khoảng 17:30-18:00.
-- Field title, description, unit, encouragement phải là tiếng Việt có dấu.
-- title tối đa 8 từ; description tối đa 20 từ; encouragement tối đa 18 từ.
-- target_value phải là số dương.
-- Không chẩn đoán y tế, không đưa bài tập nguy hiểm.
+Schema mỗi object:
+{
+  "day": 1,
+  "exercise_code": "ex_walk_relaxed",
+  "start_time": "08:00",
+  "end_time": "08:25",
+  "intensity": "light",
+  "target_value": 1,
+  "priority": 1
+}
 
-Cấu trúc mỗi object:
-[
-  {
-    "schedule_date": "${_dateKey(startDate)}",
-    "start_time": "08:00",
-    "end_time": "08:25",
-    "title": "Đi bộ thư giãn",
-    "description": "Đi bộ chậm, giữ nhịp thở đều và thả lỏng vai.",
-    "target_value": 1,
-    "unit": "lần",
-    "encouragement": "Bạn đang chăm sóc cơ thể rất tốt."
-  }
-]
+Quy tắc:
+- day phải là số từ $startDay đến $endDay.
+- Mỗi ngày bắt buộc đúng 2 bài tập.
+- exercise_code phải nằm trong danh sách allowed.
+- Không tự tạo exercise_code mới.
+- Không trả về title, description, unit, encouragement, meal_name hoặc cooking_instructions.
+- start_time và end_time dùng HH:mm; end_time phải sau start_time.
+- Bài sáng nên nằm khoảng 08:00-08:25; bài chiều nên nằm khoảng 17:30-18:00.
+- intensity chỉ dùng một trong: light, moderate.
+- target_value phải là số dương trong khoảng hợp lý của bài tập.
+- Tránh dùng lại các mã đã dùng nếu còn lựa chọn phù hợp.
+
+Mã đã dùng trước đó:
+${usedExerciseCodes.isEmpty ? 'Không có' : usedExerciseCodes.join(', ')}
+
+Allowed exercise codes:
+${_allowedExerciseCodes(catalog)}
 
 Hồ sơ người dùng:
 - Tên: ${profile.fullName}
@@ -49,6 +61,16 @@ Hồ sơ người dùng:
 - Hoạt động: ${profile.activityLevel}
 - Lượng nước: ${profile.waterPerDay}
 ''';
+  }
+
+  static String _allowedExerciseCodes(List<ExerciseCatalogItemModel> catalog) {
+    final sorted = [...catalog]..sort((a, b) => a.code.compareTo(b.code));
+    return sorted
+        .map(
+          (item) =>
+              '- ${item.code}: intensity=${item.intensityLevel}, target=${item.minTarget}-${item.maxTarget} ${item.unit}',
+        )
+        .join('\n');
   }
 
   static String _dateKey(DateTime value) {

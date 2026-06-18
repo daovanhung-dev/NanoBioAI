@@ -35,7 +35,12 @@ class MedicalTreatmentsDao {
   }
 
   Future<MedicalTreatmentModel?> getById(String id) async {
-    final maps = await db.query(tableName, where: 'id = ?', whereArgs: [id], limit: 1);
+    final maps = await db.query(
+      tableName,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
     if (maps.isEmpty) return null;
     return MedicalTreatmentModel.fromMap(maps.first);
   }

@@ -67,14 +67,13 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
                           final availableWidth = constraints.maxWidth.isFinite
                               ? constraints.maxWidth
                               : MediaQuery.sizeOf(context).width -
-                                  AppSpacing.bottomSheetPadding * 2;
+                                    AppSpacing.bottomSheetPadding * 2;
 
                           final columns = availableWidth >= 760 ? 2 : 1;
                           final gap = AppSpacing.sm;
 
                           final itemWidth =
-                              ((availableWidth - gap * (columns - 1)) /
-                                      columns)
+                              ((availableWidth - gap * (columns - 1)) / columns)
                                   .clamp(0.0, availableWidth)
                                   .toDouble();
 
@@ -90,8 +89,9 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
                               spacing: gap,
                               runSpacing: gap,
                               children: items.map((item) {
-                                final selected =
-                                    selectedCodes.contains(item.code);
+                                final selected = selectedCodes.contains(
+                                  item.code,
+                                );
 
                                 return _ConditionOptionTile(
                                   width: itemWidth,
@@ -143,9 +143,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
     return Stack(
       children: [
         const Positioned.fill(
-          child: CustomPaint(
-            painter: _SoftHealthBackground(),
-          ),
+          child: CustomPaint(painter: _SoftHealthBackground()),
         ),
         const Positioned(
           top: -120,
@@ -153,10 +151,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
           child: IgnorePointer(
             child: Opacity(
               opacity: 0.12,
-              child: _DecorativeGlow(
-                size: 280,
-                gradient: AppGradients.ai,
-              ),
+              child: _DecorativeGlow(size: 280, gradient: AppGradients.ai),
             ),
           ),
         ),
@@ -166,10 +161,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
           child: IgnorePointer(
             child: Opacity(
               opacity: 0.10,
-              child: _DecorativeGlow(
-                size: 340,
-                gradient: AppGradients.health,
-              ),
+              child: _DecorativeGlow(size: 340, gradient: AppGradients.health),
             ),
           ),
         ),
@@ -184,11 +176,12 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
             builder: (context, constraints) {
               final availableWidth =
                   constraints.maxWidth.isFinite && constraints.maxWidth > 0
-                      ? constraints.maxWidth
-                      : MediaQuery.sizeOf(context).width;
+                  ? constraints.maxWidth
+                  : MediaQuery.sizeOf(context).width;
 
-              final contentMaxWidth =
-                  availableWidth >= 960 ? 860.0 : availableWidth;
+              final contentMaxWidth = availableWidth >= 960
+                  ? 860.0
+                  : availableWidth;
 
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -288,10 +281,7 @@ class _NamiHeroCard extends StatelessWidget {
                 spacing: AppSpacing.md,
                 runSpacing: AppSpacing.md,
                 crossAxisAlignment: WrapCrossAlignment.center,
-                children: const [
-                  _NamiAvatar(),
-                  _SoftHeroBadge(),
-                ],
+                children: const [_NamiAvatar(), _SoftHeroBadge()],
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(
@@ -387,11 +377,7 @@ class _SoftHeroBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            AppIcons.verified,
-            color: AppColors.textWhite,
-            size: 18,
-          ),
+          const Icon(AppIcons.verified, color: AppColors.textWhite, size: 18),
           const SizedBox(width: AppSpacing.xs),
           Text(
             'Nami đang lắng nghe',
@@ -430,11 +416,7 @@ class _HeroMetric extends StatelessWidget {
             decoration: AppDecoration.circle(
               color: AppColors.textWhite.withOpacity(0.16),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.textWhite,
-              size: 20,
-            ),
+            child: Icon(icon, color: AppColors.textWhite, size: 20),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -523,11 +505,7 @@ class _ResponsiveInfoCard extends StatelessWidget {
               gradient: iconGradient,
               shadows: AppShadows.primary,
             ),
-            child: Icon(
-              icon,
-              color: AppColors.textWhite,
-              size: 30,
-            ),
+            child: Icon(icon, color: AppColors.textWhite, size: 30),
           );
 
           final textContent = Column(
@@ -595,14 +573,8 @@ class _FriendlySectionHeader extends StatelessWidget {
         Container(
           width: AppSpacing.iconButtonSize,
           height: AppSpacing.iconButtonSize,
-          decoration: AppDecoration.circle(
-            color: AppColors.primarySoft,
-          ),
-          child: Icon(
-            icon,
-            color: AppColors.primary,
-            size: 20,
-          ),
+          decoration: AppDecoration.circle(color: AppColors.primarySoft),
+          child: Icon(icon, color: AppColors.primary, size: 20),
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
@@ -660,7 +632,9 @@ class _ConditionPickerField extends StatelessWidget {
           color: hasSelection ? AppColors.primary : AppColors.border,
           width: hasSelection ? 1.4 : 1.0,
         ),
-        gradient: hasSelection ? AppGradients.primarySoft : AppGradients.surface,
+        gradient: hasSelection
+            ? AppGradients.primarySoft
+            : AppGradients.surface,
       ),
       child: Material(
         color: Colors.transparent,
@@ -777,11 +751,7 @@ class _EmptyPickerHint extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
-            AppIcons.info,
-            color: AppColors.textMuted,
-            size: 20,
-          ),
+          const Icon(AppIcons.info, color: AppColors.textMuted, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -802,10 +772,7 @@ class _SoftSelectionPill extends StatelessWidget {
   final String emoji;
   final String label;
 
-  const _SoftSelectionPill({
-    required this.emoji,
-    required this.label,
-  });
+  const _SoftSelectionPill({required this.emoji, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -922,10 +889,7 @@ class _RemovableConditionChip extends StatelessWidget {
   final _ConditionViewData item;
   final VoidCallback onRemove;
 
-  const _RemovableConditionChip({
-    required this.item,
-    required this.onRemove,
-  });
+  const _RemovableConditionChip({required this.item, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -958,11 +922,7 @@ class _RemovableConditionChip extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.xs),
-              const Icon(
-                AppIcons.close,
-                color: AppColors.primary,
-                size: 16,
-              ),
+              const Icon(AppIcons.close, color: AppColors.primary, size: 16),
             ],
           ),
         ),
@@ -1082,10 +1042,7 @@ class _NamiClosingCard extends StatelessWidget {
 
     return Container(
       decoration: AppDecoration.gradient(
-        colors: const [
-          AppColors.textPrimary,
-          AppColors.primaryDark,
-        ],
+        colors: const [AppColors.textPrimary, AppColors.primaryDark],
         radius: AppRadius.xxl,
         shadows: AppShadows.floating,
       ),
@@ -1358,10 +1315,7 @@ class _PickerFooter extends StatelessWidget {
   final int selectedCount;
   final VoidCallback onDone;
 
-  const _PickerFooter({
-    required this.selectedCount,
-    required this.onDone,
-  });
+  const _PickerFooter({required this.selectedCount, required this.onDone});
 
   @override
   Widget build(BuildContext context) {
@@ -1369,9 +1323,7 @@ class _PickerFooter extends StatelessWidget {
       decoration: AppDecoration.card(
         radius: AppRadius.none,
         shadows: AppShadows.appBar,
-        border: const Border(
-          top: BorderSide(color: AppColors.border),
-        ),
+        border: const Border(top: BorderSide(color: AppColors.border)),
       ),
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.bottomSheetPadding,
@@ -1432,10 +1384,7 @@ class _DecorativeGlow extends StatelessWidget {
   final double size;
   final Gradient gradient;
 
-  const _DecorativeGlow({
-    required this.size,
-    required this.gradient,
-  });
+  const _DecorativeGlow({required this.size, required this.gradient});
 
   @override
   Widget build(BuildContext context) {
@@ -1472,30 +1421,26 @@ class _SoftHealthBackground extends CustomPainter {
     }
 
     final primaryOrb = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          AppColors.primary.withOpacity(0.12),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.86, size.height * 0.16),
-          radius: 220,
-        ),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [AppColors.primary.withOpacity(0.12), Colors.transparent],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.86, size.height * 0.16),
+              radius: 220,
+            ),
+          );
 
     final healthOrb = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          AppColors.success.withOpacity(0.10),
-          Colors.transparent,
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.10, size.height * 0.84),
-          radius: 240,
-        ),
-      );
+      ..shader =
+          RadialGradient(
+            colors: [AppColors.success.withOpacity(0.10), Colors.transparent],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.10, size.height * 0.84),
+              radius: 240,
+            ),
+          );
 
     canvas.drawCircle(
       Offset(size.width * 0.86, size.height * 0.16),

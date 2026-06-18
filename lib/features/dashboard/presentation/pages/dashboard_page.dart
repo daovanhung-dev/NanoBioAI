@@ -41,8 +41,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     _fadeIn = CurvedAnimation(parent: _entryController, curve: Curves.easeOut);
     _slideUp = Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)
         .animate(
-      CurvedAnimation(parent: _entryController, curve: Curves.easeOutCubic),
-    );
+          CurvedAnimation(parent: _entryController, curve: Curves.easeOutCubic),
+        );
 
     _entryController.forward();
     Future<void>.delayed(const Duration(milliseconds: 240), () {
@@ -79,7 +79,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           onRetry: () => ref.invalidate(dashboardProvider),
         ),
         data: (dashboard) {
-          final dynamicData = dynamicAsync.value ?? DashboardDynamicEntity.empty();
+          final dynamicData =
+              dynamicAsync.value ?? DashboardDynamicEntity.empty();
           return FadeTransition(
             opacity: _fadeIn,
             child: SlideTransition(
@@ -131,9 +132,18 @@ class _DashboardContent extends StatelessWidget {
     final goals = _asStringList(dashboard.goals);
     final conditions = _asStringList(dashboard.conditions);
     final habits = _asStringList(dashboard.habits);
-    final sleepQuality = _safeText(dashboard.sleepQuality, fallback: 'Chưa ghi nhận');
-    final activityLevel = _safeText(dashboard.activityLevel, fallback: 'Chưa ghi nhận');
-    final waterPerDay = _safeText(dashboard.waterPerDay, fallback: 'Chưa ghi nhận');
+    final sleepQuality = _safeText(
+      dashboard.sleepQuality,
+      fallback: 'Chưa ghi nhận',
+    );
+    final activityLevel = _safeText(
+      dashboard.activityLevel,
+      fallback: 'Chưa ghi nhận',
+    );
+    final waterPerDay = _safeText(
+      dashboard.waterPerDay,
+      fallback: 'Chưa ghi nhận',
+    );
     final concern = _safeText(dashboard.concernText, fallback: '');
 
     return CustomScrollView(
@@ -279,22 +289,24 @@ class _HeroPanel extends StatelessWidget {
           Text(
             'Chào $shortName,',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             'Nami đã lấy dữ liệu mới nhất từ SQLite để cùng bạn nhìn lại hôm nay.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withOpacity(0.88),
-                  height: 1.45,
-                ),
+              color: Colors.white.withOpacity(0.88),
+              height: 1.45,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           _HeroPill(
             icon: Icons.monitor_heart_rounded,
-            label: bmi > 0 ? 'BMI ${bmi.toStringAsFixed(1)}' : 'BMI chưa có dữ liệu',
+            label: bmi > 0
+                ? 'BMI ${bmi.toStringAsFixed(1)}'
+                : 'BMI chưa có dữ liệu',
           ),
         ],
       ),
@@ -325,9 +337,9 @@ class _HeroPill extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -373,8 +385,8 @@ class _HealthScorePanel extends StatelessWidget {
                 Text(
                   score == 0 ? 'Chưa đủ dữ liệu chấm điểm' : _scoreTitle(score),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -382,16 +394,22 @@ class _HealthScorePanel extends StatelessWidget {
                       ? 'Khi bạn ghi log sức khỏe, hoàn thành nhiệm vụ hoặc bữa ăn, điểm hôm nay sẽ tự cập nhật.'
                       : 'Điểm này được tính từ log sức khỏe, nhiệm vụ hằng ngày, bữa ăn và dữ liệu nước/ngủ trong SQLite.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        height: 1.45,
-                        color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.72),
-                      ),
+                    height: 1.45,
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.color?.withOpacity(0.72),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _MiniBadge(label: bmi > 0 ? 'BMI ${bmi.toStringAsFixed(1)}' : 'BMI --'),
+                    _MiniBadge(
+                      label: bmi > 0
+                          ? 'BMI ${bmi.toStringAsFixed(1)}'
+                          : 'BMI --',
+                    ),
                     _MiniBadge(label: sleepQuality),
                     _MiniBadge(label: activityLevel),
                   ],
@@ -433,7 +451,9 @@ class _ScoreRing extends StatelessWidget {
               value: progress.clamp(0, 1).toDouble(),
               strokeWidth: 9,
               backgroundColor: AppColors.primary.withOpacity(0.10),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.primary,
+              ),
               strokeCap: StrokeCap.round,
             ),
           ),
@@ -443,13 +463,10 @@ class _ScoreRing extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+                  fontWeight: FontWeight.w900,
+                ),
               ),
-              Text(
-                'điểm',
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
+              Text('điểm', style: Theme.of(context).textTheme.labelSmall),
             ],
           ),
         ],
@@ -488,8 +505,8 @@ class _TodayMetricsGrid extends StatelessWidget {
         value: metrics.caloriesLogged > 0
             ? '${metrics.caloriesLogged} kcal'
             : metrics.caloriesPlanned > 0
-                ? '${metrics.caloriesPlanned} kcal dự kiến'
-                : 'Chưa có',
+            ? '${metrics.caloriesPlanned} kcal dự kiến'
+            : 'Chưa có',
       ),
       _MetricData(
         icon: Icons.water_drop_rounded,
@@ -523,12 +540,18 @@ class _TodayMetricsGrid extends StatelessWidget {
           builder: (context, constraints) {
             final columns = constraints.maxWidth >= 620 ? 3 : 2;
             final spacing = 12.0;
-            final width = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+            final width =
+                (constraints.maxWidth - spacing * (columns - 1)) / columns;
             return Wrap(
               spacing: spacing,
               runSpacing: spacing,
               children: items
-                  .map((item) => SizedBox(width: width, child: _MetricTile(data: item)))
+                  .map(
+                    (item) => SizedBox(
+                      width: width,
+                      child: _MetricTile(data: item),
+                    ),
+                  )
                   .toList(),
             );
           },
@@ -543,7 +566,11 @@ class _MetricData {
   final String title;
   final String value;
 
-  const _MetricData({required this.icon, required this.title, required this.value});
+  const _MetricData({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
 }
 
 class _MetricTile extends StatelessWidget {
@@ -564,9 +591,9 @@ class _MetricTile extends StatelessWidget {
             data.value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 2),
           Text(data.title, style: Theme.of(context).textTheme.bodySmall),
@@ -603,12 +630,17 @@ class _InsightSection extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.psychology_alt_rounded, color: AppColors.secondary),
+                const Icon(
+                  Icons.psychology_alt_rounded,
+                  color: AppColors.secondary,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Điều bạn đang quan tâm: $concern',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.45),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(height: 1.45),
                   ),
                 ),
               ],
@@ -624,14 +656,18 @@ class _InsightSection extends StatelessWidget {
                 'Khi bảng ai_insights hoặc ai_recommendations có dữ liệu, phần này sẽ tự hiển thị.',
           )
         else ...[
-          ...insights.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _InsightCard(item: item),
-              )),
-          ...recommendations.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _RecommendationCard(item: item),
-              )),
+          ...insights.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _InsightCard(item: item),
+            ),
+          ),
+          ...recommendations.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _RecommendationCard(item: item),
+            ),
+          ),
         ],
       ],
     );
@@ -651,14 +687,17 @@ class _InsightCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(_riskIcon(item.riskLevel), color: _riskColor(item.riskLevel)),
+              Icon(
+                _riskIcon(item.riskLevel),
+                color: _riskColor(item.riskLevel),
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   item.title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
             ],
@@ -666,7 +705,9 @@ class _InsightCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             item.content,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.45),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.45),
           ),
         ],
       ),
@@ -688,16 +729,18 @@ class _RecommendationCard extends StatelessWidget {
           Row(
             children: [
               Icon(
-                item.isRead ? Icons.lightbulb_outline_rounded : Icons.lightbulb_rounded,
+                item.isRead
+                    ? Icons.lightbulb_outline_rounded
+                    : Icons.lightbulb_rounded,
                 color: AppColors.primary,
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   item.title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
             ],
@@ -705,16 +748,18 @@ class _RecommendationCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             item.description,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.45),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.45),
           ),
           if (item.actionText.trim().isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(
               item.actionText,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
+                color: AppColors.primary,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ],
         ],
@@ -777,9 +822,9 @@ class _TimelineRow extends StatelessWidget {
           child: Text(
             item.timeLabel,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                ),
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
         Container(
@@ -802,19 +847,24 @@ class _TimelineRow extends StatelessWidget {
             children: [
               Text(
                 item.title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
               if (item.subtitle.trim().isNotEmpty) ...[
                 const SizedBox(height: 4),
-                Text(item.subtitle, style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  item.subtitle,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ],
             ],
           ),
         ),
         Icon(
-          item.isCompleted ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+          item.isCompleted
+              ? Icons.check_circle_rounded
+              : Icons.radio_button_unchecked_rounded,
           color: item.isCompleted ? AppColors.primary : Colors.grey,
           size: 20,
         ),
@@ -884,17 +934,17 @@ class _GoalProgressRow extends StatelessWidget {
             Expanded(
               child: Text(
                 item.title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
             ),
             Text(
               '${(item.progress * 100).round()}%',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w900,
-                  ),
+                color: AppColors.primary,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ],
         ),
@@ -937,18 +987,31 @@ class _LifestyleSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Nhịp sống của bạn',
-          subtitle: 'Dữ liệu từ health_profiles, lifestyle_habits và conditions',
+          subtitle:
+              'Dữ liệu từ health_profiles, lifestyle_habits và conditions',
           icon: Icons.spa_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
         _DashboardCard(
           child: Column(
             children: [
-              _LifestyleRow(icon: Icons.bedtime_rounded, label: 'Giấc ngủ', value: sleepQuality),
+              _LifestyleRow(
+                icon: Icons.bedtime_rounded,
+                label: 'Giấc ngủ',
+                value: sleepQuality,
+              ),
               const Divider(height: 24),
-              _LifestyleRow(icon: Icons.directions_run_rounded, label: 'Vận động', value: activityLevel),
+              _LifestyleRow(
+                icon: Icons.directions_run_rounded,
+                label: 'Vận động',
+                value: activityLevel,
+              ),
               const Divider(height: 24),
-              _LifestyleRow(icon: Icons.water_drop_rounded, label: 'Nước mỗi ngày', value: waterPerDay),
+              _LifestyleRow(
+                icon: Icons.water_drop_rounded,
+                label: 'Nước mỗi ngày',
+                value: waterPerDay,
+              ),
               if (conditions.isNotEmpty || habits.isNotEmpty) ...[
                 const Divider(height: 24),
                 Align(
@@ -957,8 +1020,18 @@ class _LifestyleSection extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      ...conditions.map((item) => _InfoChip(label: item, icon: Icons.health_and_safety_rounded)),
-                      ...habits.map((item) => _InfoChip(label: item, icon: Icons.restaurant_rounded)),
+                      ...conditions.map(
+                        (item) => _InfoChip(
+                          label: item,
+                          icon: Icons.health_and_safety_rounded,
+                        ),
+                      ),
+                      ...habits.map(
+                        (item) => _InfoChip(
+                          label: item,
+                          icon: Icons.restaurant_rounded,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -976,7 +1049,11 @@ class _LifestyleRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _LifestyleRow({required this.icon, required this.label, required this.value});
+  const _LifestyleRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -984,12 +1061,16 @@ class _LifestyleRow extends StatelessWidget {
       children: [
         Icon(icon, color: AppColors.primary),
         const SizedBox(width: 12),
-        Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyMedium)),
+        Expanded(
+          child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        ),
         Flexible(
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
         ),
       ],
@@ -1017,14 +1098,19 @@ class _GoalChipsSection extends StatelessWidget {
           const _EmptyDataCard(
             icon: Icons.track_changes_outlined,
             title: 'Chưa có mục tiêu',
-            message: 'Sau onboarding, mục tiêu sẽ được lưu và tự hiển thị ở đây.',
+            message:
+                'Sau onboarding, mục tiêu sẽ được lưu và tự hiển thị ở đây.',
           )
         else
           _DashboardCard(
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: goals.map((goal) => _InfoChip(label: goal, icon: Icons.flag_rounded)).toList(),
+              children: goals
+                  .map(
+                    (goal) => _InfoChip(label: goal, icon: Icons.flag_rounded),
+                  )
+                  .toList(),
             ),
           ),
       ],
@@ -1037,7 +1123,11 @@ class _SectionTitle extends StatelessWidget {
   final String subtitle;
   final IconData icon;
 
-  const _SectionTitle({required this.title, required this.subtitle, required this.icon});
+  const _SectionTitle({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1060,14 +1150,16 @@ class _SectionTitle extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.35),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(height: 1.35),
               ),
             ],
           ),
@@ -1124,9 +1216,9 @@ class _MiniBadge extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w800,
-            ),
+          color: AppColors.primary,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
@@ -1155,9 +1247,9 @@ class _InfoChip extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                ),
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
       ),
@@ -1170,7 +1262,11 @@ class _EmptyDataCard extends StatelessWidget {
   final String title;
   final String message;
 
-  const _EmptyDataCard({required this.icon, required this.title, required this.message});
+  const _EmptyDataCard({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1186,12 +1282,16 @@ class _EmptyDataCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   message,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.45),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.45),
                 ),
               ],
             ),
@@ -1249,7 +1349,9 @@ class _InlineErrorBanner extends StatelessWidget {
           Expanded(
             child: Text(
               'Không đọc được một phần dữ liệu động: $message',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.4),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(height: 1.4),
             ),
           ),
         ],
@@ -1281,17 +1383,25 @@ class _DashboardErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 42),
+            const Icon(
+              Icons.error_outline_rounded,
+              color: Colors.redAccent,
+              size: 42,
+            ),
             const SizedBox(height: 12),
             Text(
               'Chưa thể mở trang chủ',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.45),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(height: 1.45),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(

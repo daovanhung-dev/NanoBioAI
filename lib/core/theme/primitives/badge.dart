@@ -135,10 +135,7 @@ class AppBadge extends StatelessWidget {
         color: _getBackgroundColor(isDark),
         borderRadius: BorderRadius.circular(_getBorderRadius()),
         border: variant == BadgeVariant.status
-            ? Border.all(
-                color: _getBorderColor(isDark),
-                width: 1,
-              )
+            ? Border.all(color: _getBorderColor(isDark), width: 1)
             : null,
       ),
       constraints: _getConstraints(),
@@ -236,10 +233,7 @@ class AppBadge extends StatelessWidget {
           vertical: AppSpacingTokens.chipPaddingV,
         );
       case BadgeVariant.count:
-        return const EdgeInsets.symmetric(
-          horizontal: 6,
-          vertical: 2,
-        );
+        return const EdgeInsets.symmetric(horizontal: 6, vertical: 2);
       case BadgeVariant.dot:
         return EdgeInsets.zero;
     }
@@ -262,10 +256,7 @@ class AppBadge extends StatelessWidget {
       case BadgeVariant.status:
         return null;
       case BadgeVariant.count:
-        return const BoxConstraints(
-          minWidth: 20,
-          minHeight: 20,
-        );
+        return const BoxConstraints(minWidth: 20, minHeight: 20);
       case BadgeVariant.dot:
         return const BoxConstraints(
           minWidth: 8,

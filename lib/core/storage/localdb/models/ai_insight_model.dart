@@ -29,7 +29,8 @@ class AIInsightModel {
     );
   }
 
-  factory AIInsightModel.fromJson(Map<String, Object?> json) => AIInsightModel.fromMap(json);
+  factory AIInsightModel.fromJson(Map<String, Object?> json) =>
+      AIInsightModel.fromMap(json);
 
   Map<String, Object?> toMap() {
     return {

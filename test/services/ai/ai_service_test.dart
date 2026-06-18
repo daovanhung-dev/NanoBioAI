@@ -1,10 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
+import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
+import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
 import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
+import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/services/ai/ai_exceptions.dart';
+import 'package:nano_app/services/ai/ai_json_parser.dart';
 import 'package:nano_app/services/ai/ai_json_prompt_builder.dart';
 import 'package:nano_app/services/ai/ai_service.dart';
 import 'package:nano_app/services/ai/ai_vietnamese_text_validator.dart';
@@ -12,6 +17,12 @@ import 'package:nano_app/services/ai/prompts/exercise_tasks_prompt.dart';
 import 'package:nano_app/services/ai/prompts/meal_plan_prompt.dart';
 
 void main() {
+  const catalog = AiCatalogBundle(
+    meals: AiCatalogSeedData.meals,
+    exercises: AiCatalogSeedData.exercises,
+    scheduleTasks: AiCatalogSeedData.scheduleTasks,
+  );
+
   group('AIOverloadedException', () {
     test('matches Gemini overload and capacity errors', () {
       expect(
@@ -79,64 +90,84 @@ void main() {
     });
   });
 
+  group('AIJsonParser', () {
+    test('extracts arrays from markdown and removes trailing commas', () {
+      final decoded = AIJsonParser.decodeArray('''
+```json
+[
+  {"day": 1,},
+]
+```
+''');
+
+      expect(decoded, [
+        {'day': 1},
+      ]);
+    });
+
+    test('throws when response does not contain a JSON array', () {
+      expect(
+        () => AIJsonParser.decodeArray('{"day": 1}'),
+        throwsFormatException,
+      );
+    });
+  });
+
   group('AI prompts', () {
-    test(
-      'meal prompt uses Vietnamese instructions and preserves schema keys',
-      () {
-        final prompt = MealPlanPrompt.generate(
-          healthData: const _FakeHealthData(),
-          startDate: DateTime(2026, 6, 18),
-          days: 7,
-        );
+    test('meal prompt uses code-only schema and allowed catalog codes', () {
+      final prompt = MealPlanPrompt.generate(
+        healthData: const _FakeHealthData(),
+        startDate: DateTime(2026, 6, 18),
+        startDay: 1,
+        days: 2,
+        catalog: catalog.meals,
+        usedMealCodes: const ['br_oat_egg'],
+      );
 
-        expect(prompt, contains('Bạn là chuyên gia dinh dưỡng.'));
-        expect(prompt, contains('"meal_type": "breakfast"'));
-        expect(prompt, contains('"cooking_instructions"'));
-        expect(prompt, isNot(contains('Ban la')));
-        expect(prompt, isNot(contains('khong')));
-        expect(prompt, isNot(contains('Tra ve')));
-        expect(prompt, isNot(_containsMojibake));
-      },
-    );
+      expect(prompt, contains('"meal_code"'));
+      expect(prompt, contains('br_oat_egg'));
+      expect(prompt, contains('Không tự tạo meal_code mới.'));
+      expect(prompt, contains('Không trả về meal_name'));
+      expect(prompt, isNot(contains('"meal_name":')));
+      expect(prompt, isNot(_containsMojibake));
+    });
 
-    test(
-      'exercise prompt uses Vietnamese instructions and preserves schema keys',
-      () {
-        final prompt = ExerciseTasksPrompt.generate(
-          profile: const DailyHealthProfileEntity(
-            userId: 'u1',
-            fullName: 'Đào Văn Hùng',
-            goals: ['Ngủ ngon hơn'],
-            conditions: ['Đau lưng nhẹ'],
-            habits: ['Đi bộ buổi sáng'],
-            sleepQuality: 'Khá',
-            activityLevel: 'Vừa phải',
-            waterPerDay: '2 lít',
-          ),
-          startDate: DateTime(2026, 6, 18),
-          days: 7,
-        );
+    test('exercise prompt uses code-only schema and allowed catalog codes', () {
+      final prompt = ExerciseTasksPrompt.generate(
+        profile: const DailyHealthProfileEntity(
+          userId: 'u1',
+          fullName: 'Đào Văn Hùng',
+          goals: ['Ngủ ngon hơn'],
+          conditions: ['Đau lưng nhẹ'],
+          habits: ['Đi bộ buổi sáng'],
+          sleepQuality: 'Khá',
+          activityLevel: 'Vừa phải',
+          waterPerDay: '2 lít',
+        ),
+        startDate: DateTime(2026, 6, 18),
+        startDay: 3,
+        days: 2,
+        catalog: catalog.exercises,
+        usedExerciseCodes: const ['ex_walk_relaxed'],
+      );
 
-        expect(prompt, contains('Bạn là huấn luyện viên sức khỏe cá nhân.'));
-        expect(prompt, contains('"schedule_date"'));
-        expect(prompt, contains('"target_value"'));
-        expect(prompt, isNot(contains('Ban la')));
-        expect(prompt, isNot(contains('khong')));
-        expect(prompt, isNot(contains('Tra ve')));
-        expect(prompt, isNot(_containsMojibake));
-      },
-    );
+      expect(prompt, contains('"exercise_code"'));
+      expect(prompt, contains('ex_walk_relaxed'));
+      expect(prompt, contains('Không tự tạo exercise_code mới.'));
+      expect(prompt, contains('Không trả về title'));
+      expect(prompt, isNot(contains('"title":')));
+      expect(prompt, isNot(_containsMojibake));
+    });
 
-    test('JSON wrapper is Vietnamese and avoids English-only commands', () {
+    test('JSON wrapper is Vietnamese and forbids display text output', () {
       final prompt = AIJsonPromptBuilder.buildArrayPrompt(
-        'Tạo dữ liệu bằng tiếng Việt có dấu.',
+        'Chọn mã kỹ thuật trong danh sách allowed.',
       );
 
       expect(prompt, contains('Chỉ trả về một mảng JSON hợp lệ.'));
       expect(prompt, contains('Không viết giải thích.'));
+      expect(prompt, contains('Không tự tạo mã ngoài danh sách allowed.'));
       expect(prompt, isNot(contains('Return ONLY')));
-      expect(prompt, isNot(contains('Rules')));
-      expect(prompt, isNot(contains('No markdown')));
       expect(prompt, isNot(_containsMojibake));
     });
   });
@@ -193,6 +224,200 @@ void main() {
         ),
         throwsFormatException,
       );
+    });
+  });
+
+  group('AIService connection check', () {
+    test('succeeds when AI returns the expected JSON ping payload', () async {
+      String? capturedPrompt;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        textGenerator: ({required modelName, required prompt}) async {
+          capturedPrompt = prompt;
+          return jsonEncode([
+            {'status_code': 'ai_connection_ok'},
+          ]);
+        },
+      );
+
+      final result = await service.checkConnection(
+        perModelTimeout: const Duration(milliseconds: 100),
+      );
+
+      expect(result.success, isTrue);
+      expect(result.message, 'AI đã sẵn sàng.');
+      expect(result.modelName, 'fake-model');
+      expect(capturedPrompt, contains('ai_connection_ok'));
+    });
+
+    test('fails when AI returns an empty response', () async {
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        textGenerator: ({required modelName, required prompt}) async => '',
+      );
+
+      final result = await service.checkConnection(
+        perModelTimeout: const Duration(milliseconds: 100),
+      );
+
+      expect(result.success, isFalse);
+      expect(result.message, contains('không đúng định dạng'));
+      expect(result.modelName, 'fake-model');
+    });
+
+    test('fails when AI response is not a JSON array', () async {
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        textGenerator: ({required modelName, required prompt}) async {
+          return jsonEncode({'status_code': 'ai_connection_ok'});
+        },
+      );
+
+      final result = await service.checkConnection(
+        perModelTimeout: const Duration(milliseconds: 100),
+      );
+
+      expect(result.success, isFalse);
+      expect(result.message, contains('không đúng định dạng'));
+    });
+
+    test('fails when AI returns the wrong status code', () async {
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        textGenerator: ({required modelName, required prompt}) async {
+          return jsonEncode([
+            {'status_code': 'unexpected'},
+          ]);
+        },
+      );
+
+      final result = await service.checkConnection(
+        perModelTimeout: const Duration(milliseconds: 100),
+      );
+
+      expect(result.success, isFalse);
+      expect(result.message, contains('không đúng định dạng'));
+    });
+
+    test('fails when the text generator throws', () async {
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        textGenerator: ({required modelName, required prompt}) async {
+          throw StateError('network down');
+        },
+      );
+
+      final result = await service.checkConnection(
+        perModelTimeout: const Duration(milliseconds: 100),
+      );
+
+      expect(result.success, isFalse);
+      expect(result.message, contains('Không thể kết nối AI'));
+      expect(result.modelName, 'fake-model');
+    });
+  });
+
+  group('AIService chunked generation', () {
+    test('meal generation splits seven days into 2-2-3 chunks', () async {
+      final prompts = <String>[];
+      var call = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          prompts.add(prompt);
+          final chunks = [
+            _mealItemsForRange(startDay: 1, days: 2),
+            _mealItemsForRange(startDay: 3, days: 2),
+            _mealItemsForRange(startDay: 5, days: 3),
+          ];
+          return jsonEncode(chunks[call++]);
+        },
+      );
+
+      final meals = await service.generateMealPlan(
+        healthData: const _FakeHealthData(),
+        userId: 'u1',
+        startDate: DateTime(2026, 6, 18),
+      );
+
+      expect(meals, hasLength(35));
+      expect(prompts, hasLength(3));
+      expect(prompts[0], contains('ngày 1 đến ngày 2'));
+      expect(prompts[1], contains('ngày 3 đến ngày 4'));
+      expect(prompts[2], contains('ngày 5 đến ngày 7'));
+      expect(prompts[1], contains('br_oat_egg'));
+    });
+
+    test('meal generation falls back only for invalid chunks', () async {
+      var call = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          call++;
+          if (call == 2) {
+            return jsonEncode([
+              {'day': 3, 'meal_type': 'breakfast', 'meal_code': 'unknown_meal'},
+            ]);
+          }
+          return jsonEncode(
+            call == 1
+                ? _mealItemsForRange(startDay: 1, days: 2)
+                : _mealItemsForRange(startDay: 5, days: 3),
+          );
+        },
+      );
+
+      final meals = await service.generateMealPlan(
+        healthData: const _FakeHealthData(),
+        userId: 'u1',
+        startDate: DateTime(2026, 6, 18),
+      );
+
+      expect(meals, hasLength(35));
+      expect(
+        meals.where((meal) => meal.planDate == '2026-06-20'),
+        hasLength(MealPlanAiNormalizer.mealsPerDay),
+      );
+      expect(meals.map((meal) => meal.mealName), isNot(contains('Bua sang')));
+    });
+
+    test('exercise generation returns fourteen catalog-mapped tasks', () async {
+      final prompts = <String>[];
+      var call = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          prompts.add(prompt);
+          final chunks = [
+            _exerciseItemsForRange(startDay: 1, days: 2),
+            _exerciseItemsForRange(startDay: 3, days: 2),
+            _exerciseItemsForRange(startDay: 5, days: 3),
+          ];
+          return jsonEncode(chunks[call++]);
+        },
+      );
+
+      final exercises = await service.generateExerciseTasks(
+        profile: const DailyHealthProfileEntity(
+          userId: 'u1',
+          fullName: 'Đào Văn Hùng',
+          goals: ['Ngủ ngon hơn'],
+          conditions: [],
+          habits: [],
+          sleepQuality: 'Khá',
+          activityLevel: 'Nhẹ',
+          waterPerDay: '2 lít',
+        ),
+        startDate: DateTime(2026, 6, 18),
+      );
+
+      expect(exercises, hasLength(14));
+      expect(prompts, hasLength(3));
+      expect(exercises.first.title, 'Đi bộ thư giãn');
+      expect(exercises.first.unit, 'lần');
     });
   });
 
@@ -285,6 +510,61 @@ void main() {
 }
 
 final Matcher _containsMojibake = matches(RegExp(r'Ã|Ä|Æ|áº|á»|Â'));
+
+List<Map<String, Object?>> _mealItemsForRange({
+  required int startDay,
+  required int days,
+}) {
+  final byType = <String, List<String>>{
+    for (final slot in MealPlanAiNormalizer.mealSlots)
+      slot.type: AiCatalogSeedData.meals
+          .where((item) => item.mealType == slot.type)
+          .map((item) => item.code)
+          .toList(),
+  };
+
+  return [
+    for (var day = startDay; day < startDay + days; day++)
+      for (final slot in MealPlanAiNormalizer.mealSlots)
+        {
+          'day': day,
+          'meal_type': slot.type,
+          'meal_code':
+              byType[slot.type]![(day - 1) % byType[slot.type]!.length],
+          'portion_level': 'standard',
+          'priority': slot.order,
+        },
+  ];
+}
+
+List<Map<String, Object?>> _exerciseItemsForRange({
+  required int startDay,
+  required int days,
+}) {
+  return [
+    for (var day = startDay; day < startDay + days; day++) ...[
+      {
+        'day': day,
+        'exercise_code': AiCatalogSeedData.exercises[((day - 1) * 2) % 16].code,
+        'start_time': '08:00',
+        'end_time': '08:25',
+        'intensity': 'light',
+        'target_value': 1,
+        'priority': 1,
+      },
+      {
+        'day': day,
+        'exercise_code':
+            AiCatalogSeedData.exercises[(((day - 1) * 2) + 1) % 16].code,
+        'start_time': '17:30',
+        'end_time': '18:00',
+        'intensity': 'moderate',
+        'target_value': 1,
+        'priority': 2,
+      },
+    ],
+  ];
+}
 
 class _FakeHealthData implements HealthDataInterface {
   const _FakeHealthData();

@@ -65,7 +65,10 @@ class OnboardingEntity {
   }
 
   bool get hasAllergy => allergyName.trim().isNotEmpty;
-  bool get hasTreatment => treatmentName.trim().isNotEmpty || medicationName.trim().isNotEmpty || treatmentNote.trim().isNotEmpty;
+  bool get hasTreatment =>
+      treatmentName.trim().isNotEmpty ||
+      medicationName.trim().isNotEmpty ||
+      treatmentNote.trim().isNotEmpty;
 
   Map<String, Object?> toDebugMap() {
     return {

@@ -3,10 +3,7 @@ import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/dashboard/domain/entities/dashboard_health_status.dart';
 
 class HealthMetricsOverviewSection extends StatelessWidget {
-  const HealthMetricsOverviewSection({
-    super.key,
-    required this.status,
-  });
+  const HealthMetricsOverviewSection({super.key, required this.status});
 
   final DashboardHealthStatus status;
 
@@ -44,7 +41,8 @@ class HealthMetricsOverviewSection extends StatelessWidget {
                       children: [
                         Text(
                           'Nami vừa tính lại sức khỏe của bạn',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
                                 color: AppColors.textPrimary,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -52,7 +50,8 @@ class HealthMetricsOverviewSection extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           status.summaryMessage,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
                                 color: AppColors.textSecondary,
                                 height: 1.45,
                               ),
@@ -119,19 +118,19 @@ class _ScoreBadge extends StatelessWidget {
           Text(
             '$score',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
-                ),
+              color: color,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -149,7 +148,9 @@ class _MetricGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth >= 560;
-        final itemWidth = isWide ? (constraints.maxWidth - 12) / 2 : constraints.maxWidth;
+        final itemWidth = isWide
+            ? (constraints.maxWidth - 12) / 2
+            : constraints.maxWidth;
 
         return Wrap(
           spacing: 12,
@@ -208,9 +209,9 @@ class _MetricTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w800,
-                          ),
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -218,9 +219,9 @@ class _MetricTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: color,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -228,9 +229,9 @@ class _MetricTile extends StatelessWidget {
               Text(
                 metric.value,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w900,
-                    ),
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ],
           ),
@@ -250,9 +251,9 @@ class _MetricTile extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.35,
-                ),
+              color: AppColors.textSecondary,
+              height: 1.35,
+            ),
           ),
         ],
       ),
@@ -304,7 +305,9 @@ class _InsightList extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.primarySoft.withOpacity(0.72),
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.08)),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.08),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,7 +332,8 @@ class _InsightList extends StatelessWidget {
                         children: [
                           Text(
                             insight.title,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
                                   color: AppColors.textPrimary,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -337,7 +341,8 @@ class _InsightList extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             insight.message,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: AppColors.textSecondary,
                                   height: 1.42,
                                 ),

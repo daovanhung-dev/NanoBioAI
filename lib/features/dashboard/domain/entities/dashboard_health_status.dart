@@ -1,9 +1,4 @@
-enum DashboardRiskLevel {
-  excellent,
-  good,
-  attention,
-  risk,
-}
+enum DashboardRiskLevel { excellent, good, attention, risk }
 
 class DashboardMetricStatus {
   const DashboardMetricStatus({

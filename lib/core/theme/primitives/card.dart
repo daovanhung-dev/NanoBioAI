@@ -125,7 +125,8 @@ class AppCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final effectivePadding = padding ?? EdgeInsets.all(AppSpacingTokens.cardPadding);
+    final effectivePadding =
+        padding ?? EdgeInsets.all(AppSpacingTokens.cardPadding);
 
     return AnimatedContainer(
       duration: AppMotionTokens.card,
@@ -142,10 +143,7 @@ class AppCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppRadiusTokens.card),
-          child: Padding(
-            padding: effectivePadding,
-            child: child,
-          ),
+          child: Padding(padding: effectivePadding, child: child),
         ),
       ),
     );
@@ -195,8 +193,8 @@ class AppCard extends StatelessWidget {
       case CardVariant.defaultCard:
         return isDark ? AppShadowTokens.cardDark : AppShadowTokens.card;
       case CardVariant.elevated:
-        return isDark 
-            ? AppShadowTokens.cardElevatedDark 
+        return isDark
+            ? AppShadowTokens.cardElevatedDark
             : AppShadowTokens.cardElevated;
       case CardVariant.outlined:
         return null;

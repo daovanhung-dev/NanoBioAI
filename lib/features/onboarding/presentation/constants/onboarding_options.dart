@@ -6,10 +6,7 @@
 /// **Validates: Requirements 5.7, 5.8, 5.9, 6.12, 11.1-11.9**
 
 // Birth Year Options (1920-2024, descending)
-final birthYears = List<int>.generate(
-  2024 - 1920 + 1,
-  (index) => 2024 - index,
-);
+final birthYears = List<int>.generate(2024 - 1920 + 1, (index) => 2024 - index);
 
 // Occupation Options
 const occupations = [
@@ -57,11 +54,19 @@ const healthConditions = [
 
 // Activity Levels
 const activityLevels = [
-  {'code': 'sedentary', 'label': 'Ít vận động', 'description': 'Ngồi nhiều, ít hoạt động'},
+  {
+    'code': 'sedentary',
+    'label': 'Ít vận động',
+    'description': 'Ngồi nhiều, ít hoạt động',
+  },
   {'code': 'light', 'label': 'Nhẹ', 'description': '1-2 ngày/tuần'},
   {'code': 'moderate', 'label': 'Trung bình', 'description': '3-5 ngày/tuần'},
   {'code': 'active', 'label': 'Năng động', 'description': '6-7 ngày/tuần'},
-  {'code': 'very_active', 'label': 'Rất năng động', 'description': 'Vận động viên'},
+  {
+    'code': 'very_active',
+    'label': 'Rất năng động',
+    'description': 'Vận động viên',
+  },
 ];
 
 // Sleep Quality Options

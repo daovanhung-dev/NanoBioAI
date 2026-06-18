@@ -1,4 +1,7 @@
 import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/meal_catalog_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/exercise_catalog_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/schedule_task_catalog_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/daily_health_tasks_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
 import 'package:path/path.dart';
@@ -24,6 +27,7 @@ import 'tables/survey_answers_table.dart';
 
 // MIGRATIONS
 import 'migrations/migration_manager.dart';
+import 'seeders/ai_catalog_seeder.dart';
 
 class DatabaseService {
   DatabaseService._();
@@ -111,6 +115,14 @@ class DatabaseService {
     await db.execute(SurveyAnswersTable.createTable);
 
     await db.execute(MealPlansTable.createTable);
+
+    await db.execute(MealCatalogTable.createTable);
+    await db.execute(MealCatalogTable.createTypeIndex);
+    await db.execute(ExerciseCatalogTable.createTable);
+    await db.execute(ExerciseCatalogTable.createCategoryIndex);
+    await db.execute(ScheduleTaskCatalogTable.createTable);
+    await db.execute(ScheduleTaskCatalogTable.createCategoryIndex);
+    await AiCatalogSeeder.seed(db);
   }
 
   /// Delete database

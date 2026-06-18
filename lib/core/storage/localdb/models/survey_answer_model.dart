@@ -23,7 +23,8 @@ class SurveyAnswerModel {
     );
   }
 
-  factory SurveyAnswerModel.fromJson(Map<String, Object?> json) => SurveyAnswerModel.fromMap(json);
+  factory SurveyAnswerModel.fromJson(Map<String, Object?> json) =>
+      SurveyAnswerModel.fromMap(json);
 
   Map<String, Object?> toMap() {
     return {

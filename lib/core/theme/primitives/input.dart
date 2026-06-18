@@ -221,24 +221,15 @@ class AppInput extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadiusTokens.input),
-              borderSide: BorderSide(
-                color: AppColorTokens.primary,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: AppColorTokens.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadiusTokens.input),
-              borderSide: BorderSide(
-                color: AppColorTokens.error,
-                width: 1,
-              ),
+              borderSide: BorderSide(color: AppColorTokens.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadiusTokens.input),
-              borderSide: BorderSide(
-                color: AppColorTokens.error,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: AppColorTokens.error, width: 2),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadiusTokens.input),

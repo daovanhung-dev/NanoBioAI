@@ -16,7 +16,7 @@ void main() {
       // Note: This is a basic test structure
       // In real scenario, we would need to create mock XFile objects
       // For now, we're testing the validation logic conceptually
-      
+
       expect(ImagePickerService.allowedFormats.contains('png'), isTrue);
       expect(ImagePickerService.maxFileSizeBytes, equals(5 * 1024 * 1024));
     });
@@ -38,19 +38,25 @@ void main() {
       // This test demonstrates the expected behavior
       // In actual implementation, we would mock XFile
       const invalidFormats = ['gif', 'bmp', 'webp', 'svg'];
-      
+
       for (final format in invalidFormats) {
-        expect(ImagePickerService.allowedFormats.contains(format), isFalse,
-            reason: '$format should not be in allowed formats');
+        expect(
+          ImagePickerService.allowedFormats.contains(format),
+          isFalse,
+          reason: '$format should not be in allowed formats',
+        );
       }
     });
 
     test('should accept valid formats', () {
       const validFormats = ['png', 'jpg', 'jpeg'];
-      
+
       for (final format in validFormats) {
-        expect(ImagePickerService.allowedFormats.contains(format), isTrue,
-            reason: '$format should be in allowed formats');
+        expect(
+          ImagePickerService.allowedFormats.contains(format),
+          isTrue,
+          reason: '$format should be in allowed formats',
+        );
       }
     });
   });

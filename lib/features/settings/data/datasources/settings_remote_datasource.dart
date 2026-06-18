@@ -20,9 +20,7 @@ class SettingsRemoteDatasource {
   Future<void> updatePassword(String newPassword) async {
     try {
       final response = await supabase.auth.updateUser(
-        UserAttributes(
-          password: newPassword,
-        ),
+        UserAttributes(password: newPassword),
       );
 
       if (response.user == null) {

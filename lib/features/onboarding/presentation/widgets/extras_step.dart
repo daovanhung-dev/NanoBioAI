@@ -289,8 +289,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                                   hint: 'Chọn dị ứng hoặc món bạn muốn hạn chế',
                                   value: state.allergyName,
                                   options: _allergyOptions,
-                                  sheetTitle:
-                                      'Món nào Nami nên tránh cho bạn?',
+                                  sheetTitle: 'Món nào Nami nên tránh cho bạn?',
                                   sheetSubtitle:
                                       'Chọn những mục phù hợp. Bạn vẫn có thể tự nhập nếu danh sách chưa đủ.',
                                   onChanged: controller.updateAllergyName,
@@ -372,7 +371,8 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                           const SizedBox(height: AppSpacing.xl),
                           const _SectionHeader(
                             icon: AppIcons.stress,
-                            title: 'Gần đây bạn muốn Nami quan tâm điều gì trước?',
+                            title:
+                                'Gần đây bạn muốn Nami quan tâm điều gì trước?',
                             subtitle:
                                 'Không cần hoàn hảo ngay từ đầu. Mình sẽ cùng bạn điều chỉnh dần từng chút một.',
                           ),
@@ -384,8 +384,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                               hint: 'Chọn một vài điều đang làm bạn bận tâm',
                               value: state.concernText,
                               options: _concernOptions,
-                              sheetTitle:
-                                  'Điều gì đang làm bạn bận tâm nhất?',
+                              sheetTitle: 'Điều gì đang làm bạn bận tâm nhất?',
                               sheetSubtitle:
                                   'Bạn có thể chọn nhiều mục. Nếu muốn nói bằng lời của mình, hãy dùng phần tự nhập.',
                               onChanged: controller.updateConcernText,
@@ -442,26 +441,17 @@ class _SoftBackground extends StatelessWidget {
           Positioned(
             top: -96,
             right: -72,
-            child: _GlowCircle(
-              size: 240,
-              color: AppColors.primarySoft,
-            ),
+            child: _GlowCircle(size: 240, color: AppColors.primarySoft),
           ),
           Positioned(
             bottom: -120,
             left: -88,
-            child: _GlowCircle(
-              size: 300,
-              color: AppColors.secondarySoft,
-            ),
+            child: _GlowCircle(size: 300, color: AppColors.secondarySoft),
           ),
           Positioned(
             top: 220,
             left: -120,
-            child: _GlowCircle(
-              size: 220,
-              color: AppColors.infoSoft,
-            ),
+            child: _GlowCircle(size: 220, color: AppColors.infoSoft),
           ),
         ],
       ),
@@ -470,10 +460,7 @@ class _SoftBackground extends StatelessWidget {
 }
 
 class _GlowCircle extends StatelessWidget {
-  const _GlowCircle({
-    required this.size,
-    required this.color,
-  });
+  const _GlowCircle({required this.size, required this.color});
 
   final double size;
   final Color color;
@@ -484,9 +471,7 @@ class _GlowCircle extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: AppDecoration.circle(
-          color: color.withOpacity(0.72),
-        ),
+        decoration: AppDecoration.circle(color: color.withOpacity(0.72)),
       ),
     );
   }
@@ -533,10 +518,7 @@ class _HeroSection extends StatelessWidget {
                 runSpacing: AppSpacing.md,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 alignment: WrapAlignment.spaceBetween,
-                children: [
-                  avatar,
-                  badge,
-                ],
+                children: [avatar, badge],
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(
@@ -566,10 +548,7 @@ class _HeroSection extends StatelessWidget {
 }
 
 class _HeroBadge extends StatelessWidget {
-  const _HeroBadge({
-    required this.icon,
-    required this.label,
-  });
+  const _HeroBadge({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
@@ -614,10 +593,10 @@ class _HeroInfoWrap extends StatelessWidget {
       builder: (context, constraints) {
         const spacing = AppSpacing.md;
         final columns = constraints.maxWidth >= 520 ? 2 : 1;
-        final itemWidth = ((constraints.maxWidth - spacing * (columns - 1)) /
-                columns)
-            .clamp(150.0, 360.0)
-            .toDouble();
+        final itemWidth =
+            ((constraints.maxWidth - spacing * (columns - 1)) / columns)
+                .clamp(150.0, 360.0)
+                .toDouble();
 
         return Wrap(
           spacing: spacing,
@@ -661,10 +640,7 @@ class _HeroInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: AppDecoration.glass(
-        radius: AppRadius.lg,
-        opacity: 0.12,
-      ),
+      decoration: AppDecoration.glass(radius: AppRadius.lg, opacity: 0.12),
       child: Row(
         children: [
           Icon(icon, color: AppColors.textWhite, size: 22),
@@ -803,10 +779,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _SurfaceCard extends StatelessWidget {
-  const _SurfaceCard({
-    required this.child,
-    this.padding,
-  });
+  const _SurfaceCard({required this.child, this.padding});
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -934,9 +907,7 @@ class _NamiChoiceField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: AppTextStyles.labelLarge.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
+          style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: AppSpacing.sm),
         Material(
@@ -966,7 +937,9 @@ class _NamiChoiceField extends StatelessWidget {
                   _ChoiceFieldHeader(
                     icon: icon,
                     title: hasValue ? 'Nami đã ghi nhớ' : 'Chạm để chọn nhanh',
-                    subtitle: hasValue ? 'Bạn có thể sửa lại bất cứ lúc nào' : hint,
+                    subtitle: hasValue
+                        ? 'Bạn có thể sửa lại bất cứ lúc nào'
+                        : hint,
                     selected: hasValue,
                   ),
                   if (hasValue) ...[
@@ -1166,8 +1139,9 @@ class _ChoiceBottomSheetState extends State<_ChoiceBottomSheet> {
                     Container(
                       width: 52,
                       height: 52,
-                      decoration:
-                          AppDecoration.primaryGradient(radius: AppRadius.lg),
+                      decoration: AppDecoration.primaryGradient(
+                        radius: AppRadius.lg,
+                      ),
                       child: const Icon(
                         AppIcons.ai,
                         color: AppColors.textWhite,
@@ -1188,8 +1162,9 @@ class _ChoiceBottomSheetState extends State<_ChoiceBottomSheet> {
                           const SizedBox(height: AppSpacing.xs),
                           Text(
                             widget.subtitle,
-                            style:
-                                AppTextStyles.bodyMedium.copyWith(height: 1.55),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              height: 1.55,
+                            ),
                           ),
                         ],
                       ),
@@ -1215,8 +1190,8 @@ class _ChoiceBottomSheetState extends State<_ChoiceBottomSheet> {
                       final columns = constraints.maxWidth >= 720
                           ? 3
                           : constraints.maxWidth >= 460
-                              ? 2
-                              : 1;
+                          ? 2
+                          : 1;
                       const spacing = AppSpacing.sm;
                       final itemWidth =
                           ((constraints.maxWidth - spacing * (columns - 1)) /
@@ -1233,8 +1208,9 @@ class _ChoiceBottomSheetState extends State<_ChoiceBottomSheet> {
                               width: itemWidth,
                               child: _BottomSheetOptionTile(
                                 option: option,
-                                selected:
-                                    _selectedValues.contains(option.value),
+                                selected: _selectedValues.contains(
+                                  option.value,
+                                ),
                                 onTap: () => _toggleOption(option),
                               ),
                             ),
@@ -1251,7 +1227,8 @@ class _ChoiceBottomSheetState extends State<_ChoiceBottomSheet> {
                 ),
               ),
               _BottomSheetActions(
-                hasSelection: _selectedValues.isNotEmpty ||
+                hasSelection:
+                    _selectedValues.isNotEmpty ||
                     _customController.text.trim().isNotEmpty,
                 onClear: () {
                   setState(() {
@@ -1552,10 +1529,7 @@ class _BottomSheetActions extends StatelessWidget {
 }
 
 class _SelectedPill extends StatelessWidget {
-  const _SelectedPill({
-    required this.label,
-    this.onDeleted,
-  });
+  const _SelectedPill({required this.label, this.onDeleted});
 
   final String label;
   final VoidCallback? onDeleted;
@@ -1664,10 +1638,7 @@ class _CareNoteCard extends StatelessWidget {
 }
 
 class _CommitmentCard extends StatelessWidget {
-  const _CommitmentCard({
-    required this.agreed,
-    required this.onChanged,
-  });
+  const _CommitmentCard({required this.agreed, required this.onChanged});
 
   final bool agreed;
   final ValueChanged<bool> onChanged;
@@ -1691,10 +1662,7 @@ class _CommitmentCard extends StatelessWidget {
         builder: (context, constraints) {
           final compact = constraints.maxWidth < 420;
 
-          final switchControl = Switch(
-            value: agreed,
-            onChanged: onChanged,
-          );
+          final switchControl = Switch(value: agreed, onChanged: onChanged);
 
           final textContent = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1747,10 +1715,7 @@ class _CommitmentCard extends StatelessWidget {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.completedFields,
-    required this.agreed,
-  });
+  const _SummaryCard({required this.completedFields, required this.agreed});
 
   final int completedFields;
   final bool agreed;
@@ -1805,10 +1770,7 @@ class _SummaryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-          _SummaryRows(
-            completedFields: completedFields,
-            agreed: agreed,
-          ),
+          _SummaryRows(completedFields: completedFields, agreed: agreed),
         ],
       ),
     );
@@ -1816,10 +1778,7 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _SummaryRows extends StatelessWidget {
-  const _SummaryRows({
-    required this.completedFields,
-    required this.agreed,
-  });
+  const _SummaryRows({required this.completedFields, required this.agreed});
 
   final int completedFields;
   final bool agreed;
@@ -1830,10 +1789,10 @@ class _SummaryRows extends StatelessWidget {
       builder: (context, constraints) {
         const spacing = AppSpacing.sm;
         final columns = constraints.maxWidth >= 620 ? 3 : 1;
-        final itemWidth = ((constraints.maxWidth - spacing * (columns - 1)) /
-                columns)
-            .clamp(150.0, 280.0)
-            .toDouble();
+        final itemWidth =
+            ((constraints.maxWidth - spacing * (columns - 1)) / columns)
+                .clamp(150.0, 280.0)
+                .toDouble();
 
         return Wrap(
           spacing: spacing,
@@ -1885,10 +1844,7 @@ class _SummaryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: AppDecoration.glass(
-        radius: AppRadius.lg,
-        opacity: 0.1,
-      ),
+      decoration: AppDecoration.glass(radius: AppRadius.lg, opacity: 0.1),
       child: Row(
         children: [
           Icon(icon, color: AppColors.textWhite, size: 20),

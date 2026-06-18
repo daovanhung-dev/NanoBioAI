@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:nano_app/core/constants/app/app_radius.dart';
 import 'package:nano_app/core/constants/app/app_spacing.dart';
@@ -14,21 +12,22 @@ class AppTheme {
   static ThemeData _buildLightTheme() {
     final baseTheme = ThemeData.light();
 
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.light,
-    ).copyWith(
-      primary: AppColors.primary,
-      secondary: AppColors.secondary,
-      surface: AppColors.card,
-      error: AppColors.error,
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,
-      onSurface: AppColors.textPrimary,
-      onError: Colors.white,
-      outline: AppColors.divider,
-      surfaceTint: Colors.transparent,
-    );
+    final colorScheme =
+        ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          brightness: Brightness.light,
+        ).copyWith(
+          primary: AppColors.primary,
+          secondary: AppColors.secondary,
+          surface: AppColors.card,
+          error: AppColors.error,
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+          onSurface: AppColors.textPrimary,
+          onError: Colors.white,
+          outline: AppColors.divider,
+          surfaceTint: Colors.transparent,
+        );
 
     return baseTheme.copyWith(
       brightness: Brightness.light,
@@ -72,10 +71,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
 
-        iconTheme: const IconThemeData(
-          color: AppColors.textPrimary,
-          size: 24,
-        ),
+        iconTheme: const IconThemeData(color: AppColors.textPrimary, size: 24),
 
         actionsIconTheme: const IconThemeData(
           color: AppColors.textPrimary,
@@ -125,10 +121,7 @@ class AppTheme {
         space: 1,
       ),
 
-      iconTheme: const IconThemeData(
-        color: AppColors.textSecondary,
-        size: 24,
-      ),
+      iconTheme: const IconThemeData(color: AppColors.textSecondary, size: 24),
 
       primaryIconTheme: const IconThemeData(
         color: AppColors.textPrimary,
@@ -149,9 +142,7 @@ class AppTheme {
 
         margin: const EdgeInsets.all(AppSpacing.sm),
 
-        textStyle: AppTextStyles.bodySmall.copyWith(
-          color: Colors.white,
-        ),
+        textStyle: AppTextStyles.bodySmall.copyWith(color: Colors.white),
 
         decoration: BoxDecoration(
           color: AppColors.textPrimary,
@@ -174,9 +165,7 @@ class AppTheme {
           vertical: AppSpacing.md,
         ),
 
-        hintStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textHint,
-        ),
+        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
 
         labelStyle: AppTextStyles.bodyMedium.copyWith(
           color: AppColors.textSecondary,
@@ -186,32 +175,22 @@ class AppTheme {
           color: AppColors.textSecondary,
         ),
 
-        errorStyle: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.error,
-        ),
+        errorStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
 
         border: _inputBorder(AppColors.divider),
 
         enabledBorder: _inputBorder(AppColors.divider),
 
-        focusedBorder: _inputBorder(
-          AppColors.primary,
-          width: 1.5,
-        ),
+        focusedBorder: _inputBorder(AppColors.primary, width: 1.5),
 
         errorBorder: _inputBorder(AppColors.error),
 
-        focusedErrorBorder: _inputBorder(
-          AppColors.error,
-          width: 1.5,
-        ),
+        focusedErrorBorder: _inputBorder(AppColors.error, width: 1.5),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(
-            Size(0, 48),
-          ),
+          minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
 
           padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(
@@ -220,25 +199,17 @@ class AppTheme {
             ),
           ),
 
-          backgroundColor: const WidgetStatePropertyAll(
-            AppColors.primary,
-          ),
+          backgroundColor: const WidgetStatePropertyAll(AppColors.primary),
 
-          foregroundColor: const WidgetStatePropertyAll(
-            Colors.white,
-          ),
+          foregroundColor: const WidgetStatePropertyAll(Colors.white),
 
           elevation: const WidgetStatePropertyAll(0),
 
-          textStyle: WidgetStatePropertyAll(
-            AppTextStyles.button,
-          ),
+          textStyle: WidgetStatePropertyAll(AppTextStyles.button),
 
           shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                AppRadius.md,
-              ),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
           ),
         ),
@@ -246,9 +217,7 @@ class AppTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(
-            Size(0, 48),
-          ),
+          minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
 
           padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(
@@ -257,26 +226,17 @@ class AppTheme {
             ),
           ),
 
-          foregroundColor: const WidgetStatePropertyAll(
-            AppColors.primary,
-          ),
+          foregroundColor: const WidgetStatePropertyAll(AppColors.primary),
 
           side: const WidgetStatePropertyAll(
-            BorderSide(
-              color: AppColors.primary,
-              width: 1.2,
-            ),
+            BorderSide(color: AppColors.primary, width: 1.2),
           ),
 
-          textStyle: WidgetStatePropertyAll(
-            AppTextStyles.buttonText,
-          ),
+          textStyle: WidgetStatePropertyAll(AppTextStyles.buttonText),
 
           shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                AppRadius.md,
-              ),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
           ),
         ),
@@ -284,9 +244,7 @@ class AppTheme {
 
       textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(
-            Size(0, 44),
-          ),
+          minimumSize: const WidgetStatePropertyAll(Size(0, 44)),
 
           padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(
@@ -295,19 +253,13 @@ class AppTheme {
             ),
           ),
 
-          foregroundColor: const WidgetStatePropertyAll(
-            AppColors.primary,
-          ),
+          foregroundColor: const WidgetStatePropertyAll(AppColors.primary),
 
-          textStyle: WidgetStatePropertyAll(
-            AppTextStyles.labelLarge,
-          ),
+          textStyle: WidgetStatePropertyAll(AppTextStyles.labelLarge),
 
           shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                AppRadius.md,
-              ),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
           ),
         ),
@@ -327,9 +279,7 @@ class AppTheme {
         ),
 
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            AppRadius.md,
-          ),
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
 
         behavior: SnackBarBehavior.floating,
@@ -338,41 +288,27 @@ class AppTheme {
 
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android:
-              FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
 
-          TargetPlatform.iOS:
-              CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
 
-          TargetPlatform.macOS:
-              CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
 
-          TargetPlatform.windows:
-              ZoomPageTransitionsBuilder(),
+          TargetPlatform.windows: ZoomPageTransitionsBuilder(),
 
-          TargetPlatform.linux:
-              ZoomPageTransitionsBuilder(),
+          TargetPlatform.linux: ZoomPageTransitionsBuilder(),
 
-          TargetPlatform.fuchsia:
-              ZoomPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: ZoomPageTransitionsBuilder(),
         },
-      ), tabBarTheme: TabBarThemeData(indicatorColor: AppColors.primary),
+      ),
+      tabBarTheme: TabBarThemeData(indicatorColor: AppColors.primary),
     );
   }
 
-  static OutlineInputBorder _inputBorder(
-    Color color, {
-    double width = 1,
-  }) {
+  static OutlineInputBorder _inputBorder(Color color, {double width = 1}) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(
-        AppRadius.md,
-      ),
-      borderSide: BorderSide(
-        color: color,
-        width: width,
-      ),
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      borderSide: BorderSide(color: color, width: width),
     );
   }
 }
-

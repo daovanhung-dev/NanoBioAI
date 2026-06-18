@@ -25,9 +25,9 @@ class NotificationBootstrap {
 
   static final LocalReminderNotificationScheduler _scheduler =
       LocalReminderNotificationScheduler(
-    onForegroundResponse: handleNotificationResponse,
-    onBackgroundResponse: bioAiNotificationBackgroundResponse,
-  );
+        onForegroundResponse: handleNotificationResponse,
+        onBackgroundResponse: bioAiNotificationBackgroundResponse,
+      );
 
   static bool _timezoneInitialized = false;
   static bool _initialized = false;
@@ -44,18 +44,13 @@ class NotificationBootstrap {
 
     _initialized = true;
 
-    AppLogger.info(
-      _tag,
-      'Notification bootstrap initialized',
-    );
+    AppLogger.info(_tag, 'Notification bootstrap initialized');
   }
 
   static Future<void> scheduleGeneratedReminders() async {
     await initialize();
 
-    final service = await ReminderScheduleService.create(
-      scheduler: _scheduler,
-    );
+    final service = await ReminderScheduleService.create(scheduler: _scheduler);
 
     await service.scheduleGeneratedReminders();
   }

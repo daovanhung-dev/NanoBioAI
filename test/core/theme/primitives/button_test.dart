@@ -7,8 +7,9 @@ import 'package:nano_app/core/theme/tokens/component_tokens.dart';
 
 void main() {
   group('AppButton', () {
-    testWidgets('primary variant renders with correct styling',
-        (WidgetTester tester) async {
+    testWidgets('primary variant renders with correct styling', (
+      WidgetTester tester,
+    ) async {
       bool pressed = false;
 
       await tester.pumpWidget(
@@ -34,10 +35,12 @@ void main() {
 
       // Verify minimum height constraint
       final container = tester.widget<AnimatedContainer>(
-        find.ancestor(
-          of: find.byType(Material),
-          matching: find.byType(AnimatedContainer),
-        ).first,
+        find
+            .ancestor(
+              of: find.byType(Material),
+              matching: find.byType(AnimatedContainer),
+            )
+            .first,
       );
       expect(
         container.constraints?.minHeight,
@@ -45,8 +48,9 @@ void main() {
       );
     });
 
-    testWidgets('secondary variant renders correctly',
-        (WidgetTester tester) async {
+    testWidgets('secondary variant renders correctly', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -98,10 +102,12 @@ void main() {
 
       // Verify touch target size
       final container = tester.widget<AnimatedContainer>(
-        find.ancestor(
-          of: find.byType(Material),
-          matching: find.byType(AnimatedContainer),
-        ).first,
+        find
+            .ancestor(
+              of: find.byType(Material),
+              matching: find.byType(AnimatedContainer),
+            )
+            .first,
       );
       expect(
         container.constraints?.minWidth,
@@ -113,8 +119,9 @@ void main() {
       );
     });
 
-    testWidgets('outlined variant renders with border',
-        (WidgetTester tester) async {
+    testWidgets('outlined variant renders with border', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -141,8 +148,9 @@ void main() {
       expect(decoration.border, isNotNull);
     });
 
-    testWidgets('loading state shows loading indicator',
-        (WidgetTester tester) async {
+    testWidgets('loading state shows loading indicator', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -162,8 +170,9 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('disabled state when onPressed is null',
-        (WidgetTester tester) async {
+    testWidgets('disabled state when onPressed is null', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -183,8 +192,9 @@ void main() {
       expect(inkWell.onTap, isNull);
     });
 
-    testWidgets('button applies correct padding from tokens',
-        (WidgetTester tester) async {
+    testWidgets('button applies correct padding from tokens', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -215,8 +225,9 @@ void main() {
       );
     });
 
-    testWidgets('button applies correct border radius from tokens',
-        (WidgetTester tester) async {
+    testWidgets('button applies correct border radius from tokens', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -230,10 +241,9 @@ void main() {
       );
 
       final material = tester.widget<Material>(
-        find.ancestor(
-          of: find.byType(InkWell),
-          matching: find.byType(Material),
-        ).first,
+        find
+            .ancestor(of: find.byType(InkWell), matching: find.byType(Material))
+            .first,
       );
 
       expect(
@@ -242,8 +252,9 @@ void main() {
       );
     });
 
-    testWidgets('button works in both light and dark mode',
-        (WidgetTester tester) async {
+    testWidgets('button works in both light and dark mode', (
+      WidgetTester tester,
+    ) async {
       // Test light mode
       await tester.pumpWidget(
         MaterialApp(
@@ -278,8 +289,9 @@ void main() {
       expect(find.text('Button'), findsOneWidget);
     });
 
-    testWidgets('all button variants can be instantiated',
-        (WidgetTester tester) async {
+    testWidgets('all button variants can be instantiated', (
+      WidgetTester tester,
+    ) async {
       for (final variant in ButtonVariant.values) {
         await tester.pumpWidget(
           MaterialApp(
@@ -298,8 +310,9 @@ void main() {
       }
     });
 
-    testWidgets('button respects const constructor where possible',
-        (WidgetTester tester) async {
+    testWidgets('button respects const constructor where possible', (
+      WidgetTester tester,
+    ) async {
       // This test verifies that the widget can be created as const
       const button = AppButton(
         variant: ButtonVariant.primary,
@@ -307,13 +320,7 @@ void main() {
         child: Text('Const Button'),
       );
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: button,
-          ),
-        ),
-      );
+      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: button)));
 
       expect(find.text('Const Button'), findsOneWidget);
     });

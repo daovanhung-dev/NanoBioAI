@@ -87,11 +87,7 @@ class ErrorState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Error icon
-            Icon(
-              Icons.error_outline,
-              size: 80,
-              color: AppColorTokens.error,
-            ),
+            Icon(Icons.error_outline, size: 80, color: AppColorTokens.error),
             SizedBox(height: AppSpacingTokens.sectionSpacing),
             // Error title
             Text(

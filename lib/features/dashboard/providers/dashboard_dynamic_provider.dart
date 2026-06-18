@@ -6,11 +6,15 @@ import 'package:nano_app/features/dashboard/domain/entities/dashboard_dynamic_en
 
 final dashboardDynamicLocalDatasourceProvider =
     FutureProvider<DashboardDynamicLocalDatasource>((ref) async {
-  final db = await DatabaseService.database;
-  return DashboardDynamicLocalDatasource(db);
-});
+      final db = await DatabaseService.database;
+      return DashboardDynamicLocalDatasource(db);
+    });
 
-final dashboardDynamicProvider = FutureProvider<DashboardDynamicEntity>((ref) async {
-  final datasource = await ref.watch(dashboardDynamicLocalDatasourceProvider.future);
+final dashboardDynamicProvider = FutureProvider<DashboardDynamicEntity>((
+  ref,
+) async {
+  final datasource = await ref.watch(
+    dashboardDynamicLocalDatasourceProvider.future,
+  );
   return datasource.fetch();
 });

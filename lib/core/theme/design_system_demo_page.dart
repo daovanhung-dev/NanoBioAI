@@ -121,22 +121,22 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       children: [
         _buildSectionTitle('Primitive Components'),
         SizedBox(height: AppSpacingTokens.sectionSpacing),
-        
+
         // Buttons
         _buildSubSection('Buttons', _buildButtonExamples()),
-        
+
         // Cards
         _buildSubSection('Cards', _buildCardExamples()),
-        
+
         // Chips
         _buildSubSection('Chips', _buildChipExamples()),
-        
+
         // Inputs
         _buildSubSection('Inputs', _buildInputExamples()),
-        
+
         // Badges
         _buildSubSection('Badges', _buildBadgeExamples()),
-        
+
         // Section Headers
         _buildSubSection('Section Headers', _buildSectionHeaderExamples()),
       ],
@@ -230,9 +230,9 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
           child: AppCard(
             variant: CardVariant.defaultCard,
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Card tapped!')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Card tapped!')));
             },
             child: const Text('Interactive Card\n(Tap me)'),
           ),
@@ -273,9 +273,9 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
           label: 'With Delete',
           onTap: () {},
           onDeleted: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Chip deleted!')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Chip deleted!')));
           },
         ),
       ],
@@ -291,10 +291,7 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
           hint: 'Enter text here',
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
-        AppInput(
-          variant: InputVariant.search,
-          hint: 'Search...',
-        ),
+        AppInput(variant: InputVariant.search, hint: 'Search...'),
         SizedBox(height: AppSpacingTokens.itemSpacing),
         AppInput(
           variant: InputVariant.textField,
@@ -331,22 +328,10 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
           status: BadgeStatus.info,
           label: 'Info',
         ),
-        AppBadge(
-          variant: BadgeVariant.count,
-          count: 5,
-        ),
-        AppBadge(
-          variant: BadgeVariant.count,
-          count: 99,
-        ),
-        AppBadge(
-          variant: BadgeVariant.count,
-          count: 100,
-        ),
-        AppBadge(
-          variant: BadgeVariant.dot,
-          status: BadgeStatus.error,
-        ),
+        AppBadge(variant: BadgeVariant.count, count: 5),
+        AppBadge(variant: BadgeVariant.count, count: 99),
+        AppBadge(variant: BadgeVariant.count, count: 100),
+        AppBadge(variant: BadgeVariant.dot, status: BadgeStatus.error),
       ],
     );
   }
@@ -354,21 +339,16 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
   Widget _buildSectionHeaderExamples() {
     return Column(
       children: [
-        SectionHeader(
-          title: 'Section Title',
-        ),
-        SectionHeader(
-          title: 'With Subtitle',
-          subtitle: 'This is a subtitle',
-        ),
+        SectionHeader(title: 'Section Title'),
+        SectionHeader(title: 'With Subtitle', subtitle: 'This is a subtitle'),
         SectionHeader(
           title: 'With Action',
           subtitle: 'Subtitle text here',
           actionLabel: 'View All',
           onAction: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Action pressed!')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Action pressed!')));
           },
         ),
       ],
@@ -385,7 +365,7 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       children: [
         _buildSectionTitle('Design Tokens'),
         SizedBox(height: AppSpacingTokens.sectionSpacing),
-        
+
         _buildSubSection('Colors', _buildColorTokens()),
         _buildSubSection('Spacing', _buildSpacingTokens()),
         _buildSubSection('Radius', _buildRadiusTokens()),
@@ -395,7 +375,7 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
 
   Widget _buildColorTokens() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Wrap(
       spacing: AppSpacingTokens.itemSpacing,
       runSpacing: AppSpacingTokens.itemSpacing,
@@ -406,8 +386,14 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
         _buildColorSwatch('Warning', AppColorTokens.warning),
         _buildColorSwatch('Error', AppColorTokens.error),
         _buildColorSwatch('Info', AppColorTokens.info),
-        _buildColorSwatch('Surface', isDark ? AppColorTokens.darkSurface : AppColorTokens.surface),
-        _buildColorSwatch('Background', isDark ? AppColorTokens.darkBackground : AppColorTokens.background),
+        _buildColorSwatch(
+          'Surface',
+          isDark ? AppColorTokens.darkSurface : AppColorTokens.surface,
+        ),
+        _buildColorSwatch(
+          'Background',
+          isDark ? AppColorTokens.darkBackground : AppColorTokens.background,
+        ),
       ],
     );
   }
@@ -435,7 +421,10 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSpacingExample('Page Padding', AppSpacingTokens.pagePadding),
-        _buildSpacingExample('Section Spacing', AppSpacingTokens.sectionSpacing),
+        _buildSpacingExample(
+          'Section Spacing',
+          AppSpacingTokens.sectionSpacing,
+        ),
         _buildSpacingExample('Card Padding', AppSpacingTokens.cardPadding),
         _buildSpacingExample('Item Spacing', AppSpacingTokens.itemSpacing),
       ],
@@ -451,11 +440,7 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
             width: 150,
             child: Text(label, style: AppTextStyles.labelLarge),
           ),
-          Container(
-            width: spacing,
-            height: 20,
-            color: AppColorTokens.primary,
-          ),
+          Container(width: spacing, height: 20, color: AppColorTokens.primary),
           SizedBox(width: AppSpacingTokens.itemSpacing),
           Text('${spacing}px', style: AppTextStyles.caption),
         ],
@@ -488,7 +473,11 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
           ),
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing / 2),
-        Text('$label\n${radius}px', style: AppTextStyles.caption, textAlign: TextAlign.center),
+        Text(
+          '$label\n${radius}px',
+          style: AppTextStyles.caption,
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }
@@ -499,35 +488,56 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
 
   Widget _buildTypographySection() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? AppColorTokens.darkTextPrimary : AppColorTokens.textPrimary;
-    
+    final textColor = isDark
+        ? AppColorTokens.darkTextPrimary
+        : AppColorTokens.textPrimary;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Typography'),
         SizedBox(height: AppSpacingTokens.sectionSpacing),
-        
-        Text('Display Large', style: AppTextStyles.displayLarge.copyWith(color: textColor)),
+
+        Text(
+          'Display Large',
+          style: AppTextStyles.displayLarge.copyWith(color: textColor),
+        ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
-        
-        Text('Heading 1', style: AppTextStyles.heading1.copyWith(color: textColor)),
+
+        Text(
+          'Heading 1',
+          style: AppTextStyles.heading1.copyWith(color: textColor),
+        ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
-        
-        Text('Heading 2', style: AppTextStyles.heading2.copyWith(color: textColor)),
+
+        Text(
+          'Heading 2',
+          style: AppTextStyles.heading2.copyWith(color: textColor),
+        ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
-        
-        Text('Body Large - Lorem ipsum dolor sit amet, consectetur adipiscing elit.', 
-          style: AppTextStyles.bodyLarge.copyWith(color: textColor)),
+
+        Text(
+          'Body Large - Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+          style: AppTextStyles.bodyLarge.copyWith(color: textColor),
+        ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
-        
-        Text('Body Medium - Lorem ipsum dolor sit amet, consectetur adipiscing elit.', 
-          style: AppTextStyles.bodyMedium.copyWith(color: textColor)),
+
+        Text(
+          'Body Medium - Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+          style: AppTextStyles.bodyMedium.copyWith(color: textColor),
+        ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
-        
-        Text('Label Large', style: AppTextStyles.labelLarge.copyWith(color: textColor)),
+
+        Text(
+          'Label Large',
+          style: AppTextStyles.labelLarge.copyWith(color: textColor),
+        ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
-        
-        Text('Caption - Small supplementary text', style: AppTextStyles.caption.copyWith(color: textColor)),
+
+        Text(
+          'Caption - Small supplementary text',
+          style: AppTextStyles.caption.copyWith(color: textColor),
+        ),
       ],
     );
   }
@@ -542,8 +552,9 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       children: [
         _buildSectionTitle('State Widgets'),
         SizedBox(height: AppSpacingTokens.sectionSpacing),
-        
-        _buildSubSection('Loading State', 
+
+        _buildSubSection(
+          'Loading State',
           SizedBox(
             height: 200,
             child: LoadingState(
@@ -552,8 +563,9 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
             ),
           ),
         ),
-        
-        _buildSubSection('Empty State', 
+
+        _buildSubSection(
+          'Empty State',
           SizedBox(
             height: 300,
             child: EmptyState(
@@ -569,16 +581,17 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
             ),
           ),
         ),
-        
-        _buildSubSection('Error State', 
+
+        _buildSubSection(
+          'Error State',
           SizedBox(
             height: 300,
             child: ErrorState(
               message: 'Failed to load data. Please try again.',
               onRetry: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Retrying...')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Retrying...')));
               },
             ),
           ),
@@ -596,7 +609,9 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
     return Text(
       title,
       style: AppTextStyles.heading1.copyWith(
-        color: isDark ? AppColorTokens.darkTextPrimary : AppColorTokens.textPrimary,
+        color: isDark
+            ? AppColorTokens.darkTextPrimary
+            : AppColorTokens.textPrimary,
       ),
     );
   }
@@ -609,7 +624,9 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
         Text(
           title,
           style: AppTextStyles.heading2.copyWith(
-            color: isDark ? AppColorTokens.darkTextPrimary : AppColorTokens.textPrimary,
+            color: isDark
+                ? AppColorTokens.darkTextPrimary
+                : AppColorTokens.textPrimary,
           ),
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing),

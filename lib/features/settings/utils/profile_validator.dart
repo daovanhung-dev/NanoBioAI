@@ -71,16 +71,16 @@ class ProfileValidator {
     if (email == null || email.trim().isEmpty) {
       return 'Email không được để trống';
     }
-    
+
     // Email regex pattern: basic format validation
     final emailRegex = RegExp(
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
     );
-    
+
     if (!emailRegex.hasMatch(email.trim())) {
       return 'Email không đúng định dạng';
     }
-    
+
     return null;
   }
 
@@ -92,19 +92,17 @@ class ProfileValidator {
     if (phone == null || phone.trim().isEmpty) {
       return 'Số điện thoại không được để trống';
     }
-    
+
     final cleanPhone = phone.trim().replaceAll(RegExp(r'[\s-]'), '');
-    
+
     // Phone regex pattern: supports Vietnamese phone numbers
     // Formats: 0xxxxxxxxx (10 digits), 84xxxxxxxxx (11 digits), +84xxxxxxxxx
-    final phoneRegex = RegExp(
-      r'^(\+?84|0)[0-9]{9}$',
-    );
-    
+    final phoneRegex = RegExp(r'^(\+?84|0)[0-9]{9}$');
+
     if (!phoneRegex.hasMatch(cleanPhone)) {
       return 'Số điện thoại không đúng định dạng';
     }
-    
+
     return null;
   }
 

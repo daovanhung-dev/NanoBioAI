@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/migrations/migration_manager.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -203,5 +204,37 @@ void main() {
     expect(logNames, contains('oxygen_saturation'));
     expect(logNames.where((name) => name == 'heart_rate_bpm'), hasLength(1));
     expect(logNames.where((name) => name == 'oxygen_saturation'), hasLength(1));
+  });
+
+  test('migration v8 creates and seeds AI catalog tables once', () async {
+    await MigrationManager.runMigrations(db, 7, 8);
+    await MigrationManager.runMigrations(db, 7, 8);
+
+    final tables = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    );
+    final tableNames = tables.map((table) => table['name']).toList();
+
+    expect(tableNames, contains('meal_catalog'));
+    expect(tableNames, contains('exercise_catalog'));
+    expect(tableNames, contains('schedule_task_catalog'));
+
+    final mealCount = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM meal_catalog'),
+    );
+    final exerciseCount = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM exercise_catalog'),
+    );
+    final scheduleCount = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM schedule_task_catalog'),
+    );
+
+    expect(mealCount, 40);
+    expect(exerciseCount, 16);
+    expect(scheduleCount, 3);
+
+    final indexes = await db.rawQuery('PRAGMA index_list(meal_catalog)');
+    final indexNames = indexes.map((index) => index['name']).toList();
+    expect(indexNames, contains('idx_meal_catalog_type'));
   });
 }

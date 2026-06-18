@@ -26,31 +26,22 @@ class _AIChatFABState extends State<AIChatFAB>
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: AppDuration.slow,
-    );
+    _controller = AnimationController(vsync: this, duration: AppDuration.slow);
 
-    _scaleAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.elasticOut,
-      ),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
-    _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    _rotationAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
-    _glowAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
+    _glowAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.2,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     // Entrance animation
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -79,7 +70,7 @@ class _AIChatFABState extends State<AIChatFAB>
 
   void _onTap() {
     HapticFeedback.mediumImpact();
-    
+
     setState(() {
       _isPressed = true;
     });
@@ -89,7 +80,7 @@ class _AIChatFABState extends State<AIChatFAB>
         setState(() {
           _isPressed = false;
         });
-        
+
         context.push(RoutePaths.aiChat);
       }
     });
@@ -161,11 +152,7 @@ class _AIChatFABState extends State<AIChatFAB>
                   // Icon
                   Transform.rotate(
                     angle: _rotationAnimation.value * math.pi * 0.2,
-                    child: Icon(
-                      AppIcons.aiChat,
-                      color: Colors.white,
-                      size: 28,
-                    ),
+                    child: Icon(AppIcons.aiChat, color: Colors.white, size: 28),
                   ),
 
                   // Pulse indicator

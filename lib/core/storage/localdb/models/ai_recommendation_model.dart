@@ -32,7 +32,8 @@ class AIRecommendationModel {
     );
   }
 
-  factory AIRecommendationModel.fromJson(Map<String, Object?> json) => AIRecommendationModel.fromMap(json);
+  factory AIRecommendationModel.fromJson(Map<String, Object?> json) =>
+      AIRecommendationModel.fromMap(json);
 
   Map<String, Object?> toMap() {
     return {

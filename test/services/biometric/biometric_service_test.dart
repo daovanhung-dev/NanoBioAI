@@ -24,8 +24,7 @@ void main() {
       });
 
       test('creates exception with message and code', () {
-        final exception =
-            BiometricException('Test message', code: 'TEST_CODE');
+        final exception = BiometricException('Test message', code: 'TEST_CODE');
         expect(exception.message, equals('Test message'));
         expect(exception.code, equals('TEST_CODE'));
       });

@@ -35,7 +35,8 @@ class NutritionLogModel {
     );
   }
 
-  factory NutritionLogModel.fromJson(Map<String, Object?> json) => NutritionLogModel.fromMap(json);
+  factory NutritionLogModel.fromJson(Map<String, Object?> json) =>
+      NutritionLogModel.fromMap(json);
 
   Map<String, Object?> toMap() {
     return {

@@ -22,7 +22,7 @@ class ImagePickerService {
     try {
       // Request camera permission
       final permissionStatus = await Permission.camera.request();
-      
+
       if (permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
         return null;
       }
@@ -49,7 +49,7 @@ class ImagePickerService {
     try {
       // Request photo library permission
       final permissionStatus = await Permission.photos.request();
-      
+
       if (permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
         return null;
       }
@@ -75,7 +75,10 @@ class ImagePickerService {
   Future<bool> validateImage(XFile file) async {
     try {
       // Check file format
-      final extension = path.extension(file.path).toLowerCase().replaceAll('.', '');
+      final extension = path
+          .extension(file.path)
+          .toLowerCase()
+          .replaceAll('.', '');
       if (!allowedFormats.contains(extension)) {
         return false;
       }
@@ -100,7 +103,7 @@ class ImagePickerService {
     try {
       // Get app documents directory
       final directory = await getApplicationDocumentsDirectory();
-      
+
       // Create avatars subdirectory if it doesn't exist
       final avatarsDir = Directory('${directory.path}/avatars');
       if (!await avatarsDir.exists()) {
@@ -129,7 +132,10 @@ class ImagePickerService {
   Future<String?> getValidationError(XFile file) async {
     try {
       // Check file format
-      final extension = path.extension(file.path).toLowerCase().replaceAll('.', '');
+      final extension = path
+          .extension(file.path)
+          .toLowerCase()
+          .replaceAll('.', '');
       if (!allowedFormats.contains(extension)) {
         return 'Invalid image format. Only PNG and JPEG are allowed.';
       }

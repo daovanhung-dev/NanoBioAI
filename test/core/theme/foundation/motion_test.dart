@@ -33,12 +33,15 @@ void main() {
     });
 
     group('requirement validation', () {
-      test('all duration values should match requirement 1.6 specification', () {
-        // Requirement 1.6: fast: 150ms, normal: 250ms, slow: 350ms
-        expect(MotionFoundation.fast.inMilliseconds, 150);
-        expect(MotionFoundation.normal.inMilliseconds, 250);
-        expect(MotionFoundation.slow.inMilliseconds, 350);
-      });
+      test(
+        'all duration values should match requirement 1.6 specification',
+        () {
+          // Requirement 1.6: fast: 150ms, normal: 250ms, slow: 350ms
+          expect(MotionFoundation.fast.inMilliseconds, 150);
+          expect(MotionFoundation.normal.inMilliseconds, 250);
+          expect(MotionFoundation.slow.inMilliseconds, 350);
+        },
+      );
 
       test('all required curves should be defined', () {
         // Requirement 1.6: ease-in, ease-out, ease-in-out

@@ -240,11 +240,7 @@ class AppButton extends StatelessWidget {
                       ),
                     ),
                   )
-                : Icon(
-                    icon,
-                    color: _getIconColor(isDark),
-                    size: 24,
-                  ),
+                : Icon(icon, color: _getIconColor(isDark), size: 24),
           ),
         ),
       ),
@@ -277,9 +273,7 @@ class AppButton extends StatelessWidget {
   /// Gets the text color based on variant and state.
   Color _getTextColor(bool isDark) {
     if (_isDisabled) {
-      return isDark
-          ? AppColorTokens.darkTextMuted
-          : AppColorTokens.textMuted;
+      return isDark ? AppColorTokens.darkTextMuted : AppColorTokens.textMuted;
     }
 
     switch (variant) {
@@ -302,22 +296,16 @@ class AppButton extends StatelessWidget {
   /// Gets the icon color for icon buttons.
   Color _getIconColor(bool isDark) {
     if (_isDisabled) {
-      return isDark
-          ? AppColorTokens.darkTextMuted
-          : AppColorTokens.textMuted;
+      return isDark ? AppColorTokens.darkTextMuted : AppColorTokens.textMuted;
     }
 
-    return isDark
-        ? AppColorTokens.darkTextPrimary
-        : AppColorTokens.textPrimary;
+    return isDark ? AppColorTokens.darkTextPrimary : AppColorTokens.textPrimary;
   }
 
   /// Gets the border color for outlined variant.
   Color _getBorderColor(bool isDark) {
     if (_isDisabled) {
-      return isDark
-          ? AppColorTokens.darkBorder
-          : AppColorTokens.border;
+      return isDark ? AppColorTokens.darkBorder : AppColorTokens.border;
     }
 
     return isDark

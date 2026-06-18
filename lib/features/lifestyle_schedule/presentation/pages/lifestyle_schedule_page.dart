@@ -401,7 +401,11 @@ class _HeroPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColorTokens.textInverse, size: _ScheduleUi.pillIconSize),
+          Icon(
+            icon,
+            color: AppColorTokens.textInverse,
+            size: _ScheduleUi.pillIconSize,
+          ),
           const SizedBox(width: AppSpacingTokens.itemSpacing),
           Text(
             '$label • $value',
@@ -529,9 +533,7 @@ class _ScoreBadge extends StatelessWidget {
       ),
       child: Text(
         '${score.round()}%',
-        style: AppTextStyles.labelLarge.copyWith(
-          color: AppColorTokens.primary,
-        ),
+        style: AppTextStyles.labelLarge.copyWith(color: AppColorTokens.primary),
       ),
     );
   }
@@ -596,10 +598,7 @@ class _EncouragementBanner extends ConsumerWidget {
       padding: const EdgeInsets.all(AppSpacingTokens.cardPadding),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColorTokens.successLight,
-            AppColorTokens.infoLight,
-          ],
+          colors: [AppColorTokens.successLight, AppColorTokens.infoLight],
         ),
         borderRadius: BorderRadius.circular(AppRadiusTokens.card),
         border: Border.all(
@@ -660,7 +659,8 @@ class _DateSection extends StatelessWidget {
       children: [
         SectionHeader(
           title: 'Chọn ngày đồng hành',
-          subtitle: 'Nami gom các nhịp ăn uống, vận động và nghỉ ngơi theo từng ngày.',
+          subtitle:
+              'Nami gom các nhịp ăn uống, vận động và nghỉ ngơi theo từng ngày.',
         ),
         const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
         _DateSelector(state: state),
@@ -791,8 +791,8 @@ class _DateChip extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: isToday
                           ? (selected
-                              ? AppColorTokens.textInverse
-                              : AppColorTokens.success)
+                                ? AppColorTokens.textInverse
+                                : AppColorTokens.success)
                           : Colors.transparent,
                     ),
                   ),
@@ -872,7 +872,11 @@ class _TimelineRow extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _TimelineRail(meta: meta, isCompleted: item.isCompleted, isLast: isLast),
+          _TimelineRail(
+            meta: meta,
+            isCompleted: item.isCompleted,
+            isLast: isLast,
+          ),
           const SizedBox(width: AppSpacingTokens.itemSpacingLarge),
           Expanded(
             child: _ScheduleItemCard(
@@ -881,8 +885,8 @@ class _TimelineRow extends ConsumerWidget {
               canComplete: canComplete,
               onToggle: canComplete
                   ? () => ref
-                      .read(lifestyleScheduleControllerProvider.notifier)
-                      .toggleItem(item)
+                        .read(lifestyleScheduleControllerProvider.notifier)
+                        .toggleItem(item)
                   : null,
             ),
           ),
@@ -919,7 +923,9 @@ class _TimelineRail extends StatelessWidget {
               color: isCompleted ? AppColorTokens.success : meta.color,
               boxShadow: [
                 BoxShadow(
-                  color: meta.color.withValues(alpha: _ScheduleUi.shadowOpacity),
+                  color: meta.color.withValues(
+                    alpha: _ScheduleUi.shadowOpacity,
+                  ),
                   blurRadius: _ScheduleUi.railGlowBlur,
                   offset: const Offset(0, AppSpacingTokens.itemSpacing),
                 ),
@@ -945,7 +951,9 @@ class _TimelineRail extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       meta.color.withValues(alpha: _ScheduleUi.borderOpacity),
-                      meta.color.withValues(alpha: _ScheduleUi.softSurfaceOpacity),
+                      meta.color.withValues(
+                        alpha: _ScheduleUi.softSurfaceOpacity,
+                      ),
                     ],
                   ),
                 ),
@@ -977,7 +985,9 @@ class _ScheduleItemCard extends StatelessWidget {
         : _SchedulePalette.textPrimary(context);
 
     return AppCard(
-      variant: item.isCompleted ? CardVariant.outlined : CardVariant.defaultCard,
+      variant: item.isCompleted
+          ? CardVariant.outlined
+          : CardVariant.defaultCard,
       padding: EdgeInsets.zero,
       onTap: onToggle,
       child: AnimatedContainer(
@@ -990,15 +1000,19 @@ class _ScheduleItemCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              meta.color.withValues(alpha: item.isCompleted
-                  ? _ScheduleUi.completedTintOpacity
-                  : _ScheduleUi.softSurfaceOpacity),
+              meta.color.withValues(
+                alpha: item.isCompleted
+                    ? _ScheduleUi.completedTintOpacity
+                    : _ScheduleUi.softSurfaceOpacity,
+              ),
               _SchedulePalette.surface(context),
             ],
           ),
           border: Border.all(
             color: item.isCompleted
-                ? AppColorTokens.success.withValues(alpha: _ScheduleUi.borderOpacity)
+                ? AppColorTokens.success.withValues(
+                    alpha: _ScheduleUi.borderOpacity,
+                  )
                 : meta.color.withValues(alpha: _ScheduleUi.softBorderOpacity),
           ),
         ),
@@ -1162,7 +1176,9 @@ class _WaitingPill extends StatelessWidget {
       ),
       child: Text(
         'Chờ đúng giờ',
-        style: AppTextStyles.labelMedium.copyWith(color: AppColorTokens.warning),
+        style: AppTextStyles.labelMedium.copyWith(
+          color: AppColorTokens.warning,
+        ),
       ),
     );
   }
@@ -1184,7 +1200,9 @@ class _DonePill extends StatelessWidget {
       ),
       child: Text(
         'Đã chăm sóc',
-        style: AppTextStyles.labelMedium.copyWith(color: AppColorTokens.success),
+        style: AppTextStyles.labelMedium.copyWith(
+          color: AppColorTokens.success,
+        ),
       ),
     );
   }
@@ -1211,7 +1229,9 @@ class _CompletionButton extends StatelessWidget {
       enabled: enabled,
       child: AnimatedOpacity(
         duration: AppMotionTokens.button,
-        opacity: enabled ? _ScheduleUi.enabledOpacity : _ScheduleUi.disabledOpacity,
+        opacity: enabled
+            ? _ScheduleUi.enabledOpacity
+            : _ScheduleUi.disabledOpacity,
         child: InkWell(
           onTap: enabled ? onTap : null,
           borderRadius: BorderRadius.circular(AppRadiusTokens.avatar),
@@ -1222,13 +1242,19 @@ class _CompletionButton extends StatelessWidget {
             height: AppSpacingTokens.touchTargetMin,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: checked ? AppColorTokens.success : color.withValues(alpha: _ScheduleUi.softSurfaceOpacity),
+              color: checked
+                  ? AppColorTokens.success
+                  : color.withValues(alpha: _ScheduleUi.softSurfaceOpacity),
               border: Border.all(
-                color: checked ? AppColorTokens.success : color.withValues(alpha: _ScheduleUi.borderOpacity),
+                color: checked
+                    ? AppColorTokens.success
+                    : color.withValues(alpha: _ScheduleUi.borderOpacity),
               ),
             ),
             child: Icon(
-              checked ? Icons.check_rounded : Icons.radio_button_unchecked_rounded,
+              checked
+                  ? Icons.check_rounded
+                  : Icons.radio_button_unchecked_rounded,
               color: checked ? AppColorTokens.textInverse : color,
               size: _ScheduleUi.checkIconSize,
             ),
@@ -1422,8 +1448,9 @@ class _SchedulePalette {
   static bool _isDark(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark;
 
-  static Color background(BuildContext context) =>
-      _isDark(context) ? AppColorTokens.darkBackground : AppColorTokens.background;
+  static Color background(BuildContext context) => _isDark(context)
+      ? AppColorTokens.darkBackground
+      : AppColorTokens.background;
 
   static Color surface(BuildContext context) =>
       _isDark(context) ? AppColorTokens.darkSurface : AppColorTokens.surface;
@@ -1436,8 +1463,9 @@ class _SchedulePalette {
       ? AppColorTokens.darkTextSecondary
       : AppColorTokens.textSecondary;
 
-  static Color textMuted(BuildContext context) =>
-      _isDark(context) ? AppColorTokens.darkTextMuted : AppColorTokens.textMuted;
+  static Color textMuted(BuildContext context) => _isDark(context)
+      ? AppColorTokens.darkTextMuted
+      : AppColorTokens.textMuted;
 
   static Color border(BuildContext context) =>
       _isDark(context) ? AppColorTokens.darkBorder : AppColorTokens.border;

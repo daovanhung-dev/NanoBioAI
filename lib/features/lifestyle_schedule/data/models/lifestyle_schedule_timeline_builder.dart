@@ -1,3 +1,4 @@
+import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 
@@ -18,10 +19,22 @@ class LifestyleScheduleTimelineBuilder {
     required DailyHealthProfileEntity profile,
     required List<MealPlanModel> meals,
     required List<ExerciseTaskModel> exercises,
+    required AiCatalogBundle catalog,
     required DateTime startDate,
     int days = 7,
     required String createdAt,
   }) {
+    final scheduleCatalog = catalog.scheduleTasksByCode;
+    final wakeTask = _requiredRoutine(scheduleCatalog, 'routine_wake');
+    final waterTask = _requiredRoutine(
+      scheduleCatalog,
+      'routine_water_morning',
+    );
+    final sleepTask = _requiredRoutine(
+      scheduleCatalog,
+      'routine_sleep_prepare',
+    );
+
     final mealsByDate = <String, List<MealPlanModel>>{};
     for (final meal in meals) {
       final date = _dateKeyFromText(meal.planDate);
@@ -57,23 +70,13 @@ class LifestyleScheduleTimelineBuilder {
         _routine(
           profile: profile,
           date: date,
-          startTime: '06:00',
-          endTime: '06:15',
-          title: 'Thuc day',
-          description: 'Bat dau ngay moi, ngoi day cham va gian co nhe.',
-          category: 'wake',
+          item: wakeTask,
           createdAt: createdAt,
         ),
         _routine(
           profile: profile,
           date: date,
-          startTime: '06:15',
-          endTime: '06:20',
-          title: 'Uong nuoc dau ngay',
-          description: 'Uong mot coc nuoc nho de khoi dong co the.',
-          category: LifestyleScheduleCategories.water,
-          targetValue: 250,
-          unit: 'ml',
+          item: waterTask,
           createdAt: createdAt,
         ),
         ...dayMeals.map(
@@ -90,11 +93,11 @@ class LifestyleScheduleTimelineBuilder {
             sourceId: meal.id,
             targetValue: 1,
             currentValue: 0,
-            unit: 'lan',
+            unit: 'lần',
             isCompleted: false,
             sortOrder: 0,
             aiGenerated: true,
-            encouragement: 'Hoan thanh dung bua giup lich trinh on dinh hon.',
+            encouragement: 'Hoàn thành đúng bữa giúp lịch trình ổn định hơn.',
             createdAt: createdAt,
             updatedAt: createdAt,
           ),
@@ -125,11 +128,7 @@ class LifestyleScheduleTimelineBuilder {
         _routine(
           profile: profile,
           date: date,
-          startTime: '21:00',
-          endTime: '21:15',
-          title: 'Di ngu',
-          description: 'Giam anh sang man hinh va chuan bi ngu dung gio.',
-          category: LifestyleScheduleCategories.sleep,
+          item: sleepTask,
           createdAt: createdAt,
         ),
       ];
@@ -158,33 +157,27 @@ class LifestyleScheduleTimelineBuilder {
   LifestyleScheduleItemModel _routine({
     required DailyHealthProfileEntity profile,
     required String date,
-    required String startTime,
-    required String endTime,
-    required String title,
-    required String description,
-    required String category,
-    double targetValue = 1,
-    String unit = 'lan',
+    required ScheduleTaskCatalogItemModel item,
     required String createdAt,
   }) {
     return LifestyleScheduleItemModel(
       id: '',
       userId: profile.userId,
       scheduleDate: date,
-      startTime: startTime,
-      endTime: endTime,
-      title: title,
-      description: description,
-      category: category,
+      startTime: item.startTime,
+      endTime: item.endTime,
+      title: item.title,
+      description: item.description,
+      category: item.category,
       sourceType: LifestyleScheduleSourceTypes.aiSchedule,
-      sourceId: null,
-      targetValue: targetValue,
+      sourceId: item.code,
+      targetValue: item.targetValue,
       currentValue: 0,
-      unit: unit,
+      unit: item.unit,
       isCompleted: false,
       sortOrder: 0,
       aiGenerated: true,
-      encouragement: 'Hoan thanh mot moc nho giup ngay hom nay de theo hon.',
+      encouragement: item.encouragement,
       createdAt: createdAt,
       updatedAt: createdAt,
     );
@@ -193,18 +186,29 @@ class LifestyleScheduleTimelineBuilder {
   String _mealTitle(MealPlanModel meal) {
     switch (meal.mealType.trim().toLowerCase()) {
       case 'breakfast':
-        return 'An sang: ${meal.mealName}';
+        return 'Ăn sáng: ${meal.mealName}';
       case 'morning_snack':
-        return 'Bua phu sang: ${meal.mealName}';
+        return 'Bữa phụ sáng: ${meal.mealName}';
       case 'lunch':
-        return 'An trua: ${meal.mealName}';
+        return 'Ăn trưa: ${meal.mealName}';
       case 'afternoon_snack':
-        return 'Bua phu chieu: ${meal.mealName}';
+        return 'Bữa phụ chiều: ${meal.mealName}';
       case 'dinner':
-        return 'An toi: ${meal.mealName}';
+        return 'Ăn tối: ${meal.mealName}';
       default:
-        return 'Dung bua: ${meal.mealName}';
+        return 'Dùng bữa: ${meal.mealName}';
     }
+  }
+
+  ScheduleTaskCatalogItemModel _requiredRoutine(
+    Map<String, ScheduleTaskCatalogItemModel> catalog,
+    String code,
+  ) {
+    final item = catalog[code];
+    if (item == null) {
+      throw StateError('Missing schedule_task_catalog code: $code');
+    }
+    return item;
   }
 
   String _id(

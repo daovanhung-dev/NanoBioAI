@@ -150,37 +150,25 @@ class AppColors {
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF60A5FA),
-      Color(0xFF2563EB),
-    ],
+    colors: [Color(0xFF60A5FA), Color(0xFF2563EB)],
   );
 
   static const LinearGradient blueGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [
-      Color(0xFF38BDF8),
-      Color(0xFF2563EB),
-    ],
+    colors: [Color(0xFF38BDF8), Color(0xFF2563EB)],
   );
 
   static const LinearGradient premiumGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF3B82F6),
-      Color(0xFF8B5CF6),
-    ],
+    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
   );
 
   static const LinearGradient successGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF22C55E),
-      Color(0xFF16A34A),
-    ],
+    colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
   );
 
   // ============================================================

@@ -75,7 +75,7 @@ class DailyHealthAiTaskNormalizer {
             description: _readString(map['description']),
             targetValue: _readPositiveDouble(map['target_value']),
             currentValue: 0,
-            unit: _readString(map['unit'], fallback: 'lan'),
+            unit: _readString(map['unit'], fallback: 'lần'),
             isCompleted: false,
             sortOrder: categoryIndex + 1,
             source: 'ai',
@@ -107,15 +107,15 @@ class DailyHealthAiTaskNormalizer {
   static String _fallbackTitle(String category) {
     switch (category) {
       case 'water':
-        return 'Uong nuoc';
+        return 'Uống nước';
       case 'body':
-        return 'Van dong';
+        return 'Vận động';
       case 'mind':
-        return 'Cham soc tam tri';
+        return 'Chăm sóc tâm trí';
       case 'brain':
-        return 'Kien thuc suc khoe';
+        return 'Kiến thức sức khỏe';
       default:
-        return 'Nhiem vu suc khoe';
+        return 'Nhiệm vụ sức khỏe';
     }
   }
 

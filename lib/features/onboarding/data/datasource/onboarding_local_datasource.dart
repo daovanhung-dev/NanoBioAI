@@ -11,7 +11,7 @@ import '../models/onboarding_model.dart';
 
 class OnboardingLocalDatasource {
   static const _tag = 'ONBOARDING';
-  
+
   const OnboardingLocalDatasource();
 
   Future<Database> _db() async {
@@ -21,7 +21,7 @@ class OnboardingLocalDatasource {
   Future<void> saveOnboarding(OnboardingEntity entity) async {
     AppLogger.database(_tag, 'Start saving onboarding to SQLite');
     AppLogger.info(_tag, 'Converting entity to model');
-    
+
     final model = OnboardingModel.fromEntity(entity);
 
     final db = await _db();
@@ -39,7 +39,7 @@ class OnboardingLocalDatasource {
         /// USER
         /// =========================
         AppLogger.database(_tag, 'Querying existing user by email/phone');
-        
+
         final users = await txn.query(
           'users',
           where: 'email = ? OR phone = ?',
@@ -65,7 +65,7 @@ class OnboardingLocalDatasource {
             where: 'id = ?',
             whereArgs: [userId],
           );
-          
+
           AppLogger.success(_tag, 'User record updated successfully');
         } else {
           // Generate a text primary key (timestamp-based) to match table schema (TEXT PK)
@@ -136,7 +136,7 @@ class OnboardingLocalDatasource {
           where: 'user_id = ?',
           whereArgs: [userId],
         );
-        
+
         AppLogger.success(_tag, 'Old health data deleted');
 
         /// =========================
@@ -149,7 +149,7 @@ class OnboardingLocalDatasource {
           _healthProfileRow(model, userId, now),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
-        
+
         AppLogger.success(_tag, 'Health profile inserted');
 
         /// =========================
@@ -165,14 +165,17 @@ class OnboardingLocalDatasource {
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
         }
-        
+
         AppLogger.success(_tag, '${goalRows.length} goals inserted');
 
         /// =========================
         /// CONDITIONS
         /// =========================
         final conditionRows = _conditionRows(model, userId, now);
-        AppLogger.database(_tag, 'Insert ${conditionRows.length} health_conditions');
+        AppLogger.database(
+          _tag,
+          'Insert ${conditionRows.length} health_conditions',
+        );
 
         for (final row in conditionRows) {
           await txn.insert(
@@ -181,7 +184,7 @@ class OnboardingLocalDatasource {
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
         }
-        
+
         AppLogger.success(_tag, '${conditionRows.length} conditions inserted');
 
         /// =========================
@@ -194,7 +197,7 @@ class OnboardingLocalDatasource {
           _lifestyleRow(model, userId, now),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
-        
+
         AppLogger.success(_tag, 'Lifestyle habits inserted');
 
         /// =========================
@@ -203,13 +206,13 @@ class OnboardingLocalDatasource {
 
         if (model.hasAllergy) {
           AppLogger.database(_tag, 'Insert food_allergies');
-          
+
           await txn.insert(
             'food_allergies',
             _allergyRow(model, userId, now),
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
-          
+
           AppLogger.success(_tag, 'Food allergy inserted');
         } else {
           AppLogger.info(_tag, 'No allergy data to insert');
@@ -221,13 +224,13 @@ class OnboardingLocalDatasource {
 
         if (model.hasTreatment) {
           AppLogger.database(_tag, 'Insert medical_treatments');
-          
+
           await txn.insert(
             'medical_treatments',
             _treatmentRow(model, userId, now),
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
-          
+
           AppLogger.success(_tag, 'Medical treatment inserted');
         } else {
           AppLogger.info(_tag, 'No treatment data to insert');
@@ -246,7 +249,7 @@ class OnboardingLocalDatasource {
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
         }
-        
+
         AppLogger.success(_tag, '${surveyRows.length} survey answers inserted');
         AppLogger.database(_tag, 'Transaction completed successfully');
       });
@@ -315,7 +318,7 @@ class OnboardingLocalDatasource {
       debugPrint(const JsonEncoder.withIndent('  ').convert(snapshot));
 
       debugPrint('╚══════════════════════════════════════════════');
-      
+
       AppLogger.success(_tag, 'Onboarding data saved to SQLite successfully');
       AppLogger.info(_tag, 'User ID: $userId');
     } catch (e, st) {

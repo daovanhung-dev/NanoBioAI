@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/services/ai/ai_service.dart';
 
 import '../../../../core/theme/theme.dart';
 import '../../providers/onboarding_provider.dart';
@@ -44,6 +45,10 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
   @override
   Widget build(BuildContext context) {
     final controller = ref.read(onboardingProvider.notifier);
+    final aiDevCheckEnabled = ref.watch(onboardingAiDevCheckEnabledProvider);
+    final aiDevCheck = aiDevCheckEnabled
+        ? ref.watch(onboardingAiDevCheckProvider)
+        : null;
     final width = MediaQuery.sizeOf(context).width;
     final showDecoration = width >= 420;
 
@@ -105,6 +110,10 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const _NamiHeroHeader(),
+                    if (aiDevCheckEnabled && aiDevCheck != null) ...[
+                      SizedBox(height: _adaptive(maxWidth, 14, 18, 20)),
+                      _AiDevCheckBanner(state: aiDevCheck),
+                    ],
                     SizedBox(height: _adaptive(maxWidth, 18, 24, 28)),
                     const _HumanMessageCard(),
                     SizedBox(height: _adaptive(maxWidth, 22, 28, 32)),
@@ -136,6 +145,120 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
     if (width >= 900) return desktop;
     if (width >= 600) return tablet;
     return mobile;
+  }
+}
+
+class _AiDevCheckBanner extends StatelessWidget {
+  final AsyncValue<AIConnectionCheckResult?> state;
+
+  const _AiDevCheckBanner({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    return state.when(
+      data: (result) {
+        if (result == null) {
+          return const SizedBox.shrink();
+        }
+
+        return _AiDevCheckBannerFrame(
+          success: result.success,
+          message: result.message,
+          modelName: result.modelName,
+        );
+      },
+      loading: () => const _AiDevCheckBannerFrame(
+        isLoading: true,
+        message: 'Đang kiểm tra kết nối AI...',
+      ),
+      error: (error, stackTrace) => const _AiDevCheckBannerFrame(
+        success: false,
+        message: 'Không thể kiểm tra kết nối AI.',
+      ),
+    );
+  }
+}
+
+class _AiDevCheckBannerFrame extends StatelessWidget {
+  final bool success;
+  final bool isLoading;
+  final String message;
+  final String? modelName;
+
+  const _AiDevCheckBannerFrame({
+    this.success = false,
+    this.isLoading = false,
+    required this.message,
+    this.modelName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isLoading
+        ? AppColors.primary
+        : success
+        ? AppColors.success
+        : AppColors.error;
+    final backgroundColor = isLoading
+        ? AppColors.primarySoft
+        : success
+        ? AppColors.successSoft
+        : AppColors.errorSoft;
+    final icon = success
+        ? Icons.check_circle_rounded
+        : Icons.error_outline_rounded;
+
+    return Container(
+      key: const Key('onboarding_ai_dev_check_banner'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: color.withOpacity(0.24)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 22,
+            height: 22,
+            child: isLoading
+                ? CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  )
+                : Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                  ),
+                ),
+                if (modelName != null && modelName!.trim().isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Model: ${modelName!.trim()}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: color.withOpacity(0.82),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

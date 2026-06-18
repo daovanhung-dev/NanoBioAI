@@ -58,11 +58,9 @@ class _HealthChipState extends State<HealthChip>
   bool get _enabled => widget.enabled;
 
   Gradient get _gradient =>
-      widget.gradient ??
-      (_selected ? AppGradients.ai : AppGradients.surface);
+      widget.gradient ?? (_selected ? AppGradients.ai : AppGradients.surface);
 
-  Color get _activeColor =>
-      widget.activeColor ?? AppColors.primary;
+  Color get _activeColor => widget.activeColor ?? AppColors.primary;
 
   @override
   void initState() {
@@ -128,10 +126,7 @@ class _HealthChipState extends State<HealthChip>
         child: AnimatedBuilder(
           animation: _pressController,
           builder: (_, child) {
-            return Transform.scale(
-              scale: _pressController.value,
-              child: child,
-            );
+            return Transform.scale(scale: _pressController.value, child: child);
           },
           child: AnimatedContainer(
             duration: AppDuration.normal,
@@ -152,26 +147,19 @@ class _HealthChipState extends State<HealthChip>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (widget.emoji != null) ...[
-                    _EmojiAvatar(
-                      emoji: widget.emoji!,
-                      selected: _selected,
-                    ),
+                    _EmojiAvatar(emoji: widget.emoji!, selected: _selected),
                     const SizedBox(width: AppSpacing.medium),
                   ],
 
                   if (widget.icon != null) ...[
-                    _IconAvatar(
-                      icon: widget.icon!,
-                      selected: _selected,
-                    ),
+                    _IconAvatar(icon: widget.icon!, selected: _selected),
                     const SizedBox(width: AppSpacing.medium),
                   ],
 
                   Expanded(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AnimatedDefaultTextStyle(
                           duration: AppDuration.normal,
@@ -191,20 +179,15 @@ class _HealthChipState extends State<HealthChip>
                         ),
 
                         if (_selected) ...[
-                          const SizedBox(
-                            height: AppSpacing.xs,
-                          ),
+                          const SizedBox(height: AppSpacing.xs),
                           AnimatedOpacity(
                             duration: AppDuration.normal,
                             opacity: _selected ? 1 : 0,
                             child: Text(
                               'AI optimized',
-                              style: AppTextStyles.labelSmall
-                                  .copyWith(
-                                color: Colors.white
-                                    .withOpacity(0.82),
-                                fontWeight:
-                                    FontWeight.w600,
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: Colors.white.withOpacity(0.82),
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -214,24 +197,18 @@ class _HealthChipState extends State<HealthChip>
                   ),
 
                   if (widget.badge != null) ...[
-                    const SizedBox(
-                      width: AppSpacing.sm,
-                    ),
+                    const SizedBox(width: AppSpacing.sm),
                     widget.badge!,
                   ],
 
                   if (widget.trailing != null) ...[
-                    const SizedBox(
-                      width: AppSpacing.sm,
-                    ),
+                    const SizedBox(width: AppSpacing.sm),
                     widget.trailing!,
                   ],
 
                   const SizedBox(width: AppSpacing.sm),
 
-                  _SelectionIndicator(
-                    visible: _selected,
-                  ),
+                  _SelectionIndicator(visible: _selected),
                 ],
               ),
             ),
@@ -245,18 +222,12 @@ class _HealthChipState extends State<HealthChip>
     if (_selected) {
       return AppDecoration.base(
         gradient: _gradient,
-        borderRadius: BorderRadius.circular(
-          AppRadius.xl,
-        ),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.12),
-        ),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
         shadows: [
           ...AppShadows.primary,
           BoxShadow(
-            color: _activeColor.withOpacity(
-              _pressed ? 0.18 : 0.32,
-            ),
+            color: _activeColor.withOpacity(_pressed ? 0.18 : 0.32),
             blurRadius: _hovered ? 34 : 24,
             spreadRadius: -4,
             offset: const Offset(0, 14),
@@ -267,18 +238,12 @@ class _HealthChipState extends State<HealthChip>
 
     return AppDecoration.base(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(
-        AppRadius.xl,
-      ),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
       border: Border.all(
-        color: _hovered
-            ? AppColors.primary.withOpacity(0.3)
-            : AppColors.border,
+        color: _hovered ? AppColors.primary.withOpacity(0.3) : AppColors.border,
         width: _hovered ? 1.4 : 1,
       ),
-      shadows: _hovered
-          ? AppShadows.soft
-          : AppShadows.card,
+      shadows: _hovered ? AppShadows.soft : AppShadows.card,
     );
   }
 }
@@ -287,10 +252,7 @@ class _EmojiAvatar extends StatelessWidget {
   final String emoji;
   final bool selected;
 
-  const _EmojiAvatar({
-    required this.emoji,
-    required this.selected,
-  });
+  const _EmojiAvatar({required this.emoji, required this.selected});
 
   @override
   Widget build(BuildContext context) {
@@ -300,10 +262,7 @@ class _EmojiAvatar extends StatelessWidget {
       width: 54,
       height: 54,
       decoration: selected
-          ? AppDecoration.glass(
-              radius: AppRadius.lg,
-              opacity: 0.14,
-            )
+          ? AppDecoration.glass(radius: AppRadius.lg, opacity: 0.14)
           : AppDecoration.container(
               color: AppColors.primarySoft,
               radius: AppRadius.lg,
@@ -312,12 +271,7 @@ class _EmojiAvatar extends StatelessWidget {
         child: AnimatedScale(
           duration: AppDuration.normal,
           scale: selected ? 1.08 : 1,
-          child: Text(
-            emoji,
-            style: const TextStyle(
-              fontSize: 26,
-            ),
-          ),
+          child: Text(emoji, style: const TextStyle(fontSize: 26)),
         ),
       ),
     );
@@ -328,10 +282,7 @@ class _IconAvatar extends StatelessWidget {
   final IconData icon;
   final bool selected;
 
-  const _IconAvatar({
-    required this.icon,
-    required this.selected,
-  });
+  const _IconAvatar({required this.icon, required this.selected});
 
   @override
   Widget build(BuildContext context) {
@@ -341,10 +292,7 @@ class _IconAvatar extends StatelessWidget {
       width: 54,
       height: 54,
       decoration: selected
-          ? AppDecoration.glass(
-              radius: AppRadius.lg,
-              opacity: 0.14,
-            )
+          ? AppDecoration.glass(radius: AppRadius.lg, opacity: 0.14)
           : AppDecoration.container(
               color: AppColors.primarySoft,
               radius: AppRadius.lg,
@@ -352,9 +300,7 @@ class _IconAvatar extends StatelessWidget {
       child: Icon(
         icon,
         size: 24,
-        color: selected
-            ? Colors.white
-            : AppColors.primary,
+        color: selected ? Colors.white : AppColors.primary,
       ),
     );
   }
@@ -363,9 +309,7 @@ class _IconAvatar extends StatelessWidget {
 class _SelectionIndicator extends StatelessWidget {
   final bool visible;
 
-  const _SelectionIndicator({
-    required this.visible,
-  });
+  const _SelectionIndicator({required this.visible});
 
   @override
   Widget build(BuildContext context) {
@@ -377,29 +321,20 @@ class _SelectionIndicator extends StatelessWidget {
         duration: AppDuration.fast,
         opacity: visible ? 1 : 0,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(
-            AppRadius.circular,
-          ),
+          borderRadius: BorderRadius.circular(AppRadius.circular),
           child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: 10,
-              sigmaY: 10,
-            ),
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
               width: 30,
               height: 30,
               decoration: AppDecoration.circle(
-                color: Colors.white.withOpacity(
-                  0.18,
-                ),
+                color: Colors.white.withOpacity(0.18),
                 shadows: AppShadows.glass,
               ),
               child: Container(
                 margin: const EdgeInsets.all(2),
                 decoration: AppDecoration.circle(
-                  color: Colors.white.withOpacity(
-                    0.1,
-                  ),
+                  color: Colors.white.withOpacity(0.1),
                   shadows: const [],
                 ),
                 child: const Icon(

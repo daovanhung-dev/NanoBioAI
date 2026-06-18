@@ -113,11 +113,7 @@ class NotificationsDao {
       where:
           'source_type = ? AND action_status = ? '
           'AND source_id IN ($placeholders)',
-      whereArgs: [
-        sourceType,
-        NotificationActionStatuses.pending,
-        ...sourceIds,
-      ],
+      whereArgs: [sourceType, NotificationActionStatuses.pending, ...sourceIds],
     );
 
     return maps.map(NotificationModel.fromMap).toList();
@@ -135,11 +131,7 @@ class NotificationsDao {
       where:
           'source_type = ? AND action_status = ? '
           'AND source_id IN ($placeholders)',
-      whereArgs: [
-        sourceType,
-        NotificationActionStatuses.pending,
-        ...sourceIds,
-      ],
+      whereArgs: [sourceType, NotificationActionStatuses.pending, ...sourceIds],
     );
   }
 

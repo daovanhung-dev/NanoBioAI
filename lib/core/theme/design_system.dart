@@ -88,11 +88,7 @@ export 'tokens/spacing_tokens.dart' show AppSpacingTokens;
 
 /// Component tokens (radius, shadow, motion, text styles)
 export 'tokens/component_tokens.dart'
-    show
-        AppRadiusTokens,
-        AppShadowTokens,
-        AppMotionTokens,
-        AppTextStyles;
+    show AppRadiusTokens, AppShadowTokens, AppMotionTokens, AppTextStyles;
 
 // ============================================================================
 // PRIMITIVE COMPONENTS (Layer 3)

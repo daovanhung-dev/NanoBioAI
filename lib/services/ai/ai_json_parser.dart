@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class AIJsonParser {
   const AIJsonParser._();
 
@@ -15,5 +17,13 @@ class AIJsonParser {
     }
 
     return cleaned.substring(start, end + 1);
+  }
+
+  static List<dynamic> decodeArray(String text) {
+    final decoded = jsonDecode(extractArrayText(text));
+    if (decoded is! List) {
+      throw const FormatException('AI response must be a JSON array');
+    }
+    return decoded;
   }
 }

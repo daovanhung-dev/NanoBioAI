@@ -299,8 +299,9 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
                           textInputAction: widget.textInputAction,
                           inputFormatters: widget.inputFormatters,
                           textCapitalization: widget.textCapitalization,
-                          cursorColor:
-                              _hasError ? AppColors.error : AppColors.primary,
+                          cursorColor: _hasError
+                              ? AppColors.error
+                              : AppColors.primary,
                           cursorWidth: 1.7,
                           style: AppTypography.readable(
                             AppTextStyles.bodyLarge.copyWith(
@@ -343,15 +344,17 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
                               if (widget.suffixIcon != null)
                                 Padding(
                                   padding: EdgeInsets.only(
-                                    right: widget.obscureText ? AppSpacing.xs : 0,
+                                    right: widget.obscureText
+                                        ? AppSpacing.xs
+                                        : 0,
                                   ),
                                   child: IconTheme(
                                     data: IconThemeData(
                                       color: _hasError
                                           ? AppColors.error
                                           : _isFocused
-                                              ? AppColors.primary
-                                              : AppColors.textSecondary,
+                                          ? AppColors.primary
+                                          : AppColors.textSecondary,
                                       size: 20,
                                     ),
                                     child: widget.suffixIcon!,
@@ -422,8 +425,8 @@ class _FieldLabel extends StatelessWidget {
             decoration: BoxDecoration(
               color: showActiveMark
                   ? hasError
-                      ? AppColors.error
-                      : AppColors.primary
+                        ? AppColors.error
+                        : AppColors.primary
                   : AppColors.border,
               borderRadius: BorderRadius.circular(999),
             ),
@@ -465,18 +468,18 @@ class _FieldIconSlot extends StatelessWidget {
     final iconColor = !enabled
         ? AppColors.textDisabled
         : hasError
-            ? AppColors.error
-            : isActive
-                ? AppColors.primary
-                : AppColors.textSecondary;
+        ? AppColors.error
+        : isActive
+        ? AppColors.primary
+        : AppColors.textSecondary;
 
     final backgroundColor = !enabled
         ? AppColors.cardAlt
         : hasError
-            ? AppColors.errorSoft.withOpacity(0.32)
-            : isActive
-                ? AppColors.primarySoft.withOpacity(0.78)
-                : AppColors.cardAlt.withOpacity(0.72);
+        ? AppColors.errorSoft.withOpacity(0.32)
+        : isActive
+        ? AppColors.primarySoft.withOpacity(0.78)
+        : AppColors.cardAlt.withOpacity(0.72);
 
     return AnimatedContainer(
       duration: AppDuration.fast,
@@ -488,10 +491,7 @@ class _FieldIconSlot extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: IconTheme(
-        data: IconThemeData(
-          color: iconColor,
-          size: 20,
-        ),
+        data: IconThemeData(color: iconColor, size: 20),
         child: child,
       ),
     );
@@ -518,8 +518,8 @@ class _IconActionButton extends StatelessWidget {
     final iconColor = hasError
         ? AppColors.error
         : isActive
-            ? AppColors.primary
-            : AppColors.textSecondary;
+        ? AppColors.primary
+        : AppColors.textSecondary;
 
     return Tooltip(
       message: tooltip,
@@ -537,11 +537,7 @@ class _IconActionButton extends StatelessWidget {
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: iconColor,
-          ),
+          child: Icon(icon, size: 20, color: iconColor),
         ),
       ),
     );

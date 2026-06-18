@@ -136,11 +136,7 @@ class AppChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[
-                  Icon(
-                    icon,
-                    size: 16,
-                    color: _getTextColor(isDark),
-                  ),
+                  Icon(icon, size: 16, color: _getTextColor(isDark)),
                   SizedBox(width: AppSpacingTokens.iconTextSpacing),
                 ],
                 Text(
@@ -171,7 +167,8 @@ class AppChip extends StatelessWidget {
   /// Gets the background color based on variant, selection state, and theme mode.
   Color _getBackgroundColor(bool isDark) {
     // Selected state colors
-    if (selected && (variant == ChipVariant.selectable || variant == ChipVariant.filter)) {
+    if (selected &&
+        (variant == ChipVariant.selectable || variant == ChipVariant.filter)) {
       return AppColorTokens.primaryLight;
     }
 
@@ -186,7 +183,8 @@ class AppChip extends StatelessWidget {
   /// Gets the text color based on variant, selection state, and theme mode.
   Color _getTextColor(bool isDark) {
     // Selected state text color
-    if (selected && (variant == ChipVariant.selectable || variant == ChipVariant.filter)) {
+    if (selected &&
+        (variant == ChipVariant.selectable || variant == ChipVariant.filter)) {
       return AppColorTokens.primary;
     }
 
@@ -201,11 +199,9 @@ class AppChip extends StatelessWidget {
   /// Gets the border based on variant, selection state, and theme mode.
   Border? _getBorder(bool isDark) {
     // Selected state border
-    if (selected && (variant == ChipVariant.selectable || variant == ChipVariant.filter)) {
-      return Border.all(
-        color: AppColorTokens.primary,
-        width: 1.5,
-      );
+    if (selected &&
+        (variant == ChipVariant.selectable || variant == ChipVariant.filter)) {
+      return Border.all(color: AppColorTokens.primary, width: 1.5);
     }
 
     // Unselected state border

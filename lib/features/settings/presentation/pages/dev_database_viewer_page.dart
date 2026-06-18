@@ -42,15 +42,13 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
     final versionResult = await db.rawQuery('PRAGMA user_version');
     final version = _asInt(versionResult.first['user_version']);
 
-    final tableRows = await db.rawQuery(
-      """
+    final tableRows = await db.rawQuery("""
       SELECT name
       FROM sqlite_master
       WHERE type = 'table'
         AND name NOT LIKE 'sqlite_%'
       ORDER BY name ASC
-      """,
-    );
+      """);
 
     final tables = <_DatabaseTableSnapshot>[];
 
@@ -68,9 +66,7 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
         'SELECT COUNT(*) AS total FROM $quotedTableName',
       );
 
-      final dataRows = await db.rawQuery(
-        'SELECT * FROM $quotedTableName',
-      );
+      final dataRows = await db.rawQuery('SELECT * FROM $quotedTableName');
 
       tables.add(
         _DatabaseTableSnapshot(
@@ -173,9 +169,7 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
                   if (selectedTable != null)
                     _TableDetailSection(table: selectedTable)
                   else
-                    _NoTableSelectedCard(
-                      hasSearch: _searchQuery.isNotEmpty,
-                    ),
+                    _NoTableSelectedCard(hasSearch: _searchQuery.isNotEmpty),
                 ],
               ),
             );
@@ -213,10 +207,8 @@ class _DatabaseSnapshot {
   final List<_DatabaseTableSnapshot> tables;
   final DateTime loadedAt;
 
-  int get totalRows => tables.fold<int>(
-        0,
-        (sum, table) => sum + table.totalRows,
-      );
+  int get totalRows =>
+      tables.fold<int>(0, (sum, table) => sum + table.totalRows);
 
   List<_DatabaseTableSnapshot> filteredTables(String query) {
     final normalizedQuery = query.trim().toLowerCase();
@@ -399,10 +391,7 @@ class _SummaryPill extends StatelessWidget {
 }
 
 class _SearchField extends StatelessWidget {
-  const _SearchField({
-    required this.controller,
-    required this.onChanged,
-  });
+  const _SearchField({required this.controller, required this.onChanged});
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
@@ -466,9 +455,7 @@ class _TableSelector extends StatelessWidget {
         children: [
           Text(
             'Danh sách bảng',
-            style: AppTextStyles.heading4.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+            style: AppTextStyles.heading4.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
@@ -806,10 +793,7 @@ class _MutedInfoBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: AppColors.borderLight),
       ),
-      child: Text(
-        message,
-        style: AppTextStyles.bodySmall,
-      ),
+      child: Text(message, style: AppTextStyles.bodySmall),
     );
   }
 }
@@ -825,10 +809,7 @@ class _DatabaseLoadingState extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           const SizedBox(height: AppSpacing.md),
-          Text(
-            'Đang đọc SQLite...',
-            style: AppTextStyles.bodyMedium,
-          ),
+          Text('Đang đọc SQLite...', style: AppTextStyles.bodyMedium),
         ],
       ),
     );
@@ -836,10 +817,7 @@ class _DatabaseLoadingState extends StatelessWidget {
 }
 
 class _DatabaseErrorState extends StatelessWidget {
-  const _DatabaseErrorState({
-    required this.message,
-    required this.onRetry,
-  });
+  const _DatabaseErrorState({required this.message, required this.onRetry});
 
   final String message;
   final Future<void> Function() onRetry;
@@ -864,10 +842,7 @@ class _DatabaseErrorState extends StatelessWidget {
                 size: 48,
               ),
               const SizedBox(height: AppSpacing.md),
-              Text(
-                'Không đọc được database',
-                style: AppTextStyles.heading4,
-              ),
+              Text('Không đọc được database', style: AppTextStyles.heading4),
               const SizedBox(height: AppSpacing.sm),
               SelectableText(
                 message,
@@ -907,10 +882,7 @@ class _DatabaseEmptyState extends StatelessWidget {
               size: 48,
             ),
             const SizedBox(height: AppSpacing.md),
-            Text(
-              'Chưa tìm thấy bảng SQLite',
-              style: AppTextStyles.heading4,
-            ),
+            Text('Chưa tìm thấy bảng SQLite', style: AppTextStyles.heading4),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Database có thể chưa được khởi tạo. Hãy thử tải lại sau khi app tạo dữ liệu.',

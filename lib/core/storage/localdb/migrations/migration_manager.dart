@@ -1,7 +1,11 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../tables/daily_health_tasks_table.dart';
+import '../tables/exercise_catalog_table.dart';
 import '../tables/lifestyle_schedule_items_table.dart';
+import '../tables/meal_catalog_table.dart';
+import '../tables/schedule_task_catalog_table.dart';
+import '../seeders/ai_catalog_seeder.dart';
 
 class MigrationManager {
   static Future<void> runMigrations(
@@ -26,6 +30,9 @@ class MigrationManager {
     }
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 7)) {
       await _migrateToV7(db);
+    }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 8)) {
+      await _migrateToV8(db);
     }
   }
 
@@ -172,6 +179,16 @@ class MigrationManager {
       columnName: 'subscription_tier',
       definition: "TEXT DEFAULT 'free'",
     );
+  }
+
+  static Future<void> _migrateToV8(Database db) async {
+    await db.execute(MealCatalogTable.createTable);
+    await db.execute(MealCatalogTable.createTypeIndex);
+    await db.execute(ExerciseCatalogTable.createTable);
+    await db.execute(ExerciseCatalogTable.createCategoryIndex);
+    await db.execute(ScheduleTaskCatalogTable.createTable);
+    await db.execute(ScheduleTaskCatalogTable.createCategoryIndex);
+    await AiCatalogSeeder.seed(db);
   }
 
   static Future<void> _addColumnIfMissing(

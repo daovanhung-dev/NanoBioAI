@@ -8,12 +8,12 @@ class AIChatRepositoryImpl implements AIChatRepository {
   final List<ChatMessageEntity> _history = [];
 
   AIChatRepositoryImpl({required AIChatService aiChatService})
-      : _aiChatService = aiChatService;
+    : _aiChatService = aiChatService;
 
   @override
   Future<ChatMessageEntity> sendMessage(String message) async {
     final timestamp = DateTime.now();
-    
+
     // Create user message
     final userMessage = ChatMessageModel(
       id: timestamp.millisecondsSinceEpoch.toString(),
@@ -21,12 +21,12 @@ class AIChatRepositoryImpl implements AIChatRepository {
       role: MessageRole.user,
       timestamp: timestamp,
     );
-    
+
     _history.add(userMessage);
 
     // Get AI response
     final responseText = await _aiChatService.sendMessage(message);
-    
+
     // Create AI message
     final aiMessage = ChatMessageModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -34,9 +34,9 @@ class AIChatRepositoryImpl implements AIChatRepository {
       role: MessageRole.assistant,
       timestamp: DateTime.now(),
     );
-    
+
     _history.add(aiMessage);
-    
+
     return aiMessage;
   }
 

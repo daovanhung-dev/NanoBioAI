@@ -15,12 +15,22 @@ class DashboardHealthCalculator {
     final bmiLabel = _bmiLabel(bmi);
     final bmiScore = _bmiScore(bmi);
 
-    final hydrationLiter = _resolveWaterLiter(input.waterPerDay, input.latestWaterMl);
+    final hydrationLiter = _resolveWaterLiter(
+      input.waterPerDay,
+      input.latestWaterMl,
+    );
     final hydrationScore = _hydrationScore(hydrationLiter);
 
     final sleepScore = _sleepScore(input.sleepQuality, input.latestSleepHours);
-    final activityScore = _activityScore(input.activityLevel, input.latestStepsCount);
-    final stressScore = _stressScore(input.latestStressLevel, input.conditions, input.concernText);
+    final activityScore = _activityScore(
+      input.activityLevel,
+      input.latestStepsCount,
+    );
+    final stressScore = _stressScore(
+      input.latestStressLevel,
+      input.conditions,
+      input.concernText,
+    );
     final conditionScore = _conditionScore(input.conditions);
     final goalFocusScore = _goalFocusScore(input.goals);
 
@@ -48,7 +58,9 @@ class DashboardHealthCalculator {
       DashboardMetricStatus(
         code: 'water',
         title: 'Nước uống',
-        value: hydrationLiter == null ? '--' : '${hydrationLiter.toStringAsFixed(1)}L',
+        value: hydrationLiter == null
+            ? '--'
+            : '${hydrationLiter.toStringAsFixed(1)}L',
         label: _hydrationLabel(hydrationScore),
         message: _hydrationMessage(hydrationScore),
         progress: hydrationScore / 100,
@@ -72,7 +84,9 @@ class DashboardHealthCalculator {
       DashboardMetricStatus(
         code: 'stress',
         title: 'Căng thẳng',
-        value: input.latestStressLevel == null ? '--' : '${input.latestStressLevel}/10',
+        value: input.latestStressLevel == null
+            ? '--'
+            : '${input.latestStressLevel}/10',
         label: _scoreLabel(stressScore),
         message: _stressMessage(stressScore),
         progress: stressScore / 100,
@@ -115,7 +129,10 @@ class DashboardHealthCalculator {
 
     final heightCm = input.heightCm?.toDouble();
     final weightKg = input.weightKg?.toDouble();
-    if (heightCm == null || weightKg == null || heightCm <= 0 || weightKg <= 0) {
+    if (heightCm == null ||
+        weightKg == null ||
+        heightCm <= 0 ||
+        weightKg <= 0) {
       return 0;
     }
 
@@ -135,11 +152,16 @@ class DashboardHealthCalculator {
   }
 
   static String _bmiMessage(double bmi) {
-    if (bmi <= 0) return 'Cần chiều cao và cân nặng để Nami tính BMI chính xác hơn.';
-    if (bmi < 18.5) return 'Bạn có thể cần tăng năng lượng và protein một cách nhẹ nhàng.';
-    if (bmi < 23) return 'BMI đang ở vùng khá cân bằng, hãy duy trì nhịp sinh hoạt hiện tại.';
-    if (bmi < 25) return 'BMI bắt đầu nhích lên, mình nên chú ý bữa tối và vận động nhẹ.';
-    if (bmi < 30) return 'Nên ưu tiên kiểm soát calo, đường ngọt và vận động đều hơn.';
+    if (bmi <= 0)
+      return 'Cần chiều cao và cân nặng để Nami tính BMI chính xác hơn.';
+    if (bmi < 18.5)
+      return 'Bạn có thể cần tăng năng lượng và protein một cách nhẹ nhàng.';
+    if (bmi < 23)
+      return 'BMI đang ở vùng khá cân bằng, hãy duy trì nhịp sinh hoạt hiện tại.';
+    if (bmi < 25)
+      return 'BMI bắt đầu nhích lên, mình nên chú ý bữa tối và vận động nhẹ.';
+    if (bmi < 30)
+      return 'Nên ưu tiên kiểm soát calo, đường ngọt và vận động đều hơn.';
     return 'Nên theo dõi sát hơn và cân nhắc tham khảo chuyên gia y tế khi cần.';
   }
 
@@ -178,9 +200,12 @@ class DashboardHealthCalculator {
   static String _hydrationLabel(int score) => _scoreLabel(score);
 
   static String _hydrationMessage(int score) {
-    if (score >= 85) return 'Lượng nước khá ổn, cứ giữ nhịp nhẹ nhàng như vậy nhé.';
-    if (score >= 70) return 'Chỉ cần thêm một chút nước vào buổi sáng hoặc chiều.';
-    if (score >= 55) return 'Nami nghĩ bạn nên đặt nhắc uống nước để dễ duy trì hơn.';
+    if (score >= 85)
+      return 'Lượng nước khá ổn, cứ giữ nhịp nhẹ nhàng như vậy nhé.';
+    if (score >= 70)
+      return 'Chỉ cần thêm một chút nước vào buổi sáng hoặc chiều.';
+    if (score >= 55)
+      return 'Nami nghĩ bạn nên đặt nhắc uống nước để dễ duy trì hơn.';
     return 'Lượng nước hơi thấp, hôm nay mình tăng dần từng cốc nhỏ nhé.';
   }
 
@@ -205,14 +230,16 @@ class DashboardHealthCalculator {
   }
 
   static String _sleepValue(String? quality, num? hours) {
-    if (hours != null && hours > 0) return '${hours.toDouble().toStringAsFixed(1)}h';
+    if (hours != null && hours > 0)
+      return '${hours.toDouble().toStringAsFixed(1)}h';
     if (quality == null || quality.trim().isEmpty) return '--';
     return quality.trim();
   }
 
   static String _sleepMessage(int score) {
     if (score >= 85) return 'Giấc ngủ đang hỗ trợ tốt cho phục hồi cơ thể.';
-    if (score >= 70) return 'Giấc ngủ tương đối ổn, có thể cải thiện thêm giờ đi ngủ.';
+    if (score >= 70)
+      return 'Giấc ngủ tương đối ổn, có thể cải thiện thêm giờ đi ngủ.';
     if (score >= 55) return 'Nên giảm màn hình và caffeine trước khi ngủ.';
     return 'Giấc ngủ đang là điểm cần chăm sóc trước tiên.';
   }
@@ -243,13 +270,19 @@ class DashboardHealthCalculator {
   }
 
   static String _activityMessage(int score) {
-    if (score >= 85) return 'Mức vận động rất tốt, hãy giữ nhịp an toàn và đều đặn.';
-    if (score >= 70) return 'Bạn đang có nền vận động ổn, thêm đi bộ nhẹ là rất tốt.';
+    if (score >= 85)
+      return 'Mức vận động rất tốt, hãy giữ nhịp an toàn và đều đặn.';
+    if (score >= 70)
+      return 'Bạn đang có nền vận động ổn, thêm đi bộ nhẹ là rất tốt.';
     if (score >= 55) return 'Nên thêm 10–15 phút vận động nhẹ trong ngày.';
     return 'Cơ thể cần được đánh thức bằng những bước đi nhỏ trước.';
   }
 
-  static int _stressScore(int? stressLevel, List<String> conditions, String? concern) {
+  static int _stressScore(
+    int? stressLevel,
+    List<String> conditions,
+    String? concern,
+  ) {
     if (stressLevel != null) {
       return (100 - (stressLevel.clamp(0, 10).toInt() * 8))
           .clamp(20, 100)
@@ -258,16 +291,21 @@ class DashboardHealthCalculator {
 
     final haystack = _normalize([...conditions, concern ?? ''].join(' '));
     var score = 82;
-    if (haystack.contains('stress') || haystack.contains('cang thang')) score -= 24;
-    if (haystack.contains('mat ngu') || haystack.contains('kho ngu')) score -= 12;
+    if (haystack.contains('stress') || haystack.contains('cang thang'))
+      score -= 24;
+    if (haystack.contains('mat ngu') || haystack.contains('kho ngu'))
+      score -= 12;
     if (haystack.contains('met moi')) score -= 12;
     return score.clamp(35, 92).toInt();
   }
 
   static String _stressMessage(int score) {
-    if (score >= 85) return 'Tín hiệu căng thẳng chưa đáng lo, hãy tiếp tục nghỉ ngơi đều.';
-    if (score >= 70) return 'Cơ thể có thể đang hơi mệt, nên có khoảng nghỉ ngắn trong ngày.';
-    if (score >= 55) return 'Nami gợi ý thở chậm 3 phút và ngủ sớm hơn một chút.';
+    if (score >= 85)
+      return 'Tín hiệu căng thẳng chưa đáng lo, hãy tiếp tục nghỉ ngơi đều.';
+    if (score >= 70)
+      return 'Cơ thể có thể đang hơi mệt, nên có khoảng nghỉ ngắn trong ngày.';
+    if (score >= 55)
+      return 'Nami gợi ý thở chậm 3 phút và ngủ sớm hơn một chút.';
     return 'Căng thẳng đang ảnh hưởng rõ, mình nên ưu tiên phục hồi trước.';
   }
 
@@ -306,7 +344,8 @@ class DashboardHealthCalculator {
   }
 
   static String _conditionMessage(List<String> conditions) {
-    if (conditions.isEmpty) return 'Chưa ghi nhận vấn đề đặc biệt trong hồ sơ sức khỏe.';
+    if (conditions.isEmpty)
+      return 'Chưa ghi nhận vấn đề đặc biệt trong hồ sơ sức khỏe.';
     return 'Có ${conditions.length} điểm cần theo dõi, Nami sẽ ưu tiên gợi ý nhẹ nhàng hơn.';
   }
 
@@ -317,7 +356,11 @@ class DashboardHealthCalculator {
     return 68;
   }
 
-  static DashboardRiskLevel _riskLevel(int totalScore, int conditionScore, int stressScore) {
+  static DashboardRiskLevel _riskLevel(
+    int totalScore,
+    int conditionScore,
+    int stressScore,
+  ) {
     if (totalScore >= 85 && conditionScore >= 75 && stressScore >= 70) {
       return DashboardRiskLevel.excellent;
     }
@@ -344,7 +387,9 @@ class DashboardHealthCalculator {
     DashboardRiskLevel riskLevel,
     List<String> goals,
   ) {
-    final goalText = goals.isEmpty ? 'sức khỏe tổng thể' : goals.take(2).join(', ');
+    final goalText = goals.isEmpty
+        ? 'sức khỏe tổng thể'
+        : goals.take(2).join(', ');
 
     switch (riskLevel) {
       case DashboardRiskLevel.excellent:
@@ -371,65 +416,89 @@ class DashboardHealthCalculator {
     final insights = <DashboardHealthInsight>[];
 
     if (bmi > 0 && bmi >= 23) {
-      insights.add(const DashboardHealthInsight(
-        title: 'BMI cần được theo dõi nhẹ nhàng',
-        message: 'Ưu tiên bữa tối gọn hơn, thêm rau xanh và đi bộ sau ăn 10 phút.',
-        priority: 1,
-      ));
+      insights.add(
+        const DashboardHealthInsight(
+          title: 'BMI cần được theo dõi nhẹ nhàng',
+          message:
+              'Ưu tiên bữa tối gọn hơn, thêm rau xanh và đi bộ sau ăn 10 phút.',
+          priority: 1,
+        ),
+      );
     } else if (bmi > 0 && bmi < 18.5) {
-      insights.add(const DashboardHealthInsight(
-        title: 'Cơ thể cần thêm năng lượng tốt',
-        message: 'Bạn có thể tăng bữa phụ bằng sữa, trứng, đậu hoặc thực phẩm giàu protein.',
-        priority: 1,
-      ));
+      insights.add(
+        const DashboardHealthInsight(
+          title: 'Cơ thể cần thêm năng lượng tốt',
+          message:
+              'Bạn có thể tăng bữa phụ bằng sữa, trứng, đậu hoặc thực phẩm giàu protein.',
+          priority: 1,
+        ),
+      );
     }
 
     if (hydrationScore < 70) {
-      insights.add(const DashboardHealthInsight(
-        title: 'Uống nước từng chút sẽ dễ hơn',
-        message: 'Hãy bắt đầu bằng một cốc nước sau khi thức dậy và một cốc giữa buổi chiều.',
-        priority: 2,
-      ));
+      insights.add(
+        const DashboardHealthInsight(
+          title: 'Uống nước từng chút sẽ dễ hơn',
+          message:
+              'Hãy bắt đầu bằng một cốc nước sau khi thức dậy và một cốc giữa buổi chiều.',
+          priority: 2,
+        ),
+      );
     }
 
     if (sleepScore < 70) {
-      insights.add(const DashboardHealthInsight(
-        title: 'Giấc ngủ nên là ưu tiên hôm nay',
-        message: 'Giảm màn hình trước ngủ 30 phút và thử đi ngủ sớm hơn 15 phút.',
-        priority: 2,
-      ));
+      insights.add(
+        const DashboardHealthInsight(
+          title: 'Giấc ngủ nên là ưu tiên hôm nay',
+          message:
+              'Giảm màn hình trước ngủ 30 phút và thử đi ngủ sớm hơn 15 phút.',
+          priority: 2,
+        ),
+      );
     }
 
     if (activityScore < 65) {
-      insights.add(const DashboardHealthInsight(
-        title: 'Vận động không cần quá nặng',
-        message: 'Chỉ cần 10–15 phút đi bộ nhẹ cũng giúp cơ thể tỉnh hơn và tiêu hóa tốt hơn.',
-        priority: 3,
-      ));
+      insights.add(
+        const DashboardHealthInsight(
+          title: 'Vận động không cần quá nặng',
+          message:
+              'Chỉ cần 10–15 phút đi bộ nhẹ cũng giúp cơ thể tỉnh hơn và tiêu hóa tốt hơn.',
+          priority: 3,
+        ),
+      );
     }
 
     if (stressScore < 65) {
-      insights.add(const DashboardHealthInsight(
-        title: 'Bạn có vẻ đang hơi căng',
-        message: 'Tạm dừng một chút, hít thở chậm và để cơ thể được nghỉ vài phút nhé.',
-        priority: 2,
-      ));
+      insights.add(
+        const DashboardHealthInsight(
+          title: 'Bạn có vẻ đang hơi căng',
+          message:
+              'Tạm dừng một chút, hít thở chậm và để cơ thể được nghỉ vài phút nhé.',
+          priority: 2,
+        ),
+      );
     }
 
     if (conditionScore < 70 && conditions.isNotEmpty) {
-      insights.add(DashboardHealthInsight(
-        title: 'Có ${conditions.length} vấn đề cần theo dõi',
-        message: 'Nami sẽ ưu tiên các gợi ý an toàn, dễ áp dụng và tránh thay đổi quá đột ngột.',
-        priority: 1,
-      ));
+      insights.add(
+        DashboardHealthInsight(
+          title: 'Có ${conditions.length} vấn đề cần theo dõi',
+          message:
+              'Nami sẽ ưu tiên các gợi ý an toàn, dễ áp dụng và tránh thay đổi quá đột ngột.',
+          priority: 1,
+        ),
+      );
     }
 
     if (insights.isEmpty) {
-      insights.add(const DashboardHealthInsight(
-        title: 'Hôm nay bạn đang làm khá tốt',
-        message: 'Hãy duy trì nước uống, giấc ngủ và một chút vận động nhẹ để cơ thể ổn định hơn.',
-        priority: 4,
-      ));
+      insights.add(
+        const DashboardHealthInsight(
+          title: 'Hôm nay bạn đang làm khá tốt',
+          message:
+              'Hãy duy trì nước uống, giấc ngủ và một chút vận động nhẹ để cơ thể ổn định hơn.',
+          priority: 4,
+        ),
+      );
     }
 
     insights.sort((a, b) => a.priority.compareTo(b.priority));
@@ -444,7 +513,10 @@ class DashboardHealthCalculator {
   }
 
   static int _weightedAverage(List<_WeightedScore> scores) {
-    final totalWeight = scores.fold<double>(0, (sum, item) => sum + item.weight);
+    final totalWeight = scores.fold<double>(
+      0,
+      (sum, item) => sum + item.weight,
+    );
     if (totalWeight <= 0) return 0;
 
     final total = scores.fold<double>(

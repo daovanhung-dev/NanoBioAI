@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 /// AppLogger - Centralized logging system for debugging and monitoring
-/// 
+///
 /// Usage:
 /// ```dart
 /// AppLogger.info('TAG', 'Information message');
@@ -46,13 +46,13 @@ class AppLogger {
     StackTrace? stackTrace,
   ]) {
     if (!_enableLogging) return;
-    
+
     debugPrint('[$tag][ERROR] $message');
-    
+
     if (error != null) {
       debugPrint('Error: $error');
     }
-    
+
     if (stackTrace != null) {
       debugPrint('StackTrace:\n$stackTrace');
     }
@@ -68,10 +68,10 @@ class AppLogger {
     String? reason,
   }) {
     if (!_enableLogging) return;
-    
+
     final status = passed ? 'Passed' : 'Failed';
     debugPrint('[$tag][VALIDATION] $field - $status');
-    
+
     if (!passed && reason != null) {
       debugPrint('Reason: $reason');
     }
@@ -125,7 +125,7 @@ class AppLogger {
   ///         - item2: value2
   static void summary(String tag, String title, Map<String, dynamic> data) {
     if (!_enableLogging) return;
-    
+
     debugPrint('[$tag][SUMMARY] $title');
     data.forEach((key, value) {
       debugPrint('  - $key: $value');

@@ -67,7 +67,7 @@ void main() {
           GradientFoundation.surfaceLight,
           GradientFoundation.surfaceDark,
         ];
-        
+
         expect(gradients.length, 5);
         // All gradients are LinearGradient - verified by static type
         for (final gradient in gradients) {
@@ -99,19 +99,26 @@ void main() {
         ];
 
         for (final color in allColors) {
-          expect(foundationColors.contains(color), true,
-              reason: 'All gradient colors should reference ColorFoundation values');
+          expect(
+            foundationColors.contains(color),
+            true,
+            reason:
+                'All gradient colors should reference ColorFoundation values',
+          );
         }
       });
 
       test('gradients should be const and immutable', () {
         // Verify that GradientFoundation class is immutable
         // This is enforced by the @immutable annotation in the source
-        expect(GradientFoundation.primary, const LinearGradient(
-          colors: [ColorFoundation.blue500, ColorFoundation.cyan500],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ));
+        expect(
+          GradientFoundation.primary,
+          const LinearGradient(
+            colors: [ColorFoundation.blue500, ColorFoundation.cyan500],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        );
       });
     });
 

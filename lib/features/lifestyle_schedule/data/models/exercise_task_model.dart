@@ -21,7 +21,7 @@ class ExerciseTaskModel {
     required this.title,
     this.description = '',
     this.targetValue = 1,
-    this.unit = 'lan',
+    this.unit = 'lần',
     this.encouragement = '',
     required this.createdAt,
     required this.updatedAt,

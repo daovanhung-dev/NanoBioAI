@@ -186,9 +186,7 @@ void main() {
     });
 
     test('should return error map for null time', () {
-      final result = SettingsValidator.validateMealReminderSettings(
-        time: null,
-      );
+      final result = SettingsValidator.validateMealReminderSettings(time: null);
       expect(result, isNotEmpty);
       expect(result['meal_reminder_time'], isNotNull);
       expect(result['meal_reminder_time'], contains('không được để trống'));

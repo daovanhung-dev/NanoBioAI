@@ -33,9 +33,7 @@ class NotificationModel {
     this.updatedAt = '',
   });
 
-  factory NotificationModel.fromMap(
-    Map<String, dynamic> map,
-  ) {
+  factory NotificationModel.fromMap(Map<String, dynamic> map) {
     return NotificationModel(
       id: map['id']?.toString() ?? '',
       userId: map['user_id']?.toString(),

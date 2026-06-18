@@ -69,11 +69,7 @@ class LoadingState extends StatelessWidget {
   ///
   /// The [variant] determines the visual style.
   /// The [message] provides optional context about what is loading.
-  const LoadingState({
-    super.key,
-    required this.variant,
-    this.message,
-  });
+  const LoadingState({super.key, required this.variant, this.message});
 
   /// The visual style variant for this loading state.
   final LoadingVariant variant;
@@ -123,9 +119,7 @@ class LoadingState extends StatelessWidget {
           height: 48,
           child: CircularProgressIndicator(
             strokeWidth: 4,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              AppColorTokens.primary,
-            ),
+            valueColor: AlwaysStoppedAnimation<Color>(AppColorTokens.primary),
           ),
         );
       case LoadingVariant.skeleton:
@@ -143,9 +137,7 @@ class LoadingState extends StatelessWidget {
       width: 200,
       height: 100,
       decoration: BoxDecoration(
-        color: isDark
-            ? AppColorTokens.darkSurface
-            : AppColorTokens.surface,
+        color: isDark ? AppColorTokens.darkSurface : AppColorTokens.surface,
         borderRadius: BorderRadius.circular(AppRadiusTokens.card),
       ),
       child: Center(

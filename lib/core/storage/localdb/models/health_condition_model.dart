@@ -26,7 +26,8 @@ class HealthConditionModel {
     );
   }
 
-  factory HealthConditionModel.fromJson(Map<String, Object?> json) => HealthConditionModel.fromMap(json);
+  factory HealthConditionModel.fromJson(Map<String, Object?> json) =>
+      HealthConditionModel.fromMap(json);
 
   Map<String, Object?> toMap() {
     return {

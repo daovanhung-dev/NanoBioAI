@@ -95,6 +95,4 @@ class AIChatController extends Notifier<AIChatState> {
 }
 
 final aiChatControllerProvider =
-    NotifierProvider<AIChatController, AIChatState>(
-  AIChatController.new,
-);
+    NotifierProvider<AIChatController, AIChatState>(AIChatController.new);

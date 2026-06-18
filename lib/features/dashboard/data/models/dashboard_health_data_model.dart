@@ -31,8 +31,10 @@ class DashboardHealthDataModel extends DashboardHealthInput {
     Map<String, Object?>? lifestyleHabit,
     Map<String, Object?>? latestTrackingLog,
     Iterable<Map<String, Object?>> healthGoals = const <Map<String, Object?>>[],
-    Iterable<Map<String, Object?>> healthConditions = const <Map<String, Object?>>[],
-    Iterable<Map<String, Object?>> surveyAnswers = const <Map<String, Object?>>[],
+    Iterable<Map<String, Object?>> healthConditions =
+        const <Map<String, Object?>>[],
+    Iterable<Map<String, Object?>> surveyAnswers =
+        const <Map<String, Object?>>[],
   }) {
     return DashboardHealthDataModel(
       fullName: _asString(user?['full_name']) ?? 'Bạn',

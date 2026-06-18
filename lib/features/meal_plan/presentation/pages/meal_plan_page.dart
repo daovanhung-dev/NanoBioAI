@@ -706,11 +706,11 @@ class _MealPlanCardState extends State<MealPlanCard> {
       case 'breakfast':
         return 'Bữa sáng';
       case 'morning_snack':
-        return 'Bua phu sang';
+        return 'Bữa phụ sáng';
       case 'lunch':
         return 'Bữa trưa';
       case 'afternoon_snack':
-        return 'Bua phu chieu';
+        return 'Bữa phụ chiều';
       case 'dinner':
         return 'Bữa tối';
       case 'snack':

@@ -1,6 +1,1 @@
-enum SplashStatus {
-  initial,
-  loading,
-  onboarded,
-  onboardingRequired,
-}
+enum SplashStatus { initial, loading, onboarded, onboardingRequired }
