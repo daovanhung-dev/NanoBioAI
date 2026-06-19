@@ -64,6 +64,23 @@ void main() {
     expect(meal!.isCompleted, isTrue);
   });
 
+  test('completeItemById marks schedule item completed', () async {
+    await LifestyleScheduleItemsDao(db).upsertMany([
+      _schedule(
+        id: 'schedule-1',
+        sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+        sourceId: '',
+      ),
+    ]);
+
+    final updated = await datasource.completeItemById('schedule-1');
+    final restored = await LifestyleScheduleItemsDao(db).getById('schedule-1');
+
+    expect(updated.isCompleted, isTrue);
+    expect(restored, isNotNull);
+    expect(restored!.isCompleted, isTrue);
+  });
+
   test('done daily-task-linked item completes daily task', () async {
     await DailyHealthTasksDao(db).upsertMany([_task(id: 'task-1')]);
     await LifestyleScheduleItemsDao(db).upsertMany([

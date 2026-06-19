@@ -53,6 +53,25 @@ void main() {
     expect(restored.map((item) => item.id), ['day-1', 'day-2']);
   });
 
+  test('deleteByUserIdAndDateRange removes only matching user range', () async {
+    await dao.upsertMany([
+      _item(id: 'day-1', scheduleDate: '2026-06-17'),
+      _item(id: 'day-2', scheduleDate: '2026-06-18'),
+      _item(id: 'outside', scheduleDate: '2026-06-24'),
+      _item(id: 'other-user', userId: 'u2', scheduleDate: '2026-06-18'),
+    ]);
+
+    await dao.deleteByUserIdAndDateRange(
+      userId: 'u1',
+      startDate: '2026-06-17',
+      endDate: '2026-06-18',
+    );
+
+    final restored = await dao.getAll();
+
+    expect(restored.map((item) => item.id), ['other-user', 'outside']);
+  });
+
   test('updateCompletion persists progress status', () async {
     await dao.upsertMany([_item(id: 'schedule-1')]);
 

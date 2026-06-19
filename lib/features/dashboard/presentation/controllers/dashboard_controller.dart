@@ -5,9 +5,12 @@ import 'package:nano_app/features/daily_health_tracking/providers/daily_health_t
 import 'package:nano_app/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/features/meal_plan/presentation/controllers/meal_plan_controller.dart';
 import 'package:nano_app/features/meal_plan/providers/meal_plan_provider.dart';
+import 'package:nano_app/features/nutrition/providers/nutrition_provider.dart';
 
 import 'package:nano_app/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:nano_app/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
 
 import 'package:nano_app/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/features/dashboard/providers/dashboard_provider.dart';
@@ -71,17 +74,28 @@ class DashboardController extends AsyncNotifier<void> {
     return DateTime(now.year, now.month, now.day + 1);
   }
 
+  DateTime _today() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
   Future<GeneratedPlanResult> generateAdditionalPlan() async {
     state = const AsyncLoading<void>();
     try {
       final result = await ref
           .read(generatedPlanServiceProvider)
-          .generateNextPlan(days: 7);
+          .generateNextPlan(
+            days: 7,
+            startDate: _today(),
+            appendAfterExisting: false,
+          );
 
       ref.invalidate(dashboardProvider);
       ref.invalidate(dashboardDynamicProvider);
       ref.invalidate(lifestyleScheduleControllerProvider);
+      ref.invalidate(mealPlanControllerProvider);
       ref.invalidate(getMealPlanProvider);
+      ref.invalidate(nutritionSummaryProvider);
 
       state = const AsyncData<void>(null);
       return result;
@@ -89,5 +103,69 @@ class DashboardController extends AsyncNotifier<void> {
       state = AsyncError<void>(error, stackTrace);
       rethrow;
     }
+  }
+
+  Future<void> completeTimelineItem(DashboardTimelineItem item) async {
+    if (!item.canComplete || item.isCompleted) return;
+    final sourceId = item.sourceId;
+    if (sourceId == null || sourceId.isEmpty) {
+      throw StateError('Missing timeline source id');
+    }
+
+    switch (item.sourceType) {
+      case DashboardTimelineSourceTypes.schedule:
+        await ref
+            .read(lifestyleScheduleRepositoryProvider)
+            .completeItemById(sourceId);
+        break;
+      case DashboardTimelineSourceTypes.meal:
+        await ref.read(mealPlanRepositoryProvider).completeMealById(sourceId);
+        break;
+      case DashboardTimelineSourceTypes.task:
+        await ref
+            .read(dailyHealthTrackingRepositoryProvider)
+            .completeTaskById(sourceId);
+        break;
+      default:
+        throw StateError('Timeline item cannot be completed');
+    }
+
+    _invalidateDashboardDependents();
+  }
+
+  Future<void> saveDailyCheckIn(String mood) async {
+    await ref.read(dailyHealthTrackingRepositoryProvider).saveTodayMood(mood);
+    _invalidateDashboardDependents();
+  }
+
+  Future<void> addWater(int amountMl) async {
+    await ref
+        .read(dailyHealthTrackingRepositoryProvider)
+        .addTodayWater(amountMl);
+    _invalidateDashboardDependents();
+  }
+
+  Future<void> setWater(int waterMl) async {
+    await ref
+        .read(dailyHealthTrackingRepositoryProvider)
+        .setTodayWater(waterMl);
+    _invalidateDashboardDependents();
+  }
+
+  Future<void> saveWeight(double weightKg) async {
+    await ref
+        .read(dailyHealthTrackingRepositoryProvider)
+        .saveTodayWeight(weightKg);
+    _invalidateDashboardDependents();
+  }
+
+  void _invalidateDashboardDependents() {
+    ref.invalidate(dashboardProvider);
+    ref.invalidate(dashboardDynamicProvider);
+    ref.invalidate(dailyHealthTrackingControllerProvider);
+    ref.invalidate(lifestyleScheduleControllerProvider);
+    ref.invalidate(mealPlanControllerProvider);
+    ref.invalidate(getMealPlanProvider);
+    ref.invalidate(nutritionSummaryProvider);
   }
 }

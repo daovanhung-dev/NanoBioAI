@@ -25,4 +25,9 @@ class LifestyleScheduleRepositoryImpl implements LifestyleScheduleRepository {
       isCompleted: isCompleted,
     );
   }
+
+  @override
+  Future<LifestyleScheduleItemEntity> completeItemById(String id) {
+    return datasource.completeItemById(id);
+  }
 }

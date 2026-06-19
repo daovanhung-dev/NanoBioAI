@@ -45,4 +45,29 @@ class DailyHealthTrackingRepositoryImpl
       ),
     );
   }
+
+  @override
+  Future<DailyHealthTaskEntity> completeTaskById(String id) {
+    return datasource.completeTaskById(id);
+  }
+
+  @override
+  Future<void> saveTodayMood(String mood) {
+    return datasource.saveTodayMood(mood);
+  }
+
+  @override
+  Future<void> addTodayWater(int amountMl) {
+    return datasource.addTodayWater(amountMl);
+  }
+
+  @override
+  Future<void> setTodayWater(int waterMl) {
+    return datasource.setTodayWater(waterMl);
+  }
+
+  @override
+  Future<void> saveTodayWeight(double weightKg) {
+    return datasource.saveTodayWeight(weightKg);
+  }
 }

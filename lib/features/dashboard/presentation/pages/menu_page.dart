@@ -19,47 +19,53 @@ class MainNavigationPage extends StatefulWidget {
 
 class _MainNavigationPageState extends State<MainNavigationPage>
     with TickerProviderStateMixin {
-  late final PageController _pageController;
+  static const double _bottomNavigationReserve = 132;
 
-  late final AnimationController _backgroundController;
-  late final AnimationController _pulseController;
+  late final PageController _pageController;
+  late final AnimationController _ambientController;
   late final AnimationController _floatingController;
-  late final AnimationController _rotationController;
-  late final AnimationController _indicatorController;
 
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    DashboardPage(), //LifestyleSchedulePage(),
+  late final List<Widget> _pages = const [
+    DashboardPage(showStandaloneChatButton: false),
     FeaturesHubPage(),
     HealthInsightsView(),
     SettingsView(),
   ];
 
-  final List<_NavItemData> _items = const [
+  late final List<_NavItemData> _items = [
     _NavItemData(
-      label: 'Trang chủ',
+      label: 'Hôm nay',
+      semanticLabel: 'Về trang hôm nay của bạn',
       icon: Icons.home_rounded,
       activeIcon: Icons.home_filled,
-      gradient: [Color(0xFF2563EB), Color(0xFF60A5FA)],
+      baseColor: AppColors.primary,
+      accentColor: AppColors.primaryLight,
     ),
     _NavItemData(
-      label: 'Tính năng',
+      label: 'Tiện ích',
+      semanticLabel: 'Mở các tiện ích chăm sóc sức khỏe',
       icon: Icons.widgets_rounded,
       activeIcon: Icons.dashboard_customize_rounded,
-      gradient: [Color(0xFF06B6D4), Color(0xFF22D3EE)],
+      baseColor: AppColors.secondary,
+      accentColor: AppColors.info,
     ),
     _NavItemData(
-      label: 'Góc của bạn',
+      label: 'Góc Nami',
+      semanticLabel: 'Mở góc đồng hành cùng Nami',
       icon: Icons.auto_awesome_mosaic_rounded,
       activeIcon: Icons.auto_awesome_rounded,
-      gradient: [Color(0xFF7C3AED), Color(0xFFA855F7)],
+      baseColor: AppColors.warning,
+      accentColor: AppColors.secondary,
     ),
     _NavItemData(
-      label: 'Tùy chỉnh',
+      label: 'Của bạn',
+      semanticLabel: 'Mở không gian tùy chỉnh của bạn',
       icon: Icons.settings_outlined,
       activeIcon: Icons.settings_rounded,
-      gradient: [Color(0xFF0F172A), Color(0xFF334155)],
+      baseColor: AppColors.textPrimary,
+      accentColor: AppColors.textSecondary,
     ),
   ];
 
@@ -69,40 +75,22 @@ class _MainNavigationPageState extends State<MainNavigationPage>
 
     _pageController = PageController();
 
-    _backgroundController = AnimationController(
+    _ambientController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 14),
+      duration: const Duration(seconds: 18),
     )..repeat();
-
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
 
     _floatingController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 6),
     )..repeat(reverse: true);
-
-    _rotationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 12),
-    )..repeat();
-
-    _indicatorController = AnimationController(
-      vsync: this,
-      duration: AppDuration.normal,
-    )..forward();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _backgroundController.dispose();
-    _pulseController.dispose();
+    _ambientController.dispose();
     _floatingController.dispose();
-    _rotationController.dispose();
-    _indicatorController.dispose();
     super.dispose();
   }
 
@@ -111,109 +99,112 @@ class _MainNavigationPageState extends State<MainNavigationPage>
 
     HapticFeedback.lightImpact();
 
-    setState(() {
-      _currentIndex = index;
-    });
-
-    _indicatorController
-      ..reset()
-      ..forward();
+    setState(() => _currentIndex = index);
 
     _pageController.animateToPage(
       index,
       duration: AppDuration.slow,
-      curve: Curves.easeOutExpo,
+      curve: Curves.easeOutCubic,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      extendBody: true,
-      body: Stack(
-        children: [
-          _AnimatedBackground(
-            backgroundController: _backgroundController,
-            floatingController: _floatingController,
-            rotationController: _rotationController,
-          ),
+    final overlayStyle = SystemUiOverlayStyle.dark.copyWith(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    );
 
-          PageView.builder(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _pages.length,
-            itemBuilder: (_, index) {
-              return AnimatedSwitcher(
-                duration: AppDuration.slow,
-                switchInCurve: Curves.easeOutExpo,
-                switchOutCurve: Curves.easeInExpo,
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: ScaleTransition(
-                      scale: Tween<double>(begin: 0.98, end: 1).animate(
-                        CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOutExpo,
-                        ),
-                      ),
-                      child: child,
-                    ),
-                  );
-                },
-                child: _pages[index],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        extendBody: true,
+        body: LayoutBuilder(
+          builder: (context, _) {
+            return Stack(
+              children: [
+                RepaintBoundary(
+                  child: _AnimatedBackground(
+                    ambientAnimation: _ambientController,
+                    floatingAnimation: _floatingController,
+                  ),
+                ),
+                PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: _pages,
+                ),
+                DraggableAIChatButton(
+                  visible: _currentIndex == 0,
+                  bottomReserve: _bottomNavigationReserve,
+                ),
+              ],
+            );
+          },
+        ),
+        bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.only(
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            bottom: AppSpacing.lg,
+          ),
+          child: AnimatedBuilder(
+            animation: _floatingController,
+            builder: (_, __) {
+              return Transform.translate(
+                offset: Offset(
+                  0,
+                  lerpDouble(0, -3, _floatingController.value)!,
+                ),
+                child: RepaintBoundary(child: _buildNavigationBar(context)),
               );
             },
           ),
-        ],
-      ),
-      floatingActionButton: const AIChatFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.only(
-          left: AppSpacing.md,
-          right: AppSpacing.md,
-          bottom: AppSpacing.lg,
-        ),
-        child: AnimatedBuilder(
-          animation: Listenable.merge([_pulseController, _floatingController]),
-          builder: (_, __) {
-            return Transform.translate(
-              offset: Offset(0, lerpDouble(0, -4, _floatingController.value)!),
-              child: _buildNavigationBar(),
-            );
-          },
         ),
       ),
     );
   }
 
-  Widget _buildNavigationBar() {
+  Widget _buildNavigationBar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final glassColors = isDark
+        ? [
+            Colors.white.withValues(alpha: .12),
+            Colors.white.withValues(alpha: .07),
+          ]
+        : [
+            Colors.white.withValues(alpha: .84),
+            Colors.white.withValues(alpha: .66),
+          ];
+
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: .14)
+        : Colors.white.withValues(alpha: .58);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.xxl),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
-          height: 92,
-          padding: const EdgeInsets.all(10),
+          height: 78,
+          padding: const EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.xxl),
-            border: Border.all(color: Colors.white.withOpacity(.5)),
+            border: Border.all(color: borderColor),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(.78),
-                Colors.white.withOpacity(.60),
-              ],
+              colors: glassColors,
             ),
             boxShadow: [
               ...AppShadows.xl,
               BoxShadow(
-                color: AppColors.primary.withOpacity(.10),
-                blurRadius: 40,
-                spreadRadius: 2,
+                color: AppColors.primary.withValues(alpha: .08),
+                blurRadius: 34,
+                spreadRadius: 1,
                 offset: const Offset(0, 16),
               ),
             ],
@@ -221,13 +212,12 @@ class _MainNavigationPageState extends State<MainNavigationPage>
           child: Row(
             children: List.generate(_items.length, (index) {
               final item = _items[index];
-              final isActive = _currentIndex == index;
 
               return Expanded(
                 child: _AnimatedNavItem(
                   item: item,
-                  isActive: isActive,
-                  pulseValue: _pulseController.value,
+                  isActive: _currentIndex == index,
+                  pulseValue: _floatingController.value,
                   onTap: () => _changeTab(index),
                 ),
               );
@@ -254,254 +244,301 @@ class _AnimatedNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final glowOpacity = lerpDouble(.12, .28, pulseValue)!;
+    final inactiveColor = AppColors.textHint;
+    final glowOpacity = lerpDouble(.10, .22, pulseValue)!;
 
-    final scale = isActive ? lerpDouble(1, 1.08, pulseValue)! : 1.0;
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween<double>(begin: 0, end: isActive ? 1 : 0),
-        duration: AppDuration.normal,
-        curve: Curves.easeOutExpo,
-        builder: (_, value, child) {
-          return Transform.scale(
-            scale: scale,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  AnimatedOpacity(
-                    opacity: isActive ? 1 : 0,
-                    duration: AppDuration.normal,
-                    child: Container(
-                      height: 64,
+    return Semantics(
+      label: item.semanticLabel,
+      selected: isActive,
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(end: isActive ? 1 : 0),
+          duration: AppDuration.normal,
+          curve: Curves.easeOutCubic,
+          builder: (_, value, __) {
+            return AnimatedScale(
+              scale: isActive ? lerpDouble(1, 1.035, pulseValue)! : 1,
+              duration: AppDuration.fast,
+              curve: Curves.easeOutCubic,
+              child: Container(
+                height: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned.fill(
+                      child: AnimatedOpacity(
+                        opacity: isActive ? 1 : 0,
+                        duration: AppDuration.normal,
+                        curve: Curves.easeOutCubic,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(AppRadius.xl),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [item.baseColor, item.accentColor],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: item.baseColor.withValues(
+                                  alpha: glowOpacity,
+                                ),
+                                blurRadius: 24,
+                                spreadRadius: 1,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    AnimatedContainer(
+                      duration: AppDuration.normal,
+                      curve: Curves.easeOutCubic,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(AppRadius.xl),
-                        gradient: LinearGradient(colors: item.gradient),
-                        boxShadow: [
-                          BoxShadow(
-                            color: item.gradient.first.withOpacity(glowOpacity),
-                            blurRadius: 30,
-                            spreadRadius: 4,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
+                        border: Border.all(
+                          color: isActive
+                              ? Colors.white.withValues(alpha: .24)
+                              : Colors.transparent,
+                        ),
                       ),
-                    ),
-                  ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isCompact = constraints.maxWidth < 72;
 
-                  Container(
-                    height: 64,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(AppRadius.xl),
-                      border: Border.all(
-                        color: isActive
-                            ? Colors.white.withOpacity(.24)
-                            : Colors.transparent,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TweenAnimationBuilder<double>(
-                          tween: Tween<double>(begin: 0, end: isActive ? 1 : 0),
-                          duration: AppDuration.normal,
-                          curve: Curves.easeOutBack,
-                          builder: (_, value, child) {
-                            return Transform.translate(
-                              offset: Offset(0, lerpDouble(4, 0, value)!),
-                              child: Transform.scale(
-                                scale: lerpDouble(.90, 1, value)!,
-                                child: ShaderMask(
-                                  shaderCallback: (rect) {
-                                    return LinearGradient(
-                                      colors: isActive
-                                          ? [Colors.white, Colors.white70]
-                                          : [
-                                              AppColors.textHint,
-                                              AppColors.textHint,
-                                            ],
-                                    ).createShader(rect);
-                                  },
-                                  child: Icon(
-                                    isActive ? item.activeIcon : item.icon,
-                                    color: Colors.white,
-                                    size: isActive ? 30 : 24,
-                                  ),
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Transform.translate(
+                                offset: Offset(0, lerpDouble(3, 0, value)!),
+                                child: Icon(
+                                  isActive ? item.activeIcon : item.icon,
+                                  color: isActive
+                                      ? Colors.white
+                                      : inactiveColor,
+                                  size: lerpDouble(23, 28, value)!,
                                 ),
                               ),
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        AnimatedDefaultTextStyle(
-                          duration: AppDuration.normal,
-                          curve: Curves.easeOutExpo,
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: isActive ? Colors.white : AppColors.textHint,
-                            fontWeight: isActive
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            fontSize: isActive ? 11.8 : 10.8,
-                            letterSpacing: .2,
-                          ),
-                          child: Text(
-                            item.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  if (isActive)
-                    Positioned(
-                      top: 8,
-                      child: Container(
-                        width: 26,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(.9),
-                          borderRadius: BorderRadius.circular(
-                            AppRadius.circular,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.white.withOpacity(.7),
-                              blurRadius: 12,
-                              spreadRadius: 1,
-                            ),
-                          ],
-                        ),
+                              if (!isCompact) ...[
+                                const SizedBox(height: 3),
+                                AnimatedDefaultTextStyle(
+                                  duration: AppDuration.normal,
+                                  curve: Curves.easeOutCubic,
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: isActive
+                                        ? Colors.white
+                                        : inactiveColor,
+                                    fontWeight: isActive
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                    fontSize: lerpDouble(10.5, 11.4, value)!,
+                                    letterSpacing: .1,
+                                  ),
+                                  child: Text(
+                                    item.label,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          );
+                        },
                       ),
                     ),
-                ],
+                    if (isActive)
+                      Positioned(
+                        top: 7,
+                        child: Container(
+                          width: 22,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: .92),
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.circular,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withValues(alpha: .62),
+                                blurRadius: 10,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 }
 
 class _AnimatedBackground extends StatelessWidget {
-  final AnimationController backgroundController;
-  final AnimationController floatingController;
-  final AnimationController rotationController;
+  final Animation<double> ambientAnimation;
+  final Animation<double> floatingAnimation;
 
   const _AnimatedBackground({
-    required this.backgroundController,
-    required this.floatingController,
-    required this.rotationController,
+    required this.ambientAnimation,
+    required this.floatingAnimation,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        backgroundController,
-        floatingController,
-        rotationController,
-      ]),
+      animation: Listenable.merge([ambientAnimation, floatingAnimation]),
       builder: (_, __) {
-        return Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
-                ),
-              ),
-            ),
-
-            Positioned(
-              top: -120,
-              left: -80,
-              child: Transform.rotate(
-                angle: rotationController.value * 2,
-                child: Container(
-                  width: 280,
-                  height: 280,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        AppColors.primary.withOpacity(.18),
-                        AppColors.primary.withOpacity(.01),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            Positioned(
-              top: 180 + lerpDouble(-18, 18, floatingController.value)!,
-              right: -80,
-              child: Container(
-                width: 220,
-                height: 220,
+        return IgnorePointer(
+          child: Stack(
+            children: [
+              Container(
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.secondary.withOpacity(.14),
-                      AppColors.secondary.withOpacity(.01),
-                    ],
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: isDark
+                        ? [AppColors.textPrimary, AppColors.textSecondary]
+                        : [AppColors.background, AppColors.surface],
                   ),
                 ),
               ),
-            ),
-
-            Positioned(
-              bottom: -140,
-              left: 40,
-              child: Transform.rotate(
-                angle: -rotationController.value,
-                child: Container(
-                  width: 260,
-                  height: 260,
+              _AmbientOrb(
+                top: -116,
+                left: -84,
+                size: 284,
+                color: AppColors.primary,
+                opacity: .16,
+                animationValue: ambientAnimation.value,
+                floatingValue: floatingAnimation.value,
+                rotateFactor: 2.2,
+              ),
+              _AmbientOrb(
+                top: 172,
+                right: -92,
+                size: 236,
+                color: AppColors.secondary,
+                opacity: .13,
+                animationValue: ambientAnimation.value,
+                floatingValue: floatingAnimation.value,
+                rotateFactor: -1.4,
+              ),
+              _AmbientOrb(
+                bottom: -148,
+                left: 42,
+                size: 276,
+                color: AppColors.warning,
+                opacity: .10,
+                animationValue: ambientAnimation.value,
+                floatingValue: floatingAnimation.value,
+                rotateFactor: 1.1,
+              ),
+              Positioned.fill(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
                     gradient: RadialGradient(
+                      center: const Alignment(.15, -.55),
+                      radius: 1.1,
                       colors: [
-                        const Color(0xFFA855F7).withOpacity(.12),
-                        const Color(0xFFA855F7).withOpacity(.01),
+                        Colors.white.withValues(alpha: isDark ? .02 : .28),
+                        Colors.transparent,
                       ],
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
 }
 
+class _AmbientOrb extends StatelessWidget {
+  final double? top;
+  final double? left;
+  final double? right;
+  final double? bottom;
+  final double size;
+  final Color color;
+  final double opacity;
+  final double animationValue;
+  final double floatingValue;
+  final double rotateFactor;
+
+  const _AmbientOrb({
+    this.top,
+    this.left,
+    this.right,
+    this.bottom,
+    required this.size,
+    required this.color,
+    required this.opacity,
+    required this.animationValue,
+    required this.floatingValue,
+    required this.rotateFactor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: top == null ? null : top! + lerpDouble(-10, 10, floatingValue)!,
+      left: left,
+      right: right,
+      bottom: bottom == null
+          ? null
+          : bottom! + lerpDouble(8, -8, floatingValue)!,
+      child: Transform.rotate(
+        angle: animationValue * rotateFactor,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [
+                color.withValues(alpha: opacity),
+                color.withValues(alpha: .01),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _NavItemData {
   final String label;
+  final String semanticLabel;
   final IconData icon;
   final IconData activeIcon;
-  final List<Color> gradient;
+  final Color baseColor;
+  final Color accentColor;
 
   const _NavItemData({
     required this.label,
+    required this.semanticLabel,
     required this.icon,
     required this.activeIcon,
-    required this.gradient,
+    required this.baseColor,
+    required this.accentColor,
   });
 }

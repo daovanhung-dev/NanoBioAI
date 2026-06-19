@@ -22,6 +22,10 @@ class DashboardDynamicLocalDatasource {
     final todayMeals = _dedupeMeals(
       await _todayMeals(userId: userId, today: today),
     );
+    final todayScheduleItems = await _todayScheduleItems(
+      userId: userId,
+      today: today,
+    );
     final todayNutritionLogs = await _todayNutritionLogs(
       userId: userId,
       today: today,
@@ -34,6 +38,8 @@ class DashboardDynamicLocalDatasource {
     final recommendations = await _latestRecommendations(userId);
     final goals = await _goalProgress(userId, todayTasks);
     final unreadNotificationCount = await _unreadNotificationCount(userId);
+    final planStatus = await _planStatus(userId: userId, today: today);
+    final selfCareStreak = await _selfCareStreak(userId: userId);
 
     final metrics = _buildMetrics(
       todayLog: todayLog,
@@ -43,6 +49,7 @@ class DashboardDynamicLocalDatasource {
     );
 
     final timeline = _buildTimeline(
+      scheduleItems: todayScheduleItems,
       meals: todayMeals,
       tasks: todayTasks,
       notifications: todayNotifications,
@@ -59,6 +66,10 @@ class DashboardDynamicLocalDatasource {
       recommendations: recommendations,
       goalProgress: goals,
       unreadNotificationCount: unreadNotificationCount,
+      todayMood: _readString(todayLog?['mood']),
+      todayWeightKg: _readDouble(todayLog?['weight_kg']),
+      planStatus: planStatus,
+      selfCareStreak: selfCareStreak,
     );
   }
 
@@ -133,6 +144,66 @@ class DashboardDynamicLocalDatasource {
         mealOrder: _readInt(row['meal_order']) ?? 0,
         startTime: _readString(row['start_time']),
         isCompleted: _readBool(row['is_completed']),
+      );
+    }).toList();
+  }
+
+  Future<List<_DashboardScheduleItem>> _todayScheduleItems({
+    required String userId,
+    required String today,
+  }) async {
+    final rows = await db.query(
+      'lifestyle_schedule_items',
+      where:
+          'user_id = ? AND (schedule_date = ? OR substr(schedule_date, 1, 10) = ?)',
+      whereArgs: [userId, today, today],
+      orderBy: 'sort_order ASC, start_time ASC, created_at ASC',
+    );
+
+    return rows.map((row) {
+      final timeLabel = _timeFromIso(_readString(row['start_time'])) ?? '--:--';
+      final title = _readString(row['title']) ?? 'Lịch trình hôm nay';
+      final description = _readString(row['description']) ?? '';
+      final targetValue = _readDouble(row['target_value']) ?? 0;
+      final currentValue = _readDouble(row['current_value']) ?? 0;
+      final unit = _readString(row['unit']);
+      final progress = targetValue > 0 && unit != null
+          ? '${_formatNumber(currentValue)}/${_formatNumber(targetValue)} $unit'
+          : '';
+      final subtitle = description.isNotEmpty ? description : progress;
+      final category =
+          _readString(row['category']) ??
+          _readString(row['source_type']) ??
+          'health';
+
+      final isCompleted = _readBool(row['is_completed']);
+      final sourceId = _readString(row['id']);
+      final canComplete =
+          !isCompleted &&
+          (sourceId?.isNotEmpty ?? false) &&
+          _canCompleteNow(_readString(row['start_time']));
+
+      return _DashboardScheduleItem(
+        sourceType: _readString(row['source_type']),
+        sourceId: _readString(row['source_id']),
+        timeline: DashboardTimelineItem(
+          id: 'schedule_${sourceId ?? ''}',
+          sourceType: DashboardTimelineSourceTypes.schedule,
+          sourceId: sourceId,
+          status: isCompleted
+              ? DashboardTimelineStatus.completed
+              : DashboardTimelineStatus.pending,
+          canComplete: canComplete,
+          timeLabel: timeLabel,
+          title: title,
+          subtitle: subtitle,
+          category: category,
+          isCompleted: isCompleted,
+          sortOrder: _timelineSortOrder(
+            timeLabel,
+            _readInt(row['sort_order']) ?? 0,
+          ),
+        ),
       );
     }).toList();
   }
@@ -252,6 +323,124 @@ class DashboardDynamicLocalDatasource {
     return _readInt(result.first['count']) ?? 0;
   }
 
+  Future<DashboardPlanStatus> _planStatus({
+    required String userId,
+    required String today,
+  }) async {
+    final rows = await db.rawQuery(
+      '''
+      SELECT MAX(plan_date) AS last_date FROM meal_plans WHERE user_id = ?
+      UNION ALL
+      SELECT MAX(schedule_date) AS last_date FROM lifestyle_schedule_items WHERE user_id = ?
+      ''',
+      [userId, userId],
+    );
+    final lastDate = rows
+        .map((row) => _readString(row['last_date']))
+        .whereType<String>()
+        .map((value) => value.length >= 10 ? value.substring(0, 10) : value)
+        .where((value) => value.isNotEmpty)
+        .fold<String?>(null, (current, value) {
+          if (current == null) return value;
+          return value.compareTo(current) > 0 ? value : current;
+        });
+
+    if (lastDate == null) return const DashboardPlanStatus.empty();
+
+    final todayDate = _readDate(today);
+    final lastPlanDate = _readDate(lastDate);
+    if (todayDate == null || lastPlanDate == null) {
+      return DashboardPlanStatus(lastPlanDate: lastDate, remainingDays: 0);
+    }
+
+    final remainingDays = lastPlanDate.isBefore(todayDate)
+        ? 0
+        : lastPlanDate.difference(todayDate).inDays + 1;
+
+    return DashboardPlanStatus(
+      lastPlanDate: lastDate,
+      remainingDays: remainingDays,
+    );
+  }
+
+  Future<DashboardSelfCareStreak> _selfCareStreak({
+    required String userId,
+  }) async {
+    final today = _dateOnly(DateTime.now());
+    final dates = List<DateTime>.generate(
+      7,
+      (index) => today.subtract(Duration(days: 6 - index)),
+    );
+    final startDate = _dateKey(dates.first);
+    final endDate = _dateKey(dates.last);
+
+    final careDates = <String>{};
+
+    final healthLogs = await db.query(
+      'health_tracking_logs',
+      columns: const ['log_date'],
+      where: 'user_id = ? AND log_date >= ? AND log_date <= ?',
+      whereArgs: [userId, startDate, endDate],
+    );
+    for (final row in healthLogs) {
+      final date = _datePart(_readString(row['log_date']));
+      if (date != null) careDates.add(date);
+    }
+
+    final completedTasks = await db.query(
+      'daily_health_tasks',
+      columns: const ['task_date'],
+      where:
+          'user_id = ? AND is_completed = 1 AND task_date >= ? AND task_date <= ?',
+      whereArgs: [userId, startDate, endDate],
+    );
+    for (final row in completedTasks) {
+      final date = _datePart(_readString(row['task_date']));
+      if (date != null) careDates.add(date);
+    }
+
+    final completedMeals = await db.query(
+      'meal_plans',
+      columns: const ['plan_date'],
+      where:
+          'user_id = ? AND is_completed = 1 AND plan_date >= ? AND plan_date <= ?',
+      whereArgs: [userId, startDate, endDate],
+    );
+    for (final row in completedMeals) {
+      final date = _datePart(_readString(row['plan_date']));
+      if (date != null) careDates.add(date);
+    }
+
+    final completedSchedule = await db.query(
+      'lifestyle_schedule_items',
+      columns: const ['schedule_date'],
+      where:
+          'user_id = ? AND is_completed = 1 AND schedule_date >= ? AND schedule_date <= ?',
+      whereArgs: [userId, startDate, endDate],
+    );
+    for (final row in completedSchedule) {
+      final date = _datePart(_readString(row['schedule_date']));
+      if (date != null) careDates.add(date);
+    }
+
+    final days = dates
+        .map(
+          (date) => DashboardSelfCareDay(
+            date: _dateKey(date),
+            hasCareSignal: careDates.contains(_dateKey(date)),
+          ),
+        )
+        .toList(growable: false);
+
+    var currentStreak = 0;
+    for (final day in days.reversed) {
+      if (!day.hasCareSignal) break;
+      currentStreak += 1;
+    }
+
+    return DashboardSelfCareStreak(days: days, currentStreak: currentStreak);
+  }
+
   DashboardDailyMetrics _buildMetrics({
     required Map<String, Object?>? todayLog,
     required List<DashboardTaskItem> tasks,
@@ -337,23 +526,51 @@ class DashboardDynamicLocalDatasource {
   }
 
   List<DashboardTimelineItem> _buildTimeline({
+    required List<_DashboardScheduleItem> scheduleItems,
     required List<DashboardMealItem> meals,
     required List<DashboardTaskItem> tasks,
     required List<Map<String, Object?>> notifications,
   }) {
-    final items = <DashboardTimelineItem>[];
+    final items = scheduleItems.map((item) => item.timeline).toList();
+    final scheduledMealIds = scheduleItems
+        .where((item) => item.sourceType == 'meal_plan')
+        .map((item) => item.sourceId)
+        .whereType<String>()
+        .toSet();
     final mealTaskIds = <String>{};
 
     for (final meal in _dedupeMeals(meals)) {
+      final timeLabel = _mealTimeLabel(meal);
+      final mealSubtitle = meal.calories > 0
+          ? '${_mealTypeLabel(meal.mealType)} - ${meal.calories} kcal'
+          : _mealTypeLabel(meal.mealType);
+      if (scheduledMealIds.contains(meal.id) ||
+          _timelineDuplicatesExisting(
+            timeLabel: timeLabel,
+            title: meal.mealName,
+            subtitle: mealSubtitle,
+            category: 'meal',
+            existingItems: items,
+          )) {
+        continue;
+      }
+
       final matchedTask = _findMatchingMealTask(meal, tasks);
       if (matchedTask != null && matchedTask.id.isNotEmpty) {
         mealTaskIds.add(matchedTask.id);
       }
 
-      final timeLabel = _mealTimeLabel(meal);
       items.add(
         DashboardTimelineItem(
           id: 'meal_${meal.id}',
+          sourceType: DashboardTimelineSourceTypes.meal,
+          sourceId: meal.id,
+          status: (meal.isCompleted || (matchedTask?.isCompleted ?? false))
+              ? DashboardTimelineStatus.completed
+              : DashboardTimelineStatus.pending,
+          canComplete:
+              !(meal.isCompleted || (matchedTask?.isCompleted ?? false)) &&
+              meal.id.isNotEmpty,
           timeLabel: timeLabel,
           title: meal.mealName,
           subtitle: meal.calories > 0
@@ -370,14 +587,34 @@ class DashboardDynamicLocalDatasource {
     }
 
     for (final task in _dedupeTasks(tasks)) {
-      if (mealTaskIds.contains(task.id) || _isMealTaskCoveredByMeal(task, meals)) {
+      if (mealTaskIds.contains(task.id) ||
+          _isMealTaskCoveredByMeal(task, meals)) {
         continue;
       }
 
       final timeLabel = _taskTimeLabel(task);
+      final taskSubtitle = task.unit == null
+          ? (task.description ?? '')
+          : '${_formatNumber(task.currentValue)}/${_formatNumber(task.targetValue)} ${task.unit}';
+      if (_timelineDuplicatesExisting(
+        timeLabel: timeLabel,
+        title: task.title,
+        subtitle: taskSubtitle,
+        category: task.category,
+        existingItems: items,
+      )) {
+        continue;
+      }
+
       items.add(
         DashboardTimelineItem(
           id: 'task_${task.id}',
+          sourceType: DashboardTimelineSourceTypes.task,
+          sourceId: task.id,
+          status: task.isCompleted
+              ? DashboardTimelineStatus.completed
+              : DashboardTimelineStatus.pending,
+          canComplete: !task.isCompleted && task.id.isNotEmpty,
           timeLabel: timeLabel,
           title: task.title,
           subtitle: task.unit == null
@@ -391,7 +628,8 @@ class DashboardDynamicLocalDatasource {
     }
 
     for (final row in notifications) {
-      final timeLabel = _timeFromIso(_readString(row['scheduled_at'])) ?? '--:--';
+      final timeLabel =
+          _timeFromIso(_readString(row['scheduled_at'])) ?? '--:--';
       final title = _readString(row['title']) ?? 'Thông báo';
       final subtitle = _readString(row['body']) ?? '';
 
@@ -407,6 +645,12 @@ class DashboardDynamicLocalDatasource {
       items.add(
         DashboardTimelineItem(
           id: 'notification_${_readString(row['id']) ?? ''}',
+          sourceType: DashboardTimelineSourceTypes.notification,
+          sourceId: _readString(row['id']),
+          status: _readBool(row['is_read'])
+              ? DashboardTimelineStatus.completed
+              : DashboardTimelineStatus.pending,
+          canComplete: false,
           timeLabel: timeLabel,
           title: title,
           subtitle: subtitle,
@@ -426,7 +670,8 @@ class DashboardDynamicLocalDatasource {
     final byKey = <String, DashboardMealItem>{};
 
     for (final meal in meals) {
-      final naturalKey = 'meal:${_mealTimeLabel(meal)}:${_normalizeForCompare(meal.mealType)}:${_normalizeForCompare(meal.mealName)}';
+      final naturalKey =
+          'meal:${_mealTimeLabel(meal)}:${_normalizeForCompare(meal.mealType)}:${_normalizeForCompare(meal.mealName)}';
       final key = _normalizeForCompare(meal.mealName).isNotEmpty
           ? naturalKey
           : 'id:${meal.id}';
@@ -437,13 +682,18 @@ class DashboardDynamicLocalDatasource {
     return byKey.values.toList();
   }
 
-  DashboardMealItem _mergeMeal(DashboardMealItem current, DashboardMealItem next) {
+  DashboardMealItem _mergeMeal(
+    DashboardMealItem current,
+    DashboardMealItem next,
+  ) {
     return DashboardMealItem(
       id: current.id.isNotEmpty ? current.id : next.id,
       mealType: current.mealType.isNotEmpty ? current.mealType : next.mealType,
       mealName: current.mealName.isNotEmpty ? current.mealName : next.mealName,
       description: current.description ?? next.description,
-      calories: current.calories >= next.calories ? current.calories : next.calories,
+      calories: current.calories >= next.calories
+          ? current.calories
+          : next.calories,
       waterMl: current.waterMl >= next.waterMl ? current.waterMl : next.waterMl,
       mealOrder: current.mealOrder != 0 ? current.mealOrder : next.mealOrder,
       startTime: current.startTime ?? next.startTime,
@@ -455,7 +705,8 @@ class DashboardDynamicLocalDatasource {
     final byKey = <String, DashboardTaskItem>{};
 
     for (final task in tasks) {
-      final naturalKey = 'task:${_taskTimeLabel(task)}:${_normalizeForCompare(task.category)}:${_normalizeForCompare(task.title)}';
+      final naturalKey =
+          'task:${_taskTimeLabel(task)}:${_normalizeForCompare(task.category)}:${_normalizeForCompare(task.title)}';
       final key = _normalizeForCompare(task.title).isNotEmpty
           ? naturalKey
           : 'id:${task.id}';
@@ -466,7 +717,10 @@ class DashboardDynamicLocalDatasource {
     return byKey.values.toList();
   }
 
-  DashboardTaskItem _mergeTask(DashboardTaskItem current, DashboardTaskItem next) {
+  DashboardTaskItem _mergeTask(
+    DashboardTaskItem current,
+    DashboardTaskItem next,
+  ) {
     final currentDescription = current.description?.trim() ?? '';
     final nextDescription = next.description?.trim() ?? '';
     final currentEncouragement = current.encouragement?.trim() ?? '';
@@ -525,7 +779,8 @@ class DashboardDynamicLocalDatasource {
     final mealType = _normalizeForCompare(_mealTypeLabel(meal.mealType));
     final taskTime = _taskTimeLabel(task);
     final mealTime = _mealTimeLabel(meal);
-    final sameTime = taskTime != '--:--' && mealTime != '--:--' && taskTime == mealTime;
+    final sameTime =
+        taskTime != '--:--' && mealTime != '--:--' && taskTime == mealTime;
 
     final hasMealKeyword = _containsAny(taskText, const [
       'an sang',
@@ -566,15 +821,52 @@ class DashboardDynamicLocalDatasource {
       final itemText = _normalizeForCompare('${item.title} ${item.subtitle}');
       final sameTime = timeLabel == item.timeLabel || timeLabel == '--:--';
 
-      if (sameTime && itemTitle.isNotEmpty && notificationText.contains(itemTitle)) {
+      if (sameTime &&
+          itemTitle.isNotEmpty &&
+          notificationText.contains(itemTitle)) {
         return true;
       }
-      if (sameTime && notificationTitle.isNotEmpty && itemText.contains(notificationTitle)) {
+      if (sameTime &&
+          notificationTitle.isNotEmpty &&
+          itemText.contains(notificationTitle)) {
         return true;
       }
       if (sameTime && itemText.isNotEmpty && notificationText == itemText) {
         return true;
       }
+    }
+
+    return false;
+  }
+
+  bool _timelineDuplicatesExisting({
+    required String timeLabel,
+    required String title,
+    required String subtitle,
+    required String category,
+    required List<DashboardTimelineItem> existingItems,
+  }) {
+    final candidateCategory = _logicalCategory(category);
+    final candidateTitle = _normalizeForCompare(title);
+    final candidateText = _normalizeForCompare('$title $subtitle');
+    if (candidateText.isEmpty) return false;
+
+    for (final item in existingItems) {
+      final sameTime = timeLabel == item.timeLabel || timeLabel == '--:--';
+      final sameCategory = _logicalCategory(item.category) == candidateCategory;
+      if (!sameTime || !sameCategory) continue;
+
+      final itemTitle = _normalizeForCompare(item.title);
+      final itemText = _normalizeForCompare('${item.title} ${item.subtitle}');
+      if (itemText.isEmpty) continue;
+
+      if (candidateTitle.isNotEmpty && itemText.contains(candidateTitle)) {
+        return true;
+      }
+      if (itemTitle.isNotEmpty && candidateText.contains(itemTitle)) {
+        return true;
+      }
+      if (candidateText == itemText) return true;
     }
 
     return false;
@@ -604,8 +896,20 @@ class DashboardDynamicLocalDatasource {
   ) {
     return DashboardTimelineItem(
       id: current.id.isNotEmpty ? current.id : next.id,
-      timeLabel: current.timeLabel != '--:--' ? current.timeLabel : next.timeLabel,
-      title: current.title.length >= next.title.length ? current.title : next.title,
+      sourceType: current.sourceType.isNotEmpty
+          ? current.sourceType
+          : next.sourceType,
+      sourceId: current.sourceId ?? next.sourceId,
+      status: current.isCompleted || next.isCompleted
+          ? DashboardTimelineStatus.completed
+          : DashboardTimelineStatus.pending,
+      canComplete: current.canComplete || next.canComplete,
+      timeLabel: current.timeLabel != '--:--'
+          ? current.timeLabel
+          : next.timeLabel,
+      title: current.title.length >= next.title.length
+          ? current.title
+          : next.title,
       subtitle: current.subtitle.length >= next.subtitle.length
           ? current.subtitle
           : next.subtitle,
@@ -697,7 +1001,8 @@ class DashboardDynamicLocalDatasource {
   }
 
   int _timelineSortOrder(String timeLabel, int fallbackPriority) {
-    return _timeSortValue(timeLabel) * 1000 + fallbackPriority.clamp(0, 999).toInt();
+    return _timeSortValue(timeLabel) * 1000 +
+        fallbackPriority.clamp(0, 999).toInt();
   }
 
   int _timeSortValue(String timeLabel) {
@@ -711,11 +1016,22 @@ class DashboardDynamicLocalDatasource {
 
   String _logicalCategory(String category) {
     final normalized = _normalizeForCompare(category);
-    if (_containsAny(normalized, const ['meal', 'breakfast', 'lunch', 'dinner', 'snack'])) {
+    if (_containsAny(normalized, const [
+      'meal',
+      'breakfast',
+      'lunch',
+      'dinner',
+      'snack',
+    ])) {
       return 'meal';
     }
     if (_containsAny(normalized, const ['water', 'nuoc'])) return 'water';
-    if (_containsAny(normalized, const ['notification', 'reminder', 'thong bao', 'nhac'])) {
+    if (_containsAny(normalized, const [
+      'notification',
+      'reminder',
+      'thong bao',
+      'nhac',
+    ])) {
       return 'notification';
     }
     return normalized.isEmpty ? 'health' : normalized;
@@ -782,6 +1098,22 @@ class DashboardDynamicLocalDatasource {
     return '${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}';
   }
 
+  bool _canCompleteNow(String? startTime) {
+    final timeLabel = _timeFromIso(startTime);
+    if (timeLabel == null) return true;
+
+    final parts = timeLabel.split(':');
+    if (parts.length != 2) return true;
+
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return true;
+
+    final now = DateTime.now();
+    final start = DateTime(now.year, now.month, now.day, hour, minute);
+    return !now.isBefore(start);
+  }
+
   String _formatNumber(double value) {
     if (value == value.roundToDouble()) return value.round().toString();
     return value.toStringAsFixed(1);
@@ -789,6 +1121,23 @@ class DashboardDynamicLocalDatasource {
 
   String _dateKey(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  DateTime _dateOnly(DateTime value) {
+    return DateTime(value.year, value.month, value.day);
+  }
+
+  DateTime? _readDate(String? value) {
+    final date = _datePart(value);
+    if (date == null) return null;
+    return DateTime.tryParse(date);
+  }
+
+  String? _datePart(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final text = value.trim();
+    if (text.length >= 10) return text.substring(0, 10);
+    return text;
   }
 
   String? _readString(Object? value) {
@@ -818,4 +1167,16 @@ class DashboardDynamicLocalDatasource {
     final normalized = value.toString().trim().toLowerCase();
     return normalized == '1' || normalized == 'true' || normalized == 'yes';
   }
+}
+
+class _DashboardScheduleItem {
+  final String? sourceType;
+  final String? sourceId;
+  final DashboardTimelineItem timeline;
+
+  const _DashboardScheduleItem({
+    required this.sourceType,
+    required this.sourceId,
+    required this.timeline,
+  });
 }

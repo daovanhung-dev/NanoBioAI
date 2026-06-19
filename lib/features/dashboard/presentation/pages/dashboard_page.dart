@@ -3,13 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
+import 'package:nano_app/features/dashboard/domain/services/dashboard_companion_service.dart';
 import 'package:nano_app/features/dashboard/presentation/controllers/dashboard_controller.dart';
+import 'package:nano_app/features/dashboard/presentation/widgets/companion/dashboard_companion_widgets.dart';
 import 'package:nano_app/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/services/ai/ai_exceptions.dart';
+import 'package:nano_app/shared/widgets/ai_chat_fab.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
-  const DashboardPage({super.key});
+  final bool showStandaloneChatButton;
+
+  const DashboardPage({super.key, this.showStandaloneChatButton = true});
 
   @override
   ConsumerState<DashboardPage> createState() => _DashboardPageState();
@@ -89,46 +94,129 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     }
   }
 
+  Future<void> _completeTimelineItem(DashboardTimelineItem item) async {
+    await _runDashboardAction(
+      action: () => ref
+          .read(dashboardControllerProvider.notifier)
+          .completeTimelineItem(item),
+      successMessage: 'Nami đã ghi nhận việc nhỏ này rồi nhé.',
+      errorMessage:
+          'Nami chưa thể cập nhật việc này lúc này. Mình thử lại sau một chút nhé.',
+    );
+  }
+
+  Future<void> _saveDailyCheckIn(String mood) async {
+    await _runDashboardAction(
+      action: () =>
+          ref.read(dashboardControllerProvider.notifier).saveDailyCheckIn(mood),
+      successMessage: 'Nami đã ghi nhận cảm nhận hôm nay của bạn.',
+      errorMessage:
+          'Nami chưa thể ghi nhận cảm nhận lúc này. Mình thử lại sau một chút nhé.',
+    );
+  }
+
+  Future<void> _addWater(int amountMl) async {
+    await _runDashboardAction(
+      action: () =>
+          ref.read(dashboardControllerProvider.notifier).addWater(amountMl),
+      successMessage: 'Nami đã thêm lượng nước cho hôm nay.',
+      errorMessage:
+          'Nami chưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
+    );
+  }
+
+  Future<void> _setWater(int waterMl) async {
+    await _runDashboardAction(
+      action: () =>
+          ref.read(dashboardControllerProvider.notifier).setWater(waterMl),
+      successMessage: 'Nami đã lưu lượng nước hôm nay.',
+      errorMessage:
+          'Nami chưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
+    );
+  }
+
+  Future<void> _saveWeight(double weightKg) async {
+    await _runDashboardAction(
+      action: () =>
+          ref.read(dashboardControllerProvider.notifier).saveWeight(weightKg),
+      successMessage: 'Nami đã lưu cân nặng hôm nay.',
+      errorMessage:
+          'Nami chưa thể cập nhật cân nặng lúc này. Mình thử lại sau một chút nhé.',
+    );
+  }
+
+  Future<void> _runDashboardAction({
+    required Future<void> Function() action,
+    required String successMessage,
+    required String errorMessage,
+  }) async {
+    try {
+      await action();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(successMessage)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(errorMessage)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final dashboardAsync = ref.watch(dashboardProvider);
     final dynamicAsync = ref.watch(dashboardDynamicProvider);
     final generationState = ref.watch(dashboardControllerProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: dashboardAsync.when(
-        loading: () => const _DashboardLoadingView(),
-        error: (error, _) => _DashboardErrorView(
-          message:
-              'Nami chưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
-          onRetry: () => ref.invalidate(dashboardProvider),
-        ),
-        data: (dashboard) {
-          final dynamicData =
-              dynamicAsync.value ?? DashboardDynamicEntity.empty();
-          return FadeTransition(
-            opacity: _fadeIn,
-            child: SlideTransition(
-              position: _slideUp,
-              child: RefreshIndicator(
-                onRefresh: _refresh,
-                child: _DashboardContent(
-                  dashboard: dashboard,
-                  dynamicData: dynamicData,
-                  isDynamicLoading: dynamicAsync.isLoading,
-                  dynamicError: dynamicAsync.hasError
-                      ? 'Nami chưa thể cập nhật một vài tín hiệu mới nhất. Bạn có thể kéo xuống để thử lại nhé.'
-                      : null,
-                  isGeneratingPlan: generationState.isLoading,
-                  onGeneratePlan: _generateAdditionalPlan,
-                  pulseAnimation: _pulseController,
-                  scoreAnimation: _scoreController,
-                ),
+    final body = dashboardAsync.when(
+      loading: () => const _DashboardLoadingView(),
+      error: (error, _) => _DashboardErrorView(
+        message:
+            'Nami chưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
+        onRetry: () => ref.invalidate(dashboardProvider),
+      ),
+      data: (dashboard) {
+        final dynamicData =
+            dynamicAsync.value ?? DashboardDynamicEntity.empty();
+        return FadeTransition(
+          opacity: _fadeIn,
+          child: SlideTransition(
+            position: _slideUp,
+            child: RefreshIndicator(
+              onRefresh: _refresh,
+              child: _DashboardContent(
+                dashboard: dashboard,
+                dynamicData: dynamicData,
+                isDynamicLoading: dynamicAsync.isLoading,
+                dynamicError: dynamicAsync.hasError
+                    ? 'Nami chưa thể cập nhật một vài tín hiệu mới nhất. Bạn có thể kéo xuống để thử lại nhé.'
+                    : null,
+                isGeneratingPlan: generationState.isLoading,
+                onGeneratePlan: _generateAdditionalPlan,
+                onCompleteTimelineItem: _completeTimelineItem,
+                onDailyCheckIn: _saveDailyCheckIn,
+                onAddWater: _addWater,
+                onSetWater: _setWater,
+                onSaveWeight: _saveWeight,
+                pulseAnimation: _pulseController,
+                scoreAnimation: _scoreController,
               ),
             ),
-          );
-        },
+          ),
+        );
+      },
+    );
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          Positioned.fill(child: body),
+          if (widget.showStandaloneChatButton)
+            const DraggableAIChatButton(bottomReserve: 24),
+        ],
       ),
     );
   }
@@ -141,6 +229,11 @@ class _DashboardContent extends StatelessWidget {
   final String? dynamicError;
   final bool isGeneratingPlan;
   final Future<void> Function() onGeneratePlan;
+  final TimelineActionCallback onCompleteTimelineItem;
+  final Future<void> Function(String mood) onDailyCheckIn;
+  final Future<void> Function(int amountMl) onAddWater;
+  final Future<void> Function(int waterMl) onSetWater;
+  final Future<void> Function(double weightKg) onSaveWeight;
   final Animation<double> pulseAnimation;
   final Animation<double> scoreAnimation;
 
@@ -151,6 +244,11 @@ class _DashboardContent extends StatelessWidget {
     required this.dynamicError,
     required this.isGeneratingPlan,
     required this.onGeneratePlan,
+    required this.onCompleteTimelineItem,
+    required this.onDailyCheckIn,
+    required this.onAddWater,
+    required this.onSetWater,
+    required this.onSaveWeight,
     required this.pulseAnimation,
     required this.scoreAnimation,
   });
@@ -177,6 +275,19 @@ class _DashboardContent extends StatelessWidget {
       fallback: 'Chưa ghi nhận',
     );
     final concern = _safeText(dashboard.concernText, fallback: '');
+    final displayWeightKg = dynamicData.todayWeightKg ?? weightKg;
+    final dailySummary = DashboardCompanionService.buildDailySummary(
+      metrics: dynamicData.metrics,
+      sleepQuality: sleepQuality,
+      activityLevel: activityLevel,
+    );
+    final isSlowDay = DashboardCompanionService.isSlowDayMood(
+      dynamicData.todayMood,
+    );
+    final nextAction = DashboardCompanionService.selectNextAction(
+      timeline: dynamicData.timeline,
+      mood: dynamicData.todayMood,
+    );
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(
@@ -203,19 +314,60 @@ class _DashboardContent extends StatelessWidget {
                 _InlineErrorBanner(message: dynamicError!),
                 const SizedBox(height: AppSpacing.md),
               ],
+              DashboardDailySummaryCard(summary: dailySummary),
+              const SizedBox(height: AppSpacing.md),
+              DashboardDailyCheckInCard(
+                selectedMood: dynamicData.todayMood,
+                onSelectMood: onDailyCheckIn,
+              ),
+              if (isSlowDay) ...[
+                const SizedBox(height: AppSpacing.md),
+                const DashboardSlowDayBanner(),
+              ],
+              const SizedBox(height: AppSpacing.md),
+              DashboardNextActionSection(
+                item: nextAction,
+                isSlowDay: isSlowDay,
+                onComplete: onCompleteTimelineItem,
+                onLater: () {
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Mình để việc này lại một chút, Nami vẫn nhắc nhẹ thôi nhé.',
+                        ),
+                      ),
+                    );
+                },
+              ),
+              const SizedBox(height: AppSpacing.lg),
               _HealthScorePanel(
                 metrics: dynamicData.metrics,
                 bmi: bmi,
                 sleepQuality: sleepQuality,
                 activityLevel: activityLevel,
                 scoreAnimation: scoreAnimation,
+                onTap: () => _showScoreBreakdown(
+                  context,
+                  metrics: dynamicData.metrics,
+                  sleepQuality: sleepQuality,
+                  activityLevel: activityLevel,
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               _TodayMetricsGrid(
-                weightKg: weightKg,
+                weightKg: displayWeightKg,
                 heightCm: heightCm,
                 metrics: dynamicData.metrics,
+                onWaterTap: () => _showWaterSheet(context),
+                onWeightTap: () =>
+                    _showWeightSheet(context, currentWeightKg: displayWeightKg),
               ),
+              const SizedBox(height: AppSpacing.lg),
+              DashboardPlanStatusCard(planStatus: dynamicData.planStatus),
+              const SizedBox(height: AppSpacing.lg),
+              DashboardSelfCareStreakCard(streak: dynamicData.selfCareStreak),
               const SizedBox(height: AppSpacing.lg),
               _InsightSection(
                 insights: dynamicData.insights,
@@ -223,7 +375,10 @@ class _DashboardContent extends StatelessWidget {
                 concern: concern,
               ),
               const SizedBox(height: AppSpacing.lg),
-              _TimelineSection(items: dynamicData.timeline),
+              _TimelineSection(
+                items: dynamicData.timeline,
+                onCompleteTimelineItem: onCompleteTimelineItem,
+              ),
               const SizedBox(height: AppSpacing.lg),
               _GoalProgressSection(
                 progressItems: dynamicData.goalProgress,
@@ -244,6 +399,50 @@ class _DashboardContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showScoreBreakdown(
+    BuildContext context, {
+    required DashboardDailyMetrics metrics,
+    required String sleepQuality,
+    required String activityLevel,
+  }) {
+    final items = DashboardCompanionService.buildScoreBreakdown(
+      metrics: metrics,
+      sleepQuality: sleepQuality,
+      activityLevel: activityLevel,
+    );
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: false,
+      builder: (_) => DashboardHealthScoreBreakdownSheet(items: items),
+    );
+  }
+
+  void _showWaterSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => DashboardWaterUpdateSheet(
+        currentWaterMl: dynamicData.metrics.waterMl,
+        onAddWater: onAddWater,
+        onSetWater: onSetWater,
+      ),
+    );
+  }
+
+  void _showWeightSheet(
+    BuildContext context, {
+    required double currentWeightKg,
+  }) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => DashboardWeightUpdateSheet(
+        currentWeightKg: currentWeightKg > 0 ? currentWeightKg : null,
+        onSaveWeight: onSaveWeight,
+      ),
     );
   }
 }
@@ -478,6 +677,7 @@ class _HealthScorePanel extends StatelessWidget {
   final String sleepQuality;
   final String activityLevel;
   final Animation<double> scoreAnimation;
+  final VoidCallback onTap;
 
   const _HealthScorePanel({
     required this.metrics,
@@ -485,64 +685,71 @@ class _HealthScorePanel extends StatelessWidget {
     required this.sleepQuality,
     required this.activityLevel,
     required this.scoreAnimation,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final score = metrics.dailyScore;
-    return _DashboardCard(
-      child: Row(
-        children: [
-          AnimatedBuilder(
-            animation: scoreAnimation,
-            builder: (context, _) {
-              return _ScoreRing(
-                progress: (score / 100) * scoreAnimation.value,
-                label: score == 0 ? '--' : score.toString(),
-              );
-            },
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  score == 0 ? 'Chưa đủ dữ liệu chấm điểm' : _scoreTitle(score),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  score == 0
-                      ? 'Khi bạn ghi nhận sức khỏe, hoàn thành việc nhỏ hoặc dùng bữa, điểm hôm nay sẽ tự cập nhật.'
-                      : 'Điểm này được Nami tổng hợp từ sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    height: 1.45,
-                    color: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.color?.withOpacity(0.72),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _MiniBadge(
-                      label: bmi > 0
-                          ? 'BMI ${bmi.toStringAsFixed(1)}'
-                          : 'BMI --',
-                    ),
-                    _MiniBadge(label: sleepQuality),
-                    _MiniBadge(label: activityLevel),
-                  ],
-                ),
-              ],
+    return GestureDetector(
+      onTap: onTap,
+      child: _DashboardCard(
+        child: Row(
+          children: [
+            AnimatedBuilder(
+              animation: scoreAnimation,
+              builder: (context, _) {
+                return _ScoreRing(
+                  progress: (score / 100) * scoreAnimation.value,
+                  label: score == 0 ? '--' : score.toString(),
+                );
+              },
             ),
-          ),
-        ],
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    score == 0
+                        ? 'Chưa đủ dữ liệu chấm điểm'
+                        : _scoreTitle(score),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    score == 0
+                        ? 'Khi bạn ghi nhận sức khỏe, hoàn thành việc nhỏ hoặc dùng bữa, điểm hôm nay sẽ tự cập nhật.'
+                        : 'Điểm này được Nami tổng hợp từ sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      height: 1.45,
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.color?.withOpacity(0.72),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _MiniBadge(
+                        label: bmi > 0
+                            ? 'BMI ${bmi.toStringAsFixed(1)}'
+                            : 'BMI --',
+                      ),
+                      _MiniBadge(label: sleepQuality),
+                      _MiniBadge(label: activityLevel),
+                      const _MiniBadge(label: 'Chạm để xem thêm'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -604,11 +811,15 @@ class _TodayMetricsGrid extends StatelessWidget {
   final double weightKg;
   final double heightCm;
   final DashboardDailyMetrics metrics;
+  final VoidCallback onWaterTap;
+  final VoidCallback onWeightTap;
 
   const _TodayMetricsGrid({
     required this.weightKg,
     required this.heightCm,
     required this.metrics,
+    required this.onWaterTap,
+    required this.onWeightTap,
   });
 
   @override
@@ -618,6 +829,7 @@ class _TodayMetricsGrid extends StatelessWidget {
         icon: Icons.monitor_weight_rounded,
         title: 'Cân nặng',
         value: weightKg > 0 ? '${weightKg.toStringAsFixed(1)} kg' : 'Chưa có',
+        onTap: onWeightTap,
       ),
       _MetricData(
         icon: Icons.height_rounded,
@@ -637,6 +849,7 @@ class _TodayMetricsGrid extends StatelessWidget {
         icon: Icons.water_drop_rounded,
         title: 'Nước',
         value: metrics.waterMl > 0 ? '${metrics.waterMl} ml' : 'Chưa có',
+        onTap: onWaterTap,
       ),
       _MetricData(
         icon: Icons.task_alt_rounded,
@@ -690,11 +903,13 @@ class _MetricData {
   final IconData icon;
   final String title;
   final String value;
+  final VoidCallback? onTap;
 
   const _MetricData({
     required this.icon,
     required this.title,
     required this.value,
+    this.onTap,
   });
 }
 
@@ -705,12 +920,23 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _DashboardCard(
+    final content = _DashboardCard(
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(data.icon, color: AppColors.primary, size: 22),
+          Row(
+            children: [
+              Icon(data.icon, color: AppColors.primary, size: 22),
+              const Spacer(),
+              if (data.onTap != null)
+                Icon(
+                  Icons.edit_rounded,
+                  color: AppColors.primary.withValues(alpha: 0.65),
+                  size: 16,
+                ),
+            ],
+          ),
           const SizedBox(height: 10),
           Text(
             data.value,
@@ -725,6 +951,10 @@ class _MetricTile extends StatelessWidget {
         ],
       ),
     );
+
+    final onTap = data.onTap;
+    if (onTap == null) return content;
+    return GestureDetector(onTap: onTap, child: content);
   }
 }
 
@@ -895,8 +1125,12 @@ class _RecommendationCard extends StatelessWidget {
 
 class _TimelineSection extends StatelessWidget {
   final List<DashboardTimelineItem> items;
+  final TimelineActionCallback onCompleteTimelineItem;
 
-  const _TimelineSection({required this.items});
+  const _TimelineSection({
+    required this.items,
+    required this.onCompleteTimelineItem,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -921,7 +1155,10 @@ class _TimelineSection extends StatelessWidget {
             child: Column(
               children: [
                 for (var i = 0; i < items.length; i++) ...[
-                  _TimelineRow(item: items[i]),
+                  _TimelineRow(
+                    item: items[i],
+                    onComplete: onCompleteTimelineItem,
+                  ),
                   if (i != items.length - 1) const Divider(height: 24),
                 ],
               ],
@@ -934,8 +1171,9 @@ class _TimelineSection extends StatelessWidget {
 
 class _TimelineRow extends StatelessWidget {
   final DashboardTimelineItem item;
+  final TimelineActionCallback onComplete;
 
-  const _TimelineRow({required this.item});
+  const _TimelineRow({required this.item, required this.onComplete});
 
   @override
   Widget build(BuildContext context) {
@@ -986,13 +1224,26 @@ class _TimelineRow extends StatelessWidget {
             ],
           ),
         ),
-        Icon(
-          item.isCompleted
-              ? Icons.check_circle_rounded
-              : Icons.radio_button_unchecked_rounded,
-          color: item.isCompleted ? AppColors.primary : Colors.grey,
-          size: 20,
-        ),
+        if (item.isCompleted)
+          const Icon(
+            Icons.check_circle_rounded,
+            color: AppColors.primary,
+            size: 20,
+          )
+        else if (item.canComplete)
+          IconButton(
+            tooltip: 'Đã làm',
+            visualDensity: VisualDensity.compact,
+            onPressed: () => onComplete(item),
+            icon: const Icon(Icons.check_circle_outline_rounded),
+            color: AppColors.primary,
+          )
+        else
+          const Icon(
+            Icons.radio_button_unchecked_rounded,
+            color: Colors.grey,
+            size: 20,
+          ),
       ],
     );
   }

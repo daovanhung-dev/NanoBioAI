@@ -100,4 +100,16 @@ class LifestyleScheduleItemsDao {
       whereArgs: [userId],
     );
   }
+
+  Future<void> deleteByUserIdAndDateRange({
+    required String userId,
+    required String startDate,
+    required String endDate,
+  }) async {
+    await db.delete(
+      LifestyleScheduleItemsTable.tableName,
+      where: 'user_id = ? AND schedule_date >= ? AND schedule_date <= ?',
+      whereArgs: [userId, startDate, endDate],
+    );
+  }
 }

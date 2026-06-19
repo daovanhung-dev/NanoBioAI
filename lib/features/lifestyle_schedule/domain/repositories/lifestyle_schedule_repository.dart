@@ -10,4 +10,6 @@ abstract class LifestyleScheduleRepository {
     required LifestyleScheduleItemEntity item,
     required bool isCompleted,
   });
+
+  Future<LifestyleScheduleItemEntity> completeItemById(String id);
 }

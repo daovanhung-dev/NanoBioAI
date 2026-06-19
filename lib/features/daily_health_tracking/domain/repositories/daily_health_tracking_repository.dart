@@ -14,4 +14,14 @@ abstract class DailyHealthTrackingRepository {
     required DailyHealthTaskEntity task,
     required double amount,
   });
+
+  Future<DailyHealthTaskEntity> completeTaskById(String id);
+
+  Future<void> saveTodayMood(String mood);
+
+  Future<void> addTodayWater(int amountMl);
+
+  Future<void> setTodayWater(int waterMl);
+
+  Future<void> saveTodayWeight(double weightKg);
 }

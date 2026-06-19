@@ -9,6 +9,10 @@ class DashboardDynamicEntity {
   final List<DashboardRecommendationItem> recommendations;
   final List<DashboardGoalProgressItem> goalProgress;
   final int unreadNotificationCount;
+  final String? todayMood;
+  final double? todayWeightKg;
+  final DashboardPlanStatus planStatus;
+  final DashboardSelfCareStreak selfCareStreak;
 
   const DashboardDynamicEntity({
     required this.userId,
@@ -21,6 +25,10 @@ class DashboardDynamicEntity {
     required this.recommendations,
     required this.goalProgress,
     required this.unreadNotificationCount,
+    required this.todayMood,
+    required this.todayWeightKg,
+    required this.planStatus,
+    required this.selfCareStreak,
   });
 
   factory DashboardDynamicEntity.empty() {
@@ -35,6 +43,10 @@ class DashboardDynamicEntity {
       recommendations: const [],
       goalProgress: const [],
       unreadNotificationCount: 0,
+      todayMood: null,
+      todayWeightKg: null,
+      planStatus: const DashboardPlanStatus.empty(),
+      selfCareStreak: const DashboardSelfCareStreak.empty(),
     );
   }
 
@@ -46,7 +58,46 @@ class DashboardDynamicEntity {
       recommendations.isNotEmpty ||
       goalProgress.isNotEmpty ||
       unreadNotificationCount > 0 ||
+      todayMood != null ||
+      todayWeightKg != null ||
+      planStatus.hasPlan ||
+      selfCareStreak.hasAnyCareDay ||
       metrics.hasAnyData;
+}
+
+class DashboardPlanStatus {
+  final String? lastPlanDate;
+  final int remainingDays;
+
+  const DashboardPlanStatus({
+    required this.lastPlanDate,
+    required this.remainingDays,
+  });
+
+  const DashboardPlanStatus.empty() : lastPlanDate = null, remainingDays = 0;
+
+  bool get hasPlan => lastPlanDate != null && lastPlanDate!.trim().isNotEmpty;
+}
+
+class DashboardSelfCareStreak {
+  final List<DashboardSelfCareDay> days;
+  final int currentStreak;
+
+  const DashboardSelfCareStreak({
+    required this.days,
+    required this.currentStreak,
+  });
+
+  const DashboardSelfCareStreak.empty() : days = const [], currentStreak = 0;
+
+  bool get hasAnyCareDay => days.any((day) => day.hasCareSignal);
+}
+
+class DashboardSelfCareDay {
+  final String date;
+  final bool hasCareSignal;
+
+  const DashboardSelfCareDay({required this.date, required this.hasCareSignal});
 }
 
 class DashboardDailyMetrics {
@@ -178,6 +229,10 @@ class DashboardTaskItem {
 
 class DashboardTimelineItem {
   final String id;
+  final String sourceType;
+  final String? sourceId;
+  final String status;
+  final bool canComplete;
   final String timeLabel;
   final String title;
   final String subtitle;
@@ -187,6 +242,10 @@ class DashboardTimelineItem {
 
   const DashboardTimelineItem({
     required this.id,
+    required this.sourceType,
+    required this.sourceId,
+    required this.status,
+    required this.canComplete,
     required this.timeLabel,
     required this.title,
     required this.subtitle,
@@ -194,6 +253,18 @@ class DashboardTimelineItem {
     required this.isCompleted,
     required this.sortOrder,
   });
+}
+
+class DashboardTimelineSourceTypes {
+  static const schedule = 'schedule';
+  static const meal = 'meal';
+  static const task = 'task';
+  static const notification = 'notification';
+}
+
+class DashboardTimelineStatus {
+  static const pending = 'pending';
+  static const completed = 'completed';
 }
 
 class DashboardInsightItem {

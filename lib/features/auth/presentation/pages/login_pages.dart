@@ -38,9 +38,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           context.go('/menu');
         },
         error: (e, st) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
                 'Nami chưa thể đăng nhập lúc này. Bạn kiểm tra lại thông tin rồi thử thêm một lần nhé.',

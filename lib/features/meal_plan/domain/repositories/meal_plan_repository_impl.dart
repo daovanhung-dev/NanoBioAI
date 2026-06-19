@@ -11,4 +11,9 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
     final meals = await datasource.getMealByWeeks();
     return meals.map((meal) => meal.toEntity()).toList();
   }
+
+  @override
+  Future<void> completeMealById(String id) {
+    return datasource.completeMealById(id);
+  }
 }

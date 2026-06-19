@@ -45,28 +45,36 @@ class GeneratedPlanService {
            scheduleReminders ??
            NotificationBootstrap.scheduleGeneratedReminders;
 
-  Future<GeneratedPlanResult> generateNextPlan({int days = 7}) async {
+  Future<GeneratedPlanResult> generateNextPlan({
+    int days = 7,
+    DateTime? startDate,
+    bool appendAfterExisting = true,
+  }) async {
     final now = DateTime.now();
-    final fallbackStartDate = DateTime(now.year, now.month, now.day + 1);
+    final fallbackStartDate = _dateOnly(
+      startDate ?? DateTime(now.year, now.month, now.day + 1),
+    );
     AppLogger.action(_tag, 'Generate next plan');
 
     final DashboardEntity dashboardData = await dashboardRepository
         .fetchDashboard();
     final profile = await dailyHealthDatasource.fetchLatestProfile();
-    final startDate = await scheduleDatasource.getNextGeneratedPlanStartDate(
-      userId: profile.userId,
-      fallbackStartDate: fallbackStartDate,
-    );
+    final resolvedStartDate = appendAfterExisting
+        ? await scheduleDatasource.getNextGeneratedPlanStartDate(
+            userId: profile.userId,
+            fallbackStartDate: fallbackStartDate,
+          )
+        : fallbackStartDate;
 
     AppLogger.info(
       _tag,
-      'Resolved start date ${_dateKey(startDate)} for $days days',
+      'Resolved start date ${_dateKey(resolvedStartDate)} for $days days',
     );
 
     final meals = await aiService.generateMealPlan(
       healthData: dashboardData,
       userId: profile.userId,
-      startDate: startDate,
+      startDate: resolvedStartDate,
       days: days,
     );
     await dashboardRepository.saveMealPlan(meals);
@@ -74,7 +82,7 @@ class GeneratedPlanService {
 
     final exercises = await aiService.generateExerciseTasks(
       profile: profile,
-      startDate: startDate,
+      startDate: resolvedStartDate,
       days: days,
     );
     AppLogger.info(_tag, 'Generated ${exercises.length} exercise records');
@@ -83,7 +91,7 @@ class GeneratedPlanService {
     final mealsForSchedule = await scheduleDatasource
         .getMealPlansForScheduleSeed(
           userId: profile.userId,
-          startDate: startDate,
+          startDate: resolvedStartDate,
           days: days,
         );
     final createdAt = DateTime.now().toIso8601String();
@@ -92,14 +100,15 @@ class GeneratedPlanService {
       meals: mealsForSchedule,
       exercises: exercises,
       catalog: catalog,
-      startDate: startDate,
+      startDate: resolvedStartDate,
       days: days,
       createdAt: createdAt,
     );
     await scheduleDatasource.seedGeneratedSchedule(
       schedule,
       requireComplete: true,
-      startDate: startDate,
+      replaceExistingRange: !appendAfterExisting,
+      startDate: resolvedStartDate,
       days: days,
     );
     AppLogger.info(_tag, 'Saved ${schedule.length} schedule items');
@@ -117,7 +126,7 @@ class GeneratedPlanService {
     }
 
     return GeneratedPlanResult(
-      startDate: startDate,
+      startDate: resolvedStartDate,
       days: days,
       mealCount: meals.length,
       exerciseCount: exercises.length,
@@ -129,5 +138,9 @@ class GeneratedPlanService {
     final month = value.month.toString().padLeft(2, '0');
     final day = value.day.toString().padLeft(2, '0');
     return '${value.year}-$month-$day';
+  }
+
+  DateTime _dateOnly(DateTime value) {
+    return DateTime(value.year, value.month, value.day);
   }
 }

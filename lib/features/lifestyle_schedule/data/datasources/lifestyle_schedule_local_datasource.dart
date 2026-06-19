@@ -26,6 +26,7 @@ class LifestyleScheduleLocalDatasource {
   Future<void> seedGeneratedSchedule(
     List<LifestyleScheduleItemModel> items, {
     bool requireComplete = false,
+    bool replaceExistingRange = false,
     DateTime? startDate,
     int days = 7,
   }) async {
@@ -34,7 +35,19 @@ class LifestyleScheduleLocalDatasource {
     }
 
     final db = await _db();
-    await LifestyleScheduleItemsDao(db).upsertMany(items);
+    final dao = LifestyleScheduleItemsDao(db);
+    if (replaceExistingRange && startDate != null && items.isNotEmpty) {
+      final userId = items.first.userId;
+      if (userId != null && userId.isNotEmpty) {
+        await dao.deleteByUserIdAndDateRange(
+          userId: userId,
+          startDate: _dateKey(startDate),
+          endDate: _dateKey(startDate.add(Duration(days: days - 1))),
+        );
+      }
+    }
+
+    await dao.upsertMany(items);
   }
 
   Future<LifestyleScheduleSummaryEntity> getWeekSchedule({
@@ -136,6 +149,16 @@ class LifestyleScheduleLocalDatasource {
     await _syncDailyScheduleScore(db, updated);
 
     return updated;
+  }
+
+  Future<LifestyleScheduleItemEntity> completeItemById(String id) async {
+    final db = await _db();
+    final item = await LifestyleScheduleItemsDao(db).getById(id);
+    if (item == null) {
+      throw StateError('Schedule item not found');
+    }
+
+    return updateItemCompletion(item: item.toEntity(), isCompleted: true);
   }
 
   Future<Map<String, Object?>> _fetchLatestUser(Database db) async {

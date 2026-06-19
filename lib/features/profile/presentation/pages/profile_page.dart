@@ -63,8 +63,7 @@ class ProfilePage extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.lg),
                       _ChipSection(
                         title: 'Mục tiêu',
-                        emptyMessage:
-                            'Nami chưa thấy mục tiêu nào được chọn.',
+                        emptyMessage: 'Nami chưa thấy mục tiêu nào được chọn.',
                         items: dashboard.goals,
                         icon: Icons.flag_rounded,
                       ),

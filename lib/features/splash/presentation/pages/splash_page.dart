@@ -102,10 +102,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                     gradient: RadialGradient(
                       radius: 1.2,
                       center: Alignment.center,
-                      colors: [
-                        Color(0x1606B6D4),
-                        Colors.transparent,
-                      ],
+                      colors: [Color(0x1606B6D4), Colors.transparent],
                     ),
                   ),
                 ),
@@ -203,10 +200,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                         builder: (context, child) {
                           final value = 0.96 + (_pulseController.value * 0.04);
 
-                          return Transform.scale(
-                            scale: value,
-                            child: child,
-                          );
+                          return Transform.scale(scale: value, child: child);
                         },
                         child: _MainSplashCard(
                           title: widget.title,
@@ -450,11 +444,7 @@ class _CareMessage extends StatelessWidget {
               gradient: AppGradients.primary,
               shadows: AppShadows.sm,
             ),
-            child: const Icon(
-              Icons.spa_rounded,
-              color: Colors.white,
-              size: 21,
-            ),
+            child: const Icon(Icons.spa_rounded, color: Colors.white, size: 21),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -510,9 +500,7 @@ class _AnimatedLogo extends StatelessWidget {
                     height: 108,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.12),
-                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.12)),
                     ),
                   ),
                   Container(
@@ -659,9 +647,7 @@ class _ProgressLoader extends StatelessWidget {
             child: FractionallySizedBox(
               widthFactor: value,
               child: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppGradients.hero,
-                ),
+                decoration: const BoxDecoration(gradient: AppGradients.hero),
               ),
             ),
           );
@@ -705,10 +691,7 @@ class _AnimatedOrb extends StatelessWidget {
         child: Container(
           width: size,
           height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: gradient,
-          ),
+          decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient),
         ),
       ),
     );

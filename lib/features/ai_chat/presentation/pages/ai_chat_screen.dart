@@ -15,44 +15,28 @@ class AIChatScreen extends ConsumerStatefulWidget {
   ConsumerState<AIChatScreen> createState() => _AIChatScreenState();
 }
 
-class _AIChatScreenState extends ConsumerState<AIChatScreen>
-    with TickerProviderStateMixin {
+class _AIChatScreenState extends ConsumerState<AIChatScreen> {
+  static const double _maxContentWidth = 820;
+
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
 
-  late final AnimationController _backgroundController;
-  late final AnimationController _pulseController;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _backgroundController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 16),
-    )..repeat();
-
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
-  }
+  int _lastMessageCount = 0;
+  bool _lastLoadingState = false;
 
   @override
   void dispose() {
     _textController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
-    _backgroundController.dispose();
-    _pulseController.dispose();
     super.dispose();
   }
 
   void _scrollToBottom() {
     if (!_scrollController.hasClients) return;
 
-    Future.delayed(const Duration(milliseconds: 120), () {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
 
       _scrollController.animateTo(
@@ -63,10 +47,23 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen>
     });
   }
 
+  void _syncAutoScroll({required int messageCount, required bool isLoading}) {
+    final shouldScroll =
+        _lastMessageCount != messageCount || _lastLoadingState != isLoading;
+
+    _lastMessageCount = messageCount;
+    _lastLoadingState = isLoading;
+
+    if (shouldScroll) {
+      _scrollToBottom();
+    }
+  }
+
   void _sendMessage() {
     final message = _textController.text.trim();
     if (message.isEmpty) return;
 
+    HapticFeedback.lightImpact();
     ref.read(aiChatControllerProvider.notifier).sendMessage(message);
     _textController.clear();
     _scrollToBottom();
@@ -81,508 +78,207 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen>
   Widget build(BuildContext context) {
     final state = ref.watch(aiChatControllerProvider);
 
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: AppColors.background,
-      extendBodyBehindAppBar: true,
-      appBar: _buildAppBar(context),
-      body: Stack(
-        children: [
-          _AnimatedBackground(
-            backgroundController: _backgroundController,
-            pulseController: _pulseController,
-          ),
-          SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: AppDuration.normal,
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    child: state.messages.isEmpty
-                        ? _EmptyNamiState(
-                            key: const ValueKey('empty-chat'),
-                            onQuestionTap: _sendSuggestedQuestion,
-                          )
-                        : _buildMessageList(state.messages, state.isLoading),
-                  ),
-                ),
-                _InputArea(
-                  controller: _textController,
-                  focusNode: _focusNode,
-                  isLoading: state.isLoading,
-                  onSend: _sendMessage,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    _syncAutoScroll(
+      messageCount: state.messages.length,
+      isLoading: state.isLoading,
     );
-  }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      systemOverlayStyle: SystemUiOverlayStyle.dark,
-      leadingWidth: 64,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: AppSpacing.md),
-        child: _GlassIconButton(
-          icon: Icons.arrow_back_rounded,
-          semanticLabel: 'Quay lại',
-          onTap: () => Navigator.pop(context),
-        ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: AppColors.background,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
-      title: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadius.circular),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            decoration: AppDecoration.glass(
-              opacity: 0.92,
-              radius: AppRadius.circular,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const _NamiAvatar(size: 34, iconSize: 18),
-                const SizedBox(width: AppSpacing.sm),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Nami',
-                      style: AppTextStyles.labelLarge.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: AppColors.success,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.success.withValues(
-                                  alpha: 0.45,
-                                ),
-                                blurRadius: 8,
-                                spreadRadius: 1,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          'Đang lắng nghe bạn',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      centerTitle: true,
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: AppSpacing.md),
-          child: _GlassIconButton(
-            icon: Icons.refresh_rounded,
-            semanticLabel: 'Làm mới cuộc trò chuyện',
-            onTap: () {
-              ref.read(aiChatControllerProvider.notifier).clearChat();
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMessageList(List<ChatMessageEntity> messages, bool isLoading) {
-    return ListView.builder(
-      key: const ValueKey('message-list'),
-      controller: _scrollController,
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.pagePadding,
-        AppSpacing.xl,
-        AppSpacing.pagePadding,
-        AppSpacing.md,
-      ),
-      itemCount: messages.length + (isLoading ? 2 : 1),
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return const _ConversationWarmNote();
-        }
-
-        final messageIndex = index - 1;
-
-        if (messageIndex == messages.length && isLoading) {
-          return const _TypingIndicator();
-        }
-
-        final message = messages[messageIndex];
-        final isUser = message.role == MessageRole.user;
-
-        return _MessageBubble(message: message, isUser: isUser);
-      },
-    );
-  }
-}
-
-class _EmptyNamiState extends StatelessWidget {
-  final ValueChanged<String> onQuestionTap;
-
-  const _EmptyNamiState({super.key, required this.onQuestionTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.pagePadding,
-        AppSpacing.xl,
-        AppSpacing.pagePadding,
-        AppSpacing.xl,
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: AppSpacing.xl),
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.92, end: 1),
-            duration: AppDuration.slow,
-            curve: Curves.easeOutBack,
-            builder: (context, value, child) {
-              return Transform.scale(scale: value, child: child);
-            },
-            child: Container(
-              width: 132,
-              height: 132,
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primary.withValues(alpha: 0.16),
-                    AppColors.secondary.withValues(alpha: 0.08),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: Container(
-                decoration: AppDecoration.base(
-                  gradient: AppGradients.ai,
-                  shape: BoxShape.circle,
-                  shadows: AppShadows.floating,
-                ),
-                child: const Icon(
-                  AppIcons.aiChat,
-                  size: 58,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          Text(
-            'Nami đang ở đây cùng bạn',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.heading2.copyWith(
-              fontWeight: FontWeight.w900,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'Bạn cứ kể cho Nami nghe điều mình đang quan tâm. Nami sẽ nhẹ nhàng gợi ý để bạn chăm sóc sức khỏe, bữa ăn, giấc ngủ và cảm xúc tốt hơn mỗi ngày.',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.65,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          const _CareReminderCard(),
-          const SizedBox(height: AppSpacing.xl),
-          _SuggestedQuestions(onQuestionTap: onQuestionTap),
-        ],
-      ),
-    );
-  }
-}
-
-class _CareReminderCard extends StatelessWidget {
-  const _CareReminderCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: AppDecoration.container(
-        color: AppColors.surface.withValues(alpha: 0.88),
-        radius: AppRadius.lg,
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
-        shadows: AppShadows.sm,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: AppDecoration.base(
-              gradient: AppGradients.primary,
-              shape: BoxShape.circle,
-              shadows: AppShadows.xs,
-            ),
-            child: const Icon(
-              Icons.favorite_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              'Một lời nhắn nhỏ: Nami có thể đồng hành và gợi ý, còn những vấn đề sức khỏe nghiêm trọng bạn vẫn nên hỏi bác sĩ nhé.',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.55,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConversationWarmNote extends StatelessWidget {
-  const _ConversationWarmNote();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: AppDecoration.container(
-          color: AppColors.surface.withValues(alpha: 0.82),
-          radius: AppRadius.lg,
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
-        ),
-        child: Row(
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        backgroundColor: AppColors.background,
+        appBar: _buildAppBar(context),
+        body: Column(
           children: [
-            const _NamiAvatar(size: 36, iconSize: 18),
-            const SizedBox(width: AppSpacing.sm),
             Expanded(
-              child: Text(
-                'Nami sẽ đọc thật kỹ từng chia sẻ của bạn và trả lời bằng cách dễ hiểu nhất.',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.45,
-                ),
-              ),
+              child: state.messages.isEmpty
+                  ? _ChatGptEmptyState(onQuestionTap: _sendSuggestedQuestion)
+                  : _MessageList(
+                      controller: _scrollController,
+                      messages: state.messages,
+                      isLoading: state.isLoading,
+                    ),
+            ),
+            _ChatComposer(
+              controller: _textController,
+              focusNode: _focusNode,
+              isLoading: state.isLoading,
+              onSend: _sendMessage,
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class _InputArea extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final bool isLoading;
-  final VoidCallback onSend;
-
-  const _InputArea({
-    required this.controller,
-    required this.focusNode,
-    required this.isLoading,
-    required this.onSend,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      toolbarHeight: 64,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      backgroundColor: AppColors.background.withValues(alpha: .92),
+      surfaceTintColor: Colors.transparent,
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
+      leadingWidth: 58,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: AppSpacing.sm),
+        child: _MinimalIconButton(
+          icon: Icons.arrow_back_rounded,
+          semanticLabel: 'Quay lại',
+          onTap: () => Navigator.pop(context),
+        ),
+      ),
+      titleSpacing: 0,
+      title: const _ChatHeaderTitle(),
+      centerTitle: false,
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: AppSpacing.sm),
+          child: _MinimalIconButton(
+            icon: Icons.refresh_rounded,
+            semanticLabel: 'Làm mới cuộc trò chuyện',
+            onTap: () {
+              HapticFeedback.selectionClick();
+              ref.read(aiChatControllerProvider.notifier).clearChat();
+            },
+          ),
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.94),
-            border: Border(
-              top: BorderSide(color: AppColors.border.withValues(alpha: 0.45)),
-            ),
-            boxShadow: AppShadows.sm,
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        constraints: const BoxConstraints(maxHeight: 124),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
-                        ),
-                        decoration: AppDecoration.input(
-                          borderColor: focusNode.hasFocus
-                              ? AppColors.primary.withValues(alpha: 0.42)
-                              : AppColors.border.withValues(alpha: 0.55),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                right: AppSpacing.sm,
-                                bottom: 2,
-                              ),
-                              child: Icon(
-                                Icons.auto_awesome_rounded,
-                                color: AppColors.primary.withValues(alpha: 0.8),
-                                size: 20,
-                              ),
-                            ),
-                            Expanded(
-                              child: TextField(
-                                controller: controller,
-                                focusNode: focusNode,
-                                maxLines: null,
-                                textCapitalization:
-                                    TextCapitalization.sentences,
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  color: AppColors.textPrimary,
-                                  height: 1.45,
-                                ),
-                                enabled: !isLoading,
-                                decoration: InputDecoration(
-                                  hintText:
-                                      'Nhắn cho Nami điều bạn đang quan tâm...',
-                                  hintStyle: AppTextStyles.inputHint.copyWith(
-                                    color: AppColors.textMuted,
-                                  ),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                                onSubmitted: (_) => onSend(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Semantics(
-                      label: 'Gửi tin nhắn cho Nami',
-                      button: true,
-                      child: GestureDetector(
-                        onTap: isLoading ? null : onSend,
-                        child: AnimatedContainer(
-                          duration: AppDuration.fast,
-                          curve: Curves.easeOutCubic,
-                          width: 50,
-                          height: 50,
-                          decoration: isLoading
-                              ? AppDecoration.container(
-                                  color: AppColors.disabled,
-                                  radius: AppRadius.circular,
-                                )
-                              : AppDecoration.primaryGradient(
-                                  radius: AppRadius.circular,
-                                ),
-                          child: AnimatedSwitcher(
-                            duration: AppDuration.fast,
-                            child: isLoading
-                                ? const SizedBox(
-                                    key: ValueKey('loading-send'),
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(
-                                    key: ValueKey('ready-send'),
-                                    Icons.send_rounded,
-                                    color: Colors.white,
-                                    size: 22,
-                                  ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Nami sẽ luôn trả lời nhẹ nhàng, không phán xét và dễ hiểu nhất có thể.',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textMuted,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          height: 1,
+          color: AppColors.border.withValues(alpha: .42),
         ),
       ),
     );
   }
 }
 
-class _MessageBubble extends StatelessWidget {
+class _ChatHeaderTitle extends StatelessWidget {
+  const _ChatHeaderTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const _NamiAvatar(size: 34, iconSize: 18),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Nami',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.success.withValues(alpha: .35),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      'Sẵn sàng lắng nghe bạn',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MessageList extends StatelessWidget {
+  static const double _maxContentWidth = 820;
+
+  final ScrollController controller;
+  final List<ChatMessageEntity> messages;
+  final bool isLoading;
+
+  const _MessageList({
+    required this.controller,
+    required this.messages,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      controller: controller,
+      physics: const BouncingScrollPhysics(),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pagePadding,
+        AppSpacing.lg,
+        AppSpacing.pagePadding,
+        AppSpacing.xl,
+      ),
+      itemCount: messages.length + (isLoading ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == messages.length && isLoading) {
+          return const _CenteredContent(
+            maxWidth: _maxContentWidth,
+            child: _TypingIndicator(),
+          );
+        }
+
+        final message = messages[index];
+        final isUser = message.role == MessageRole.user;
+
+        return _CenteredContent(
+          maxWidth: _maxContentWidth,
+          child: _MessageRow(message: message, isUser: isUser),
+        );
+      },
+    );
+  }
+}
+
+class _MessageRow extends StatelessWidget {
   final ChatMessageEntity message;
   final bool isUser;
 
-  const _MessageBubble({required this.message, required this.isUser});
+  const _MessageRow({required this.message, required this.isUser});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: AppSpacing.md,
-        left: isUser ? AppSpacing.xl : 0,
-        right: isUser ? 0 : AppSpacing.xl,
-      ),
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Row(
         mainAxisAlignment: isUser
             ? MainAxisAlignment.end
@@ -590,105 +286,654 @@ class _MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
-            const _NamiAvatar(size: 38, iconSize: 19),
-            const SizedBox(width: AppSpacing.sm),
+            const _NamiAvatar(size: 34, iconSize: 17),
+            const SizedBox(width: AppSpacing.md),
           ],
           Flexible(
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: 1),
-              duration: AppDuration.normal,
-              curve: Curves.easeOutCubic,
-              builder: (context, value, child) {
-                return Opacity(
-                  opacity: value,
-                  child: Transform.translate(
-                    offset: Offset(0, 12 * (1 - value)),
-                    child: child,
-                  ),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.md,
-                ),
-                decoration: isUser
-                    ? AppDecoration.gradient(
-                        colors: AppGradients.primary.colors,
-                        radius: AppRadius.lg,
-                        shadows: AppShadows.sm,
-                      )
-                    : AppDecoration.container(
-                        color: AppColors.surface.withValues(alpha: 0.94),
-                        radius: AppRadius.lg,
-                        border: Border.all(
-                          color: AppColors.border.withValues(alpha: 0.46),
-                        ),
-                        shadows: AppShadows.xs,
-                      ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (!isUser) ...[
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.spa_rounded,
-                            color: AppColors.primary,
-                            size: 15,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            'Nami gửi bạn',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                    ],
-                    Text(
-                      message.content,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: isUser ? Colors.white : AppColors.textPrimary,
-                        height: 1.62,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Align(
-                      alignment: isUser
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Text(
-                        _formatTime(message.timestamp),
-                        style: AppTextStyles.caption.copyWith(
-                          color: isUser
-                              ? Colors.white.withValues(alpha: 0.72)
-                              : AppColors.textMuted,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isUser ? 620 : double.infinity,
               ),
+              child: isUser
+                  ? _UserMessageBubble(message: message)
+                  : _AssistantMessage(message: message),
             ),
           ),
-          if (isUser) ...[
-            const SizedBox(width: AppSpacing.sm),
-            const _UserAvatar(),
-          ],
         ],
       ),
     );
   }
+}
 
-  String _formatTime(DateTime time) {
+class _AssistantMessage extends StatelessWidget {
+  final ChatMessageEntity message;
+
+  const _AssistantMessage({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: AppDuration.normal,
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 8 * (1 - value)),
+            child: child,
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(top: 3),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(
+              message.content,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.72,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            _MessageTime(time: message.timestamp, isUser: false),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _UserMessageBubble extends StatelessWidget {
+  final ChatMessageEntity message;
+
+  const _UserMessageBubble({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: AppDuration.normal,
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 8 * (1 - value)),
+            child: child,
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          gradient: AppGradients.primary,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(AppRadius.lg),
+            topRight: Radius.circular(AppRadius.lg),
+            bottomLeft: Radius.circular(AppRadius.lg),
+            bottomRight: Radius.circular(AppRadius.sm),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: .16),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            SelectableText(
+              message.content,
+              textAlign: TextAlign.left,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: Colors.white,
+                height: 1.56,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            _MessageTime(time: message.timestamp, isUser: true),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MessageTime extends StatelessWidget {
+  final DateTime time;
+  final bool isUser;
+
+  const _MessageTime({required this.time, required this.isUser});
+
+  @override
+  Widget build(BuildContext context) {
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+
+    return Text(
+      '$hour:$minute',
+      style: AppTextStyles.caption.copyWith(
+        color: isUser
+            ? Colors.white.withValues(alpha: .72)
+            : AppColors.textMuted,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+  }
+}
+
+class _ChatGptEmptyState extends StatelessWidget {
+  static const double _maxContentWidth = 760;
+
+  final ValueChanged<String> onQuestionTap;
+
+  const _ChatGptEmptyState({required this.onQuestionTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pagePadding,
+          AppSpacing.xl,
+          AppSpacing.pagePadding,
+          AppSpacing.xl,
+        ),
+        child: _CenteredContent(
+          maxWidth: _maxContentWidth,
+          child: Column(
+            children: [
+              const _NamiHeroMark(),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'Hôm nay bạn muốn Nami giúp gì?',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.heading1.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.3,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Bạn có thể hỏi về bữa ăn, giấc ngủ, vận động, cảm xúc hoặc chỉ đơn giản là kể cho Nami nghe điều bạn đang bận tâm.',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.62,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              _PromptGrid(onQuestionTap: onQuestionTap),
+              const SizedBox(height: AppSpacing.lg),
+              _CareNote(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NamiHeroMark extends StatelessWidget {
+  const _NamiHeroMark();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 82,
+      height: 82,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(colors: AppGradients.ai.colors),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: .18),
+            blurRadius: 30,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        padding: const EdgeInsets.all(6),
+        child: Container(
+          decoration: AppDecoration.base(
+            gradient: AppGradients.ai,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(AppIcons.aiChat, color: Colors.white, size: 34),
+        ),
+      ),
+    );
+  }
+}
+
+class _PromptGrid extends StatelessWidget {
+  final ValueChanged<String> onQuestionTap;
+
+  const _PromptGrid({required this.onQuestionTap});
+
+  static const List<_PromptAction> _items = [
+    _PromptAction(
+      icon: Icons.bedtime_rounded,
+      title: 'Cải thiện giấc ngủ',
+      subtitle: 'Nami ơi, làm sao để mình ngủ sâu hơn?',
+    ),
+    _PromptAction(
+      icon: Icons.restaurant_rounded,
+      title: 'Gợi ý bữa ăn',
+      subtitle: 'Hôm nay mình nên ăn gì cho nhẹ bụng?',
+    ),
+    _PromptAction(
+      icon: Icons.self_improvement_rounded,
+      title: 'Giảm căng thẳng',
+      subtitle: 'Mình đang hơi căng thẳng, Nami giúp mình với.',
+    ),
+    _PromptAction(
+      icon: Icons.directions_walk_rounded,
+      title: 'Vận động nhẹ',
+      subtitle: 'Gợi ý cho mình vài bài tập nhẹ hôm nay.',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 560;
+
+        return Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: _items.map((item) {
+            final width = isNarrow
+                ? constraints.maxWidth
+                : (constraints.maxWidth - AppSpacing.sm) / 2;
+
+            return SizedBox(
+              width: width,
+              child: _PromptCard(
+                item: item,
+                onTap: () => onQuestionTap(item.subtitle),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+}
+
+class _PromptCard extends StatelessWidget {
+  final _PromptAction item;
+  final VoidCallback onTap;
+
+  const _PromptCard({required this.item, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Gợi ý: ${item.title}',
+      button: true,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          onTap: onTap,
+          child: Ink(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(
+                color: AppColors.border.withValues(alpha: .62),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: .08),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Icon(item.icon, color: AppColors.primary, size: 20),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        item.subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CareNote extends StatelessWidget {
+  const _CareNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: .055),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.favorite_rounded, color: AppColors.primary, size: 18),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Nami có thể đồng hành và gợi ý nhẹ nhàng. Với vấn đề sức khỏe nghiêm trọng, bạn vẫn nên hỏi bác sĩ nhé.',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChatComposer extends StatefulWidget {
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool isLoading;
+  final VoidCallback onSend;
+
+  const _ChatComposer({
+    required this.controller,
+    required this.focusNode,
+    required this.isLoading,
+    required this.onSend,
+  });
+
+  @override
+  State<_ChatComposer> createState() => _ChatComposerState();
+}
+
+class _ChatComposerState extends State<_ChatComposer> {
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_handleTextChanged);
+    widget.focusNode.addListener(_handleFocusChanged);
+    _hasText = widget.controller.text.trim().isNotEmpty;
+  }
+
+  @override
+  void didUpdateWidget(covariant _ChatComposer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_handleTextChanged);
+      widget.controller.addListener(_handleTextChanged);
+      _handleTextChanged();
+    }
+
+    if (oldWidget.focusNode != widget.focusNode) {
+      oldWidget.focusNode.removeListener(_handleFocusChanged);
+      widget.focusNode.addListener(_handleFocusChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_handleTextChanged);
+    widget.focusNode.removeListener(_handleFocusChanged);
+    super.dispose();
+  }
+
+  void _handleTextChanged() {
+    final next = widget.controller.text.trim().isNotEmpty;
+    if (_hasText == next) return;
+
+    setState(() => _hasText = next);
+  }
+
+  void _handleFocusChanged() {
+    setState(() {});
+  }
+
+  void _submit() {
+    if (!_hasText || widget.isLoading) return;
+    widget.onSend();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canSend = _hasText && !widget.isLoading;
+    final focused = widget.focusNode.hasFocus;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          color: AppColors.background.withValues(alpha: .92),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.pagePadding,
+            AppSpacing.sm,
+            AppSpacing.pagePadding,
+            AppSpacing.sm,
+          ),
+          child: SafeArea(
+            top: false,
+            child: _CenteredContent(
+              maxWidth: 820,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedContainer(
+                    duration: AppDuration.fast,
+                    curve: Curves.easeOutCubic,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.sm,
+                      AppSpacing.sm,
+                      AppSpacing.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                      border: Border.all(
+                        color: focused
+                            ? AppColors.primary.withValues(alpha: .38)
+                            : AppColors.border.withValues(alpha: .72),
+                        width: focused ? 1.4 : 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.textPrimary.withValues(alpha: .06),
+                          blurRadius: 22,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minHeight: 30,
+                              maxHeight: 140,
+                            ),
+                            child: TextField(
+                              controller: widget.controller,
+                              focusNode: widget.focusNode,
+                              enabled: !widget.isLoading,
+                              maxLines: null,
+                              minLines: 1,
+                              keyboardType: TextInputType.multiline,
+                              textInputAction: TextInputAction.newline,
+                              textCapitalization: TextCapitalization.sentences,
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                color: AppColors.textPrimary,
+                                height: 1.48,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Nhắn cho Nami...',
+                                hintStyle: AppTextStyles.bodyLarge.copyWith(
+                                  color: AppColors.textMuted,
+                                  height: 1.48,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        _SendButton(
+                          canSend: canSend,
+                          isLoading: widget.isLoading,
+                          onTap: _submit,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Nami có thể chưa luôn chính xác. Bạn hãy kiểm tra lại những thông tin quan trọng nhé.',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textMuted,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SendButton extends StatelessWidget {
+  final bool canSend;
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  const _SendButton({
+    required this.canSend,
+    required this.isLoading,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final background = canSend ? AppColors.primary : AppColors.border;
+    final foreground = canSend ? Colors.white : AppColors.textMuted;
+
+    return Semantics(
+      label: 'Gửi tin nhắn',
+      button: true,
+      enabled: canSend,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: canSend ? onTap : null,
+        child: AnimatedContainer(
+          duration: AppDuration.fast,
+          curve: Curves.easeOutCubic,
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: background,
+            shape: BoxShape.circle,
+            boxShadow: canSend
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: .22),
+                      blurRadius: 16,
+                      offset: const Offset(0, 7),
+                    ),
+                  ]
+                : null,
+          ),
+          child: AnimatedSwitcher(
+            duration: AppDuration.fast,
+            child: isLoading
+                ? const SizedBox(
+                    key: ValueKey('send-loading'),
+                    width: 18,
+                    height: 18,
+                    child: Center(
+                      child: SizedBox(
+                        width: 17,
+                        height: 17,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                : Icon(
+                    key: const ValueKey('send-ready'),
+                    Icons.arrow_upward_rounded,
+                    color: foreground,
+                    size: 21,
+                  ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -709,7 +954,7 @@ class _TypingIndicatorState extends State<_TypingIndicator>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1100),
     )..repeat();
   }
 
@@ -722,63 +967,38 @@ class _TypingIndicatorState extends State<_TypingIndicator>
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _NamiAvatar(size: 38, iconSize: 19),
-          const SizedBox(width: AppSpacing.sm),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.md,
-            ),
-            decoration: AppDecoration.container(
-              color: AppColors.surface.withValues(alpha: 0.94),
-              radius: AppRadius.lg,
-              border: Border.all(
-                color: AppColors.border.withValues(alpha: 0.42),
-              ),
-              shadows: AppShadows.xs,
-            ),
+          const _NamiAvatar(size: 34, iconSize: 17),
+          const SizedBox(width: AppSpacing.md),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
             child: AnimatedBuilder(
               animation: _controller,
-              builder: (context, child) {
+              builder: (context, _) {
                 return Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Nami đang đọc thật kỹ',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    ...List.generate(3, (index) {
-                      final delay = index * 0.2;
-                      final value = (_controller.value - delay).clamp(0.0, 1.0);
-                      final scale = (1 - (value - 0.5).abs() * 2).clamp(
-                        0.45,
-                        1.0,
-                      );
+                  children: List.generate(3, (index) {
+                    final phase = (_controller.value + index * .18) % 1;
+                    final scale = .55 + (.45 * (1 - (phase - .5).abs() * 2));
 
-                      return Transform.scale(
-                        scale: scale,
-                        child: Container(
-                          width: 7,
-                          height: 7,
-                          margin: const EdgeInsets.symmetric(horizontal: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(
-                              alpha: 0.35 + scale * 0.55,
-                            ),
-                            shape: BoxShape.circle,
+                    return Transform.scale(
+                      scale: scale,
+                      child: Container(
+                        width: 7,
+                        height: 7,
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(
+                            alpha: .35 + scale * .45,
                           ),
+                          shape: BoxShape.circle,
                         ),
-                      );
-                    }),
-                  ],
+                      ),
+                    );
+                  }),
                 );
               },
             ),
@@ -789,166 +1009,12 @@ class _TypingIndicatorState extends State<_TypingIndicator>
   }
 }
 
-class _SuggestedQuestions extends StatelessWidget {
-  final ValueChanged<String> onQuestionTap;
-
-  const _SuggestedQuestions({required this.onQuestionTap});
-
-  static const _questions = [
-    _NamiSuggestion(
-      icon: Icons.bedtime_rounded,
-      title: 'Giấc ngủ',
-      question: 'Nami ơi, làm sao để mình ngủ sâu hơn?',
-      subtitle: 'Nhẹ nhàng chăm lại nhịp nghỉ ngơi',
-    ),
-    _NamiSuggestion(
-      icon: Icons.restaurant_rounded,
-      title: 'Bữa ăn',
-      question: 'Bữa sáng hôm nay mình nên ăn gì?',
-      subtitle: 'Gợi ý món dễ ăn, đủ năng lượng',
-    ),
-    _NamiSuggestion(
-      icon: Icons.self_improvement_rounded,
-      title: 'Căng thẳng',
-      question: 'Mình đang hơi căng thẳng, Nami giúp mình với.',
-      subtitle: 'Một vài cách thở và thả lỏng',
-    ),
-    _NamiSuggestion(
-      icon: Icons.water_drop_rounded,
-      title: 'Uống nước',
-      question: 'Mỗi ngày mình nên uống bao nhiêu nước?',
-      subtitle: 'Nhắc nhẹ để cơ thể dễ chịu hơn',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Nami gợi ý vài điều nhỏ',
-          style: AppTextStyles.labelLarge.copyWith(
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Text(
-          'Chạm vào một câu hỏi nếu bạn chưa biết bắt đầu từ đâu.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-            height: 1.45,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Column(
-          children: _questions.map((item) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: _SuggestionCard(
-                item: item,
-                onTap: () => onQuestionTap(item.question),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-}
-
-class _SuggestionCard extends StatelessWidget {
-  final _NamiSuggestion item;
-  final VoidCallback onTap;
-
-  const _SuggestionCard({required this.item, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        onTap: onTap,
-        child: Ink(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: AppDecoration.container(
-            color: AppColors.surface.withValues(alpha: 0.9),
-            radius: AppRadius.lg,
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.12),
-            ),
-            shadows: AppShadows.xs,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: AppDecoration.container(
-                  color: AppColors.primary.withValues(alpha: 0.09),
-                  radius: AppRadius.circular,
-                ),
-                child: Icon(item.icon, color: AppColors.primary, size: 22),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      item.subtitle,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: AppColors.textMuted,
-                size: 16,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NamiSuggestion {
-  final IconData icon;
-  final String title;
-  final String question;
-  final String subtitle;
-
-  const _NamiSuggestion({
-    required this.icon,
-    required this.title,
-    required this.question,
-    required this.subtitle,
-  });
-}
-
-class _GlassIconButton extends StatelessWidget {
+class _MinimalIconButton extends StatelessWidget {
   final IconData icon;
   final String semanticLabel;
   final VoidCallback onTap;
 
-  const _GlassIconButton({
+  const _MinimalIconButton({
     required this.icon,
     required this.semanticLabel,
     required this.onTap,
@@ -959,17 +1025,13 @@ class _GlassIconButton extends StatelessWidget {
     return Semantics(
       label: semanticLabel,
       button: true,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 42,
-          height: 42,
-          decoration: AppDecoration.glass(
-            opacity: 0.9,
-            radius: AppRadius.circular,
-          ),
-          child: Icon(icon, color: AppColors.primary, size: 22),
-        ),
+      child: IconButton(
+        onPressed: onTap,
+        icon: Icon(icon),
+        color: AppColors.textPrimary,
+        iconSize: 23,
+        splashRadius: 24,
+        tooltip: semanticLabel,
       ),
     );
   }
@@ -990,15 +1052,14 @@ class _NamiAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(colors: AppGradients.ai.colors),
-        boxShadow: AppShadows.xs,
       ),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
         ),
+        padding: const EdgeInsets.all(3),
         child: Container(
-          margin: const EdgeInsets.all(3),
           decoration: AppDecoration.base(
             gradient: AppGradients.ai,
             shape: BoxShape.circle,
@@ -1010,153 +1071,32 @@ class _NamiAvatar extends StatelessWidget {
   }
 }
 
-class _UserAvatar extends StatelessWidget {
-  const _UserAvatar();
+class _CenteredContent extends StatelessWidget {
+  final double maxWidth;
+  final Widget child;
+
+  const _CenteredContent({required this.maxWidth, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: AppDecoration.base(
-        gradient: AppGradients.primary,
-        shape: BoxShape.circle,
-        shadows: AppShadows.xs,
-      ),
-      child: const Icon(AppIcons.profile, color: Colors.white, size: 19),
-    );
-  }
-}
-
-class _AnimatedBackground extends StatelessWidget {
-  final AnimationController backgroundController;
-  final AnimationController pulseController;
-
-  const _AnimatedBackground({
-    required this.backgroundController,
-    required this.pulseController,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([backgroundController, pulseController]),
-      builder: (context, child) {
-        final pulse = pulseController.value;
-
-        return Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.background,
-                    AppColors.primary.withValues(alpha: 0.08),
-                    AppColors.secondary.withValues(alpha: 0.06),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              top: -120 + (pulse * 12),
-              right: -90,
-              child: _SoftOrb(
-                size: 260,
-                color: AppColors.primary,
-                opacity: 0.12 + pulse * 0.05,
-              ),
-            ),
-            Positioned(
-              top: 210,
-              left: -120 + (pulse * 10),
-              child: _SoftOrb(
-                size: 220,
-                color: AppColors.secondary,
-                opacity: 0.1,
-              ),
-            ),
-            Positioned(
-              bottom: -130,
-              right: -80 + (pulse * 10),
-              child: _SoftOrb(
-                size: 250,
-                color: AppColors.primary,
-                opacity: 0.08,
-              ),
-            ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _CalmGridPainter(
-                    progress: backgroundController.value,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _SoftOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-  final double opacity;
-
-  const _SoftOrb({
-    required this.size,
-    required this.color,
-    required this.opacity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color.withValues(alpha: opacity),
-            color.withValues(alpha: opacity * 0.35),
-            Colors.transparent,
-          ],
-        ),
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: child,
       ),
     );
   }
 }
 
-class _CalmGridPainter extends CustomPainter {
-  final double progress;
+class _PromptAction {
+  final IconData icon;
+  final String title;
+  final String subtitle;
 
-  const _CalmGridPainter({required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.025)
-      ..strokeWidth = 1;
-
-    const gap = 34.0;
-    final offset = progress * gap;
-
-    for (double x = -gap + offset; x < size.width + gap; x += gap) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-
-    for (double y = -gap + offset; y < size.height + gap; y += gap) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _CalmGridPainter oldDelegate) {
-    return oldDelegate.progress != progress;
-  }
+  const _PromptAction({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
 }

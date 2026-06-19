@@ -14,13 +14,15 @@ import '../models/daily_health_task_model.dart';
 class DailyHealthTrackingLocalDatasource {
   static const _tag = 'DAILY_TRACKING_DS';
 
+  final Database? databaseOverride;
   final DailyHealthTaskGenerator taskGenerator;
 
   const DailyHealthTrackingLocalDatasource({
+    this.databaseOverride,
     this.taskGenerator = const DailyHealthTaskGenerator(),
   });
 
-  Future<Database> _db() async => DatabaseService.database;
+  Future<Database> _db() async => databaseOverride ?? DatabaseService.database;
 
   Future<DailyHealthProfileEntity> fetchLatestProfile() async {
     final db = await _db();
@@ -114,6 +116,52 @@ class DailyHealthTrackingLocalDatasource {
       AppLogger.error(_tag, 'Failed to update daily task', e, st);
       rethrow;
     }
+  }
+
+  Future<DailyHealthTaskEntity> completeTaskById(String id) async {
+    AppLogger.database(_tag, 'Complete daily task by id');
+
+    try {
+      final db = await _db();
+      final task = await DailyHealthTasksDao(db).getById(id);
+      if (task == null) {
+        throw StateError('Daily health task not found');
+      }
+
+      return updateTask(
+        task.toEntity().copyWith(
+          currentValue: task.targetValue,
+          isCompleted: true,
+        ),
+      );
+    } catch (e, st) {
+      AppLogger.error(_tag, 'Failed to complete daily task', e, st);
+      rethrow;
+    }
+  }
+
+  Future<void> saveTodayMood(String mood) async {
+    AppLogger.database(_tag, 'Save today mood');
+    await _updateTodayHealthLog((current, now) {
+      return current.copyWith(mood: mood, updatedAt: now);
+    });
+  }
+
+  Future<void> addTodayWater(int amountMl) async {
+    AppLogger.database(_tag, 'Add today water');
+    await _updateWater((currentWater) => currentWater + amountMl);
+  }
+
+  Future<void> setTodayWater(int waterMl) async {
+    AppLogger.database(_tag, 'Set today water');
+    await _updateWater((_) => waterMl);
+  }
+
+  Future<void> saveTodayWeight(double weightKg) async {
+    AppLogger.database(_tag, 'Save today weight');
+    await _updateTodayHealthLog((current, now) {
+      return current.copyWith(weightKg: weightKg, updatedAt: now);
+    });
   }
 
   Future<DailyHealthProfileEntity> _fetchLatestProfile(Database db) async {
@@ -211,6 +259,80 @@ class DailyHealthTrackingLocalDatasource {
     );
 
     await dao.upsertByUserAndDate(next);
+  }
+
+  Future<void> _updateWater(int Function(int currentWater) resolveWater) async {
+    await _updateTodayHealthLog(
+      (current, now) {
+        final nextWater = resolveWater(current.waterMl).clamp(0, 10000).toInt();
+        return current.copyWith(waterMl: nextWater, updatedAt: now);
+      },
+      afterSave: (db, log) async {
+        await _syncWaterTask(db: db, log: log);
+      },
+    );
+  }
+
+  Future<void> _syncWaterTask({
+    required Database db,
+    required HealthTrackingLogModel log,
+  }) async {
+    final userId = log.userId;
+    if (userId == null || userId.isEmpty) return;
+
+    final dao = DailyHealthTasksDao(db);
+    final tasks = await dao.getByUserAndDate(
+      userId: userId,
+      taskDate: log.logDate,
+    );
+    final waterTasks = tasks
+        .where((task) => task.category == 'water')
+        .toList(growable: false);
+    if (waterTasks.isEmpty) return;
+
+    final task = waterTasks.firstWhere(
+      (item) => item.taskCode == 'water_daily',
+      orElse: () => waterTasks.reduce(
+        (current, next) =>
+            current.targetValue >= next.targetValue ? current : next,
+      ),
+    );
+    final nextValue = log.waterMl.clamp(0, task.targetValue).toDouble();
+    await dao.updateTask(
+      task.copyWith(
+        currentValue: nextValue,
+        isCompleted: nextValue >= task.targetValue,
+        updatedAt: log.updatedAt,
+      ),
+    );
+  }
+
+  Future<void> _updateTodayHealthLog(
+    HealthTrackingLogModel Function(HealthTrackingLogModel current, String now)
+    update, {
+    Future<void> Function(Database db, HealthTrackingLogModel log)? afterSave,
+  }) async {
+    final db = await _db();
+    final profile = await _fetchLatestProfile(db);
+    final date = _dateKey(DateTime.now());
+    final dao = HealthTrackingLogsDao(db);
+    final existing = await dao.getByUserAndDate(
+      userId: profile.userId,
+      logDate: date,
+    );
+    final now = DateTime.now().toIso8601String();
+    final current =
+        existing ??
+        HealthTrackingLogModel(
+          id: 'health_log_${profile.userId}_$date',
+          userId: profile.userId,
+          logDate: date,
+          createdAt: now,
+          updatedAt: now,
+        );
+    final next = update(current, now);
+    await dao.upsertByUserAndDate(next);
+    await afterSave?.call(db, next);
   }
 
   List<String> _readHabits(Map<String, Object?> row) {

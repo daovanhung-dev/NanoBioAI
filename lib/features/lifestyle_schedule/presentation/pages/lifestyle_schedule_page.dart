@@ -1370,10 +1370,7 @@ class _ScheduleErrorState extends StatelessWidget {
         child: AppCard(
           variant: CardVariant.elevated,
           padding: const EdgeInsets.all(AppSpacingTokens.cardPadding),
-          child: ErrorState(
-            message: message,
-            onRetry: onRetry,
-          ),
+          child: ErrorState(message: message, onRetry: onRetry),
         ),
       ),
     );
