@@ -89,8 +89,10 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         catalogLoader ?? const AiCatalogLocalDatasource().loadActiveBundle;
 
     final apiKey =
-        apiKeyOverride ??
-        (_textGenerator == null ? dotenv.env['GEMINI_API_KEY'] : null);
+        _cleanEnv(apiKeyOverride) ??
+        (_textGenerator == null
+            ? _cleanEnv(dotenv.env['GEMINI_API_KEY'])
+            : null);
     if (_textGenerator == null && (apiKey == null || apiKey.isEmpty)) {
       throw Exception('Không tìm thấy GEMINI_API_KEY');
     }
@@ -108,7 +110,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
                 )
               : null,
           overflowModelsCsv: _textGenerator == null
-              ? dotenv.env['GEMINI_PLAN_OVERFLOW_MODELS']
+              ? _cleanEnv(dotenv.env['GEMINI_PLAN_OVERFLOW_MODELS'])
               : null,
         );
     AITraceLogger.info(
@@ -1069,10 +1071,19 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
   }
 
   static String? _envWithLegacy(String key, String legacyKey) {
-    if (dotenv.env.containsKey(key)) {
-      return dotenv.env[key];
+    final value = dotenv.env.containsKey(key)
+        ? dotenv.env[key]
+        : dotenv.env[legacyKey];
+
+    return _cleanEnv(value);
+  }
+
+  static String? _cleanEnv(String? value) {
+    final cleaned = value?.trim();
+    if (cleaned == null || cleaned.isEmpty) {
+      return null;
     }
-    return dotenv.env[legacyKey];
+    return cleaned;
   }
 }
 
