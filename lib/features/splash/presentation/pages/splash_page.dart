@@ -12,8 +12,9 @@ import '../../providers/splash_provider.dart';
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({
     super.key,
-    this.title = 'BioAI',
-    this.subtitle = 'Mình đang chuẩn bị mọi thứ để chăm sóc bạn tốt hơn.',
+    this.title = 'Nami',
+    this.subtitle =
+        'Mình ở đây rồi. Hãy để Nami chuẩn bị một không gian thật dịu dàng để chăm sóc bạn hôm nay.',
   });
 
   final String title;
@@ -101,7 +102,10 @@ class _SplashPageState extends ConsumerState<SplashPage>
                     gradient: RadialGradient(
                       radius: 1.2,
                       center: Alignment.center,
-                      colors: [Color(0x1206B6D4), Colors.transparent],
+                      colors: [
+                        Color(0x1606B6D4),
+                        Colors.transparent,
+                      ],
                     ),
                   ),
                 ),
@@ -165,7 +169,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
-                        'MÌNH ĐÃ SẴN SÀNG',
+                        'NAMI ĐANG Ở ĐÂY',
                         style: AppTextStyles.overline.copyWith(
                           color: AppColors.textSecondary,
                           letterSpacing: 1.2,
@@ -179,26 +183,42 @@ class _SplashPageState extends ConsumerState<SplashPage>
           ),
 
           SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.pagePaddingLarge,
-                ),
-                child: AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) {
-                    final value = 0.96 + (_pulseController.value * 0.04);
-
-                    return Transform.scale(scale: value, child: child);
-                  },
-                  child: _MainSplashCard(
-                    title: widget.title,
-                    subtitle: widget.subtitle,
-                    pulseController: _pulseController,
-                    floatingController: _floatingController,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.pagePaddingLarge,
+                    92,
+                    AppSpacing.pagePaddingLarge,
+                    126,
                   ),
-                ),
-              ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: math.max(0, constraints.maxHeight - 218),
+                    ),
+                    child: Center(
+                      child: AnimatedBuilder(
+                        animation: _pulseController,
+                        builder: (context, child) {
+                          final value = 0.96 + (_pulseController.value * 0.04);
+
+                          return Transform.scale(
+                            scale: value,
+                            child: child,
+                          );
+                        },
+                        child: _MainSplashCard(
+                          title: widget.title,
+                          subtitle: widget.subtitle,
+                          pulseController: _pulseController,
+                          floatingController: _floatingController,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
 
@@ -211,11 +231,12 @@ class _SplashPageState extends ConsumerState<SplashPage>
                 const _ProgressLoader(),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Chờ mình một chút nhé, hành trình của bạn sắp bắt đầu.',
+                  'Nami đang sắp xếp mọi thứ thật gọn gàng cho bạn. Chỉ một chút nữa thôi nhé.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textMuted,
                     letterSpacing: 0.3,
+                    height: 1.45,
                   ),
                 ),
               ],
@@ -309,10 +330,10 @@ class _MainSplashCard extends StatelessWidget {
                   radius: AppRadius.circular,
                 ),
                 child: Text(
-                  'TRỢ LÝ SỨC KHỎE CỦA BẠN',
+                  'NAMI · NGƯỜI ĐỒNG HÀNH CỦA BẠN',
                   style: AppTextStyles.overline.copyWith(
                     color: AppColors.primaryDark,
-                    letterSpacing: 1.5,
+                    letterSpacing: 1.45,
                   ),
                 ),
               ),
@@ -345,6 +366,10 @@ class _MainSplashCard extends StatelessWidget {
                 ),
               ),
 
+              const SizedBox(height: AppSpacing.lg),
+
+              const _CareMessage(),
+
               const SizedBox(height: AppSpacing.xl),
 
               Row(
@@ -352,8 +377,8 @@ class _MainSplashCard extends StatelessWidget {
                   Expanded(
                     child: _FeatureCard(
                       icon: AppIcons.health,
-                      title: 'Sức khỏe',
-                      subtitle: 'Mình cùng theo dõi',
+                      title: 'Nhịp khỏe',
+                      subtitle: 'Nami lắng nghe thật nhẹ',
                       gradient: AppGradients.health,
                     ),
                   ),
@@ -362,7 +387,7 @@ class _MainSplashCard extends StatelessWidget {
                     child: _FeatureCard(
                       icon: AppIcons.ai,
                       title: 'Gợi ý riêng',
-                      subtitle: 'Hiểu điều bạn cần',
+                      subtitle: 'Vừa với cơ thể bạn',
                       gradient: AppGradients.ai,
                     ),
                   ),
@@ -377,7 +402,7 @@ class _MainSplashCard extends StatelessWidget {
                     child: _FeatureCard(
                       icon: AppIcons.sleep,
                       title: 'Giấc ngủ',
-                      subtitle: 'Cùng ngủ ngon hơn',
+                      subtitle: 'Cùng bạn nghỉ sâu hơn',
                       gradient: AppGradients.sleep,
                     ),
                   ),
@@ -385,8 +410,8 @@ class _MainSplashCard extends StatelessWidget {
                   Expanded(
                     child: _FeatureCard(
                       icon: AppIcons.nutrition,
-                      title: 'Dinh dưỡng',
-                      subtitle: 'Ăn ngon và phù hợp',
+                      title: 'Bữa ăn',
+                      subtitle: 'Ấm bụng, hợp cơ thể',
                       gradient: AppGradients.energy,
                     ),
                   ),
@@ -399,6 +424,49 @@ class _MainSplashCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CareMessage extends StatelessWidget {
+  const _CareMessage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: AppDecoration.glass(
+        opacity: 0.12,
+        radius: AppRadius.xl,
+        borderColor: Colors.white.withOpacity(0.14),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: AppDecoration.circle(
+              gradient: AppGradients.primary,
+              shadows: AppShadows.sm,
+            ),
+            child: const Icon(
+              Icons.spa_rounded,
+              color: Colors.white,
+              size: 21,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              'Hôm nay mình sẽ đi chậm cùng bạn: từng bữa ăn, từng giấc ngủ, từng thói quen nhỏ đều sẽ được chăm chút.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.55,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -442,7 +510,9 @@ class _AnimatedLogo extends StatelessWidget {
                     height: 108,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.12)),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.12),
+                      ),
                     ),
                   ),
                   Container(
@@ -513,7 +583,10 @@ class _FeatureCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             subtitle,
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textMuted,
+              height: 1.35,
+            ),
           ),
         ],
       ),
@@ -586,7 +659,9 @@ class _ProgressLoader extends StatelessWidget {
             child: FractionallySizedBox(
               widthFactor: value,
               child: Container(
-                decoration: const BoxDecoration(gradient: AppGradients.hero),
+                decoration: const BoxDecoration(
+                  gradient: AppGradients.hero,
+                ),
               ),
             ),
           );
@@ -630,7 +705,10 @@ class _AnimatedOrb extends StatelessWidget {
         child: Container(
           width: size,
           height: size,
-          decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: gradient,
+          ),
         ),
       ),
     );

@@ -10,6 +10,7 @@ import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
 import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
+import 'package:nano_app/services/ai/ai_chat_service.dart';
 import 'package:nano_app/services/ai/ai_exceptions.dart';
 import 'package:nano_app/services/ai/ai_json_parser.dart';
 import 'package:nano_app/services/ai/ai_json_prompt_builder.dart';
@@ -320,21 +321,132 @@ void main() {
     });
   });
 
+  group('AIChatService', () {
+    test('uses cheap default chat model and returns valid AI text', () async {
+      final modelCalls = <String>[];
+      final service = AIChatService(
+        textGenerator: ({required modelName, required message}) async {
+          modelCalls.add(modelName);
+          return 'Mình sẽ giúp bạn bắt đầu nhẹ nhàng. Bạn thử uống thêm nước và nghỉ vài phút nhé.';
+        },
+      );
+
+      final result = await service.sendMessage('Tôi hơi mệt');
+
+      expect(result, contains('Mình sẽ giúp'));
+      expect(modelCalls, ['gemini-3.1-flash-lite']);
+    });
+
+    test('fails over to the next cheap model after transient errors', () async {
+      final modelCalls = <String>[];
+      final delays = <Duration>[];
+      final service = AIChatService(
+        modelNames: const ['primary-model', 'fallback-model'],
+        random: Random(0),
+        delay: (duration) async {
+          delays.add(duration);
+        },
+        textGenerator: ({required modelName, required message}) async {
+          modelCalls.add(modelName);
+          if (modelName == 'primary-model') {
+            throw TimeoutException('temporary overload');
+          }
+          return 'Mình gợi ý bạn nghỉ một chút, uống nước và theo dõi cơ thể nhé.';
+        },
+      );
+
+      final result = await service.sendMessage('Tôi căng thẳng');
+
+      expect(result, contains('Mình gợi ý'));
+      expect(modelCalls, ['primary-model', 'fallback-model']);
+      expect(delays, hasLength(1));
+    });
+
+    test('returns local fallback when all transient attempts fail', () async {
+      final modelCalls = <String>[];
+      final service = AIChatService(
+        modelNames: const ['primary-model', 'fallback-model'],
+        delay: (_) async {},
+        textGenerator: ({required modelName, required message}) async {
+          modelCalls.add(modelName);
+          throw TimeoutException('temporary overload');
+        },
+      );
+
+      final result = await service.sendMessage('Tôi cần tư vấn');
+
+      expect(modelCalls, ['primary-model', 'fallback-model']);
+      expect(result, contains('Mình chưa thể phản hồi bằng AI'));
+    });
+
+    test(
+      'retries another model after empty or invalid Vietnamese response',
+      () async {
+        final modelCalls = <String>[];
+        final service = AIChatService(
+          modelNames: const ['empty-model', 'invalid-model', 'valid-model'],
+          textGenerator: ({required modelName, required message}) async {
+            modelCalls.add(modelName);
+            if (modelName == 'empty-model') return '';
+            if (modelName == 'invalid-model') {
+              return 'You should drink more water and sleep earlier.';
+            }
+            return 'Mình nghĩ bạn nên uống thêm nước và ngủ sớm hơn một chút nhé.';
+          },
+        );
+
+        final result = await service.sendMessage('Nên làm gì hôm nay?');
+
+        expect(result, contains('Mình nghĩ'));
+        expect(modelCalls, ['empty-model', 'invalid-model', 'valid-model']);
+      },
+    );
+
+    test('missing API key does not crash and returns local fallback', () async {
+      final service = AIChatService(
+        apiKeyOverride: '',
+        modelNames: const ['fake-model'],
+      );
+
+      final result = await service.sendMessage('Xin chào');
+
+      expect(result, contains('Mình chưa thể phản hồi bằng AI'));
+    });
+
+    test(
+      'sendMessageStream uses the same retry and fallback behavior',
+      () async {
+        final modelCalls = <String>[];
+        final service = AIChatService(
+          modelNames: const ['primary-model', 'fallback-model'],
+          delay: (_) async {},
+          textGenerator: ({required modelName, required message}) async {
+            modelCalls.add(modelName);
+            if (modelName == 'primary-model') {
+              throw TimeoutException('temporary overload');
+            }
+            return 'Mình đang ở đây để hỗ trợ bạn từng bước nhỏ nhé.';
+          },
+        );
+
+        final stream = await service.sendMessageStream('Tôi cần hỗ trợ');
+        final result = await stream.join();
+
+        expect(result, contains('Mình đang ở đây'));
+        expect(modelCalls, ['primary-model', 'fallback-model']);
+      },
+    );
+  });
+
   group('AIService chunked generation', () {
-    test('meal generation splits seven days into 2-2-3 chunks', () async {
+    test('meal generation requests seven days in one chunk', () async {
       final prompts = <String>[];
-      var call = 0;
       final service = AIService(
         modelNames: const ['fake-model'],
         catalogLoader: () async => catalog,
         textGenerator: ({required modelName, required prompt}) async {
           prompts.add(prompt);
-          final chunks = [
-            _mealItemsForRange(startDay: 1, days: 2),
-            _mealItemsForRange(startDay: 3, days: 2),
-            _mealItemsForRange(startDay: 5, days: 3),
-          ];
-          return jsonEncode(chunks[call++]);
+          return jsonEncode(_mealItemsForRange(startDay: 1, days: 7));
         },
       );
 
@@ -345,11 +457,9 @@ void main() {
       );
 
       expect(meals, hasLength(35));
-      expect(prompts, hasLength(3));
-      expect(prompts[0], contains('ngày 1 đến ngày 2'));
-      expect(prompts[1], contains('ngày 3 đến ngày 4'));
-      expect(prompts[2], contains('ngày 5 đến ngày 7'));
-      expect(prompts[1], contains('br_oat_egg'));
+      expect(prompts, hasLength(1));
+      expect(prompts.single, contains('ngày 1 đến ngày 7'));
+      expect(prompts.single, contains('br_oat_egg'));
     });
 
     test(
@@ -396,13 +506,13 @@ void main() {
           call++;
           if (call == 2) {
             return jsonEncode([
-              {'day': 3, 'meal_type': 'breakfast', 'meal_code': 'unknown_meal'},
+              {'day': 8, 'meal_type': 'breakfast', 'meal_code': 'unknown_meal'},
             ]);
           }
           return jsonEncode(
             call == 1
-                ? _mealItemsForRange(startDay: 1, days: 2)
-                : _mealItemsForRange(startDay: 5, days: 3),
+                ? _mealItemsForRange(startDay: 1, days: 7)
+                : _mealItemsForRange(startDay: 8, days: 1),
           );
         },
       );
@@ -411,11 +521,12 @@ void main() {
         healthData: const _FakeHealthData(),
         userId: 'u1',
         startDate: DateTime(2026, 6, 18),
+        days: 8,
       );
 
-      expect(meals, hasLength(35));
+      expect(meals, hasLength(40));
       expect(
-        meals.where((meal) => meal.planDate == '2026-06-20'),
+        meals.where((meal) => meal.planDate == '2026-06-25'),
         hasLength(MealPlanAiNormalizer.mealsPerDay),
       );
       expect(meals.map((meal) => meal.mealName), isNot(contains('Bua sang')));
@@ -453,19 +564,19 @@ void main() {
       },
     );
 
-    test('transient retry logs attempts, transient flag, and delay', () async {
-      var call = 0;
+    test('transient errors fail over to the next model', () async {
+      final modelCalls = <String>[];
       final delays = <Duration>[];
       final service = AIService(
-        modelNames: const ['fake-model'],
+        modelNames: const ['primary-model', 'fallback-model'],
         catalogLoader: () async => catalog,
         random: Random(0),
         delay: (duration) async {
           delays.add(duration);
         },
         textGenerator: ({required modelName, required prompt}) async {
-          call++;
-          if (call == 1) {
+          modelCalls.add(modelName);
+          if (modelName == 'primary-model') {
             throw TimeoutException('temporary overload');
           }
           return jsonEncode(_mealItemsForRange(startDay: 1, days: 1));
@@ -483,7 +594,7 @@ void main() {
       });
       final joined = logs.join('\n');
 
-      expect(call, 2);
+      expect(modelCalls, ['primary-model', 'fallback-model']);
       expect(delays, hasLength(1));
       expect(joined, contains('RETRY_ATTEMPT_FAILED'));
       expect(joined, contains('"modelAttempt": 1'));
@@ -493,20 +604,77 @@ void main() {
       expect(joined, contains('delayMs'));
     });
 
+    test('models in cooldown are skipped on later chunks', () async {
+      final now = DateTime(2026, 6, 18, 8);
+      final modelCalls = <String>[];
+      final service = AIService(
+        modelNames: const ['primary-model', 'fallback-model'],
+        catalogLoader: () async => catalog,
+        now: () => now,
+        modelCooldown: const Duration(minutes: 3),
+        delay: (_) async {},
+        textGenerator: ({required modelName, required prompt}) async {
+          modelCalls.add(modelName);
+          if (modelName == 'primary-model') {
+            throw TimeoutException('temporary overload');
+          }
+          return jsonEncode(
+            modelCalls.length == 2
+                ? _mealItemsForRange(startDay: 1, days: 7)
+                : _mealItemsForRange(startDay: 8, days: 1),
+          );
+        },
+      );
+
+      final logs = await _captureDebugPrint(() async {
+        final meals = await service.generateMealPlan(
+          healthData: const _FakeHealthData(),
+          userId: 'u1',
+          startDate: DateTime(2026, 6, 18),
+          days: 8,
+        );
+        expect(meals, hasLength(40));
+      });
+
+      expect(modelCalls, ['primary-model', 'fallback-model', 'fallback-model']);
+      expect(logs.join('\n'), contains('MODEL_COOLDOWN_SKIP'));
+    });
+
+    test('all transient model failures use local fallback', () async {
+      final modelCalls = <String>[];
+      final service = AIService(
+        modelNames: const ['primary-model', 'fallback-model'],
+        catalogLoader: () async => catalog,
+        delay: (_) async {},
+        textGenerator: ({required modelName, required prompt}) async {
+          modelCalls.add(modelName);
+          throw TimeoutException('temporary overload');
+        },
+      );
+
+      final logs = await _captureDebugPrint(() async {
+        final meals = await service.generateMealPlan(
+          healthData: const _FakeHealthData(),
+          userId: 'u1',
+          startDate: DateTime(2026, 6, 18),
+          days: 1,
+        );
+        expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
+      });
+
+      expect(modelCalls, ['primary-model', 'fallback-model']);
+      expect(logs.join('\n'), contains('MEAL_CHUNK_LOCAL_FALLBACK'));
+      expect(logs.join('\n'), contains(AITraceLogger.localGen));
+    });
+
     test('exercise generation returns fourteen catalog-mapped tasks', () async {
       final prompts = <String>[];
-      var call = 0;
       final service = AIService(
         modelNames: const ['fake-model'],
         catalogLoader: () async => catalog,
         textGenerator: ({required modelName, required prompt}) async {
           prompts.add(prompt);
-          final chunks = [
-            _exerciseItemsForRange(startDay: 1, days: 2),
-            _exerciseItemsForRange(startDay: 3, days: 2),
-            _exerciseItemsForRange(startDay: 5, days: 3),
-          ];
-          return jsonEncode(chunks[call++]);
+          return jsonEncode(_exerciseItemsForRange(startDay: 1, days: 7));
         },
       );
 
@@ -525,7 +693,7 @@ void main() {
       );
 
       expect(exercises, hasLength(14));
-      expect(prompts, hasLength(3));
+      expect(prompts, hasLength(1));
       expect(exercises.first.title, 'Đi bộ thư giãn');
       expect(exercises.first.unit, 'lần');
     });
@@ -540,24 +708,34 @@ void main() {
             primaryModel: null,
             fallbackModelsCsv: null,
           ),
-          ['gemini-2.5-flash-lite', 'gemini-2.5-flash'],
+          [
+            'gemini-3.1-flash-lite',
+            'gemini-3.5-flash',
+            'gemini-2.5-flash-lite',
+            'gemini-2.5-flash',
+          ],
         );
       },
     );
 
-    test(
-      'prioritizes primary model, parses fallback csv, and de-duplicates',
-      () {
-        expect(
-          AIModelCandidates.resolve(
-            primaryModel: ' gemini-custom ',
-            fallbackModelsCsv:
-                'gemini-2.5-flash, gemini-custom, gemini-2.0-flash, ',
-          ),
-          ['gemini-custom', 'gemini-2.5-flash', 'gemini-2.0-flash'],
-        );
-      },
-    );
+    test('prioritizes primary, fallback, overflow, and de-duplicates', () {
+      expect(
+        AIModelCandidates.resolve(
+          primaryModel: ' gemini-custom ',
+          fallbackModelsCsv:
+              'gemini-3.5-flash, gemini-custom, gemini-2.5-flash, ',
+          overflowModelsCsv:
+              'gemini-3-flash-preview, gemini-2.5-flash, gemini-2.5-pro',
+        ),
+        [
+          'gemini-custom',
+          'gemini-3.5-flash',
+          'gemini-2.5-flash',
+          'gemini-3-flash-preview',
+          'gemini-2.5-pro',
+        ],
+      );
+    });
 
     test('uses default fallback when fallback csv is blank', () {
       expect(
@@ -565,7 +743,12 @@ void main() {
           primaryModel: 'gemini-custom',
           fallbackModelsCsv: ' , ',
         ),
-        ['gemini-custom', 'gemini-2.5-flash'],
+        [
+          'gemini-custom',
+          'gemini-3.5-flash',
+          'gemini-2.5-flash-lite',
+          'gemini-2.5-flash',
+        ],
       );
     });
   });
@@ -594,26 +777,26 @@ void main() {
       );
     });
 
-    test('uses capped exponential-ish base delays', () {
+    test('uses short capped base delays', () {
       expect(
         AIRetryPolicy.baseDelayForFailureNumber(1),
-        const Duration(seconds: 2),
+        const Duration(seconds: 1),
       );
       expect(
         AIRetryPolicy.baseDelayForFailureNumber(2),
-        const Duration(seconds: 5),
+        const Duration(seconds: 3),
       );
       expect(
         AIRetryPolicy.baseDelayForFailureNumber(3),
-        const Duration(seconds: 10),
+        const Duration(seconds: 3),
       );
       expect(
         AIRetryPolicy.baseDelayForFailureNumber(4),
-        const Duration(seconds: 20),
+        const Duration(seconds: 3),
       );
       expect(
         AIRetryPolicy.baseDelayForFailureNumber(99),
-        const Duration(seconds: 20),
+        const Duration(seconds: 3),
       );
     });
   });

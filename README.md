@@ -229,6 +229,9 @@ SUPABASE_ANON_KEY=your-supabase-anon-key
 
 # Google Gemini AI (Get from: https://makersuite.google.com/app/apikey)
 GEMINI_API_KEY=your-gemini-api-key
+GEMINI_PLAN_MODEL=gemini-3.1-flash-lite
+GEMINI_PLAN_FALLBACK_MODELS=gemini-3.5-flash,gemini-2.5-flash-lite,gemini-2.5-flash
+GEMINI_PLAN_OVERFLOW_MODELS=
 ```
 
 ### **4. Run the App**

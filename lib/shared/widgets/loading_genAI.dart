@@ -37,27 +37,26 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
   Timer? _dotTimer;
   Timer? _messageTimer;
 
-  // Các tin nhắn tuần tự – viết theo giọng "tôi" để cảm giác trợ lý thật sự
   final List<_ThoughtEntry> _thoughts = const [
     _ThoughtEntry(
-      icon: Icons.search_rounded,
-      text: 'Tôi đang đọc kỹ yêu cầu của bạn...',
+      icon: Icons.favorite_rounded,
+      text: 'Tôi đang lắng nghe thật kỹ điều bạn cần...',
     ),
     _ThoughtEntry(
-      icon: Icons.hub_rounded,
-      text: 'Đang kết nối các thông tin liên quan...',
+      icon: Icons.spa_rounded,
+      text: 'Tôi đang gom những chi tiết quan trọng để chăm chút cho bạn...',
     ),
     _ThoughtEntry(
-      icon: Icons.edit_note_rounded,
-      text: 'Đang lên kế hoạch câu trả lời phù hợp...',
+      icon: Icons.auto_awesome_rounded,
+      text: 'Tôi đang sắp xếp câu trả lời sao cho dễ hiểu và nhẹ nhàng nhất...',
     ),
     _ThoughtEntry(
       icon: Icons.fact_check_rounded,
-      text: 'Đang kiểm tra lại một lần cuối...',
+      text: 'Tôi kiểm tra thêm một lượt để bạn có thể yên tâm hơn...',
     ),
     _ThoughtEntry(
       icon: Icons.volunteer_activism_rounded,
-      text: 'Gần xong rồi! Cảm ơn bạn đã kiên nhẫn.',
+      text: 'Sắp xong rồi, cảm ơn bạn đã chờ tôi thêm một chút nhé.',
     ),
   ];
 
@@ -65,7 +64,6 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
   void initState() {
     super.initState();
 
-    // ── Breathing (2.4 s, reverse) ───────────────────────────────
     _breatheCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
@@ -76,7 +74,6 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       end: 1.07,
     ).animate(CurvedAnimation(parent: _breatheCtrl, curve: Curves.easeInOut));
 
-    // ── Ripple 1 ─────────────────────────────────────────────────
     _rippleCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
@@ -86,16 +83,17 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       begin: 1.0,
       end: 2.2,
     ).animate(CurvedAnimation(parent: _rippleCtrl, curve: Curves.easeOut));
+
     _rippleOpacity = Tween<double>(
       begin: 0.45,
       end: 0.0,
     ).animate(CurvedAnimation(parent: _rippleCtrl, curve: Curves.easeOut));
 
-    // ── Ripple 2 (offset 1.1 s) ──────────────────────────────────
     _ripple2Ctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     );
+
     Future.delayed(const Duration(milliseconds: 1100), () {
       if (mounted) _ripple2Ctrl.repeat();
     });
@@ -104,17 +102,16 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       begin: 1.0,
       end: 2.2,
     ).animate(CurvedAnimation(parent: _ripple2Ctrl, curve: Curves.easeOut));
+
     _ripple2Opacity = Tween<double>(
       begin: 0.30,
       end: 0.0,
     ).animate(CurvedAnimation(parent: _ripple2Ctrl, curve: Curves.easeOut));
 
-    // ── Dots (sequential, 420 ms) ─────────────────────────────────
     _dotTimer = Timer.periodic(const Duration(milliseconds: 420), (_) {
       if (mounted) setState(() => _dotPhase = (_dotPhase + 1) % 4);
     });
 
-    // ── Rotating thoughts (2.8 s) ─────────────────────────────────
     _messageTimer = Timer.periodic(const Duration(milliseconds: 2800), (_) {
       if (mounted) {
         setState(() => _messageIndex = (_messageIndex + 1) % _thoughts.length);
@@ -132,64 +129,121 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
     super.dispose();
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // BUILD
-  // ════════════════════════════════════════════════════════════════
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Column(
-            children: [
-              const Spacer(flex: 3),
+      body: Stack(
+        children: [
+          _buildSoftBackground(),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final topSpace = (constraints.maxHeight * 0.08)
+                    .clamp(28.0, 72.0)
+                    .toDouble();
+                final bottomSpace = (constraints.maxHeight * 0.06)
+                    .clamp(24.0, 56.0)
+                    .toDouble();
 
-              // ── 1. Identity label ─────────────────────────────
-              _buildIdentityLabel(),
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                      ),
+                      child: Column(
+                        children: [
+                          SizedBox(height: topSpace),
 
-              const SizedBox(height: AppSpacing.sm),
+                          _buildIdentityLabel(),
 
-              // ── 2. Headline ───────────────────────────────────
-              Text(
-                'Đang xử lý cho bạn',
-                style: AppTextStyles.heading2,
-                textAlign: TextAlign.center,
-              ),
+                          const SizedBox(height: AppSpacing.md),
 
-              const SizedBox(height: AppSpacing.xl),
+                          _buildHeadline(),
 
-              // ── 3. Breathing orb ──────────────────────────────
-              _buildOrb(),
+                          const SizedBox(height: AppSpacing.xl),
 
-              const SizedBox(height: AppSpacing.xl),
+                          Semantics(
+                            label: 'Nami đang chuẩn bị câu trả lời cho bạn',
+                            liveRegion: true,
+                            child: _buildOrb(),
+                          ),
 
-              // ── 4. Thinking pill ──────────────────────────────
-              _buildThinkingPill(),
+                          const SizedBox(height: AppSpacing.xl),
 
-              const SizedBox(height: AppSpacing.lg),
+                          _buildThinkingPill(),
 
-              // ── 5. Rotating thought ───────────────────────────
-              _buildRotatingThought(),
+                          const SizedBox(height: AppSpacing.lg),
 
-              const Spacer(flex: 4),
+                          _buildRotatingThought(),
 
-              // ── 6. Footer ─────────────────────────────────────
-              _buildFooter(),
+                          SizedBox(height: bottomSpace),
 
-              const SizedBox(height: AppSpacing.lg),
-            ],
+                          _buildFooter(),
+
+                          const SizedBox(height: AppSpacing.lg),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  // ════════════════════════════════════════════════════════════════
-  // WIDGETS
-  // ════════════════════════════════════════════════════════════════
+  Widget _buildSoftBackground() {
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          Positioned(
+            top: -80,
+            right: -64,
+            child: _buildSoftCircle(
+              size: 190,
+              color: AppColors.primary.withValues(alpha: 0.10),
+            ),
+          ),
+          Positioned(
+            bottom: 60,
+            left: -72,
+            child: _buildSoftCircle(
+              size: 180,
+              color: AppColors.secondary.withValues(alpha: 0.10),
+            ),
+          ),
+          Positioned(
+            top: 220,
+            left: 36,
+            child: _buildSoftCircle(
+              size: 74,
+              color: AppColors.primary.withValues(alpha: 0.06),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSoftCircle({required double size, required Color color}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        boxShadow: [BoxShadow(color: color, blurRadius: 54, spreadRadius: 18)],
+      ),
+    );
+  }
 
   Widget _buildIdentityLabel() {
     return Container(
@@ -198,8 +252,9 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         vertical: AppSpacing.xs + 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft,
+        color: AppColors.primarySoft.withValues(alpha: 0.86),
         borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -214,7 +269,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
           ),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            'Trợ lý AI • Đang trực tuyến',
+            'Nami • Đang ở bên bạn',
             style: AppTextStyles.labelSmall.copyWith(
               color: AppColors.primary,
               letterSpacing: 0.2,
@@ -225,7 +280,25 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
     );
   }
 
-  // ── Orb (breathing + dual ripple) ────────────────────────────────
+  Widget _buildHeadline() {
+    return Column(
+      children: [
+        Text(
+          'Đợi Nami một chút nhé',
+          style: AppTextStyles.heading2.copyWith(color: AppColors.textPrimary),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          'Tôi đang chăm chút câu trả lời để mọi thứ đến với bạn thật rõ ràng và dễ chịu.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
 
   Widget _buildOrb() {
     const orbSize = 88.0;
@@ -236,7 +309,6 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Ripple 2
           AnimatedBuilder(
             animation: _ripple2Ctrl,
             builder: (_, __) => Transform.scale(
@@ -246,15 +318,14 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                 height: orbSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.secondary.withOpacity(
-                    _ripple2Opacity.value * 0.6,
+                  color: AppColors.secondary.withValues(
+                    alpha: _ripple2Opacity.value * 0.6,
                   ),
                 ),
               ),
             ),
           ),
 
-          // Ripple 1
           AnimatedBuilder(
             animation: _rippleCtrl,
             builder: (_, __) => Transform.scale(
@@ -264,15 +335,14 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                 height: orbSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withOpacity(
-                    _rippleOpacity.value * 0.7,
+                  color: AppColors.primary.withValues(
+                    alpha: _rippleOpacity.value * 0.7,
                   ),
                 ),
               ),
             ),
           ),
 
-          // Soft glow halo (breathing)
           AnimatedBuilder(
             animation: _breatheCtrl,
             builder: (_, __) => Transform.scale(
@@ -285,12 +355,12 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                   color: AppColors.primarySoft,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.22),
+                      color: AppColors.primary.withValues(alpha: 0.22),
                       blurRadius: 28,
                       spreadRadius: 6,
                     ),
                     BoxShadow(
-                      color: AppColors.secondary.withOpacity(0.14),
+                      color: AppColors.secondary.withValues(alpha: 0.14),
                       blurRadius: 40,
                       spreadRadius: 2,
                     ),
@@ -300,13 +370,12 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
             ),
           ),
 
-          // Core orb (breathing, slightly less scale range)
           AnimatedBuilder(
             animation: _breatheCtrl,
             builder: (_, __) {
-              // Dampen the breathing for the core so it's subtle
-              final t = (_breatheScale.value - 0.93) / 0.14; // 0..1
+              final t = (_breatheScale.value - 0.93) / 0.14;
               final coreScale = 0.96 + t * 0.08;
+
               return Transform.scale(
                 scale: coreScale,
                 child: Container(
@@ -331,8 +400,6 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
     );
   }
 
-  // ── Thinking pill with sequential dots ───────────────────────────
-
   Widget _buildThinkingPill() {
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -340,14 +407,20 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.card.withValues(alpha: 0.96),
         borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.55)),
         boxShadow: AppShadows.card,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Đang suy nghĩ', style: AppTextStyles.labelLarge),
+          Text(
+            'Nami đang nghĩ',
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(width: AppSpacing.xs),
           _buildDots(),
         ],
@@ -360,6 +433,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (i) {
         final isActive = i == (_dotPhase % 3);
+
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
@@ -374,8 +448,6 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       }),
     );
   }
-
-  // ── Rotating thought with icon ────────────────────────────────────
 
   Widget _buildRotatingThought() {
     final thought = _thoughts[_messageIndex];
@@ -405,12 +477,18 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(thought.icon, size: 15, color: AppColors.textHint),
+            Icon(
+              thought.icon,
+              size: 16,
+              color: AppColors.primary.withValues(alpha: 0.78),
+            ),
             const SizedBox(width: AppSpacing.xs),
             Flexible(
               child: Text(
                 thought.text,
-                style: AppTextStyles.bodyMedium,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -420,20 +498,17 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
     );
   }
 
-  // ── Footer ────────────────────────────────────────────────────────
-
   Widget _buildFooter() {
     return Text(
-      'Phản hồi thường mất 5–15 phút. Vui lòng không đóng ứng dụng trong khi chờ.',
-      style: AppTextStyles.caption,
+      'Bạn có thể giữ màn hình này mở thêm một chút nhé. Tôi vẫn đang ở đây và sẽ mang câu trả lời đến ngay khi đã sẵn sàng.',
+      style: AppTextStyles.caption.copyWith(
+        color: AppColors.textMuted,
+        height: 1.45,
+      ),
       textAlign: TextAlign.center,
     );
   }
 }
-
-// ════════════════════════════════════════════════════════════════
-// DATA MODEL
-// ════════════════════════════════════════════════════════════════
 
 class _ThoughtEntry {
   const _ThoughtEntry({required this.icon, required this.text});

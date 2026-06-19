@@ -25,6 +25,15 @@ Commit đề xuất: feat(dashboard): sinh thêm kế hoạch AI sau onboarding
 - Ghi chú: thực đơn, bài tập và lịch trình phải dùng cùng `profile.userId` để timeline cá nhân gom đúng dữ liệu.
 - Ghi chú: mốc sinh thêm dựa trên `lifestyle_schedule_items`, không dựa trên meal-only, để có thể tự sửa trường hợp thực đơn đã sinh nhưng lịch trình chưa có.
 
+## Khả năng chịu tải AI
+- Model mặc định cho sinh kế hoạch: `gemini-3.1-flash-lite`.
+- Fallback mặc định: `gemini-3.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.5-flash`.
+- Overflow chỉ bật thủ công qua `GEMINI_PLAN_OVERFLOW_MODELS`, ví dụ Pro/Preview khi cần khẩn cấp.
+- Mỗi model chỉ thử một lần cho lỗi tạm thời như timeout, 429, 503 hoặc quota.
+- Model bị lỗi tạm thời được đưa vào cooldown 3 phút trong phiên service hiện tại.
+- Khi hết model khả dụng, app dùng fallback local từ catalog để vẫn tạo đủ kế hoạch thay vì báo lỗi 503 lên UI.
+- Kế hoạch 7 ngày được gom thành 1 chunk meal và 1 chunk exercise để giảm số request Gemini.
+
 ## UI/UX
 - Loading: nút CTA chuyển sang trạng thái `Nami đang chuẩn bị thêm kế hoạch cho bạn...`.
 - Empty: nếu chưa có kế hoạch, bắt đầu từ ngày mai.

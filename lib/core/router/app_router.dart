@@ -10,7 +10,7 @@ import 'package:nano_app/features/nutrition/presentation/pages/nutrition_page.da
 import 'package:nano_app/features/onboarding/onboarding.dart';
 import 'package:nano_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:nano_app/features/splash/splash.dart';
-import 'package:nano_app/features/ai_chat/presentation/ai_chat_screen.dart';
+import 'package:nano_app/features/ai_chat/presentation/pages/ai_chat_screen.dart';
 import 'package:nano_app/features/community/presentation/pages/community_page.dart';
 import 'package:nano_app/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart';
 import 'package:nano_app/features/stress_tracking/presentation/pages/stress_tracking_page.dart';

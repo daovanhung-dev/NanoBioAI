@@ -53,7 +53,7 @@ class AIConnectionCheckResult {
 
 class AIService {
   static const _tag = 'AI_SERVICE';
-  static const _chunkSizes = [2, 2, 3];
+  static const _chunkSizes = [7];
   static const _connectionCheckStatusCode = 'ai_connection_ok';
   static const _connectionCheckPrompt = '''
 Trả về đúng một mảng JSON theo schema sau:
@@ -66,6 +66,9 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
   late final Random _random;
   late final AITextGenerator? _textGenerator;
   late final AiCatalogLoader _catalogLoader;
+  late final DateTime Function() _now;
+  late final Duration _modelCooldown;
+  final Map<String, DateTime> _modelCooldownUntil = {};
 
   AIService({
     String? apiKeyOverride,
@@ -74,10 +77,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     Random? random,
     AITextGenerator? textGenerator,
     AiCatalogLoader? catalogLoader,
+    DateTime Function()? now,
+    Duration? modelCooldown,
   }) {
     _delay = delay ?? ((duration) => Future<void>.delayed(duration));
     _random = random ?? Random();
     _textGenerator = textGenerator;
+    _now = now ?? DateTime.now;
+    _modelCooldown = modelCooldown ?? AIRetryPolicy.modelCooldown;
     _catalogLoader =
         catalogLoader ?? const AiCatalogLocalDatasource().loadActiveBundle;
 
@@ -92,10 +99,16 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         modelNames ??
         AIModelCandidates.resolve(
           primaryModel: _textGenerator == null
-              ? dotenv.env['GEMINI_MODEL']
+              ? _envWithLegacy('GEMINI_PLAN_MODEL', 'GEMINI_MODEL')
               : null,
           fallbackModelsCsv: _textGenerator == null
-              ? dotenv.env['GEMINI_FALLBACK_MODELS']
+              ? _envWithLegacy(
+                  'GEMINI_PLAN_FALLBACK_MODELS',
+                  'GEMINI_FALLBACK_MODELS',
+                )
+              : null,
+          overflowModelsCsv: _textGenerator == null
+              ? dotenv.env['GEMINI_PLAN_OVERFLOW_MODELS']
               : null,
         );
     AITraceLogger.info(
@@ -545,8 +558,6 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         location: StackTrace.current,
       );
       return items;
-    } on AIOverloadedException {
-      rethrow;
     } catch (error, stackTrace) {
       AITraceLogger.error(
         _tag,
@@ -639,8 +650,6 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         location: StackTrace.current,
       );
       return items;
-    } on AIOverloadedException {
-      rethrow;
     } catch (error, stackTrace) {
       AITraceLogger.error(
         _tag,
@@ -678,14 +687,31 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required Future<T> Function(_AIModelEntry entry) operation,
   }) async {
     var totalAttempts = 0;
+    var cooldownSkips = 0;
 
     for (var modelIndex = 0; modelIndex < _models.length; modelIndex++) {
       final entry = _models[modelIndex];
+      final cooldownUntil = _activeCooldownUntil(entry.name);
+      if (cooldownUntil != null) {
+        cooldownSkips++;
+        AITraceLogger.info(
+          _tag,
+          traceId,
+          method,
+          'MODEL_COOLDOWN_SKIP',
+          'Skipping model in transient-error cooldown.',
+          data: {
+            'model': entry.name,
+            'cooldownUntil': cooldownUntil.toIso8601String(),
+          },
+          location: StackTrace.current,
+        );
+        continue;
+      }
 
       for (
         var modelAttempt = 1;
-        modelAttempt <= AIRetryPolicy.maxAttemptsPerModel &&
-            totalAttempts < AIRetryPolicy.maxAttemptsTotal;
+        modelAttempt <= AIRetryPolicy.maxAttemptsPerModel;
         modelAttempt++
       ) {
         totalAttempts++;
@@ -742,10 +768,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             rethrow;
           }
 
+          _cooldownModel(entry.name);
+
           final hasMoreAttempts =
-              totalAttempts < AIRetryPolicy.maxAttemptsTotal &&
-              (modelAttempt < AIRetryPolicy.maxAttemptsPerModel ||
-                  modelIndex < _models.length - 1);
+              modelAttempt < AIRetryPolicy.maxAttemptsPerModel ||
+              _hasAvailableModelAfter(modelIndex);
           if (!hasMoreAttempts) {
             break;
           }
@@ -778,10 +805,42 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       method,
       'RETRY_EXHAUSTED',
       label,
-      data: {'totalAttempts': totalAttempts, 'models': _modelNames()},
+      data: {
+        'totalAttempts': totalAttempts,
+        'cooldownSkips': cooldownSkips,
+        'models': _modelNames(),
+      },
       location: StackTrace.current,
     );
     throw const AIOverloadedException();
+  }
+
+  void _cooldownModel(String modelName) {
+    if (_modelCooldown <= Duration.zero) {
+      return;
+    }
+    _modelCooldownUntil[modelName] = _now().add(_modelCooldown);
+  }
+
+  DateTime? _activeCooldownUntil(String modelName) {
+    final cooldownUntil = _modelCooldownUntil[modelName];
+    if (cooldownUntil == null) {
+      return null;
+    }
+    if (_now().isBefore(cooldownUntil)) {
+      return cooldownUntil;
+    }
+    _modelCooldownUntil.remove(modelName);
+    return null;
+  }
+
+  bool _hasAvailableModelAfter(int modelIndex) {
+    for (var index = modelIndex + 1; index < _models.length; index++) {
+      if (_activeCooldownUntil(_models[index].name) == null) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<List<dynamic>> _generateJsonArray(
@@ -1008,24 +1067,36 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
 
     return 'Không thể kết nối AI. Kiểm tra GEMINI_API_KEY, model hoặc mạng.';
   }
+
+  static String? _envWithLegacy(String key, String legacyKey) {
+    if (dotenv.env.containsKey(key)) {
+      return dotenv.env[key];
+    }
+    return dotenv.env[legacyKey];
+  }
 }
 
 class AIModelCandidates {
-  static const defaultPrimaryModel = 'gemini-2.5-flash-lite';
-  static const defaultFallbackModel = 'gemini-2.5-flash';
+  static const defaultPrimaryModel = 'gemini-3.1-flash-lite';
+  static const defaultFallbackModels = [
+    'gemini-3.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.5-flash',
+  ];
 
   const AIModelCandidates._();
 
   static List<String> resolve({
     required String? primaryModel,
     required String? fallbackModelsCsv,
+    String? overflowModelsCsv,
   }) {
     final fallbackModels = _parseCsv(fallbackModelsCsv);
+    final overflowModels = _parseCsv(overflowModelsCsv);
     final rawModels = <String>[
       _clean(primaryModel) ?? defaultPrimaryModel,
-      ...(fallbackModels.isEmpty
-          ? const [defaultFallbackModel]
-          : fallbackModels),
+      ...(fallbackModels.isEmpty ? defaultFallbackModels : fallbackModels),
+      ...overflowModels,
     ];
 
     final models = <String>[];
@@ -1065,9 +1136,9 @@ class AIModelCandidates {
 }
 
 class AIRetryPolicy {
-  static const maxAttemptsPerModel = 2;
-  static const maxAttemptsTotal = 4;
-  static const maxDelay = Duration(seconds: 20);
+  static const maxAttemptsPerModel = 1;
+  static const maxDelay = Duration(milliseconds: 3750);
+  static const modelCooldown = Duration(minutes: 3);
 
   const AIRetryPolicy._();
 
@@ -1075,10 +1146,8 @@ class AIRetryPolicy {
 
   static Duration baseDelayForFailureNumber(int failureNumber) {
     return switch (failureNumber) {
-      <= 1 => const Duration(seconds: 2),
-      2 => const Duration(seconds: 5),
-      3 => const Duration(seconds: 10),
-      _ => maxDelay,
+      <= 1 => const Duration(seconds: 1),
+      _ => const Duration(seconds: 3),
     };
   }
 
