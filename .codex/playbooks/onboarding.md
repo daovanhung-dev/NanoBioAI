@@ -1,28 +1,46 @@
-# Playbook — Onboarding
+# Playbook - Onboarding
 
-## Mục tiêu
+## Muc tieu
 
-Onboarding thu thập hồ sơ sức khỏe, lưu DB, rồi kích hoạt tạo lịch trình cá nhân.
+Onboarding thu thap ho so suc khoe, luu SQLite day du, roi kich hoat flow tao meal plan, exercise/daily tasks, lifestyle schedule va notifications.
 
-## Khi sửa Onboarding
-
-Đọc:
+## Doc truoc
 
 - `lib/features/onboarding/`
-- DAOs/models: user, health_profile, health_goal, lifestyle_habit, conditions, allergies.
-- Service tạo meal/schedule/task nếu task liên quan sau onboarding.
+- `lib/main.dart` neu task lien quan callback sau onboarding.
+- SQLite models/DAOs lien quan user, health profile, goals, habits, conditions, allergies, treatments, survey answers.
+- Neu sau submit bi loi: doc them playbook AI, lifestyle schedule, notification theo trieu chung.
 
-## Quy tắc
+## Luong dung
 
-- Giữ provider/controller/route/callback public nếu chưa kiểm tra usage bằng `rg`.
-- Giảm nhập tay, ưu tiên select/choice có kiểm soát.
-- Validate dữ liệu trước khi lưu.
-- Text tiếng Việt có dấu, giọng Nami nhẹ nhàng, không phán xét.
-- Sau submit thành công, không chỉ navigate; phải đảm bảo dữ liệu cần cho dashboard đã có hoặc có flow tạo tiếp rõ ràng.
+```text
+Form input
+-> validate
+-> save profile/goals/habits/conditions/allergies/treatments/survey answers
+-> generate meal/tasks/schedule
+-> save SQLite
+-> schedule notifications
+-> navigate/dashboard refresh
+```
 
-## Test nên có
+## Quy tac
+
+- Giu provider/controller/route/callback public neu chua `rg` usage.
+- Validate truoc khi luu; khong bo qua field bat buoc bang nullable workaround.
+- Sau submit thanh cong phai luu du data can cho dashboard va flow ca nhan hoa.
+- Error state khong lam mat du lieu da nhap.
+- Copy tieng Viet co dau, Nami nhe nhang, khong phan xet.
+
+## Tim nhanh
+
+```bash
+rg "Onboarding|onboarding|submit|complete|callback" lib/features/onboarding lib/main.dart test
+rg "health_profiles|health_goals|lifestyle_habits|survey_answers|allergies|treatments" lib/core/storage/localdb lib/features/onboarding test
+```
+
+## Test nen chay
 
 - Validate required fields.
-- Save profile/goals/habits đúng mapping.
-- Submit success kích hoạt flow kế tiếp.
-- Error state không mất dữ liệu người dùng.
+- Mapping form -> model/DAO.
+- Submit success goi callback/flow tiep theo.
+- Regression cho error state.

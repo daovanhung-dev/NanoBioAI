@@ -1,29 +1,47 @@
-# Playbook — Notification / Reminder
+# Playbook - Notification / Reminder
 
-## Mục tiêu
+## Muc tieu
 
-Thông báo theo lịch trình cá nhân, có action Đã làm/Bỏ qua, và action cập nhật DB an toàn.
+Thong bao theo lifestyle schedule, co action Da lam/Bo qua, va action cap nhat SQLite an toan.
 
-## Khi sửa Notification
-
-Đọc:
+## Doc truoc
 
 - `lib/services/notifications/`
-- `lib/features/daily_health_tracking/`
-- DAO/model/table notification/task nếu có.
+- `lib/features/lifestyle_schedule/`
+- DAOs lien quan notifications, meal plans, daily health tasks, lifestyle schedule items.
+- Tests: `test/services/notifications/`, `test/features/lifestyle_schedule/`
 
-## Quy tắc
+## File can de y
 
-- Timezone phải init trước khi schedule.
-- Notification id phải ổn định, tránh trùng ngoài ý muốn.
-- Payload phải serialize/parse an toàn, có version/type nếu cần.
-- Background action không được phụ thuộc BuildContext.
-- Không gọi plugin notification thật trong unit test; test payload/id/mapper/service logic.
-- Nếu đổi Android/native config, chạy build APK.
+- `notification_bootstrap.dart`
+- `notification_payload.dart`
+- `notification_id_generator.dart`
+- `reminder_notification_scheduler.dart`
+- `reminder_schedule_service.dart`
+- `notification_action_handler.dart`
+- `notification_lifecycle_refresher.dart`
+- `notification_startup_scheduler.dart`
 
-## Test nên có
+## Quy tac
 
-- Payload round-trip.
-- Invalid payload không crash.
-- ID generator ổn định.
-- Action complete/skip gọi đúng service/DAO abstraction.
+- Init timezone truoc khi schedule.
+- Notification id phai on dinh, tranh trung ngoai y muon.
+- Payload co type/id/version neu can; invalid payload khong crash.
+- Background action khong phu thuoc `BuildContext`.
+- Complete/skip phai update DB qua service/DAO abstraction.
+- Neu doi Android/native config, chay build APK debug neu moi truong cho phep.
+- Khong goi plugin notification that trong unit test; test mapper/payload/id/service logic.
+
+## Tim nhanh
+
+```bash
+rg "Notification|notification|payload|timezone|reminder|complete|skip|AndroidNotificationAction|background" lib/services/notifications lib/features test
+```
+
+## Test nen chay
+
+- `flutter test test/services/notifications`
+- Payload round-trip va invalid payload.
+- ID generator on dinh.
+- Complete/skip update dung source.
+- Build APK debug neu doi native/manifest.

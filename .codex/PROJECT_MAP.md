@@ -1,305 +1,160 @@
-# PROJECT_MAP — NanoBio / BioAI
+# PROJECT_MAP - NanoBio / BioAI
 
-File này giúp Codex chọn đúng tài liệu và đúng vùng source code. **Chỉ đọc file cần thiết cho task.**
+Dung file nay de chon dung source can doc. Khong doc tran lan.
 
-## Global entry points
+## Current Source Map
 
-- **App bootstrap**: `lib/main.dart` (init Supabase, notifications, onboarding callback)
-- **App shell/router**: `lib/app/app.dart`, `lib/core/router/app_router.dart`
-- **Theme/design system**: `lib/core/theme/` (3-layer token architecture)
-- **Local DB**: `lib/core/storage/localdb/` (SQLite v8, 19 tables)
-- **AI service**: `lib/services/ai/` (Gemini integration, retry, fallback)
-- **Notification service**: `lib/services/notifications/` (local reminders, actions)
-- **Supabase service**: `lib/services/supabase/` (auth only)
+- App bootstrap: `lib/main.dart`
+- Router/app shell: `lib/core/router/`, `lib/app/app.dart`
+- Theme/design tokens: `lib/core/theme/`
+- SQLite core: `lib/core/storage/localdb/`
+- AI service: `lib/services/ai/`
+- Notifications: `lib/services/notifications/`
+- Supabase auth: `lib/services/supabase/`
+- Tests: `test/`
 
-## Task routing
+Feature folders hien co:
 
-### 🔐 Authentication / Login
+```text
+ai_chat, auth, community, daily_health_tracking, dashboard,
+features_hub, lifestyle_schedule, meal_plan, nutrition, onboarding,
+other, profile, settings, sleep_tracking, splash, stress_tracking
+```
 
-Read:
+## Task Routing
 
-- `.codex/playbooks/ui.md` (if UI changes)
-- `lib/features/auth/`
-- `lib/services/supabase/`
-- `lib/core/router/route_guards.dart`
+### Dashboard / Health Score / Trang chu
 
-Focus: Supabase auth integration, session management, route guards.
+Doc:
 
----
-
-### 📝 Onboarding (7-step wizard)
-
-Read:
-
-- `.codex/playbooks/onboarding.md`
-- `lib/features/onboarding/`
-- DAOs liên quan: `users_dao`, `health_profiles_dao`, `health_goals_dao`, `lifestyle_habits_dao`, `health_conditions_dao`, `food_allergies_dao`, `medical_treatments_dao`
-
-Focus: 
-- Sau onboarding phải lưu đủ hồ sơ vào 8 tables
-- Kích hoạt callback trong `main.dart` để generate schedule
-- Validation rules cho từng step
-
----
-
-### 🏠 Dashboard / Health Score / Trang chủ
-
-Read:
-
-- `.codex/playbooks/dashboard.md` ⭐ **CRITICAL**
+- `.codex/playbooks/dashboard.md`
 - `lib/features/dashboard/`
 - `lib/features/daily_health_tracking/`
 - `lib/features/lifestyle_schedule/`
-- `lib/core/storage/localdb/daos/health_tracking_logs_dao.dart`
-- `lib/core/storage/localdb/tables/daily_health_tasks_table.dart`
-- `lib/core/storage/localdb/tables/lifestyle_schedule_items_table.dart`
+- Test lien quan: `test/features/dashboard/`, `test/features/daily_health_tracking/`, `test/features/lifestyle_schedule/`
 
-Focus: 
-- Dashboard phải tính từ SQLite/data layer thật
-- **KHÔNG mock/fake production data**
-- BMI calculation từ DB
-- Health score từ tracking logs
-- Timeline từ schedule items
+Tap trung: dashboard doc SQLite that qua provider/repository/datasource, score/progress/timeline khong dung mock production.
 
-**Critical Rules**:
-```dart
-// ✅ CORRECT
-final data = await repository.fetchDashboard(); // Query DB
-final bmi = data.bmi; // Calculate from DB
+### Onboarding
 
-// ❌ WRONG - NEVER DO THIS!
-final mockBmi = 22.5; 
-final mockData = DashboardEntity(...); // Fake data
-```
+Doc:
 
----
+- `.codex/playbooks/onboarding.md`
+- `lib/features/onboarding/`
+- DAOs/models lien quan profile/goals/habits/conditions/allergies/treatments/survey answers.
+- `lib/main.dart` neu task lien quan callback sau onboarding.
 
-### 🍽️ Meal Plan / Exercise / AI Parser
+Tap trung: validate, luu du ho so, kich hoat meal/exercise/schedule.
 
-Read:
+### AI / Meal Plan / Exercise Parser
 
-- `.codex/playbooks/ai_service.md` ⭐ **CRITICAL**
+Doc:
+
+- `.codex/playbooks/ai_service.md`
 - `lib/services/ai/`
 - `lib/features/meal_plan/`
-- Normalizer/catalog/seed: 
-  - `lib/features/meal_plan/data/models/meal_plan_ai_normalizer.dart`
-  - `lib/features/lifestyle_schedule/data/models/exercise_tasks_ai_normalizer.dart`
-  - `lib/core/storage/localdb/seeders/ai_catalog_seeder.dart`
+- `lib/features/lifestyle_schedule/data/models/*normalizer*`
+- `test/services/ai/`, `test/features/meal_plan/`, `test/features/lifestyle_schedule/`
 
-Focus: 
-- AI output không crash app
-- Text hiển thị tiếng Việt có dấu
-- Test không gọi API thật (mock AI service)
-- Fallback khi AI fail
-- Validator/normalizer validate schema
+Tap trung: schema, validator, normalizer, fallback, tieng Viet co dau, khong goi API that trong test.
 
----
+### Lifestyle Schedule / Timeline
 
-### 📊 Daily Health Tracking
-
-Read:
-
-- `.codex/playbooks/health_tracking.md`
-- `lib/features/daily_health_tracking/`
-- `lib/core/storage/localdb/daos/health_tracking_logs_dao.dart`
-- `lib/core/storage/localdb/tables/health_tracking_logs_table.dart`
-
-Focus:
-- Tracking logs (weight, sleep, water, steps, stress)
-- Validate input ranges
-- Timestamp timezone-aware
-- No duplicate entries (same metric + date)
-- Integration với Dashboard
-
----
-
-### 📅 Lifestyle Schedule / Timeline
-
-Read:
+Doc:
 
 - `.codex/playbooks/lifestyle_schedule.md`
 - `lib/features/lifestyle_schedule/`
-- `lib/features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart`
-- `lib/core/storage/localdb/tables/lifestyle_schedule_items_table.dart`
+- `lib/services/notifications/` neu lien quan reminder/action.
+- `test/features/lifestyle_schedule/`
 
-Focus:
-- Schedule generation (meals + exercises + hydration + sleep)
-- Timeline builder logic
-- Status flow: pending → completed/skipped
-- Integration với notifications
-- Refresh schedule after 7 days
+Tap trung: meal + exercise + hydration + sleep, status pending/completed/skipped, khong tao item trung.
 
----
+### Daily Health Tracking
 
-### 🔔 Notification / Reminder / Action Button
+Doc:
 
-Read:
-
-- `.codex/playbooks/notification.md` ⭐ **CRITICAL**
-- `lib/services/notifications/`
+- `.codex/playbooks/health_tracking.md`
 - `lib/features/daily_health_tracking/`
-- `notifications_dao` nếu có
+- health tracking logs/tasks DAO/table/model.
+- `test/features/daily_health_tracking/`
 
-Focus: 
-- Timezone init trước khi schedule
-- Notification id ổn định
-- Payload serialize/parse an toàn
-- Background action không phụ thuộc BuildContext
-- Test không gọi plugin thật
-- Action button (complete/skip) update DB
+Tap trung: validate range, upsert theo ngay, dashboard integration.
 
----
+### Notification / Reminder / Action Button
 
-### 💾 SQLite / DAO / Migration
+Doc:
 
-Read:
+- `.codex/playbooks/notification.md`
+- `lib/services/notifications/`
+- schedule/task/notification DAO/service lien quan.
+- `test/services/notifications/`
 
-- `.codex/playbooks/sqlite.md` ⭐ **CRITICAL**
-- `lib/core/storage/localdb/database_service.dart`
+Tap trung: timezone init, stable id, payload parse, background action khong can `BuildContext`, complete/skip update SQLite.
+
+### SQLite / DAO / Migration
+
+Doc:
+
+- `.codex/playbooks/sqlite.md`
 - `lib/core/storage/localdb/database_version.dart`
+- `lib/core/storage/localdb/database_service.dart`
 - `lib/core/storage/localdb/migrations/`
 - `lib/core/storage/localdb/tables/`
 - `lib/core/storage/localdb/models/`
 - `lib/core/storage/localdb/daos/`
+- `test/core/storage/localdb/`
 
-Focus: 
-- Đổi schema phải đi đủ table/model/DAO/migration/onCreate
-- Tăng database version
-- Migration không mất dữ liệu cũ
-- Test CRUD operations
+Tap trung: doi schema phai dong bo version, migration, onCreate, table, model, DAO, test.
 
----
+### UI / Theme / Nami Copywriting
 
-### 🎨 UI / Theme / Copywriting / Design System
+Doc:
 
-Read:
-
-- `.codex/playbooks/ui.md`
+- `.codex/playbooks/ui_nami.md`
 - `lib/core/theme/`
-- Widgets/pages của feature liên quan
-- `lib/core/theme/IMPLEMENTATION_STATUS.md`
+- page/widget cua feature lien quan.
+- Widget tests lien quan neu co.
 
-Focus: 
-- Dùng theme token (không hardcode)
-- Responsive layout
-- Không overflow
-- Text tiếng Việt có dấu
-- 3-layer token architecture (Foundation → Semantic → Component)
+Tap trung: theme tokens, responsive, no overflow, copy Nami, khong lo thuat ngu ky thuat.
 
----
+### Settings / Profile / Auth
 
-## Search commands ưu tiên
+Doc theo pham vi:
 
-### Find class/provider usage
+- `lib/features/settings/`, `test/features/settings/`
+- `lib/features/profile/`
+- `lib/features/auth/`, `lib/services/supabase/`, `lib/core/router/`
+
+Tap trung: state/session, validation, khong lo secret, khong pha route guard.
+
+## Search Commands
+
 ```bash
 rg "ClassName|providerName|routeName|tableName" lib test
+rg "mock|fake|sample|dummy" lib/features
+rg "Provider|AsyncNotifier|Repository|Datasource|Dao|DAO" lib/features/<feature> lib/services test
+rg "CREATE TABLE|ALTER TABLE|databaseVersion|onCreate|migration" lib/core/storage/localdb test
+rg "notification|payload|timezone|reminder|complete|skip" lib/services lib/features test
+rg "Gemini|generateContent|validator|normalizer|catalog|fallback" lib/services/ai lib/features test
 ```
 
-### Find mock/fake data (to remove)
+Architecture checks:
+
 ```bash
-rg "mock|fake|sample|dummy|TODO" lib/features/dashboard lib/features/onboarding
+rg "import.*core/storage/localdb|import.*data/datasources" lib/features/*/presentation
+rg "import.*package:nano_app/features/.*/data" lib/features/*/presentation
 ```
 
-### Find AI-related code
-```bash
-rg "Gemini|generate|validator|normalizer" lib/services/ai lib/features
-```
+## Critical Files
 
-### Find notification code
-```bash
-rg "notification|payload|timezone|reminder" lib/services/notifications lib/features
-```
+Chi mo khi lien quan:
 
-### Find database queries
-```bash
-rg "SELECT|INSERT|UPDATE|DELETE" lib/core/storage/localdb/daos/
-```
-
-### Find architecture violations
-```bash
-# Cross-feature imports (BAD!)
-rg "import.*features/dashboard" lib/features/onboarding
-rg "import.*features/meal_plan" lib/features/dashboard
-
-# Presentation importing Data (BAD!)
-rg "import.*data/datasources" lib/features/*/presentation/
-
-# Using core models in presentation (BAD!)
-rg "import.*core/storage/localdb/models" lib/features/*/presentation/
-```
-
----
-
-## Module dependency map
-
-```
-┌──────────────┐
-│     UI       │ (Presentation)
-└──────┬───────┘
-       │ calls
-       ↓
-┌──────────────┐
-│  Controller  │ (Riverpod Notifier)
-└──────┬───────┘
-       │ calls
-       ↓
-┌──────────────┐
-│  Repository  │ (Interface + Impl)
-└──────┬───────┘
-       │ calls
-       ↓
-┌──────────────┐
-│  Datasource  │ (*LocalDatasource / *RemoteDatasource)
-└──────┬───────┘
-       │ calls
-       ↓
-┌──────────────┐
-│   DAO/API    │ (SQLite / HTTP)
-└──────────────┘
-```
-
-**Never bypass layers!** UI → Controller → Repository → Datasource → DAO
-
----
-
-## Feature status map
-
-| Feature | Status | Main Files | Tests | Notes |
-|---------|--------|------------|-------|-------|
-| Auth | ✅ Done | `features/auth/` | ⚠️ Partial | Supabase integration |
-| Onboarding | ✅ Done | `features/onboarding/` | ⚠️ Partial | 7-step wizard |
-| Dashboard | 🚧 In Progress | `features/dashboard/` | ⚠️ Partial | Has mock data (needs fix) |
-| Meal Plan | ✅ Done | `features/meal_plan/` | ⚠️ Partial | AI generation + fallback |
-| Health Tracking | ✅ Done | `features/daily_health_tracking/` | ⚠️ Partial | Tracking logs |
-| Lifestyle Schedule | ✅ Done | `features/lifestyle_schedule/` | ⚠️ Partial | Timeline + notifications |
-| AI Chat | 🚧 Planned | `features/ai_chat/` | ❌ None | Future feature |
-| Sleep Tracking | 🚧 Planned | `features/sleep_tracking/` | ❌ None | Future feature |
-| Stress Tracking | 🚧 Planned | `features/stress_tracking/` | ❌ None | Future feature |
-
-Legend:
-- ✅ Done - Feature implemented and working
-- 🚧 In Progress - Partially implemented
-- 🚧 Planned - Not started yet
-- ⚠️ Partial - Some tests exist, not comprehensive
-- ❌ None - No tests yet
-
----
-
-## Critical files (always check before major changes)
-
-1. `lib/main.dart` - App entry, onboarding callback ⭐
-2. `lib/core/router/app_router.dart` - Route config
-3. `lib/core/storage/localdb/database_service.dart` - DB init
-4. `lib/core/storage/localdb/database_version.dart` - DB version ⭐
-5. `lib/services/ai/ai_service.dart` - AI integration
-6. `lib/services/notifications/notification_bootstrap.dart` - Notification init
-7. `.codex/AGENTS.md` - Main rules
-8. `.codex/ARCHITECTURE.md` - Architecture decisions
-9. `docs/issues/bug_architecture.md` - Known violations ⭐
-
-⭐ = Must read if making related changes
-
----
-
-**Last Updated**: 2026-06-18  
-**Version**: 1.0
+- `lib/main.dart` - app init, callback sau onboarding.
+- `lib/core/router/app_router.dart` - navigation/routes.
+- `lib/core/storage/localdb/database_service.dart` - DB init/onCreate.
+- `lib/core/storage/localdb/database_version.dart` - DB version.
+- `lib/services/ai/ai_service.dart` - Gemini integration.
+- `lib/services/ai/ai_trace_logger.dart` - AI trace logging an toan.
+- `lib/services/notifications/notification_bootstrap.dart` - notification init/action.
+- `lib/services/notifications/notification_action_handler.dart` - complete/skip action.
+- `test/architecture_preservation_property_test.dart` va `test/architecture_violation_exploration_test.dart` - kien truc/rui ro hien co.

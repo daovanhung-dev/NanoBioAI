@@ -1,29 +1,46 @@
-# Playbook — AI Service / Meal / Exercise Parser
+# Playbook - AI Service / Meal / Exercise
 
-## Mục tiêu
+## Muc tieu
 
-AI có thể fail hoặc trả dữ liệu xấu nhưng app không crash. Text hiển thị cho user phải có dấu.
+AI co the timeout, quota, hoac tra sai format nhung app khong crash. Text user-facing phai la tieng Viet co dau va da duoc validate/normalize.
 
-## Khi sửa AI
-
-Đọc:
+## Doc truoc
 
 - `lib/services/ai/`
 - `lib/features/meal_plan/`
-- Normalizer/catalog/seed liên quan nếu có.
+- `lib/features/lifestyle_schedule/data/models/*normalizer*`
+- `lib/features/daily_health_tracking/data/models/*normalizer*`
+- Tests: `test/services/ai/`, `test/features/meal_plan/`, `test/features/lifestyle_schedule/`, `test/features/daily_health_tracking/`
 
-## Quy tắc
+## File can de y
 
-- Không gọi API thật trong unit test.
-- Parser phải validate schema, type, required fields.
-- Nếu AI trả code kỹ thuật, map qua catalog local sang text tiếng Việt có dấu.
-- Không phụ thuộc 100% vào prompt để đảm bảo dữ liệu đúng; phải có validator/normalizer local.
-- Lỗi transient như 503 nên có retry/backoff hoặc fallback rõ ràng nếu đã thiết kế.
+- `lib/services/ai/ai_service.dart`
+- `lib/services/ai/ai_chat_service.dart`
+- `lib/services/ai/ai_json_parser.dart`
+- `lib/services/ai/ai_json_prompt_builder.dart`
+- `lib/services/ai/ai_vietnamese_text_validator.dart`
+- `lib/services/ai/ai_trace_logger.dart`
+- `lib/services/ai/prompts/meal_plan_prompt.dart`
+- `lib/services/ai/prompts/exercise_tasks_prompt.dart`
 
-## Test nên có
+## Quy tac
 
-- JSON hợp lệ parse đúng.
-- Thiếu field -> lỗi rõ ràng.
-- Sai type -> lỗi rõ ràng.
-- Text không dấu/user-facing invalid -> bị reject hoặc map lại qua catalog.
-- API exception -> convert sang app exception ổn định.
+- Khong tin output AI tuyet doi; validate schema/type/range.
+- Parser phai reject JSON sai schema thay vi crash.
+- Neu AI tra id/code/text khong dau, map qua catalog/normalizer de lay tieng Viet co dau.
+- Co fallback ro cho timeout, 503/quota, invalid JSON, missing fields.
+- Unit/widget test khong goi Gemini that.
+- Log AI chi ghi summary an toan: stage, status, count, error type; khong log API key/raw prompt/raw response dai.
+
+## Tim nhanh
+
+```bash
+rg "Gemini|generateContent|timeout|retry|fallback|AIService|AIChatService" lib/services/ai lib/features test
+rg "validator|normalizer|catalog|Vietnamese|json|schema|trace" lib/services/ai lib/features test
+```
+
+## Test nen chay
+
+- `flutter test test/services/ai`
+- `flutter test test/features/meal_plan`
+- Neu cham exercise/daily tasks: `flutter test test/features/lifestyle_schedule test/features/daily_health_tracking`

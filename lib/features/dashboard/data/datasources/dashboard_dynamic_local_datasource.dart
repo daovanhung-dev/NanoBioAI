@@ -16,8 +16,12 @@ class DashboardDynamicLocalDatasource {
 
     final today = _dateKey(DateTime.now());
     final todayLog = await _todayHealthLog(userId: userId, today: today);
-    final todayTasks = await _todayTasks(userId: userId, today: today);
-    final todayMeals = await _todayMeals(userId: userId, today: today);
+    final todayTasks = _dedupeTasks(
+      await _todayTasks(userId: userId, today: today),
+    );
+    final todayMeals = _dedupeMeals(
+      await _todayMeals(userId: userId, today: today),
+    );
     final todayNutritionLogs = await _todayNutritionLogs(
       userId: userId,
       today: today,
@@ -102,6 +106,7 @@ class DashboardDynamicLocalDatasource {
         isCompleted: _readBool(row['is_completed']),
         sortOrder: _readInt(row['sort_order']) ?? 0,
         encouragement: _readString(row['encouragement']),
+        timeLabel: _readTaskTime(row),
       );
     }).toList();
   }
@@ -337,55 +342,279 @@ class DashboardDynamicLocalDatasource {
     required List<Map<String, Object?>> notifications,
   }) {
     final items = <DashboardTimelineItem>[];
+    final mealTaskIds = <String>{};
 
-    for (final meal in meals) {
+    for (final meal in _dedupeMeals(meals)) {
+      final matchedTask = _findMatchingMealTask(meal, tasks);
+      if (matchedTask != null && matchedTask.id.isNotEmpty) {
+        mealTaskIds.add(matchedTask.id);
+      }
+
+      final timeLabel = _mealTimeLabel(meal);
       items.add(
         DashboardTimelineItem(
           id: 'meal_${meal.id}',
-          timeLabel: _mealTimeLabel(meal),
+          timeLabel: timeLabel,
           title: meal.mealName,
           subtitle: meal.calories > 0
               ? '${_mealTypeLabel(meal.mealType)} • ${meal.calories} kcal'
               : _mealTypeLabel(meal.mealType),
           category: 'meal',
-          isCompleted: meal.isCompleted,
-          sortOrder: meal.mealOrder == 0 ? 20 : meal.mealOrder * 10,
+          isCompleted: meal.isCompleted || (matchedTask?.isCompleted ?? false),
+          sortOrder: _timelineSortOrder(
+            timeLabel,
+            meal.mealOrder == 0 ? 20 : meal.mealOrder * 10,
+          ),
         ),
       );
     }
 
-    for (final task in tasks) {
+    for (final task in _dedupeTasks(tasks)) {
+      if (mealTaskIds.contains(task.id) || _isMealTaskCoveredByMeal(task, meals)) {
+        continue;
+      }
+
+      final timeLabel = _taskTimeLabel(task);
       items.add(
         DashboardTimelineItem(
           id: 'task_${task.id}',
-          timeLabel: _taskTimeLabel(task.sortOrder),
+          timeLabel: timeLabel,
           title: task.title,
           subtitle: task.unit == null
               ? (task.description ?? '')
               : '${_formatNumber(task.currentValue)}/${_formatNumber(task.targetValue)} ${task.unit}',
           category: task.category,
           isCompleted: task.isCompleted,
-          sortOrder: 100 + task.sortOrder,
+          sortOrder: _timelineSortOrder(timeLabel, 100 + task.sortOrder),
         ),
       );
     }
 
     for (final row in notifications) {
+      final timeLabel = _timeFromIso(_readString(row['scheduled_at'])) ?? '--:--';
+      final title = _readString(row['title']) ?? 'Thông báo';
+      final subtitle = _readString(row['body']) ?? '';
+
+      if (_notificationDuplicatesTimeline(
+        timeLabel: timeLabel,
+        title: title,
+        subtitle: subtitle,
+        existingItems: items,
+      )) {
+        continue;
+      }
+
       items.add(
         DashboardTimelineItem(
           id: 'notification_${_readString(row['id']) ?? ''}',
-          timeLabel: _timeFromIso(_readString(row['scheduled_at'])) ?? '--:--',
-          title: _readString(row['title']) ?? 'Thông báo',
-          subtitle: _readString(row['body']) ?? '',
+          timeLabel: timeLabel,
+          title: title,
+          subtitle: subtitle,
           category: _readString(row['type']) ?? 'notification',
           isCompleted: _readBool(row['is_read']),
-          sortOrder: 300 + items.length,
+          sortOrder: _timelineSortOrder(timeLabel, 300 + items.length),
         ),
       );
     }
 
-    items.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-    return items;
+    final uniqueItems = _dedupeTimelineItems(items);
+    uniqueItems.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return uniqueItems;
+  }
+
+  List<DashboardMealItem> _dedupeMeals(List<DashboardMealItem> meals) {
+    final byKey = <String, DashboardMealItem>{};
+
+    for (final meal in meals) {
+      final naturalKey = 'meal:${_mealTimeLabel(meal)}:${_normalizeForCompare(meal.mealType)}:${_normalizeForCompare(meal.mealName)}';
+      final key = _normalizeForCompare(meal.mealName).isNotEmpty
+          ? naturalKey
+          : 'id:${meal.id}';
+      final existing = byKey[key];
+      byKey[key] = existing == null ? meal : _mergeMeal(existing, meal);
+    }
+
+    return byKey.values.toList();
+  }
+
+  DashboardMealItem _mergeMeal(DashboardMealItem current, DashboardMealItem next) {
+    return DashboardMealItem(
+      id: current.id.isNotEmpty ? current.id : next.id,
+      mealType: current.mealType.isNotEmpty ? current.mealType : next.mealType,
+      mealName: current.mealName.isNotEmpty ? current.mealName : next.mealName,
+      description: current.description ?? next.description,
+      calories: current.calories >= next.calories ? current.calories : next.calories,
+      waterMl: current.waterMl >= next.waterMl ? current.waterMl : next.waterMl,
+      mealOrder: current.mealOrder != 0 ? current.mealOrder : next.mealOrder,
+      startTime: current.startTime ?? next.startTime,
+      isCompleted: current.isCompleted || next.isCompleted,
+    );
+  }
+
+  List<DashboardTaskItem> _dedupeTasks(List<DashboardTaskItem> tasks) {
+    final byKey = <String, DashboardTaskItem>{};
+
+    for (final task in tasks) {
+      final naturalKey = 'task:${_taskTimeLabel(task)}:${_normalizeForCompare(task.category)}:${_normalizeForCompare(task.title)}';
+      final key = _normalizeForCompare(task.title).isNotEmpty
+          ? naturalKey
+          : 'id:${task.id}';
+      final existing = byKey[key];
+      byKey[key] = existing == null ? task : _mergeTask(existing, task);
+    }
+
+    return byKey.values.toList();
+  }
+
+  DashboardTaskItem _mergeTask(DashboardTaskItem current, DashboardTaskItem next) {
+    final currentDescription = current.description?.trim() ?? '';
+    final nextDescription = next.description?.trim() ?? '';
+    final currentEncouragement = current.encouragement?.trim() ?? '';
+    final nextEncouragement = next.encouragement?.trim() ?? '';
+
+    return DashboardTaskItem(
+      id: current.id.isNotEmpty ? current.id : next.id,
+      category: current.category.isNotEmpty ? current.category : next.category,
+      title: current.title.isNotEmpty ? current.title : next.title,
+      description: currentDescription.length >= nextDescription.length
+          ? current.description
+          : next.description,
+      targetValue: current.targetValue >= next.targetValue
+          ? current.targetValue
+          : next.targetValue,
+      currentValue: current.currentValue >= next.currentValue
+          ? current.currentValue
+          : next.currentValue,
+      unit: current.unit ?? next.unit,
+      isCompleted: current.isCompleted || next.isCompleted,
+      sortOrder: current.sortOrder <= next.sortOrder
+          ? current.sortOrder
+          : next.sortOrder,
+      encouragement: currentEncouragement.length >= nextEncouragement.length
+          ? current.encouragement
+          : next.encouragement,
+      timeLabel: current.timeLabel ?? next.timeLabel,
+    );
+  }
+
+  DashboardTaskItem? _findMatchingMealTask(
+    DashboardMealItem meal,
+    List<DashboardTaskItem> tasks,
+  ) {
+    for (final task in tasks) {
+      if (_taskMatchesMeal(task, meal)) return task;
+    }
+    return null;
+  }
+
+  bool _isMealTaskCoveredByMeal(
+    DashboardTaskItem task,
+    List<DashboardMealItem> meals,
+  ) {
+    for (final meal in meals) {
+      if (_taskMatchesMeal(task, meal)) return true;
+    }
+    return false;
+  }
+
+  bool _taskMatchesMeal(DashboardTaskItem task, DashboardMealItem meal) {
+    final taskText = _normalizeForCompare(
+      '${task.title} ${task.description ?? ''} ${task.category}',
+    );
+    final mealName = _normalizeForCompare(meal.mealName);
+    final mealType = _normalizeForCompare(_mealTypeLabel(meal.mealType));
+    final taskTime = _taskTimeLabel(task);
+    final mealTime = _mealTimeLabel(meal);
+    final sameTime = taskTime != '--:--' && mealTime != '--:--' && taskTime == mealTime;
+
+    final hasMealKeyword = _containsAny(taskText, const [
+      'an sang',
+      'bua sang',
+      'breakfast',
+      'an trua',
+      'bua trua',
+      'lunch',
+      'an toi',
+      'bua toi',
+      'dinner',
+      'bua phu',
+      'snack',
+      'meal',
+    ]);
+
+    if (mealName.isNotEmpty && taskText.contains(mealName)) return true;
+    if (sameTime && hasMealKeyword) return true;
+    if (sameTime && mealType.isNotEmpty && taskText.contains(mealType)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool _notificationDuplicatesTimeline({
+    required String timeLabel,
+    required String title,
+    required String subtitle,
+    required List<DashboardTimelineItem> existingItems,
+  }) {
+    final notificationTitle = _normalizeForCompare(title);
+    final notificationText = _normalizeForCompare('$title $subtitle');
+    if (notificationText.isEmpty) return false;
+
+    for (final item in existingItems) {
+      final itemTitle = _normalizeForCompare(item.title);
+      final itemText = _normalizeForCompare('${item.title} ${item.subtitle}');
+      final sameTime = timeLabel == item.timeLabel || timeLabel == '--:--';
+
+      if (sameTime && itemTitle.isNotEmpty && notificationText.contains(itemTitle)) {
+        return true;
+      }
+      if (sameTime && notificationTitle.isNotEmpty && itemText.contains(notificationTitle)) {
+        return true;
+      }
+      if (sameTime && itemText.isNotEmpty && notificationText == itemText) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  List<DashboardTimelineItem> _dedupeTimelineItems(
+    List<DashboardTimelineItem> items,
+  ) {
+    final byKey = <String, DashboardTimelineItem>{};
+
+    for (final item in items) {
+      final key = [
+        item.timeLabel,
+        _logicalCategory(item.category),
+        _normalizeForCompare(item.title),
+      ].join('|');
+      final existing = byKey[key];
+      byKey[key] = existing == null ? item : _mergeTimelineItem(existing, item);
+    }
+
+    return byKey.values.toList();
+  }
+
+  DashboardTimelineItem _mergeTimelineItem(
+    DashboardTimelineItem current,
+    DashboardTimelineItem next,
+  ) {
+    return DashboardTimelineItem(
+      id: current.id.isNotEmpty ? current.id : next.id,
+      timeLabel: current.timeLabel != '--:--' ? current.timeLabel : next.timeLabel,
+      title: current.title.length >= next.title.length ? current.title : next.title,
+      subtitle: current.subtitle.length >= next.subtitle.length
+          ? current.subtitle
+          : next.subtitle,
+      category: current.category,
+      isCompleted: current.isCompleted || next.isCompleted,
+      sortOrder: current.sortOrder <= next.sortOrder
+          ? current.sortOrder
+          : next.sortOrder,
+    );
   }
 
   String _mealTimeLabel(DashboardMealItem meal) {
@@ -403,11 +632,122 @@ class DashboardDynamicLocalDatasource {
     }
   }
 
-  String _taskTimeLabel(int sortOrder) {
-    if (sortOrder <= 1) return '08:00';
-    if (sortOrder == 2) return '10:30';
-    if (sortOrder == 3) return '15:00';
-    return '20:30';
+  String _taskTimeLabel(DashboardTaskItem task) {
+    final explicitTime = _timeFromIso(task.timeLabel);
+    if (explicitTime != null) return explicitTime;
+
+    final titleTime = _timeFromText('${task.title} ${task.description ?? ''}');
+    if (titleTime != null) return titleTime;
+
+    switch (task.sortOrder) {
+      case 0:
+        return '06:00';
+      case 1:
+        return '06:15';
+      case 2:
+        return '07:00';
+      case 3:
+        return '08:00';
+      case 4:
+        return '10:30';
+      case 5:
+        return '12:00';
+      case 6:
+        return '15:00';
+      case 7:
+        return '18:30';
+      default:
+        return '20:30';
+    }
+  }
+
+  String? _readTaskTime(Map<String, Object?> row) {
+    const timeColumns = [
+      'time_label',
+      'task_time',
+      'start_time',
+      'scheduled_time',
+      'scheduled_at',
+      'reminder_time',
+      'due_time',
+      'due_at',
+      'target_time',
+    ];
+
+    for (final column in timeColumns) {
+      final time = _timeFromIso(_readString(row[column]));
+      if (time != null) return time;
+    }
+
+    return _timeFromText(
+      '${_readString(row['title']) ?? ''} ${_readString(row['description']) ?? ''}',
+    );
+  }
+
+  String? _timeFromText(String value) {
+    final match = RegExp(r'\b(\d{1,2})[:hH](\d{2})\b').firstMatch(value);
+    if (match == null) return null;
+
+    final hour = int.tryParse(match.group(1) ?? '');
+    final minute = int.tryParse(match.group(2) ?? '');
+    if (hour == null || minute == null) return null;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+
+    return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+  }
+
+  int _timelineSortOrder(String timeLabel, int fallbackPriority) {
+    return _timeSortValue(timeLabel) * 1000 + fallbackPriority.clamp(0, 999).toInt();
+  }
+
+  int _timeSortValue(String timeLabel) {
+    final match = RegExp(r'^(\d{1,2}):(\d{2})').firstMatch(timeLabel);
+    if (match == null) return 24 * 60;
+
+    final hour = int.tryParse(match.group(1) ?? '') ?? 24;
+    final minute = int.tryParse(match.group(2) ?? '') ?? 0;
+    return hour * 60 + minute;
+  }
+
+  String _logicalCategory(String category) {
+    final normalized = _normalizeForCompare(category);
+    if (_containsAny(normalized, const ['meal', 'breakfast', 'lunch', 'dinner', 'snack'])) {
+      return 'meal';
+    }
+    if (_containsAny(normalized, const ['water', 'nuoc'])) return 'water';
+    if (_containsAny(normalized, const ['notification', 'reminder', 'thong bao', 'nhac'])) {
+      return 'notification';
+    }
+    return normalized.isEmpty ? 'health' : normalized;
+  }
+
+  bool _containsAny(String value, List<String> needles) {
+    for (final needle in needles) {
+      if (value.contains(needle)) return true;
+    }
+    return false;
+  }
+
+  String _normalizeForCompare(String value) {
+    var text = value.toLowerCase().trim();
+    final replacements = <String, String>{
+      r'[àáạảãâầấậẩẫăằắặẳẵ]': 'a',
+      r'[èéẹẻẽêềếệểễ]': 'e',
+      r'[ìíịỉĩ]': 'i',
+      r'[òóọỏõôồốộổỗơờớợởỡ]': 'o',
+      r'[ùúụủũưừứựửữ]': 'u',
+      r'[ỳýỵỷỹ]': 'y',
+      r'đ': 'd',
+    };
+
+    for (final entry in replacements.entries) {
+      text = text.replaceAll(RegExp(entry.key), entry.value);
+    }
+
+    return text
+        .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 
   String _mealTypeLabel(String type) {
@@ -427,9 +767,16 @@ class DashboardDynamicLocalDatasource {
 
   String? _timeFromIso(String? value) {
     if (value == null || value.isEmpty) return null;
-    if (RegExp(r'^\d{2}:\d{2}').hasMatch(value)) {
-      return value.substring(0, 5);
+
+    final shortTime = RegExp(r'^(\d{1,2}):(\d{2})').firstMatch(value);
+    if (shortTime != null) {
+      final hour = int.tryParse(shortTime.group(1) ?? '');
+      final minute = int.tryParse(shortTime.group(2) ?? '');
+      if (hour == null || minute == null) return null;
+      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+      return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
     }
+
     final parsed = DateTime.tryParse(value);
     if (parsed == null) return null;
     return '${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}';

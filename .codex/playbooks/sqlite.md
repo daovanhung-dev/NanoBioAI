@@ -1,31 +1,52 @@
-# Playbook — SQLite / DAO / Migration
+# Playbook - SQLite / DAO / Migration
 
-## Mục tiêu
+## Muc tieu
 
-DB thay đổi phải đồng bộ đủ table/model/DAO/migration/onCreate và không phá dữ liệu cũ.
+Moi thay doi DB phai dong bo schema, model, DAO, migration, onCreate va khong pha du lieu cu.
 
-## Khi đổi schema
+## Doc truoc
 
-Bắt buộc kiểm tra:
+- `lib/core/storage/localdb/database_version.dart`
+- `lib/core/storage/localdb/database_service.dart`
+- `lib/core/storage/localdb/migrations/`
+- `lib/core/storage/localdb/tables/`
+- `lib/core/storage/localdb/models/`
+- `lib/core/storage/localdb/daos/`
+- Tests: `test/core/storage/localdb/`
 
-- `database_version.dart`
-- `database_service.dart` / onCreate
-- `migrations/`
-- `tables/`
-- `models/`
-- `daos/`
-- datasource/repository gọi DAO.
+## Snapshot
 
-## Quy tắc
+- Version hien tai: `DatabaseVersion.currentVersion = 8`.
+- Doi schema thi tang version va them migration moi.
 
-- Không sửa migration cũ nếu đã phát hành; thêm migration mới.
-- Tăng database version khi đổi schema.
-- `onCreate` cho app cài mới phải tạo đủ bảng mới nhất.
-- Model phải map đúng column name, nullable/default rõ ràng.
-- DAO không swallow exception im lặng nếu dữ liệu quan trọng.
+## Quy tac schema
 
-## Test nên có
+- Khong sua migration cu neu da phat hanh; them migration moi.
+- `onCreate` phai tao schema moi nhat cho app cai moi.
+- Model map dung column name, nullable/default ro rang.
+- DAO khong swallow exception im lang voi data quan trong.
+- Query theo ngay/gio phai ro format/timezone.
+- Repository/datasource goi DAO theo pattern hien co, UI khong goi DAO.
 
-- Insert/read/update/delete cơ bản.
-- Migration không mất dữ liệu quan trọng.
-- Query dùng cho dashboard/schedule trả đúng thứ tự/thời gian.
+## Checklist doi schema
+
+- [ ] `database_version.dart`
+- [ ] `tables/*.dart`
+- [ ] `models/*.dart`
+- [ ] `daos/*.dart`
+- [ ] `migrations/migration_vX.dart`
+- [ ] `database_service.dart` / `onCreate`
+- [ ] datasource/repository lien quan
+- [ ] CRUD/migration tests
+
+## Tim nhanh
+
+```bash
+rg "CREATE TABLE|ALTER TABLE|databaseVersion|currentVersion|onCreate|migration" lib/core/storage/localdb test/core/storage/localdb
+rg "SELECT|INSERT|UPDATE|DELETE|rawQuery|transaction" lib/core/storage/localdb/daos lib/features test
+```
+
+## Test nen chay
+
+- `flutter test test/core/storage/localdb`
+- Test feature lien quan neu DAO duoc goi qua datasource.

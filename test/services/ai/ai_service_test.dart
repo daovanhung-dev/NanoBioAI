@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
@@ -12,6 +14,7 @@ import 'package:nano_app/services/ai/ai_exceptions.dart';
 import 'package:nano_app/services/ai/ai_json_parser.dart';
 import 'package:nano_app/services/ai/ai_json_prompt_builder.dart';
 import 'package:nano_app/services/ai/ai_service.dart';
+import 'package:nano_app/services/ai/ai_trace_logger.dart';
 import 'package:nano_app/services/ai/ai_vietnamese_text_validator.dart';
 import 'package:nano_app/services/ai/prompts/exercise_tasks_prompt.dart';
 import 'package:nano_app/services/ai/prompts/meal_plan_prompt.dart';
@@ -349,6 +352,41 @@ void main() {
       expect(prompts[1], contains('br_oat_egg'));
     });
 
+    test(
+      'meal generation logs trace, prompt, raw response, and AI source',
+      () async {
+        final rawResponse = jsonEncode(
+          _mealItemsForRange(startDay: 1, days: 1),
+        );
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async {
+            return rawResponse;
+          },
+        );
+
+        final logs = await _captureDebugPrint(() async {
+          final meals = await service.generateMealPlan(
+            healthData: const _FakeHealthData(),
+            userId: 'u1',
+            startDate: DateTime(2026, 6, 18),
+            days: 1,
+          );
+          expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
+        });
+        final joined = logs.join('\n');
+
+        expect(joined, contains('traceId=meal-plan-'));
+        expect(joined, contains('method=generateMealPlan'));
+        expect(joined, contains('PROMPT_SENT'));
+        expect(joined, contains(rawResponse));
+        expect(joined, contains('MEAL_CHUNK_SUCCESS'));
+        expect(joined, contains('source'));
+        expect(joined, contains(AITraceLogger.aiGen));
+      },
+    );
+
     test('meal generation falls back only for invalid chunks', () async {
       var call = 0;
       final service = AIService(
@@ -381,6 +419,78 @@ void main() {
         hasLength(MealPlanAiNormalizer.mealsPerDay),
       );
       expect(meals.map((meal) => meal.mealName), isNot(contains('Bua sang')));
+    });
+
+    test(
+      'meal generation logs validation failure stack and local source',
+      () async {
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async {
+            final items = _mealItemsForRange(startDay: 1, days: 1);
+            items.first['meal_code'] = 'unknown_meal';
+            return jsonEncode(items);
+          },
+        );
+
+        final logs = await _captureDebugPrint(() async {
+          final meals = await service.generateMealPlan(
+            healthData: const _FakeHealthData(),
+            userId: 'u1',
+            startDate: DateTime(2026, 6, 18),
+            days: 1,
+          );
+          expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
+        });
+        final joined = logs.join('\n');
+
+        expect(joined, contains('MEAL_CHUNK_LOCAL_FALLBACK'));
+        expect(joined, contains('Unknown meal_code'));
+        expect(joined, contains('StackTrace'));
+        expect(joined, contains(AITraceLogger.localGen));
+        expect(joined, contains('MEAL_LOCAL_FALLBACK_ITEMS'));
+      },
+    );
+
+    test('transient retry logs attempts, transient flag, and delay', () async {
+      var call = 0;
+      final delays = <Duration>[];
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        random: Random(0),
+        delay: (duration) async {
+          delays.add(duration);
+        },
+        textGenerator: ({required modelName, required prompt}) async {
+          call++;
+          if (call == 1) {
+            throw TimeoutException('temporary overload');
+          }
+          return jsonEncode(_mealItemsForRange(startDay: 1, days: 1));
+        },
+      );
+
+      final logs = await _captureDebugPrint(() async {
+        final meals = await service.generateMealPlan(
+          healthData: const _FakeHealthData(),
+          userId: 'u1',
+          startDate: DateTime(2026, 6, 18),
+          days: 1,
+        );
+        expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
+      });
+      final joined = logs.join('\n');
+
+      expect(call, 2);
+      expect(delays, hasLength(1));
+      expect(joined, contains('RETRY_ATTEMPT_FAILED'));
+      expect(joined, contains('"modelAttempt": 1'));
+      expect(joined, contains('"totalAttempt": 1'));
+      expect(joined, contains('"transient": true'));
+      expect(joined, contains('RETRY_DELAY'));
+      expect(joined, contains('delayMs'));
     });
 
     test('exercise generation returns fourteen catalog-mapped tasks', () async {
@@ -510,6 +620,24 @@ void main() {
 }
 
 final Matcher _containsMojibake = matches(RegExp(r'Ã|Ä|Æ|áº|á»|Â'));
+
+Future<List<String>> _captureDebugPrint(Future<void> Function() body) async {
+  final previousDebugPrint = debugPrint;
+  final logs = <String>[];
+  debugPrint = (String? message, {int? wrapWidth}) {
+    if (message != null) {
+      logs.add(message);
+    }
+  };
+
+  try {
+    await body();
+  } finally {
+    debugPrint = previousDebugPrint;
+  }
+
+  return logs;
+}
 
 List<Map<String, Object?>> _mealItemsForRange({
   required int startDay,

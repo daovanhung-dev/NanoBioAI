@@ -1,9 +1,12 @@
-Đọc `.codex/AGENTS.md` trước.
+Đọc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`.
+Chọn 1 playbook nếu review thuộc module cụ thể.
 
-Task: review phần code sau:
-[FILE/MODULE]
+Task: review module/file
+[MODULE/FILE]
 
 Yêu cầu:
-- Nhận xét kiến trúc, bug tiềm ẩn, test thiếu, rủi ro token/phạm vi.
-- Không sửa code trừ khi được yêu cầu.
-- Đề xuất patch nhỏ nhất và thứ tự ưu tiên.
+- Chỉ review, không sửa code nếu chưa được yêu cầu.
+- Nêu bug, rủi ro kiến trúc, regression, test thiếu.
+- Ưu tiên findings theo severity, có file/line cụ thể.
+- Đề xuất patch nhỏ nhất.
+- Nếu tạo tài liệu review, cập nhật worklog trong `docs/worklog/<yyyy-mm-dd>/`.

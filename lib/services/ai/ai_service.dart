@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
@@ -17,6 +16,7 @@ import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
 import 'ai_exceptions.dart';
 import 'ai_json_parser.dart';
 import 'ai_json_prompt_builder.dart';
+import 'ai_trace_logger.dart';
 import 'prompts/exercise_tasks_prompt.dart';
 import 'prompts/meal_plan_prompt.dart';
 
@@ -52,6 +52,7 @@ class AIConnectionCheckResult {
 }
 
 class AIService {
+  static const _tag = 'AI_SERVICE';
   static const _chunkSizes = [2, 2, 3];
   static const _connectionCheckStatusCode = 'ai_connection_ok';
   static const _connectionCheckPrompt = '''
@@ -97,6 +98,16 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
               ? dotenv.env['GEMINI_FALLBACK_MODELS']
               : null,
         );
+    AITraceLogger.info(
+      _tag,
+      AITraceLogger.nextTraceId('ai-service-init'),
+      'AIService.constructor',
+      'MODELS_RESOLVED',
+      'Resolved model names',
+      data: {'models': resolvedModelNames},
+      location: StackTrace.current,
+    );
+
     final generationConfig = GenerationConfig(
       candidateCount: 1,
       maxOutputTokens: 8192,
@@ -123,7 +134,28 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
   Future<AIConnectionCheckResult> checkConnection({
     Duration perModelTimeout = const Duration(seconds: 12),
   }) async {
+    final traceId = AITraceLogger.nextTraceId('ai-connection');
+    const method = 'checkConnection';
+    AITraceLogger.start(
+      _tag,
+      traceId,
+      method,
+      data: {
+        'perModelTimeoutMs': perModelTimeout.inMilliseconds,
+        'models': _modelNames(),
+      },
+      location: StackTrace.current,
+    );
+
     if (_models.isEmpty) {
+      AITraceLogger.warning(
+        _tag,
+        traceId,
+        method,
+        'NO_MODELS',
+        'Không có model AI để kiểm tra.',
+        location: StackTrace.current,
+      );
       return const AIConnectionCheckResult.failure(
         message: 'Không có model AI để kiểm tra.',
       );
@@ -135,9 +167,21 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
 
     for (final entry in _models) {
       try {
+        AITraceLogger.info(
+          _tag,
+          traceId,
+          method,
+          'MODEL_CHECK_START',
+          'Kiểm tra kết nối với model ${entry.name}',
+          data: {'model': entry.name},
+          location: StackTrace.current,
+        );
         final text = await _generateText(
           entry,
           prompt,
+          traceId: traceId,
+          method: method,
+          step: 'CONNECTION_CHECK_GENERATE_TEXT',
         ).timeout(perModelTimeout);
 
         if (text.trim().isEmpty) {
@@ -148,6 +192,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         if (decoded.isEmpty) {
           throw const FormatException('Gemini returned an empty JSON array');
         }
+        AITraceLogger.payload(
+          _tag,
+          traceId,
+          method,
+          'CONNECTION_CHECK_DECODED_JSON',
+          decoded,
+          location: StackTrace.current,
+        );
 
         final first = decoded.first;
         if (first is! Map ||
@@ -157,21 +209,48 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
           );
         }
 
+        AITraceLogger.success(
+          _tag,
+          traceId,
+          method,
+          'SUCCESS',
+          'AI connection check thành công.',
+          data: {'model': entry.name, 'source': AITraceLogger.aiGen},
+          location: StackTrace.current,
+        );
         return AIConnectionCheckResult.success(modelName: entry.name);
-      } catch (error) {
+      } catch (error, stackTrace) {
         lastError = error;
         lastModelName = entry.name;
-        debugPrint(
+        AITraceLogger.error(
+          _tag,
+          traceId,
+          method,
+          'MODEL_CHECK_FAILED',
           'AI connection check failed model=${entry.name} '
-          'reason=${_connectionCheckFailureMessage(error)}',
+              'reason=${_connectionCheckFailureMessage(error)}',
+          error,
+          stackTrace,
+          data: {'model': entry.name},
+          location: StackTrace.current,
         );
       }
     }
 
-    return AIConnectionCheckResult.failure(
+    final result = AIConnectionCheckResult.failure(
       message: _connectionCheckFailureMessage(lastError),
       modelName: lastModelName,
     );
+    AITraceLogger.warning(
+      _tag,
+      traceId,
+      method,
+      'FAILURE',
+      result.message,
+      data: {'lastModelName': lastModelName},
+      location: StackTrace.current,
+    );
+    return result;
   }
 
   Future<List<MealPlanModel>> generateMealPlan({
@@ -180,12 +259,46 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required DateTime startDate,
     int days = 7,
   }) async {
+    final traceId = AITraceLogger.nextTraceId('meal-plan');
+    const method = 'generateMealPlan';
+    AITraceLogger.start(
+      _tag,
+      traceId,
+      method,
+      data: {
+        'userId': userId,
+        'startDate': startDate.toIso8601String(),
+        'days': days,
+        'models': _modelNames(),
+        'healthData': _healthDataToMap(healthData),
+      },
+      location: StackTrace.current,
+    );
+
     final catalog = await _catalogLoader();
+    AITraceLogger.payload(
+      _tag,
+      traceId,
+      method,
+      'CATALOG_LOADED',
+      _catalogSummary(catalog),
+      location: StackTrace.current,
+    );
+
     final normalizer = const MealPlanAiNormalizer();
     final usedCodeCounts = <String, int>{};
     final codeItems = <Map<String, dynamic>>[];
+    final chunks = _chunkPlan(days);
+    AITraceLogger.payload(
+      _tag,
+      traceId,
+      method,
+      'CHUNK_PLAN',
+      chunks.map((chunk) => chunk.toMap()).toList(growable: false),
+      location: StackTrace.current,
+    );
 
-    for (final chunk in _chunkPlan(days)) {
+    for (final chunk in chunks) {
       final prompt = MealPlanPrompt.generate(
         healthData: healthData,
         startDate: startDate,
@@ -194,6 +307,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         catalog: catalog.meals,
         usedMealCodes: _usedCodes(usedCodeCounts),
       );
+      AITraceLogger.payload(
+        _tag,
+        traceId,
+        method,
+        'MEAL_CHUNK_PROMPT_ORIGINAL day=${chunk.startDay}',
+        prompt,
+        location: StackTrace.current,
+      );
 
       final chunkItems = await _generateMealChunk(
         normalizer: normalizer,
@@ -201,19 +322,51 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         prompt: prompt,
         chunk: chunk,
         usedCodeCounts: usedCodeCounts,
+        traceId: traceId,
       );
       _accumulateCodeCounts(chunkItems, 'meal_code', usedCodeCounts);
       codeItems.addAll(chunkItems);
+      AITraceLogger.payload(
+        _tag,
+        traceId,
+        method,
+        'MEAL_USED_CODE_COUNTS_AFTER_CHUNK day=${chunk.startDay}',
+        usedCodeCounts,
+        location: StackTrace.current,
+      );
     }
 
-    return normalizer.normalize(
+    final createdAt = DateTime.now().toIso8601String();
+    final meals = normalizer.normalize(
       items: codeItems,
       catalog: catalog,
       userId: userId,
       startDate: startDate,
       days: days,
-      createdAt: DateTime.now().toIso8601String(),
+      createdAt: createdAt,
     );
+    AITraceLogger.success(
+      _tag,
+      traceId,
+      method,
+      'SUCCESS',
+      'Tạo thực đơn hoàn tất.',
+      data: {
+        'totalCodeItems': codeItems.length,
+        'totalMeals': meals.length,
+        'createdAt': createdAt,
+      },
+      location: StackTrace.current,
+    );
+    AITraceLogger.payload(
+      _tag,
+      traceId,
+      method,
+      'NORMALIZED_MEAL_PLAN_OUTPUT',
+      _mealPlansToMaps(meals),
+      location: StackTrace.current,
+    );
+    return meals;
   }
 
   Future<List<ExerciseTaskModel>> generateExerciseTasks({
@@ -221,12 +374,45 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required DateTime startDate,
     int days = 7,
   }) async {
+    final traceId = AITraceLogger.nextTraceId('exercise-tasks');
+    const method = 'generateExerciseTasks';
+    AITraceLogger.start(
+      _tag,
+      traceId,
+      method,
+      data: {
+        'startDate': startDate.toIso8601String(),
+        'days': days,
+        'models': _modelNames(),
+        'profile': _dailyHealthProfileToMap(profile),
+      },
+      location: StackTrace.current,
+    );
+
     final catalog = await _catalogLoader();
+    AITraceLogger.payload(
+      _tag,
+      traceId,
+      method,
+      'CATALOG_LOADED',
+      _catalogSummary(catalog),
+      location: StackTrace.current,
+    );
+
     final normalizer = const ExerciseTasksAiNormalizer();
     final usedCodeCounts = <String, int>{};
     final codeItems = <Map<String, dynamic>>[];
+    final chunks = _chunkPlan(days);
+    AITraceLogger.payload(
+      _tag,
+      traceId,
+      method,
+      'CHUNK_PLAN',
+      chunks.map((chunk) => chunk.toMap()).toList(growable: false),
+      location: StackTrace.current,
+    );
 
-    for (final chunk in _chunkPlan(days)) {
+    for (final chunk in chunks) {
       final prompt = ExerciseTasksPrompt.generate(
         profile: profile,
         startDate: startDate,
@@ -235,6 +421,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         catalog: catalog.exercises,
         usedExerciseCodes: _usedCodes(usedCodeCounts),
       );
+      AITraceLogger.payload(
+        _tag,
+        traceId,
+        method,
+        'EXERCISE_CHUNK_PROMPT_ORIGINAL day=${chunk.startDay}',
+        prompt,
+        location: StackTrace.current,
+      );
 
       final chunkItems = await _generateExerciseChunk(
         normalizer: normalizer,
@@ -242,19 +436,51 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         prompt: prompt,
         chunk: chunk,
         usedCodeCounts: usedCodeCounts,
+        traceId: traceId,
       );
       _accumulateCodeCounts(chunkItems, 'exercise_code', usedCodeCounts);
       codeItems.addAll(chunkItems);
+      AITraceLogger.payload(
+        _tag,
+        traceId,
+        method,
+        'EXERCISE_USED_CODE_COUNTS_AFTER_CHUNK day=${chunk.startDay}',
+        usedCodeCounts,
+        location: StackTrace.current,
+      );
     }
 
-    return normalizer.normalize(
+    final createdAt = DateTime.now().toIso8601String();
+    final exercises = normalizer.normalize(
       items: codeItems,
       catalog: catalog,
       profile: profile,
       startDate: startDate,
       days: days,
-      createdAt: DateTime.now().toIso8601String(),
+      createdAt: createdAt,
     );
+    AITraceLogger.success(
+      _tag,
+      traceId,
+      method,
+      'SUCCESS',
+      'Tạo bài tập hoàn tất.',
+      data: {
+        'totalCodeItems': codeItems.length,
+        'totalExercises': exercises.length,
+        'createdAt': createdAt,
+      },
+      location: StackTrace.current,
+    );
+    AITraceLogger.payload(
+      _tag,
+      traceId,
+      method,
+      'NORMALIZED_EXERCISE_OUTPUT',
+      _exerciseTasksToMaps(exercises),
+      location: StackTrace.current,
+    );
+    return exercises;
   }
 
   Future<List<Map<String, dynamic>>> _generateMealChunk({
@@ -263,36 +489,91 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required String prompt,
     required _AIChunk chunk,
     required Map<String, int> usedCodeCounts,
+    required String traceId,
   }) async {
+    const method = 'generateMealPlan';
     try {
-      return await _runWithRetry<List<Map<String, dynamic>>>(
+      final items = await _runWithRetry<List<Map<String, dynamic>>>(
+        traceId: traceId,
+        method: method,
         label: 'LỖI TẠO THỰC ĐƠN AI',
         operation: (entry) async {
-          final decoded = await _generateJsonArray(entry, prompt);
-          return normalizer.validateCodeItems(
+          final decoded = await _generateJsonArray(
+            entry,
+            prompt,
+            traceId: traceId,
+            method: method,
+            step: 'MEAL_CHUNK day=${chunk.startDay}',
+          );
+          AITraceLogger.payload(
+            _tag,
+            traceId,
+            method,
+            'MEAL_DECODED_JSON day=${chunk.startDay} model=${entry.name}',
+            decoded,
+            location: StackTrace.current,
+          );
+          final validated = normalizer.validateCodeItems(
             items: decoded,
             catalog: catalog,
             startDay: chunk.startDay,
             days: chunk.days,
             usedCodeCounts: usedCodeCounts,
           );
+          AITraceLogger.payload(
+            _tag,
+            traceId,
+            method,
+            'MEAL_VALIDATED_CODE_ITEMS day=${chunk.startDay} model=${entry.name}',
+            validated,
+            location: StackTrace.current,
+          );
+          return validated;
         },
       );
+      AITraceLogger.success(
+        _tag,
+        traceId,
+        method,
+        'MEAL_CHUNK_SUCCESS',
+        'Chunk thực đơn tạo bằng AI.',
+        data: {
+          'source': AITraceLogger.aiGen,
+          'chunk': chunk.toMap(),
+          'itemCount': items.length,
+        },
+        location: StackTrace.current,
+      );
+      return items;
     } on AIOverloadedException {
       rethrow;
     } catch (error, stackTrace) {
-      _logFallback(
-        label: 'FALLBACK THỰC ĐƠN AI',
-        chunk: chunk,
-        error: error,
-        stackTrace: stackTrace,
+      AITraceLogger.error(
+        _tag,
+        traceId,
+        method,
+        'MEAL_CHUNK_LOCAL_FALLBACK',
+        'Chunk thực đơn chuyển sang local fallback.',
+        error,
+        stackTrace,
+        data: {'source': AITraceLogger.localGen, 'chunk': chunk.toMap()},
+        location: StackTrace.current,
       );
-      return normalizer.fallbackCodeItems(
+      final fallbackItems = normalizer.fallbackCodeItems(
         catalog: catalog,
         startDay: chunk.startDay,
         days: chunk.days,
         usedCodeCounts: usedCodeCounts,
       );
+      AITraceLogger.payload(
+        _tag,
+        traceId,
+        method,
+        'MEAL_LOCAL_FALLBACK_ITEMS day=${chunk.startDay}',
+        fallbackItems,
+        location: StackTrace.current,
+      );
+      return fallbackItems;
     }
   }
 
@@ -302,40 +583,97 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required String prompt,
     required _AIChunk chunk,
     required Map<String, int> usedCodeCounts,
+    required String traceId,
   }) async {
+    const method = 'generateExerciseTasks';
     try {
-      return await _runWithRetry<List<Map<String, dynamic>>>(
+      final items = await _runWithRetry<List<Map<String, dynamic>>>(
+        traceId: traceId,
+        method: method,
         label: 'LỖI TẠO BÀI TẬP AI',
         operation: (entry) async {
-          final decoded = await _generateJsonArray(entry, prompt);
-          return normalizer.validateCodeItems(
+          final decoded = await _generateJsonArray(
+            entry,
+            prompt,
+            traceId: traceId,
+            method: method,
+            step: 'EXERCISE_CHUNK day=${chunk.startDay}',
+          );
+          AITraceLogger.payload(
+            _tag,
+            traceId,
+            method,
+            'EXERCISE_DECODED_JSON day=${chunk.startDay} model=${entry.name}',
+            decoded,
+            location: StackTrace.current,
+          );
+          final validated = normalizer.validateCodeItems(
             items: decoded,
             catalog: catalog,
             startDay: chunk.startDay,
             days: chunk.days,
             usedCodeCounts: usedCodeCounts,
           );
+          AITraceLogger.payload(
+            _tag,
+            traceId,
+            method,
+            'EXERCISE_VALIDATED_CODE_ITEMS day=${chunk.startDay} model=${entry.name}',
+            validated,
+            location: StackTrace.current,
+          );
+          return validated;
         },
       );
+      AITraceLogger.success(
+        _tag,
+        traceId,
+        method,
+        'EXERCISE_CHUNK_SUCCESS',
+        'Chunk bài tập tạo bằng AI.',
+        data: {
+          'source': AITraceLogger.aiGen,
+          'chunk': chunk.toMap(),
+          'itemCount': items.length,
+        },
+        location: StackTrace.current,
+      );
+      return items;
     } on AIOverloadedException {
       rethrow;
     } catch (error, stackTrace) {
-      _logFallback(
-        label: 'FALLBACK BÀI TẬP AI',
-        chunk: chunk,
-        error: error,
-        stackTrace: stackTrace,
+      AITraceLogger.error(
+        _tag,
+        traceId,
+        method,
+        'EXERCISE_CHUNK_LOCAL_FALLBACK',
+        'Chunk bài tập chuyển sang local fallback.',
+        error,
+        stackTrace,
+        data: {'source': AITraceLogger.localGen, 'chunk': chunk.toMap()},
+        location: StackTrace.current,
       );
-      return normalizer.fallbackCodeItems(
+      final fallbackItems = normalizer.fallbackCodeItems(
         catalog: catalog,
         startDay: chunk.startDay,
         days: chunk.days,
         usedCodeCounts: usedCodeCounts,
       );
+      AITraceLogger.payload(
+        _tag,
+        traceId,
+        method,
+        'EXERCISE_LOCAL_FALLBACK_ITEMS day=${chunk.startDay}',
+        fallbackItems,
+        location: StackTrace.current,
+      );
+      return fallbackItems;
     }
   }
 
   Future<T> _runWithRetry<T>({
+    required String traceId,
+    required String method,
     required String label,
     required Future<T> Function(_AIModelEntry entry) operation,
   }) async {
@@ -353,17 +691,51 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         totalAttempts++;
 
         try {
-          return await operation(entry);
+          AITraceLogger.info(
+            _tag,
+            traceId,
+            method,
+            'RETRY_ATTEMPT_START',
+            label,
+            data: {
+              'model': entry.name,
+              'modelAttempt': modelAttempt,
+              'totalAttempt': totalAttempts,
+            },
+            location: StackTrace.current,
+          );
+          final result = await operation(entry);
+          AITraceLogger.success(
+            _tag,
+            traceId,
+            method,
+            'RETRY_ATTEMPT_SUCCESS',
+            label,
+            data: {
+              'model': entry.name,
+              'modelAttempt': modelAttempt,
+              'totalAttempt': totalAttempts,
+            },
+            location: StackTrace.current,
+          );
+          return result;
         } catch (error, stackTrace) {
           final transient = AIRetryPolicy.isTransient(error);
-          _logRetryError(
-            label: label,
-            modelName: entry.name,
-            modelAttempt: modelAttempt,
-            totalAttempt: totalAttempts,
-            isTransient: transient,
-            error: error,
-            stackTrace: stackTrace,
+          AITraceLogger.error(
+            _tag,
+            traceId,
+            method,
+            'RETRY_ATTEMPT_FAILED',
+            label,
+            error,
+            stackTrace,
+            data: {
+              'model': entry.name,
+              'modelAttempt': modelAttempt,
+              'totalAttempt': totalAttempts,
+              'transient': transient,
+            },
+            location: StackTrace.current,
           );
 
           if (!transient) {
@@ -378,37 +750,100 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             break;
           }
 
-          await _delay(
-            AIRetryPolicy.delayForFailureNumber(totalAttempts, random: _random),
+          final delay = AIRetryPolicy.delayForFailureNumber(
+            totalAttempts,
+            random: _random,
           );
+          AITraceLogger.info(
+            _tag,
+            traceId,
+            method,
+            'RETRY_DELAY',
+            'Chờ trước khi thử lại.',
+            data: {
+              'model': entry.name,
+              'nextTotalAttempt': totalAttempts + 1,
+              'delayMs': delay.inMilliseconds,
+            },
+            location: StackTrace.current,
+          );
+          await _delay(delay);
         }
       }
     }
 
+    AITraceLogger.warning(
+      _tag,
+      traceId,
+      method,
+      'RETRY_EXHAUSTED',
+      label,
+      data: {'totalAttempts': totalAttempts, 'models': _modelNames()},
+      location: StackTrace.current,
+    );
     throw const AIOverloadedException();
   }
 
   Future<List<dynamic>> _generateJsonArray(
     _AIModelEntry entry,
-    String prompt,
-  ) async {
+    String prompt, {
+    required String traceId,
+    required String method,
+    required String step,
+  }) async {
     final wrappedPrompt = AIJsonPromptBuilder.buildArrayPrompt(prompt);
     final text = await _generateText(
       entry,
       wrappedPrompt,
+      traceId: traceId,
+      method: method,
+      step: '$step.GENERATE_TEXT',
     ).timeout(const Duration(minutes: 10));
 
     if (text.trim().isEmpty) {
       throw Exception('Gemini trả về nội dung rỗng');
     }
 
-    return AIJsonParser.decodeArray(text);
+    final decoded = AIJsonParser.decodeArray(text);
+    AITraceLogger.payload(
+      _tag,
+      traceId,
+      method,
+      '$step.DECODE_ARRAY',
+      decoded,
+      location: StackTrace.current,
+    );
+    return decoded;
   }
 
-  Future<String> _generateText(_AIModelEntry entry, String prompt) async {
+  Future<String> _generateText(
+    _AIModelEntry entry,
+    String prompt, {
+    required String traceId,
+    required String method,
+    required String step,
+  }) async {
+    AITraceLogger.payload(
+      _tag,
+      traceId,
+      method,
+      '$step.PROMPT_SENT model=${entry.name}',
+      prompt,
+      location: StackTrace.current,
+    );
+
     final textGenerator = _textGenerator;
     if (textGenerator != null) {
-      return textGenerator(modelName: entry.name, prompt: prompt);
+      final text = await textGenerator(modelName: entry.name, prompt: prompt);
+      AITraceLogger.payload(
+        _tag,
+        traceId,
+        method,
+        '$step.RAW_RESPONSE model=${entry.name}',
+        text,
+        location: StackTrace.current,
+      );
+      return text;
     }
 
     final model = entry.model;
@@ -421,6 +856,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     if (text == null) {
       throw Exception('Gemini trả về nội dung rỗng');
     }
+    AITraceLogger.payload(
+      _tag,
+      traceId,
+      method,
+      '$step.RAW_RESPONSE model=${entry.name}',
+      text,
+      location: StackTrace.current,
+    );
     return text;
   }
 
@@ -459,6 +902,88 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     return codes;
   }
 
+  List<String> _modelNames() {
+    return _models.map((entry) => entry.name).toList(growable: false);
+  }
+
+  Map<String, Object?> _healthDataToMap(HealthDataInterface healthData) {
+    return {
+      'fullName': healthData.fullName,
+      'gender': healthData.gender,
+      'birthYear': healthData.birthYear,
+      'heightCm': healthData.heightCm,
+      'weightKg': healthData.weightKg,
+      'bmi': healthData.bmi,
+      'goals': healthData.goals,
+      'conditions': healthData.conditions,
+      'habits': healthData.habits,
+      'sleepQuality': healthData.sleepQuality,
+      'activityLevel': healthData.activityLevel,
+      'waterPerDay': healthData.waterPerDay,
+      'allergyName': healthData.allergyName,
+      'allergyNote': healthData.allergyNote,
+      'treatmentName': healthData.treatmentName,
+      'medicationName': healthData.medicationName,
+      'treatmentNote': healthData.treatmentNote,
+      'concernText': healthData.concernText,
+    };
+  }
+
+  Map<String, Object?> _dailyHealthProfileToMap(
+    DailyHealthProfileEntity profile,
+  ) {
+    return {
+      'userId': profile.userId,
+      'fullName': profile.fullName,
+      'goals': profile.goals,
+      'conditions': profile.conditions,
+      'habits': profile.habits,
+      'sleepQuality': profile.sleepQuality,
+      'activityLevel': profile.activityLevel,
+      'waterPerDay': profile.waterPerDay,
+    };
+  }
+
+  Map<String, Object?> _catalogSummary(AiCatalogBundle catalog) {
+    return {
+      'mealCount': catalog.meals.length,
+      'mealCodes': catalog.meals.map((item) => item.code).toList(),
+      'exerciseCount': catalog.exercises.length,
+      'exerciseCodes': catalog.exercises.map((item) => item.code).toList(),
+      'scheduleTaskCount': catalog.scheduleTasks.length,
+      'scheduleTaskCodes': catalog.scheduleTasks
+          .map((item) => item.code)
+          .toList(),
+    };
+  }
+
+  List<Map<String, Object?>> _mealPlansToMaps(List<MealPlanModel> meals) {
+    return meals.map((meal) => meal.toMap()).toList(growable: false);
+  }
+
+  List<Map<String, Object?>> _exerciseTasksToMaps(
+    List<ExerciseTaskModel> exercises,
+  ) {
+    return exercises
+        .map(
+          (exercise) => {
+            'id': exercise.id,
+            'userId': exercise.userId,
+            'scheduleDate': exercise.scheduleDate,
+            'startTime': exercise.startTime,
+            'endTime': exercise.endTime,
+            'title': exercise.title,
+            'description': exercise.description,
+            'targetValue': exercise.targetValue,
+            'unit': exercise.unit,
+            'encouragement': exercise.encouragement,
+            'createdAt': exercise.createdAt,
+            'updatedAt': exercise.updatedAt,
+          },
+        )
+        .toList(growable: false);
+  }
+
   String _connectionCheckFailureMessage(Object? error) {
     if (error == null) {
       return 'Không thể kiểm tra kết nối AI.';
@@ -482,34 +1007,6 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     }
 
     return 'Không thể kết nối AI. Kiểm tra GEMINI_API_KEY, model hoặc mạng.';
-  }
-
-  void _logRetryError({
-    required String label,
-    required String modelName,
-    required int modelAttempt,
-    required int totalAttempt,
-    required bool isTransient,
-    required Object error,
-    required StackTrace stackTrace,
-  }) {
-    debugPrint(
-      '$label model=$modelName modelAttempt=$modelAttempt '
-      'totalAttempt=$totalAttempt transient=$isTransient',
-    );
-    debugPrint(error.toString());
-    debugPrint(stackTrace.toString());
-  }
-
-  void _logFallback({
-    required String label,
-    required _AIChunk chunk,
-    required Object error,
-    required StackTrace stackTrace,
-  }) {
-    debugPrint('$label chunkStart=${chunk.startDay} chunkDays=${chunk.days}');
-    debugPrint(error.toString());
-    debugPrint(stackTrace.toString());
   }
 }
 
@@ -606,4 +1103,8 @@ class _AIChunk {
   final int days;
 
   const _AIChunk({required this.startDay, required this.days});
+
+  Map<String, int> toMap() {
+    return {'startDay': startDay, 'days': days};
+  }
 }

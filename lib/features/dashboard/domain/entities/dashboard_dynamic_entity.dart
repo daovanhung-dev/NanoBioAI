@@ -153,6 +153,7 @@ class DashboardTaskItem {
   final bool isCompleted;
   final int sortOrder;
   final String? encouragement;
+  final String? timeLabel;
 
   const DashboardTaskItem({
     required this.id,
@@ -165,6 +166,7 @@ class DashboardTaskItem {
     required this.isCompleted,
     required this.sortOrder,
     required this.encouragement,
+    this.timeLabel,
   });
 
   double get progress {
