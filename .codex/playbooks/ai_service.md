@@ -1,4 +1,4 @@
-# Playbook - AI Service / Meal / Exercise
+# Playbook - AI Service / Meal / Exercise / Chat
 
 ## Muc tieu
 
@@ -8,6 +8,7 @@ AI co the timeout, quota, hoac tra sai format nhung app khong crash. Text user-f
 
 - `lib/services/ai/`
 - `lib/features/meal_plan/`
+- `lib/features/ai_chat/`
 - `lib/features/lifestyle_schedule/data/models/*normalizer*`
 - `lib/features/daily_health_tracking/data/models/*normalizer*`
 - Tests: `test/services/ai/`, `test/features/meal_plan/`, `test/features/lifestyle_schedule/`, `test/features/daily_health_tracking/`
@@ -26,6 +27,8 @@ AI co the timeout, quota, hoac tra sai format nhung app khong crash. Text user-f
 ## Quy tac
 
 - Khong tin output AI tuyet doi; validate schema/type/range.
+- AI chat phai xu ly dotenv/API key chua init an toan, khong crash khi test/unit khong load `.env`.
+- Khong de chat history/context tang vo han; neu sua chat, kiem tra message count/token growth/fallback.
 - Parser phai reject JSON sai schema thay vi crash.
 - Neu AI tra id/code/text khong dau, map qua catalog/normalizer de lay tieng Viet co dau.
 - Co fallback ro cho timeout, 503/quota, invalid JSON, missing fields.
@@ -35,7 +38,7 @@ AI co the timeout, quota, hoac tra sai format nhung app khong crash. Text user-f
 ## Tim nhanh
 
 ```bash
-rg "Gemini|generateContent|timeout|retry|fallback|AIService|AIChatService" lib/services/ai lib/features test
+rg "Gemini|generateContent|timeout|retry|fallback|AIService|AIChatService|dotenv|ChatSession" lib/services/ai lib/features test
 rg "validator|normalizer|catalog|Vietnamese|json|schema|trace" lib/services/ai lib/features test
 ```
 

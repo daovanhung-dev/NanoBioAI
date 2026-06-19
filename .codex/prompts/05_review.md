@@ -1,12 +1,13 @@
-Đọc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`.
-Chọn 1 playbook nếu review thuộc module cụ thể.
+Doc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`, `.codex/ISSUE_TODO_WORKFLOW.md`.
+Chon mode `find-issues`. Chon 1 playbook neu review thuoc module cu the.
 
 Task: review module/file
 [MODULE/FILE]
 
-Yêu cầu:
-- Chỉ review, không sửa code nếu chưa được yêu cầu.
-- Nêu bug, rủi ro kiến trúc, regression, test thiếu.
-- Ưu tiên findings theo severity, có file/line cụ thể.
-- Đề xuất patch nhỏ nhất.
-- Nếu tạo tài liệu review, cập nhật worklog trong `docs/worklog/<yyyy-mm-dd>/`.
+Yeu cau:
+- Chi review/tim bug, khong sua code, khong tao todo, khong fix.
+- Neu bug, rui ro kien truc, regression, test thieu.
+- Uu tien findings theo severity, co file/line cu the.
+- Neu co bug/rui ro ro, tao `docs/issues/<issue-slug>/<NNN>-issue-<issue-slug>.md`.
+- Chi de xuat huong patch nho nhat, khong viet patch.
+- Cap nhat worklog neu co tao docs.

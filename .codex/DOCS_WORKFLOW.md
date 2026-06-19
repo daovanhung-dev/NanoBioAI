@@ -2,26 +2,28 @@
 
 Doc file nay truoc khi code, review, test, hoac sua docs. Muc tieu: moi phien co dau vet ngan gon ve yeu cau, file da sua, cach kiem chung, va rui ro.
 
-## Khi nao phai ghi docs
+## Khi Nao Phai Ghi Docs
 
-- Luon tao/cap nhat worklog cho phien co code, review, test, sua docs, hoac phan tich loi.
+- Luon tao/cap nhat worklog cho phien co code, review, test, sua docs, hoac phan tich loi dang ke.
 - Tao docs chi tiet them khi phat sinh:
   - Feature moi/mo rong: `docs/features/`
   - Fix bug: `docs/fixbug/`
   - Test/regression/build co ket qua ro: `docs/test/`
   - Loi chua fix duoc hoac ngoai scope: `docs/issues/`
+  - Todo fix issue sau khi doc issue: `docs/todo/`
 - Neu chi hoi dap/phan tich ngan va khong sua file: khong bat buoc tao worklog, tru khi user yeu cau.
+- Moi phien chi lam dung mode: coding/test/find-issues/create-issues/create-todo/fix-issues.
 
-## Quy tac chung
+## Quy Tac Chung
 
 - Khong ghi secret, API key, token, mat khau, thong tin suc khoe nhay cam, raw AI/API response dai.
-- Dung tieng Viet co dau, ngan, du tra loi: lam gi, o dau, vi sao, kiem chung the nao, con rui ro gi.
-- File chi tiet phai co dong dau: `Commit đề xuất: ...`
-- File moi trong `docs/worklog`, `docs/features`, `docs/fixbug`, `docs/test`, `docs/issues` phai danh so `NNN-...md`.
+- Dung tieng Viet co dau trong docs user-facing; rieng `.codex` co the dung ASCII de tranh loi encoding.
+- File chi tiet phai co dong dau: `Commit de xuat: ...`
+- File moi trong `docs/worklog`, `docs/features`, `docs/fixbug`, `docs/test`, `docs/issues`, `docs/todo` phai danh so `NNN-...md`.
 - So `NNN` tinh trong chinh folder chua file do, lay so lon nhat + 1, khong doi so file cu.
-- Worklog phai link Markdown toi docs feature/fixbug/test/issue lien quan neu co.
+- Worklog phai link Markdown toi docs feature/fixbug/test/issue/todo lien quan neu co.
 
-## Vi tri file
+## Vi Tri File
 
 ```text
 docs/worklog/<yyyy-mm-dd>/<NNN>-worklog-<slug>.md
@@ -29,14 +31,15 @@ docs/features/<feature-slug>/<NNN>-feature-<feature-slug>.md
 docs/fixbug/<bug-slug>/<NNN>-fixbug-<bug-slug>.md
 docs/test/<test-slug>/<NNN>-test-<test-slug>.md
 docs/issues/<issue-slug>/<NNN>-issue-<issue-slug>.md
+docs/todo/<todo-slug>/<NNN>-todo-<todo-slug>.md
 ```
 
 Ngay dung timezone local cua user/project neu biet.
 
-## Worklog template
+## Worklog Template
 
 ```md
-Commit đề xuất: docs(worklog): ghi nhận phiên <slug>
+Commit de xuat: docs(worklog): ghi nhan phien <slug>
 
 # Worklog - <ten phien>
 
@@ -70,10 +73,10 @@ Commit đề xuất: docs(worklog): ghi nhận phiên <slug>
 - Can kiem tra tiep:
 ```
 
-## Feature template
+## Feature Template
 
 ```md
-Commit đề xuất: feat(scope): mo ta ngan
+Commit de xuat: feat(scope): mo ta ngan
 
 # <Ten feature>
 
@@ -115,10 +118,10 @@ Commit đề xuất: feat(scope): mo ta ngan
 - ...
 ```
 
-## Fix bug template
+## Fix Bug Template
 
 ```md
-Commit đề xuất: fix(scope): mo ta ngan
+Commit de xuat: fix(scope): mo ta ngan
 
 # <Ten bug>
 
@@ -141,16 +144,16 @@ Commit đề xuất: fix(scope): mo ta ngan
 
 ## Lien ket
 - Worklog:
-- Test/Issue:
+- Test/Issue/Todo:
 
 ## Regression can de y
 - ...
 ```
 
-## Test template
+## Test Template
 
 ```md
-Commit đề xuất: test(scope): mo ta ngan
+Commit de xuat: test(scope): mo ta ngan
 
 # <Ten test>
 
@@ -179,15 +182,19 @@ Commit đề xuất: test(scope): mo ta ngan
 - ...
 ```
 
-## Issue template
+## Issue Template
 
 ```md
-Commit đề xuất: docs(issue): ghi nhận lỗi <slug>
+Commit de xuat: docs(issue): ghi nhan loi <slug>
 
 # <Ten issue>
 
 ## Tom tat
 - ...
+
+## Expected / Actual
+- Mong doi:
+- Thuc te:
 
 ## Muc do anh huong
 - Severity: blocker/high/medium/low
@@ -198,7 +205,9 @@ Commit đề xuất: docs(issue): ghi nhận lỗi <slug>
 1. ...
 
 ## Da xac nhan
-- ...
+- File/line:
+- Log/command/test:
+- Case tai hien:
 
 ## Gia thuyet
 - ...
@@ -208,6 +217,7 @@ Commit đề xuất: docs(issue): ghi nhận lỗi <slug>
 
 ## Huong fix de xuat
 - ...
+- Khong viet patch code trong issue.
 
 ## Files/log lien quan
 - `path/file`
@@ -215,6 +225,42 @@ Commit đề xuất: docs(issue): ghi nhận lỗi <slug>
 ## Lien ket
 - Worklog:
 - Feature/Fixbug/Test:
+```
+
+## Todo Template
+
+```md
+Commit de xuat: docs(todo): lap todo fix <slug>
+
+# Todo - <Ten issue>
+
+## Issue goc
+- Issue: [<Ten issue>](../../issues/<issue-slug>/<NNN>-issue-<issue-slug>.md)
+- Severity:
+- Trang thai: todo
+
+## Muc tieu fix
+- ...
+
+## Khong lam trong todo nay
+- Khong sua code trong buoc tao todo.
+- Khong test/fix issue khac neu khong co yeu cau rieng.
+
+## Cac viec can lam
+1. [ ] Doc file/ham lien quan: `path/file`
+2. [ ] Xac minh nguyen nhan goc bang `rg`/test lien quan.
+3. [ ] Sua nho nhat tai `path/file`.
+4. [ ] Cap nhat docs fixbug/worklog sau khi fix.
+5. [ ] Chay command kiem chung o mode test hoac khi user yeu cau.
+
+## File du kien anh huong
+- `path/file` - ly do
+
+## Command can kiem chung
+- `command` - muc dich
+
+## Rui ro can de y
+- ...
 ```
 
 ## Logging

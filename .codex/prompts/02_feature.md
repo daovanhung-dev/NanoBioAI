@@ -1,16 +1,16 @@
-Đọc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`.
-Chọn đúng 1 playbook theo feature.
+Doc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`.
+Chon mode `coding`. Chon dung 1 playbook theo feature.
+Chi doc `docs/DD/**` neu user yeu cau ro lap trinh theo DD hoac doc DD.
 
-Task: triển khai chức năng
-[MÔ TẢ CHỨC NĂNG]
+Task: trien khai chuc nang
+[MO TA CHUC NANG]
 
-Yêu cầu:
-- Lập plan ngắn trước khi sửa nếu phạm vi lớn hơn 1 file.
-- Giữ Feature-first + Clean Architecture.
-- Không đổi public API nếu chưa `rg` usage.
-- Thêm/cập nhật test cho logic mới.
-- Tạo/cập nhật `docs/features/<feature-slug>/<NNN>-feature-<feature-slug>.md`.
-- Tạo/cập nhật worklog và link tới docs liên quan.
-- Nếu test có kết quả đáng ghi, tạo/cập nhật `docs/test/...`.
-- Nếu phát hiện lỗi chưa fix được, ghi `docs/issues/...`.
-- Chạy quick check hoặc báo rõ blocker.
+Yeu cau:
+- Lay context toi thieu bang `rg` va file lien quan truc tiep.
+- Lap plan ngan truoc khi sua neu pham vi lon hon 1 file; hoi chi tiet neu thieu thong tin chuc nang quan trong.
+- Giu Feature-first + Clean Architecture.
+- Khong doi public API neu chua `rg` usage.
+- Khong tim issue lan, khong fix issue ngoai scope, khong test lan neu user tach test thanh task rieng.
+- Tao/cap nhat `docs/features/<feature-slug>/<NNN>-feature-<feature-slug>.md`.
+- Tao/cap nhat worklog va link toi docs lien quan.
+- Neu can test, ghi command de xuat; chi chay khi task cho phep hoac user yeu cau.

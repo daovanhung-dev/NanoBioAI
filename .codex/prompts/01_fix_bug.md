@@ -1,16 +1,17 @@
-Đọc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`.
-Chọn đúng 1 playbook theo module lỗi.
+Doc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`, `.codex/ISSUE_TODO_WORKFLOW.md`.
+Chon mode `fix-issues` neu bug da co issue/todo, hoac mode `coding` neu user yeu cau sua truc tiep bug/log chua co issue.
+Chon dung 1 playbook theo module loi.
 
-Bug/log:
-[PASTE BUG/LOG]
+Bug/log hoac Issue/Todo:
+[PASTE BUG/LOG/ISSUE/TODO]
 
-Yêu cầu:
-1. Xác định triệu chứng và nguyên nhân gốc.
-2. Dùng `rg` tìm usage trước khi đổi public API/provider/route/schema.
-3. Sửa nhỏ nhất, không refactor lan.
-4. Thêm/cập nhật regression test nếu phù hợp.
-5. Chạy quick check hoặc báo rõ blocker.
-6. Tạo/cập nhật `docs/fixbug/<bug-slug>/<NNN>-fixbug-<bug-slug>.md` nếu có sửa bug.
-7. Tạo/cập nhật worklog và link tới docs liên quan.
-8. Nếu còn lỗi chưa fix được, ghi `docs/issues/...`.
-9. Báo cáo nguyên nhân, file sửa, docs, command, rủi ro.
+Yeu cau:
+1. Neu co issue/todo: doc issue + todo truoc, chi fix dung pham vi do.
+2. Neu chua co issue: xac dinh trieu chung va nguyen nhan goc trong pham vi bug/log user dua.
+3. Dung `rg` tim usage truoc khi doi public API/provider/route/schema.
+4. Sua nho nhat, khong refactor lan, khong gom issue khac.
+5. Chi chay test khi task cho phep hoac user yeu cau; neu khong, ghi command can chay la SKIPPED.
+6. Tao/cap nhat `docs/fixbug/<bug-slug>/<NNN>-fixbug-<bug-slug>.md` neu co sua bug.
+7. Cap nhat worklog va link toi docs lien quan.
+8. Neu phat hien loi khac ngoai scope, chi ghi `docs/issues/...` khi user cho phep hoac do la blocker truc tiep.
+9. Bao cao nguyen nhan, file sua, docs, command da chay/SKIPPED, rui ro.

@@ -1,6 +1,6 @@
 # AGENTS - NanoBio / BioAI
 
-File luat chinh cho Codex. Muc tieu: sua dung loi goc, giu luong san pham, kiem chung that, va tiet kiem token.
+File luat chinh cho Codex. Muc tieu: sua dung loi goc, giu flow san pham, kiem chung that, va tiet kiem token.
 
 ## Project Snapshot
 
@@ -14,20 +14,41 @@ File luat chinh cho Codex. Muc tieu: sua dung loi goc, giu luong san pham, kiem 
 ## Read Order
 
 1. Doc file nay.
-2. Doc `.codex/PROJECT_MAP.md` de chon dung module.
+2. Doc `.codex/PROJECT_MAP.md` de chon dung module/source.
 3. Neu sap code, review, test, hoac sua docs: doc `.codex/DOCS_WORKFLOW.md`.
-4. Doc dung 1 playbook lien quan truc tiep:
+4. Neu task la tim bug, tao issue, tao todo, hoac fix issue: doc `.codex/ISSUE_TODO_WORKFLOW.md`.
+5. Doc dung 1 playbook lien quan truc tiep:
    - Dashboard/health score/task: `.codex/playbooks/dashboard.md`
    - Onboarding: `.codex/playbooks/onboarding.md`
-   - AI/meal/exercise/parser: `.codex/playbooks/ai_service.md`
+   - AI/meal/exercise/parser/chat: `.codex/playbooks/ai_service.md`
    - Notification/reminder/action: `.codex/playbooks/notification.md`
    - SQLite/DAO/migration: `.codex/playbooks/sqlite.md`
    - UI/theme/copywriting: `.codex/playbooks/ui_nami.md`
    - Daily health tracking: `.codex/playbooks/health_tracking.md`
    - Lifestyle schedule/timeline: `.codex/playbooks/lifestyle_schedule.md`
-5. Dung `rg` de tim usage truoc khi mo rong pham vi hoac doi public API/provider/route/schema.
+6. Dung `rg` de tim usage truoc khi mo rong pham vi hoac doi public API/provider/route/schema.
 
-Khong doc toan bo repo khi task nam trong mot feature.
+Khong doc toan bo repo khi task nam trong mot feature. Neu user yeu cau doc toan du an, lam inventory truoc, sau do doc sau cac hotspot can cho task.
+
+## Context Strategy
+
+- Structure scan: dung `rg --files`, `Get-ChildItem`, `pubspec.yaml`, `analysis_options.yaml`, route/config, feature/test folders.
+- Targeted deep read: doc file user nhac, import truc tiep, provider/controller/repository/datasource usage, test gan nhat.
+- Exhaustive read: chi doc noi dung moi file text khi user yeu cau ro; van bo qua build/cache/generated/binary/secrets.
+- Dung lai khi da co: mode, module, trieu chung/muc tieu, file can sua, usage anh huong, cach kiem chung.
+
+## Task Mode Separation
+
+Moi phien chi chon 1 mode chinh: `coding`, `test`, `find-issues`, `create-issues`, `create-todo`, hoac `fix-issues`.
+
+- `coding`: lap trinh dung yeu cau; khong tim bug lan, khong fix issue ngoai scope.
+- `test`: chay test/analyze/build va ghi ket qua; khong sua code khi fail.
+- `find-issues`: review/tim bug/rui ro va ghi `docs/issues` neu co; khong sua code, khong tao todo.
+- `create-issues`: chuyen findings/bug thanh issue; khong sua code, khong tao todo.
+- `create-todo`: doc issue da co va tao `docs/todo`; khong sua code, khong test.
+- `fix-issues`: doc issue + todo lien quan va sua nho nhat de dong issue.
+
+Chi doc `docs/DD/**` khi user yeu cau ro lap trinh theo DD, tao feature theo DD, hoac doc DD. Neu code mau thuan DD, bao ro `code hien tai` vs `DD tam nhin`, khong tu nang scope.
 
 ## Architecture Rules
 
@@ -74,15 +95,15 @@ Dashboard production phai doc data that tu data layer/SQLite. Empty state duoc p
 - Giong Nami: diu dang, tu nhien, khong phan xet, khong gay cam giac bi cham diem.
 - Khong de user thay thuat ngu noi bo: database, table, query, parser, exception, stack trace, log.
 - Error/loading/empty state phai ro rang va de chiu.
-- Uu tien token trong `lib/core/theme/`: `AppColors`, `AppSpacing`, `AppRadius`, `AppTextStyles`, `AppDecoration`, `AppGradients`, `AppShadows`.
+- Uu tien token trong `lib/core/theme/`: `AppColors`, `AppSpacing`, `AppRadius`, `AppTextStyles`, `AppDecoration`, `AppGradients`, `AppShadows`, `AppDuration`.
 
 ## Work Process
 
 Discover:
 
-- Xac dinh module chinh va playbook duy nhat can doc.
-- Mo file dang loi/duoc yeu cau, import truc tiep, provider/repository usage bang `rg`, test lien quan.
-- Dung khi da du nguyen nhan goc va patch nho nhat.
+- Xac dinh mode, module chinh va playbook duy nhat can doc.
+- Mo file dang loi/duoc yeu cau, import truc tiep, usage bang `rg`, test lien quan.
+- Dung khi da du nguyen nhan goc hoac pham vi thay doi nho nhat.
 
 Patch:
 
@@ -91,6 +112,7 @@ Patch:
 - Neu doi schema: version + migration + table + model + DAO + onCreate.
 - Neu doi logic rui ro: them/cap nhat test phu hop.
 - Neu code/docs/review/test: cap nhat worklog theo `.codex/DOCS_WORKFLOW.md`.
+- Neu tim bug/tao issue/tao todo/fix issue: lam theo `.codex/ISSUE_TODO_WORKFLOW.md` va khong tron mode.
 
 Validate:
 

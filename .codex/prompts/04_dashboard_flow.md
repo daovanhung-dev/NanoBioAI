@@ -1,22 +1,22 @@
-Đọc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`, `.codex/playbooks/dashboard.md`.
+Doc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`, `.codex/playbooks/dashboard.md`.
 
-Task: sửa đúng luồng Dashboard.
+Task: sua dung luong Dashboard.
 
-Luồng bắt buộc:
+Luong bat buoc:
 
 ```text
-Onboarding thành công
--> tạo meal/tasks/schedule
--> lưu SQLite
--> dashboard tính điểm/timeline từ SQLite
--> notification action cập nhật SQLite
+Onboarding thanh cong
+-> tao meal/tasks/schedule
+-> luu SQLite
+-> dashboard tinh diem/timeline tu SQLite
+-> notification action cap nhat SQLite
 -> dashboard refresh
 ```
 
-Yêu cầu:
-- Loại bỏ mock/fake production.
-- Không bypass provider/repository/datasource/DAO.
-- Tách calculator/mapper nếu cần để test.
-- Cập nhật docs fixbug/feature/test/issues theo phạm vi thay đổi.
-- Cập nhật worklog.
-- Chạy quick check và báo cáo rõ.
+Yeu cau:
+- Loai bo mock/fake production.
+- Khong bypass provider/repository/datasource/DAO.
+- Tach calculator/mapper neu can de test.
+- Cap nhat docs fixbug/feature/test/issues theo pham vi thay doi.
+- Cap nhat worklog.
+- Chay quick check hoac ghi ro ly do skip.

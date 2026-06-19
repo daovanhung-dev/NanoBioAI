@@ -1,12 +1,12 @@
-Đọc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`, `.codex/playbooks/ui_nami.md`.
+Doc `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`, `.codex/playbooks/ui_nami.md`.
 
-Task: thổi hồn UI theo phong cách Nami cho:
-[FILE/MÀN HÌNH]
+Task: thoi hon UI theo phong cach Nami cho:
+[FILE/MAN HINH]
 
-Yêu cầu:
-- Chỉ đổi user-facing copy/UI liên quan, không đổi logic nếu không cần.
-- Tiếng Việt có dấu, nhẹ nhàng, ấm áp, không phán xét.
-- Không hiển thị thuật ngữ kỹ thuật/nội bộ.
-- Giữ theme tokens và responsive layout.
-- Kiểm tra overflow/loading/empty/error/data state nếu liên quan.
-- Cập nhật worklog nếu có sửa file.
+Yeu cau:
+- Chi doi user-facing copy/UI lien quan, khong doi logic neu khong can.
+- User-facing copy trong app phai la tieng Viet co dau, nhe nhang, am ap, khong phan xet.
+- Khong hien thi thuat ngu ky thuat/noi bo.
+- Giu theme tokens va responsive layout.
+- Kiem tra overflow/loading/empty/error/data state neu lien quan.
+- Cap nhat worklog neu co sua file.
