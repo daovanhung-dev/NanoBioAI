@@ -21,7 +21,8 @@ class LifestyleSchedulePage extends ConsumerWidget {
         loading: () => const _SchedulePageFrame(child: _ScheduleLoadingState()),
         error: (error, _) => _SchedulePageFrame(
           child: _ScheduleErrorState(
-            message: error.toString(),
+            message:
+                'Nami chưa mở được lịch trình. Bạn thử tải lại giúp Nami nhé.',
             onRetry: () => ref
                 .read(lifestyleScheduleControllerProvider.notifier)
                 .refresh(),
@@ -1370,8 +1371,7 @@ class _ScheduleErrorState extends StatelessWidget {
           variant: CardVariant.elevated,
           padding: const EdgeInsets.all(AppSpacingTokens.cardPadding),
           child: ErrorState(
-            message:
-                'Nami chưa mở được lịch trình. Bạn thử tải lại giúp Nami nhé.\n$message',
+            message: message,
             onRetry: onRetry,
           ),
         ),

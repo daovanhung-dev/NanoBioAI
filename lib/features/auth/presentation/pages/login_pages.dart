@@ -40,7 +40,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         error: (e, st) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(e.toString())));
+          ).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Nami chưa thể đăng nhập lúc này. Bạn kiểm tra lại thông tin rồi thử thêm một lần nhé.',
+              ),
+            ),
+          );
         },
       );
     });

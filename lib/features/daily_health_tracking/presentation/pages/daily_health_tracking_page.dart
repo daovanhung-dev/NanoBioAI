@@ -17,7 +17,10 @@ class DailyHealthTrackingPage extends ConsumerWidget {
       backgroundColor: AppColors.background,
       body: trackingAsync.when(
         loading: () => const _TrackingLoading(),
-        error: (error, _) => _TrackingError(message: error.toString()),
+        error: (error, _) => const _TrackingError(
+          message:
+              'Nami chưa thể mở phần theo dõi hôm nay. Bạn thử lại sau một chút nhé.',
+        ),
         data: (state) => RefreshIndicator(
           onRefresh: () => ref
               .read(dailyHealthTrackingControllerProvider.notifier)

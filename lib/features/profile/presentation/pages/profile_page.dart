@@ -18,7 +18,8 @@ class ProfilePage extends ConsumerWidget {
         child: dashboardAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => _EmptyProfile(
-            message: 'Chưa đọc được hồ sơ từ SQLite: $error',
+            message:
+                'Nami chưa thể mở hồ sơ của bạn lúc này. Mình thử lại sau một chút nhé.',
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
           data: (dashboard) => RefreshIndicator(
@@ -62,7 +63,8 @@ class ProfilePage extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.lg),
                       _ChipSection(
                         title: 'Mục tiêu',
-                        emptyMessage: 'Chưa có mục tiêu trong SQLite',
+                        emptyMessage:
+                            'Nami chưa thấy mục tiêu nào được chọn.',
                         items: dashboard.goals,
                         icon: Icons.flag_rounded,
                       ),
@@ -70,14 +72,15 @@ class ProfilePage extends ConsumerWidget {
                       _ChipSection(
                         title: 'Tình trạng cần lưu ý',
                         emptyMessage:
-                            'Chưa có tình trạng sức khỏe trong SQLite',
+                            'Nami chưa thấy tình trạng nào cần lưu ý.',
                         items: dashboard.conditions,
                         icon: Icons.health_and_safety_rounded,
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       _ChipSection(
                         title: 'Thói quen',
-                        emptyMessage: 'Chưa có thói quen trong SQLite',
+                        emptyMessage:
+                            'Nami chưa thấy thói quen nào được ghi nhớ.',
                         items: dashboard.habits,
                         icon: Icons.restaurant_rounded,
                       ),
@@ -146,7 +149,7 @@ class _ProfileHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Dữ liệu được đọc từ bảng users, health_profiles, goals và conditions.',
+                  'Nami sẽ dùng những thông tin này để chăm sóc bạn gần gũi hơn mỗi ngày.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.white.withValues(alpha: .78),
                     height: 1.35,

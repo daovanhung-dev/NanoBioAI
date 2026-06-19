@@ -58,7 +58,7 @@ class ErrorState extends StatelessWidget {
     super.key,
     required this.message,
     this.onRetry,
-    this.retryLabel = 'Retry',
+    this.retryLabel = 'Thử lại',
   });
 
   /// Error message describing what went wrong.
@@ -91,7 +91,7 @@ class ErrorState extends StatelessWidget {
             SizedBox(height: AppSpacingTokens.sectionSpacing),
             // Error title
             Text(
-              'Oops!',
+              'Nami cần thử lại một chút',
               style: AppTextStyles.heading2.copyWith(
                 color: isDark
                     ? AppColorTokens.darkTextPrimary

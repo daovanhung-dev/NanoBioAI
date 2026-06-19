@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -64,7 +65,7 @@ class SettingsView extends ConsumerWidget {
                             icon: Icons.person_rounded,
                             title: 'Thông tin cá nhân',
                             subtitle: dashboard == null
-                                ? 'Chưa có hồ sơ trong SQLite'
+                                ? 'Nami chưa thấy hồ sơ nào sẵn sàng'
                                 : _profileSubtitle(dashboard),
                             onTap: () => context.push(RoutePaths.profile),
                           ),
@@ -73,7 +74,7 @@ class SettingsView extends ConsumerWidget {
                             icon: Icons.lock_rounded,
                             title: 'Bảo mật',
                             subtitle:
-                                'Phiên đăng nhập Supabase và dữ liệu local của bạn',
+                                'Bảo vệ tài khoản và thông tin cá nhân của bạn',
                           ),
                           const _DividerLine(),
                           _MenuItem(
@@ -133,11 +134,12 @@ class SettingsView extends ConsumerWidget {
                             title: 'Dung lượng',
                             subtitle: cacheSizeAsync.when(
                               data: _formatBytes,
-                              loading: () => 'Đang đọc cache...',
-                              error: (_, __) => 'Chưa đọc được cache',
+                              loading: () => 'Nami đang kiểm tra dung lượng...',
+                              error: (_, __) =>
+                                  'Nami chưa kiểm tra được dung lượng',
                             ),
                             trailing: IconButton(
-                              tooltip: 'Dọn cache',
+                              tooltip: 'Dọn bộ nhớ tạm',
                               icon: const Icon(Icons.cleaning_services_rounded),
                               onPressed: () => ref
                                   .read(
@@ -149,26 +151,29 @@ class SettingsView extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.xl),
-                      _SectionTitle('Dev'),
-                      const SizedBox(height: AppSpacing.md),
-                      _MenuCard(
-                        children: [
-                          _MenuItem(
-                            icon: Icons.developer_mode_rounded,
-                            title: 'Database',
-                            subtitle:
-                                'Xem bảng, cấu trúc cột và dữ liệu SQLite local',
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => const DevDatabaseViewerPage(),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                      if (kDebugMode) ...[
+                        const SizedBox(height: AppSpacing.xl),
+                        _SectionTitle('Dev'),
+                        const SizedBox(height: AppSpacing.md),
+                        _MenuCard(
+                          children: [
+                            _MenuItem(
+                              icon: Icons.developer_mode_rounded,
+                              title: 'Công cụ dữ liệu',
+                              subtitle:
+                                  'Chỉ hiển thị trong chế độ phát triển ứng dụng',
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) =>
+                                        const DevDatabaseViewerPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.xl),
                       _SectionTitle('AI & Sức khỏe'),
                       const SizedBox(height: AppSpacing.md),
@@ -186,7 +191,7 @@ class SettingsView extends ConsumerWidget {
                             icon: Icons.favorite_rounded,
                             title: 'Mục tiêu sức khỏe',
                             subtitle: dashboard == null
-                                ? 'Chưa có mục tiêu trong SQLite'
+                                ? 'Nami chưa thấy mục tiêu nào được chọn'
                                 : _goalsSubtitle(dashboard.goals),
                           ),
                           const _DividerLine(),
@@ -240,8 +245,8 @@ class _Header extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 isLoading
-                    ? 'Đang đọc tùy chỉnh từ local storage...'
-                    : 'Các tùy chỉnh được đọc từ SQLite và SharedPreferences.',
+                    ? 'Nami đang mở lại các lựa chọn của bạn...'
+                    : 'Nami sẽ giữ các tùy chỉnh để ứng dụng hợp với bạn hơn.',
                 style: AppTextStyles.bodyMedium,
               ),
             ],
@@ -278,7 +283,7 @@ class _ProfileCard extends StatelessWidget {
       fallback: 'Chưa có hồ sơ',
     );
     final subtitle = dashboard == null
-        ? 'Hoàn thành onboarding để lưu hồ sơ vào SQLite'
+        ? 'Hoàn thành phần làm quen để Nami ghi nhớ hồ sơ của bạn'
         : _subscriptionLabel(dashboard!.subscriptionTier);
 
     return Container(
@@ -336,8 +341,8 @@ class _ProfileCard extends StatelessWidget {
                   ),
                   child: Text(
                     dashboard == null
-                        ? 'Chưa có dữ liệu local'
-                        : 'Đồng bộ từ SQLite',
+                        ? 'Nami đang chờ hồ sơ'
+                        : 'Nami đã ghi nhớ hồ sơ này',
                     style: AppTextStyles.labelMedium.copyWith(
                       color: Colors.white,
                     ),
@@ -487,7 +492,7 @@ class _DangerCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             email == null
-                ? 'Chưa có email người dùng trong SQLite.'
+                ? 'Nami chưa thấy email tài khoản để hiển thị.'
                 : 'Tài khoản hiện tại: $email',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium,
@@ -532,11 +537,11 @@ String _profileSubtitle(DashboardEntity dashboard) {
     if (dashboard.email.trim().isNotEmpty) dashboard.email.trim(),
     if (dashboard.phone.trim().isNotEmpty) dashboard.phone.trim(),
   ];
-  return items.isEmpty ? 'Hồ sơ được lưu trong SQLite' : items.join(' • ');
+  return items.isEmpty ? 'Nami đã ghi nhớ hồ sơ của bạn' : items.join(' • ');
 }
 
 String _goalsSubtitle(List<String> goals) {
-  if (goals.isEmpty) return 'Chưa có mục tiêu trong SQLite';
+  if (goals.isEmpty) return 'Nami chưa thấy mục tiêu nào được chọn';
   if (goals.length == 1) return goals.single;
   return '${goals.length} mục tiêu đang hoạt động';
 }

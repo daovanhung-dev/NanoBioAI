@@ -23,7 +23,8 @@ class HealthInsightsView extends ConsumerWidget {
           error: (error, _) => _StateMessage(
             icon: Icons.error_outline_rounded,
             title: 'Chưa có dữ liệu hồ sơ',
-            message: error.toString(),
+            message:
+                'Nami chưa thể mở góc sức khỏe của bạn lúc này. Mình thử lại sau một chút nhé.',
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
           data: (dashboard) {
@@ -157,7 +158,7 @@ class _SummaryCard extends StatelessWidget {
         ? insights.first.content
         : recommendations.isNotEmpty
         ? recommendations.first.description
-        : 'Chưa có insight AI trong SQLite. Khi dữ liệu được tạo, phần này sẽ tự cập nhật.';
+        : 'Nami chưa có nhận xét mới cho hôm nay. Khi bạn chăm sóc thêm vài nhịp nhỏ, mình sẽ tổng hợp lại dịu dàng hơn.';
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -170,7 +171,7 @@ class _SummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Báo cáo từ dữ liệu local',
+            'Báo cáo Nami vừa tổng hợp',
             style: AppTextStyles.labelMedium.copyWith(
               color: Colors.white,
               letterSpacing: 1,
@@ -432,8 +433,9 @@ class _InsightSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Section(
       title: 'Mình nhận thấy',
-      emptyTitle: 'Chưa có insight AI trong SQLite',
-      emptyMessage: 'Khi ai_insights có dữ liệu, phần này sẽ tự hiển thị.',
+      emptyTitle: 'Nami chưa có nhận xét mới',
+      emptyMessage:
+          'Khi có thêm tín hiệu từ ngày của bạn, Nami sẽ đặt những điều đáng chú ý ở đây.',
       children: insights.map((item) {
         return _SurfaceCard(
           child: Row(
@@ -474,9 +476,9 @@ class _RecommendationSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Section(
       title: 'Đề xuất hôm nay',
-      emptyTitle: 'Chưa có đề xuất AI trong SQLite',
+      emptyTitle: 'Nami chưa có gợi ý mới',
       emptyMessage:
-          'Khi ai_recommendations có dữ liệu, phần này sẽ tự hiển thị.',
+          'Bạn cứ tiếp tục chăm mình theo nhịp hiện tại. Khi có điều phù hợp, Nami sẽ nhẹ nhàng gợi ý.',
       children: recommendations.map((item) {
         return _SurfaceCard(
           child: Row(
@@ -730,7 +732,7 @@ class _SyncBanner extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                'Đang đọc dữ liệu mới nhất từ SQLite...',
+                'Nami đang cập nhật những tín hiệu mới nhất...',
                 style: AppTextStyles.bodySmall,
               ),
             ),
@@ -816,9 +818,9 @@ String _scoreTitle(int score) {
 
 String _scoreMessage(int score) {
   if (score <= 0) {
-    return 'Điểm sẽ được cập nhật khi có log sức khỏe, nhiệm vụ, bữa ăn hoặc dữ liệu nước/ngủ trong SQLite.';
+    return 'Nami sẽ cập nhật điểm khi có thêm ghi nhận sức khỏe, nhiệm vụ, bữa ăn, nước uống hoặc giấc ngủ.';
   }
-  return 'Điểm này được tính từ log sức khỏe, nhiệm vụ hằng ngày, bữa ăn và dữ liệu nước/ngủ trong SQLite.';
+  return 'Điểm này được Nami tổng hợp từ những ghi nhận sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.';
 }
 
 String _scoreLabel(int score) {

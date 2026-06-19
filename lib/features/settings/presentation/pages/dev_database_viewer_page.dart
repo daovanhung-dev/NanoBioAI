@@ -129,7 +129,8 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
 
             if (snapshot.hasError) {
               return _DatabaseErrorState(
-                message: snapshot.error.toString(),
+                message:
+                    'Không thể mở công cụ kiểm tra dữ liệu lúc này. Hãy tải lại hoặc kiểm tra log dev.',
                 onRetry: _refresh,
               );
             }

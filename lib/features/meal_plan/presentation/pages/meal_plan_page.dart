@@ -41,7 +41,8 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
               loading: () => MealLoadingView(ui: ui),
               error: (error, _) => MealErrorView(
                 ui: ui,
-                error: error.toString(),
+                error:
+                    'Nami chưa thể mở thực đơn lúc này. Bạn thử làm mới lại sau một chút nhé.',
                 onRetry: () => ref
                     .read(mealPlanControllerProvider.notifier)
                     .refreshMealPlans(),
@@ -1527,7 +1528,7 @@ class MealErrorView extends StatelessWidget {
               ),
               SizedBox(height: ui.cardGap),
               Text(
-                'Đã xảy ra lỗi',
+                'Nami chưa mở được thực đơn',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.heading3.copyWith(
                   fontSize: ui.emptyTitleFontSize,

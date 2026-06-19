@@ -100,7 +100,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       body: dashboardAsync.when(
         loading: () => const _DashboardLoadingView(),
         error: (error, _) => _DashboardErrorView(
-          message: error.toString(),
+          message:
+              'Nami chưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
           onRetry: () => ref.invalidate(dashboardProvider),
         ),
         data: (dashboard) {
@@ -117,7 +118,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                   dynamicData: dynamicData,
                   isDynamicLoading: dynamicAsync.isLoading,
                   dynamicError: dynamicAsync.hasError
-                      ? dynamicAsync.error.toString()
+                      ? 'Nami chưa thể cập nhật một vài tín hiệu mới nhất. Bạn có thể kéo xuống để thử lại nhé.'
                       : null,
                   isGeneratingPlan: generationState.isLoading,
                   onGeneratePlan: _generateAdditionalPlan,
@@ -515,8 +516,8 @@ class _HealthScorePanel extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   score == 0
-                      ? 'Khi bạn ghi log sức khỏe, hoàn thành nhiệm vụ hoặc bữa ăn, điểm hôm nay sẽ tự cập nhật.'
-                      : 'Điểm này được tính từ log sức khỏe, nhiệm vụ hằng ngày, bữa ăn và dữ liệu nước/ngủ trong hệ thống.',
+                      ? 'Khi bạn ghi nhận sức khỏe, hoàn thành việc nhỏ hoặc dùng bữa, điểm hôm nay sẽ tự cập nhật.'
+                      : 'Điểm này được Nami tổng hợp từ sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     height: 1.45,
                     color: Theme.of(
@@ -656,7 +657,7 @@ class _TodayMetricsGrid extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Dữ liệu hôm nay',
-          subtitle: 'Tất cả chỉ số bên dưới được đọc từ hệ thống',
+          subtitle: 'Nami gom lại những tín hiệu chính của hôm nay',
           icon: Icons.query_stats_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -745,7 +746,7 @@ class _InsightSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Nami nhận thấy',
-          subtitle: 'Gợi ý của AI và đề xuất được lấy từ AI trong hệ thống',
+          subtitle: 'Những điều Nami muốn bạn để ý một chút hôm nay',
           icon: Icons.auto_awesome_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -775,9 +776,9 @@ class _InsightSection extends StatelessWidget {
         if (insights.isEmpty && recommendations.isEmpty)
           const _EmptyDataCard(
             icon: Icons.auto_awesome_outlined,
-            title: 'Chưa có insight AI trong hệ thống',
+            title: 'Nami chưa có nhận xét mới',
             message:
-                'Khi bảng ai_insights hoặc ai_recommendations có dữ liệu, phần này sẽ tự hiển thị.',
+                'Khi có thêm tín hiệu từ ngày của bạn, Nami sẽ đặt những điều đáng chú ý ở đây.',
           )
         else ...[
           ...insights.map(
@@ -904,7 +905,7 @@ class _TimelineSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Hôm nay của chúng ta',
-          subtitle: 'Bữa ăn, nhiệm vụ và thông báo được gom từ hệ thống',
+          subtitle: 'Bữa ăn, việc nhỏ và lời nhắc được Nami gom lại cho bạn',
           icon: Icons.timeline_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -913,7 +914,7 @@ class _TimelineSection extends StatelessWidget {
             icon: Icons.timeline_outlined,
             title: 'Chưa có timeline hôm nay',
             message:
-                'Khi meal_plans, daily_health_tasks hoặc notifications có dữ liệu hôm nay, timeline sẽ tự cập nhật.',
+                'Khi hôm nay có bữa ăn, việc nhỏ hoặc lời nhắc mới, Nami sẽ sắp chúng thành một nhịp dễ theo dõi.',
           )
         else
           _DashboardCard(
@@ -1112,7 +1113,7 @@ class _LifestyleSection extends StatelessWidget {
         const _SectionTitle(
           title: 'Nhịp sống của bạn',
           subtitle:
-              'Dữ liệu được Nami tổng hợp từ các log sức khỏe, nhiệm vụ và bữa ăn trong hệ thống nè, bạn cố lên',
+              'Nami tổng hợp các ghi nhận sức khỏe, việc nhỏ và bữa ăn để hiểu nhịp sống của bạn hơn.',
           icon: Icons.spa_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1214,7 +1215,7 @@ class _GoalChipsSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Điều chúng ta đang hướng tới',
-          subtitle: 'Danh sách mục tiêu lấy từ health_goals',
+          subtitle: 'Những mục tiêu Nami sẽ cùng bạn chăm từng chút một',
           icon: Icons.track_changes_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1445,7 +1446,7 @@ class _SyncBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Đang đồng bộ dữ liệu động từ hệ thống...',
+                'Nami đang cập nhật những tín hiệu mới nhất...',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
@@ -1472,7 +1473,7 @@ class _InlineErrorBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Không đọc được một phần dữ liệu động: $message',
+              message,
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(height: 1.4),
