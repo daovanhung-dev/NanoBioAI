@@ -411,7 +411,7 @@ class ReviewStep extends ConsumerWidget {
                             ),
                           ),
                         );
-                        controller.goToStep(5);
+                        controller.goToStep(6);
                         return;
                       }
 
@@ -563,7 +563,7 @@ class _ReviewTopBar extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    'Bước 7/7',
+                    'Bước ${OnboardingCatalog.totalSteps}/${OnboardingCatalog.totalSteps}',
                     style: AppTextStyles.labelLarge.copyWith(
                       fontWeight: FontWeight.w700,
                     ),

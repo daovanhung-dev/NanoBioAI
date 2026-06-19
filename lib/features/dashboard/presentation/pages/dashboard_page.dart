@@ -314,6 +314,14 @@ class _DashboardContent extends StatelessWidget {
                 _InlineErrorBanner(message: dynamicError!),
                 const SizedBox(height: AppSpacing.md),
               ],
+              if (dynamicData.planStatus.hasPlan &&
+                  dynamicData.planStatus.remainingDays == 1) ...[
+                _PlanRenewalBanner(
+                  isLoading: isGeneratingPlan,
+                  onGeneratePlan: onGeneratePlan,
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
               DashboardDailySummaryCard(summary: dailySummary),
               const SizedBox(height: AppSpacing.md),
               DashboardDailyCheckInCard(
@@ -565,8 +573,9 @@ class _GeneratePlanCta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.16),
+      color: Colors.white,
       borderRadius: BorderRadius.circular(22),
+      elevation: 0,
       child: InkWell(
         onTap: isLoading ? null : onPressed,
         borderRadius: BorderRadius.circular(22),
@@ -575,7 +584,14 @@ class _GeneratePlanCta extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.68)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -583,7 +599,7 @@ class _GeneratePlanCta extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
+                  color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: isLoading
@@ -591,12 +607,12 @@ class _GeneratePlanCta extends StatelessWidget {
                         padding: EdgeInsets.all(11),
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.primary,
                         ),
                       )
                     : const Icon(
                         Icons.auto_awesome_rounded,
-                        color: Colors.white,
+                        color: AppColors.primary,
                         size: 22,
                       ),
               ),
@@ -607,10 +623,10 @@ class _GeneratePlanCta extends StatelessWidget {
                   children: [
                     Text(
                       isLoading
-                          ? 'Nami đang chuẩn bị thêm kế hoạch cho bạn...'
-                          : 'Nami tạo thêm kế hoạch',
+                          ? 'Nami đang tạo dữ liệu 7 ngày...'
+                          : 'Tạo dữ liệu 7 ngày',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -618,7 +634,7 @@ class _GeneratePlanCta extends StatelessWidget {
                     Text(
                       'Thêm 7 ngày thực đơn, vận động và lịch trình nhẹ nhàng cho bạn.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.86),
+                        color: AppColors.textSecondary,
                         height: 1.35,
                       ),
                     ),
@@ -628,11 +644,90 @@ class _GeneratePlanCta extends StatelessWidget {
               const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right_rounded,
-                color: Colors.white.withValues(alpha: isLoading ? 0.4 : 0.9),
+                color: AppColors.primary.withValues(alpha: isLoading ? 0.4 : 1),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PlanRenewalBanner extends StatelessWidget {
+  final bool isLoading;
+  final Future<void> Function() onGeneratePlan;
+
+  const _PlanRenewalBanner({
+    required this.isLoading,
+    required this.onGeneratePlan,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _DashboardCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.event_repeat_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hôm nay là ngày cuối trong lịch trình',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Bạn có thể tạo dữ liệu 7 ngày mới để Nami tiếp tục đồng hành.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        height: 1.45,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: isLoading ? null : onGeneratePlan,
+              icon: isLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.auto_awesome_rounded),
+              label: Text(
+                isLoading ? 'Nami đang tạo...' : 'Tạo dữ liệu 7 ngày',
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

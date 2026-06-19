@@ -160,15 +160,32 @@ void main() {
       await _tapByText(tester, 'Tiếp tục');
     }
 
-    expect(find.text('Bước 6/7'), findsOneWidget);
-
-    container.read(onboardingProvider.notifier).setAgreed(true);
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull);
+    expect(container.read(onboardingProvider).currentStep, 5);
+    expect(find.text('Bước 6/8'), findsOneWidget);
 
     await _tapByText(tester, 'Tiếp tục');
 
-    expect(find.text('Bước 7/7'), findsOneWidget);
+    expect(container.read(onboardingProvider).currentStep, 6);
+    expect(find.text('Bước 7/8'), findsOneWidget);
+    expect(find.text('Trước khi Nami đồng hành cùng bạn'), findsOneWidget);
+
+    await _tapByText(tester, 'Tôi hiểu và đồng ý');
+
+    expect(container.read(onboardingProvider).currentStep, 6);
+    expect(find.text('Bước 7/8'), findsOneWidget);
+
+    ScaffoldMessenger.of(
+      tester.element(find.byType(OnboardingPage)),
+    ).clearSnackBars();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    container.read(onboardingProvider.notifier).setAgreed(true);
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await _tapPrimaryOnboardingButton(tester);
+
+    expect(container.read(onboardingProvider).currentStep, 7);
+    expect(find.text('Bước 8/8'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(const SizedBox.shrink());

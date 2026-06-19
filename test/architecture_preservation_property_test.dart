@@ -55,21 +55,21 @@ void main() {
       });
 
       test(
-        'Property: Onboarding state transitions preserve all 7 wizard steps',
+        'Property: Onboarding state transitions preserve all 8 wizard steps',
         () {
-          // OBSERVATION: OnboardingState has currentStep (0-6) for 7-step wizard
-          // INVARIANT: 7-step structure must be preserved
+          // OBSERVATION: OnboardingState has currentStep (0-7) for 8-step wizard
+          // INVARIANT: 8-step structure must be preserved
 
           final onboardingFile = File(
             'lib/features/onboarding/presentation/controllers/onboarding_controller.dart',
           );
           final content = onboardingFile.readAsStringSync();
 
-          // Verify 7-step wizard logic remains
+          // Verify 8-step wizard logic remains
           expect(
-            content.contains('currentStep >= 6'),
+            content.contains('OnboardingCatalog.totalSteps - 1'),
             isTrue,
-            reason: '7-step wizard structure (0-6) must be preserved',
+            reason: '8-step wizard structure must use shared totalSteps',
           );
 
           expect(
@@ -120,22 +120,23 @@ void main() {
                 'generateMealPlan method must exist and return List<MealPlanModel>',
           );
 
-          // Verify JSON parsing logic preserved
+          // Verify AI response parsing and normalization logic preserved
           expect(
-            content.contains('jsonDecode'),
+            content.contains('_generateJsonArray'),
             isTrue,
-            reason: 'JSON parsing must be preserved',
+            reason: 'JSON array parsing must be preserved',
           );
 
           expect(
-            content.contains('MealPlanModel.fromJson'),
+            content.contains('MealPlanAiNormalizer') &&
+                content.contains('normalizer.normalize'),
             isTrue,
-            reason: 'MealPlanModel deserialization must be preserved',
+            reason: 'Meal plan normalization must be preserved',
           );
 
           // Verify retry logic preserved
           expect(
-            content.contains('retry'),
+            content.contains('_runWithRetry'),
             isTrue,
             reason: 'Retry logic for API failures must be preserved',
           );

@@ -14,7 +14,6 @@ class OnboardingCatalog {
   static const List<OnboardingChoiceOption> genders = [
     OnboardingChoiceOption(code: 'male', label: 'Nam', emoji: '👨'),
     OnboardingChoiceOption(code: 'female', label: 'Nữ', emoji: '👩'),
-    OnboardingChoiceOption(code: 'other', label: 'Khác', emoji: '🧑'),
   ];
 
   static const List<OnboardingChoiceOption> goals = [
@@ -215,5 +214,5 @@ class OnboardingCatalog {
     'Trên 2 lít/ngày',
   ];
 
-  static const int totalSteps = 7;
+  static const int totalSteps = 8;
 }

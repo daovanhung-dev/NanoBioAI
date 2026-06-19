@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/services/ai/ai_exceptions.dart';
@@ -187,7 +188,7 @@ class OnboardingController extends Notifier<OnboardingState> {
       ref.read(onboardingRepositoryProvider);
 
   void nextStep() {
-    if (state.currentStep >= 6) {
+    if (state.currentStep >= OnboardingCatalog.totalSteps - 1) {
       AppLogger.warning(_tag, 'Next Button Clicked - Already at final step');
       return;
     }
@@ -227,7 +228,7 @@ class OnboardingController extends Notifier<OnboardingState> {
   }
 
   void goToStep(int step) {
-    final safeStep = step.clamp(0, 6);
+    final safeStep = step.clamp(0, OnboardingCatalog.totalSteps - 1);
     final oldStep = state.currentStep;
 
     AppLogger.action(_tag, 'Jump to Step ${safeStep + 1}');
@@ -253,6 +254,7 @@ class OnboardingController extends Notifier<OnboardingState> {
       'Health Conditions',
       'Lifestyle Habits',
       'Extras (Allergy & Treatment)',
+      'Consent & Disclaimer',
       'Review & Submit',
     ];
     return titles[step];
@@ -514,8 +516,8 @@ class OnboardingController extends Notifier<OnboardingState> {
       AppLogger.success(_tag, 'Onboarding Completed Successfully');
 
       AppLogger.summary(_tag, 'ONBOARDING_SUMMARY', {
-        'Total Steps': 7,
-        'Completed Steps': 7,
+        'Total Steps': OnboardingCatalog.totalSteps,
+        'Completed Steps': OnboardingCatalog.totalSteps,
         'Duration': '${duration.inMinutes}m ${duration.inSeconds % 60}s',
         'User ID': entity.email.isNotEmpty ? entity.email : entity.phone,
         'Goals Count': entity.goals.length,

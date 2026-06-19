@@ -907,7 +907,7 @@ class _OptionPickerField extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
               decoration: const InputDecoration(
-                hintText: 'Ví dụ: Lập trình viên làm việc tại nhà',
+                hintText: 'Ví dụ: Nội trợ, làm văn phòng hoặc đã nghỉ hưu',
                 prefixIcon: Icon(AppIcons.dashboard, color: AppColors.primary),
               ),
             ),
@@ -1571,23 +1571,12 @@ class _GenderSelector extends StatelessWidget {
         icon: Icons.female_rounded,
         gradient: AppGradients.meditation,
       ),
-      _GenderOption(
-        code: 'other',
-        title: 'Khác / chưa muốn nói',
-        description: 'Bạn vẫn có thể tiếp tục thoải mái.',
-        icon: Icons.diversity_3_rounded,
-        gradient: AppGradients.ai,
-      ),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
-        final columns = maxWidth >= 820
-            ? 3
-            : maxWidth >= 540
-            ? 2
-            : 1;
+        final columns = maxWidth >= 540 ? 2 : 1;
         const gap = AppSpacing.md;
         final itemWidth = columns == 1
             ? maxWidth
@@ -1635,8 +1624,8 @@ class _GenderCard extends StatelessWidget {
         child: AnimatedContainer(
           duration: AppDuration.normal,
           curve: AppAnimations.smoothCurve,
-          constraints: const BoxConstraints(minHeight: 156),
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          constraints: const BoxConstraints(minHeight: 118),
+          padding: const EdgeInsets.all(AppSpacing.md),
           decoration: selected
               ? AppDecoration.gradient(
                   colors: item.gradient.colors,
@@ -1655,8 +1644,8 @@ class _GenderCard extends StatelessWidget {
                 children: [
                   AnimatedContainer(
                     duration: AppDuration.normal,
-                    width: 54,
-                    height: 54,
+                    width: 44,
+                    height: 44,
                     decoration: AppDecoration.circle(
                       color: selected
                           ? Colors.white.withOpacity(0.16)
@@ -1665,14 +1654,14 @@ class _GenderCard extends StatelessWidget {
                     child: Icon(
                       item.icon,
                       color: selected ? Colors.white : AppColors.primary,
-                      size: 28,
+                      size: 24,
                     ),
                   ),
                   const Spacer(),
                   AnimatedContainer(
                     duration: AppDuration.normal,
-                    width: 30,
-                    height: 30,
+                    width: 24,
+                    height: 24,
                     decoration: AppDecoration.circle(
                       color: selected
                           ? Colors.white.withOpacity(0.20)
@@ -1688,12 +1677,12 @@ class _GenderCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 item.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.heading4.copyWith(
+                style: AppTextStyles.heading5.copyWith(
                   color: selected ? Colors.white : AppColors.textPrimary,
                   fontWeight: FontWeight.w900,
                   height: 1.25,
@@ -1702,7 +1691,7 @@ class _GenderCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 item.description,
-                maxLines: 3,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: selected
@@ -1821,7 +1810,7 @@ class _ResponsiveOptionGrid extends StatelessWidget {
             : width >= 360
             ? 2
             : 1;
-        final childAspectRatio = crossAxisCount == 1 ? 2.6 : 1.12;
+        final childAspectRatio = crossAxisCount == 1 ? 3.1 : 1.38;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -1914,12 +1903,15 @@ class _PickerListTile extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             child: Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 38,
+                  height: 38,
                   decoration: AppDecoration.circle(
                     color: selected
                         ? Colors.white.withOpacity(0.18)
@@ -1993,7 +1985,10 @@ class _OptionTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         child: Ink(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
           decoration: selected
               ? AppDecoration.gradient(
                   colors: [AppColors.primary, AppColors.secondary],
@@ -2046,8 +2041,8 @@ class _OptionIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 42,
-      height: 42,
+      width: 36,
+      height: 36,
       decoration: AppDecoration.circle(
         color: selected
             ? Colors.white.withOpacity(0.18)
@@ -2056,6 +2051,7 @@ class _OptionIcon extends StatelessWidget {
       child: Icon(
         option.icon,
         color: selected ? Colors.white : AppColors.primary,
+        size: 20,
       ),
     );
   }
@@ -2073,7 +2069,7 @@ class _OptionLabel extends StatelessWidget {
       option.label,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: AppTextStyles.labelLarge.copyWith(
+      style: AppTextStyles.labelMedium.copyWith(
         color: selected ? Colors.white : AppColors.textPrimary,
         fontWeight: FontWeight.w900,
         height: 1.28,
@@ -2289,7 +2285,6 @@ class _OccupationOptions {
   static const items = [
     _OptionItem('Học sinh / Sinh viên', Icons.school_rounded),
     _OptionItem('Nhân viên văn phòng', Icons.business_center_rounded),
-    _OptionItem('Lập trình viên / IT', Icons.computer_rounded),
     _OptionItem('Kinh doanh / Bán hàng', Icons.storefront_rounded),
     _OptionItem('Lao động tự do', Icons.work_outline_rounded),
     _OptionItem('Nội trợ / chăm sóc gia đình', Icons.home_rounded),

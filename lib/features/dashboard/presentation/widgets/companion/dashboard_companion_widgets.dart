@@ -251,6 +251,8 @@ class DashboardPlanStatusCard extends StatelessWidget {
         : 'Nami có thể chuẩn bị nhịp 7 ngày đầu tiên cho bạn.';
     final message = !hasPlan
         ? 'Khi sẵn sàng, bạn có thể để Nami sắp nhẹ thực đơn, vận động và nhắc nhở.'
+        : planStatus.remainingDays == 1
+        ? 'Hôm nay là ngày cuối trong lịch trình hiện tại. Bạn có thể tạo nhịp 7 ngày mới để Nami tiếp tục đồng hành liền mạch.'
         : planStatus.remainingDays > 0
         ? 'Còn ${planStatus.remainingDays} ngày trong kế hoạch. Kế hoạch của bạn vẫn còn đủ dùng, mình cứ đi nhẹ từng ngày nhé.'
         : 'Kế hoạch hiện tại đã đến hạn, Nami có thể chuẩn bị thêm nhịp mới cho bạn.';

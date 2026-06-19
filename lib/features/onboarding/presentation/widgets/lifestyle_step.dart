@@ -561,21 +561,24 @@ class _HabitChoiceCard extends StatelessWidget {
             onTap: onTap,
             borderRadius: BorderRadius.circular(AppRadius.xl),
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.cardPadding),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
               child: Row(
                 children: [
                   Container(
-                    width: AppSpacing.avatarSizeMedium,
-                    height: AppSpacing.avatarSizeMedium,
+                    width: 40,
+                    height: 40,
                     decoration: AppDecoration.circle(
                       color: selected
                           ? AppColors.primary.withOpacity(0.12)
                           : AppColors.cardAlt,
                     ),
                     alignment: Alignment.center,
-                    child: Text(emoji, style: AppTextStyles.heading4),
+                    child: Text(emoji, style: AppTextStyles.heading5),
                   ),
-                  const SizedBox(width: AppSpacing.md),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       label,
@@ -592,8 +595,8 @@ class _HabitChoiceCard extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   AnimatedContainer(
                     duration: AppDuration.fast,
-                    width: 28,
-                    height: 28,
+                    width: 24,
+                    height: 24,
                     decoration: AppDecoration.circle(
                       color: selected ? AppColors.primary : AppColors.cardAlt,
                     ),
@@ -602,7 +605,7 @@ class _HabitChoiceCard extends StatelessWidget {
                       color: selected
                           ? AppColors.textWhite
                           : AppColors.textHint,
-                      size: 18,
+                      size: 16,
                     ),
                   ),
                 ],
@@ -623,7 +626,7 @@ class _ResponsivePickerPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: AppDecoration.glass(
         opacity: 0.86,
         radius: AppRadius.xxl,
@@ -716,21 +719,21 @@ class _ChoicePickerField extends StatelessWidget {
           onTap: () => _openPicker(context),
           borderRadius: BorderRadius.circular(AppRadius.xl),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.cardPadding),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: AppSpacing.avatarSizeMedium,
-                  height: AppSpacing.avatarSizeMedium,
+                  width: 40,
+                  height: 40,
                   decoration: AppDecoration.base(
                     gradient: gradient,
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                     shadows: AppShadows.md,
                   ),
-                  child: Icon(icon, color: AppColors.textWhite, size: 22),
+                  child: Icon(icon, color: AppColors.textWhite, size: 20),
                 ),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -764,12 +767,12 @@ class _ChoicePickerField extends StatelessWidget {
                           height: 1.45,
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.sm),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
                         ),
                         decoration: AppDecoration.input(
                           color: _hasValue

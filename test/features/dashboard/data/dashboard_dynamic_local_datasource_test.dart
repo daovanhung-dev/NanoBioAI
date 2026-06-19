@@ -181,6 +181,32 @@ void main() {
     },
   );
 
+  test('fetch marks plan status as final day when plan ends today', () async {
+    final todayKey = _dateKey(DateTime.now());
+
+    await _insertUser(db);
+    await _insertMealPlanDate(db, id: 'meal-today', planDate: todayKey);
+
+    final result = await DashboardDynamicLocalDatasource(db).fetch();
+
+    expect(result.planStatus.lastPlanDate, todayKey);
+    expect(result.planStatus.remainingDays, 1);
+  });
+
+  test('fetch marks plan status as expired after the last plan date', () async {
+    final yesterdayKey = _dateKey(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+
+    await _insertUser(db);
+    await _insertMealPlanDate(db, id: 'meal-yesterday', planDate: yesterdayKey);
+
+    final result = await DashboardDynamicLocalDatasource(db).fetch();
+
+    expect(result.planStatus.lastPlanDate, yesterdayKey);
+    expect(result.planStatus.remainingDays, 0);
+  });
+
   test('fetch computes plan status and seven-day self-care streak', () async {
     final today = DateTime.now();
     final todayKey = _dateKey(today);
@@ -278,4 +304,42 @@ String _dateKey(DateTime date) {
   return '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
       '${date.day.toString().padLeft(2, '0')}';
+}
+
+Future<void> _insertUser(Database db) {
+  return db.insert('users', {
+    'id': 'u1',
+    'full_name': 'User One',
+    'subscription_tier': 'premium',
+    'created_at': '2026-06-18T08:00:00',
+  });
+}
+
+Future<void> _insertMealPlanDate(
+  Database db, {
+  required String id,
+  required String planDate,
+}) {
+  return db.insert('meal_plans', {
+    'id': id,
+    'user_id': 'u1',
+    'plan_date': planDate,
+    'meal_type': 'breakfast',
+    'meal_name': 'Bữa sáng',
+    'description': '',
+    'calories': 300,
+    'protein': 10,
+    'carbs': 30,
+    'fat': 8,
+    'fiber': 4,
+    'water_ml': 250,
+    'meal_order': 1,
+    'start_time': '07:00',
+    'end_time': '07:30',
+    'cooking_instructions': '',
+    'is_completed': 0,
+    'ai_generated': 1,
+    'created_at': '2026-06-18T08:00:00',
+    'updated_at': '2026-06-18T08:00:00',
+  });
 }

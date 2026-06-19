@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/onboarding_constants.dart';
 import '../../../../core/theme/theme.dart';
 
 class OnboardingStepShell extends StatefulWidget {
@@ -30,7 +31,7 @@ class OnboardingStepShell extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.child,
-    this.totalSteps = 7,
+    this.totalSteps = OnboardingCatalog.totalSteps,
     this.footer,
     this.onBack,
     this.onNext,
@@ -479,7 +480,7 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
           duration: AppDuration.button,
           curve: AppAnimations.smoothCurve,
           width: double.infinity,
-          height: 62,
+          height: 52,
           transform: Matrix4.translationValues(0, _hovered ? -2 : 0, 0),
           decoration:
               AppDecoration.primaryGradient(
@@ -507,12 +508,16 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
                 ),
               ),
 
-              const SizedBox(width: AppSpacing.iconTextSpacingLarge),
+              const SizedBox(width: AppSpacing.sm),
 
               AnimatedContainer(
                 duration: AppDuration.fast,
                 transform: Matrix4.translationValues(_hovered ? 5 : 0, 0, 0),
-                child: const Icon(AppIcons.forward, color: Colors.white),
+                child: const Icon(
+                  AppIcons.forward,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ],
           ),
@@ -554,8 +559,8 @@ class _GlassButtonState extends State<_GlassButton> {
         child: AnimatedContainer(
           duration: AppDuration.fast,
           curve: AppAnimations.smoothCurve,
-          width: 52,
-          height: 52,
+          width: 46,
+          height: 46,
           decoration: AppDecoration.glass(
             radius: AppRadius.lg,
             opacity: _hovered ? 0.18 : 0.1,

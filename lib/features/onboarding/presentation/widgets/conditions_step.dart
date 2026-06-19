@@ -1230,14 +1230,17 @@ class _ConditionOptionTile extends StatelessWidget {
               onTap: onTap,
               borderRadius: BorderRadius.circular(AppRadius.lg),
               child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
                 child: Row(
                   children: [
                     AnimatedContainer(
                       duration: AppDuration.card,
                       curve: AppAnimations.emphasizedCurve,
-                      width: AppSpacing.touchTargetMin,
-                      height: AppSpacing.touchTargetMin,
+                      width: 40,
+                      height: 40,
                       decoration: AppDecoration.circle(
                         color: selected
                             ? AppColors.primary.withOpacity(0.12)
@@ -1246,11 +1249,11 @@ class _ConditionOptionTile extends StatelessWidget {
                       child: Center(
                         child: Text(
                           item.emoji,
-                          style: const TextStyle(fontSize: 24),
+                          style: const TextStyle(fontSize: 21),
                         ),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1285,8 +1288,8 @@ class _ConditionOptionTile extends StatelessWidget {
                     AnimatedContainer(
                       duration: AppDuration.fast,
                       curve: AppAnimations.emphasizedCurve,
-                      width: 30,
-                      height: 30,
+                      width: 24,
+                      height: 24,
                       decoration: AppDecoration.circle(
                         color: selected
                             ? AppColors.primary
@@ -1297,7 +1300,7 @@ class _ConditionOptionTile extends StatelessWidget {
                         color: selected
                             ? AppColors.textWhite
                             : AppColors.textMuted,
-                        size: 18,
+                        size: 16,
                       ),
                     ),
                   ],

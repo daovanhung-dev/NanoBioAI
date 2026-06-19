@@ -739,7 +739,7 @@ class _GoalCard extends StatelessWidget {
         child: AnimatedContainer(
           duration: AppDuration.card,
           curve: AppAnimations.emphasizedCurve,
-          padding: const EdgeInsets.all(AppSpacing.cardPadding),
+          padding: const EdgeInsets.all(AppSpacing.md),
           decoration: selected
               ? AppDecoration.gradient(
                   colors: goal.gradient.colors,
@@ -760,8 +760,8 @@ class _GoalCard extends StatelessWidget {
                 children: [
                   AnimatedContainer(
                     duration: AppDuration.card,
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: AppDecoration.container(
                       color: selected
                           ? Colors.white.withOpacity(0.18)
@@ -771,15 +771,15 @@ class _GoalCard extends StatelessWidget {
                     child: Center(
                       child: Text(
                         goal.emoji,
-                        style: const TextStyle(fontSize: 25),
+                        style: const TextStyle(fontSize: 21),
                       ),
                     ),
                   ),
                   const Spacer(),
                   AnimatedContainer(
                     duration: AppDuration.card,
-                    width: 30,
-                    height: 30,
+                    width: 24,
+                    height: 24,
                     decoration: AppDecoration.circle(
                       color: selected
                           ? Colors.white.withOpacity(0.20)
@@ -788,17 +788,17 @@ class _GoalCard extends StatelessWidget {
                     child: Icon(
                       selected ? Icons.check_rounded : Icons.add_rounded,
                       color: selected ? Colors.white : AppColors.primary,
-                      size: 18,
+                      size: 16,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 goal.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.heading5.copyWith(
+                style: AppTextStyles.labelLarge.copyWith(
                   color: selected ? Colors.white : AppColors.textPrimary,
                   fontWeight: FontWeight.w900,
                   height: 1.28,
@@ -807,7 +807,7 @@ class _GoalCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 goal.description,
-                maxLines: 3,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: selected

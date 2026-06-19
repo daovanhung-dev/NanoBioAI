@@ -88,7 +88,6 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
         ],
         OnboardingStepShell(
           stepIndex: 0,
-          totalSteps: 7,
           showBack: false,
           isScrollable: false,
           title: '',

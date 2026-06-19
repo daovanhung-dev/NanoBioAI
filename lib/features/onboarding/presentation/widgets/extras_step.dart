@@ -231,20 +231,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
             subtitle: '',
             isScrollable: false,
             onBack: controller.previousStep,
-            onNext: () {
-              if (!state.agreed) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Nami cần bạn xác nhận đồng ý trước khi mình tiếp tục chăm sóc hồ sơ sức khỏe nhé.',
-                    ),
-                  ),
-                );
-                return;
-              }
-
-              controller.nextStep();
-            },
+            onNext: controller.nextStep,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final maxContentWidth = constraints.maxWidth >= 900
@@ -392,16 +379,8 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                           ),
                           const SizedBox(height: AppSpacing.xl),
                           _CareNoteCard(completedFields: completedFields),
-                          const SizedBox(height: AppSpacing.lg),
-                          _CommitmentCard(
-                            agreed: state.agreed,
-                            onChanged: controller.setAgreed,
-                          ),
                           const SizedBox(height: AppSpacing.xl),
-                          _SummaryCard(
-                            completedFields: completedFields,
-                            agreed: state.agreed,
-                          ),
+                          _SummaryCard(completedFields: completedFields),
                         ],
                       ),
                     ),
@@ -788,7 +767,7 @@ class _SurfaceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
+      padding: padding ?? const EdgeInsets.all(AppSpacing.md),
       decoration: AppDecoration.card(
         radius: AppRadius.xl,
         border: Border.all(color: AppColors.border.withOpacity(0.72)),
@@ -920,7 +899,10 @@ class _NamiChoiceField extends StatelessWidget {
               duration: AppDuration.normal,
               curve: AppAnimations.smoothCurve,
               width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
               decoration: AppDecoration.card(
                 color: hasValue ? AppColors.primarySoft : AppColors.card,
                 radius: AppRadius.xl,
@@ -943,7 +925,7 @@ class _NamiChoiceField extends StatelessWidget {
                     selected: hasValue,
                   ),
                   if (hasValue) ...[
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
                       runSpacing: AppSpacing.sm,
@@ -1010,8 +992,8 @@ class _ChoiceFieldHeader extends StatelessWidget {
         AnimatedContainer(
           duration: AppDuration.fast,
           curve: AppAnimations.smoothCurve,
-          width: AppSpacing.touchTargetMin,
-          height: AppSpacing.touchTargetMin,
+          width: 40,
+          height: 40,
           decoration: selected
               ? AppDecoration.primaryGradient(radius: AppRadius.lg)
               : AppDecoration.input(
@@ -1022,10 +1004,10 @@ class _ChoiceFieldHeader extends StatelessWidget {
           child: Icon(
             icon,
             color: selected ? AppColors.textWhite : AppColors.primary,
-            size: 22,
+            size: 20,
           ),
         ),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1313,7 +1295,10 @@ class _BottomSheetOptionTile extends StatelessWidget {
           child: AnimatedContainer(
             duration: AppDuration.fast,
             curve: AppAnimations.smoothCurve,
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             decoration: selected
                 ? AppDecoration.card(
                     color: AppColors.primarySoft,
@@ -1334,8 +1319,8 @@ class _BottomSheetOptionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: AppSpacing.touchTargetMin,
-                  height: AppSpacing.touchTargetMin,
+                  width: 40,
+                  height: 40,
                   decoration: selected
                       ? AppDecoration.primaryGradient(radius: AppRadius.md)
                       : AppDecoration.input(
@@ -1346,10 +1331,10 @@ class _BottomSheetOptionTile extends StatelessWidget {
                   child: Icon(
                     option.icon,
                     color: selected ? AppColors.textWhite : AppColors.primary,
-                    size: 22,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1376,7 +1361,7 @@ class _BottomSheetOptionTile extends StatelessWidget {
                 Icon(
                   selected ? AppIcons.success : AppIcons.add,
                   color: selected ? AppColors.primary : AppColors.textHint,
-                  size: 22,
+                  size: 20,
                 ),
               ],
             ),
@@ -1637,88 +1622,10 @@ class _CareNoteCard extends StatelessWidget {
   }
 }
 
-class _CommitmentCard extends StatelessWidget {
-  const _CommitmentCard({required this.agreed, required this.onChanged});
-
-  final bool agreed;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: AppDuration.normal,
-      curve: AppAnimations.smoothCurve,
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: agreed
-          ? AppDecoration.primaryGradient(radius: AppRadius.xxl)
-          : AppDecoration.card(
-              radius: AppRadius.xxl,
-              border: Border.all(color: AppColors.border),
-              shadows: AppShadows.soft,
-              gradient: AppGradients.surface,
-            ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 420;
-
-          final switchControl = Switch(value: agreed, onChanged: onChanged);
-
-          final textContent = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                agreed
-                    ? 'Cảm ơn bạn, Nami đã sẵn sàng đồng hành'
-                    : 'Cho phép Nami cá nhân hóa trải nghiệm nhé',
-                style: AppTextStyles.heading4.copyWith(
-                  color: agreed ? AppColors.textWhite : AppColors.textPrimary,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Mình chỉ dùng thông tin bạn chia sẻ để tạo gợi ý chăm sóc phù hợp hơn. Bạn luôn có thể thay đổi lại sau.',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: agreed
-                      ? AppColors.textWhite.withOpacity(0.92)
-                      : AppColors.textSecondary,
-                  height: 1.65,
-                ),
-              ),
-            ],
-          );
-
-          if (compact) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                switchControl,
-                const SizedBox(height: AppSpacing.sm),
-                textContent,
-              ],
-            );
-          }
-
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              switchControl,
-              const SizedBox(width: AppSpacing.md),
-              Expanded(child: textContent),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({required this.completedFields, required this.agreed});
+  const _SummaryCard({required this.completedFields});
 
   final int completedFields;
-  final bool agreed;
 
   @override
   Widget build(BuildContext context) {
@@ -1770,7 +1677,7 @@ class _SummaryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-          _SummaryRows(completedFields: completedFields, agreed: agreed),
+          _SummaryRows(completedFields: completedFields),
         ],
       ),
     );
@@ -1778,17 +1685,16 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _SummaryRows extends StatelessWidget {
-  const _SummaryRows({required this.completedFields, required this.agreed});
+  const _SummaryRows({required this.completedFields});
 
   final int completedFields;
-  final bool agreed;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         const spacing = AppSpacing.sm;
-        final columns = constraints.maxWidth >= 620 ? 3 : 1;
+        final columns = constraints.maxWidth >= 620 ? 2 : 1;
         final itemWidth =
             ((constraints.maxWidth - spacing * (columns - 1)) / columns)
                 .clamp(150.0, 280.0)
@@ -1804,14 +1710,6 @@ class _SummaryRows extends StatelessWidget {
                 icon: AppIcons.checkIn,
                 title: 'Đã chia sẻ',
                 value: '$completedFields mục',
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: _SummaryItem(
-                icon: AppIcons.shield,
-                title: 'Đồng ý',
-                value: agreed ? 'Đã xác nhận' : 'Chưa xác nhận',
               ),
             ),
             SizedBox(

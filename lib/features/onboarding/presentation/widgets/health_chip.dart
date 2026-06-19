@@ -136,8 +136,8 @@ class _HealthChipState extends State<HealthChip>
             padding:
                 widget.padding ??
                 const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.cardPadding,
-                  vertical: AppSpacing.medium,
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
                 ),
             decoration: _buildDecoration(),
             child: AnimatedOpacity(
@@ -148,12 +148,12 @@ class _HealthChipState extends State<HealthChip>
                 children: [
                   if (widget.emoji != null) ...[
                     _EmojiAvatar(emoji: widget.emoji!, selected: _selected),
-                    const SizedBox(width: AppSpacing.medium),
+                    const SizedBox(width: AppSpacing.sm),
                   ],
 
                   if (widget.icon != null) ...[
                     _IconAvatar(icon: widget.icon!, selected: _selected),
-                    const SizedBox(width: AppSpacing.medium),
+                    const SizedBox(width: AppSpacing.sm),
                   ],
 
                   Expanded(
@@ -259,8 +259,8 @@ class _EmojiAvatar extends StatelessWidget {
     return AnimatedContainer(
       duration: AppDuration.normal,
       curve: AppAnimations.smoothCurve,
-      width: 54,
-      height: 54,
+      width: 42,
+      height: 42,
       decoration: selected
           ? AppDecoration.glass(radius: AppRadius.lg, opacity: 0.14)
           : AppDecoration.container(
@@ -271,7 +271,7 @@ class _EmojiAvatar extends StatelessWidget {
         child: AnimatedScale(
           duration: AppDuration.normal,
           scale: selected ? 1.08 : 1,
-          child: Text(emoji, style: const TextStyle(fontSize: 26)),
+          child: Text(emoji, style: const TextStyle(fontSize: 22)),
         ),
       ),
     );
@@ -289,8 +289,8 @@ class _IconAvatar extends StatelessWidget {
     return AnimatedContainer(
       duration: AppDuration.normal,
       curve: AppAnimations.smoothCurve,
-      width: 54,
-      height: 54,
+      width: 42,
+      height: 42,
       decoration: selected
           ? AppDecoration.glass(radius: AppRadius.lg, opacity: 0.14)
           : AppDecoration.container(
@@ -299,7 +299,7 @@ class _IconAvatar extends StatelessWidget {
             ),
       child: Icon(
         icon,
-        size: 24,
+        size: 20,
         color: selected ? Colors.white : AppColors.primary,
       ),
     );
@@ -325,21 +325,21 @@ class _SelectionIndicator extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-              width: 30,
-              height: 30,
+              width: 24,
+              height: 24,
               decoration: AppDecoration.circle(
                 color: Colors.white.withOpacity(0.18),
                 shadows: AppShadows.glass,
               ),
               child: Container(
-                margin: const EdgeInsets.all(2),
+                margin: const EdgeInsets.all(1.5),
                 decoration: AppDecoration.circle(
                   color: Colors.white.withOpacity(0.1),
                   shadows: const [],
                 ),
                 child: const Icon(
                   Icons.check_rounded,
-                  size: 16,
+                  size: 14,
                   color: Colors.white,
                 ),
               ),

@@ -119,7 +119,11 @@ class _OnboardingChipState extends State<OnboardingChip>
             width: widget.width,
             height: widget.height,
             padding:
-                widget.padding ?? const EdgeInsets.all(AppSpacing.cardPadding),
+                widget.padding ??
+                const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
             decoration: _buildDecoration(),
             child: AnimatedOpacity(
               duration: AppDuration.fast,
@@ -133,7 +137,7 @@ class _OnboardingChipState extends State<OnboardingChip>
                     gradient: _activeGradient,
                   ),
 
-                  const SizedBox(width: AppSpacing.md),
+                  const SizedBox(width: AppSpacing.sm),
 
                   Expanded(
                     child: Column(
@@ -190,14 +194,14 @@ class _OnboardingChipState extends State<OnboardingChip>
                                 child: widget.trailing!,
                               ),
 
-                            const SizedBox(width: AppSpacing.sm),
+                            const SizedBox(width: AppSpacing.xs),
 
                             _SelectionIndicator(visible: _selected),
                           ],
                         ),
 
                         if (hasDescription) ...[
-                          const SizedBox(height: AppSpacing.sm),
+                          const SizedBox(height: AppSpacing.xs),
 
                           AnimatedDefaultTextStyle(
                             duration: AppDuration.normal,
@@ -276,8 +280,8 @@ class _LeadingSection extends StatelessWidget {
     return AnimatedContainer(
       duration: AppDuration.normal,
       curve: AppAnimations.smoothCurve,
-      width: 62,
-      height: 62,
+      width: 44,
+      height: 44,
       decoration: AppDecoration.base(
         gradient: selected ? AppGradients.glass : AppGradients.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -294,7 +298,7 @@ class _LeadingSection extends StatelessWidget {
           scale: selected ? 1.12 : 1,
           child: Text(
             emoji,
-            style: AppTextStyles.displaySmall.copyWith(fontSize: 28, height: 1),
+            style: AppTextStyles.heading4.copyWith(fontSize: 22, height: 1),
           ),
         ),
       ),
@@ -320,25 +324,25 @@ class _SelectionIndicator extends StatelessWidget {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                 child: Container(
-                  width: 30,
-                  height: 30,
+                  width: 24,
+                  height: 24,
                   decoration: AppDecoration.circle(
                     color: Colors.white.withOpacity(0.14),
                     shadows: AppShadows.glass,
                   ),
                   child: Container(
-                    margin: const EdgeInsets.all(3),
+                    margin: const EdgeInsets.all(2),
                     decoration: AppDecoration.circle(color: Colors.white),
                     child: const Icon(
                       AppIcons.checkIn,
-                      size: 16,
+                      size: 14,
                       color: AppColors.primary,
                     ),
                   ),
                 ),
               ),
             )
-          : const SizedBox(key: ValueKey('unselected'), width: 30, height: 30),
+          : const SizedBox(key: ValueKey('unselected'), width: 24, height: 24),
     );
   }
 }

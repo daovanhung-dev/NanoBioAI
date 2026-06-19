@@ -16,7 +16,8 @@ const occupations = [
   {'code': 'engineer', 'label': 'Kỹ sư'},
   {'code': 'business', 'label': 'Kinh doanh'},
   {'code': 'student', 'label': 'Sinh viên'},
-  {'code': 'retired', 'label': 'Hưu trí'},
+  {'code': 'homemaker', 'label': 'Nội trợ'},
+  {'code': 'retired', 'label': 'Nghỉ hưu'},
   {'code': 'freelance', 'label': 'Tự do'},
   {'code': 'other', 'label': 'Khác'},
 ];
@@ -25,7 +26,6 @@ const occupations = [
 const genders = [
   {'code': 'male', 'label': 'Nam'},
   {'code': 'female', 'label': 'Nữ'},
-  {'code': 'other', 'label': 'Khác'},
 ];
 
 // Health Goals
