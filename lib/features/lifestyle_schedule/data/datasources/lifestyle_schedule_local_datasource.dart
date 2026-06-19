@@ -74,6 +74,24 @@ class LifestyleScheduleLocalDatasource {
     );
   }
 
+  Future<DateTime> getNextGeneratedPlanStartDate({
+    required String userId,
+    required DateTime fallbackStartDate,
+  }) async {
+    final db = await _db();
+    final scheduleRows = await db.rawQuery(
+      'SELECT MAX(schedule_date) AS last_date FROM lifestyle_schedule_items WHERE user_id = ?',
+      [userId],
+    );
+
+    final lastScheduleDate = _readDate(scheduleRows.firstOrNull?['last_date']);
+    if (lastScheduleDate == null) return _dateOnly(fallbackStartDate);
+
+    final nextDate = lastScheduleDate.add(const Duration(days: 1));
+    final fallback = _dateOnly(fallbackStartDate);
+    return nextDate.isBefore(fallback) ? fallback : _dateOnly(nextDate);
+  }
+
   Future<LifestyleScheduleItemEntity> updateItemCompletion({
     required LifestyleScheduleItemEntity item,
     required bool isCompleted,
@@ -236,6 +254,12 @@ class LifestyleScheduleLocalDatasource {
     final month = value.month.toString().padLeft(2, '0');
     final day = value.day.toString().padLeft(2, '0');
     return '${value.year}-$month-$day';
+  }
+
+  DateTime? _readDate(Object? value) {
+    final text = value?.toString().trim();
+    if (text == null || text.isEmpty) return null;
+    return DateTime.tryParse(text);
   }
 
   DateTime _dateOnly(DateTime value) {

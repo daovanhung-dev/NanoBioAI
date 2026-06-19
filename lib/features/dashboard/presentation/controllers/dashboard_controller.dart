@@ -1,14 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/features/daily_health_tracking/providers/daily_health_tracking_provider.dart';
+import 'package:nano_app/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/features/meal_plan/providers/meal_plan_provider.dart';
 
 import 'package:nano_app/features/dashboard/domain/entities/dashboard_entity.dart';
 
+import 'package:nano_app/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/features/dashboard/providers/dashboard_provider.dart';
 
 import 'package:nano_app/services/ai/ai_service.dart';
+import 'package:nano_app/services/ai/generated_plan_service.dart';
+
+final generatedPlanServiceProvider = Provider<GeneratedPlanService>((ref) {
+  return GeneratedPlanService(
+    dashboardRepository: ref.read(dashboardRepositoryProvider),
+    dailyHealthDatasource: ref.read(dailyHealthTrackingLocalDatasourceProvider),
+    scheduleDatasource: ref.read(lifestyleScheduleLocalDatasourceProvider),
+    aiService: ref.read(aiServiceProvider),
+  );
+});
 
 final dashboardControllerProvider =
     AsyncNotifierProvider<DashboardController, void>(DashboardController.new);
@@ -55,5 +69,25 @@ class DashboardController extends AsyncNotifier<void> {
   DateTime _tomorrow() {
     final now = DateTime.now();
     return DateTime(now.year, now.month, now.day + 1);
+  }
+
+  Future<GeneratedPlanResult> generateAdditionalPlan() async {
+    state = const AsyncLoading<void>();
+    try {
+      final result = await ref
+          .read(generatedPlanServiceProvider)
+          .generateNextPlan(days: 7);
+
+      ref.invalidate(dashboardProvider);
+      ref.invalidate(dashboardDynamicProvider);
+      ref.invalidate(lifestyleScheduleControllerProvider);
+      ref.invalidate(getMealPlanProvider);
+
+      state = const AsyncData<void>(null);
+      return result;
+    } catch (error, stackTrace) {
+      state = AsyncError<void>(error, stackTrace);
+      rethrow;
+    }
   }
 }

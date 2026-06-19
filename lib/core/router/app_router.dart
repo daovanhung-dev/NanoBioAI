@@ -105,7 +105,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: RoutePaths.aiChat,
       name: RoutePaths.aiChat,
-      redirect: RouteGuards.authGuard,
+      //redirect: RouteGuards.authGuard,
       builder: (context, state) => const AIChatScreen(),
     ),
 

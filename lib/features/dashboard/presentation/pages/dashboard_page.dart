@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
+import 'package:nano_app/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'package:nano_app/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/features/dashboard/providers/dashboard_provider.dart';
+import 'package:nano_app/services/ai/ai_exceptions.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
@@ -65,10 +67,33 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await ref.read(dashboardDynamicProvider.future);
   }
 
+  Future<void> _generateAdditionalPlan() async {
+    try {
+      await ref
+          .read(dashboardControllerProvider.notifier)
+          .generateAdditionalPlan();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nami đã thêm kế hoạch 7 ngày tiếp theo rồi nhé.'),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is AIOverloadedException
+          ? AIOverloadedException.userMessage
+          : 'Nami chưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final dashboardAsync = ref.watch(dashboardProvider);
     final dynamicAsync = ref.watch(dashboardDynamicProvider);
+    final generationState = ref.watch(dashboardControllerProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -94,6 +119,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                   dynamicError: dynamicAsync.hasError
                       ? dynamicAsync.error.toString()
                       : null,
+                  isGeneratingPlan: generationState.isLoading,
+                  onGeneratePlan: _generateAdditionalPlan,
                   pulseAnimation: _pulseController,
                   scoreAnimation: _scoreController,
                 ),
@@ -111,6 +138,8 @@ class _DashboardContent extends StatelessWidget {
   final DashboardDynamicEntity dynamicData;
   final bool isDynamicLoading;
   final String? dynamicError;
+  final bool isGeneratingPlan;
+  final Future<void> Function() onGeneratePlan;
   final Animation<double> pulseAnimation;
   final Animation<double> scoreAnimation;
 
@@ -119,6 +148,8 @@ class _DashboardContent extends StatelessWidget {
     required this.dynamicData,
     required this.isDynamicLoading,
     required this.dynamicError,
+    required this.isGeneratingPlan,
+    required this.onGeneratePlan,
     required this.pulseAnimation,
     required this.scoreAnimation,
   });
@@ -156,6 +187,8 @@ class _DashboardContent extends StatelessWidget {
             name: name,
             bmi: bmi,
             unreadNotifications: dynamicData.unreadNotificationCount,
+            isGeneratingPlan: isGeneratingPlan,
+            onGeneratePlan: onGeneratePlan,
             pulseAnimation: pulseAnimation,
           ),
         ),
@@ -218,12 +251,16 @@ class _HeroPanel extends StatelessWidget {
   final String name;
   final double bmi;
   final int unreadNotifications;
+  final bool isGeneratingPlan;
+  final Future<void> Function() onGeneratePlan;
   final Animation<double> pulseAnimation;
 
   const _HeroPanel({
     required this.name,
     required this.bmi,
     required this.unreadNotifications,
+    required this.isGeneratingPlan,
+    required this.onGeneratePlan,
     required this.pulseAnimation,
   });
 
@@ -308,7 +345,94 @@ class _HeroPanel extends StatelessWidget {
                 ? 'BMI ${bmi.toStringAsFixed(1)}'
                 : 'BMI chưa có dữ liệu',
           ),
+          const SizedBox(height: AppSpacing.md),
+          _GeneratePlanCta(
+            isLoading: isGeneratingPlan,
+            onPressed: onGeneratePlan,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _GeneratePlanCta extends StatelessWidget {
+  final bool isLoading;
+  final Future<void> Function() onPressed;
+
+  const _GeneratePlanCta({required this.isLoading, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.16),
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        onTap: isLoading ? null : onPressed,
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: isLoading
+                    ? const Padding(
+                        padding: EdgeInsets.all(11),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.auto_awesome_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isLoading
+                          ? 'Nami đang chuẩn bị thêm kế hoạch cho bạn...'
+                          : 'Nami tạo thêm kế hoạch',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Thêm 7 ngày thực đơn, vận động và lịch trình nhẹ nhàng cho bạn.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.86),
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: isLoading ? 0.4 : 0.9),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
