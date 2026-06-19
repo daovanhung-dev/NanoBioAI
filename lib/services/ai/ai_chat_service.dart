@@ -51,11 +51,9 @@ class AIChatService {
     _now = now ?? DateTime.now;
     _modelCooldown = modelCooldown ?? AIChatRetryPolicy.modelCooldown;
 
-    final apiKey =
-        _cleanEnv(apiKeyOverride) ??
-        (_textGenerator == null
-            ? _cleanEnv(dotenv.env['GEMINI_API_KEY'])
-            : null);
+    final apiKey = apiKeyOverride != null
+        ? _cleanEnv(apiKeyOverride)
+        : (_textGenerator == null ? _env('GEMINI_API_KEY') : null);
     final hasApiKey = apiKey != null && apiKey.isNotEmpty;
 
     final resolvedModelNames =
@@ -65,7 +63,7 @@ class AIChatService {
               ? _envWithLegacy('GEMINI_CHAT_MODEL', 'GEMINI_MODEL')
               : null,
           fallbackModelsCsv: _textGenerator == null
-              ? _cleanEnv(dotenv.env['GEMINI_CHAT_FALLBACK_MODELS'])
+              ? _env('GEMINI_CHAT_FALLBACK_MODELS')
               : null,
         );
     AITraceLogger.info(
@@ -467,11 +465,26 @@ class AIChatService {
   }
 
   static String? _envWithLegacy(String key, String legacyKey) {
-    final value = dotenv.env.containsKey(key)
-        ? dotenv.env[key]
-        : dotenv.env[legacyKey];
+    final env = _dotenvEnvOrNull();
+    if (env == null) {
+      return null;
+    }
+
+    final value = env.containsKey(key) ? env[key] : env[legacyKey];
 
     return _cleanEnv(value);
+  }
+
+  static String? _env(String key) {
+    return _cleanEnv(_dotenvEnvOrNull()?[key]);
+  }
+
+  static Map<String, String>? _dotenvEnvOrNull() {
+    try {
+      return dotenv.env;
+    } catch (_) {
+      return null;
+    }
   }
 
   static String? _cleanEnv(String? value) {

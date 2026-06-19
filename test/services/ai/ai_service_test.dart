@@ -414,6 +414,17 @@ void main() {
     });
 
     test(
+      'missing API key without dotenv or model override uses local fallback',
+      () async {
+        final service = AIChatService(apiKeyOverride: '', delay: (_) async {});
+
+        final result = await service.sendMessage('Xin chào');
+
+        expect(result, contains('Mình chưa thể phản hồi bằng AI'));
+      },
+    );
+
+    test(
       'sendMessageStream uses the same retry and fallback behavior',
       () async {
         final modelCalls = <String>[];
