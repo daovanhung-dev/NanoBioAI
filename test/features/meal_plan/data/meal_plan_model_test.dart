@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 
 void main() {
   test('MealPlanModel maps cooking instructions for JSON and SQLite', () {

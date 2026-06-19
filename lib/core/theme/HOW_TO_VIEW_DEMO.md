@@ -63,7 +63,7 @@ home: const SplashPage(),
 
 ## 🚀 Cách 2: Thêm Route Mới (Khuyến Nghị)
 
-### Bước 1: Mở `lib/core/router/app_router.dart`
+### Bước 1: Mở `lib/app_versions/v1/router/app_router.dart`
 
 ### Bước 2: Import demo page
 

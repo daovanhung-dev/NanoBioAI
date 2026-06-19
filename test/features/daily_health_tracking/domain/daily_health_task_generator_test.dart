@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
-import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_summary_entity.dart';
-import 'package:nano_app/features/daily_health_tracking/domain/services/daily_health_task_generator.dart';
+import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
+import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_summary_entity.dart';
+import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/services/daily_health_task_generator.dart';
 
 void main() {
   const generator = DailyHealthTaskGenerator();

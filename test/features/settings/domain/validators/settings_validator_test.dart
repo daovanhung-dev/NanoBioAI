@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/features/settings/domain/validators/settings_validator.dart';
+import 'package:nano_app/app_versions/v1/features/settings/domain/validators/settings_validator.dart';
 
 void main() {
   group('SettingsValidator - validateMealReminderTime', () {

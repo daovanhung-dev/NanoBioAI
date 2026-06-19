@@ -18,7 +18,7 @@ void main() {
         // EXPECTED: This test FAILS on unfixed code (proving the violation exists)
 
         final file = File(
-          'lib/features/onboarding/presentation/controllers/onboarding_controller.dart',
+          'lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart',
         );
         expect(
           file.existsSync(),
@@ -62,9 +62,11 @@ void main() {
         // This test verifies circular dependency between ai_service and dashboard feature
         // EXPECTED: This test FAILS on unfixed code (proving the circular dependency exists)
 
-        final aiServiceFile = File('lib/services/ai/ai_service.dart');
+        final aiServiceFile = File(
+          'lib/app_versions/v1/services/ai/ai_service.dart',
+        );
         final dashboardControllerFile = File(
-          'lib/features/dashboard/presentation/controllers/dashboard_controller.dart',
+          'lib/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart',
         );
 
         expect(
@@ -117,10 +119,10 @@ void main() {
         // EXPECTED: This test FAILS on unfixed code (proving the naming violation exists)
 
         final remoteDatasourceFile = File(
-          'lib/features/onboarding/data/datasource/onboarding_remote_datasource.dart',
+          'lib/app_versions/v1/features/onboarding/data/datasource/onboarding_remote_datasource.dart',
         );
         final localDatasourceFile = File(
-          'lib/features/onboarding/data/datasource/onboarding_local_datasource.dart',
+          'lib/app_versions/v1/features/onboarding/data/datasource/onboarding_local_datasource.dart',
         );
 
         // Check current state
@@ -172,7 +174,7 @@ void main() {
         // EXPECTED: This test FAILS on unfixed code (proving the structure violation exists)
 
         final nestedDashboardDir = Directory(
-          'lib/features/meal_plan/dashboard',
+          'lib/app_versions/v1/features/meal_plan/dashboard',
         );
 
         // ASSERTION: Nested "dashboard" folder within meal_plan should NOT exist
@@ -185,33 +187,41 @@ void main() {
         );
 
         // Check for correct flat structure
-        final mealPlanDataDir = Directory('lib/features/meal_plan/data');
-        final mealPlanDomainDir = Directory('lib/features/meal_plan/domain');
+        final mealPlanDataDir = Directory(
+          'lib/app_versions/v1/features/meal_plan/data',
+        );
+        final mealPlanDomainDir = Directory(
+          'lib/app_versions/v1/features/meal_plan/domain',
+        );
         final mealPlanPresentationDir = Directory(
-          'lib/features/meal_plan/presentation',
+          'lib/app_versions/v1/features/meal_plan/presentation',
         );
         final mealPlanProvidersDir = Directory(
-          'lib/features/meal_plan/providers',
+          'lib/app_versions/v1/features/meal_plan/providers',
         );
 
         // ASSERTION: Flat structure directories should exist at feature root level
         // On UNFIXED code (with nested structure), these may not exist, causing test to FAIL
         expect(
           mealPlanDataDir.existsSync() ||
-              Directory('lib/features/meal_plan/dashboard/data').existsSync(),
+              Directory(
+                'lib/app_versions/v1/features/meal_plan/dashboard/data',
+              ).existsSync(),
           isTrue,
           reason: 'Data layer should exist',
         );
         expect(
           mealPlanDomainDir.existsSync() ||
-              Directory('lib/features/meal_plan/dashboard/domain').existsSync(),
+              Directory(
+                'lib/app_versions/v1/features/meal_plan/dashboard/domain',
+              ).existsSync(),
           isTrue,
           reason: 'Domain layer should exist',
         );
         expect(
           mealPlanPresentationDir.existsSync() ||
               Directory(
-                'lib/features/meal_plan/dashboard/presentation',
+                'lib/app_versions/v1/features/meal_plan/dashboard/presentation',
               ).existsSync(),
           isTrue,
           reason: 'Presentation layer should exist',
@@ -220,7 +230,7 @@ void main() {
           mealPlanProvidersDir.existsSync(),
           isTrue,
           reason:
-              'Providers directory should be at lib/features/meal_plan/providers/',
+              'Providers directory should be at lib/app_versions/v1/features/meal_plan/providers/',
         );
 
         // The key assertion: flat structure at root (not nested)
@@ -228,7 +238,7 @@ void main() {
           mealPlanDataDir.existsSync(),
           isTrue,
           reason:
-              'Data directory should be at lib/features/meal_plan/data/ (flat structure)',
+              'Data directory should be at lib/app_versions/v1/features/meal_plan/data/ (flat structure)',
         );
       },
     );
@@ -243,7 +253,7 @@ void main() {
           'lib/core/storage/localdb/models/meal_plan_model.dart',
         );
         final featureModelFile = File(
-          'lib/features/meal_plan/data/models/meal_plan_model.dart',
+          'lib/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart',
         );
 
         // ASSERTION: Feature-specific model should NOT be in core layer
@@ -261,7 +271,7 @@ void main() {
           featureModelFile.existsSync(),
           isTrue,
           reason:
-              'MealPlanModel should be in lib/features/meal_plan/data/models/meal_plan_model.dart',
+              'MealPlanModel should be in lib/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart',
         );
       },
     );
@@ -274,7 +284,7 @@ void main() {
 
       // Check Violation 1: Cross-feature dependency
       final onboardingFile = File(
-        'lib/features/onboarding/presentation/controllers/onboarding_controller.dart',
+        'lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart',
       );
       if (onboardingFile.existsSync()) {
         final content = onboardingFile.readAsStringSync();
@@ -293,7 +303,9 @@ void main() {
       }
 
       // Check Violation 2: Circular dependency
-      final aiServiceFile = File('lib/services/ai/ai_service.dart');
+      final aiServiceFile = File(
+        'lib/app_versions/v1/services/ai/ai_service.dart',
+      );
       if (aiServiceFile.existsSync()) {
         final content = aiServiceFile.readAsStringSync();
         if (content.contains('features/dashboard/domain/entities')) {
@@ -305,7 +317,7 @@ void main() {
 
       // Check Violation 3: Misnamed datasource
       final remoteDatasource = File(
-        'lib/features/onboarding/data/datasource/onboarding_remote_datasource.dart',
+        'lib/app_versions/v1/features/onboarding/data/datasource/onboarding_remote_datasource.dart',
       );
       if (remoteDatasource.existsSync()) {
         final content = remoteDatasource.readAsStringSync();
@@ -318,7 +330,9 @@ void main() {
       }
 
       // Check Violation 4: Nested structure
-      if (Directory('lib/features/meal_plan/dashboard').existsSync()) {
+      if (Directory(
+        'lib/app_versions/v1/features/meal_plan/dashboard',
+      ).existsSync()) {
         violations.add(
           'Violation 4: Nested "dashboard" folder within meal_plan feature',
         );

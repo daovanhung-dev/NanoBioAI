@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
 
 void main() {
   test('LifestyleScheduleItemModel maps SQLite and JSON fields', () {

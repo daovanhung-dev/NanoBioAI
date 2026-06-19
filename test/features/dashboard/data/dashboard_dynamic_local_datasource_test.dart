@@ -9,8 +9,8 @@ import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/notifications_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/nutrition_logs_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/users_table.dart';
-import 'package:nano_app/features/dashboard/data/datasources/dashboard_dynamic_local_datasource.dart';
-import 'package:nano_app/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/data/datasources/dashboard_dynamic_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

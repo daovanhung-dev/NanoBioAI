@@ -1,2 +1,1 @@
-export "./router/app_router.dart";
-export "./constants/routes/route_names.dart";
+// Shared core barrel intentionally does not export app-version router APIs.

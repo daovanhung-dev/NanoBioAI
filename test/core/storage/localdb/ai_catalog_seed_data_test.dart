@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
-import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
-import 'package:nano_app/services/ai/ai_vietnamese_text_validator.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_vietnamese_text_validator.dart';
 
 void main() {
   test('meal catalog has forty unique active Vietnamese items', () {

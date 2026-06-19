@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/services/notifications/notification_lifecycle_refresher.dart';
-import 'package:nano_app/services/notifications/notification_startup_scheduler.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_lifecycle_refresher.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_startup_scheduler.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

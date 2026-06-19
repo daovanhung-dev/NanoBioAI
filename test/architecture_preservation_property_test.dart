@@ -22,7 +22,7 @@ void main() {
         // INVARIANT: After fix, meal generation must still be triggered (via callback)
 
         final onboardingFile = File(
-          'lib/features/onboarding/presentation/controllers/onboarding_controller.dart',
+          'lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart',
         );
         expect(onboardingFile.existsSync(), isTrue);
 
@@ -61,7 +61,7 @@ void main() {
           // INVARIANT: 8-step structure must be preserved
 
           final onboardingFile = File(
-            'lib/features/onboarding/presentation/controllers/onboarding_controller.dart',
+            'lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart',
           );
           final content = onboardingFile.readAsStringSync();
 
@@ -88,7 +88,9 @@ void main() {
           // OBSERVATION: ai_service.dart uses GenerativeModel with Gemini API
           // INVARIANT: Gemini API integration and parsing logic must remain unchanged
 
-          final aiServiceFile = File('lib/services/ai/ai_service.dart');
+          final aiServiceFile = File(
+            'lib/app_versions/v1/services/ai/ai_service.dart',
+          );
           expect(aiServiceFile.existsSync(), isTrue);
 
           final content = aiServiceFile.readAsStringSync();
@@ -149,7 +151,9 @@ void main() {
           // OBSERVATION: Currently accepts DashboardEntity, will change to HealthDataInterface
           // INVARIANT: Must accept SOME health data parameter
 
-          final aiServiceFile = File('lib/services/ai/ai_service.dart');
+          final aiServiceFile = File(
+            'lib/app_versions/v1/services/ai/ai_service.dart',
+          );
           final content = aiServiceFile.readAsStringSync();
 
           // Verify generateMealPlan has healthData parameter
@@ -173,7 +177,7 @@ void main() {
         // INVARIANT: Database storage mechanism must remain unchanged
 
         final datasourceFile = File(
-          'lib/features/dashboard/data/datasources/dashboard_local_datasource.dart',
+          'lib/app_versions/v1/features/dashboard/data/datasources/dashboard_local_datasource.dart',
         );
         expect(datasourceFile.existsSync(), isTrue);
 
@@ -206,79 +210,76 @@ void main() {
         );
       });
 
-      test(
-        'Property: MealPlanModel structure preserved (location may change)',
-        () {
-          // OBSERVATION: meal_plan_model.dart has specific fields for database storage
-          // INVARIANT: Model structure must remain identical
+      test('Property: MealPlanModel structure preserved (location may change)', () {
+        // OBSERVATION: meal_plan_model.dart has specific fields for database storage
+        // INVARIANT: Model structure must remain identical
 
-          // Check both possible locations (core and feature)
-          final coreModelFile = File(
-            'lib/core/storage/localdb/models/meal_plan_model.dart',
-          );
-          final featureModelFile = File(
-            'lib/features/meal_plan/data/models/meal_plan_model.dart',
-          );
+        // Check both possible locations (core and feature)
+        final coreModelFile = File(
+          'lib/core/storage/localdb/models/meal_plan_model.dart',
+        );
+        final featureModelFile = File(
+          'lib/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart',
+        );
 
-          final modelExists =
-              coreModelFile.existsSync() || featureModelFile.existsSync();
+        final modelExists =
+            coreModelFile.existsSync() || featureModelFile.existsSync();
+        expect(
+          modelExists,
+          isTrue,
+          reason: 'MealPlanModel must exist (location may vary)',
+        );
+
+        final content = coreModelFile.existsSync()
+            ? coreModelFile.readAsStringSync()
+            : featureModelFile.readAsStringSync();
+
+        // Verify essential fields preserved
+        final requiredFields = [
+          'String id',
+          'String planDate',
+          'String mealType',
+          'String mealName',
+          'String description',
+          'int calories',
+          'double protein',
+          'double carbs',
+          'double fat',
+          'double fiber',
+          'int waterMl',
+          'int mealOrder',
+          'bool isCompleted',
+          'bool aiGenerated',
+        ];
+
+        for (final field in requiredFields) {
           expect(
-            modelExists,
+            content.contains(field),
             isTrue,
-            reason: 'MealPlanModel must exist (location may vary)',
+            reason:
+                'Required field "$field" must be preserved in MealPlanModel',
           );
+        }
 
-          final content = coreModelFile.existsSync()
-              ? coreModelFile.readAsStringSync()
-              : featureModelFile.readAsStringSync();
+        // Verify JSON serialization preserved
+        expect(
+          content.contains('fromJson'),
+          isTrue,
+          reason: 'fromJson deserialization must be preserved (3.6)',
+        );
 
-          // Verify essential fields preserved
-          final requiredFields = [
-            'String id',
-            'String planDate',
-            'String mealType',
-            'String mealName',
-            'String description',
-            'int calories',
-            'double protein',
-            'double carbs',
-            'double fat',
-            'double fiber',
-            'int waterMl',
-            'int mealOrder',
-            'bool isCompleted',
-            'bool aiGenerated',
-          ];
+        expect(
+          content.contains('toJson'),
+          isTrue,
+          reason: 'toJson serialization must be preserved (3.6)',
+        );
 
-          for (final field in requiredFields) {
-            expect(
-              content.contains(field),
-              isTrue,
-              reason:
-                  'Required field "$field" must be preserved in MealPlanModel',
-            );
-          }
-
-          // Verify JSON serialization preserved
-          expect(
-            content.contains('fromJson'),
-            isTrue,
-            reason: 'fromJson deserialization must be preserved (3.6)',
-          );
-
-          expect(
-            content.contains('toJson'),
-            isTrue,
-            reason: 'toJson serialization must be preserved (3.6)',
-          );
-
-          expect(
-            content.contains('toMap'),
-            isTrue,
-            reason: 'toMap for database must be preserved',
-          );
-        },
-      );
+        expect(
+          content.contains('toMap'),
+          isTrue,
+          reason: 'toMap for database must be preserved',
+        );
+      });
     });
 
     group('Property 3.4 & 3.5: Health Data Storage and Retrieval Across 7 Tables', () {
@@ -289,10 +290,10 @@ void main() {
           // INVARIANT: Multi-table save logic must be preserved
 
           final datasourceFile = File(
-            'lib/features/onboarding/data/datasource/onboarding_remote_datasource.dart',
+            'lib/app_versions/v1/features/onboarding/data/datasource/onboarding_remote_datasource.dart',
           );
           final altDatasourceFile = File(
-            'lib/features/onboarding/data/datasource/onboarding_local_datasource.dart',
+            'lib/app_versions/v1/features/onboarding/data/datasource/onboarding_local_datasource.dart',
           );
 
           final fileExists =
@@ -343,7 +344,7 @@ void main() {
           // INVARIANT: Multi-table read logic must be preserved
 
           final datasourceFile = File(
-            'lib/features/dashboard/data/datasources/dashboard_local_datasource.dart',
+            'lib/app_versions/v1/features/dashboard/data/datasources/dashboard_local_datasource.dart',
           );
           expect(datasourceFile.existsSync(), isTrue);
 
@@ -390,7 +391,7 @@ void main() {
         // INVARIANT: Entity structure must remain unchanged
 
         final entityFile = File(
-          'lib/features/dashboard/domain/entities/dashboard_entity.dart',
+          'lib/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart',
         );
         expect(entityFile.existsSync(), isTrue);
 
@@ -443,7 +444,7 @@ void main() {
           'lib/core/storage/localdb/models/meal_plan_model.dart',
         );
         final featureModelFile = File(
-          'lib/features/meal_plan/data/models/meal_plan_model.dart',
+          'lib/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart',
         );
 
         final modelExists =
@@ -494,7 +495,7 @@ void main() {
         // INVARIANT: Navigation flow must remain identical
 
         final onboardingFile = File(
-          'lib/features/onboarding/presentation/controllers/onboarding_controller.dart',
+          'lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart',
         );
         final content = onboardingFile.readAsStringSync();
 
@@ -520,7 +521,7 @@ void main() {
           // INVARIANT: Orchestration logic must remain unchanged
 
           final dashboardFile = File(
-            'lib/features/dashboard/presentation/controllers/dashboard_controller.dart',
+            'lib/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart',
           );
           expect(dashboardFile.existsSync(), isTrue);
 
@@ -561,13 +562,13 @@ void main() {
         // INVARIANT: Provider APIs must remain stable
 
         final onboardingFile = File(
-          'lib/features/onboarding/presentation/controllers/onboarding_controller.dart',
+          'lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart',
         );
         final dashboardFile = File(
-          'lib/features/dashboard/presentation/controllers/dashboard_controller.dart',
+          'lib/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart',
         );
         final onboardingProviderFile = File(
-          'lib/features/onboarding/providers/onboarding_provider.dart',
+          'lib/app_versions/v1/features/onboarding/providers/onboarding_provider.dart',
         );
 
         expect(onboardingFile.existsSync(), isTrue);
@@ -615,7 +616,7 @@ void main() {
         // INVARIANT: All state update methods must be preserved
 
         final onboardingFile = File(
-          'lib/features/onboarding/presentation/controllers/onboarding_controller.dart',
+          'lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart',
         );
         final content = onboardingFile.readAsStringSync();
 
@@ -660,7 +661,7 @@ void main() {
 
           // Step 1: Onboarding can save data
           final onboardingFile = File(
-            'lib/features/onboarding/presentation/controllers/onboarding_controller.dart',
+            'lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart',
           );
           final onboardingContent = onboardingFile.readAsStringSync();
           expect(
@@ -681,7 +682,7 @@ void main() {
 
           // Step 3: Dashboard controller orchestrates
           final dashboardFile = File(
-            'lib/features/dashboard/presentation/controllers/dashboard_controller.dart',
+            'lib/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart',
           );
           final dashboardContent = dashboardFile.readAsStringSync();
           expect(
@@ -691,7 +692,9 @@ void main() {
           );
 
           // Step 4: AI service generates meals
-          final aiServiceFile = File('lib/services/ai/ai_service.dart');
+          final aiServiceFile = File(
+            'lib/app_versions/v1/services/ai/ai_service.dart',
+          );
           final aiServiceContent = aiServiceFile.readAsStringSync();
           expect(
             aiServiceContent.contains(
@@ -703,7 +706,7 @@ void main() {
 
           // Step 5: Data is saved to database
           final datasourceFile = File(
-            'lib/features/dashboard/data/datasources/dashboard_local_datasource.dart',
+            'lib/app_versions/v1/features/dashboard/data/datasources/dashboard_local_datasource.dart',
           );
           final datasourceContent = datasourceFile.readAsStringSync();
           expect(

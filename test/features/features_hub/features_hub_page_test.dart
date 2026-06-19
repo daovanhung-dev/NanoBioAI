@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/features/features_hub/presentation/pages/features_hub_page.dart';
+import 'package:nano_app/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart';
 
 void main() {
   testWidgets('placeholder feature shows development snackbar', (tester) async {

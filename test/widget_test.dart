@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/features/onboarding/presentation/controllers/onboarding_controller.dart';
-import 'package:nano_app/features/onboarding/presentation/pages/onboarding_page.dart';
-import 'package:nano_app/features/onboarding/providers/onboarding_provider.dart';
-import 'package:nano_app/services/ai/ai_service.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/features/settings/data/datasources/settings_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

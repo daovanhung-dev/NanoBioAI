@@ -8,17 +8,17 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
-import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
-import 'package:nano_app/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
-import 'package:nano_app/services/ai/ai_chat_service.dart';
-import 'package:nano_app/services/ai/ai_exceptions.dart';
-import 'package:nano_app/services/ai/ai_json_parser.dart';
-import 'package:nano_app/services/ai/ai_json_prompt_builder.dart';
-import 'package:nano_app/services/ai/ai_service.dart';
-import 'package:nano_app/services/ai/ai_trace_logger.dart';
-import 'package:nano_app/services/ai/ai_vietnamese_text_validator.dart';
-import 'package:nano_app/services/ai/prompts/exercise_tasks_prompt.dart';
-import 'package:nano_app/services/ai/prompts/meal_plan_prompt.dart';
+import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_chat_service.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_json_parser.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_json_prompt_builder.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_trace_logger.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_vietnamese_text_validator.dart';
+import 'package:nano_app/app_versions/v1/services/ai/prompts/exercise_tasks_prompt.dart';
+import 'package:nano_app/app_versions/v1/services/ai/prompts/meal_plan_prompt.dart';
 
 void main() {
   const catalog = AiCatalogBundle(

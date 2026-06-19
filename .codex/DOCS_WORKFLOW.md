@@ -323,3 +323,8 @@ Commit de xuat: docs(todo): lap todo fix <slug>
   1. Coding: Phải có checklist để kiểm tra xem nhưng DD nào đã được coding
   2. Issues: Kiểm tra xem những issues nào đã được tạo todo
   3. Todo: Kiểm tra xem nhưng todo đã được làm
+
+## refactor
+
+- Mọi thhay đổi về kiến trúc dự án đều phải được cập nhật lại vào trong .codex
+- Bắt kỳ thao tác thêm file, sửa, xóa đều phải được cập nhật nếu cần thiết sau mỗi phiên làm việc

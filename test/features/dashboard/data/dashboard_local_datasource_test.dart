@@ -7,7 +7,7 @@ import 'package:nano_app/core/storage/localdb/tables/lifestyle_habits_table.dart
 import 'package:nano_app/core/storage/localdb/tables/medical_treatments_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/survey_answers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/users_table.dart';
-import 'package:nano_app/features/dashboard/data/datasources/dashboard_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/data/datasources/dashboard_local_datasource.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

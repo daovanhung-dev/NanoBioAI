@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/features/daily_health_tracking/data/models/daily_health_ai_task_normalizer.dart';
-import 'package:nano_app/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
+import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/models/daily_health_ai_task_normalizer.dart';
+import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
 
 void main() {
   const profile = DailyHealthProfileEntity(

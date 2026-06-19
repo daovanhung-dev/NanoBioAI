@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
-import 'package:nano_app/features/dashboard/domain/services/dashboard_companion_service.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/domain/services/dashboard_companion_service.dart';
 
 void main() {
   test('selectNextAction prioritizes light items on slow days', () {

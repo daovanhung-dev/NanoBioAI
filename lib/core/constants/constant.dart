@@ -1,1 +1,1 @@
-export "./routes/route_names.dart";
+// App route constants live under app_versions because routing is versioned.

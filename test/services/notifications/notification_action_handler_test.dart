@@ -7,16 +7,16 @@ import 'package:nano_app/core/storage/localdb/tables/health_tracking_logs_table.
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/notifications_table.dart';
-import 'package:nano_app/features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart';
-import 'package:nano_app/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
-import 'package:nano_app/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
-import 'package:nano_app/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
-import 'package:nano_app/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart';
-import 'package:nano_app/features/meal_plan/data/daos/meal_plan_dao.dart';
-import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
-import 'package:nano_app/services/notifications/notification_action_handler.dart';
-import 'package:nano_app/services/notifications/notification_constants.dart';
-import 'package:nano_app/services/notifications/notification_payload.dart';
+import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/daos/meal_plan_dao.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_action_handler.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_constants.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_payload.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

@@ -3,14 +3,14 @@ import 'package:nano_app/core/storage/localdb/daos/notifications_dao.dart';
 import 'package:nano_app/core/storage/localdb/models/notification_model.dart';
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/notifications_table.dart';
-import 'package:nano_app/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
-import 'package:nano_app/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
-import 'package:nano_app/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart';
-import 'package:nano_app/services/notifications/notification_constants.dart';
-import 'package:nano_app/services/notifications/notification_id_generator.dart';
-import 'package:nano_app/services/notifications/notification_payload.dart';
-import 'package:nano_app/services/notifications/reminder_notification_scheduler.dart';
-import 'package:nano_app/services/notifications/reminder_schedule_service.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_constants.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_id_generator.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_payload.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/reminder_notification_scheduler.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/reminder_schedule_service.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

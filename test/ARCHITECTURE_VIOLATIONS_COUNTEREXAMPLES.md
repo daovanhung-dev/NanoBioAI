@@ -12,12 +12,12 @@ All 6 bug condition exploration tests **failed as expected**, confirming that al
 
 ## Counterexample 1: Cross-Feature Dependency
 
-**File**: `lib/features/onboarding/presentation/controllers/onboarding_controller.dart`
+**File**: `lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart`
 
 **Violation Details**:
 - **Line 4**: Imports `dashboard_controller.dart` from a different feature
   ```dart
-  import 'package:nano_app/features/dashboard/presentation/controllers/dashboard_controller.dart';
+  import 'package:nano_app/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
   ```
 - **Line 302**: Direct cross-feature controller call
   ```dart
@@ -41,17 +41,17 @@ All 6 bug condition exploration tests **failed as expected**, confirming that al
 ## Counterexample 2: Circular Dependency
 
 **Files**:
-- `lib/services/ai/ai_service.dart` (line 9)
-- `lib/features/dashboard/presentation/controllers/dashboard_controller.dart` (line 8)
+- `lib/app_versions/v1/services/ai/ai_service.dart` (line 9)
+- `lib/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart` (line 8)
 
 **Violation Details**:
 - **AIService line 9**: Imports DashboardEntity from dashboard feature
   ```dart
-  import 'package:nano_app/features/dashboard/domain/entities/dashboard_entity.dart';
+  import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
   ```
 - **DashboardController line 8**: Imports AIService
   ```dart
-  import 'package:nano_app/services/ai/ai_service.dart';
+  import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
   ```
 
 **Test Result**: ❌ FAILED (Expected: no service→feature dependency, Actual: circular dependency found)
@@ -71,7 +71,7 @@ All 6 bug condition exploration tests **failed as expected**, confirming that al
 
 ## Counterexample 3: Misnamed Datasource
 
-**File**: `lib/features/onboarding/data/datasource/onboarding_remote_datasource.dart`
+**File**: `lib/app_versions/v1/features/onboarding/data/datasource/onboarding_remote_datasource.dart`
 
 **Violation Details**:
 - **Line 4**: Imports SQLite (local database)
@@ -100,14 +100,14 @@ All 6 bug condition exploration tests **failed as expected**, confirming that al
 
 ## Counterexample 4: Nested Feature Structure
 
-**Path**: `lib/features/meal_plan/dashboard/`
+**Path**: `lib/app_versions/v1/features/meal_plan/dashboard/`
 
 **Violation Details**:
 - Nested "dashboard" folder within meal_plan feature
 - Contains its own `data/`, `domain/`, `presentation/`, and `providers/` subfolders
 - Structure: 
   ```
-  lib/features/meal_plan/
+  lib/app_versions/v1/features/meal_plan/
     └── dashboard/           ❌ WRONG - nested feature
         ├── data/
         ├── domain/
@@ -126,7 +126,7 @@ All 6 bug condition exploration tests **failed as expected**, confirming that al
 **Expected Behavior After Fix**:
 - Flat structure at feature root level:
   ```
-  lib/features/meal_plan/
+  lib/app_versions/v1/features/meal_plan/
     ├── data/
     ├── domain/
     ├── presentation/
@@ -154,7 +154,7 @@ All 6 bug condition exploration tests **failed as expected**, confirming that al
 - Harder to understand feature boundaries
 
 **Expected Behavior After Fix**:
-- Model moved to `lib/features/meal_plan/data/models/meal_plan_model.dart`
+- Model moved to `lib/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart`
 - Feature-specific models contained within their feature
 - Core layer only contains truly shared infrastructure
 

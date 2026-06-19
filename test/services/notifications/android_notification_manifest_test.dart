@@ -37,7 +37,7 @@ void main() {
 
   test('uses exact alarms when available and falls back safely', () {
     final schedulerSource = File(
-      'lib/services/notifications/reminder_notification_scheduler.dart',
+      'lib/app_versions/v1/services/notifications/reminder_notification_scheduler.dart',
     ).readAsStringSync();
 
     expect(schedulerSource, contains('requestExactAlarmsPermission'));

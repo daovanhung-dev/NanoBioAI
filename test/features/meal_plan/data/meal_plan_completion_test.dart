@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
-import 'package:nano_app/features/meal_plan/data/daos/meal_plan_dao.dart';
-import 'package:nano_app/features/meal_plan/data/datasources/meal_plan_local_datasource.dart';
-import 'package:nano_app/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/daos/meal_plan_dao.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/datasources/meal_plan_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
