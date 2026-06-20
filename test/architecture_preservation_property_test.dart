@@ -388,7 +388,7 @@ void main() {
 
       test('Property: DashboardEntity structure preserved', () {
         // OBSERVATION: DashboardEntity has specific fields matching database schema
-        // INVARIANT: Entity structure must remain unchanged
+        // INVARIANT: Entity structure must keep the auth UUID user id contract
 
         final entityFile = File(
           'lib/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart',
@@ -399,7 +399,7 @@ void main() {
 
         // Verify essential health data fields preserved
         final requiredFields = [
-          'int userId',
+          'String userId',
           'String fullName',
           'String email',
           'String phone',

@@ -9,6 +9,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dash
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/domain/entities/settings_preferences_entity.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
+import 'package:nano_app/services/supabase/auth/account_security_service.dart';
 
 import 'dev_database_viewer_page.dart';
 
@@ -75,6 +76,7 @@ class SettingsView extends ConsumerWidget {
                             title: 'Bảo mật',
                             subtitle:
                                 'Bảo vệ tài khoản và thông tin cá nhân của bạn',
+                            onTap: () => _showChangePasswordSheet(context),
                           ),
                           const _DividerLine(),
                           _MenuItem(
@@ -209,6 +211,9 @@ class SettingsView extends ConsumerWidget {
                         email: dashboard?.email.trim().isEmpty == false
                             ? dashboard!.email
                             : null,
+                        onLogout: () => _confirmLogout(context, ref),
+                        onDeleteAccount: () =>
+                            _confirmDeleteAccount(context, ref),
                       ),
                       const SizedBox(height: AppSpacing.xxxl),
                     ],
@@ -220,6 +225,209 @@ class SettingsView extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _showChangePasswordSheet(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => const _ChangePasswordSheet(),
+    );
+  }
+
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Đăng xuất?'),
+        content: const Text(
+          'Nami sẽ đưa bạn về màn đăng nhập. Dữ liệu cloud của bạn vẫn được giữ nguyên.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Ở lại'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Đăng xuất'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await AccountSecurityService().signOut();
+      invalidateUserScopedProviders(ref);
+      if (!context.mounted) return;
+      context.go('/v2/auth');
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nami chưa thể đăng xuất lúc này. Bạn thử lại nhé.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _confirmDeleteAccount(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Yêu cầu xóa tài khoản?'),
+        content: const Text(
+          'Yêu cầu này sẽ được gửi tới hệ thống bảo mật. Nami không giữ khóa quản trị trong ứng dụng.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Gửi yêu cầu xóa'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await AccountSecurityService().requestAccountDeletion();
+      invalidateUserScopedProviders(ref);
+      if (!context.mounted) return;
+      context.go('/v2/auth');
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Nami chưa thể gửi yêu cầu xóa tài khoản lúc này. Bạn thử lại sau nhé.',
+          ),
+        ),
+      );
+    }
+  }
+}
+
+class _ChangePasswordSheet extends StatefulWidget {
+  const _ChangePasswordSheet();
+
+  @override
+  State<_ChangePasswordSheet> createState() => _ChangePasswordSheetState();
+}
+
+class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _password = TextEditingController();
+  final _confirm = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _password.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        bottomInset + AppSpacing.lg,
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Đổi mật khẩu', style: AppTextStyles.heading3),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Mật khẩu mới cần có ít nhất 8 ký tự. Nami sẽ không lưu mật khẩu trong hồ sơ công khai.',
+              style: AppTextStyles.bodyMedium,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            TextFormField(
+              controller: _password,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Mật khẩu mới'),
+              validator: _validatePassword,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextFormField(
+              controller: _confirm,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Nhập lại mật khẩu'),
+              validator: (value) {
+                final passwordError = _validatePassword(value);
+                if (passwordError != null) return passwordError;
+                if (value != _password.text) {
+                  return 'Hai mật khẩu chưa khớp nhau';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _saving ? null : _save,
+                child: _saving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Cập nhật mật khẩu'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String? _validatePassword(String? value) {
+    final text = value ?? '';
+    if (text.length < 8) return 'Mật khẩu cần ít nhất 8 ký tự';
+    return null;
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _saving = true);
+    try {
+      await AccountSecurityService().updatePassword(_password.text);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nami đã cập nhật mật khẩu.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Nami chưa thể cập nhật mật khẩu lúc này. Bạn thử lại sau nhé.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 }
 
@@ -458,8 +666,14 @@ class _MenuItem extends StatelessWidget {
 
 class _DangerCard extends StatelessWidget {
   final String? email;
+  final VoidCallback onLogout;
+  final VoidCallback onDeleteAccount;
 
-  const _DangerCard({required this.email});
+  const _DangerCard({
+    required this.email,
+    required this.onLogout,
+    required this.onDeleteAccount,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -508,9 +722,16 @@ class _DangerCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
               ),
-              onPressed: null,
+              onPressed: onLogout,
               child: const Text('Đăng xuất'),
             ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextButton.icon(
+            onPressed: onDeleteAccount,
+            icon: const Icon(Icons.delete_forever_rounded),
+            label: const Text('Yêu cầu xóa tài khoản'),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
           ),
         ],
       ),

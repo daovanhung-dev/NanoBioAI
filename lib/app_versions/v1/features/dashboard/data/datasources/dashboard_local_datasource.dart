@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/daos/meal_plan_dao.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 import '../../domain/entities/dashboard_entity.dart';
 
@@ -40,7 +41,15 @@ class DashboardLocalDatasource {
   Future<DashboardEntity> fetchDashboard() async {
     final db = await _db();
 
-    final users = await db.query('users', orderBy: 'created_at DESC', limit: 1);
+    final authUserId = currentSupabaseUserIdOrNull();
+    final users = authUserId == null
+        ? await db.query('users', orderBy: 'created_at DESC', limit: 1)
+        : await db.query(
+            'users',
+            where: 'id = ?',
+            whereArgs: [authUserId],
+            limit: 1,
+          );
 
     if (users.isEmpty) {
       throw Exception('Chưa có dữ liệu người dùng trong SQLite.');
@@ -124,7 +133,7 @@ class DashboardLocalDatasource {
     }
 
     return DashboardEntity(
-      userId: _readInt(user, 'id'),
+      userId: _readString(user, 'id'),
       fullName: _readString(user, 'full_name'),
       email: _readString(user, 'email'),
       phone: _readString(user, 'phone'),

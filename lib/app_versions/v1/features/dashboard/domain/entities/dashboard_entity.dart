@@ -2,7 +2,7 @@
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
 
 class DashboardEntity implements HealthDataInterface {
-  final int userId;
+  final String userId;
 
   @override
   final String fullName;

@@ -13,6 +13,7 @@ Doc file nay truoc khi code, review, test, hoac sua docs. Muc tieu: moi phien co
   - Todo fix issue sau khi doc issue: `docs/todo/`
 - Neu chi hoi dap/phan tich ngan va khong sua file: khong bat buoc tao worklog, tru khi user yeu cau.
 - Moi phien chi lam dung mode: coding/test/find-issues/create-issues/create-todo/fix-issues.
+- Sau mỗi phiên làm việc thì phải báo cáo tỷ lệ % công việc theo yêu cầu đã hoàn thành, và nói rõ những công việc chưa hoàn thành hoặc đang làm dở, trình bày chi tiết.
 
 ## Quy Tac Chung
 

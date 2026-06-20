@@ -1,0 +1,24 @@
+import '../entities/auth_commands.dart';
+import '../entities/auth_route_state.dart';
+
+abstract class AuthRepository {
+  Stream<void> watchAuthChanges();
+
+  Future<AuthRouteState> resolveAuthRouteState();
+
+  Future<RegistrationResult> signUpWithEmail(RegisterCommand command);
+
+  Future<void> signInWithEmail(LoginCommand command);
+
+  Future<void> resendEmailConfirmation(String email);
+
+  Future<void> sendPasswordRecovery(String email);
+
+  Future<void> updatePassword(UpdatePasswordCommand command);
+
+  Future<void> recoverSessionFromUri(Uri uri);
+
+  Future<void> signOut();
+
+  Future<void> requestAccountDeletion();
+}

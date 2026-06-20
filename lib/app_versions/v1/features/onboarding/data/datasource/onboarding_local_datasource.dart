@@ -18,7 +18,10 @@ class OnboardingLocalDatasource {
     return DatabaseService.database;
   }
 
-  Future<void> saveOnboarding(OnboardingEntity entity) async {
+  Future<void> saveOnboarding(
+    OnboardingEntity entity, {
+    String? userIdOverride,
+  }) async {
     AppLogger.database(_tag, 'Start saving onboarding to SQLite');
     AppLogger.info(_tag, 'Converting entity to model');
 
@@ -38,14 +41,21 @@ class OnboardingLocalDatasource {
         /// =========================
         /// USER
         /// =========================
-        AppLogger.database(_tag, 'Querying existing user by email/phone');
+        AppLogger.database(_tag, 'Querying existing user');
 
-        final users = await txn.query(
-          'users',
-          where: 'email = ? OR phone = ?',
-          whereArgs: [model.email, model.phone],
-          limit: 1,
-        );
+        final users = userIdOverride != null
+            ? await txn.query(
+                'users',
+                where: 'id = ?',
+                whereArgs: [userIdOverride],
+                limit: 1,
+              )
+            : await txn.query(
+                'users',
+                where: 'email = ? OR phone = ?',
+                whereArgs: [model.email, model.phone],
+                limit: 1,
+              );
 
         if (users.isNotEmpty) {
           userId = users.first['id'] as String;
@@ -68,8 +78,9 @@ class OnboardingLocalDatasource {
 
           AppLogger.success(_tag, 'User record updated successfully');
         } else {
-          // Generate a text primary key (timestamp-based) to match table schema (TEXT PK)
-          final generatedId = DateTime.now().millisecondsSinceEpoch.toString();
+          final generatedId =
+              userIdOverride ??
+              DateTime.now().millisecondsSinceEpoch.toString();
           AppLogger.database(_tag, 'New user, generating ID: $generatedId');
 
           await txn.insert('users', {
@@ -528,6 +539,13 @@ class OnboardingLocalDatasource {
         'user_id': userId,
         'question_code': 'birth_year',
         'answer_value': model.birthYear.toString(),
+        'created_at': now,
+      },
+
+      {
+        'user_id': userId,
+        'question_code': 'concern_text',
+        'answer_value': model.concernText,
         'created_at': now,
       },
     ];

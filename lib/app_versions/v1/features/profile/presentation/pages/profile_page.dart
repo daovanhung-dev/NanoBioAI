@@ -4,6 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
+import 'package:nano_app/app_versions/v1/features/settings/data/datasources/settings_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
+import 'package:nano_app/app_versions/v1/features/settings/utils/profile_validator.dart';
+import 'package:nano_app/services/supabase/auth/auth_profile_service.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -14,6 +19,14 @@ class ProfilePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      floatingActionButton: dashboardAsync.value == null
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () =>
+                  _showEditProfileSheet(context, ref, dashboardAsync.value!),
+              icon: const Icon(Icons.edit_rounded),
+              label: const Text('Chỉnh sửa'),
+            ),
       body: SafeArea(
         child: dashboardAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -90,6 +103,263 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _showEditProfileSheet(
+    BuildContext context,
+    WidgetRef ref,
+    DashboardEntity dashboard,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => _EditProfileSheet(dashboard: dashboard),
+    );
+    invalidateUserScopedProviders(ref);
+  }
+}
+
+class _EditProfileSheet extends StatefulWidget {
+  final DashboardEntity dashboard;
+
+  const _EditProfileSheet({required this.dashboard});
+
+  @override
+  State<_EditProfileSheet> createState() => _EditProfileSheetState();
+}
+
+class _EditProfileSheetState extends State<_EditProfileSheet> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _fullName;
+  late final TextEditingController _email;
+  late final TextEditingController _phone;
+  late final TextEditingController _gender;
+  late final TextEditingController _birthYear;
+  late final TextEditingController _occupation;
+  late final TextEditingController _height;
+  late final TextEditingController _weight;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final dashboard = widget.dashboard;
+    _fullName = TextEditingController(text: dashboard.fullName);
+    _email = TextEditingController(text: dashboard.email);
+    _phone = TextEditingController(text: dashboard.phone);
+    _gender = TextEditingController(text: dashboard.gender);
+    _birthYear = TextEditingController(
+      text: dashboard.birthYear > 0 ? dashboard.birthYear.toString() : '',
+    );
+    _occupation = TextEditingController(text: dashboard.occupation);
+    _height = TextEditingController(
+      text: dashboard.heightCm > 0 ? dashboard.heightCm.toString() : '',
+    );
+    _weight = TextEditingController(
+      text: dashboard.weightKg > 0 ? dashboard.weightKg.toString() : '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _fullName.dispose();
+    _email.dispose();
+    _phone.dispose();
+    _gender.dispose();
+    _birthYear.dispose();
+    _occupation.dispose();
+    _height.dispose();
+    _weight.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        bottomInset + AppSpacing.lg,
+      ),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Chỉnh sửa hồ sơ', style: AppTextStyles.heading3),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Email được quản lý bởi Supabase Auth nên Nami chỉ cập nhật hồ sơ sức khỏe và thông tin hiển thị ở đây.',
+                style: AppTextStyles.bodyMedium,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _ProfileField(
+                controller: _fullName,
+                label: 'Họ và tên',
+                validator: ProfileValidator.validateFullName,
+              ),
+              _ProfileField(controller: _email, label: 'Email', enabled: false),
+              _ProfileField(
+                controller: _phone,
+                label: 'Số điện thoại',
+                keyboardType: TextInputType.phone,
+                validator: ProfileValidator.validatePhone,
+              ),
+              _ProfileField(controller: _gender, label: 'Giới tính'),
+              _ProfileField(
+                controller: _birthYear,
+                label: 'Năm sinh',
+                keyboardType: TextInputType.number,
+                validator: (value) => ProfileValidator.validateBirthYear(
+                  int.tryParse((value ?? '').trim()),
+                ),
+              ),
+              _ProfileField(controller: _occupation, label: 'Nghề nghiệp'),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ProfileField(
+                      controller: _height,
+                      label: 'Chiều cao (cm)',
+                      keyboardType: TextInputType.number,
+                      validator: (value) => ProfileValidator.validateHeight(
+                        double.tryParse((value ?? '').trim()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _ProfileField(
+                      controller: _weight,
+                      label: 'Cân nặng (kg)',
+                      keyboardType: TextInputType.number,
+                      validator: (value) => ProfileValidator.validateWeight(
+                        double.tryParse((value ?? '').trim()),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _saving ? null : _save,
+                  child: _saving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Lưu hồ sơ'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    final authUserId = currentSupabaseUserIdOrNull();
+    if (authUserId == null) {
+      _showMessage(
+        'Phiên đăng nhập chưa sẵn sàng. Bạn đăng nhập lại rồi thử cập nhật hồ sơ nhé.',
+      );
+      return;
+    }
+
+    setState(() => _saving = true);
+    try {
+      final birthYear = int.parse(_birthYear.text.trim());
+      final height = double.parse(_height.text.trim());
+      final weight = double.parse(_weight.text.trim());
+      final bmi = _calculateBmi(height, weight);
+      final payload = CloudProfileUpdatePayload(
+        fullName: _fullName.text.trim(),
+        phone: _phone.text.trim(),
+        gender: _gender.text.trim(),
+        birthYear: birthYear,
+        occupation: _occupation.text.trim(),
+        heightCm: height,
+        weightKg: weight,
+        bmi: bmi,
+      );
+
+      await const AuthProfileService().updateProfile(payload);
+      await const SettingsLocalDatasource().updateUserProfile(authUserId, {
+        'full_name': payload.fullName,
+        'phone': payload.phone,
+        'gender': payload.gender,
+        'birth_year': payload.birthYear,
+        'occupation': payload.occupation,
+        'height_cm': payload.heightCm,
+        'weight_kg': payload.weightKg,
+        'bmi': payload.bmi,
+      });
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nami đã cập nhật hồ sơ của bạn.')),
+      );
+    } catch (_) {
+      _showMessage(
+        'Nami chưa thể cập nhật hồ sơ lúc này. Bạn thử lại sau một chút nhé.',
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  double _calculateBmi(double heightCm, double weightKg) {
+    if (heightCm <= 0 || weightKg <= 0) return 0;
+    final heightM = heightCm / 100;
+    return double.parse((weightKg / (heightM * heightM)).toStringAsFixed(2));
+  }
+}
+
+class _ProfileField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final bool enabled;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
+
+  const _ProfileField({
+    required this.controller,
+    required this.label,
+    this.enabled = true,
+    this.keyboardType,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: TextFormField(
+        controller: controller,
+        enabled: enabled,
+        keyboardType: keyboardType,
+        validator: validator,
+        decoration: InputDecoration(labelText: label),
       ),
     );
   }

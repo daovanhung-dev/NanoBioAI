@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 class DashboardDynamicLocalDatasource {
   final Database db;
@@ -74,7 +75,15 @@ class DashboardDynamicLocalDatasource {
   }
 
   Future<Map<String, Object?>?> _latestUser() async {
-    final rows = await db.query('users', orderBy: 'created_at DESC', limit: 1);
+    final authUserId = currentSupabaseUserIdOrNull();
+    final rows = authUserId == null
+        ? await db.query('users', orderBy: 'created_at DESC', limit: 1)
+        : await db.query(
+            'users',
+            where: 'id = ?',
+            whereArgs: [authUserId],
+            limit: 1,
+          );
     if (rows.isEmpty) return null;
     return rows.first;
   }

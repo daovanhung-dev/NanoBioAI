@@ -2,6 +2,7 @@ import 'package:nano_app/core/storage/localdb/daos/health_tracking_logs_dao.dart
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/models/health_tracking_log_model.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/daily_health_profile_entity.dart';
@@ -167,7 +168,15 @@ class DailyHealthTrackingLocalDatasource {
   Future<DailyHealthProfileEntity> _fetchLatestProfile(Database db) async {
     AppLogger.database(_tag, 'Fetching latest user profile');
 
-    final users = await db.query('users', orderBy: 'created_at DESC', limit: 1);
+    final authUserId = currentSupabaseUserIdOrNull();
+    final users = authUserId == null
+        ? await db.query('users', orderBy: 'created_at DESC', limit: 1)
+        : await db.query(
+            'users',
+            where: 'id = ?',
+            whereArgs: [authUserId],
+            limit: 1,
+          );
     if (users.isEmpty) {
       throw Exception('Chưa có dữ liệu người dùng trong SQLite.');
     }

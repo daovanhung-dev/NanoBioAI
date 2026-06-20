@@ -3,6 +3,7 @@ import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/services/supabase/auth/auth_profile_service.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
 import '../../domain/repositories/onboarding_repository.dart';
@@ -181,6 +182,9 @@ class OnboardingController extends Notifier<OnboardingState> {
   OnboardingState build() {
     _startTime = DateTime.now();
     AppLogger.info(_tag, 'Controller initialized');
+    Future.microtask(
+      () => const AuthProfileService().markOnboardingInProgress(),
+    );
     return const OnboardingState();
   }
 

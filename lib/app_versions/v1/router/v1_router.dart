@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nano_app/app_versions/v1/features/auth/auth.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/dashboard.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/menu_page.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart';
@@ -14,6 +13,7 @@ import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_
 import 'package:nano_app/app_versions/v1/features/community/presentation/pages/community_page.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart';
 import 'package:nano_app/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart';
+import 'package:nano_app/app_versions/v2/features/auth/auth.dart';
 
 import 'v1_route_guards.dart';
 import 'v1_route_paths.dart';
@@ -31,7 +31,7 @@ final v1Routes = <RouteBase>[
     path: V1RoutePaths.login,
     name: V1RoutePaths.login,
     redirect: V1RouteGuards.guestGuard,
-    builder: (context, state) => const LoginPage(),
+    builder: (context, state) => const V2LoginPage(),
   ),
 
   /// Register
@@ -102,7 +102,7 @@ final v1Routes = <RouteBase>[
   GoRoute(
     path: V1RoutePaths.aiChat,
     name: V1RoutePaths.aiChat,
-    //redirect: V1RouteGuards.authGuard,
+    redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const AIChatScreen(),
   ),
 
