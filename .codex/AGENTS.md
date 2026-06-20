@@ -4,7 +4,7 @@ File luat chinh cho Codex. Muc tieu: sua dung loi goc, giu flow san pham, kiem c
 
 ## Project Snapshot
 
-- App: NanoBio / BioAI - tro ly suc khoe AI bang Flutter.
+- App: NanoBio / NamiAI - tro ly suc khoe AI bang Flutter.
 - UI persona: Nami - am ap, nhe nhang, quan tam, khong phan xet.
 - Kien truc: feature-first + Clean Architecture theo huong hien co cua repo.
 - Stack hien tai: Flutter/Dart SDK `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4`, Gemini SDK `0.4.7`, local notifications `19.5.0`.
@@ -27,6 +27,7 @@ File luat chinh cho Codex. Muc tieu: sua dung loi goc, giu flow san pham, kiem c
    - Daily health tracking: `.codex/playbooks/health_tracking.md`
    - Lifestyle schedule/timeline: `.codex/playbooks/lifestyle_schedule.md`
 6. Dung `rg` de tim usage truoc khi mo rong pham vi hoac doi public API/provider/route/schema.
+7. Yêu cầu đọc workRule để hiểu cách làm việc, chỉ đọc file tương ứng với loại task hiện tại(develop: tạo chức năng mới, test: kiểm thử chức năng đã coding, fix: fix các issues).
 
 Khong doc toan bo repo khi task nam trong mot feature. Neu user yeu cau doc toan du an, lam inventory truoc, sau do doc sau cac hotspot can cho task.
 
