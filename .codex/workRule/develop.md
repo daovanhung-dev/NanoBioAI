@@ -10,18 +10,28 @@
 
 ---
 
-## 2. Quy tắc Version: V1 và V2
+## 2. Quy tắc Version và Access Tier
 
 ### 2.1. Nguyên tắc mặc định
 
-- Mặc định tạo chức năng mới ở `v2`.
-- Trước khi coding ở `v2`, vẫn phải đọc qua `v1` để nắm rõ cấu trúc hiện tại của dự án.
+- Không mặc định tạo mọi chức năng mới ở `v2`; phải chọn version theo access tier và BD/DD.
+- Guest/basic hoặc chỉnh luồng chưa đăng nhập: thực hiện ở `v1`.
+- Auth/free/member gate hoặc tính năng gói free sau đăng nhập: thực hiện ở `v2`.
+- Plus/FamilyPlus planned: thực hiện ở `v3` khi BD/DD đã có và version folder được xác định.
+- Sale/referral: là module hoặc axis độc lập, không tự kế thừa từ `v1`, `v2`, `v3`; vẫn phải đọc BD/DD và playbook access/membership/referral trước khi code.
+- Trước khi coding ở version cao hơn, vẫn phải đọc version thấp hơn để nắm flow được kế thừa.
 - Nếu task yêu cầu cập nhật dữ liệu hoặc logic thuộc `v1`, vẫn phải sửa lại `v1`.
 
 ### 2.2. Cách hiểu version
 
 ```text
-V2 là bản viết tiếp chức năng của V1.
+V1 là guest/basic flow cho người dùng chưa đăng nhập sau onboarding.
+
+V2 là authenticated free flow, kế thừa phần basic cần thiết từ V1.
+
+V3 là planned paid flow cho Plus và FamilyPlus, kế thừa từ V2 khi BD/DD cho phép.
+
+Sale/referral là vai trò độc lập với version và membership tier.
 
 Việc tách version nhằm thuận tiện cho việc fix bug và vá lỗi.
 
@@ -142,8 +152,9 @@ Chỉ được bắt đầu coding khi hoàn thành toàn bộ checklist:
 - [ ] Đã xác định DD tương ứng trong `docs/DD`.
 - [ ] Đã đọc luồng kỹ thuật, model và ràng buộc trong DD.
 - [ ] Đã xác định đúng phạm vi file cần chỉnh sửa.
-- [ ] Đã xác định version cần thực hiện: `v1` hoặc `v2`.
-- [ ] Đã đọc cấu trúc liên quan của `v1` khi thực hiện tại `v2`.
+- [ ] Đã xác định access tier liên quan: guest/basic, free, Plus, FamilyPlus hoặc sale/referral.
+- [ ] Đã xác định version cần thực hiện: `v1`, `v2`, `v3` hoặc module sale/referral độc lập.
+- [ ] Đã đọc cấu trúc liên quan của version thấp hơn khi thực hiện tại `v2`/`v3`.
 - [ ] Không có mâu thuẫn giữa yêu cầu, BD và DD.
 - [ ] Sẵn sàng bắt đầu coding.
 
@@ -154,9 +165,9 @@ Chỉ được bắt đầu coding khi hoàn thành toàn bộ checklist:
 ```text
 Nhận yêu cầu develop
         ↓
-Xác định version cần thực hiện: v1 hoặc v2
+Xác định access tier và version cần thực hiện: v1, v2, v3 hoặc sale/referral
         ↓
-Nếu làm v2: đọc v1 để nắm cấu trúc hiện tại
+Nếu làm v2/v3: đọc version thấp hơn để nắm cấu trúc hiện tại
         ↓
 Đọc BD gốc trong docs/BD
         ↓

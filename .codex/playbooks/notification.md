@@ -8,6 +8,7 @@ Thong bao theo lifestyle schedule, co action Da lam/Bo qua, va action cap nhat S
 
 - `lib/services/notifications/`
 - `lib/features/lifestyle_schedule/`
+- `.codex/playbooks/access_membership_referral.md` neu task cham notification theo guest/basic schedule, membership gate, hoac family schedule.
 - DAOs lien quan notifications, meal plans, daily health tasks, lifestyle schedule items.
 - Tests: `test/services/notifications/`, `test/features/lifestyle_schedule/`
 
@@ -29,6 +30,7 @@ Thong bao theo lifestyle schedule, co action Da lam/Bo qua, va action cap nhat S
 - Payload co type/id/version neu can; invalid payload khong crash.
 - Background action khong phu thuoc `BuildContext`.
 - Complete/skip phai update DB qua service/DAO abstraction.
+- Notification v1 phuc vu lich trinh ca nhan guest/basic; paid/family notification can membership/family permission gate rieng.
 - Neu doi Android/native config, chay build APK debug neu moi truong cho phep.
 - Khong goi plugin notification that trong unit test; test mapper/payload/id/service logic.
 

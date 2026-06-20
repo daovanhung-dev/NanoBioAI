@@ -22,6 +22,7 @@ Khong doc toan bo `.codex`, `lib/`, `test/`, hoac docs cu neu task chua can. Khi
 - `TOKEN_SAVING_RULES.md`: quy tac lay context va tiet kiem token.
 - `CHECKLIST.md`: checklist truoc/trong/sau khi lam.
 - `playbooks/*.md`: huong dan ngan theo module; chi doc 1 file lien quan.
+- `playbooks/access_membership_referral.md`: access gate, membership tier, guest/free/Plus/FamilyPlus va sale/referral.
 - `prompts/*.md`: prompt mau de giao viec; khong phai nguon luat chinh.
 - `tool/*`: script quick/full check.
 
@@ -32,6 +33,7 @@ Khong doc toan bo `.codex`, `lib/`, `test/`, hoac docs cu neu task chua can. Khi
 - Supabase `2.12.4`, Gemini SDK `0.4.7`.
 - Local notifications `19.5.0`, timezone `0.10.1`, flutter_timezone `5.1.0`.
 - SQLite database version: `8`.
+- Product access map: `v1` = guest/basic, `v2` = authenticated free, `v3` = planned Plus/FamilyPlus, `sale` = independent referral role.
 
 Nguon dung nhat van la `pubspec.yaml` va `lib/core/storage/localdb/database_version.dart`; khong doan.
 

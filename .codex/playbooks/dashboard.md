@@ -9,6 +9,7 @@ Dashboard phai phan anh du lieu that tu SQLite: ho so, BMI, tracking logs, meal 
 - `lib/features/dashboard/`
 - `lib/features/daily_health_tracking/`
 - `lib/features/lifestyle_schedule/`
+- `.codex/playbooks/access_membership_referral.md` neu task cham health score theo membership, guest/free/Plus access, hoac family dashboard.
 - Neu can: `lib/features/meal_plan/`, `lib/services/notifications/`
 - Tests: `test/features/dashboard/`, `test/features/daily_health_tracking/`, `test/features/lifestyle_schedule/`
 
@@ -36,6 +37,7 @@ File hien tai can de y:
 - Khong dung mock/fake/sample data trong production dashboard.
 - UI khong query SQLite truc tiep.
 - Score/progress/timeline phai tinh tu du lieu that; thieu data thi hien empty state.
+- Free v2 health score duoc tinh tu lich su lam theo lich trinh AI; guest/basic khong duoc mo cac score/module ngoai scope v1 neu chua dang nhap.
 - Neu user complete/skip task, dashboard phai refresh tu DB.
 - User-facing copy khong noi `database`, `table`, `query`, `log`, `exception`.
 - Tranh `dynamic` trong UI neu co entity typed san.

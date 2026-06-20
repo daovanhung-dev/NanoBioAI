@@ -6,6 +6,7 @@
 - [ ] Xac dinh module chinh bang `.codex/PROJECT_MAP.md`.
 - [ ] Doc `AGENTS.md`, `PROJECT_MAP.md`, va `DOCS_WORKFLOW.md` neu co sua file/review/test/docs.
 - [ ] Neu task lien quan issue/todo/fix issue: doc `ISSUE_TODO_WORKFLOW.md`.
+- [ ] Neu task lien quan auth/access/membership/referral sale: doc `.codex/playbooks/access_membership_referral.md`.
 - [ ] Chi doc `docs/DD/**` khi user yeu cau ro.
 - [ ] Doc dung 1 playbook lien quan.
 - [ ] Dung `rg` tim usage truoc khi doi public API/provider/route/schema.
@@ -17,6 +18,7 @@
 - [ ] Khong bypass UI -> Provider/Controller -> Repository -> Datasource -> DAO/API.
 - [ ] Khong them mock/fake/sample data vao production.
 - [ ] Khong hard-code secret/API key, khong sua `.env` that neu khong duoc yeu cau ro.
+- [ ] Khong tin client/local cache cho membership tier, sale status, referral tree, hoac commission.
 - [ ] User-facing copy tieng Viet co dau, dung giong Nami.
 - [ ] Log neu co phai co prefix module va khong lo secret/du lieu nhay cam.
 

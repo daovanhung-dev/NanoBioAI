@@ -21,6 +21,7 @@ File luat chinh cho Codex. Muc tieu: sua dung loi goc, giu flow san pham, kiem c
    - Dashboard/health score/task: `.codex/playbooks/dashboard.md`
    - Onboarding: `.codex/playbooks/onboarding.md`
    - AI/meal/exercise/parser/chat: `.codex/playbooks/ai_service.md`
+   - Access/membership/auth/referral sale: `.codex/playbooks/access_membership_referral.md`
    - Notification/reminder/action: `.codex/playbooks/notification.md`
    - SQLite/DAO/migration: `.codex/playbooks/sqlite.md`
    - UI/theme/copywriting: `.codex/playbooks/ui_nami.md`
@@ -72,23 +73,48 @@ Giu cac luat sau:
 - Tranh `dynamic`, `!`, `as` neu chua chung minh an toan.
 - Khong refactor lan sang module khac khi khong can cho loi goc.
 
+## Version & Access Map
+
+- `v1`: guest/basic flow cho nguoi dung chua dang nhap sau onboarding.
+- `v2`: authenticated free flow sau khi dang nhap va doc membership tu Supabase.
+- `v3`: planned paid flow cho Plus va FamilyPlus.
+- `sale`: vai tro doc lap voi tier/version; mot nguoi vua co app membership tier, vua co the co sale status.
+- Task lien quan auth/access/membership/referral sale phai doc `.codex/playbooks/access_membership_referral.md`.
+
 ## Critical Product Flow
 
 Luong loi can giu dung:
 
 ```text
-Onboarding complete
--> save profile/goals/habits/conditions/allergies/treatments/survey answers to SQLite
--> generate meal plan + exercise/daily health tasks by AI or fallback
+Guest opens app
+-> onboarding collects profile/goals/habits/conditions/allergies/treatments/survey answers
+-> save personal data locally to SQLite
+-> Gemini generates one initial personal schedule: meal plan + exercise/daily health tasks + lifestyle schedule
 -> normalize Vietnamese user-facing text
 -> save meal/task/schedule data to SQLite
--> build lifestyle schedule: meals + exercise + hydration + sleep
--> schedule local notifications with complete/skip actions
--> user action updates SQLite
--> dashboard reads SQLite and recalculates score/progress/timeline
+-> schedule local notifications by day/time with complete/skip actions
+-> guest can use only basic v1 modules until login
+-> login/sign-up opens membership lookup from Supabase
+-> access gate enables free/Plus/FamilyPlus features by membership tier
+-> user actions update SQLite/Supabase according to feature ownership
+-> dashboard reads real data and recalculates score/progress/timeline
 ```
 
-Dashboard production phai doc data that tu data layer/SQLite. Empty state duoc phep, bia so lieu thi khong.
+Dashboard production phai doc data that tu data layer/SQLite/Supabase theo feature ownership. Empty state duoc phep, bia so lieu thi khong.
+
+## Access & Membership Rules
+
+- Guest/unauthenticated (`v1`) chi duoc dung:
+  - AI tao lich trinh ca nhan 1 lan duy nhat ngay sau onboarding; muon tao them phai dang nhap.
+  - Module tinh toan du lieu suc khoe co ban.
+  - Thong bao theo lich trinh ca nhan theo tung ngay, tung moc.
+- Guest khong duoc dung cac tinh nang ngoai basic v1. Neu muon dung them thi phai dang nhap.
+- Sau login, app phai doc membership tier tu Supabase; khong tin client/local cache de quyet dinh quyen cao cap.
+- Free (`v2`) ke thua v1 va them: AI chat gioi han 3 cau/ngay, tao lich trinh ca nhan moi gioi han 3 lan/thang, health score dua tren lich su lam theo lich trinh AI.
+- Plus (`v3`, planned) ke thua free va them: lo trinh rieng theo muc tieu, module/tinh nang theo doi suc khoe cao hon, AI chat khong gioi han, tao thuc don/lich trinh khong gioi han.
+- FamilyPlus (`v3`, planned) ke thua Plus va them: onboarding gia dinh, menu gia dinh, theo doi suc khoe thanh vien, them thanh vien, xem/theo doi lich trinh cua nhau, ho tro tao/tinh chinh lich trinh cho thanh vien.
+- Sale/referral khong phai membership tier. Sale status la truc quyen rieng voi logic hoa hong rieng, khong tu ke thua v1/v2/v3.
+- UI/copy khong noi thuat ngu noi bo nhu tier, entitlement, gate, commission tree neu dang noi voi user cuoi.
 
 ## UI & Copy
 
@@ -143,7 +169,7 @@ Neu command khong chay duoc do moi truong, bao ro blocker. Khong bia ket qua tes
 Task chi xong khi:
 
 - Dung loi goc hoac dung yeu cau chuc nang.
-- Khong pha flow onboarding -> schedule -> notification -> dashboard.
+- Khong pha flow onboarding guest -> initial schedule -> notification -> login/membership gate -> dashboard.
 - Khong tao architecture violation moi.
 - Format/analyze/test da chay, hoac co ly do skip ro rang.
 - User-facing copy dung tieng Viet co dau va dung giong Nami.

@@ -17,8 +17,10 @@ Dung file nay de chon dung source can doc. Khong doc tran lan.
 - Tests: `test/`
 - Product/design docs: `docs/DD/`, `docs/features/`
 - Issues/todo/worklog: docs/issues/, docs/todo/, docs/worklog/`r
-- V1 source root: lib/app_versions/v1/ - baseline 1.0 hien tai.
-- V2 source root: lib/app_versions/v2/ - additive features moi, compose lai v1 routes khi can.
+- V1 source root: lib/app_versions/v1/ - guest/basic flow cho nguoi dung chua dang nhap.
+- V2 source root: lib/app_versions/v2/ - authenticated free flow, membership gate, auth/free extensions.
+- V3 source root: lib/app_versions/v3/ - planned Plus/FamilyPlus features neu duoc tao sau.
+- Sale/referral: axis doc lap voi version; khong tu ke thua v1/v2/v3.
 
 V1 feature folders hien co:
 
@@ -142,6 +144,20 @@ Doc theo pham vi:
 
 Tap trung: state/session, validation, route guard, khong lo secret.
 
+### Access / Membership / Auth / Referral Sale
+
+Doc:
+
+- `.codex/playbooks/access_membership_referral.md`
+- `lib/app_versions/v2/features/auth/`
+- `lib/services/supabase/`
+- `lib/app_versions/v1/router/`, `lib/app_versions/v2/router/`
+- `lib/app_versions/v1/features/settings/`, `lib/app_versions/v1/features/profile/`
+- Neu lien quan guest/basic: `lib/app_versions/v1/features/onboarding/`, `lib/app_versions/v1/services/ai/`, `lib/app_versions/v1/features/lifestyle_schedule/`, `lib/app_versions/v1/services/notifications/`
+- Neu tao v3 sau: `lib/app_versions/v3/` va tests tuong ung.
+
+Tap trung: v1 chi la guest/basic; v2 la authenticated free; v3 la Plus/FamilyPlus planned; sale/referral la vai tro doc lap. Quyen membership/referral phai doc tu Supabase/server-side source, khong tin client/local cache cho quyen cao cap/hoa hong.
+
 ### Feature Hub / Care Pages / Tracking Pages
 
 Doc:
@@ -171,7 +187,18 @@ Doc:
 - Neu dung lai man hinh/route v1: `lib/app_versions/v1/router/` va feature v1 lien quan.
 - Tests: tao/cap nhat theo module moi, va `test/architecture_version_boundary_test.dart`.
 
-Tap trung: v2 la lop mo rong, khong rewrite v1. V2 feature khong import truc tiep v1 presentation/controller; neu can data thi di qua repository/service/shared storage. `core/` khong import `app_versions/*`.
+Tap trung: v2 la authenticated free layer, khong rewrite v1 guest/basic. V2 feature khong import truc tiep v1 presentation/controller; neu can data thi di qua repository/service/shared storage. `core/` khong import `app_versions/*`.
+
+### V3 / Plus / FamilyPlus Planned
+
+Doc:
+
+- `.codex/playbooks/access_membership_referral.md`
+- BD/DD tuong ung trong `docs/BD` va `docs/DD` truoc khi code.
+- `lib/app_versions/v1/` de nam basic flow va `lib/app_versions/v2/` de nam auth/free/membership gate.
+- `lib/app_versions/v3/` neu da ton tai; neu chua co thi lap plan tao theo architecture version boundary.
+
+Tap trung: Plus ke thua free, FamilyPlus ke thua Plus. Khong tu them paid feature vao v1 guest/basic hoac v2 free neu BD/DD chua yeu cau.
 
 ### Docs / DD / Issue / Todo
 
@@ -193,6 +220,7 @@ rg "Provider|AsyncNotifier|Notifier|Repository|Datasource|Dao|DAO" lib/app_versi
 rg "CREATE TABLE|ALTER TABLE|databaseVersion|currentVersion|onCreate|migration" lib/core/storage/localdb test
 rg "notification|payload|timezone|reminder|complete|skip" lib/app_versions/v1/services lib/app_versions/v1/features test
 rg "Gemini|generateContent|validator|normalizer|catalog|fallback|dotenv|ChatSession" lib/app_versions/v1/services/ai lib/app_versions/v1/features test
+rg "membership|subscription|tier|entitlement|referral|commission|sale|FamilyPlus|Plus" lib docs .codex
 ```
 
 Architecture checks:

@@ -9,6 +9,7 @@ AI co the timeout, quota, hoac tra sai format nhung app khong crash. Text user-f
 - `lib/services/ai/`
 - `lib/features/meal_plan/`
 - `lib/features/ai_chat/`
+- `.codex/playbooks/access_membership_referral.md` neu task cham AI chat quota, tao lich trinh theo tier, guest/free/Plus access, hoac membership gate.
 - `lib/features/lifestyle_schedule/data/models/*normalizer*`
 - `lib/features/daily_health_tracking/data/models/*normalizer*`
 - Tests: `test/services/ai/`, `test/features/meal_plan/`, `test/features/lifestyle_schedule/`, `test/features/daily_health_tracking/`
@@ -32,6 +33,7 @@ AI co the timeout, quota, hoac tra sai format nhung app khong crash. Text user-f
 - Parser phai reject JSON sai schema thay vi crash.
 - Neu AI tra id/code/text khong dau, map qua catalog/normalizer de lay tieng Viet co dau.
 - Co fallback ro cho timeout, 503/quota, invalid JSON, missing fields.
+- Guest chi duoc tao lich trinh AI 1 lan sau onboarding; free chat 3 cau/ngay va tao lich trinh 3 lan/thang; Plus planned mo gioi han theo membership gate.
 - Unit/widget test khong goi Gemini that.
 - Log AI chi ghi summary an toan: stage, status, count, error type; khong log API key/raw prompt/raw response dai.
 
