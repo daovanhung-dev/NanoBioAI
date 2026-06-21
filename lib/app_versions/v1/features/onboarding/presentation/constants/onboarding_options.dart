@@ -4,6 +4,7 @@
 /// used throughout the onboarding flow.
 ///
 /// **Validates: Requirements 5.7, 5.8, 5.9, 6.12, 11.1-11.9**
+library;
 
 // Birth Year Options (1920-2024, descending)
 final birthYears = List<int>.generate(2024 - 1920 + 1, (index) => 2024 - index);

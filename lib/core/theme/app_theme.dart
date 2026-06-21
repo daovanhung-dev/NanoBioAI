@@ -130,7 +130,7 @@ class AppTheme {
 
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: AppColors.primary,
-        selectionColor: AppColors.primary.withOpacity(0.18),
+        selectionColor: AppColors.primary.withValues(alpha: 0.18),
         selectionHandleColor: AppColors.primary,
       ),
 

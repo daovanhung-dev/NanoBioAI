@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/theme/primitives/button.dart';
-import 'package:nano_app/core/theme/tokens/color_tokens.dart';
 import 'package:nano_app/core/theme/tokens/spacing_tokens.dart';
 import 'package:nano_app/core/theme/tokens/component_tokens.dart';
 
@@ -299,8 +298,8 @@ void main() {
               body: AppButton(
                 variant: variant,
                 onPressed: () {},
-                child: const Text('Test'),
                 icon: variant == ButtonVariant.icon ? Icons.star : null,
+                child: const Text('Test'),
               ),
             ),
           ),

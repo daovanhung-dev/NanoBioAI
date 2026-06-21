@@ -95,7 +95,7 @@ class AIChatService {
           model: hasApiKey && _textGenerator == null
               ? GenerativeModel(
                   model: modelName,
-                  apiKey: apiKey!,
+                  apiKey: apiKey,
                   generationConfig: GenerationConfig(
                     candidateCount: 1,
                     maxOutputTokens: 512,

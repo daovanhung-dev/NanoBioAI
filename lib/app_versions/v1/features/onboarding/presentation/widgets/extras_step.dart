@@ -450,7 +450,7 @@ class _GlowCircle extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: AppDecoration.circle(color: color.withOpacity(0.72)),
+        decoration: AppDecoration.circle(color: color.withValues(alpha: 0.72)),
       ),
     );
   }
@@ -512,7 +512,7 @@ class _HeroSection extends StatelessWidget {
               Text(
                 'Những chia sẻ ở bước này giúp Nami chăm sóc bữa ăn, thói quen và lời nhắc của bạn tinh tế hơn. Bạn có thể chọn nhanh, bỏ qua điều chưa chắc, rồi chỉnh lại sau.',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textWhite.withOpacity(0.92),
+                  color: AppColors.textWhite.withValues(alpha: 0.92),
                   height: 1.65,
                 ),
               ),
@@ -631,7 +631,7 @@ class _HeroInfo extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textWhite.withOpacity(0.78),
+                    color: AppColors.textWhite.withValues(alpha: 0.78),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xxs),
@@ -727,7 +727,7 @@ class _SectionHeader extends StatelessWidget {
           height: AppSpacing.touchTargetMin,
           decoration: AppDecoration.card(
             radius: AppRadius.lg,
-            border: Border.all(color: AppColors.border.withOpacity(0.72)),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
             shadows: AppShadows.xs,
             gradient: AppGradients.surface,
           ),
@@ -770,7 +770,7 @@ class _SurfaceCard extends StatelessWidget {
       padding: padding ?? const EdgeInsets.all(AppSpacing.md),
       decoration: AppDecoration.card(
         radius: AppRadius.xl,
-        border: Border.all(color: AppColors.border.withOpacity(0.72)),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
         shadows: AppShadows.soft,
         gradient: AppGradients.surface,
       ),
@@ -908,7 +908,7 @@ class _NamiChoiceField extends StatelessWidget {
                 radius: AppRadius.xl,
                 border: Border.all(
                   color: hasValue
-                      ? AppColors.primary.withOpacity(0.42)
+                      ? AppColors.primary.withValues(alpha: 0.42)
                       : AppColors.border,
                 ),
                 shadows: hasValue ? AppShadows.primary : AppShadows.xs,
@@ -1304,7 +1304,7 @@ class _BottomSheetOptionTile extends StatelessWidget {
                     color: AppColors.primarySoft,
                     radius: AppRadius.lg,
                     border: Border.all(
-                      color: AppColors.primary.withOpacity(0.5),
+                      color: AppColors.primary.withValues(alpha: 0.5),
                       width: 1.4,
                     ),
                     shadows: AppShadows.primary,
@@ -1467,7 +1467,7 @@ class _BottomSheetActions extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.card,
         border: Border(
-          top: BorderSide(color: AppColors.border.withOpacity(0.72)),
+          top: BorderSide(color: AppColors.border.withValues(alpha: 0.72)),
         ),
       ),
       child: LayoutBuilder(
@@ -1529,7 +1529,7 @@ class _SelectedPill extends StatelessWidget {
       decoration: AppDecoration.container(
         color: AppColors.card,
         radius: AppRadius.circular,
-        border: Border.all(color: AppColors.primary.withOpacity(0.28)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.28)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1579,7 +1579,7 @@ class _CareNoteCard extends StatelessWidget {
       decoration: AppDecoration.card(
         color: AppColors.infoSoft,
         radius: AppRadius.xl,
-        border: Border.all(color: AppColors.info.withOpacity(0.22)),
+        border: Border.all(color: AppColors.info.withValues(alpha: 0.22)),
         shadows: AppShadows.xs,
       ),
       child: Row(
@@ -1589,7 +1589,7 @@ class _CareNoteCard extends StatelessWidget {
             width: AppSpacing.touchTargetMin,
             height: AppSpacing.touchTargetMin,
             decoration: AppDecoration.circle(
-              color: AppColors.card.withOpacity(0.82),
+              color: AppColors.card.withValues(alpha: 0.82),
             ),
             child: const Icon(AppIcons.info, color: AppColors.info),
           ),
@@ -1667,7 +1667,7 @@ class _SummaryCard extends StatelessWidget {
                     Text(
                       'Bước tiếp theo sẽ nhẹ nhàng hơn vì mình đã có ngữ cảnh về bạn.',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textWhite.withOpacity(0.84),
+                        color: AppColors.textWhite.withValues(alpha: 0.84),
                         height: 1.5,
                       ),
                     ),
@@ -1754,7 +1754,7 @@ class _SummaryItem extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textWhite.withOpacity(0.74),
+                    color: AppColors.textWhite.withValues(alpha: 0.74),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xxs),

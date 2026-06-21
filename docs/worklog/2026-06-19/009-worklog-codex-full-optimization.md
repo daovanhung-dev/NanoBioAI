@@ -43,7 +43,7 @@ Commit de xuat: docs(worklog): ghi nhan phien codex full optimization
 - `Get-Content .codex\README.md`: PASS - smoke read file chinh.
 - `Get-Content .codex\AGENTS.md`: PASS - smoke read file chinh.
 - `Get-Content .codex\PROJECT_MAP.md`: PASS - smoke read file chinh.
-- `Select-String -Path .codex\*.md,.codex\playbooks\*.md,.codex\prompts\*.md -Pattern 'Ä|Ã|Æ|áº|á»|ðŸ|â'`: PASS - khong thay marker mojibake.
+- `Select-String -Path .codex\*.md,.codex\playbooks\*.md,.codex\prompts\*.md -Pattern '<mojibake-markers>'`: PASS - khong thay marker mojibake.
 - `git diff --check -- .codex docs\worklog\2026-06-19\009-worklog-codex-full-optimization.md`: PASS - khong co whitespace error; Git canh bao LF se duoc thay bang CRLF khi cham file tren Windows.
 - `dart format --set-exit-if-changed .`: SKIPPED - chi sua Markdown `.codex`.
 - `flutter analyze`: SKIPPED - chi sua Markdown `.codex`.

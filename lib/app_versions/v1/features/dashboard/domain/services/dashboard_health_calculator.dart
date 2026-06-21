@@ -152,16 +152,21 @@ class DashboardHealthCalculator {
   }
 
   static String _bmiMessage(double bmi) {
-    if (bmi <= 0)
+    if (bmi <= 0) {
       return 'Cần chiều cao và cân nặng để Nami tính BMI chính xác hơn.';
-    if (bmi < 18.5)
+    }
+    if (bmi < 18.5) {
       return 'Bạn có thể cần tăng năng lượng và protein một cách nhẹ nhàng.';
-    if (bmi < 23)
+    }
+    if (bmi < 23) {
       return 'BMI đang ở vùng khá cân bằng, hãy duy trì nhịp sinh hoạt hiện tại.';
-    if (bmi < 25)
+    }
+    if (bmi < 25) {
       return 'BMI bắt đầu nhích lên, mình nên chú ý bữa tối và vận động nhẹ.';
-    if (bmi < 30)
+    }
+    if (bmi < 30) {
       return 'Nên ưu tiên kiểm soát calo, đường ngọt và vận động đều hơn.';
+    }
     return 'Nên theo dõi sát hơn và cân nhắc tham khảo chuyên gia y tế khi cần.';
   }
 
@@ -200,12 +205,15 @@ class DashboardHealthCalculator {
   static String _hydrationLabel(int score) => _scoreLabel(score);
 
   static String _hydrationMessage(int score) {
-    if (score >= 85)
+    if (score >= 85) {
       return 'Lượng nước khá ổn, cứ giữ nhịp nhẹ nhàng như vậy nhé.';
-    if (score >= 70)
+    }
+    if (score >= 70) {
       return 'Chỉ cần thêm một chút nước vào buổi sáng hoặc chiều.';
-    if (score >= 55)
+    }
+    if (score >= 55) {
       return 'Nami nghĩ bạn nên đặt nhắc uống nước để dễ duy trì hơn.';
+    }
     return 'Lượng nước hơi thấp, hôm nay mình tăng dần từng cốc nhỏ nhé.';
   }
 
@@ -230,16 +238,18 @@ class DashboardHealthCalculator {
   }
 
   static String _sleepValue(String? quality, num? hours) {
-    if (hours != null && hours > 0)
+    if (hours != null && hours > 0) {
       return '${hours.toDouble().toStringAsFixed(1)}h';
+    }
     if (quality == null || quality.trim().isEmpty) return '--';
     return quality.trim();
   }
 
   static String _sleepMessage(int score) {
     if (score >= 85) return 'Giấc ngủ đang hỗ trợ tốt cho phục hồi cơ thể.';
-    if (score >= 70)
+    if (score >= 70) {
       return 'Giấc ngủ tương đối ổn, có thể cải thiện thêm giờ đi ngủ.';
+    }
     if (score >= 55) return 'Nên giảm màn hình và caffeine trước khi ngủ.';
     return 'Giấc ngủ đang là điểm cần chăm sóc trước tiên.';
   }
@@ -270,10 +280,12 @@ class DashboardHealthCalculator {
   }
 
   static String _activityMessage(int score) {
-    if (score >= 85)
+    if (score >= 85) {
       return 'Mức vận động rất tốt, hãy giữ nhịp an toàn và đều đặn.';
-    if (score >= 70)
+    }
+    if (score >= 70) {
       return 'Bạn đang có nền vận động ổn, thêm đi bộ nhẹ là rất tốt.';
+    }
     if (score >= 55) return 'Nên thêm 10–15 phút vận động nhẹ trong ngày.';
     return 'Cơ thể cần được đánh thức bằng những bước đi nhỏ trước.';
   }
@@ -291,21 +303,26 @@ class DashboardHealthCalculator {
 
     final haystack = _normalize([...conditions, concern ?? ''].join(' '));
     var score = 82;
-    if (haystack.contains('stress') || haystack.contains('cang thang'))
+    if (haystack.contains('stress') || haystack.contains('cang thang')) {
       score -= 24;
-    if (haystack.contains('mat ngu') || haystack.contains('kho ngu'))
+    }
+    if (haystack.contains('mat ngu') || haystack.contains('kho ngu')) {
       score -= 12;
+    }
     if (haystack.contains('met moi')) score -= 12;
     return score.clamp(35, 92).toInt();
   }
 
   static String _stressMessage(int score) {
-    if (score >= 85)
+    if (score >= 85) {
       return 'Tín hiệu căng thẳng chưa đáng lo, hãy tiếp tục nghỉ ngơi đều.';
-    if (score >= 70)
+    }
+    if (score >= 70) {
       return 'Cơ thể có thể đang hơi mệt, nên có khoảng nghỉ ngắn trong ngày.';
-    if (score >= 55)
+    }
+    if (score >= 55) {
       return 'Nami gợi ý thở chậm 3 phút và ngủ sớm hơn một chút.';
+    }
     return 'Căng thẳng đang ảnh hưởng rõ, mình nên ưu tiên phục hồi trước.';
   }
 
@@ -344,8 +361,9 @@ class DashboardHealthCalculator {
   }
 
   static String _conditionMessage(List<String> conditions) {
-    if (conditions.isEmpty)
+    if (conditions.isEmpty) {
       return 'Chưa ghi nhận vấn đề đặc biệt trong hồ sơ sức khỏe.';
+    }
     return 'Có ${conditions.length} điểm cần theo dõi, Nami sẽ ưu tiên gợi ý nhẹ nhàng hơn.';
   }
 

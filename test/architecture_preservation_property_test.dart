@@ -30,7 +30,8 @@ void main() {
 
         // Verify that saveOnboarding() method exists and triggers meal generation
         expect(
-          content.contains('Future<void> saveOnboarding()'),
+          content.contains('Future<void> saveOnboarding()') ||
+              content.contains('Future<String> saveOnboarding('),
           isTrue,
           reason: 'saveOnboarding() method must exist',
         );
@@ -665,7 +666,8 @@ void main() {
           );
           final onboardingContent = onboardingFile.readAsStringSync();
           expect(
-            onboardingContent.contains('Future<void> saveOnboarding()'),
+            onboardingContent.contains('Future<void> saveOnboarding()') ||
+                onboardingContent.contains('Future<String> saveOnboarding('),
             isTrue,
             reason: 'Onboarding save entry point must exist',
           );

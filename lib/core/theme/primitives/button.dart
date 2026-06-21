@@ -251,8 +251,8 @@ class AppButton extends StatelessWidget {
   Color _getBackgroundColor(bool isDark) {
     if (_isDisabled) {
       return isDark
-          ? AppColorTokens.darkBorder.withOpacity(0.3)
-          : AppColorTokens.border.withOpacity(0.5);
+          ? AppColorTokens.darkBorder.withValues(alpha: 0.3)
+          : AppColorTokens.border.withValues(alpha: 0.5);
     }
 
     switch (variant) {

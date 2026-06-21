@@ -38,8 +38,8 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
           // ── Body ────────────────────────────────────────────────────────
           Expanded(
             child: mealState.when(
-              loading: () => MealLoadingView(ui: ui),
-              error: (error, _) => MealErrorView(
+              loading: () => _MealLoadingView(ui: ui),
+              error: (error, _) => _MealErrorView(
                 ui: ui,
                 error:
                     'Nami chưa thể mở thực đơn lúc này. Bạn thử làm mới lại sau một chút nhé.',
@@ -49,7 +49,7 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
               ),
               data: (meals) {
                 if (meals.isEmpty) {
-                  return MealEmptyView(
+                  return _MealEmptyView(
                     ui: ui,
                     title: 'Mình chưa chuẩn bị xong thực đơn',
                     subtitle:
@@ -59,7 +59,7 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
 
                 final availableDates = _extractAvailableDates(meals);
                 if (availableDates.isEmpty) {
-                  return MealEmptyView(
+                  return _MealEmptyView(
                     ui: ui,
                     title: 'Mình chưa sắp được lịch ăn',
                     subtitle:
@@ -141,7 +141,7 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
                         if (filteredMeals.isEmpty)
                           SliverFillRemaining(
                             hasScrollBody: false,
-                            child: MealEmptyView(
+                            child: _MealEmptyView(
                               ui: ui,
                               title: 'Hôm nay mình chưa có món để gợi ý',
                               subtitle:
@@ -274,7 +274,10 @@ class _MealPlanHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.primary.withOpacity(0.82)],
+          colors: [
+            AppColors.primary,
+            AppColors.primary.withValues(alpha: 0.82),
+          ],
         ),
       ),
       child: SafeArea(
@@ -287,7 +290,7 @@ class _MealPlanHeader extends StatelessWidget {
               right: -ui.pagePadding * 1.5,
               child: _DecorativeCircle(
                 size: ui.headerDecorSize,
-                color: Colors.white.withOpacity(0.07),
+                color: Colors.white.withValues(alpha: 0.07),
               ),
             ),
             Positioned(
@@ -295,7 +298,7 @@ class _MealPlanHeader extends StatelessWidget {
               left: -ui.pagePadding,
               child: _DecorativeCircle(
                 size: ui.headerDecorSize * 0.55,
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
               ),
             ),
             // Content
@@ -322,7 +325,7 @@ class _MealPlanHeader extends StatelessWidget {
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.18),
+                                color: Colors.white.withValues(alpha: 0.18),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -330,7 +333,7 @@ class _MealPlanHeader extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: ui.headerDateFontSize,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   letterSpacing: 0.2,
                                 ),
                               ),
@@ -353,7 +356,7 @@ class _MealPlanHeader extends StatelessWidget {
                           'Theo dõi dinh dưỡng theo từng ngày',
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontSize: ui.headerSubtitleFontSize,
-                            color: Colors.white.withOpacity(0.72),
+                            color: Colors.white.withValues(alpha: 0.72),
                             height: 1.3,
                           ),
                         ),
@@ -370,10 +373,10 @@ class _MealPlanHeader extends StatelessWidget {
                         height: ui.actionButtonSize,
                         width: ui.actionButtonSize,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(ui.radiusLg),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.25),
+                            color: Colors.white.withValues(alpha: 0.25),
                             width: 1,
                           ),
                         ),
@@ -510,7 +513,7 @@ class _DateChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(ui.radiusLg),
           border: isToday && !isSelected
               ? Border.all(
-                  color: AppColors.primary.withOpacity(0.4),
+                  color: AppColors.primary.withValues(alpha: 0.4),
                   width: 1.5,
                 )
               : null,
@@ -525,7 +528,7 @@ class _DateChip extends StatelessWidget {
                 fontSize: ui.chipDayFontSize,
                 fontWeight: FontWeight.w700,
                 color: isSelected
-                    ? Colors.white.withOpacity(0.85)
+                    ? Colors.white.withValues(alpha: 0.85)
                     : AppColors.textSecondary,
                 letterSpacing: 0.3,
               ),
@@ -680,7 +683,7 @@ class _AnimatedMealCard extends StatelessWidget {
           child: child,
         ),
       ),
-      child: MealPlanCard(ui: ui, meal: meal),
+      child: _MealPlanCard(ui: ui, meal: meal),
     );
   }
 }
@@ -689,17 +692,17 @@ class _AnimatedMealCard extends StatelessWidget {
 // MEAL PLAN CARD
 // ─────────────────────────────────────────────────────────────────────────────
 
-class MealPlanCard extends StatefulWidget {
+class _MealPlanCard extends StatefulWidget {
   final _MealPlanResponsiveUi ui;
   final MealPlanEntity meal;
 
-  const MealPlanCard({super.key, required this.ui, required this.meal});
+  const _MealPlanCard({required this.ui, required this.meal});
 
   @override
-  State<MealPlanCard> createState() => _MealPlanCardState();
+  State<_MealPlanCard> createState() => _MealPlanCardState();
 }
 
-class _MealPlanCardState extends State<MealPlanCard> {
+class _MealPlanCardState extends State<_MealPlanCard> {
   bool _isPressed = false;
 
   static String _mealLabel(String type, int order) {
@@ -853,7 +856,7 @@ class _MealPlanCardState extends State<MealPlanCard> {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [accent, accent.withOpacity(0.6)],
+                          colors: [accent, accent.withValues(alpha: 0.6)],
                         ),
                       ),
                     ),
@@ -873,7 +876,7 @@ class _MealPlanCardState extends State<MealPlanCard> {
                                 Container(
                                   padding: EdgeInsets.all(ui.smallPadding),
                                   decoration: BoxDecoration(
-                                    color: accent.withOpacity(0.12),
+                                    color: accent.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(
                                       ui.radiusMd,
                                     ),
@@ -897,7 +900,7 @@ class _MealPlanCardState extends State<MealPlanCard> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: accent.withOpacity(0.1),
+                                          color: accent.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(
                                             4,
                                           ),
@@ -978,7 +981,7 @@ class _MealPlanCardState extends State<MealPlanCard> {
                             Divider(
                               height: 1,
                               thickness: 1,
-                              color: AppColors.textHint.withOpacity(0.12),
+                              color: AppColors.textHint.withValues(alpha: 0.12),
                             ),
 
                             SizedBox(height: ui.cardGap),
@@ -993,7 +996,7 @@ class _MealPlanCardState extends State<MealPlanCard> {
                               spacing: ui.smallGap,
                               runSpacing: ui.smallGap,
                               children: [
-                                MealStatusBadge(
+                                _MealStatusBadge(
                                   ui: ui,
                                   icon: meal.isCompleted
                                       ? Icons.check_circle_rounded
@@ -1008,7 +1011,7 @@ class _MealPlanCardState extends State<MealPlanCard> {
                                       ? AppColors.success
                                       : AppColors.warning,
                                 ),
-                                MealStatusBadge(
+                                _MealStatusBadge(
                                   ui: ui,
                                   icon: meal.aiGenerated
                                       ? Icons.auto_awesome_rounded
@@ -1186,7 +1189,7 @@ class _NutritionRow extends StatelessWidget {
                       right: e.key < items.length - 1 ? ui.smallGap : 0,
                     ),
                     decoration: BoxDecoration(
-                      color: e.value.color.withOpacity(0.25),
+                      color: e.value.color.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(ui.circularRadius),
                     ),
                     child: FractionallySizedBox(
@@ -1225,15 +1228,14 @@ class _NutrientDot {
 // STATUS BADGE  (with icon)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class MealStatusBadge extends StatelessWidget {
+class _MealStatusBadge extends StatelessWidget {
   final _MealPlanResponsiveUi ui;
   final IconData? icon;
   final String label;
   final Color backgroundColor;
   final Color textColor;
 
-  const MealStatusBadge({
-    super.key,
+  const _MealStatusBadge({
     required this.ui,
     this.icon,
     required this.label,
@@ -1277,13 +1279,12 @@ class MealStatusBadge extends StatelessWidget {
 // EMPTY VIEW
 // ─────────────────────────────────────────────────────────────────────────────
 
-class MealEmptyView extends StatelessWidget {
+class _MealEmptyView extends StatelessWidget {
   final _MealPlanResponsiveUi ui;
   final String title;
   final String subtitle;
 
-  const MealEmptyView({
-    super.key,
+  const _MealEmptyView({
     required this.ui,
     required this.title,
     required this.subtitle,
@@ -1339,15 +1340,15 @@ class MealEmptyView extends StatelessWidget {
 // LOADING VIEW  (shimmer-style skeleton)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class MealLoadingView extends StatefulWidget {
+class _MealLoadingView extends StatefulWidget {
   final _MealPlanResponsiveUi ui;
-  const MealLoadingView({super.key, required this.ui});
+  const _MealLoadingView({required this.ui});
 
   @override
-  State<MealLoadingView> createState() => _MealLoadingViewState();
+  State<_MealLoadingView> createState() => _MealLoadingViewState();
 }
 
-class _MealLoadingViewState extends State<MealLoadingView>
+class _MealLoadingViewState extends State<_MealLoadingView>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _anim;
@@ -1394,7 +1395,7 @@ class _SkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final base = AppColors.textHint.withOpacity(opacity);
+    final base = AppColors.textHint.withValues(alpha: opacity);
     return Container(
       decoration: AppDecoration.card(
         color: AppColors.surface,
@@ -1487,13 +1488,12 @@ class _ShimmerBar extends StatelessWidget {
 // ERROR VIEW
 // ─────────────────────────────────────────────────────────────────────────────
 
-class MealErrorView extends StatelessWidget {
+class _MealErrorView extends StatelessWidget {
   final _MealPlanResponsiveUi ui;
   final String error;
   final VoidCallback onRetry;
 
-  const MealErrorView({
-    super.key,
+  const _MealErrorView({
     required this.ui,
     required this.error,
     required this.onRetry,

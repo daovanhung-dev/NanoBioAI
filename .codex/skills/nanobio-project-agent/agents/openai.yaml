@@ -1,0 +1,4 @@
+interface:
+  display_name: "NanoBio Project Agent"
+  short_description: "NanoBio workflow and context router"
+  default_prompt: "Use $nanobio-project-agent to load the right NanoBio project context for this task."

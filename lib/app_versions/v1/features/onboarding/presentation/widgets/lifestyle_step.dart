@@ -217,7 +217,7 @@ class _NamiHeroCard extends StatelessWidget {
               Text(
                 'Mỗi người có một cách sống riêng. Bạn cứ chia sẻ nhẹ nhàng, Nami sẽ ghi nhớ để đồng hành cùng bạn theo cách vừa đủ và thoải mái nhất.',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textWhite.withOpacity(0.88),
+                  color: AppColors.textWhite.withValues(alpha: 0.88),
                   height: 1.65,
                 ),
               ),
@@ -328,7 +328,7 @@ class _HeroInfoTile extends StatelessWidget {
             width: AppSpacing.iconButtonSize,
             height: AppSpacing.iconButtonSize,
             decoration: AppDecoration.circle(
-              color: AppColors.textWhite.withOpacity(0.14),
+              color: AppColors.textWhite.withValues(alpha: 0.14),
             ),
             child: Icon(icon, color: AppColors.textWhite, size: 20),
           ),
@@ -342,7 +342,7 @@ class _HeroInfoTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textWhite.withOpacity(0.72),
+                    color: AppColors.textWhite.withValues(alpha: 0.72),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
@@ -572,7 +572,7 @@ class _HabitChoiceCard extends StatelessWidget {
                     height: 40,
                     decoration: AppDecoration.circle(
                       color: selected
-                          ? AppColors.primary.withOpacity(0.12)
+                          ? AppColors.primary.withValues(alpha: 0.12)
                           : AppColors.cardAlt,
                     ),
                     alignment: Alignment.center,
@@ -631,7 +631,7 @@ class _ResponsivePickerPanel extends StatelessWidget {
         opacity: 0.86,
         radius: AppRadius.xxl,
         shadows: AppShadows.soft,
-        borderColor: AppColors.border.withOpacity(0.72),
+        borderColor: AppColors.border.withValues(alpha: 0.72),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -703,7 +703,7 @@ class _ChoicePickerField extends StatelessWidget {
       curve: AppAnimations.smoothCurve,
       decoration: AppDecoration.base(
         color: _hasValue
-            ? AppColors.primarySoft.withOpacity(0.48)
+            ? AppColors.primarySoft.withValues(alpha: 0.48)
             : AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
@@ -1161,7 +1161,7 @@ class _CustomOptionEntry extends StatelessWidget {
                   width: AppSpacing.iconButtonSize,
                   height: AppSpacing.iconButtonSize,
                   decoration: AppDecoration.circle(
-                    color: AppColors.info.withOpacity(0.12),
+                    color: AppColors.info.withValues(alpha: 0.12),
                   ),
                   child: const Icon(
                     AppIcons.edit,
@@ -1271,7 +1271,7 @@ class _NamiMemoryCard extends StatelessWidget {
                           ? 'Những thông tin này sẽ giúp Nami chăm sóc bạn gần gũi và đúng nhịp hơn.'
                           : 'Bạn chưa cần điền hết ngay. Mình có thể bắt đầu chậm rãi từ những điều bạn thấy thoải mái.',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textWhite.withOpacity(0.84),
+                        color: AppColors.textWhite.withValues(alpha: 0.84),
                         height: 1.55,
                       ),
                     ),
@@ -1344,7 +1344,7 @@ class _MemoryTile extends StatelessWidget {
             width: AppSpacing.iconButtonSize,
             height: AppSpacing.iconButtonSize,
             decoration: AppDecoration.circle(
-              color: AppColors.textWhite.withOpacity(0.12),
+              color: AppColors.textWhite.withValues(alpha: 0.12),
             ),
             child: Icon(icon, color: AppColors.textWhite, size: 20),
           ),
@@ -1356,7 +1356,7 @@ class _MemoryTile extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textWhite.withOpacity(0.72),
+                    color: AppColors.textWhite.withValues(alpha: 0.72),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
@@ -1392,7 +1392,7 @@ class _TinyStatusPill extends StatelessWidget {
       decoration: AppDecoration.container(
         color: AppColors.successSoft,
         radius: AppRadius.circular,
-        border: Border.all(color: AppColors.success.withOpacity(0.4)),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1459,7 +1459,7 @@ class _LifestyleCalmBackgroundPainter extends CustomPainter {
     canvas.drawRect(rect, backgroundPaint);
 
     final linePaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.035)
+      ..color = AppColors.primary.withValues(alpha: 0.035)
       ..strokeWidth = 1;
 
     for (double x = 0; x < size.width; x += AppSpacing.xl) {

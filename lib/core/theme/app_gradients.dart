@@ -236,7 +236,10 @@ class AppGradients {
     return LinearGradient(
       begin: begin,
       end: end,
-      colors: [color.withOpacity(opacityStart), color.withOpacity(opacityEnd)],
+      colors: [
+        color.withValues(alpha: opacityStart),
+        color.withValues(alpha: opacityEnd),
+      ],
     );
   }
 

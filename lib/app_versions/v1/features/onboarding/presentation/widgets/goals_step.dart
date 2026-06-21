@@ -204,7 +204,7 @@ class _HeroSection extends StatelessWidget {
                 width: 156,
                 height: 156,
                 decoration: AppDecoration.circle(
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withValues(alpha: 0.08),
                 ),
               ),
             ),
@@ -217,7 +217,7 @@ class _HeroSection extends StatelessWidget {
                 width: 130,
                 height: 130,
                 decoration: AppDecoration.circle(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                 ),
               ),
             ),
@@ -294,7 +294,7 @@ class _HeroSection extends StatelessWidget {
               Text(
                 message,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: Colors.white.withOpacity(0.93),
+                  color: Colors.white.withValues(alpha: 0.93),
                   height: 1.65,
                 ),
               ),
@@ -500,7 +500,7 @@ class _HumanSectionHeader extends StatelessWidget {
             ),
             decoration: AppDecoration.outlined(
               color: AppColors.primarySoft,
-              borderColor: AppColors.primary.withOpacity(0.18),
+              borderColor: AppColors.primary.withValues(alpha: 0.18),
               radius: AppRadius.circular,
             ),
             child: Text(
@@ -616,7 +616,7 @@ class _GoalCategoryPill extends StatelessWidget {
                   shadows: AppShadows.primary,
                 )
               : AppDecoration.outlined(
-                  color: Colors.white.withOpacity(0.92),
+                  color: Colors.white.withValues(alpha: 0.92),
                   borderColor: AppColors.border,
                   radius: AppRadius.circular,
                 ),
@@ -642,7 +642,7 @@ class _GoalCategoryPill extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   decoration: AppDecoration.circle(
                     color: active
-                        ? Colors.white.withOpacity(0.20)
+                        ? Colors.white.withValues(alpha: 0.20)
                         : AppColors.primarySoft,
                   ),
                   alignment: Alignment.center,
@@ -748,7 +748,9 @@ class _GoalCard extends StatelessWidget {
                 )
               : AppDecoration.card(
                   radius: AppRadius.cardLarge,
-                  border: Border.all(color: AppColors.border.withOpacity(0.82)),
+                  border: Border.all(
+                    color: AppColors.border.withValues(alpha: 0.82),
+                  ),
                   shadows: AppShadows.soft,
                 ),
           child: Column(
@@ -764,7 +766,7 @@ class _GoalCard extends StatelessWidget {
                     height: 40,
                     decoration: AppDecoration.container(
                       color: selected
-                          ? Colors.white.withOpacity(0.18)
+                          ? Colors.white.withValues(alpha: 0.18)
                           : AppColors.primarySoft,
                       radius: AppRadius.lg,
                     ),
@@ -782,7 +784,7 @@ class _GoalCard extends StatelessWidget {
                     height: 24,
                     decoration: AppDecoration.circle(
                       color: selected
-                          ? Colors.white.withOpacity(0.20)
+                          ? Colors.white.withValues(alpha: 0.20)
                           : AppColors.primarySoft,
                     ),
                     child: Icon(
@@ -811,7 +813,7 @@ class _GoalCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: selected
-                      ? Colors.white.withOpacity(0.88)
+                      ? Colors.white.withValues(alpha: 0.88)
                       : AppColors.textSecondary,
                   height: 1.45,
                 ),
@@ -826,11 +828,11 @@ class _GoalCard extends StatelessWidget {
                   ),
                   decoration: AppDecoration.outlined(
                     color: selected
-                        ? Colors.white.withOpacity(0.14)
+                        ? Colors.white.withValues(alpha: 0.14)
                         : AppColors.primarySoft,
                     borderColor: selected
-                        ? Colors.white.withOpacity(0.18)
-                        : AppColors.primary.withOpacity(0.12),
+                        ? Colors.white.withValues(alpha: 0.18)
+                        : AppColors.primary.withValues(alpha: 0.12),
                     radius: AppRadius.circular,
                   ),
                   child: Text(
@@ -863,11 +865,14 @@ class _OtherGoalCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
-      decoration: AppDecoration.glass(
-        opacity: 0.94,
-        radius: AppRadius.cardLarge,
-        shadows: AppShadows.soft,
-      ).copyWith(border: Border.all(color: Colors.white.withOpacity(0.72))),
+      decoration:
+          AppDecoration.glass(
+            opacity: 0.94,
+            radius: AppRadius.cardLarge,
+            shadows: AppShadows.soft,
+          ).copyWith(
+            border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+          ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -998,7 +1003,7 @@ class _NamiPromiseCard extends StatelessWidget {
               Text(
                 body,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: Colors.white.withOpacity(0.92),
+                  color: Colors.white.withValues(alpha: 0.92),
                   height: 1.62,
                 ),
               ),
@@ -1126,9 +1131,9 @@ class _GoalsBackgroundPainter extends CustomPainter {
         end: Alignment.bottomRight,
         colors: [
           AppColors.background,
-          AppColors.primarySoft.withOpacity(0.52),
+          AppColors.primarySoft.withValues(alpha: 0.52),
           Colors.white,
-          AppColors.secondarySoft.withOpacity(0.36),
+          AppColors.secondarySoft.withValues(alpha: 0.36),
         ],
         transform: GradientRotation(animation * math.pi * 0.75),
       ).createShader(rect);
@@ -1136,7 +1141,7 @@ class _GoalsBackgroundPainter extends CustomPainter {
     canvas.drawRect(rect, backgroundPaint);
 
     final gridPaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.026)
+      ..color = AppColors.primary.withValues(alpha: 0.026)
       ..strokeWidth = 1;
 
     for (double x = 0; x <= size.width; x += 46) {
@@ -1148,7 +1153,7 @@ class _GoalsBackgroundPainter extends CustomPainter {
     }
 
     final pulsePaint = Paint()
-      ..color = AppColors.secondary.withOpacity(0.035)
+      ..color = AppColors.secondary.withValues(alpha: 0.035)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
 

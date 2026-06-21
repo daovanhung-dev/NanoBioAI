@@ -192,7 +192,7 @@ class AppShadows {
   }) {
     return [
       BoxShadow(
-        color: color.withOpacity(opacity),
+        color: color.withValues(alpha: opacity),
         blurRadius: blurRadius,
         spreadRadius: spreadRadius,
         offset: offset,

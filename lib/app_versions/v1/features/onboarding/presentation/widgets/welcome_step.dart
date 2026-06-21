@@ -73,7 +73,7 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
             child: _FloatingCircle(
               controller: _floatingController,
               size: 240,
-              color: AppColors.primary.withOpacity(0.055),
+              color: AppColors.primary.withValues(alpha: 0.055),
             ),
           ),
           Positioned(
@@ -82,7 +82,7 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
             child: _FloatingCircle(
               controller: _floatingController,
               size: 300,
-              color: AppColors.success.withOpacity(0.05),
+              color: AppColors.success.withValues(alpha: 0.05),
             ),
           ),
         ],
@@ -291,7 +291,7 @@ class _NamiHeroHeader extends StatelessWidget {
                   height: 150,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.07),
+                    color: Colors.white.withValues(alpha: 0.07),
                   ),
                 ),
               ),
@@ -303,7 +303,7 @@ class _NamiHeroHeader extends StatelessWidget {
                   height: 132,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.055),
+                    color: Colors.white.withValues(alpha: 0.055),
                   ),
                 ),
               ),
@@ -340,7 +340,7 @@ class _NamiHeroHeader extends StatelessWidget {
                   Text(
                     'Từ hôm nay, mình sẽ ở đây để lắng nghe cơ thể bạn, nhắc bạn chăm mình đúng lúc và giúp mọi thay đổi trở nên nhẹ nhàng hơn.',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: Colors.white.withOpacity(0.94),
+                      color: Colors.white.withValues(alpha: 0.94),
                       height: 1.7,
                       fontSize: compact ? 15.5 : 17,
                     ),
@@ -370,13 +370,13 @@ class _NamiAvatar extends StatelessWidget {
       padding: EdgeInsets.all(size * 0.10),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withOpacity(0.15),
-        border: Border.all(color: Colors.white.withOpacity(0.20)),
+        color: Colors.white.withValues(alpha: 0.15),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.20)),
       ),
       child: Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white.withOpacity(0.18),
+          color: Colors.white.withValues(alpha: 0.18),
         ),
         child: Icon(
           Icons.volunteer_activism_rounded,
@@ -402,9 +402,9 @@ class _StatusPill extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.circular),
-        border: Border.all(color: Colors.white.withOpacity(0.18)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -492,9 +492,9 @@ class _WarmNote extends StatelessWidget {
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.13),
+        color: Colors.white.withValues(alpha: 0.13),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -536,7 +536,9 @@ class _HumanMessageCard extends StatelessWidget {
                 radius: AppRadius.xxl,
                 shadows: AppShadows.soft,
               ).copyWith(
-                border: Border.all(color: AppColors.primary.withOpacity(0.10)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                ),
               ),
           child: compact
               ? const Column(
@@ -634,7 +636,7 @@ class _TitleSection extends StatelessWidget {
           ),
           decoration: AppDecoration.outlined(
             color: AppColors.primarySoft,
-            borderColor: AppColors.primary.withOpacity(0.16),
+            borderColor: AppColors.primary.withValues(alpha: 0.16),
             radius: AppRadius.circular,
           ),
           child: Text(
@@ -749,10 +751,13 @@ class _CareFeatureCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: AppDecoration.card(
-        radius: AppRadius.xl,
-        shadows: AppShadows.sm,
-      ).copyWith(border: Border.all(color: AppColors.border.withOpacity(0.72))),
+      decoration:
+          AppDecoration.card(
+            radius: AppRadius.xl,
+            shadows: AppShadows.sm,
+          ).copyWith(
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
+          ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -802,7 +807,9 @@ class _CarePromiseCard extends StatelessWidget {
             radius: AppRadius.xxl,
             shadows: AppShadows.soft,
           ).copyWith(
-            border: Border.all(color: AppColors.primary.withOpacity(0.10)),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.10),
+            ),
           ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -895,7 +902,7 @@ class _GentleStartCard extends StatelessWidget {
               height: 140,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.07),
+                color: Colors.white.withValues(alpha: 0.07),
               ),
             ),
           ),
@@ -907,8 +914,10 @@ class _GentleStartCard extends StatelessWidget {
                 height: 86,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.16),
-                  border: Border.all(color: Colors.white.withOpacity(0.18)),
+                  color: Colors.white.withValues(alpha: 0.16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.18),
+                  ),
                 ),
                 child: const Icon(
                   Icons.self_improvement_rounded,
@@ -931,7 +940,7 @@ class _GentleStartCard extends StatelessWidget {
                 'Nami sẽ hỏi từng bước ngắn thôi: bạn là ai, cơ thể bạn đang thế nào và bạn muốn được chăm sóc ra sao. Bạn có thể chọn gần đúng, không cần áp lực.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: Colors.white.withOpacity(0.94),
+                  color: Colors.white.withValues(alpha: 0.94),
                   height: 1.75,
                 ),
               ),
@@ -991,8 +1000,8 @@ class _SoftBackgroundPainter extends CustomPainter {
         end: Alignment.bottomRight,
         colors: [
           AppColors.background,
-          AppColors.primarySoft.withOpacity(0.15),
-          AppColors.secondarySoft.withOpacity(0.12),
+          AppColors.primarySoft.withValues(alpha: 0.15),
+          AppColors.secondarySoft.withValues(alpha: 0.12),
           Colors.white,
         ],
         stops: const [0, 0.38, 0.72, 1],
@@ -1003,7 +1012,7 @@ class _SoftBackgroundPainter extends CustomPainter {
 
     final softPaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = AppColors.primary.withOpacity(0.035);
+      ..color = AppColors.primary.withValues(alpha: 0.035);
 
     canvas.drawCircle(
       Offset(size.width * 0.18, size.height * 0.18),
@@ -1013,7 +1022,7 @@ class _SoftBackgroundPainter extends CustomPainter {
 
     final glowPaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = AppColors.success.withOpacity(0.030);
+      ..color = AppColors.success.withValues(alpha: 0.030);
 
     canvas.drawCircle(
       Offset(size.width * 0.86, size.height * 0.70),
@@ -1022,7 +1031,7 @@ class _SoftBackgroundPainter extends CustomPainter {
     );
 
     final linePaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.018)
+      ..color = AppColors.primary.withValues(alpha: 0.018)
       ..strokeWidth = 1;
 
     for (double i = 0; i < size.width; i += 58) {

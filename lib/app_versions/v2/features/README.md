@@ -10,3 +10,12 @@ Quy uoc:
 - V2 feature khong import truc tiep v1 presentation/controller.
 - Neu can du lieu, di qua repository/service/shared storage thay vi query UI v1.
 - `core/` khong duoc import nguoc vao `app_versions/v1` hoac `app_versions/v2`.
+
+Feature status:
+
+- `auth`: dang trien khai theo DD authentication.
+- `home`: shell cho v2 app.
+- `membership_entitlement`: planned, doc trusted membership package.
+- `usage_quota`: planned, quota AI chat va tao lich trinh cho Free.
+- `personal_schedule_quota`: planned, guard tao lich trinh moi.
+- `health_scoring`: planned, diem suc khoe dua tren lich su thuc hien lich trinh.

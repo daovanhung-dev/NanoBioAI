@@ -26,13 +26,22 @@ void main() {
         final source = File(
           'lib/app_versions/v1/features/settings/presentation/pages/settings_page.dart',
         ).readAsStringSync();
+        final providerSource = File(
+          'lib/services/supabase/auth/account_security_provider.dart',
+        ).readAsStringSync();
 
         expect(source, contains('updatePassword'));
         expect(source, contains('signOut'));
         expect(source, contains('requestAccountDeletion'));
-        expect(source, contains("context.go('/v2/auth')"));
+        expect(source, contains('accountSecurityControllerProvider.notifier'));
+        expect(source, isNot(contains('AccountSecurityService()')));
+        expect(source, contains('AuthRoutePaths.authGate'));
         expect(source, contains('invalidateUserScopedProviders'));
         expect(source, contains('Yêu cầu xóa tài khoản'));
+        expect(
+          providerSource,
+          contains('AsyncNotifierProvider<AccountSecurityController, void>'),
+        );
       },
     );
   });

@@ -7,6 +7,23 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/dataso
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+
+class DashboardGenerationAuthRequiredException implements Exception {
+  static const userMessage =
+      'Bạn cần đăng nhập để Nami tạo dữ liệu lịch trình 7 ngày mới nhé.';
+
+  const DashboardGenerationAuthRequiredException();
+
+  @override
+  String toString() => userMessage;
+}
+
+void requireAuthenticatedGeneratedPlanUser(String? userId) {
+  if (userId == null || userId.trim().isEmpty) {
+    throw const DashboardGenerationAuthRequiredException();
+  }
+}
 
 class GeneratedPlanResult {
   final DateTime startDate;
@@ -33,6 +50,7 @@ class GeneratedPlanService {
   final AIService aiService;
   final AiCatalogLocalDatasource catalogDatasource;
   final Future<void> Function() scheduleReminders;
+  final String? Function() currentUserId;
 
   GeneratedPlanService({
     required this.dashboardRepository,
@@ -41,15 +59,19 @@ class GeneratedPlanService {
     required this.aiService,
     this.catalogDatasource = const AiCatalogLocalDatasource(),
     Future<void> Function()? scheduleReminders,
+    String? Function()? currentUserId,
   }) : scheduleReminders =
            scheduleReminders ??
-           NotificationBootstrap.scheduleGeneratedReminders;
+           NotificationBootstrap.scheduleGeneratedReminders,
+       currentUserId = currentUserId ?? currentSupabaseUserIdOrNull;
 
   Future<GeneratedPlanResult> generateNextPlan({
     int days = 7,
     DateTime? startDate,
     bool appendAfterExisting = true,
   }) async {
+    requireAuthenticatedGeneratedPlanUser(currentUserId());
+
     final now = DateTime.now();
     final fallbackStartDate = _dateOnly(
       startDate ?? DateTime(now.year, now.month, now.day + 1),

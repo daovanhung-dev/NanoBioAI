@@ -73,18 +73,3 @@ int? _readInt(Object? value) {
   if (value is num) return value.toInt();
   return int.tryParse(value.toString());
 }
-
-double? _readDouble(Object? value) {
-  if (value == null) return null;
-  if (value is double) return value;
-  if (value is num) return value.toDouble();
-  return double.tryParse(value.toString());
-}
-
-bool _readBool(Object? value) {
-  if (value == null) return false;
-  if (value is bool) return value;
-  if (value is num) return value != 0;
-  final normalized = value.toString().trim().toLowerCase();
-  return normalized == '1' || normalized == 'true' || normalized == 'yes';
-}

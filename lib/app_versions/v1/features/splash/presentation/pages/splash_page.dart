@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/router/router.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import '../../domain/services/splash_route_decision.dart';
 import '../../providers/splash_provider.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
@@ -56,7 +58,12 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 
   Future<void> _handleRouting() async {
+    final hasSession = currentSupabaseUserIdOrNull() != null;
     final completed = await AppPrefs.isOnboardingCompleted();
+    final target = const SplashRouteDecision().resolve(
+      hasAuthenticatedSession: hasSession,
+      onboardingCompleted: completed,
+    );
 
     if (!mounted) return;
 
@@ -64,10 +71,19 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
     if (!mounted) return;
 
-    if (completed) {
-      V1AppNavigator.goMenu(context);
-    } else {
-      V1AppNavigator.goOnboarding(context);
+    switch (target) {
+      case SplashRouteTarget.authGate:
+        V1AppNavigator.goAuthGate(context);
+        break;
+      case SplashRouteTarget.onboardingEntry:
+        V1AppNavigator.goOnboardingEntry(context);
+        break;
+      case SplashRouteTarget.menu:
+        V1AppNavigator.goMenu(context);
+        break;
+      case SplashRouteTarget.onboarding:
+        V1AppNavigator.goOnboarding(context);
+        break;
     }
   }
 
@@ -150,7 +166,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                   decoration: AppDecoration.glass(
                     opacity: 0.18,
                     radius: AppRadius.circular,
-                    borderColor: Colors.white.withOpacity(0.18),
+                    borderColor: Colors.white.withValues(alpha: 0.18),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -295,7 +311,7 @@ class _MainSplashCard extends StatelessWidget {
       decoration: AppDecoration.glass(
         opacity: 0.22,
         radius: AppRadius.xxl,
-        borderColor: Colors.white.withOpacity(0.25),
+        borderColor: Colors.white.withValues(alpha: 0.25),
         shadows: AppShadows.xl,
       ),
       child: ClipRRect(
@@ -318,8 +334,8 @@ class _MainSplashCard extends StatelessWidget {
                 ),
                 decoration: AppDecoration.gradient(
                   colors: [
-                    AppColors.primary.withOpacity(0.12),
-                    AppColors.secondary.withOpacity(0.10),
+                    AppColors.primary.withValues(alpha: 0.12),
+                    AppColors.secondary.withValues(alpha: 0.10),
                   ],
                   radius: AppRadius.circular,
                 ),
@@ -433,7 +449,7 @@ class _CareMessage extends StatelessWidget {
       decoration: AppDecoration.glass(
         opacity: 0.12,
         radius: AppRadius.xl,
-        borderColor: Colors.white.withOpacity(0.14),
+        borderColor: Colors.white.withValues(alpha: 0.14),
       ),
       child: Row(
         children: [
@@ -500,7 +516,9 @@ class _AnimatedLogo extends StatelessWidget {
                     height: 108,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.12)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.12),
+                      ),
                     ),
                   ),
                   Container(
@@ -509,7 +527,7 @@ class _AnimatedLogo extends StatelessWidget {
                     decoration: AppDecoration.glass(
                       opacity: 0.18,
                       radius: AppRadius.circular,
-                      borderColor: Colors.white.withOpacity(0.25),
+                      borderColor: Colors.white.withValues(alpha: 0.25),
                     ),
                     child: const Icon(
                       AppIcons.health,
@@ -547,7 +565,7 @@ class _FeatureCard extends StatelessWidget {
       decoration: AppDecoration.glass(
         opacity: 0.12,
         radius: AppRadius.xl,
-        borderColor: Colors.white.withOpacity(0.14),
+        borderColor: Colors.white.withValues(alpha: 0.14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -702,7 +720,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primary.withOpacity(0.035)
+      ..color = AppColors.primary.withValues(alpha: 0.035)
       ..strokeWidth = 1;
 
     const gap = 36.0;

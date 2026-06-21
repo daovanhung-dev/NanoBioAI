@@ -20,7 +20,7 @@ class GoalProgressRow extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: goal.color.withOpacity(0.12),
+                color: goal.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Icon(goal.icon, color: goal.color, size: 15),
@@ -60,7 +60,7 @@ class GoalProgressRow extends StatelessWidget {
             Container(
               height: 6,
               decoration: BoxDecoration(
-                color: goal.color.withOpacity(0.1),
+                color: goal.color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.circular),
               ),
             ),
@@ -70,12 +70,12 @@ class GoalProgressRow extends StatelessWidget {
                 height: 6,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [goal.color.withOpacity(0.7), goal.color],
+                    colors: [goal.color.withValues(alpha: 0.7), goal.color],
                   ),
                   borderRadius: BorderRadius.circular(AppRadius.circular),
                   boxShadow: [
                     BoxShadow(
-                      color: goal.color.withOpacity(0.3),
+                      color: goal.color.withValues(alpha: 0.3),
                       blurRadius: 4,
                       offset: const Offset(0, 1),
                     ),

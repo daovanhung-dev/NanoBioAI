@@ -186,7 +186,7 @@ class _HealthChipState extends State<HealthChip>
                             child: Text(
                               'AI optimized',
                               style: AppTextStyles.labelSmall.copyWith(
-                                color: Colors.white.withOpacity(0.82),
+                                color: Colors.white.withValues(alpha: 0.82),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -223,11 +223,11 @@ class _HealthChipState extends State<HealthChip>
       return AppDecoration.base(
         gradient: _gradient,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         shadows: [
           ...AppShadows.primary,
           BoxShadow(
-            color: _activeColor.withOpacity(_pressed ? 0.18 : 0.32),
+            color: _activeColor.withValues(alpha: _pressed ? 0.18 : 0.32),
             blurRadius: _hovered ? 34 : 24,
             spreadRadius: -4,
             offset: const Offset(0, 14),
@@ -240,7 +240,9 @@ class _HealthChipState extends State<HealthChip>
       color: Colors.white,
       borderRadius: BorderRadius.circular(AppRadius.xl),
       border: Border.all(
-        color: _hovered ? AppColors.primary.withOpacity(0.3) : AppColors.border,
+        color: _hovered
+            ? AppColors.primary.withValues(alpha: 0.3)
+            : AppColors.border,
         width: _hovered ? 1.4 : 1,
       ),
       shadows: _hovered ? AppShadows.soft : AppShadows.card,
@@ -328,13 +330,13 @@ class _SelectionIndicator extends StatelessWidget {
               width: 24,
               height: 24,
               decoration: AppDecoration.circle(
-                color: Colors.white.withOpacity(0.18),
+                color: Colors.white.withValues(alpha: 0.18),
                 shadows: AppShadows.glass,
               ),
               child: Container(
                 margin: const EdgeInsets.all(1.5),
                 decoration: AppDecoration.circle(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   shadows: const [],
                 ),
                 child: const Icon(

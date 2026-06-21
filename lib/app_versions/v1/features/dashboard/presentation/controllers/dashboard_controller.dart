@@ -17,6 +17,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_
 
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 final generatedPlanServiceProvider = Provider<GeneratedPlanService>((ref) {
   return GeneratedPlanService(
@@ -42,6 +43,8 @@ class DashboardController extends AsyncNotifier<void> {
     int days = 7,
   }) async {
     AppLogger.action(_tag, 'Generate weekly meal plan');
+    requireAuthenticatedGeneratedPlanUser(currentSupabaseUserIdOrNull());
+
     final repository = ref.read(dashboardRepositoryProvider);
     final resolvedStartDate = startDate ?? _tomorrow();
 
@@ -80,6 +83,8 @@ class DashboardController extends AsyncNotifier<void> {
   }
 
   Future<GeneratedPlanResult> generateAdditionalPlan() async {
+    requireAuthenticatedGeneratedPlanUser(currentSupabaseUserIdOrNull());
+
     state = const AsyncLoading<void>();
     try {
       final result = await ref

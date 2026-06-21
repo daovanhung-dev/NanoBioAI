@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 
 import 'v1_route_paths.dart';
 
@@ -10,6 +11,10 @@ class V1AppNavigator {
 
   static void goLogin(BuildContext context) {
     context.go(V1RoutePaths.login);
+  }
+
+  static void goAuthGate(BuildContext context) {
+    context.go(AuthRoutePaths.authGate);
   }
 
   static void goProfile(BuildContext context) {
@@ -34,5 +39,9 @@ class V1AppNavigator {
 
   static void goOnboarding(BuildContext context) {
     context.go(V1RoutePaths.onboarding);
+  }
+
+  static void goOnboardingEntry(BuildContext context) {
+    context.go(V1RoutePaths.onboardingEntry);
   }
 }

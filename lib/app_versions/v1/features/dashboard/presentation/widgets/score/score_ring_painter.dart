@@ -16,7 +16,7 @@ class ScoreRingPainter extends CustomPainter {
     const startAngle = -math.pi / 2;
 
     final trackPaint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
+      ..color = Colors.white.withValues(alpha: 0.08)
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -50,7 +50,9 @@ class ScoreRingPainter extends CustomPainter {
         center.dy + radius * math.sin(angle),
       );
       final glowPaint = Paint()
-        ..color = const Color(0xFF60A5FA).withOpacity(0.4 + pulseValue * 0.2)
+        ..color = const Color(
+          0xFF60A5FA,
+        ).withValues(alpha: 0.4 + pulseValue * 0.2)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
       canvas.drawCircle(dotCenter, 6, glowPaint);
       canvas.drawCircle(dotCenter, 4, Paint()..color = const Color(0xFF93C5FD));

@@ -241,7 +241,7 @@ class _HeroHeader extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: AppGradients.glass,
             borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-            border: Border.all(color: Colors.white.withOpacity(0.35)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
             boxShadow: AppShadows.floating,
           ),
           child: Column(
@@ -272,7 +272,7 @@ class _HeroHeader extends StatelessWidget {
                     decoration: AppDecoration.glass(
                       radius: AppRadius.circular,
                       opacity: 0.18,
-                      borderColor: AppColors.primary.withOpacity(0.12),
+                      borderColor: AppColors.primary.withValues(alpha: 0.12),
                     ),
                     child: Row(
                       children: [
@@ -490,7 +490,7 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
                     ? [
                         ...AppShadows.primary,
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.22),
+                          color: AppColors.primary.withValues(alpha: 0.22),
                           blurRadius: 32,
                           spreadRadius: -6,
                           offset: const Offset(0, 18),
@@ -678,7 +678,7 @@ class _BackgroundPainter extends CustomPainter {
     canvas.drawRect(rect, backgroundPaint);
 
     final linePaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.035)
+      ..color = AppColors.primary.withValues(alpha: 0.035)
       ..strokeWidth = 1;
 
     for (double i = 0; i < size.width; i += 40) {

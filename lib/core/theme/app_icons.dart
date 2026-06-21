@@ -260,7 +260,7 @@ class AppIcons {
     }
   }
 
-  static const IconData auto_awesome_rounded = Icons.auto_awesome_rounded;
+  static const IconData autoAwesomeRounded = Icons.auto_awesome_rounded;
 
   static const IconData flag = Icons.flag_rounded;
 

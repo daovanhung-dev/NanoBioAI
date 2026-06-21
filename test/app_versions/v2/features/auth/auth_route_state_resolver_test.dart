@@ -28,12 +28,17 @@ void main() {
         email: 'nami@example.com',
         emailConfirmed: false,
       ),
-      profile: const AuthProfile(id: 'user-1', onboardingStatus: 'completed'),
+      profile: const AuthProfile(
+        id: 'user-1',
+        onboardingStatus: 'completed',
+        subscriptionTier: 'plus',
+      ),
       requiresEmailConfirmation: true,
     );
 
     expect(state.status, AuthRouteStatus.emailVerificationRequired);
     expect(state.email, 'nami@example.com');
+    expect(state.subscriptionTier, 'plus');
   });
 
   test('maps missing profile to bootstrap unavailable', () {
@@ -45,6 +50,7 @@ void main() {
 
     expect(state.status, AuthRouteStatus.profileBootstrapUnavailable);
     expect(state.userId, 'user-1');
+    expect(state.email, 'nami@example.com');
   });
 
   test('maps pending onboarding statuses to onboarding required', () {
@@ -56,18 +62,25 @@ void main() {
       );
 
       expect(state.status, AuthRouteStatus.onboardingRequired);
+      expect(state.email, 'nami@example.com');
     }
   });
 
   test('maps completed onboarding to authenticated ready', () {
     final state = resolver.resolve(
       session: session,
-      profile: const AuthProfile(id: 'user-1', onboardingStatus: 'completed'),
+      profile: const AuthProfile(
+        id: 'user-1',
+        onboardingStatus: 'completed',
+        subscriptionTier: 'familyplus',
+      ),
       requiresEmailConfirmation: true,
     );
 
     expect(state.status, AuthRouteStatus.authenticatedReady);
     expect(state.userId, 'user-1');
+    expect(state.email, 'nami@example.com');
+    expect(state.subscriptionTier, 'familyplus');
   });
 
   test('maps unknown onboarding status to failure', () {
@@ -78,5 +91,15 @@ void main() {
     );
 
     expect(state.status, AuthRouteStatus.failure);
+  });
+
+  test('normalizes missing subscription tier to free', () {
+    final profile = AuthProfile.fromMap({
+      'id': 'user-1',
+      'onboarding_status': 'completed',
+      'subscription_tier': '',
+    });
+
+    expect(profile.subscriptionTier, 'free');
   });
 }

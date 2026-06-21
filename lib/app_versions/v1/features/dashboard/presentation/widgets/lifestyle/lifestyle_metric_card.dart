@@ -26,7 +26,7 @@ class LifestyleMetricCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: bgGradient,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: color.withOpacity(0.15)),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +38,7 @@ class LifestyleMetricCard extends StatelessWidget {
               Text(
                 title,
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: color.withOpacity(0.8),
+                  color: color.withValues(alpha: 0.8),
                   fontWeight: AppTypography.semiBold,
                 ),
               ),

@@ -290,7 +290,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
                 height: 52,
                 width: 52,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.14),
+                  color: Colors.white.withValues(alpha: .14),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 child: const Icon(
@@ -315,7 +315,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
                     Text(
                       'Theo dõi toàn bộ database local của ứng dụng.',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withOpacity(.82),
+                        color: Colors.white.withValues(alpha: .82),
                       ),
                     ),
                   ],
@@ -373,7 +373,7 @@ class _SummaryPill extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(.14),
+        color: Colors.white.withValues(alpha: .14),
         borderRadius: BorderRadius.circular(AppRadius.circular),
       ),
       child: Row(

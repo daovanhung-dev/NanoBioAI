@@ -296,7 +296,7 @@ class _NamiHeroCard extends StatelessWidget {
               Text(
                 'Những chia sẻ ở bước này giúp Nami chăm sóc bạn tinh tế hơn: từ bữa ăn, nhịp sinh hoạt đến những lời nhắc nhẹ nhàng hằng ngày.',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textWhite.withOpacity(0.92),
+                  color: AppColors.textWhite.withValues(alpha: 0.92),
                   height: 1.65,
                 ),
               ),
@@ -350,7 +350,7 @@ class _NamiAvatar extends StatelessWidget {
           width: 54,
           height: 54,
           decoration: AppDecoration.circle(
-            color: AppColors.textWhite.withOpacity(0.18),
+            color: AppColors.textWhite.withValues(alpha: 0.18),
           ),
           child: const Icon(
             AppIcons.aiHealth,
@@ -414,7 +414,7 @@ class _HeroMetric extends StatelessWidget {
             width: AppSpacing.iconButtonSize,
             height: AppSpacing.iconButtonSize,
             decoration: AppDecoration.circle(
-              color: AppColors.textWhite.withOpacity(0.16),
+              color: AppColors.textWhite.withValues(alpha: 0.16),
             ),
             child: Icon(icon, color: AppColors.textWhite, size: 20),
           ),
@@ -426,7 +426,7 @@ class _HeroMetric extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textWhite.withOpacity(0.78),
+                    color: AppColors.textWhite.withValues(alpha: 0.78),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
@@ -1081,7 +1081,7 @@ class _NamiClosingCard extends StatelessWidget {
                     ? 'Nami sẽ dùng những thông tin này để chăm sóc bạn tinh tế hơn trong các gợi ý tiếp theo.'
                     : 'Nếu chưa muốn chọn gì ở bước này, bạn có thể đi tiếp. Nami sẽ dần hiểu bạn hơn qua quá trình sử dụng.',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textWhite.withOpacity(0.82),
+                  color: AppColors.textWhite.withValues(alpha: 0.82),
                   height: 1.65,
                 ),
               ),
@@ -1243,7 +1243,7 @@ class _ConditionOptionTile extends StatelessWidget {
                       height: 40,
                       decoration: AppDecoration.circle(
                         color: selected
-                            ? AppColors.primary.withOpacity(0.12)
+                            ? AppColors.primary.withValues(alpha: 0.12)
                             : AppColors.inputBackground,
                       ),
                       child: Center(
@@ -1412,7 +1412,7 @@ class _SoftHealthBackground extends CustomPainter {
     canvas.drawRect(rect, backgroundPaint);
 
     final gridPaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.035)
+      ..color = AppColors.primary.withValues(alpha: 0.035)
       ..strokeWidth = 1.0;
 
     for (double x = 0; x < size.width; x += 40) {
@@ -1426,7 +1426,10 @@ class _SoftHealthBackground extends CustomPainter {
     final primaryOrb = Paint()
       ..shader =
           RadialGradient(
-            colors: [AppColors.primary.withOpacity(0.12), Colors.transparent],
+            colors: [
+              AppColors.primary.withValues(alpha: 0.12),
+              Colors.transparent,
+            ],
           ).createShader(
             Rect.fromCircle(
               center: Offset(size.width * 0.86, size.height * 0.16),
@@ -1437,7 +1440,10 @@ class _SoftHealthBackground extends CustomPainter {
     final healthOrb = Paint()
       ..shader =
           RadialGradient(
-            colors: [AppColors.success.withOpacity(0.10), Colors.transparent],
+            colors: [
+              AppColors.success.withValues(alpha: 0.10),
+              Colors.transparent,
+            ],
           ).createShader(
             Rect.fromCircle(
               center: Offset(size.width * 0.10, size.height * 0.84),

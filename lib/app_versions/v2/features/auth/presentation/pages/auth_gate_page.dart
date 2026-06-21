@@ -12,7 +12,8 @@ class AuthGatePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(v2AuthRouteStateProvider);
+    final state = ref.watch(v2AuthControllerProvider);
+    final controller = ref.read(v2AuthControllerProvider.notifier);
 
     return state.when(
       loading: () => const _AuthLoading(),
@@ -20,7 +21,7 @@ class AuthGatePage extends ConsumerWidget {
         title: 'Nami chưa mở được tài khoản',
         message:
             'Mình chưa kiểm tra được phiên đăng nhập. Bạn thử lại sau một chút nhé.',
-        onRetry: () => ref.invalidate(v2AuthRouteStateProvider),
+        onRetry: () => controller.refresh(),
       ),
       data: (routeState) {
         final target = _targetFor(routeState);
@@ -36,7 +37,7 @@ class AuthGatePage extends ConsumerWidget {
             title: 'Hồ sơ đang được chuẩn bị',
             message:
                 'Nami đã thấy phiên đăng nhập, nhưng hồ sơ nền chưa sẵn sàng. Bạn thử lại sau một chút hoặc liên hệ hỗ trợ nhé.',
-            onRetry: () => ref.invalidate(v2AuthRouteStateProvider),
+            onRetry: () => controller.refresh(),
           );
         }
 
@@ -45,7 +46,7 @@ class AuthGatePage extends ConsumerWidget {
           message:
               routeState.message ??
               'Trạng thái tài khoản chưa rõ ràng. Mình thử làm mới lại nhé.',
-          onRetry: () => ref.invalidate(v2AuthRouteStateProvider),
+          onRetry: () => controller.refresh(),
         );
       },
     );

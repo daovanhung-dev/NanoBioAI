@@ -3,13 +3,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'app_versions/v1/app/bio_ai_v1_app.dart';
+import 'app_versions/v2/app/bio_ai_v2_app.dart';
 import 'core/storage/localdb/app_prefs.dart';
 import 'app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
 import 'app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'app_versions/v1/services/notifications/notification_lifecycle_refresher.dart';
 import 'app_versions/v1/services/notifications/notification_startup_scheduler.dart';
+import 'services/supabase/auth/current_auth_user.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,13 +38,14 @@ Future<void> main() async {
       overrides: [
         onboardingCompletionCallbackProvider.overrideWith((ref) {
           return () async {
+            if (currentSupabaseUserIdOrNull() == null) return;
             await ref
                 .read(generatedPlanServiceProvider)
                 .generateNextPlan(days: 7);
           };
         }),
       ],
-      child: const BioAIV1App(),
+      child: const BioAIV2App(),
     ),
   );
 }

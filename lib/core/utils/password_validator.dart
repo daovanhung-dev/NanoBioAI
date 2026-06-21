@@ -64,7 +64,7 @@ class PasswordValidator {
   /// - [newPassword]: The new password
   /// - [confirmPassword]: The password confirmation
   ///
-  /// Returns a Map<String, String> where keys are field names and values are error messages
+  /// Returns a `Map<String, String>` where keys are field names and values are error messages
   /// Returns empty map if all validations pass
   static Map<String, String> validateAll({
     required String currentPassword,

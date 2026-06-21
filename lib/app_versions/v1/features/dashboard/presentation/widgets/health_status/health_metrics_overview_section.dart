@@ -109,9 +109,9 @@ class _ScoreBadge extends StatelessWidget {
       width: 86,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.10),
+        color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: color.withOpacity(0.22)),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Column(
         children: [
@@ -194,7 +194,7 @@ class _MetricTile extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.11),
+                  color: color.withValues(alpha: 0.11),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(_iconFor(metric.code), color: color, size: 19),
@@ -242,7 +242,7 @@ class _MetricTile extends StatelessWidget {
               minHeight: 7,
               value: metric.progress.clamp(0.0, 1.0).toDouble(),
               color: color,
-              backgroundColor: color.withOpacity(0.12),
+              backgroundColor: color.withValues(alpha: 0.12),
             ),
           ),
           const SizedBox(height: 10),
@@ -303,10 +303,10 @@ class _InsightList extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.primarySoft.withOpacity(0.72),
+                  color: AppColors.primarySoft.withValues(alpha: 0.72),
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.08),
+                    color: AppColors.primary.withValues(alpha: 0.08),
                   ),
                 ),
                 child: Row(

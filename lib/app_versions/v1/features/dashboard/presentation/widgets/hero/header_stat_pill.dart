@@ -21,9 +21,11 @@ class HeaderStatPill extends StatelessWidget {
         vertical: 6,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(active ? 0.2 : 0.12),
+        color: Colors.white.withValues(alpha: active ? 0.2 : 0.12),
         borderRadius: BorderRadius.circular(AppRadius.circular),
-        border: Border.all(color: Colors.white.withOpacity(active ? 0.4 : 0.2)),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: active ? 0.4 : 0.2),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

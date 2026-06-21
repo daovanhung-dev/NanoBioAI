@@ -13,8 +13,13 @@ class AuthSessionSnapshot {
 class AuthProfile {
   final String id;
   final String onboardingStatus;
+  final String subscriptionTier;
 
-  const AuthProfile({required this.id, required this.onboardingStatus});
+  const AuthProfile({
+    required this.id,
+    required this.onboardingStatus,
+    this.subscriptionTier = 'free',
+  });
 
   factory AuthProfile.fromMap(Map<String, Object?> map) {
     return AuthProfile(
@@ -22,6 +27,12 @@ class AuthProfile {
       onboardingStatus:
           map['onboarding_status']?.toString().trim().toLowerCase() ??
           'not_started',
+      subscriptionTier: _normalizeSubscriptionTier(map['subscription_tier']),
     );
+  }
+
+  static String _normalizeSubscriptionTier(Object? value) {
+    final text = value?.toString().trim().toLowerCase() ?? '';
+    return text.isEmpty ? 'free' : text;
   }
 }

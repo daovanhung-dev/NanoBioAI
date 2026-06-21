@@ -108,7 +108,7 @@ class ProfileValidator {
 
   /// Validates all profile fields and returns a map of field-specific errors
   ///
-  /// Returns a Map<String, String> where:
+  /// Returns a `Map<String, String>` where:
   /// - Key: field name (e.g., 'height', 'weight', 'fullName')
   /// - Value: error message
   ///

@@ -16,8 +16,6 @@ class AIChatScreen extends ConsumerStatefulWidget {
 }
 
 class _AIChatScreenState extends ConsumerState<AIChatScreen> {
-  static const double _maxContentWidth = 820;
-
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();

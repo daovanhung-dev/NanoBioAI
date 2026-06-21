@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// **Validates: Requirements 1.1, 1.2, 2.1, 2.2, 3.1, 4.1, 5.1**
@@ -349,13 +350,13 @@ void main() {
 
       // Print all violations for debugging
       if (violations.isNotEmpty) {
-        print('\n========================================');
-        print('ARCHITECTURE VIOLATIONS DETECTED:');
-        print('========================================');
+        debugPrint('\n========================================');
+        debugPrint('ARCHITECTURE VIOLATIONS DETECTED:');
+        debugPrint('========================================');
         for (var i = 0; i < violations.length; i++) {
-          print('${i + 1}. ${violations[i]}');
+          debugPrint('${i + 1}. ${violations[i]}');
         }
-        print('========================================\n');
+        debugPrint('========================================\n');
       }
 
       // ASSERTION: No violations should exist

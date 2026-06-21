@@ -100,7 +100,7 @@ class _TrackingHeader extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.18),
+                  color: Colors.white.withValues(alpha: .18),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 child: const Icon(Icons.favorite_rounded, color: Colors.white),
@@ -123,7 +123,7 @@ class _TrackingHeader extends StatelessWidget {
                     Text(
                       state.summary.taskDate,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white.withOpacity(.82),
+                        color: Colors.white.withValues(alpha: .82),
                       ),
                     ),
                   ],
@@ -135,7 +135,7 @@ class _TrackingHeader extends StatelessWidget {
           Text(
             'Hoàn thành từng việc nhỏ để thấy tiến trình sức khỏe rõ hơn trong ngày.',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: Colors.white.withOpacity(.9),
+              color: Colors.white.withValues(alpha: .9),
               height: 1.4,
             ),
           ),
@@ -242,7 +242,7 @@ class _EncouragementBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.successSoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.success.withOpacity(.2)),
+        border: Border.all(color: AppColors.success.withValues(alpha: .2)),
       ),
       child: Row(
         children: [
@@ -317,7 +317,7 @@ class _CategoryGrid extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
               color: value >= 1
-                  ? item.color.withOpacity(.45)
+                  ? item.color.withValues(alpha: .45)
                   : AppColors.borderLight,
             ),
             boxShadow: AppShadows.sm,
@@ -329,7 +329,7 @@ class _CategoryGrid extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: item.color.withOpacity(value >= 1 ? .18 : .1),
+                  color: item.color.withValues(alpha: value >= 1 ? .18 : .1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(item.icon, color: item.color, size: 20),
@@ -373,7 +373,7 @@ class _TaskCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
           color: task.isCompleted
-              ? meta.color.withOpacity(.35)
+              ? meta.color.withValues(alpha: .35)
               : AppColors.borderLight,
         ),
         boxShadow: AppShadows.sm,

@@ -153,7 +153,7 @@ class _OnboardingChipState extends State<OnboardingChip>
                                 height: 28,
                                 decoration: AppDecoration.circle(
                                   color: _selected
-                                      ? Colors.white.withOpacity(0.14)
+                                      ? Colors.white.withValues(alpha: 0.14)
                                       : AppColors.primarySoft,
                                 ),
                                 child: Icon(
@@ -208,7 +208,7 @@ class _OnboardingChipState extends State<OnboardingChip>
                             curve: AppAnimations.smoothCurve,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: _selected
-                                  ? Colors.white.withOpacity(0.82)
+                                  ? Colors.white.withValues(alpha: 0.82)
                                   : AppColors.textSecondary,
                               fontWeight: FontWeight.w500,
                               height: 1.45,
@@ -237,11 +237,11 @@ class _OnboardingChipState extends State<OnboardingChip>
       return AppDecoration.base(
         gradient: _activeGradient,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         shadows: [
           ...AppShadows.primary,
           BoxShadow(
-            color: _activeColor.withOpacity(_pressed ? 0.18 : 0.30),
+            color: _activeColor.withValues(alpha: _pressed ? 0.18 : 0.30),
             blurRadius: _hovered ? 34 : 24,
             spreadRadius: -8,
             offset: const Offset(0, 14),
@@ -255,8 +255,8 @@ class _OnboardingChipState extends State<OnboardingChip>
       radius: AppRadius.xl,
       border: Border.all(
         color: _hovered
-            ? AppColors.primary.withOpacity(0.32)
-            : AppColors.border.withOpacity(0.7),
+            ? AppColors.primary.withValues(alpha: 0.32)
+            : AppColors.border.withValues(alpha: 0.7),
         width: _hovered ? 1.4 : 1,
       ),
       shadows: _hovered ? AppShadows.soft : AppShadows.card,
@@ -287,8 +287,8 @@ class _LeadingSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
           color: selected
-              ? Colors.white.withOpacity(0.12)
-              : AppColors.border.withOpacity(0.5),
+              ? Colors.white.withValues(alpha: 0.12)
+              : AppColors.border.withValues(alpha: 0.5),
         ),
       ),
       child: Center(
@@ -327,7 +327,7 @@ class _SelectionIndicator extends StatelessWidget {
                   width: 24,
                   height: 24,
                   decoration: AppDecoration.circle(
-                    color: Colors.white.withOpacity(0.14),
+                    color: Colors.white.withValues(alpha: 0.14),
                     shadows: AppShadows.glass,
                   ),
                   child: Container(

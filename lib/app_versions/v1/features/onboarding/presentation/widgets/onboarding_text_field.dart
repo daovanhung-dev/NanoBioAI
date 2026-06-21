@@ -164,15 +164,15 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
   }
 
   Color get _borderColor {
-    if (!widget.enabled) return AppColors.border.withOpacity(0.52);
+    if (!widget.enabled) return AppColors.border.withValues(alpha: 0.52);
     if (_hasError) return AppColors.error;
     if (_isFocused) return AppColors.primary;
-    return AppColors.border.withOpacity(_hasText ? 0.92 : 0.68);
+    return AppColors.border.withValues(alpha: _hasText ? 0.92 : 0.68);
   }
 
   Color get _fieldColor {
     if (!widget.enabled) return AppColors.cardAlt;
-    if (_hasError) return AppColors.errorSoft.withOpacity(0.18);
+    if (_hasError) return AppColors.errorSoft.withValues(alpha: 0.18);
     if (_isFocused) return AppColors.surface;
     return AppColors.surface;
   }
@@ -183,7 +183,7 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
     if (_hasError) {
       return [
         BoxShadow(
-          color: AppColors.error.withOpacity(0.08),
+          color: AppColors.error.withValues(alpha: 0.08),
           blurRadius: 22,
           offset: const Offset(0, 10),
         ),
@@ -193,7 +193,7 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
     if (_isFocused) {
       return [
         BoxShadow(
-          color: AppColors.primary.withOpacity(0.10),
+          color: AppColors.primary.withValues(alpha: 0.10),
           blurRadius: 24,
           offset: const Offset(0, 12),
         ),
@@ -262,8 +262,8 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
                           }
                         }
                       : null,
-                  splashColor: AppColors.primary.withOpacity(0.04),
-                  highlightColor: AppColors.primary.withOpacity(0.025),
+                  splashColor: AppColors.primary.withValues(alpha: 0.04),
+                  highlightColor: AppColors.primary.withValues(alpha: 0.025),
                   child: Row(
                     crossAxisAlignment: _isMultiline
                         ? CrossAxisAlignment.start
@@ -324,7 +324,7 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
                             isDense: true,
                             hintText: widget.hint,
                             hintStyle: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textHint.withOpacity(0.82),
+                              color: AppColors.textHint.withValues(alpha: 0.82),
                               fontWeight: FontWeight.w500,
                               letterSpacing: -0.05,
                             ),
@@ -476,10 +476,10 @@ class _FieldIconSlot extends StatelessWidget {
     final backgroundColor = !enabled
         ? AppColors.cardAlt
         : hasError
-        ? AppColors.errorSoft.withOpacity(0.32)
+        ? AppColors.errorSoft.withValues(alpha: 0.32)
         : isActive
-        ? AppColors.primarySoft.withOpacity(0.78)
-        : AppColors.cardAlt.withOpacity(0.72);
+        ? AppColors.primarySoft.withValues(alpha: 0.78)
+        : AppColors.cardAlt.withValues(alpha: 0.72);
 
     return AnimatedContainer(
       duration: AppDuration.fast,
@@ -533,7 +533,7 @@ class _IconActionButton extends StatelessWidget {
           height: 38,
           decoration: BoxDecoration(
             color: isActive
-                ? AppColors.primarySoft.withOpacity(0.72)
+                ? AppColors.primarySoft.withValues(alpha: 0.72)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),

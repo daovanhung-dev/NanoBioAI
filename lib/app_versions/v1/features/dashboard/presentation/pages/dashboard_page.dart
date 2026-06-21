@@ -9,7 +9,9 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/widgets
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/shared/widgets/ai_chat_fab.dart';
+import 'package:nano_app/core/membership/membership_display_info.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   final bool showStandaloneChatButton;
@@ -85,9 +87,13 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       );
     } catch (error) {
       if (!mounted) return;
-      final message = error is AIOverloadedException
-          ? AIOverloadedException.userMessage
-          : 'Nami chưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.';
+      final message = switch (error) {
+        DashboardGenerationAuthRequiredException() =>
+          DashboardGenerationAuthRequiredException.userMessage,
+        AIOverloadedException() => AIOverloadedException.userMessage,
+        _ =>
+          'Nami chưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',
+      };
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
@@ -180,6 +186,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       data: (dashboard) {
         final dynamicData =
             dynamicAsync.value ?? DashboardDynamicEntity.empty();
+        final membershipInfo = membershipDisplayInfoForTier(
+          dashboard.subscriptionTier,
+        );
         return FadeTransition(
           opacity: _fadeIn,
           child: SlideTransition(
@@ -188,6 +197,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
               onRefresh: _refresh,
               child: _DashboardContent(
                 dashboard: dashboard,
+                membershipInfo: membershipInfo,
                 dynamicData: dynamicData,
                 isDynamicLoading: dynamicAsync.isLoading,
                 dynamicError: dynamicAsync.hasError
@@ -224,6 +234,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
 
 class _DashboardContent extends StatelessWidget {
   final dynamic dashboard;
+  final MembershipDisplayInfo membershipInfo;
   final DashboardDynamicEntity dynamicData;
   final bool isDynamicLoading;
   final String? dynamicError;
@@ -239,6 +250,7 @@ class _DashboardContent extends StatelessWidget {
 
   const _DashboardContent({
     required this.dashboard,
+    required this.membershipInfo,
     required this.dynamicData,
     required this.isDynamicLoading,
     required this.dynamicError,
@@ -297,6 +309,7 @@ class _DashboardContent extends StatelessWidget {
         SliverToBoxAdapter(
           child: _HeroPanel(
             name: name,
+            membershipInfo: membershipInfo,
             bmi: bmi,
             unreadNotifications: dynamicData.unreadNotificationCount,
             isGeneratingPlan: isGeneratingPlan,
@@ -457,6 +470,7 @@ class _DashboardContent extends StatelessWidget {
 
 class _HeroPanel extends StatelessWidget {
   final String name;
+  final MembershipDisplayInfo membershipInfo;
   final double bmi;
   final int unreadNotifications;
   final bool isGeneratingPlan;
@@ -465,6 +479,7 @@ class _HeroPanel extends StatelessWidget {
 
   const _HeroPanel({
     required this.name,
+    required this.membershipInfo,
     required this.bmi,
     required this.unreadNotifications,
     required this.isGeneratingPlan,
@@ -510,9 +525,11 @@ class _HeroPanel extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
+                    color: Colors.white.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.26)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.26),
+                    ),
                   ),
                   child: const Icon(
                     Icons.favorite_rounded,
@@ -542,16 +559,23 @@ class _HeroPanel extends StatelessWidget {
           Text(
             'Nami đã lấy dữ liệu mới nhất từ hệ thống để cùng bạn nhìn lại hôm nay.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.white.withOpacity(0.88),
+              color: Colors.white.withValues(alpha: 0.88),
               height: 1.45,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          _HeroPill(
-            icon: Icons.monitor_heart_rounded,
-            label: bmi > 0
-                ? 'BMI ${bmi.toStringAsFixed(1)}'
-                : 'BMI chưa có dữ liệu',
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              _HeroPill(icon: membershipInfo.icon, label: membershipInfo.label),
+              _HeroPill(
+                icon: Icons.monitor_heart_rounded,
+                label: bmi > 0
+                    ? 'BMI ${bmi.toStringAsFixed(1)}'
+                    : 'BMI chưa có dữ liệu',
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.md),
           _GeneratePlanCta(
@@ -744,9 +768,9 @@ class _HeroPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.16),
+        color: Colors.white.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.22)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -822,7 +846,7 @@ class _HealthScorePanel extends StatelessWidget {
                       height: 1.45,
                       color: Theme.of(
                         context,
-                      ).textTheme.bodySmall?.color?.withOpacity(0.72),
+                      ).textTheme.bodySmall?.color?.withValues(alpha: 0.72),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -877,7 +901,7 @@ class _ScoreRing extends StatelessWidget {
             child: CircularProgressIndicator(
               value: progress.clamp(0, 1).toDouble(),
               strokeWidth: 9,
-              backgroundColor: AppColors.primary.withOpacity(0.10),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.10),
               valueColor: const AlwaysStoppedAnimation<Color>(
                 AppColors.primary,
               ),
@@ -1289,7 +1313,7 @@ class _TimelineRow extends StatelessWidget {
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: _categoryColor(item.category).withOpacity(0.12),
+            color: _categoryColor(item.category).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Icon(
@@ -1427,7 +1451,7 @@ class _GoalProgressRow extends StatelessWidget {
           child: LinearProgressIndicator(
             value: item.progress.clamp(0, 1).toDouble(),
             minHeight: 8,
-            backgroundColor: AppColors.primary.withOpacity(0.10),
+            backgroundColor: AppColors.primary.withValues(alpha: 0.10),
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
         ),
@@ -1609,7 +1633,7 @@ class _SectionTitle extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.10),
+            color: AppColors.primary.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(icon, color: AppColors.primary, size: 22),
@@ -1657,10 +1681,10 @@ class _DashboardCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -1681,7 +1705,7 @@ class _MiniBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.08),
+        color: AppColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -1706,9 +1730,9 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.08),
+        color: AppColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.primary.withOpacity(0.12)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1745,7 +1769,7 @@ class _EmptyDataCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.primary.withOpacity(0.8)),
+          Icon(icon, color: AppColors.primary.withValues(alpha: 0.8)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

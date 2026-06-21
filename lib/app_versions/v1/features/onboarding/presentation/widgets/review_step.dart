@@ -4,7 +4,7 @@ import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/app_versions/v1/router/router.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
-import 'package:nano_app/shared/widgets/loading_genAI.dart';
+import 'package:nano_app/shared/widgets/loading_gen_ai.dart';
 
 import '../../providers/onboarding_provider.dart';
 
@@ -664,7 +664,7 @@ class _HeroSection extends StatelessWidget {
           Text(
             'AI sẽ sử dụng dữ liệu khảo sát để phân tích và cá nhân hóa trải nghiệm sức khỏe.',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: Colors.white.withOpacity(0.92),
+              color: Colors.white.withValues(alpha: 0.92),
               height: 1.7,
             ),
           ),
@@ -678,7 +678,7 @@ class _HeroSection extends StatelessWidget {
                   width: 58,
                   height: 58,
                   decoration: AppDecoration.circle(
-                    color: Colors.white.withOpacity(0.14),
+                    color: Colors.white.withValues(alpha: 0.14),
                   ),
                   child: const Icon(AppIcons.profile, color: Colors.white),
                 ),
@@ -702,7 +702,7 @@ class _HeroSection extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
                     ],

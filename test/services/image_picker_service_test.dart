@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:nano_app/services/image_picker/image_picker_service.dart';
 
 void main() {

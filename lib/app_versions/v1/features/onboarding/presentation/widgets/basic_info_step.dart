@@ -378,7 +378,7 @@ class _HeroCard extends StatelessWidget {
                     Text(
                       'Mình là Nami, trợ lý sức khỏe ảo của bạn. Chỉ vài thông tin nhẹ nhàng thôi, Nami sẽ giúp bạn xây một lộ trình dễ theo, vừa sức và có thể duy trì mỗi ngày.',
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: Colors.white.withOpacity(0.92),
+                        color: Colors.white.withValues(alpha: 0.92),
                         height: 1.62,
                       ),
                     ),
@@ -439,7 +439,7 @@ class _HeroGlow extends StatelessWidget {
       width: size,
       height: size,
       decoration: AppDecoration.circle(
-        color: Colors.white.withOpacity(opacity),
+        color: Colors.white.withValues(alpha: opacity),
       ),
     );
   }
@@ -472,7 +472,7 @@ class _SectionHeader extends StatelessWidget {
               ),
               decoration: AppDecoration.outlined(
                 color: AppColors.primarySoft,
-                borderColor: AppColors.primary.withOpacity(0.18),
+                borderColor: AppColors.primary.withValues(alpha: 0.18),
                 radius: AppRadius.circular,
               ),
               child: Text(
@@ -518,11 +518,14 @@ class _GlassCard extends StatelessWidget {
         return Container(
           width: double.infinity,
           padding: EdgeInsets.all(compact ? AppSpacing.md : AppSpacing.lg),
-          decoration: AppDecoration.glass(
-            opacity: 0.94,
-            radius: AppRadius.xl,
-            shadows: AppShadows.soft,
-          ).copyWith(border: Border.all(color: Colors.white.withOpacity(0.72))),
+          decoration:
+              AppDecoration.glass(
+                opacity: 0.94,
+                radius: AppRadius.xl,
+                shadows: AppShadows.soft,
+              ).copyWith(
+                border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+              ),
           child: child,
         );
       },
@@ -533,13 +536,9 @@ class _GlassCard extends StatelessWidget {
 class _AdaptiveWrap extends StatelessWidget {
   final List<Widget> children;
   final double minItemWidth;
-  final double gap;
+  final double gap = AppSpacing.md;
 
-  const _AdaptiveWrap({
-    required this.children,
-    this.minItemWidth = 260,
-    this.gap = AppSpacing.lg,
-  });
+  const _AdaptiveWrap({required this.children, this.minItemWidth = 260});
 
   @override
   Widget build(BuildContext context) {
@@ -1164,7 +1163,7 @@ class _FieldFrame extends StatelessWidget {
           decoration: AppDecoration.container(
             color: AppColors.surface,
             radius: AppRadius.lg,
-            border: Border.all(color: AppColors.border.withOpacity(0.55)),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.55)),
             shadows: AppShadows.xs,
           ),
           child: Column(
@@ -1310,8 +1309,8 @@ class _FieldIcon extends StatelessWidget {
       height: size,
       decoration: AppDecoration.gradient(
         colors: [
-          AppColors.primary.withOpacity(0.14),
-          AppColors.secondary.withOpacity(0.08),
+          AppColors.primary.withValues(alpha: 0.14),
+          AppColors.secondary.withValues(alpha: 0.08),
         ],
         radius: AppRadius.md,
       ),
@@ -1332,7 +1331,7 @@ class _RequiredBadge extends StatelessWidget {
       ),
       decoration: AppDecoration.outlined(
         color: AppColors.primarySoft,
-        borderColor: AppColors.primary.withOpacity(0.18),
+        borderColor: AppColors.primary.withValues(alpha: 0.18),
         radius: AppRadius.circular,
       ),
       child: Text(
@@ -1371,7 +1370,7 @@ class _SelectionSummary extends StatelessWidget {
                 colors: [
                   AppColors.primarySoft,
                   Colors.white,
-                  AppColors.secondarySoft.withOpacity(0.48),
+                  AppColors.secondarySoft.withValues(alpha: 0.48),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -1380,8 +1379,8 @@ class _SelectionSummary extends StatelessWidget {
         radius: AppRadius.lg,
         border: Border.all(
           color: selected
-              ? AppColors.primary.withOpacity(0.34)
-              : AppColors.border.withOpacity(0.86),
+              ? AppColors.primary.withValues(alpha: 0.34)
+              : AppColors.border.withValues(alpha: 0.86),
           width: selected ? 1.35 : 1,
         ),
         shadows: selected ? AppShadows.focus : AppShadows.xs,
@@ -1403,8 +1402,8 @@ class _SelectionSummary extends StatelessWidget {
                       ? AppDecoration.primaryGradient(radius: AppRadius.md)
                       : AppDecoration.gradient(
                           colors: [
-                            AppColors.primary.withOpacity(0.12),
-                            AppColors.secondary.withOpacity(0.08),
+                            AppColors.primary.withValues(alpha: 0.12),
+                            AppColors.secondary.withValues(alpha: 0.08),
                           ],
                           radius: AppRadius.md,
                         ),
@@ -1458,7 +1457,7 @@ class _SelectionSummary extends StatelessWidget {
                       ).copyWith(
                         border: Border.all(
                           color: selected
-                              ? AppColors.success.withOpacity(0.24)
+                              ? AppColors.success.withValues(alpha: 0.24)
                               : AppColors.border,
                         ),
                       ),
@@ -1648,7 +1647,7 @@ class _GenderCard extends StatelessWidget {
                     height: 44,
                     decoration: AppDecoration.circle(
                       color: selected
-                          ? Colors.white.withOpacity(0.16)
+                          ? Colors.white.withValues(alpha: 0.16)
                           : AppColors.primarySoft,
                     ),
                     child: Icon(
@@ -1664,7 +1663,7 @@ class _GenderCard extends StatelessWidget {
                     height: 24,
                     decoration: AppDecoration.circle(
                       color: selected
-                          ? Colors.white.withOpacity(0.20)
+                          ? Colors.white.withValues(alpha: 0.20)
                           : AppColors.primarySoft,
                     ),
                     child: Icon(
@@ -1695,7 +1694,7 @@ class _GenderCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: selected
-                      ? Colors.white.withOpacity(0.88)
+                      ? Colors.white.withValues(alpha: 0.88)
                       : AppColors.textSecondary,
                   height: 1.45,
                 ),
@@ -1914,7 +1913,7 @@ class _PickerListTile extends StatelessWidget {
                   height: 38,
                   decoration: AppDecoration.circle(
                     color: selected
-                        ? Colors.white.withOpacity(0.18)
+                        ? Colors.white.withValues(alpha: 0.18)
                         : AppColors.primarySoft,
                   ),
                   child: Icon(
@@ -1945,7 +1944,7 @@ class _PickerListTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodySmall.copyWith(
                           color: selected
-                              ? Colors.white.withOpacity(0.86)
+                              ? Colors.white.withValues(alpha: 0.86)
                               : AppColors.textSecondary,
                         ),
                       ),
@@ -2045,7 +2044,7 @@ class _OptionIcon extends StatelessWidget {
       height: 36,
       decoration: AppDecoration.circle(
         color: selected
-            ? Colors.white.withOpacity(0.18)
+            ? Colors.white.withValues(alpha: 0.18)
             : AppColors.primarySoft,
       ),
       child: Icon(
@@ -2141,7 +2140,7 @@ class _FloatingBubble extends StatelessWidget {
                 height: size,
                 decoration: AppDecoration.circle(
                   gradient: gradient,
-                ).copyWith(color: AppColors.primary.withOpacity(opacity)),
+                ).copyWith(color: AppColors.primary.withValues(alpha: opacity)),
               ),
             );
           },
@@ -2209,9 +2208,9 @@ class _OnboardingBackgroundPainter extends CustomPainter {
         end: Alignment.bottomRight,
         colors: [
           AppColors.background,
-          AppColors.primarySoft.withOpacity(0.82),
+          AppColors.primarySoft.withValues(alpha: 0.82),
           Colors.white,
-          AppColors.secondarySoft.withOpacity(0.48),
+          AppColors.secondarySoft.withValues(alpha: 0.48),
         ],
         transform: GradientRotation(animation * math.pi * 2),
       ).createShader(rect);
@@ -2219,7 +2218,7 @@ class _OnboardingBackgroundPainter extends CustomPainter {
     canvas.drawRect(rect, backgroundPaint);
 
     final gridPaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.026)
+      ..color = AppColors.primary.withValues(alpha: 0.026)
       ..strokeWidth = 1;
 
     for (double x = 0; x < size.width; x += 42) {

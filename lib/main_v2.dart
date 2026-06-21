@@ -10,6 +10,7 @@ import 'app_versions/v1/services/notifications/notification_lifecycle_refresher.
 import 'app_versions/v1/services/notifications/notification_startup_scheduler.dart';
 import 'app_versions/v2/app/bio_ai_v2_app.dart';
 import 'core/storage/localdb/app_prefs.dart';
+import 'services/supabase/auth/current_auth_user.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +38,7 @@ Future<void> main() async {
       overrides: [
         onboardingCompletionCallbackProvider.overrideWith((ref) {
           return () async {
+            if (currentSupabaseUserIdOrNull() == null) return;
             await ref
                 .read(generatedPlanServiceProvider)
                 .generateNextPlan(days: 7);

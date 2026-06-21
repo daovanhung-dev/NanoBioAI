@@ -61,7 +61,7 @@ class InsightCard extends StatelessWidget {
         color: AppColors.card,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: AppShadows.sm,
-        border: Border.all(color: _accentColor.withOpacity(0.15)),
+        border: Border.all(color: _accentColor.withValues(alpha: 0.15)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +78,7 @@ class InsightCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.md),
               boxShadow: [
                 BoxShadow(
-                  color: _accentColor.withOpacity(0.3),
+                  color: _accentColor.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),

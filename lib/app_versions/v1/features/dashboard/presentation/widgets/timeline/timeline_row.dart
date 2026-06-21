@@ -36,10 +36,10 @@ class TimelineRow extends StatelessWidget {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: event.color.withOpacity(0.15),
+                  color: event.color.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: event.color.withOpacity(0.4),
+                    color: event.color.withValues(alpha: 0.4),
                     width: 1.5,
                   ),
                 ),

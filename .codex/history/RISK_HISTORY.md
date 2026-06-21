@@ -1,0 +1,213 @@
+# Risk History
+
+Raw risk/failure/skip history extracted from worklogs. This file is not part of the default context pack unless exact history is needed.
+
+## Extracted Lines
+
+- docs/worklog/2026-06-19/001-worklog-codex-context-optimization.md :: - `flutter pub get`: SKIPPED - chỉ sửa docs `.codex`.
+- docs/worklog/2026-06-19/001-worklog-codex-context-optimization.md :: - `dart format --set-exit-if-changed .`: SKIPPED - chỉ sửa Markdown.
+- docs/worklog/2026-06-19/001-worklog-codex-context-optimization.md :: - `flutter analyze`: SKIPPED - chỉ sửa docs `.codex`.
+- docs/worklog/2026-06-19/001-worklog-codex-context-optimization.md :: - `flutter test`: SKIPPED - chỉ sửa docs `.codex`.
+- docs/worklog/2026-06-19/001-worklog-codex-context-optimization.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-06-19/001-worklog-codex-context-optimization.md :: - Chưa fix: worktree trước phiên đã có nhiều thay đổi ngoài phạm vi, gồm `.env`, code app và một số file docs cũ bị xóa; phiên này không xử lý các thay đổi đó.
+- docs/worklog/2026-06-19/001-worklog-codex-context-optimization.md :: - Cần kiểm tra tiếp: nếu muốn chuẩn hóa line ending toàn repo, nên làm trong task riêng để tránh trộn diff.
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - `flutter test test/services/ai`: FAIL lần đầu do Flutter tool crash khi chạy song song; PASS khi chạy lại tuần tự
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - `flutter analyze`: FAIL - repo còn nhiều warning/info sẵn có, không thấy lỗi biên dịch mới từ thay đổi này
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1`: PASS theo exit code script, nhưng output có analyzer warnings và full test còn 2 failure
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - `flutter test`: FAIL - 2 failure ở `test/architecture_preservation_property_test.dart` và `test/features/features_hub/features_hub_page_test.dart`
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - Chưa fix: full test suite còn 2 failure ngoài phạm vi trực tiếp.
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - Cần kiểm tra tiếp: test thực tế trên thiết bị với quyền notification và tài khoản đã onboarding; nếu từng bấm bản cũ, bấm lại để sinh lại meal đúng user và lịch trình cá nhân.
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - `test/services/ai/ai_service_test.dart` - sửa - test default model pool, overflow, failover, cooldown và fallback local.
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1`: PASS theo exit code script; output vẫn có analyzer warnings sẵn và full test còn 2 failure ngoài phạm vi.
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: ### Lỗi/Rủi ro
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - Đã fix: lỗi 503/quota/timeout không còn làm luồng sinh kế hoạch fail ngay khi hết model khả dụng; app dùng fallback local.
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - Chưa fix: `.env` thật không được sửa theo quy tắc an toàn, nên môi trường local cần tự thêm `GEMINI_PLAN_*` nếu muốn dùng model pool mới thay vì legacy key.
+- docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - Cần kiểm tra tiếp: chạy thực tế trên thiết bị với API key thật để quan sát tỷ lệ `MODEL_COOLDOWN_SKIP`, `RETRY_EXHAUSTED` và `LOCAL_GEN` trong log.
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - Thêm retry/failover theo model, timeout từng attempt, cooldown model lỗi tạm thời và backoff ngắn.
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `lib/app_versions/v1/services/ai/ai_chat_service.dart` - sửa - thêm retry/failover/fallback và model candidates riêng cho chat.
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `dart format lib\services\ai\ai_chat_service.dart test\services\ai\ai_service_test.dart`: FAIL - timeout sau 120-180 giây.
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `dart --version`: FAIL - timeout sau 30 giây, cho thấy Dart tool đang bị treo ngoài phạm vi code.
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `flutter test test\services\ai`: FAIL - timeout sau 240 giây, cùng nhóm lỗi môi trường Dart/Flutter đang treo.
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `Stop-Process -Id 12980,16704,6312,20028,9728 -Force`: PASS - dừng các process phát sinh từ lệnh timeout trong phiên.
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - Chưa fix: Chưa xác nhận được bằng `flutter test` vì Dart/Flutter tool timeout ngay cả với `dart --version`.
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - Cần kiểm tra tiếp: Chạy lại `dart format`, `flutter analyze`, `flutter test test/services/ai` sau khi xử lý các process Dart/Flutter cũ hoặc restart môi trường dev.
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: - `dart format <files đã sửa>`: FAIL/BLOCKED - timeout sau 120 giây, không có output.
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: - `dart --version`: FAIL/BLOCKED - timeout sau 30 giây.
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: - `dart --disable-dart-dev --version`: FAIL/BLOCKED - timeout sau 20 giây.
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: - `flutter --version`: FAIL/BLOCKED - timeout sau 20 giây.
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: - `flutter analyze`: SKIPPED - Dart/Flutter command đang timeout.
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: - `flutter test`: SKIPPED - Dart/Flutter command đang timeout.
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: - `.codex/tool/codex_quick_check.ps1`: SKIPPED - phụ thuộc Flutter/Dart đang timeout.
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: - Chưa fix: `DevDatabaseViewerPage` vẫn là công cụ kỹ thuật và còn thuật ngữ dev; trang này đã được ẩn khỏi Settings thường bằng `kDebugMode`.
+- docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md :: - Cần kiểm tra tiếp: Dart/Flutter toolchain đang bị kẹt hoặc bị tiến trình nền chặn; cần chạy lại format/analyze/test sau khi xử lý các tiến trình `dart` chạy từ trước phiên.
+- docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md :: - `dart format <changed files>`: FAIL/BLOCKED - timeout sau 120 giây, không có output.
+- docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md :: - `dart --version`: FAIL/BLOCKED - timeout sau 20 giây.
+- docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md :: - `flutter test test\features\dashboard\data\dashboard_dynamic_local_datasource_test.dart test\features\lifestyle_schedule\data\lifestyle_schedule_dao_test.dart`: FAIL/BLOCKED - timeout sau 180 giây.
+- docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md :: - `.codex/tool/codex_quick_check.ps1`: SKIPPED - phụ thuộc Dart/Flutter đang timeout.
+- docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md :: - Chưa fix: Dart/Flutter toolchain vẫn treo khi chạy format/version/test trong môi trường hiện tại.
+- docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md :: - Cần kiểm tra tiếp: Chạy lại `dart format`, targeted tests và quick check sau khi xử lý nguyên nhân Dart/Flutter timeout.
+- docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md :: - `flutter analyze`: FAIL do repo đang tính warning/info là fatal; output gồm warning/info sẵn có, không thấy compile error mới.
+- docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md :: ## Ghi chú/Rủi ro
+- docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md :: - `dart`/`flutter` timeout khi chạy trong sandbox, đã chạy validation ngoài sandbox sau khi được phê duyệt.
+- docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md :: - TODO: AI chat route chưa support `extra`, nên Dashboard chỉ mở `RoutePaths.aiChat`; cần thêm route contract nếu muốn truyền dashboard context vào chat.
+- docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md :: - TODO: score breakdown hiện là breakdown local từ metrics Dashboard, chưa phải công thức điểm persisted/có version.
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - `docs/issues/release-format-dry-run-fails-new-pages/001-issue-release-format-dry-run-fails-new-pages.md` - tạo - ghi bug format dry-run fail.
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - `docs/issues/release-test-suite-fails/001-issue-release-test-suite-fails.md` - tạo - ghi bug test suite đỏ.
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - &#91;Dart format dry-run fail ở 6 page mới&#93;(../../issues/release-format-dry-run-fails-new-pages/001-issue-release-format-dry-run-fails-new-pages.md)
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - &#91;Flutter analyze đang fail với 290 issue&#93;(../../issues/release-analyze-red-290-issues/001-issue-release-analyze-red-290-issues.md)
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - &#91;Flutter test đang fail 3 case trước release 1.0&#93;(../../issues/release-test-suite-fails/001-issue-release-test-suite-fails.md)
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - `dart format --output=none --set-exit-if-changed .`: FAIL - 6 page mới cần format; không ghi file.
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - `flutter analyze`: FAIL - 290 issues found.
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - `flutter test`: FAIL - 3 test case fail.
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - Chưa fix: toàn bộ issue trong `docs/issues` vẫn mở.
+- docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md :: - Cần kiểm tra tiếp: responsive thực tế bằng emulator/device và Android APK build nếu muốn audit trước khi phát hành lên store.
+- docs/worklog/2026-06-19/008-worklog-dd-redesign.md :: - `dart format --set-exit-if-changed .`: SKIPPED - chi sua Markdown.
+- docs/worklog/2026-06-19/008-worklog-dd-redesign.md :: - `flutter analyze`: SKIPPED - chi sua Markdown.
+- docs/worklog/2026-06-19/008-worklog-dd-redesign.md :: - `flutter test`: SKIPPED - chi sua Markdown.
+- docs/worklog/2026-06-19/008-worklog-dd-redesign.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-19/008-worklog-dd-redesign.md :: - Chua fix: Chua chuyen doi tung legacy module DD sang template moi.
+- docs/worklog/2026-06-19/008-worklog-dd-redesign.md :: - Can kiem tra tiep: Neu user muon, co the migrate lan luot 09 module DD cu sang `TEMPLATE_CODING_DD.md`.
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: - Kiem tra trang thai dirty hien co de khong cham vao `.codex.zip`, `.env`, `docs/todo` dang bi xoa, hoac docs/DD ngoai scope.
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: - Giu workflow mode hien co: `coding`, `test`, `find-issues`, `create-issues`, `create-todo`, `fix-issues`.
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: - `.codex/ISSUE_TODO_WORKFLOW.md` - sua - tach mode issue/todo/fix ro hon.
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: - Khong phat sinh feature/fixbug/test/issue/todo rieng.
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: - `dart format --set-exit-if-changed .`: SKIPPED - chi sua Markdown `.codex`.
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: - `flutter analyze`: SKIPPED - chi sua Markdown `.codex`.
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: - `flutter test`: SKIPPED - chi sua Markdown `.codex`.
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: - Chua fix: Cac thay doi dirty ngoai scope van giu nguyen, gom `.codex.zip`, docs/DD moi, va 2 file `docs/todo` dang bi xoa.
+- docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md :: - Can kiem tra tiep: Neu muon chuan hoa line ending toan repo, nen lam task rieng de tranh diff lon.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: Commit de xuat: docs(worklog): ghi nhan phien create todos from issues
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: # Worklog - Create todos from issues
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - Loai task: create-todo
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - Module chinh: docs/issues, docs/todo
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - Yeu cau goc: doc issues va tao todo
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - Tao 11 todo rieng, moi todo link ve issue goc va tach muc tieu/file/command kiem chung.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/ai-chat-dotenv-uninitialized/001-todo-ai-chat-dotenv-uninitialized.md` - tao - todo fix crash dotenv AI Chat.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/ai-chat-unbounded-context-tokens/001-todo-ai-chat-unbounded-context-tokens.md` - tao - todo gioi han context AI Chat.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/ai-raw-payload-logging/001-todo-ai-raw-payload-logging.md` - tao - todo go raw AI logging.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/auth-guards-disabled/001-todo-auth-guards-disabled.md` - tao - todo bat/dong bo auth guard.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/features-hub-expansion-not-wired/001-todo-features-hub-expansion-not-wired.md` - tao - todo noi route Features Hub expansion.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/features-hub-widget-test-stale/001-todo-features-hub-widget-test-stale.md` - tao - todo cap nhat widget test stale.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/new-care-pages-session-only-state/001-todo-new-care-pages-session-only-state.md` - tao - todo xu ly state session-only.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/onboarding-sensitive-snapshot-logging/001-todo-onboarding-sensitive-snapshot-logging.md` - tao - todo go log snapshot nhay cam.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/release-analyze-red-290-issues/001-todo-release-analyze-red-290-issues.md` - tao - todo xu ly analyze red.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/release-format-dry-run-fails-new-pages/001-todo-release-format-dry-run-fails-new-pages.md` - tao - todo format page moi.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/todo/release-test-suite-fails/001-todo-release-test-suite-fails.md` - tao - todo xu ly test suite fail.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md` - tao - ghi nhan phien.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;AI Chat dotenv uninitialized&#93;(../../todo/ai-chat-dotenv-uninitialized/001-todo-ai-chat-dotenv-uninitialized.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;AI Chat unbounded context tokens&#93;(../../todo/ai-chat-unbounded-context-tokens/001-todo-ai-chat-unbounded-context-tokens.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;AI raw payload logging&#93;(../../todo/ai-raw-payload-logging/001-todo-ai-raw-payload-logging.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;Auth guards disabled&#93;(../../todo/auth-guards-disabled/001-todo-auth-guards-disabled.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;Features Hub expansion not wired&#93;(../../todo/features-hub-expansion-not-wired/001-todo-features-hub-expansion-not-wired.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;Features Hub widget test stale&#93;(../../todo/features-hub-widget-test-stale/001-todo-features-hub-widget-test-stale.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;New care pages session-only state&#93;(../../todo/new-care-pages-session-only-state/001-todo-new-care-pages-session-only-state.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;Onboarding sensitive snapshot logging&#93;(../../todo/onboarding-sensitive-snapshot-logging/001-todo-onboarding-sensitive-snapshot-logging.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;Release analyze red&#93;(../../todo/release-analyze-red-290-issues/001-todo-release-analyze-red-290-issues.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;Release format dry-run&#93;(../../todo/release-format-dry-run-fails-new-pages/001-todo-release-format-dry-run-fails-new-pages.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - &#91;Release test suite fails&#93;(../../todo/release-test-suite-fails/001-todo-release-test-suite-fails.md)
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `rg --files docs/todo`: PASS/SKIPPED - ban dau chua co todo de liet ke.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `flutter test`: SKIPPED - mode create-todo khong test/fix.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - `flutter analyze`: SKIPPED - mode create-todo khong test/fix.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - Da fix: Khong co, phien nay chi tao todo.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - Chua fix: Tat ca issue goc van con trang thai can fix.
+- docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md :: - Can kiem tra tiep: Chon todo uu tien cao de fix theo mode `fix-issues`.
+- docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md :: - Doc todo, issue, AI service playbook, implementation va test lien quan.
+- docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md :: - Reproduce test fail voi `NotInitializedError`.
+- docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md :: - Cap nhat todo va tao fixbug doc.
+- docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md :: - `docs/todo/ai-chat-dotenv-uninitialized/001-todo-ai-chat-dotenv-uninitialized.md` - cap nhat trang thai/checklist.
+- docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md :: - &#91;Todo AI Chat dotenv uninitialized&#93;(../../todo/ai-chat-dotenv-uninitialized/001-todo-ai-chat-dotenv-uninitialized.md)
+- docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md :: - `flutter test`: SKIPPED - optional trong plan; repo da co cac release-level issue rieng ve full suite.
+- docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md :: - Chua fix: Cac issue AI/log/release khac trong `docs/issues` van ngoai scope.
+- docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md :: - Can kiem tra tiep: Khi fix release suite tong, chay lai `flutter test` toan repo.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: Commit de xuat: docs(worklog): ghi nhan tao checklist issue todo
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: # Worklog - Tao checklist issue todo
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - Module chinh: docs/issues, docs/todo
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - Yeu cau goc: tao checklist cho todo va issues
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - Kiem ke 11 todo trong `docs/todo`.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - Ghi nhan 1 todo da done va 1 fixbug da co cho AI Chat dotenv.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - Tao checklist tracker tong hop trang thai issue/todo/fixbug.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - `docs/todo/issue-todo-checklist/001-todo-issue-todo-checklist.md` - tao - checklist tong hop issue/todo.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - `docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md` - tao - ghi nhan phien docs.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - &#91;Checklist issue todo&#93;(../../todo/issue-todo-checklist/001-todo-issue-todo-checklist.md)
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - `rg --files docs/issues docs/todo docs/fixbug`: PASS - kiem ke issue/todo/fixbug.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - `rg "Trang thai:|Severity:|# Todo|# " docs/todo docs/issues -n`: PASS - lay status va severity.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - `flutter test`: SKIPPED - chi sua docs checklist.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - Chua fix: 10 todo van con pending.
+- docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md :: - Can kiem tra tiep: Cap nhat checklist sau moi lan fix issue.
+- docs/worklog/2026-06-20/001-worklog-onboarding-dashboard-refresh.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1`: PASS/WARN - script exit 0 va in `QUICK CHECK PASSED`; output co `flutter analyze` 292 issues co san va full `flutter test` co 1 fail ngoai scope o `test/features/features_hub/features_hub_page_test.dart` do khong tim thay text `AI Coach`.
+- docs/worklog/2026-06-20/001-worklog-onboarding-dashboard-refresh.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-20/001-worklog-onboarding-dashboard-refresh.md :: - Chua fix: analyzer warnings/info co san trong repo; full test fail ngoai scope o `features_hub_page_test.dart`.
+- docs/worklog/2026-06-20/001-worklog-onboarding-dashboard-refresh.md :: - Can kiem tra tiep: UI thuc te tren mobile de dam bao cac choice card gon hon nhung van de cham.
+- docs/worklog/2026-06-20/002-worklog-authentication-v2.md :: - `flutter analyze`: FAIL - repo co 289 warning/info lint nen hien co; loc theo file vua sua khong co issue.
+- docs/worklog/2026-06-20/002-worklog-authentication-v2.md :: - `flutter test test\features\features_hub\features_hub_page_test.dart`: FAIL - khong tim thay text `AI Coach`, doc lap voi auth.
+- docs/worklog/2026-06-20/002-worklog-authentication-v2.md :: - `powershell -NoProfile -ExecutionPolicy Bypass -File .codex\tool\codex_quick_check.ps1`: PARTIAL - script in `QUICK CHECK PASSED` nhung log co `Some tests failed` vi `features_hub_page_test`.
+- docs/worklog/2026-06-20/002-worklog-authentication-v2.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-20/002-worklog-authentication-v2.md :: - Chua fix: analyzer nen hien co cua repo van fail do warning/info lint ngoai scope.
+- docs/worklog/2026-06-20/002-worklog-authentication-v2.md :: - Chua fix: full suite con fail ngoai scope auth o `features_hub_page_test`.
+- docs/worklog/2026-06-20/002-worklog-authentication-v2.md :: - Can kiem tra tiep: manual Supabase SQL integrity, RLS hai user, redirect allow-list, recovery link va Edge Function `delete-account`.
+- docs/worklog/2026-06-20/003-worklog-authentication-dd-checklist.md :: - Phan loai trang thai: Done, Partial, Pending, Manual.
+- docs/worklog/2026-06-20/003-worklog-authentication-dd-checklist.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-20/003-worklog-authentication-dd-checklist.md :: - Chua fix: Checklist chi phan loai theo codebase hien tai, chua thay the manual Supabase verification.
+- docs/worklog/2026-06-20/003-worklog-authentication-dd-checklist.md :: - Can kiem tra tiep: Cap nhat checklist sau khi deploy SQL, chay RLS smoke, test email/recovery link va Edge Function delete account.
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: - Yeu cau goc: Hoan thanh code gaps authentication v2, cap nhat checklist DD va bao cao % hoan thanh theo module, tach code-level voi manual Supabase ops.
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: - Bo sung profile update sau onboarding: UI edit profile, validation, cloud-first update `users`/`health_profiles`, mirror SQLite bang current auth UUID, safe failure khi thieu session.
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: | A. Database foundation | 100% | 20% | Code khong vi pham Supabase ops; SQL deploy, integrity query, RLS smoke va backfill van manual. |
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: | B. Auth data/domain | 100% | 95% | Commands/results/errors/repository/datasource/error mapping/security contract done; con manual trigger/email behavior that. |
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: | C. Presentation/routing | 100% | 85% | Auth pages/AuthGate/deep link code done; email verification/recovery manual pending. |
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: | E. Settings/account safety | 95% | 75% | Change password/logout/delete UI + cache invalidation done; Edge Function JWT/cascade verify manual pending. |
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: | Test/traceability | 85% | 65% | Targeted tests pass va checklist updated; analyzer nen/full quick check/manual Supabase chua clean. |
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: Ghi chu: Phan tram la snapshot sau phien code nay, khong phai cam ket production-ready khi cac buoc manual Supabase chua chay.
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: - `lib/app_versions/v2/features/auth/domain/entities/auth_failure.dart` - sua - them auth failure code cho session/duplicate email.
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: - `flutter analyze`: FAIL - repo con 289 warning/info nen cu; khong thay issue compile moi trong file vua sua.
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: - `powershell -NoProfile -ExecutionPolicy Bypass -File .codex\tool\codex_quick_check.ps1`: PARTIAL - script exit 0 va in `QUICK CHECK PASSED`, nhung log full test co `Some tests failed` do `test/features/features_hub/features_hub_page_test.dart` khong tim thay text `AI Coach`.
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: - Chua fix: Analyzer full repo van fail boi lint/warning nen cu; quick check full-suite truoc do fail ngoai scope o `features_hub_page_test.dart`.
+- docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md :: - Can kiem tra tiep: Supabase SQL deploy, integrity query 0 row, RLS smoke 2 account, email/recovery link, Edge Function delete-account JWT/cascade delete, backfill old users.
+- docs/worklog/2026-06-20/005-worklog-codex-project-flow.md :: - `dart format`, `flutter analyze`, `flutter test`: SKIPPED - khong sua runtime code.
+- docs/worklog/2026-06-20/005-worklog-codex-project-flow.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-20/005-worklog-codex-project-flow.md :: - Chua fix: Chua cap nhat BD/DD/auth checklist cu vi ngoai scope theo plan.
+- docs/worklog/2026-06-20/005-worklog-codex-project-flow.md :: - Can kiem tra tiep: Khi bat dau code membership/referral that, can tao BD/DD va chay test/ops rieng cho Supabase, quota, payment webhook va RLS.
+- docs/worklog/2026-06-21/001-worklog-project-scaffold.md :: - `flutter analyze`: FAIL - 288 warning/info hien huu ngoai pham vi scaffold.
+- docs/worklog/2026-06-21/001-worklog-project-scaffold.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-21/001-worklog-project-scaffold.md :: - Chua fix: chua implement logic that cho membership/quota/v3/sale vi can DD chi tiet.
+- docs/worklog/2026-06-21/001-worklog-project-scaffold.md :: - Can kiem tra tiep: xu ly no ky thuat full analyze trong phien rieng.
+- docs/worklog/2026-06-21/002-worklog-supabase-database-draft.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-21/002-worklog-supabase-database-draft.md :: - Chua fix: Chua chay SQL tren Supabase sandbox/staging.
+- docs/worklog/2026-06-21/002-worklog-supabase-database-draft.md :: - Can kiem tra tiep: Review SQL bang Supabase CLI/sandbox, chot PO cac diem payment, payout, FamilyPlus consent va anonymous upgrade.
+- docs/worklog/2026-06-21/003-worklog-auth-system-flow.md :: - FAIL - `flutter analyze`: 287 warning/info lint nen hien co cua repo.
+- docs/worklog/2026-06-21/004-worklog-dashboard-auth-generation-guard.md :: - `OnboardingController` coi auth-required khi tao plan la skip hop le, khong lam fail guest onboarding.
+- docs/worklog/2026-06-21/004-worklog-dashboard-auth-generation-guard.md :: - PARTIAL - `dart analyze` tren cac file chinh vua sua: chi con 16 info `withOpacity` nen trong `dashboard_page.dart`, khong co loi moi tu auth guard.
+- docs/worklog/2026-06-21/005-worklog-riverpod-account-state.md :: - `flutter analyze`: FAIL - 287 warning/info nen co san ngoai pham vi; khong thay issue moi trong file vua sua.
+- docs/worklog/2026-06-21/005-worklog-riverpod-account-state.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-21/005-worklog-riverpod-account-state.md :: - Chua fix: warning/info analyze nen o v1/core/test.
+- docs/worklog/2026-06-21/005-worklog-riverpod-account-state.md :: - Can kiem tra tiep: manual Supabase smoke cho login/logout/delete request va auth event stream.
+- docs/worklog/2026-06-21/006-worklog-onboarding-auth-sync.md :: - `flutter analyze`: FAIL - 288 warning/info legacy ngoai scope, khong thay loi compile trong file moi/sua.
+- docs/worklog/2026-06-21/006-worklog-onboarding-auth-sync.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-21/006-worklog-onboarding-auth-sync.md :: - Chua fix: full analyze repo co warning/info legacy ngoai scope.
+- docs/worklog/2026-06-21/006-worklog-onboarding-auth-sync.md :: - Can kiem tra tiep: live Supabase local voi file seed va luong sync that tren device/emulator.
+- docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md :: - Giu cac phan phu thuoc Q-01..Q-10 o `Status: Draft` va ghi open decisions.
+- docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md :: - `flutter analyze` / `flutter test`: SKIPPED - docs-only, khong sua runtime code.
+- docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md :: - Chua fix: Q-01..Q-10 van la open decisions, cac DD lien quan chua Ready for implementation.
+- docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md :: - Can kiem tra tiep: PO/Tech Lead can chot Q-01..Q-10 truoc khi code cac phan phu thuoc.
+- docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md :: - Dang do: chua chot open decisions Q-01..Q-10 va chua implement runtime code.
+- docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md :: - Rut gon root `.codex/AGENTS.md`, `README.md`, `PROJECT_MAP.md`, `DOCS_WORKFLOW.md`, `CHECKLIST.md`, `ISSUE_TODO_WORKFLOW.md` thanh router/context entrypoint.
+- docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md :: - `.codex/ISSUE_TODO_WORKFLOW.md` - sua - mode issue/todo ngan gon.
+- docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md :: - `powershell -ExecutionPolicy Bypass -File .codex\tools\update_worklog_learning.ps1`: PASS - sinh history tu worklog corpus; lan dau fail do syntax PowerShell da duoc fix.
+- docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md :: - `flutter analyze` / `flutter test`: SKIPPED - docs/context-only, khong sua runtime Dart.
+- docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md :: - Chua fix: Worktree van co nhieu thay doi runtime va `.env` ngoai scope phien nay; khong cham vao.
+- docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md :: - Can kiem tra tiep: Neu muon skill global auto-trigger o moi workspace thi can task rieng de cai vao `~/.codex/skills`.
+- docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md :: - Da fix: PowerShell wildcard check ban dau dung `-LiteralPath` nen fail; chay lai bang `-Path` da PASS.
+- docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md :: - Chua fix: mot so task key sinh tu lich su co slug khong dau/chua chuan do worklog cu ghi `Loai task` khong dong nhat.
+- docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md :: - Can kiem tra tiep: neu muon task key on dinh hon, co the them mapping manual workflow -> canonical task key trong script refresh.

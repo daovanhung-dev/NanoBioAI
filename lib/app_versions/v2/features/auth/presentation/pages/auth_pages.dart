@@ -91,7 +91,7 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
     setState(() => _loading = true);
     try {
       await ref
-          .read(v2AuthRepositoryProvider)
+          .read(v2AuthControllerProvider.notifier)
           .signInWithEmail(
             LoginCommand(email: _email.text, password: _password.text),
           );
@@ -220,7 +220,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
     setState(() => _loading = true);
     try {
       final result = await ref
-          .read(v2AuthRepositoryProvider)
+          .read(v2AuthControllerProvider.notifier)
           .signUpWithEmail(
             RegisterCommand(
               email: _email.text,
@@ -305,7 +305,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
     setState(() => _loading = true);
     try {
       await ref
-          .read(v2AuthRepositoryProvider)
+          .read(v2AuthControllerProvider.notifier)
           .resendEmailConfirmation(widget.email);
       _startCooldown();
       if (mounted) {
@@ -398,7 +398,7 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
     setState(() => _loading = true);
     try {
       await ref
-          .read(v2AuthRepositoryProvider)
+          .read(v2AuthControllerProvider.notifier)
           .sendPasswordRecovery(_email.text);
       if (mounted) setState(() => _sent = true);
     } catch (error) {
@@ -470,7 +470,7 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
     setState(() => _loading = true);
     try {
       await ref
-          .read(v2AuthRepositoryProvider)
+          .read(v2AuthControllerProvider.notifier)
           .updatePassword(
             UpdatePasswordCommand(
               newPassword: _password.text,
@@ -513,7 +513,7 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
   Future<void> _recover() async {
     try {
       await ref
-          .read(v2AuthRepositoryProvider)
+          .read(v2AuthControllerProvider.notifier)
           .recoverSessionFromUri(widget.uri);
     } catch (error) {
       if (mounted) _showError(context, error);

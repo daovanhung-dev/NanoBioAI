@@ -14,20 +14,37 @@ class AuthRouteStateResolver {
       return const AuthRouteState.unauthenticated();
     }
 
+    final subscriptionTier = profile?.subscriptionTier ?? 'free';
+
     if (requiresEmailConfirmation && !session.emailConfirmed) {
-      return AuthRouteState.emailVerificationRequired(email: session.email);
+      return AuthRouteState.emailVerificationRequired(
+        email: session.email,
+        subscriptionTier: subscriptionTier,
+      );
     }
 
     if (profileLoadFailed || profile == null) {
-      return AuthRouteState.profileBootstrapUnavailable(userId: session.userId);
+      return AuthRouteState.profileBootstrapUnavailable(
+        userId: session.userId,
+        email: session.email,
+        subscriptionTier: subscriptionTier,
+      );
     }
 
     switch (profile.onboardingStatus) {
       case 'completed':
-        return AuthRouteState.authenticatedReady(userId: session.userId);
+        return AuthRouteState.authenticatedReady(
+          userId: session.userId,
+          email: session.email,
+          subscriptionTier: subscriptionTier,
+        );
       case 'not_started':
       case 'in_progress':
-        return AuthRouteState.onboardingRequired(userId: session.userId);
+        return AuthRouteState.onboardingRequired(
+          userId: session.userId,
+          email: session.email,
+          subscriptionTier: subscriptionTier,
+        );
       default:
         return const AuthRouteState.failure(
           'Nami chưa xác định được trạng thái tài khoản lúc này.',

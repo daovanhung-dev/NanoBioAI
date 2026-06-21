@@ -230,8 +230,9 @@ class DailyHealthTaskGenerator {
     if (text.contains('sedentary') || text.contains('it van dong')) return 3000;
     if (text.contains('light') || text.contains('nhe')) return 5000;
     if (text.contains('moderate') || text.contains('trung binh')) return 7000;
-    if (text.contains('very_active') || text.contains('rat nang dong'))
+    if (text.contains('very_active') || text.contains('rat nang dong')) {
       return 10000;
+    }
     if (text.contains('active') || text.contains('nang dong')) return 9000;
     return 5000;
   }

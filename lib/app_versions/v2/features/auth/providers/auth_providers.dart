@@ -1,34 +1,10 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart';
-import 'package:nano_app/app_versions/v2/features/auth/data/repositories/supabase_auth_repository.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_route_state.dart';
-import 'package:nano_app/app_versions/v2/features/auth/domain/repositories/auth_repository.dart';
+import 'package:nano_app/app_versions/v2/features/auth/presentation/controllers/auth_controller.dart';
 
-final authEmailConfirmationRequiredProvider = Provider<bool>((ref) {
-  if (!dotenv.isInitialized) return true;
-  final value = dotenv.env['AUTH_CONFIRM_EMAIL_REQUIRED'];
-  return value?.trim().toLowerCase() != 'false';
-});
+export 'auth_dependencies.dart';
 
-final v2AuthRemoteDatasourceProvider = Provider<SupabaseAuthRemoteDatasource>((
-  ref,
-) {
-  return SupabaseAuthRemoteDatasource();
-});
+final v2AuthControllerProvider =
+    AsyncNotifierProvider<AuthController, AuthRouteState>(AuthController.new);
 
-final v2AuthRepositoryProvider = Provider<AuthRepository>((ref) {
-  return SupabaseAuthRepository(
-    datasource: ref.watch(v2AuthRemoteDatasourceProvider),
-    requiresEmailConfirmation: ref.watch(authEmailConfirmationRequiredProvider),
-  );
-});
-
-final v2AuthChangesProvider = StreamProvider<void>((ref) {
-  return ref.watch(v2AuthRepositoryProvider).watchAuthChanges();
-});
-
-final v2AuthRouteStateProvider = FutureProvider<AuthRouteState>((ref) async {
-  ref.watch(v2AuthChangesProvider);
-  return ref.watch(v2AuthRepositoryProvider).resolveAuthRouteState();
-});
+final v2AuthRouteStateProvider = v2AuthControllerProvider;

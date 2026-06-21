@@ -12,12 +12,14 @@ class AuthRouteState {
   final AuthRouteStatus status;
   final String? userId;
   final String? email;
+  final String subscriptionTier;
   final String? message;
 
   const AuthRouteState._({
     required this.status,
     this.userId,
     this.email,
+    this.subscriptionTier = 'free',
     this.message,
   });
 
@@ -27,20 +29,47 @@ class AuthRouteState {
   const AuthRouteState.unauthenticated()
     : this._(status: AuthRouteStatus.unauthenticated);
 
-  const AuthRouteState.emailVerificationRequired({String? email})
-    : this._(status: AuthRouteStatus.emailVerificationRequired, email: email);
+  const AuthRouteState.emailVerificationRequired({
+    String? email,
+    String subscriptionTier = 'free',
+  }) : this._(
+         status: AuthRouteStatus.emailVerificationRequired,
+         email: email,
+         subscriptionTier: subscriptionTier,
+       );
 
-  const AuthRouteState.onboardingRequired({required String userId})
-    : this._(status: AuthRouteStatus.onboardingRequired, userId: userId);
+  const AuthRouteState.onboardingRequired({
+    required String userId,
+    String? email,
+    String subscriptionTier = 'free',
+  }) : this._(
+         status: AuthRouteStatus.onboardingRequired,
+         userId: userId,
+         email: email,
+         subscriptionTier: subscriptionTier,
+       );
 
-  const AuthRouteState.authenticatedReady({required String userId})
-    : this._(status: AuthRouteStatus.authenticatedReady, userId: userId);
+  const AuthRouteState.authenticatedReady({
+    required String userId,
+    String? email,
+    String subscriptionTier = 'free',
+  }) : this._(
+         status: AuthRouteStatus.authenticatedReady,
+         userId: userId,
+         email: email,
+         subscriptionTier: subscriptionTier,
+       );
 
-  const AuthRouteState.profileBootstrapUnavailable({required String userId})
-    : this._(
-        status: AuthRouteStatus.profileBootstrapUnavailable,
-        userId: userId,
-      );
+  const AuthRouteState.profileBootstrapUnavailable({
+    required String userId,
+    String? email,
+    String subscriptionTier = 'free',
+  }) : this._(
+         status: AuthRouteStatus.profileBootstrapUnavailable,
+         userId: userId,
+         email: email,
+         subscriptionTier: subscriptionTier,
+       );
 
   const AuthRouteState.failure(String message)
     : this._(status: AuthRouteStatus.failure, message: message);

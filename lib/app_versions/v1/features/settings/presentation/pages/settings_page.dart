@@ -4,12 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
+import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/domain/entities/settings_preferences_entity.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
-import 'package:nano_app/services/supabase/auth/account_security_service.dart';
+import 'package:nano_app/services/supabase/auth/account_security_provider.dart';
 
 import 'dev_database_viewer_page.dart';
 
@@ -259,10 +260,10 @@ class SettingsView extends ConsumerWidget {
     if (confirmed != true) return;
 
     try {
-      await AccountSecurityService().signOut();
+      await ref.read(accountSecurityControllerProvider.notifier).signOut();
       invalidateUserScopedProviders(ref);
       if (!context.mounted) return;
-      context.go('/v2/auth');
+      context.go(AuthRoutePaths.authGate);
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -300,10 +301,12 @@ class SettingsView extends ConsumerWidget {
     if (confirmed != true) return;
 
     try {
-      await AccountSecurityService().requestAccountDeletion();
+      await ref
+          .read(accountSecurityControllerProvider.notifier)
+          .requestAccountDeletion();
       invalidateUserScopedProviders(ref);
       if (!context.mounted) return;
-      context.go('/v2/auth');
+      context.go(AuthRoutePaths.authGate);
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -317,14 +320,15 @@ class SettingsView extends ConsumerWidget {
   }
 }
 
-class _ChangePasswordSheet extends StatefulWidget {
+class _ChangePasswordSheet extends ConsumerStatefulWidget {
   const _ChangePasswordSheet();
 
   @override
-  State<_ChangePasswordSheet> createState() => _ChangePasswordSheetState();
+  ConsumerState<_ChangePasswordSheet> createState() =>
+      _ChangePasswordSheetState();
 }
 
-class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
+class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
   final _formKey = GlobalKey<FormState>();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
@@ -410,7 +414,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     try {
-      await AccountSecurityService().updatePassword(_password.text);
+      await ref
+          .read(accountSecurityControllerProvider.notifier)
+          .updatePassword(_password.text);
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(

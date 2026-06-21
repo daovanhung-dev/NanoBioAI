@@ -19,7 +19,7 @@ class GoalChip extends StatelessWidget {
           colors: [AppColors.primarySoft, Color(0xFFDBEAFE)],
         ),
         borderRadius: BorderRadius.circular(AppRadius.circular),
-        border: Border.all(color: AppColors.primary.withOpacity(0.25)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

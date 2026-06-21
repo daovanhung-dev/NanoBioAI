@@ -1,4 +1,5 @@
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/services/supabase/auth/auth_profile_service.dart';
 
 import '../../data/datasource/onboarding_local_datasource.dart';
@@ -28,7 +29,16 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       }
 
       AppLogger.info(_tag, 'Mirroring onboarding to local datasource');
-      await localDatasource.saveOnboarding(entity, userIdOverride: authUserId);
+      final localUserId = await localDatasource.saveOnboarding(
+        entity,
+        userIdOverride: authUserId,
+      );
+
+      if (authUserId == null) {
+        await AppPrefs.setPendingGuestUserId(localUserId);
+      } else {
+        await AppPrefs.clearPendingGuestUserId();
+      }
       AppLogger.success(_tag, 'Save completed successfully');
     } catch (e, st) {
       AppLogger.error(_tag, 'Repository save failed', e, st);

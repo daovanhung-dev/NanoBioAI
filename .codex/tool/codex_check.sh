@@ -14,20 +14,25 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$SCRIPT_DIR/check_helpers.sh"
 cd "$PROJECT_ROOT"
 
 [[ -f pubspec.yaml ]] || { echo "pubspec.yaml not found. Keep .codex at project root." >&2; exit 1; }
 
-[[ "$SKIP_DOCTOR" == "1" ]] || flutter doctor -v
-flutter pub get
-[[ "$BUILD_RUNNER" == "1" ]] && dart run build_runner build --delete-conflicting-outputs
-if [[ "$FIX_FORMAT" == "1" ]]; then
-  dart format .
+if [[ "$SKIP_DOCTOR" == "1" ]]; then
+  add_codex_skipped_step "Flutter doctor" "skip-doctor argument was provided."
 else
-  dart format --set-exit-if-changed .
+  invoke_native_command "Flutter doctor" flutter doctor -v
 fi
-flutter analyze
-flutter test
-[[ "$BUILD_APK" == "1" ]] && flutter build apk --debug
+invoke_native_command "Flutter dependency resolution" flutter pub get
+[[ "$BUILD_RUNNER" == "1" ]] && invoke_native_command "Dart build_runner" dart run build_runner build --delete-conflicting-outputs
+if [[ "$FIX_FORMAT" == "1" ]]; then
+  invoke_native_command "Dart format write" dart format .
+else
+  invoke_native_command "Dart format check" dart format --set-exit-if-changed .
+fi
+invoke_native_command "Flutter analyze" flutter analyze
+invoke_native_command "Flutter test" flutter test
+[[ "$BUILD_APK" == "1" ]] && invoke_native_command "Flutter debug APK build" flutter build apk --debug
 
-echo "FULL CHECK PASSED"
+complete_codex_check "FULL CHECK"

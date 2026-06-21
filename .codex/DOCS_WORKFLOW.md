@@ -1,41 +1,32 @@
-# DOCS_WORKFLOW - Worklog va tai lieu ket qua
+# DOCS_WORKFLOW - Worklog And Project Docs
 
-Doc file nay truoc khi code, review, test, hoac sua docs. Muc tieu: moi phien co dau vet ngan gon ve yeu cau, file da sua, cach kiem chung, va rui ro.
+Use this file for any session that changes code, tests, docs, `.codex`, issues, todos, DD, or performs substantial review/analysis.
 
-## Khi Nao Phai Ghi Docs
+## Required Docs
 
-- Luon tao/cap nhat worklog cho phien co code, review, test, sua docs, hoac phan tich loi dang ke.
-- Tao docs chi tiet them khi phat sinh:
-  - Feature moi/mo rong: `docs/features/`
-  - Fix bug: `docs/fixbug/`
-  - Test/regression/build co ket qua ro: `docs/test/`
-  - Loi chua fix duoc hoac ngoai scope: `docs/issues/`
-  - Todo fix issue sau khi doc issue: `docs/todo/`
-- Neu chi hoi dap/phan tich ngan va khong sua file: khong bat buoc tao worklog, tru khi user yeu cau.
-- Moi phien chi lam dung mode: coding/test/find-issues/create-issues/create-todo/fix-issues.
-- Sau mỗi phiên làm việc thì phải báo cáo tỷ lệ % công việc theo yêu cầu đã hoàn thành, và nói rõ những công việc chưa hoàn thành hoặc đang làm dở, trình bày chi tiết.
+- Always create/update a worklog for code, review, test, docs, issue/todo, DD, context update, or substantial analysis.
+- Add detailed docs when relevant:
+  - Feature/change: `docs/features/<slug>/<NNN>-feature-<slug>.md`
+  - Bug fix: `docs/fixbug/<slug>/<NNN>-fixbug-<slug>.md`
+  - Test result: `docs/test/<slug>/<NNN>-test-<slug>.md`
+  - Issue: `docs/issues/<slug>/<NNN>-issue-<slug>.md`
+  - Todo: `docs/todo/<slug>/<NNN>-todo-<slug>.md`
+  - DD: `docs/DD/<module>/`
 
-## Quy Tac Chung
+## Numbering
 
-- Khong ghi secret, API key, token, mat khau, thong tin suc khoe nhay cam, raw AI/API response dai.
-- Dung tieng Viet co dau trong docs user-facing; rieng `.codex` co the dung ASCII de tranh loi encoding.
-- File chi tiet phai co dong dau: `Commit de xuat: ...`
-- File moi trong `docs/worklog`, `docs/features`, `docs/fixbug`, `docs/test`, `docs/issues`, `docs/todo` phai danh so `NNN-...md`.
-- So `NNN` tinh trong chinh folder chua file do, lay so lon nhat + 1, khong doi so file cu.
-- Worklog phai link Markdown toi docs feature/fixbug/test/issue/todo lien quan neu co.
+- New docs under `docs/worklog`, `docs/features`, `docs/fixbug`, `docs/test`, `docs/issues`, `docs/todo` use `NNN-...md`.
+- `NNN` is max existing number in that folder + 1.
+- Do not renumber old files.
+- Detail docs start with `Commit de xuat: ...`.
 
-## Vi Tri File
+## Worklog Location
 
 ```text
 docs/worklog/<yyyy-mm-dd>/<NNN>-worklog-<slug>.md
-docs/features/<feature-slug>/<NNN>-feature-<feature-slug>.md
-docs/fixbug/<bug-slug>/<NNN>-fixbug-<bug-slug>.md
-docs/test/<test-slug>/<NNN>-test-<test-slug>.md
-docs/issues/<issue-slug>/<NNN>-issue-<issue-slug>.md
-docs/todo/<todo-slug>/<NNN>-todo-<todo-slug>.md
 ```
 
-Ngay dung timezone local cua user/project neu biet.
+Use project/user timezone when known: `Asia/Saigon`.
 
 ## Worklog Template
 
@@ -67,8 +58,7 @@ Commit de xuat: docs(worklog): ghi nhan phien <slug>
 
 ## Tai lieu lien quan
 
-- [Ten docs](../../features/<slug>/001-feature-<slug>.md) - neu co
-- Khong phat sinh
+- ...
 
 ## Commands
 
@@ -79,253 +69,53 @@ Commit de xuat: docs(worklog): ghi nhan phien <slug>
 - Da fix:
 - Chua fix:
 - Can kiem tra tiep:
+
+## Ty le hoan thanh
+
+- Hoan thanh:
+- Dang do:
+
+## Tu danh gia va toi uu phien sau
+
+- Chat luong dau ra: tot/can cai thien - ly do
+- Muc do hoan thanh task:
+- Bang chung kiem chung:
+- Diem ton token/chua toi uu:
+- Cach toi uu cho phien sau:
+- Task-skill can doc lan sau: `.codex/task-skills/<task-key>.md`
 ```
 
-## Feature Template
+## DD Rules
 
-```md
-Commit de xuat: feat(scope): mo ta ngan
+- For BD -> DD work, use `.codex/workflows/docs-dd.md`.
+- DD must trace to BD IDs, BR/AC/UC, or source headings.
+- Keep `Status: Draft` while open decisions affect behavior, schema, security, or acceptance.
+- Update `docs/checklist/checklist_create_DD.md` when DD status/checklist changes.
 
-# <Ten feature>
+## Issue/Todo Rules
 
-## Muc tieu
+- Use `.codex/ISSUE_TODO_WORKFLOW.md`.
+- Do not mix find issue, create issue, create todo, fix issue, and test unless the user requests a chain.
 
-- ...
+## History Refresh
 
-## Pham vi
+After creating/updating any worklog, run:
 
-- Bao gom:
-- Khong bao gom:
-
-## Luong hoat dong
-
-1. ...
-
-## Du lieu va luu tru
-
-- Nguon doc:
-- Noi ghi:
-- Table/model/entity:
-- Migration/version:
-
-## UI/UX
-
-- Loading:
-- Empty:
-- Error:
-- Success:
-
-## Files
-
-- `path/file` - ly do
-
-## Kiem chung
-
-- Command:
-- Ket qua:
-- Case da test:
-
-## Lien ket
-
-- Worklog:
-- Test/Issue:
-
-## Rui ro
-
-- ...
+```powershell
+powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1
 ```
 
-## Fix Bug Template
+Include changed `.codex/history/*` files in the same docs/context update.
+The refresh also regenerates `.codex/task-skills/*.md`; include those files when their generated content changes.
 
-```md
-Commit de xuat: fix(scope): mo ta ngan
+## Self Optimization
 
-# <Ten bug>
+- At the end of each substantial session, use `.codex/history/SESSION_QUALITY_REVIEW.md`.
+- Before broad reads/checks, ask how to save tokens while keeping or improving quality.
+- Prefer updating generated summaries and task-skills over making future agents read raw worklogs by default.
 
-## Trieu chung
+## Safety
 
-- ...
-
-## Nguyen nhan goc
-
-- ...
-
-## Cach sua
-
-- ...
-
-## Files
-
-- `path/file` - ly do
-
-## Kiem chung
-
-- Command:
-- Ket qua:
-- Case da test:
-
-## Lien ket
-
-- Worklog:
-- Test/Issue/Todo:
-
-## Regression can de y
-
-- ...
-```
-
-## Test Template
-
-```md
-Commit de xuat: test(scope): mo ta ngan
-
-# <Ten test>
-
-## Pham vi
-
-- Loai test:
-- Module:
-- Case bao gom:
-- Case chua bao gom:
-
-## Moi truong
-
-- OS:
-- Flutter/Dart:
-- Device/emulator:
-
-## Commands/Kich ban
-
-- `command`
-
-## Ket qua
-
-- PASS/FAIL/SKIPPED - ghi chu
-
-## Lien ket
-
-- Worklog:
-- Feature/Fixbug/Issue:
-
-## Rui ro
-
-- ...
-```
-
-## Issue Template
-
-```md
-Commit de xuat: docs(issue): ghi nhan loi <slug>
-
-# <Ten issue>
-
-## Tom tat
-
-- ...
-
-## Expected / Actual
-
-- Mong doi:
-- Thuc te:
-
-## Muc do anh huong
-
-- Severity: blocker/high/medium/low
-- Anh huong user:
-- Anh huong dev/build/test:
-
-## Cach tai hien
-
-1. ...
-
-## Da xac nhan
-
-- File/line:
-- Log/command/test:
-- Case tai hien:
-
-## Gia thuyet
-
-- ...
-
-## Workaround
-
-- ...
-
-## Huong fix de xuat
-
-- ...
-- Khong viet patch code trong issue.
-
-## Files/log lien quan
-
-- `path/file`
-
-## Lien ket
-
-- Worklog:
-- Feature/Fixbug/Test:
-```
-
-## Todo Template
-
-```md
-Commit de xuat: docs(todo): lap todo fix <slug>
-
-# Todo - <Ten issue>
-
-## Issue goc
-
-- Issue: [<Ten issue>](../../issues/<issue-slug>/<NNN>-issue-<issue-slug>.md)
-- Severity:
-- Trang thai: todo
-
-## Muc tieu fix
-
-- ...
-
-## Khong lam trong todo nay
-
-- Khong sua code trong buoc tao todo.
-- Khong test/fix issue khac neu khong co yeu cau rieng.
-
-## Cac viec can lam
-
-1. [ ] Doc file/ham lien quan: `path/file`
-2. [ ] Xac minh nguyen nhan goc bang `rg`/test lien quan.
-3. [ ] Sua nho nhat tai `path/file`.
-4. [ ] Cap nhat docs fixbug/worklog sau khi fix.
-5. [ ] Chay command kiem chung o mode test hoac khi user yeu cau.
-
-## File du kien anh huong
-
-- `path/file` - ly do
-
-## Command can kiem chung
-
-- `command` - muc dich
-
-## Rui ro can de y
-
-- ...
-```
-
-## Logging
-
-- Log chi de bat loi, khong che loi.
-- Prefix theo module, vi du `[DashboardFlow]`, `[AIService]`, `[NotificationScheduler]`.
-- Khong log secret, token, raw response dai, ho so suc khoe chi tiet, hoac PII nhay cam.
-- User-facing error khong hien stack trace/exception/query/table.
-
-## Checklist
-
-- Mọi công việc điều phải cập nhật checklist, nếu không có checklist thì phải tạo
-- Những task như:
-  1. Coding: Phải có checklist để kiểm tra xem nhưng DD nào đã được coding
-  2. Issues: Kiểm tra xem những issues nào đã được tạo todo
-  3. Todo: Kiểm tra xem nhưng todo đã được làm
-
-## refactor
-
-- Mọi thhay đổi về kiến trúc dự án đều phải được cập nhật lại vào trong .codex
-- Bắt kỳ thao tác thêm file, sửa, xóa đều phải được cập nhật nếu cần thiết sau mỗi phiên làm việc
+- Do not write secrets, API keys, tokens, passwords, health PII, raw AI prompt/response, raw webhook/payment payloads, or long logs into docs.
+- Summarize command failures; do not paste noisy full logs unless required.
+- `.codex` files may use ASCII for reliability; user-facing docs should use Vietnamese with correct tone when practical.

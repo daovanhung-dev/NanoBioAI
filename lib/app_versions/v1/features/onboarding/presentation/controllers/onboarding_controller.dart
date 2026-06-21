@@ -3,6 +3,7 @@ import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/services/supabase/auth/auth_profile_service.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
@@ -503,7 +504,13 @@ class OnboardingController extends Notifier<OnboardingState> {
       final onCompletionCallback = ref.read(
         onboardingCompletionCallbackProvider,
       );
-      await onCompletionCallback();
+      var generatedPlan = false;
+      try {
+        await onCompletionCallback();
+        generatedPlan = true;
+      } on DashboardGenerationAuthRequiredException catch (error) {
+        AppLogger.info(_tag, 'Skip generated plan: $error');
+      }
 
       AppLogger.info(_tag, 'Setting onboarding completed flag');
       await AppPrefs.setOnboardingCompleted(true);
@@ -530,8 +537,8 @@ class OnboardingController extends Notifier<OnboardingState> {
         'Has Allergy': entity.hasAllergy,
         'Has Treatment': entity.hasTreatment,
         'Saved To Database': true,
-        'Meal Plan Generated': true,
-        'Daily Health Tasks Generated': true,
+        'Meal Plan Generated': generatedPlan,
+        'Daily Health Tasks Generated': generatedPlan,
       });
       AppLogger.separator(_tag);
     } catch (e, st) {

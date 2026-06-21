@@ -18,7 +18,7 @@ class OnboardingLocalDatasource {
     return DatabaseService.database;
   }
 
-  Future<void> saveOnboarding(
+  Future<String> saveOnboarding(
     OnboardingEntity entity, {
     String? userIdOverride,
   }) async {
@@ -332,6 +332,7 @@ class OnboardingLocalDatasource {
 
       AppLogger.success(_tag, 'Onboarding data saved to SQLite successfully');
       AppLogger.info(_tag, 'User ID: $userId');
+      return userId;
     } catch (e, st) {
       AppLogger.error(_tag, 'Failed to save onboarding to SQLite', e, st);
       rethrow;

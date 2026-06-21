@@ -11,17 +11,18 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$SCRIPT_DIR/check_helpers.sh"
 cd "$PROJECT_ROOT"
 
 [[ -f pubspec.yaml ]] || { echo "pubspec.yaml not found. Keep .codex at project root." >&2; exit 1; }
 
-flutter pub get
+invoke_native_command "Flutter dependency resolution" flutter pub get
 if [[ "$FIX_FORMAT" == "1" ]]; then
-  dart format .
+  invoke_native_command "Dart format write" dart format .
 else
-  dart format --set-exit-if-changed .
+  invoke_native_command "Dart format check" dart format --set-exit-if-changed .
 fi
-flutter analyze
-flutter test
+invoke_native_command "Flutter analyze" flutter analyze
+invoke_native_command "Flutter test" flutter test
 
-echo "QUICK CHECK PASSED"
+complete_codex_check "QUICK CHECK"

@@ -1,33 +1,36 @@
 # CODEX CHECKLIST
 
-## Truoc Khi Sua
+## Before Work
 
-- [ ] Xac dinh mode: coding, test, find-issues, create-issues, create-todo, fix-issues.
-- [ ] Xac dinh module chinh bang `.codex/PROJECT_MAP.md`.
-- [ ] Doc `AGENTS.md`, `PROJECT_MAP.md`, va `DOCS_WORKFLOW.md` neu co sua file/review/test/docs.
-- [ ] Neu task lien quan issue/todo/fix issue: doc `ISSUE_TODO_WORKFLOW.md`.
-- [ ] Neu task lien quan auth/access/membership/referral sale: doc `.codex/playbooks/access_membership_referral.md`.
-- [ ] Chi doc `docs/DD/**` khi user yeu cau ro.
-- [ ] Doc dung 1 playbook lien quan.
-- [ ] Dung `rg` tim usage truoc khi doi public API/provider/route/schema.
-- [ ] Khong tron mode: tim issue khong coding, tao todo khong fix, test khong sua code.
+- [ ] Choose one workflow in `.codex/workflows/`.
+- [ ] Choose one domain in `.codex/domains/` if task touches code/product.
+- [ ] Read `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, and `.codex/history/LEARNED_SKILLS.md`.
+- [ ] Read `.codex/task-skills/README.md` and the matching `.codex/task-skills/<task-key>.md` when present.
+- [ ] Read `.codex/DOCS_WORKFLOW.md` if code/test/docs/review/issues/todo/DD/context changes are expected.
+- [ ] Read `.codex/ISSUE_TODO_WORKFLOW.md` for issue/todo/fix-issue work.
+- [ ] Read BD/DD only when workflow requires it or user asks for it.
+- [ ] Use `rg` to confirm usage before changing public API, route, provider, callback, schema, or workflow contract.
+- [ ] Ask: how can this task use fewer tokens while producing equal or better work?
 
-## Khi Sua
+## During Work
 
-- [ ] Sua nho nhat du dung yeu cau.
-- [ ] Khong bypass UI -> Provider/Controller -> Repository -> Datasource -> DAO/API.
-- [ ] Khong them mock/fake/sample data vao production.
-- [ ] Khong hard-code secret/API key, khong sua `.env` that neu khong duoc yeu cau ro.
-- [ ] Khong tin client/local cache cho membership tier, sale status, referral tree, hoac commission.
-- [ ] User-facing copy tieng Viet co dau, dung giong Nami.
-- [ ] Log neu co phai co prefix module va khong lo secret/du lieu nhay cam.
+- [ ] Keep the patch scoped to the selected workflow.
+- [ ] Preserve `Presentation -> Provider/Controller -> Repository -> Datasource -> DAO/API`.
+- [ ] Do not add production mock/fake/sample data.
+- [ ] Do not edit real `.env` or expose secrets unless explicitly requested.
+- [ ] Do not trust client/local cache for membership, sale, referral, payment, commission, or quota.
+- [ ] Keep user-facing copy Vietnamese, Nami tone, no internal technical terms.
+- [ ] If schema changes: update version, migration, table, model, DAO, onCreate, datasource/repository, and tests.
+- [ ] Before expanding context or running broad checks, confirm the added cost improves the result.
 
-## Sau Khi Sua
+## After Work
 
-- [ ] Chay quick check hoac ghi ro ly do skip.
-- [ ] Neu doi schema: version + migration + table + model + DAO + onCreate + test.
-- [ ] Neu doi notification/native/build: chay full check/build APK neu moi truong cho phep.
-- [ ] Tao/cap nhat worklog trong `docs/worklog/<yyyy-mm-dd>/`.
-- [ ] Tao/cap nhat docs `features`, `fixbug`, `test`, `issues`, `todo` neu phat sinh.
-- [ ] File docs moi dung `NNN-...md` va dong dau `Commit de xuat:`.
-- [ ] Bao cao cuoi gom: file sua, docs tao/cap nhat, command, ket qua, rui ro.
+- [ ] Run targeted checks for changed scope.
+- [ ] Run quick/full check only when appropriate for runtime changes.
+- [ ] Create/update worklog under `docs/worklog/<yyyy-mm-dd>/`.
+- [ ] Add the worklog self-review: quality, completion, verification, token waste, next optimization, and task-skill to read next time.
+- [ ] Create/update feature/fixbug/test/issue/todo/DD docs when relevant.
+- [ ] If worklog changed, run `.codex/tools/update_worklog_learning.ps1`.
+- [ ] Confirm `.codex/history/SESSION_QUALITY_REVIEW.md` and `.codex/task-skills/*` reflect new lessons when worklog changed.
+- [ ] If `.codex` layout or repo tree changed, update `.codex/MAP_TREE.md`.
+- [ ] Report files changed, docs changed, commands/results, remaining risk, and completion percentage.

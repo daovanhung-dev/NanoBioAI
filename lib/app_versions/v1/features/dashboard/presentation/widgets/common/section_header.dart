@@ -23,7 +23,7 @@ class SectionHeader extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.12),
+            color: iconColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: Icon(icon, color: iconColor, size: 18),
