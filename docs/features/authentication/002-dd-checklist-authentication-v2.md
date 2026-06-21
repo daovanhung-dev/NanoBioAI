@@ -2,7 +2,7 @@ Commit de xuat: docs(auth): tao checklist DD authentication v2
 
 # Checklist DD Authentication V2
 
-Cap nhat gan nhat: 2026-06-20 sau phien code gaps authentication v2.
+Cap nhat gan nhat: 2026-06-21 sau phien toi uu auth theo luong he thong.
 
 ## Cach doc trang thai
 
@@ -17,7 +17,7 @@ Cap nhat gan nhat: 2026-06-20 sau phien code gaps authentication v2.
 |---|---|---:|---|---|
 | A. Database foundation | `03`, `database/*` | [M] | Da doc DD/SQL, khong chay SQL trong coding, app khong tu chen baseline profile sau sign-up. | Chay SQL theo `database/README.md`, verify integrity query 0 row, RLS smoke 2 tai khoan, backfill user cu neu co. |
 | B. Auth data/domain layer | `04`, `08`, `11`, `12`, `14` | [x] | Co commands/results/errors, `AuthRepository`, Supabase datasource, route-state resolver, validators, error mapping duplicate/neutral, last-login best-effort, delete qua Edge Function, contract tests khong lo service-role. | Co the bo sung fake Supabase datasource coverage sau neu can chi tiet hon. |
-| C. Presentation/routing | `07`, `08`, `11`, `14` | [x] | Co login/register/verify/forgot/reset/callback pages, AuthGate v2, deep link native, route theo Supabase session + email + onboarding status. | Manual test email verification/recovery link tren Supabase that. |
+| C. Presentation/routing | `07`, `08`, `11`, `14` | [x] | Co login/register/verify/forgot/reset/callback pages, AuthGate v2, deep link native, route theo Supabase session + email + onboarding status. Production `main.dart` chay `BioAIV2App/v2Router`; Splash giu guest flow nhung chuyen session hien co vao AuthGate; auth route dung constants chung. | Manual test email verification/recovery link tren Supabase that. |
 | D. Onboarding/profile integration | `09`, `10` | [x] | Onboarding mark `in_progress`, save cloud-first, set `completed` + timestamp, mirror SQLite bang auth UUID, local readers doc theo current auth UUID, co profile edit sau onboarding cloud-first + local mirror. | Can manual Supabase/RLS verify. |
 | E. Settings/account safety | `10`, `11`, `12` | [~] | Co UI doi mat khau/logout/request delete, confirm dialogs, route ve AuthGate, central user-scoped cache invalidation, Flutter khong lo service-role key. | Edge Function server-side/JWT/cascade delete va auth-user-change runtime smoke can manual verify. |
 
@@ -70,6 +70,7 @@ Cap nhat gan nhat: 2026-06-20 sau phien code gaps authentication v2.
 
 - [x] Co `LoginCommand`, login page, invalid input validation, neutral auth error mapping.
 - [x] AuthGate mapping: no session -> login, unverified -> verify, missing profile -> support, pending onboarding -> onboarding, completed -> menu/dashboard.
+- [x] AuthGate doc them `public.users.subscription_tier` nhu snapshot tin cay toi thieu, default an toan `free`.
 - [x] `last_login_at` best-effort, failure khong chan route.
 - [x] Unit test route-state resolver cover cac state chinh.
 - [x] Logout/delete clear Supabase session, local onboarding compatibility flag va user-scoped Riverpod providers/cache trung tam.
@@ -117,16 +118,16 @@ Cap nhat gan nhat: 2026-06-20 sau phien code gaps authentication v2.
 - [x] Co commands/results/states/errors theo contract.
 - [x] Datasource dung Supabase Auth/PostgREST/Functions dung scope.
 - [x] AuthGate la top-level route gate cua v2.
-- [~] Auth UI hien dung repository/provider truc tiep thay vi tao AuthController rieng; settings security actions dung shared service de khong tao phu thuoc v1 -> v2.
+- [x] Auth UI goi `AuthController` provider mong cho login/register/resend/recovery/reset/callback; settings security actions dung shared service de khong tao phu thuoc v1 -> v2.
 
 ### `15_TEST_ACCEPTANCE_AND_TRACEABILITY.md` - Test/acceptance
 
 - [x] Co unit tests cho route-state resolver va validators.
 - [x] Co widget smoke tests cho login/register.
-- [x] Targeted regression pass: auth v2, settings/profile contract, boundary, onboarding/dashboard/daily tracking targeted tu phien truoc.
+- [x] Targeted regression pass: auth v2, splash route decision, version boundary, settings/profile contract, onboarding/dashboard/daily tracking targeted tu phien truoc.
 - [~] Chua co fake datasource/controller tests cho tat ca TC-AUTH-01..35, nhung da bo sung contract/unit tests cho code gaps TC-AUTH-04, 10, 13, 15, 24, 26, 31, 32, 34.
 - [M] Chua co SQL integrity/RLS/manual Supabase verification.
-- [~] `flutter analyze` con fail 289 warning/info nen cua repo; filter file vua sua khong co issue.
+- [~] `flutter analyze` con fail 287 warning/info nen cua repo; targeted auth/splash/version tests pass.
 
 ## Traceability TC-AUTH
 
@@ -174,9 +175,11 @@ Cap nhat gan nhat: 2026-06-20 sau phien code gaps authentication v2.
 - Partial: A do manual database pending; E do Edge Function server-side/cascade manual pending; Test/traceability do analyzer nen va manual Supabase chua clean.
 - Chua lam trong repo: fake Supabase datasource test chi tiet cho tung TC-AUTH, manual RLS/email/recovery/Edge Function/backfill.
 - Manual pending: deploy SQL, integrity query, RLS two-account smoke, email/recovery link, Edge Function delete account.
+- Khong lam trong scope nay: quota/entitlement Free/Plus/FamilyPlus day du; `subscription_tier` chi moi la hook doc tu Supabase.
 
 ## Lien ket
 
 - Feature: [Authentication V2](001-feature-authentication-v2.md)
 - Test: [Test Authentication V2](../../test/authentication/001-test-authentication-v2.md)
 - Worklog coding: [Worklog Authentication V2](../../worklog/2026-06-20/002-worklog-authentication-v2.md)
+- Worklog auth flow: [Worklog Auth System Flow](../../worklog/2026-06-21/003-worklog-auth-system-flow.md)

@@ -15,17 +15,19 @@ Commit de xuat: feat(auth): hoan thanh authentication v2 theo BD/DD
 
 ## Luong hoat dong
 
-1. App v2 mo `AuthGate`.
-2. AuthGate doc session Supabase, email verification va `public.users.onboarding_status`.
-3. Chua login thi vao login/register.
-4. Chua verify email thi vao verify email.
-5. Profile bootstrap thieu thi hien man hinh ho tro/retry.
-6. `not_started`/`in_progress` thi vao onboarding.
-7. `completed` thi vao menu/dashboard v1.
+1. Production entrypoint `main.dart` chay `BioAIV2App` voi `v2Router`.
+2. Splash v1 van la `initialLocation`: neu co Supabase session thi vao `AuthGate`, neu chua co session thi di guest flow theo local onboarding flag.
+3. AuthGate doc session Supabase, email verification, `public.users.onboarding_status` va `subscription_tier`.
+4. Chua login thi vao login/register.
+5. Chua verify email thi vao verify email.
+6. Profile bootstrap thieu thi hien man hinh ho tro/retry.
+7. `not_started`/`in_progress` thi vao onboarding.
+8. `completed` thi vao menu/dashboard v1.
 
 ## Du lieu va luu tru
 
 - Nguon doc route: Supabase Auth + `public.users`.
+- `subscription_tier` duoc doc nhu snapshot/hook tin cay toi thieu, default an toan la `free`; chua mo quota/entitlement paid trong scope nay.
 - Onboarding cloud-first: update `users`, `health_profiles`, `lifestyle_habits`, replace/upsert collection rows co du lieu that, sau do set completed.
 - Mirror local: SQLite ghi bang auth UUID de dashboard/AI/notification hien tai tiep tuc doc dung user.
 - Database SQL: dung scripts trong `docs/DD/authentication/database/`, khong chay tu Flutter.
@@ -44,21 +46,23 @@ Commit de xuat: feat(auth): hoan thanh authentication v2 theo BD/DD
 - `lib/app_versions/v1/features/onboarding/` - save cloud-first roi mirror SQLite.
 - `lib/app_versions/v1/features/dashboard/` va `daily_health_tracking` - doc SQLite theo auth UUID neu co.
 - `.env.example`, Android/iOS config - deep link `nanobio://auth/callback`.
+- `lib/core/constants/routes/auth_route_paths.dart` - route auth dung chung cho v1/v2.
 
 ## Kiem chung
 
-- `dart format --set-exit-if-changed .`: PASS.
-- `flutter test test\architecture_preservation_property_test.dart test\app_versions\v2\features\auth test\architecture_version_boundary_test.dart test\widget_test.dart test\features\dashboard test\features\daily_health_tracking`: PASS - 63 tests.
-- `flutter analyze`: FAIL do 289 warning/info nen hien co cua repo; loc theo file auth/onboarding/dashboard vua sua khong co issue.
-- `.codex\tool\codex_quick_check.ps1` voi `-ExecutionPolicy Bypass`: log co 1 full-suite test fail doc lap o `test/features/features_hub/features_hub_page_test.dart` do khong tim thay text `AI Coach`.
+- 2026-06-21: `dart format --set-exit-if-changed .`: PASS sau lan format cuoi.
+- 2026-06-21: `flutter test test\app_versions\v2\features\auth test\app_versions\v1\features\splash test\architecture_version_boundary_test.dart`: PASS - 29 tests.
+- 2026-06-21: `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1`: PASS, script exit 0 va full suite pass 290 tests.
+- 2026-06-21: `flutter analyze`: FAIL do 287 warning/info nen hien co cua repo.
 
 ## Lien ket
 
 - Worklog: `../../worklog/2026-06-20/002-worklog-authentication-v2.md`
+- Worklog cap nhat auth flow: `../../worklog/2026-06-21/003-worklog-auth-system-flow.md`
 - Test: `../../test/authentication/001-test-authentication-v2.md`
 
 ## Rui ro
 
 - Can deploy/chay SQL Supabase theo `docs/DD/authentication/database/README.md` truoc khi test manual tren moi truong that.
 - Xoa tai khoan phu thuoc Edge Function `delete-account` duoc deploy rieng, Flutter khong chua service-role key.
-- Full suite hien con fail ngoai scope auth o `features_hub_page_test`; targeted auth/onboarding/dashboard regression da pass.
+- `subscription_tier` moi la hook doc tu Supabase, chua thay the DD entitlement/quota planned cho Free/Plus/FamilyPlus.

@@ -7,6 +7,7 @@ Commit de xuat: test(auth): kiem chung authentication v2
 - Loai test: unit/widget/targeted regression.
 - Module: authentication v2, onboarding lifecycle, dashboard user selection, daily health tracking user selection.
 - Case bao gom: route-state mapping, auth validators, auth page smoke render, v1/v2 architecture boundary, architecture preservation guard cap nhat UUID, onboarding widget regression, dashboard/daily tracking targeted tests.
+- Cap nhat 2026-06-21: production entrypoint v2, Splash route decision, shared auth route constants, AuthController presentation flow, `subscription_tier` resolver.
 - Case chua bao gom: manual Supabase email verification, RLS two-account smoke, Edge Function delete account.
 
 ## Moi truong
@@ -19,14 +20,22 @@ Commit de xuat: test(auth): kiem chung authentication v2
 
 - `dart format --set-exit-if-changed .`
 - `flutter analyze`
+- `flutter test test\app_versions\v2\features\auth test\app_versions\v1\features\splash test\architecture_version_boundary_test.dart`
 - `flutter test test\architecture_preservation_property_test.dart test\app_versions\v2\features\auth test\architecture_version_boundary_test.dart test\widget_test.dart test\features\dashboard test\features\daily_health_tracking`
 - `flutter test test\app_versions\v2\features\auth test\features\settings test\architecture_version_boundary_test.dart`
 - `flutter test test\features\features_hub\features_hub_page_test.dart`
 - `powershell -NoProfile -ExecutionPolicy Bypass -File .codex\tool\codex_quick_check.ps1`
+- `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1`
 
-## Ket qua
+## Ket qua hien tai
 
-- PASS - format check: 370 files, 0 changed sau lan format cuoi.
+- PASS - 2026-06-21 format check: 386 files, 0 changed sau lan format cuoi.
+- PASS - 2026-06-21 auth flow targeted tests: 29 tests pass, gom auth v2, splash route decision va architecture version boundary.
+- PASS - 2026-06-21 quick check: script exit 0, in `QUICK CHECK PASSED`; full suite pass 290 tests.
+- FAIL - 2026-06-21 `flutter analyze`: repo dang co 287 warning/info lint nen hien co.
+
+## Ket qua lich su truoc 2026-06-21
+
 - PASS - targeted tests: 63 tests pass.
 - PASS - code gaps targeted tests: 79 tests pass, gom auth v2, settings datasource/validators, profile update contract, account security contract, user-scoped cache contract va version boundary.
 - PASS - broader authentication regression: 126 tests pass, gom architecture preservation, auth v2, settings, boundary, widget onboarding, dashboard va daily health tracking.
@@ -39,6 +48,7 @@ Commit de xuat: test(auth): kiem chung authentication v2
 
 - Feature: `../../features/authentication/001-feature-authentication-v2.md`
 - Worklog: `../../worklog/2026-06-20/002-worklog-authentication-v2.md`
+- Worklog auth flow: `../../worklog/2026-06-21/003-worklog-auth-system-flow.md`
 
 ## Rui ro
 
