@@ -34,6 +34,14 @@ Commit đề xuất: feat(dashboard): thêm Nami companion cho trang chủ
 - `flutter test test/features/dashboard test/features/daily_health_tracking test/features/lifestyle_schedule test/features/meal_plan`: PASS, 46 tests passed.
 - `git diff --check`: PASS, chỉ có warning LF/CRLF trên Windows.
 
+## Cap nhat 2026-06-21 - Auth guard tao du lieu 7 ngay
+- Them `test/app_versions/v1/services/ai/generated_plan_service_auth_test.dart`.
+- PASS - `flutter test test/app_versions/v1/services/ai/generated_plan_service_auth_test.dart`: 2 tests pass.
+- PASS - `flutter test test/features/dashboard test/app_versions/v1/services/ai/generated_plan_service_auth_test.dart`: 13 tests pass.
+- PASS - `flutter test test/architecture_version_boundary_test.dart test/app_versions/v1/services/ai/generated_plan_service_auth_test.dart`: 9 tests pass.
+- PASS - `dart format --set-exit-if-changed` tren cac file chinh vua sua: 0 changed.
+- PARTIAL - `dart analyze` tren cac file chinh vua sua: chi con 16 info `withOpacity` nen trong `dashboard_page.dart`, khong co loi moi tu auth guard.
+
 ## Ghi chú
 - `dart`/`flutter` timeout trong sandbox, validation đã chạy ngoài sandbox sau khi được phê duyệt.
 - Analyzer vẫn còn warning/info nên nếu CI dùng fatal warnings, cần xử lý lint nền riêng với feature này.

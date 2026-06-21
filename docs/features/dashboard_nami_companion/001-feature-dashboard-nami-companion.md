@@ -56,6 +56,12 @@ Commit đề xuất: feat(dashboard): thêm Nami companion cho trang chủ
 - `lib/features/dashboard/presentation/widgets/companion/dashboard_companion_widgets.dart`
 - `lib/shared/widgets/ai_chat_fab.dart`
 
+## Cap nhat 2026-06-21
+- Tao du lieu lich trinh AI 7 ngay tren Dashboard yeu cau co Supabase session.
+- Khi chua dang nhap, `GeneratedPlanService.generateNextPlan()` nem `DashboardGenerationAuthRequiredException` truoc khi goi AI, save meal plan, seed schedule hoac tao reminder.
+- Nami hien copy dang nhap rieng tren Dashboard thay vi loi chung.
+- Guest onboarding van hoan tat duoc; callback tao plan se skip neu chua co session va khong tao du lieu moi.
+
 ## TODO
 - AI chat route chưa support `extra`; cần thêm route/context contract trước khi truyền Dashboard context vào `AIChatScreen`.
 - Score breakdown hiện là breakdown local từ metrics Dashboard, không phải công thức điểm persisted/có version trong database.
