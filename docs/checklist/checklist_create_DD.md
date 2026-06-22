@@ -7,7 +7,7 @@ Commit de xuat: docs(dd): cap nhat checklist tao DD
 **BD nguồn:** `docs/BD/project_flow/BD_Product_Flow_Membership_Sale.md` (`BD-BIOAI-PRODUCT-FLOW-001`)  
 **DD folder:** `docs/DD/product_flow/`  
 **Checklist nguồn:** `docs/BD/project_flow/checklist_create_DD_product_flow_membership_sale.md`  
-**Ngày cập nhật:** 2026-06-21  
+**Ngày cập nhật:** 2026-06-22
 
 | # | DD | Status | BD source | Output path | Ngày hoàn thành | Ghi chú |
 |---:|---|---|---|---|---|---|
@@ -34,3 +34,21 @@ Commit de xuat: docs(dd): cap nhat checklist tao DD
 - `Done` trong checklist này nghĩa là DD đã được tạo, không có nghĩa DD đã Ready for implementation.
 - Các DD còn phụ thuộc Q-01..Q-10 giữ `Status: Draft` và phải được PO/Tech Lead chốt trước khi coding.
 
+## Chức năng chưa hoàn thành theo DD
+
+> Cập nhật 2026-06-22: các mục dưới đây chưa được xác nhận hoàn thành trong DD vì còn `Status: Draft`, còn open decision, thiếu dependency, hoặc test matrix vẫn ở `Draft`.
+
+| Nhóm chức năng | DD liên quan | Trạng thái đơn giản | Ghi chú |
+|---|---|---|---|
+| Supabase foundation, RLS, migration cho profile, health subject, membership, quota, FamilyPlus, Sale/referral, payment, commission | 03 | Chưa hoàn thành | Cần review sandbox/staging; còn Q-01/Q-02/Q-04/Q-06/Q-07/Q-09/Q-10; dependency `docs/DD/authentication/*` đang không có trong working tree hiện tại. |
+| Guest onboarding, sinh lịch trình AI lần đầu, chặn tạo lại và chặn module ngoài V1 | 04, 12 | Chưa xác nhận hoàn thành | Còn Q-01/Q-02; test TC-PF-01..04 và TC-PF-29..32 vẫn `Draft`. |
+| Auth membership access gate, effective access, Sale axis độc lập | 05 | Chưa hoàn thành | Còn Q-06; phụ thuộc Auth DD; test TC-PF-05..08 vẫn `Draft`. |
+| Free quota cho AI Chat 3 lượt/ngày và tạo lịch trình 3 lần/tháng | 06 | Chưa hoàn thành | Còn Q-03/Q-04 và cần trusted quota layer/RPC; test TC-PF-09..12 vẫn `Draft`. |
+| Health score theo lịch sử hoàn thành lịch trình | 07 | Chưa hoàn thành | Còn Q-05 về công thức điểm; test TC-PF-13..15 vẫn `Draft`. |
+| Plus goal roadmap và advanced tracking | 08 | Chưa hoàn thành | Chỉ là planned capability; cần DD chi tiết `Ready`; còn Q-05/Q-06. |
+| FamilyPlus quản lý thành viên, health subject và lịch trình theo từng member | 09, 12 | Chưa hoàn thành | Còn Q-06/Q-07 về lifecycle, giới hạn member, quyền và consent; test TC-PF-18..20 vẫn `Draft`. |
+| Sale/referral registration, referral code, quan hệ giới thiệu | 10 | Chưa hoàn thành | Còn Q-08/Q-09 về điều kiện Sale, duy trì/khóa Sale và anti-fraud; test TC-PF-21..23 vẫn `Draft`. |
+| Payment commission hai tầng và Sale dashboard/history | 11 | Chưa hoàn thành | Còn Q-09/Q-10 về refund/chargeback, đối soát, hủy hoa hồng, payout; test TC-PF-24..28 vẫn `Draft`. |
+| Error/security/privacy và Flutter layer contracts | 13, 14 | Chưa hoàn thành | Backend/quota/Sale contracts chưa approved; test TC-PF-33..38 vẫn `Draft`. |
+| Test acceptance toàn bộ product flow | 15 | Chưa hoàn thành | 38/38 test case trong DD đang `Draft`; security checklist chưa tick. |
+| Các phase triển khai B..G | 16 | Chưa hoàn thành | Phase B Supabase, C Guest hardening, D Auth/Free quota, E Health score, F Plus/FamilyPlus, G Sale/payment đều chưa có gate pass trong DD. |

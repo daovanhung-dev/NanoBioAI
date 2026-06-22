@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 26
+- Total worklogs: 30
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -35,3 +35,7 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-21 | docs | docs-context | Product Flow, Membership, Quota, FamilyPlus, Sale/referral, DD workflow. | [Worklog - Product Flow DD Design](../../docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md) |
 | 2026-06-22 | docs-context | docs-context | `.codex`, workflow router, domain context, worklog learning, project skill. | [Worklog - Codex Worktype History Skill](../../docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md) |
 | 2026-06-22 | docs-context | docs-context | `.codex`, history learning, task-skills, project skill | [Worklog - Codex Self Optimization Task Skills](../../docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md) |
+| 2026-06-22 | docs-context | docs-context | `.codex`, root `AGENTS.md`, `.agents` skill bridge | [Worklog - Codex context token optimization](../../docs/worklog/2026-06-22/003-worklog-codex-context-token-optimization.md) |
+| 2026-06-22 | docs-dd | docs-dd | `docs/DD/product_flow`, `docs/checklist` | [Worklog - DD incomplete functions checklist](../../docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md) |
+| 2026-06-22 | docs-dd | docs-dd | `docs/DD/product_flow`, `docs/checklist/checklist_develop_DD.md`, source access/membership/quota/v3/sale. | [Worklog - DD develop checklist](../../docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md) |
+| 2026-06-22 | docs-context / audit checklist | supabase-schema | DB local, Supabase draft, `lib/app_versions/v1`, `lib/app_versions/v2`, `lib/app_versions/v3`, `lib/sale_referral` | [Worklog - Audit module va flow san pham](../../docs/worklog/2026-06-22/006-worklog-module-flow-audit.md) |

@@ -1,6 +1,6 @@
 # AGENTS - NanoBio / BioAI
 
-Entrypoint cho Codex trong repo nay. Muc tieu: chon dung workflow, doc dung domain, giu kien truc va cap nhat history sau moi phien co worklog.
+Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge auto-discovery va phai tro ve file nay. Muc tieu: chon dung workflow, doc dung domain, giu kien truc va cap nhat history sau moi phien co worklog.
 
 ## Snapshot
 
@@ -22,6 +22,8 @@ Always start with:
 5. One domain from `.codex/domains/` when task touches code/product
 
 If the user only asks to read context and does not name a work type, read `.codex/workflows/context-read.md`, `.codex/workflows/README.md`, `.codex/domains/README.md`, `.codex/task-skills/README.md`, and `.codex/history/WORKLOG_INDEX.md`.
+
+Do not read `.codex/MAP_TREE.md`, `.codex/history/RISK_HISTORY.md`, raw `docs/worklog/**/*.md`, raw `lib/**`, raw `test/**`, or all `docs/DD/**` by default. Open them only when the selected workflow requires exact inventory, historical evidence, source inspection, tests, or DD details.
 
 ## Workflow Router
 
@@ -47,6 +49,8 @@ Do not mix modes unless the user explicitly asks for a chain.
 After choosing the workflow, read `.codex/task-skills/README.md` and then the matching task file if present. If no exact task key exists, continue with the workflow and record the missing/needed task-skill in the worklog self-review.
 
 Before expanding context, ask and answer: how can this task use fewer tokens while producing equal or better work? Prefer router files, indexes, `rg`, and targeted file reads before raw directories, raw worklogs, all DD files, or broad test output.
+
+Read `.codex/history/OPEN_RISKS.md` only when the task touches release readiness, auth, Supabase, DD status, or testing.
 
 ## Domain Router
 

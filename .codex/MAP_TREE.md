@@ -1,633 +1,113 @@
-﻿# MAP_TREE - NanoBio / BioAI
+# MAP_TREE - NanoBio / BioAI
 
-Generated inventory for source, docs, tests, and .codex context files. Build/cache/binary-heavy paths are omitted.
+Compact inventory for routing. This file is not part of the default read pack.
+Read it only when changing context layout, checking paths, or regenerating a
+project inventory. Use `rg --files` for the current truth.
 
-## .codex
+## Default Context Roots
 
-- `.codex/AGENTS.md`
-- `.codex/CHECKLIST.md`
-- `.codex/DOCS_WORKFLOW.md`
-- `.codex/domains/access-membership-referral.md`
-- `.codex/domains/ai-service.md`
-- `.codex/domains/dashboard.md`
-- `.codex/domains/health-tracking.md`
-- `.codex/domains/lifestyle-schedule.md`
-- `.codex/domains/notification.md`
-- `.codex/domains/onboarding.md`
-- `.codex/domains/README.md`
-- `.codex/domains/sqlite.md`
-- `.codex/domains/ui-nami.md`
-- `.codex/history/HISTORY_REFRESH.md`
-- `.codex/history/LEARNED_SKILLS.md`
-- `.codex/history/OPEN_RISKS.md`
-- `.codex/history/SESSION_QUALITY_REVIEW.md`
-- `.codex/history/WORKLOG_INDEX.md`
-- `.codex/ISSUE_TODO_WORKFLOW.md`
-- `.codex/MAP_TREE.md`
-- `.codex/playbooks/access_membership_referral.md`
-- `.codex/playbooks/ai_service.md`
-- `.codex/playbooks/dashboard.md`
-- `.codex/playbooks/dd_creation.md`
-- `.codex/playbooks/health_tracking.md`
-- `.codex/playbooks/lifestyle_schedule.md`
-- `.codex/playbooks/notification.md`
-- `.codex/playbooks/onboarding.md`
-- `.codex/playbooks/sqlite.md`
-- `.codex/playbooks/ui_nami.md`
-- `.codex/PROJECT_MAP.md`
-- `.codex/README.md`
-- `.codex/skills/nanobio-project-agent/agents/openai.yaml`
-- `.codex/skills/nanobio-project-agent/references/context-router.md`
-- `.codex/skills/nanobio-project-agent/references/domain-map.md`
-- `.codex/skills/nanobio-project-agent/references/worklog-learning.md`
-- `.codex/skills/nanobio-project-agent/SKILL.md`
-- `.codex/task-skills/coding.md`
-- `.codex/task-skills/coding-refactor.md`
-- `.codex/task-skills/coding-test-docs.md`
-- `.codex/task-skills/create-todo.md`
-- `.codex/task-skills/docs.md`
-- `.codex/task-skills/docs-coding.md`
-- `.codex/task-skills/docs-context.md`
-- `.codex/task-skills/docs-context-update.md`
-- `.codex/task-skills/feature.md`
-- `.codex/task-skills/feature-dashboard-ui-data-write-path.md`
-- `.codex/task-skills/fix.md`
-- `.codex/task-skills/fix-flow-d-li-u.md`
-- `.codex/task-skills/fix-issues.md`
-- `.codex/task-skills/fix-ui-copy.md`
-- `.codex/task-skills/README.md`
-- `.codex/task-skills/review-audit-docs.md`
-- `.codex/task-skills/sua-docs-thiet-ke-lai-tai-lieu.md`
-- `.codex/task-skills/unknown.md`
-- `.codex/tool/codex_check.ps1`
-- `.codex/tool/codex_check.sh`
-- `.codex/tool/codex_quick_check.ps1`
-- `.codex/tool/codex_quick_check.sh`
-- `.codex/tools/update_worklog_learning.ps1`
-- `.codex/workflows/bugfix.md`
-- `.codex/workflows/coding.md`
+- Root bridge: `AGENTS.md`
+- Canonical agent entrypoint: `.codex/AGENTS.md`
+- Source/router map: `.codex/PROJECT_MAP.md`
+- Context read workflow: `.codex/workflows/context-read.md`
+- Docs/context workflow: `.codex/workflows/docs-context.md`
+- Worklog rules: `.codex/DOCS_WORKFLOW.md`
+- Project-local skill: `.codex/skills/nanobio-project-agent/SKILL.md`
+- Repo-discovered skill bridge: `.agents/skills/nanobio-project-agent/SKILL.md`
+
+## .codex Layout
+
+- `.codex/workflows/`: one primary workflow per task.
+- `.codex/domains/`: one domain context when task touches code/product.
+- `.codex/task-skills/`: generated canonical task skills.
+- `.codex/history/`: generated memory from worklogs.
+- `.codex/skills/nanobio-project-agent/`: canonical project skill and references.
+- `.codex/tools/`: context/history validation and refresh scripts.
+- `.codex/tool/`: Flutter/Dart validation wrappers.
+- `.codex/playbooks/` and `.codex/workRule/`: legacy aliases only; not default context.
+
+## Canonical Workflows
+
+- `.codex/workflows/README.md`
 - `.codex/workflows/context-read.md`
+- `.codex/workflows/coding.md`
+- `.codex/workflows/bugfix.md`
+- `.codex/workflows/fix-issues.md`
+- `.codex/workflows/test.md`
+- `.codex/workflows/find-issues.md`
 - `.codex/workflows/create-issues.md`
 - `.codex/workflows/create-todo.md`
-- `.codex/workflows/docs-context.md`
 - `.codex/workflows/docs-dd.md`
-- `.codex/workflows/find-issues.md`
-- `.codex/workflows/fix-issues.md`
-- `.codex/workflows/README.md`
+- `.codex/workflows/docs-context.md`
 - `.codex/workflows/refactor-scaffold.md`
 - `.codex/workflows/supabase-schema.md`
-- `.codex/workflows/test.md`
-- `.codex/workRule/develop.md`
-- `.codex/workRule/fix.md`
-- `.codex/workRule/test.md`
 
-## docs
+## Domain Contexts
 
-- `docs/BD/authentication/BD_Authentication_Registration_Login_NanoBio.md`
-- `docs/BD/project_flow/BD_Product_Flow_Membership_Sale.md`
-- `docs/BD/project_flow/checklist_create_DD_product_flow_membership_sale.md`
-- `docs/checklist/checklist_create_DD.md`
-- `docs/DD/authentication/00_READ_FIRST.md`
-- `docs/DD/authentication/01_DOCUMENT_MAP.md`
-- `docs/DD/authentication/02_MODULE_OVERVIEW.md`
-- `docs/DD/authentication/03_DATA_MODEL_RLS_AND_MIGRATIONS.md`
-- `docs/DD/authentication/04_FEATURE_REGISTRATION.md`
-- `docs/DD/authentication/05_FEATURE_PROFILE_BOOTSTRAP.md`
-- `docs/DD/authentication/06_FEATURE_MANUAL_ACCOUNT_CREATION.md`
-- `docs/DD/authentication/07_FEATURE_EMAIL_VERIFICATION.md`
-- `docs/DD/authentication/08_FEATURE_LOGIN_SESSION_AUTH_GATE.md`
-- `docs/DD/authentication/09_FEATURE_ONBOARDING_COMPLETION.md`
-- `docs/DD/authentication/10_FEATURE_PROFILE_UPDATE.md`
-- `docs/DD/authentication/11_FEATURE_PASSWORD_RECOVERY_AND_CHANGE.md`
-- `docs/DD/authentication/12_FEATURE_LOGOUT_AND_ACCOUNT_DELETION.md`
-- `docs/DD/authentication/13_ERROR_HANDLING_AND_DATA_RECOVERY.md`
-- `docs/DD/authentication/14_FLUTTER_LAYER_CONTRACTS.md`
-- `docs/DD/authentication/15_TEST_ACCEPTANCE_AND_TRACEABILITY.md`
-- `docs/DD/authentication/16_IMPLEMENTATION_ORDER.md`
-- `docs/DD/authentication/database/001_add_auth_lifecycle_fields.sql`
-- `docs/DD/authentication/database/002_verify_auth_profile_integrity.sql`
-- `docs/DD/authentication/database/prerequisites/20260620_02_auth_profile_bootstrap.sql`
-- `docs/DD/authentication/database/prerequisites/20260620_nanobio_multitenant.sql`
-- `docs/DD/authentication/database/README.md`
-- `docs/DD/authentication/guides/00_READ_ORDER.md`
-- `docs/DD/authentication/guides/01_HOW_TO_CREATE_DD_FROM_BD.md`
-- `docs/DD/authentication/guides/02_DD_AUTHORING_RULES.md`
-- `docs/DD/authentication/guides/03_CODEX_READING_WORKFLOW.md`
-- `docs/DD/authentication/references/BD_AUTH_001.md`
-- `docs/DD/authentication/templates/DD_DATABASE_TEMPLATE.md`
-- `docs/DD/authentication/templates/DD_FEATURE_TEMPLATE.md`
-- `docs/DD/authentication/templates/DD_FUNCTION_TEMPLATE.md`
-- `docs/DD/authentication/templates/DD_MODULE_TEMPLATE.md`
-- `docs/DD/authentication/templates/DD_TEST_SCENARIO_TEMPLATE.md`
-- `docs/DD/product_flow/00_READ_FIRST.md`
-- `docs/DD/product_flow/01_DOCUMENT_MAP.md`
-- `docs/DD/product_flow/02_MODULE_OVERVIEW.md`
-- `docs/DD/product_flow/03_DATA_MODEL_SUPABASE_RLS_AND_MIGRATIONS.md`
-- `docs/DD/product_flow/04_FEATURE_GUEST_ONBOARDING_INITIAL_SCHEDULE.md`
-- `docs/DD/product_flow/05_FEATURE_AUTH_MEMBERSHIP_ACCESS_GATE.md`
-- `docs/DD/product_flow/06_FEATURE_FREE_QUOTA_AI_CHAT_AND_SCHEDULE.md`
-- `docs/DD/product_flow/07_FEATURE_HEALTH_SCORE_SCHEDULE_COMPLETION.md`
-- `docs/DD/product_flow/08_FEATURE_PLUS_GOAL_ROADMAP_ADVANCED_TRACKING.md`
-- `docs/DD/product_flow/09_FEATURE_FAMILYPLUS_MEMBER_HEALTH_AND_SCHEDULE.md`
-- `docs/DD/product_flow/10_FEATURE_SALE_REFERRAL_REGISTRATION.md`
-- `docs/DD/product_flow/11_FEATURE_PAYMENT_COMMISSION_TWO_LEVEL.md`
-- `docs/DD/product_flow/12_FEATURE_NOTIFICATION_SCHEDULE_REMINDERS.md`
-- `docs/DD/product_flow/13_ERROR_HANDLING_SECURITY_AND_PRIVACY.md`
-- `docs/DD/product_flow/14_FLUTTER_LAYER_CONTRACTS.md`
-- `docs/DD/product_flow/15_TEST_ACCEPTANCE_AND_TRACEABILITY.md`
-- `docs/DD/product_flow/16_IMPLEMENTATION_ORDER.md`
-- `docs/features/ai-generated-plan/001-feature-ai-generated-plan.md`
-- `docs/features/authentication/001-feature-authentication-v2.md`
-- `docs/features/authentication/002-dd-checklist-authentication-v2.md`
-- `docs/features/authentication/003-feature-riverpod-account-state.md`
-- `docs/features/dashboard_nami_companion/001-feature-dashboard-nami-companion.md`
-- `docs/features/features-hub-expansion/001-feature-features-hub-expansion.md`
-- `docs/features/onboarding-auth-sync/001-feature-onboarding-auth-sync.md`
-- `docs/features/onboarding-dashboard-refresh/001-feature-onboarding-dashboard-refresh.md`
-- `docs/features/project-scaffold/001-feature-project-scaffold.md`
-- `docs/fixbug/ai-chat-dotenv-uninitialized/001-fixbug-ai-chat-dotenv-uninitialized.md`
-- `docs/issues/ai-chat-dotenv-uninitialized/001-issue-ai-chat-dotenv-uninitialized.md`
-- `docs/issues/ai-chat-unbounded-context-tokens/001-issue-ai-chat-unbounded-context-tokens.md`
-- `docs/issues/ai-raw-payload-logging/001-issue-ai-raw-payload-logging.md`
-- `docs/issues/auth-guards-disabled/001-issue-auth-guards-disabled.md`
-- `docs/issues/features-hub-expansion-not-wired/001-issue-features-hub-expansion-not-wired.md`
-- `docs/issues/features-hub-widget-test-stale/001-issue-features-hub-widget-test-stale.md`
-- `docs/issues/new-care-pages-session-only-state/001-issue-new-care-pages-session-only-state.md`
-- `docs/issues/onboarding-sensitive-snapshot-logging/001-issue-onboarding-sensitive-snapshot-logging.md`
-- `docs/issues/release-analyze-red-290-issues/001-issue-release-analyze-red-290-issues.md`
-- `docs/issues/release-format-dry-run-fails-new-pages/001-issue-release-format-dry-run-fails-new-pages.md`
-- `docs/issues/release-test-suite-fails/001-issue-release-test-suite-fails.md`
-- `docs/supabase/00-system-database-design.md`
-- `docs/supabase/01-core-auth-profile.sql`
-- `docs/supabase/02-health-and-schedule.sql`
-- `docs/supabase/03-membership-quota.sql`
-- `docs/supabase/04-family-plus.sql`
-- `docs/supabase/05-sale-referral-commission.sql`
-- `docs/supabase/06-rls-policy-matrix.md`
-- `docs/supabase/07-seed-reference-data.sql`
-- `docs/supabase/08-acceptance-checks.md`
-- `docs/supabase/09-dev-seed-membership-test-accounts.sql`
-- `docs/supabase/README.md`
-- `docs/test/authentication/001-test-authentication-v2.md`
-- `docs/test/authentication/002-test-riverpod-account-state.md`
-- `docs/test/dashboard_nami_companion/001-test-dashboard-nami-companion.md`
-- `docs/test/onboarding-auth-sync/001-test-onboarding-auth-sync.md`
-- `docs/todo/ai-chat-dotenv-uninitialized/001-todo-ai-chat-dotenv-uninitialized.md`
-- `docs/todo/ai-chat-unbounded-context-tokens/001-todo-ai-chat-unbounded-context-tokens.md`
-- `docs/todo/ai-raw-payload-logging/001-todo-ai-raw-payload-logging.md`
-- `docs/todo/auth-guards-disabled/001-todo-auth-guards-disabled.md`
-- `docs/todo/features-hub-expansion-not-wired/001-todo-features-hub-expansion-not-wired.md`
-- `docs/todo/features-hub-widget-test-stale/001-todo-features-hub-widget-test-stale.md`
-- `docs/todo/issue-todo-checklist/001-todo-issue-todo-checklist.md`
-- `docs/todo/new-care-pages-session-only-state/001-todo-new-care-pages-session-only-state.md`
-- `docs/todo/onboarding-sensitive-snapshot-logging/001-todo-onboarding-sensitive-snapshot-logging.md`
-- `docs/todo/release-analyze-red-290-issues/001-todo-release-analyze-red-290-issues.md`
-- `docs/todo/release-format-dry-run-fails-new-pages/001-todo-release-format-dry-run-fails-new-pages.md`
-- `docs/todo/release-test-suite-fails/001-todo-release-test-suite-fails.md`
-- `docs/worklog/2026-06-19/001-worklog-codex-context-optimization.md`
-- `docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md`
-- `docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md`
-- `docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md`
-- `docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md`
-- `docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md`
-- `docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md`
-- `docs/worklog/2026-06-19/008-worklog-dd-redesign.md`
-- `docs/worklog/2026-06-19/009-worklog-codex-full-optimization.md`
-- `docs/worklog/2026-06-19/010-worklog-create-todos-from-issues.md`
-- `docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md`
-- `docs/worklog/2026-06-19/012-worklog-issue-todo-checklist.md`
-- `docs/worklog/2026-06-20/001-worklog-onboarding-dashboard-refresh.md`
-- `docs/worklog/2026-06-20/002-worklog-authentication-v2.md`
-- `docs/worklog/2026-06-20/003-worklog-authentication-dd-checklist.md`
-- `docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md`
-- `docs/worklog/2026-06-20/005-worklog-codex-project-flow.md`
-- `docs/worklog/2026-06-21/001-worklog-project-scaffold.md`
-- `docs/worklog/2026-06-21/002-worklog-supabase-database-draft.md`
-- `docs/worklog/2026-06-21/003-worklog-auth-system-flow.md`
-- `docs/worklog/2026-06-21/004-worklog-dashboard-auth-generation-guard.md`
-- `docs/worklog/2026-06-21/005-worklog-riverpod-account-state.md`
-- `docs/worklog/2026-06-21/006-worklog-onboarding-auth-sync.md`
-- `docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md`
-- `docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md`
-- `docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md`
+- `.codex/domains/README.md`
+- `.codex/domains/dashboard.md`
+- `.codex/domains/onboarding.md`
+- `.codex/domains/ai-service.md`
+- `.codex/domains/access-membership-referral.md`
+- `.codex/domains/notification.md`
+- `.codex/domains/sqlite.md`
+- `.codex/domains/ui-nami.md`
+- `.codex/domains/health-tracking.md`
+- `.codex/domains/lifestyle-schedule.md`
 
-## lib
+## Generated Memory
 
-- `lib/app_versions/v1/app/bio_ai_v1_app.dart`
-- `lib/app_versions/v1/features/ai_chat/ai_chat.dart`
-- `lib/app_versions/v1/features/ai_chat/data/models/chat_message_model.dart`
-- `lib/app_versions/v1/features/ai_chat/domain/entities/chat_message_entity.dart`
-- `lib/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository.dart`
-- `lib/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository_impl.dart`
-- `lib/app_versions/v1/features/ai_chat/presentation/controllers/ai_chat_controller.dart`
-- `lib/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart`
-- `lib/app_versions/v1/features/ai_chat/providers/ai_chat_providers.dart`
-- `lib/app_versions/v1/features/auth/presentation/pages/v1_auth_entry_page.dart`
-- `lib/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart`
-- `lib/app_versions/v1/features/community/presentation/pages/community_page.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/data/datasources/daily_health_tracking_local_datasource.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/data/models/daily_health_ai_task_normalizer.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/data/models/daily_health_task_model.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_summary_entity.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_task_entity.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/domain/repositories/daily_health_tracking_repository.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/domain/repositories/daily_health_tracking_repository_impl.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/domain/services/daily_health_task_generator.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/presentation/controllers/daily_health_tracking_controller.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/presentation/controllers/daily_health_tracking_state.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart`
-- `lib/app_versions/v1/features/daily_health_tracking/providers/daily_health_tracking_provider.dart`
-- `lib/app_versions/v1/features/dashboard/dashboard.dart`
-- `lib/app_versions/v1/features/dashboard/data/datasources/dashboard_dynamic_local_datasource.dart`
-- `lib/app_versions/v1/features/dashboard/data/datasources/dashboard_local_datasource.dart`
-- `lib/app_versions/v1/features/dashboard/data/models/dashboard_health_data_model.dart`
-- `lib/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart`
-- `lib/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart`
-- `lib/app_versions/v1/features/dashboard/domain/entities/dashboard_health_input.dart`
-- `lib/app_versions/v1/features/dashboard/domain/entities/dashboard_health_status.dart`
-- `lib/app_versions/v1/features/dashboard/domain/repositories/dashboard_repository.dart`
-- `lib/app_versions/v1/features/dashboard/domain/repositories/dashboard_repository_impl.dart`
-- `lib/app_versions/v1/features/dashboard/domain/services/dashboard_companion_service.dart`
-- `lib/app_versions/v1/features/dashboard/domain/services/dashboard_health_calculator.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/enums/insight_type.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/mappers/dashboard_health_status_mapper.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/pages/dashboard_page.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/pages/menu_page.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/utils/dashboard_helpers.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/common/section_header.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/companion/dashboard_companion_widgets.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/goals/goal_chip.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/goals/goal_chips_grid.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/goals/goal_data.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/goals/goal_progress_row.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/goals/goal_progress_section.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/health_status/health_metrics_overview_section.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/hero/header_stat_pill.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/insights/ai_insight_section.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/insights/insight_card.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/insights/insight_data.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/lifestyle/conditions_card.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/lifestyle/lifestyle_metric_card.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/score/score_metric_row.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/score/score_ring_painter.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/states/dashboard_error.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/states/dashboard_loading.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/states/skeleton_box.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/stats/stat_card.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/stats/stat_item.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/timeline/daily_timeline.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/timeline/timeline_event.dart`
-- `lib/app_versions/v1/features/dashboard/presentation/widgets/timeline/timeline_row.dart`
-- `lib/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart`
-- `lib/app_versions/v1/features/dashboard/providers/dashboard_health_status_provider.dart`
-- `lib/app_versions/v1/features/dashboard/providers/dashboard_provider.dart`
-- `lib/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart`
-- `lib/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart`
-- `lib/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/data/models/exercise_task_model.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/data/models/exercise_tasks_ai_normalizer.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/domain/entities/lifestyle_schedule_summary_entity.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/domain/repositories/lifestyle_schedule_repository.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/domain/repositories/lifestyle_schedule_repository_impl.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/presentation/controllers/lifestyle_schedule_controller.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/presentation/controllers/lifestyle_schedule_state.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart`
-- `lib/app_versions/v1/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart`
-- `lib/app_versions/v1/features/meal_plan/data/daos/meal_plan_dao.dart`
-- `lib/app_versions/v1/features/meal_plan/data/datasources/meal_plan_local_datasource.dart`
-- `lib/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart`
-- `lib/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart`
-- `lib/app_versions/v1/features/meal_plan/domain/entities/meal_plan_entity.dart`
-- `lib/app_versions/v1/features/meal_plan/domain/repositories/meal_plan_repository.dart`
-- `lib/app_versions/v1/features/meal_plan/domain/repositories/meal_plan_repository_impl.dart`
-- `lib/app_versions/v1/features/meal_plan/presentation/controllers/meal_plan_controller.dart`
-- `lib/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart`
-- `lib/app_versions/v1/features/meal_plan/providers/meal_plan_provider.dart`
-- `lib/app_versions/v1/features/nutrition/presentation/pages/nutrition_page.dart`
-- `lib/app_versions/v1/features/nutrition/providers/nutrition_provider.dart`
-- `lib/app_versions/v1/features/onboarding/data/datasource/onboarding_local_datasource.dart`
-- `lib/app_versions/v1/features/onboarding/data/models/onboarding_model.dart`
-- `lib/app_versions/v1/features/onboarding/domain/entities/onboarding_entity.dart`
-- `lib/app_versions/v1/features/onboarding/domain/repositories/ai_repository.dart`
-- `lib/app_versions/v1/features/onboarding/domain/repositories/onboarding_repository.dart`
-- `lib/app_versions/v1/features/onboarding/domain/repositories/onboarding_repository_impl.dart`
-- `lib/app_versions/v1/features/onboarding/onboarding.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/constants/onboarding_options.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_entry_page.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_page.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/basic_info_step.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/conditions_step.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/consent_step.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/extras_step.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/goals_step.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/health_chip.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/lifestyle_step.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/onboarding_chip.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/onboarding_step_shell.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/onboarding_text_field.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/result_step.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/review_step.dart`
-- `lib/app_versions/v1/features/onboarding/presentation/widgets/welcome_step.dart`
-- `lib/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart`
-- `lib/app_versions/v1/features/onboarding/providers/onboarding_provider.dart`
-- `lib/app_versions/v1/features/onboarding/providers/repository_providers.dart`
-- `lib/app_versions/v1/features/other/presentation/pages/other_page.dart`
-- `lib/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart`
-- `lib/app_versions/v1/features/profile/presentation/pages/profile_page.dart`
-- `lib/app_versions/v1/features/profile/presentation/profile_screen.dart`
-- `lib/app_versions/v1/features/quick_care/presentation/pages/quick_care_page.dart`
-- `lib/app_versions/v1/features/settings/data/datasources/settings_local_datasource.dart`
-- `lib/app_versions/v1/features/settings/data/datasources/settings_remote_datasource.dart`
-- `lib/app_versions/v1/features/settings/data/models/settings_preferences_model.dart`
-- `lib/app_versions/v1/features/settings/data/models/user_profile_model.dart`
-- `lib/app_versions/v1/features/settings/domain/entities/settings_preferences_entity.dart`
-- `lib/app_versions/v1/features/settings/domain/entities/user_profile_entity.dart`
-- `lib/app_versions/v1/features/settings/domain/repositories/settings_repository.dart`
-- `lib/app_versions/v1/features/settings/domain/validators/settings_validator.dart`
-- `lib/app_versions/v1/features/settings/presentation/pages/dev_database_viewer_page.dart`
-- `lib/app_versions/v1/features/settings/presentation/pages/settings_page.dart`
-- `lib/app_versions/v1/features/settings/providers/settings_provider.dart`
-- `lib/app_versions/v1/features/settings/utils/profile_validator.dart`
-- `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart`
-- `lib/app_versions/v1/features/splash/domain/services/splash_route_decision.dart`
-- `lib/app_versions/v1/features/splash/presentation/pages/splash_page.dart`
-- `lib/app_versions/v1/features/splash/providers/splash_provider.dart`
-- `lib/app_versions/v1/features/splash/providers/splash_state.dart`
-- `lib/app_versions/v1/features/splash/splash.dart`
-- `lib/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart`
-- `lib/app_versions/v1/features/water_tracking/presentation/pages/water_tracking_page.dart`
-- `lib/app_versions/v1/features/weekly_summary/presentation/pages/weekly_summary_page.dart`
-- `lib/app_versions/v1/router/router.dart`
-- `lib/app_versions/v1/router/transitions.dart`
-- `lib/app_versions/v1/router/v1_navigation_service.dart`
-- `lib/app_versions/v1/router/v1_route_guards.dart`
-- `lib/app_versions/v1/router/v1_route_paths.dart`
-- `lib/app_versions/v1/router/v1_router.dart`
-- `lib/app_versions/v1/services/ai/ai_chat_service.dart`
-- `lib/app_versions/v1/services/ai/ai_exceptions.dart`
-- `lib/app_versions/v1/services/ai/ai_json_parser.dart`
-- `lib/app_versions/v1/services/ai/ai_json_prompt_builder.dart`
-- `lib/app_versions/v1/services/ai/ai_service.dart`
-- `lib/app_versions/v1/services/ai/ai_trace_logger.dart`
-- `lib/app_versions/v1/services/ai/ai_vietnamese_text_validator.dart`
-- `lib/app_versions/v1/services/ai/generated_plan_service.dart`
-- `lib/app_versions/v1/services/ai/README_FIX.md`
-- `lib/app_versions/v1/services/notifications/notification_action_handler.dart`
-- `lib/app_versions/v1/services/notifications/notification_bootstrap.dart`
-- `lib/app_versions/v1/services/notifications/notification_constants.dart`
-- `lib/app_versions/v1/services/notifications/notification_id_generator.dart`
-- `lib/app_versions/v1/services/notifications/notification_lifecycle_refresher.dart`
-- `lib/app_versions/v1/services/notifications/notification_payload.dart`
-- `lib/app_versions/v1/services/notifications/notification_startup_scheduler.dart`
-- `lib/app_versions/v1/services/notifications/reminder_defaults.dart`
-- `lib/app_versions/v1/services/notifications/reminder_notification_scheduler.dart`
-- `lib/app_versions/v1/services/notifications/reminder_schedule_service.dart`
-- `lib/app_versions/v1/shared/widgets/ai_chat_fab.dart`
-- `lib/app_versions/v1/shared/widgets/README_AI_CHAT_FAB.md`
-- `lib/app_versions/v2/app/bio_ai_v2_app.dart`
-- `lib/app_versions/v2/features/auth/auth.dart`
-- `lib/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart`
-- `lib/app_versions/v2/features/auth/data/repositories/supabase_auth_repository.dart`
-- `lib/app_versions/v2/features/auth/domain/entities/auth_commands.dart`
-- `lib/app_versions/v2/features/auth/domain/entities/auth_failure.dart`
-- `lib/app_versions/v2/features/auth/domain/entities/auth_profile.dart`
-- `lib/app_versions/v2/features/auth/domain/entities/auth_route_state.dart`
-- `lib/app_versions/v2/features/auth/domain/repositories/auth_repository.dart`
-- `lib/app_versions/v2/features/auth/domain/services/auth_route_state_resolver.dart`
-- `lib/app_versions/v2/features/auth/domain/services/auth_validators.dart`
-- `lib/app_versions/v2/features/auth/presentation/controllers/auth_controller.dart`
-- `lib/app_versions/v2/features/auth/presentation/pages/auth_gate_page.dart`
-- `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
-- `lib/app_versions/v2/features/auth/providers/auth_dependencies.dart`
-- `lib/app_versions/v2/features/auth/providers/auth_providers.dart`
-- `lib/app_versions/v2/features/cloud_sync/cloud_sync.dart`
-- `lib/app_versions/v2/features/cloud_sync/data/datasources/sqlite_user_data_sync_local_datasource.dart`
-- `lib/app_versions/v2/features/cloud_sync/data/datasources/supabase_user_data_sync_remote_datasource.dart`
-- `lib/app_versions/v2/features/cloud_sync/data/datasources/user_data_sync_datasource_contracts.dart`
-- `lib/app_versions/v2/features/cloud_sync/data/datasources/user_data_sync_tables.dart`
-- `lib/app_versions/v2/features/cloud_sync/data/repositories/authenticated_user_data_sync_repository_impl.dart`
-- `lib/app_versions/v2/features/cloud_sync/domain/entities/cloud_sync_result.dart`
-- `lib/app_versions/v2/features/cloud_sync/domain/entities/user_data_snapshot.dart`
-- `lib/app_versions/v2/features/cloud_sync/domain/repositories/authenticated_user_data_sync_repository.dart`
-- `lib/app_versions/v2/features/cloud_sync/providers/cloud_sync_providers.dart`
-- `lib/app_versions/v2/features/health_scoring/health_scoring.dart`
-- `lib/app_versions/v2/features/home/presentation/pages/v2_home_page.dart`
-- `lib/app_versions/v2/features/membership_entitlement/membership_entitlement.dart`
-- `lib/app_versions/v2/features/personal_schedule_quota/personal_schedule_quota.dart`
-- `lib/app_versions/v2/features/README.md`
-- `lib/app_versions/v2/features/usage_quota/usage_quota.dart`
-- `lib/app_versions/v2/router/v2_route_paths.dart`
-- `lib/app_versions/v2/router/v2_router.dart`
-- `lib/app_versions/v3/app/bio_ai_v3_app.dart`
-- `lib/app_versions/v3/features/advanced_health_tracking/advanced_health_tracking.dart`
-- `lib/app_versions/v3/features/family_members/family_members.dart`
-- `lib/app_versions/v3/features/family_onboarding/family_onboarding.dart`
-- `lib/app_versions/v3/features/family_schedule/family_schedule.dart`
-- `lib/app_versions/v3/features/goal_roadmap/goal_roadmap.dart`
-- `lib/app_versions/v3/features/home/presentation/pages/v3_home_page.dart`
-- `lib/app_versions/v3/features/premium_ai/premium_ai.dart`
-- `lib/app_versions/v3/features/README.md`
-- `lib/app_versions/v3/README.md`
-- `lib/app_versions/v3/router/v3_route_paths.dart`
-- `lib/app_versions/v3/router/v3_router.dart`
-- `lib/core/constants/api/supabase_constants.dart`
-- `lib/core/constants/app/app_assets.dart`
-- `lib/core/constants/app/app_constants.dart`
-- `lib/core/constants/app/app_duration.dart`
-- `lib/core/constants/app/app_radius.dart`
-- `lib/core/constants/app/app_spacing.dart`
-- `lib/core/constants/app/app_strings.dart`
-- `lib/core/constants/constant.dart`
-- `lib/core/constants/enums/gender_enum.dart`
-- `lib/core/constants/health/bmi_constants.dart`
-- `lib/core/constants/health/nutrition_constants.dart`
-- `lib/core/constants/network/endpoint_constants.dart`
-- `lib/core/constants/onboarding_constants.dart`
-- `lib/core/constants/routes/auth_route_paths.dart`
-- `lib/core/constants/storage/storage_keys.dart`
-- `lib/core/constants/validation/regex_constants.dart`
-- `lib/core/core.dart`
-- `lib/core/interfaces/health_data_interface.dart`
-- `lib/core/network/dio_provider.dart`
-- `lib/core/storage/localdb/app_prefs.dart`
-- `lib/core/storage/localdb/daos/ai_catalog_dao.dart`
-- `lib/core/storage/localdb/daos/ai_insights_dao.dart`
-- `lib/core/storage/localdb/daos/ai_recommendations_dao.dart`
-- `lib/core/storage/localdb/daos/food_allergies_dao.dart`
-- `lib/core/storage/localdb/daos/health_conditions_dao.dart`
-- `lib/core/storage/localdb/daos/health_goals_dao.dart`
-- `lib/core/storage/localdb/daos/health_profiles_dao.dart`
-- `lib/core/storage/localdb/daos/health_tracking_logs_dao.dart`
-- `lib/core/storage/localdb/daos/lifestyle_habits_dao.dart`
-- `lib/core/storage/localdb/daos/medical_treatments_dao.dart`
-- `lib/core/storage/localdb/daos/notifications_dao.dart`
-- `lib/core/storage/localdb/daos/nutrition_logs_dao.dart`
-- `lib/core/storage/localdb/daos/survey_answers_dao.dart`
-- `lib/core/storage/localdb/daos/users_dao.dart`
-- `lib/core/storage/localdb/database_constants.dart`
-- `lib/core/storage/localdb/database_service.dart`
-- `lib/core/storage/localdb/database_version.dart`
-- `lib/core/storage/localdb/datasources/ai_catalog_local_datasource.dart`
-- `lib/core/storage/localdb/migrations/migration_manager.dart`
-- `lib/core/storage/localdb/migrations/migration_v1.dart`
-- `lib/core/storage/localdb/models/ai_catalog_models.dart`
-- `lib/core/storage/localdb/models/ai_insight_model.dart`
-- `lib/core/storage/localdb/models/ai_recommendation_model.dart`
-- `lib/core/storage/localdb/models/food_allergy_model.dart`
-- `lib/core/storage/localdb/models/health_condition_model.dart`
-- `lib/core/storage/localdb/models/health_goal_model.dart`
-- `lib/core/storage/localdb/models/health_profile_model.dart`
-- `lib/core/storage/localdb/models/health_tracking_log_model.dart`
-- `lib/core/storage/localdb/models/lifestyle_habit_model.dart`
-- `lib/core/storage/localdb/models/medical_treatment_model.dart`
-- `lib/core/storage/localdb/models/notification_model.dart`
-- `lib/core/storage/localdb/models/nutrition_log_model.dart`
-- `lib/core/storage/localdb/models/survey_answer_model.dart`
-- `lib/core/storage/localdb/models/user_model.dart`
-- `lib/core/storage/localdb/seeders/ai_catalog_seed_data.dart`
-- `lib/core/storage/localdb/seeders/ai_catalog_seeder.dart`
-- `lib/core/storage/localdb/tables/ai_insights_table.dart`
-- `lib/core/storage/localdb/tables/ai_recommendations_table.dart`
-- `lib/core/storage/localdb/tables/daily_health_tasks_table.dart`
-- `lib/core/storage/localdb/tables/exercise_catalog_table.dart`
-- `lib/core/storage/localdb/tables/food_allergies_table.dart`
-- `lib/core/storage/localdb/tables/health_conditions_table.dart`
-- `lib/core/storage/localdb/tables/health_goals_table.dart`
-- `lib/core/storage/localdb/tables/health_profiles_table.dart`
-- `lib/core/storage/localdb/tables/health_tracking_logs_table.dart`
-- `lib/core/storage/localdb/tables/lifestyle_habits_table.dart`
-- `lib/core/storage/localdb/tables/lifestyle_schedule_items_table.dart`
-- `lib/core/storage/localdb/tables/meal_catalog_table.dart`
-- `lib/core/storage/localdb/tables/meal_plans_table.dart`
-- `lib/core/storage/localdb/tables/medical_treatments_table.dart`
-- `lib/core/storage/localdb/tables/notifications_table.dart`
-- `lib/core/storage/localdb/tables/nutrition_logs_table.dart`
-- `lib/core/storage/localdb/tables/schedule_task_catalog_table.dart`
-- `lib/core/storage/localdb/tables/survey_answers_table.dart`
-- `lib/core/storage/localdb/tables/users_table.dart`
-- `lib/core/theme/app_animations.dart`
-- `lib/core/theme/app_colors.dart`
-- `lib/core/theme/app_decoration.dart`
-- `lib/core/theme/app_duration.dart`
-- `lib/core/theme/app_gradients.dart`
-- `lib/core/theme/app_icons.dart`
-- `lib/core/theme/app_radius.dart`
-- `lib/core/theme/app_shadows.dart`
-- `lib/core/theme/app_spacing.dart`
-- `lib/core/theme/app_text_styles.dart`
-- `lib/core/theme/app_theme.dart`
-- `lib/core/theme/app_typography.dart`
-- `lib/core/theme/design_system.dart`
-- `lib/core/theme/design_system_demo_page.dart`
-- `lib/core/theme/foundation/colors.dart`
-- `lib/core/theme/foundation/motion.dart`
-- `lib/core/theme/foundation/radius.dart`
-- `lib/core/theme/foundation/shadows.dart`
-- `lib/core/theme/foundation/spacing.dart`
-- `lib/core/theme/foundation/typography.dart`
-- `lib/core/theme/HOW_TO_VIEW_DEMO.md`
-- `lib/core/theme/IMPLEMENTATION_STATUS.md`
-- `lib/core/theme/primitives/badge.dart`
-- `lib/core/theme/primitives/button.dart`
-- `lib/core/theme/primitives/card.dart`
-- `lib/core/theme/primitives/chip.dart`
-- `lib/core/theme/primitives/input.dart`
-- `lib/core/theme/primitives/section_header.dart`
-- `lib/core/theme/primitives/states/empty_state.dart`
-- `lib/core/theme/primitives/states/error_state.dart`
-- `lib/core/theme/primitives/states/loading_state.dart`
-- `lib/core/theme/theme.dart`
-- `lib/core/theme/tokens/color_tokens.dart`
-- `lib/core/theme/tokens/component_tokens.dart`
-- `lib/core/theme/tokens/spacing_tokens.dart`
-- `lib/core/utils/logger/app_logger.dart`
-- `lib/core/utils/password_validator.dart`
-- `lib/main.dart`
-- `lib/main_v2.dart`
-- `lib/sale_referral/features/commission/commission.dart`
-- `lib/sale_referral/features/payment_events/payment_events.dart`
-- `lib/sale_referral/features/referral_code/referral_code.dart`
-- `lib/sale_referral/features/sale_dashboard/sale_dashboard.dart`
-- `lib/sale_referral/README.md`
-- `lib/services/biometric/biometric.dart`
-- `lib/services/biometric/biometric_service.dart`
-- `lib/services/biometric/README.md`
-- `lib/services/image_picker/image_picker.dart`
-- `lib/services/image_picker/image_picker_provider.dart`
-- `lib/services/image_picker/image_picker_service.dart`
-- `lib/services/image_picker/README.md`
-- `lib/services/supabase/auth/account_security_provider.dart`
-- `lib/services/supabase/auth/account_security_service.dart`
-- `lib/services/supabase/auth/auth_profile_service.dart`
-- `lib/services/supabase/auth/current_auth_user.dart`
-- `lib/services/supabase/auth_service.dart`
-- `lib/services/supabase/supabase_service.dart`
-- `lib/shared/widgets/loading_genAI.dart`
+- `.codex/history/WORKLOG_INDEX.md`: generated worklog inventory.
+- `.codex/history/LEARNED_SKILLS.md`: reusable lessons and command patterns.
+- `.codex/history/OPEN_RISKS.md`: compact active risks only.
+- `.codex/history/RISK_HISTORY.md`: raw extracted risk evidence; do not read by default.
+- `.codex/history/SESSION_QUALITY_REVIEW.md`: worklog self-review template.
+- `.codex/history/HISTORY_REFRESH.md`: refresh instructions.
+- `.codex/task-skills/README.md`: canonical task-skill index.
+- `.codex/task-skills/LEGACY_TASK_KEY_MAP.md`: old task keys mapped to canonical keys.
 
-## test
+Canonical task-skill files are: `coding.md`, `bugfix.md`, `fix-issues.md`,
+`test.md`, `find-issues.md`, `create-issues.md`, `create-todo.md`,
+`docs-dd.md`, `docs-context.md`, `refactor-scaffold.md`, and
+`supabase-schema.md` under `.codex/task-skills/`.
 
-- `test/app_versions/v1/features/onboarding/onboarding_entry_page_test.dart`
-- `test/app_versions/v1/features/splash/splash_route_decision_test.dart`
-- `test/app_versions/v1/services/ai/generated_plan_service_auth_test.dart`
-- `test/app_versions/v2/features/auth/account_security_contract_test.dart`
-- `test/app_versions/v2/features/auth/auth_flow_contract_test.dart`
-- `test/app_versions/v2/features/auth/auth_pages_smoke_test.dart`
-- `test/app_versions/v2/features/auth/auth_route_state_resolver_test.dart`
-- `test/app_versions/v2/features/auth/auth_validators_test.dart`
-- `test/app_versions/v2/features/cloud_sync/authenticated_user_data_sync_repository_test.dart`
-- `test/app_versions/v2/features/cloud_sync/cloud_sync_contract_test.dart`
-- `test/app_versions/v2/features/membership_entitlement/membership_display_info_test.dart`
-- `test/architecture_preservation_property_test.dart`
-- `test/architecture_version_boundary_test.dart`
-- `test/architecture_violation_exploration_test.dart`
-- `test/ARCHITECTURE_VIOLATIONS_COUNTEREXAMPLES.md`
-- `test/core/storage/localdb/ai_catalog_seed_data_test.dart`
-- `test/core/storage/localdb/migration_manager_test.dart`
-- `test/core/storage/localdb/notification_model_test.dart`
-- `test/core/storage/localdb/notifications_dao_test.dart`
-- `test/core/storage/localdb/user_model_test.dart`
-- `test/core/theme/foundation/gradient_test.dart`
-- `test/core/theme/foundation/motion_test.dart`
-- `test/core/theme/primitives/button_test.dart`
-- `test/docs/supabase_dev_seed_membership_test.dart`
-- `test/features/daily_health_tracking/data/daily_health_ai_task_normalizer_test.dart`
-- `test/features/daily_health_tracking/data/daily_health_dao_test.dart`
-- `test/features/daily_health_tracking/data/daily_health_task_model_test.dart`
-- `test/features/daily_health_tracking/data/daily_health_tracking_local_datasource_write_test.dart`
-- `test/features/daily_health_tracking/domain/daily_health_task_generator_test.dart`
-- `test/features/dashboard/data/dashboard_dynamic_local_datasource_test.dart`
-- `test/features/dashboard/data/dashboard_local_datasource_test.dart`
-- `test/features/dashboard/domain/dashboard_companion_service_test.dart`
-- `test/features/features_hub/features_hub_page_test.dart`
-- `test/features/lifestyle_schedule/data/exercise_tasks_ai_normalizer_test.dart`
-- `test/features/lifestyle_schedule/data/lifestyle_schedule_completion_test.dart`
-- `test/features/lifestyle_schedule/data/lifestyle_schedule_dao_test.dart`
-- `test/features/lifestyle_schedule/data/lifestyle_schedule_item_model_test.dart`
-- `test/features/lifestyle_schedule/data/lifestyle_schedule_timeline_builder_test.dart`
-- `test/features/meal_plan/data/meal_plan_ai_normalizer_test.dart`
-- `test/features/meal_plan/data/meal_plan_completion_test.dart`
-- `test/features/meal_plan/data/meal_plan_model_test.dart`
-- `test/features/settings/data/datasources/settings_local_datasource_test.dart`
-- `test/features/settings/domain/validators/profile_validator_test.dart`
-- `test/features/settings/domain/validators/settings_validator_test.dart`
-- `test/features/settings/profile_update_contract_test.dart`
-- `test/features/settings/user_scoped_cache_contract_test.dart`
-- `test/PRESERVATION_BASELINE_OBSERVATIONS.md`
-- `test/services/ai/ai_service_test.dart`
-- `test/services/biometric/biometric_service_test.dart`
-- `test/services/image_picker_service_test.dart`
-- `test/services/notifications/android_notification_manifest_test.dart`
-- `test/services/notifications/notification_action_handler_test.dart`
-- `test/services/notifications/notification_lifecycle_refresher_test.dart`
-- `test/services/notifications/notification_startup_scheduler_test.dart`
-- `test/services/notifications/reminder_schedule_service_test.dart`
-- `test/widget_test.dart`
+## Validation And Refresh
+
+- `.codex/tools/validate_codex_integrity.ps1`: validates `.codex` links,
+  canonical task-skills, active risks, discovery bridges, and concrete paths.
+- `.codex/tools/update_worklog_learning.ps1`: regenerates history and
+  task-skill files after worklog changes.
+- `.codex/tool/codex_quick_check.ps1`: quick Flutter/Dart check wrapper.
+- `.codex/tool/codex_check.ps1`: full/native Flutter/Dart check wrapper.
+- `.codex/tool/check_helpers.ps1`: shared PowerShell check helpers.
+
+## Source Roots
+
+- App bootstrap: `lib/main.dart`, `lib/main_v2.dart`
+- v1 guest/basic: `lib/app_versions/v1/`
+- v2 authenticated free: `lib/app_versions/v2/`
+- v3 Plus/FamilyPlus planned: `lib/app_versions/v3/`
+- Sale/referral independent axis: `lib/sale_referral/`
+- Core shared code: `lib/core/`
+- Shared services/widgets: `lib/services/`, `lib/shared/widgets/`
+- Tests: `test/`
+- Product/design docs: `docs/BD/`, `docs/DD/`, `docs/supabase/`
+- Work tracking docs: `docs/issues/`, `docs/todo/`, `docs/worklog/`
+
+## Inventory Commands
+
+```powershell
+rg --files .codex
+rg --files .agents
+rg --files docs -g '!docs/worklog/**'
+rg --files lib test -g '!build/**' -g '!.dart_tool/**'
+rg --files -g '!build/**' -g '!.dart_tool/**' -g '!.git/**'
+```
+
+## Maintenance Rule
+
+If a context layout changes, update this compact map and run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1
+```

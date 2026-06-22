@@ -1,0 +1,4 @@
+interface:
+  display_name: "NanoBio Project Agent"
+  short_description: "Routes NanoBio tasks through .codex workflows, domains, task-skills, and history."
+  default_prompt: "Use $nanobio-project-agent to load the right NanoBio .codex context for this task."

@@ -2,13 +2,13 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 10 worklog(s).
+- Generated from 11 worklog(s).
 
 ## When To Read
 
 - Historical task type: docs (5)
+- Historical task type: docs-context (3)
 - Historical task type: unknown (2)
-- Historical task type: docs-context (2)
 - Historical task type: docs/context update (1)
 
 ## Common Modules
@@ -16,9 +16,9 @@
 - unknown: 2
 - `.codex`: 2
 - `.codex`, workflow router, domain context, worklog learning, project skill.: 1
-- Product Flow, Membership, Quota, FamilyPlus, Sale/referral, DD workflow.: 1
 - `.codex`, history learning, task-skills, project skill: 1
-- docs/issues, docs/todo: 1
+- `.codex`, root `AGENTS.md`, `.agents` skill bridge: 1
+- Product Flow, Membership, Quota, FamilyPlus, Sale/referral, DD workflow.: 1
 - authentication: 1
 - `.codex` project workflow: 1
 
@@ -48,3 +48,4 @@
 - [Worklog - Product Flow DD Design](../../docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md) - Product Flow, Membership, Quota, FamilyPlus, Sale/referral, DD workflow.
 - [Worklog - Codex Worktype History Skill](../../docs/worklog/2026-06-22/001-worklog-codex-worktype-history-skill.md) - `.codex`, workflow router, domain context, worklog learning, project skill.
 - [Worklog - Codex Self Optimization Task Skills](../../docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md) - `.codex`, history learning, task-skills, project skill
+- [Worklog - Codex context token optimization](../../docs/worklog/2026-06-22/003-worklog-codex-context-token-optimization.md) - `.codex`, root `AGENTS.md`, `.agents` skill bridge

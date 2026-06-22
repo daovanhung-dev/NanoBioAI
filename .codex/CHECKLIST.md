@@ -9,6 +9,7 @@
 - [ ] Read `.codex/DOCS_WORKFLOW.md` if code/test/docs/review/issues/todo/DD/context changes are expected.
 - [ ] Read `.codex/ISSUE_TODO_WORKFLOW.md` for issue/todo/fix-issue work.
 - [ ] Read BD/DD only when workflow requires it or user asks for it.
+- [ ] Do not read `.codex/MAP_TREE.md` or `.codex/history/RISK_HISTORY.md` unless inventory or exact historical evidence is required.
 - [ ] Use `rg` to confirm usage before changing public API, route, provider, callback, schema, or workflow contract.
 - [ ] Ask: how can this task use fewer tokens while producing equal or better work?
 

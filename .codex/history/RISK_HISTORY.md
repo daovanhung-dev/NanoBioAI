@@ -211,3 +211,22 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md :: - Da fix: PowerShell wildcard check ban dau dung `-LiteralPath` nen fail; chay lai bang `-Path` da PASS.
 - docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md :: - Chua fix: mot so task key sinh tu lich su co slug khong dau/chua chuan do worklog cu ghi `Loai task` khong dong nhat.
 - docs/worklog/2026-06-22/002-worklog-codex-self-optimization-task-skills.md :: - Can kiem tra tiep: neu muon task key on dinh hon, co the them mapping manual workflow -> canonical task key trong script refresh.
+- docs/worklog/2026-06-22/003-worklog-codex-context-token-optimization.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL/PASS - lan dau bat `.codex/config.toml` va `.codex/rules` trong raw `RISK_HISTORY.md`; da loai raw evidence khoi stale-path check va chay lai PASS.
+- docs/worklog/2026-06-22/003-worklog-codex-context-token-optimization.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-22/003-worklog-codex-context-token-optimization.md :: - Chua fix: Khong them `.codex/config.toml` hoac `.codex/rules` vi ngoai pham vi token/context.
+- docs/worklog/2026-06-22/003-worklog-codex-context-token-optimization.md :: - Can kiem tra tiep: Khong co trong pham vi hien tai.
+- docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md :: - Xac dinh cac nhom chuc nang chua duoc xac nhan hoan thanh theo DD vi van `Status: Draft`, con Q-01..Q-10, con dependency thieu, hoac test matrix van `Draft`.
+- docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL - stale path `docs/DD/authentication/00_READ_FIRST.md` vi Auth DD dang bi xoa trong working tree hien tai.
+- docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md :: - Chua fix: khong audit source runtime, nen ket luan duoc ghi la "chua duoc xac nhan hoan thanh theo DD", khong phai ket luan code chua co. Integrity validation dang fail do Auth DD dependency bi xoa san trong working tree.
+- docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md :: - Can kiem tra tiep: neu can danh gia implementation thuc te, can workflow coding/test/find-issues va doc source/test lien quan.
+- docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL - stale path `docs/DD/authentication/00_READ_FIRST.md` do Auth DD dang bi xoa trong working tree.
+- docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md :: - Chua fix: khong chay full Flutter test/analyze; khong ket luan production runtime. Integrity validation van fail do stale Auth DD path co san trong working tree.
+- docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md :: - Can kiem tra tiep: neu can ket luan "da code nhung fail" thi can workflow test/find-issues va chay targeted tests.
+- docs/worklog/2026-06-22/006-worklog-module-flow-audit.md :: - Gioi han: Khong sua runtime code. Khong tao issue docs hoac todo docs trong phien nay.
+- docs/worklog/2026-06-22/006-worklog-module-flow-audit.md :: - Flutter analyze/test: SKIPPED - docs/worklog-only, khong sua runtime code.
+- docs/worklog/2026-06-22/006-worklog-module-flow-audit.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-22/006-worklog-module-flow-audit.md :: - Chua fix: Chua sua runtime code cho Onboarding/Auth/quota/entitlement.
+- docs/worklog/2026-06-22/006-worklog-module-flow-audit.md :: - Can kiem tra tiep:
+- docs/worklog/2026-06-22/006-worklog-module-flow-audit.md :: - NB-RISK-002: Product flow DD open decisions Q-01..Q-10.

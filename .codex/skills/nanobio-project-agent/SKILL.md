@@ -5,6 +5,8 @@ description: Project-scoped workflow and context router for NanoBio/BioAI. Use w
 
 # NanoBio Project Agent
 
+Canonical project-local skill. The repo-discovered wrapper at `.agents/skills/nanobio-project-agent/SKILL.md` exists only to route Codex here.
+
 ## Quick Start
 
 1. Confirm the current workspace is `nano_app`.
@@ -42,5 +44,7 @@ Use `references/domain-map.md` when a task touches app code or product docs. Pre
 Use `references/worklog-learning.md` for the rule: after any session creates or updates a worklog, run `.codex/tools/update_worklog_learning.ps1` so `.codex/history/` and `.codex/task-skills/` reflect the full worklog corpus.
 
 Do not read raw `docs/worklog/**/*.md` by default. Read `.codex/history/WORKLOG_INDEX.md`, `.codex/history/LEARNED_SKILLS.md`, and the matching generated task-skill first; open raw worklogs only when a workflow needs evidence or historical details.
+
+Do not read `.codex/MAP_TREE.md` or `.codex/history/RISK_HISTORY.md` by default. Open them only when checking inventory, changing context layout, or collecting exact historical evidence.
 
 At the end of a substantial session, add the self-review from `.codex/history/SESSION_QUALITY_REVIEW.md`: output quality, completion, verification evidence, token efficiency, and what should be optimized next.

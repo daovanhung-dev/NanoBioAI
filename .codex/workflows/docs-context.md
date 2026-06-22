@@ -16,6 +16,8 @@ Use for updating `.codex`, project maps, checklists, worklog learning, repo docs
 ## Rules
 
 - Prefer router/index files over large always-read files.
+- Do not read `.codex/history/RISK_HISTORY.md` unless exact historical risk evidence is needed.
+- Do not read `.codex/MAP_TREE.md` unless updating layout or validating inventory.
 - Keep `.codex` ASCII unless a docs file is intended for Vietnamese user-facing output.
 - Do not leave stale paths to missing files or old source roots.
 - Preserve the workflow -> task-skill -> domain read order.

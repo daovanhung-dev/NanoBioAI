@@ -29,9 +29,38 @@ function Test-IsInsideProject {
   return $full.StartsWith($script:root, [System.StringComparison]::OrdinalIgnoreCase)
 }
 
+function Test-ShouldSkipBacktickPath {
+  param([string]$Value)
+  if ([string]::IsNullOrWhiteSpace($Value)) { return $true }
+  if ($Value -match '[<>\*\?\{\}\[\]\|]') { return $true }
+  if ($Value -match '\s') { return $true }
+  if ($Value -match '^(https?|mailto|app|file)://') { return $true }
+  if ($Value -match '^[A-Z_][A-Z0-9_]*$') { return $true }
+  return $false
+}
+
+function Test-IsConcreteProjectPath {
+  param([string]$Value)
+  if (Test-ShouldSkipBacktickPath $Value) { return $false }
+  $normalized = $Value.Trim().Trim([char[]]@([char]0x60, [char]0x22, [char]0x27))
+  if ($normalized.StartsWith("./")) { $normalized = $normalized.Substring(2) }
+  if ($normalized -match '^(AGENTS\.md|README\.md|pubspec\.yaml|analysis_options\.yaml)$') { return $true }
+  if ($normalized -match '^(\.codex|\.agents|docs|lib|test|assets|android|ios|linux|macos|web|windows)/') { return $true }
+  return $false
+}
+
+function Resolve-ProjectPathFromBacktick {
+  param([string]$Value)
+  $normalized = $Value.Trim().Trim([char[]]@([char]0x60, [char]0x22, [char]0x27))
+  if ($normalized.StartsWith("./")) { $normalized = $normalized.Substring(2) }
+  $normalized = $normalized.Replace("/", [System.IO.Path]::DirectorySeparatorChar)
+  return [System.IO.Path]::GetFullPath((Join-Path $script:root $normalized))
+}
+
 $textExtensions = @(".md", ".ps1", ".json", ".yaml", ".yml")
 $scanRoots = @(
   (Join-Path $root ".codex"),
+  (Join-Path $root ".agents"),
   (Join-Path $root "docs\worklog")
 ) | Where-Object { Test-Path $_ }
 
@@ -60,8 +89,20 @@ foreach ($scanRoot in $scanRoots) {
 }
 
 $codexRoot = Join-Path $root ".codex"
-$markdownFiles = Get-ChildItem -LiteralPath $codexRoot -Recurse -File -Filter "*.md"
+$markdownFiles = @()
+if (Test-Path $codexRoot) {
+  $markdownFiles += Get-ChildItem -LiteralPath $codexRoot -Recurse -File -Filter "*.md"
+}
+$agentsRoot = Join-Path $root ".agents"
+if (Test-Path $agentsRoot) {
+  $markdownFiles += Get-ChildItem -LiteralPath $agentsRoot -Recurse -File -Filter "*.md"
+}
+$rootAgentsPath = Join-Path $root "AGENTS.md"
+if (Test-Path $rootAgentsPath) {
+  $markdownFiles += Get-Item -LiteralPath $rootAgentsPath
+}
 $linkPattern = '(?<!\!)\[[^\]]+\]\((?<target>[^)]+)\)'
+$backtickPattern = '`(?<value>[^`\r\n]+)`'
 
 foreach ($file in $markdownFiles) {
   $text = Read-Utf8Text $file.FullName
@@ -89,6 +130,40 @@ foreach ($file in $markdownFiles) {
     if (-not (Test-Path $candidate)) {
       Add-Failure "Broken Markdown link: source=$(Get-ProjectRelativePath $file.FullName), link=$rawTarget, expected=$candidate"
     }
+  }
+
+  if ((Get-ProjectRelativePath $file.FullName) -ne ".codex/history/RISK_HISTORY.md") {
+    foreach ($match in [regex]::Matches($text, $backtickPattern)) {
+      $rawValue = $match.Groups["value"].Value.Trim()
+      if (-not (Test-IsConcreteProjectPath $rawValue)) { continue }
+      $candidate = Resolve-ProjectPathFromBacktick $rawValue
+      if (-not (Test-IsInsideProject $candidate)) {
+        Add-Failure "Backticked path escapes project: source=$(Get-ProjectRelativePath $file.FullName), path=$rawValue, resolved=$candidate"
+        continue
+      }
+      if (-not (Test-Path $candidate)) {
+        Add-Failure "Stale backticked path: source=$(Get-ProjectRelativePath $file.FullName), path=$rawValue, expected=$candidate"
+      }
+    }
+  }
+}
+
+if (-not (Test-Path $rootAgentsPath)) {
+  Add-Failure "Missing root AGENTS.md bridge."
+} else {
+  $rootAgentsText = Read-Utf8Text $rootAgentsPath
+  if ($rootAgentsText -notmatch [regex]::Escape(".codex/AGENTS.md")) {
+    Add-Failure "Root AGENTS.md does not bridge to .codex/AGENTS.md."
+  }
+}
+
+$skillBridgePath = Join-Path $root ".agents\skills\nanobio-project-agent\SKILL.md"
+if (-not (Test-Path $skillBridgePath)) {
+  Add-Failure "Missing .agents skill bridge: .agents/skills/nanobio-project-agent/SKILL.md"
+} else {
+  $skillBridgeText = Read-Utf8Text $skillBridgePath
+  if ($skillBridgeText -notmatch [regex]::Escape(".codex/skills/nanobio-project-agent/SKILL.md")) {
+    Add-Failure ".agents skill bridge does not point to .codex/skills/nanobio-project-agent/SKILL.md."
   }
 }
 

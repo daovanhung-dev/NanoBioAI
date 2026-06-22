@@ -13,6 +13,8 @@ Always read:
 
 Then read one workflow from `.codex/workflows/`, the matching generated task-skill when present, and one domain from `.codex/domains/` when a domain is clear.
 
+Read `.codex/history/OPEN_RISKS.md` only for release readiness, auth, Supabase, DD status, or testing. Do not read `.codex/history/RISK_HISTORY.md`, `.codex/MAP_TREE.md`, raw worklogs, raw source, raw tests, or all DD files unless the selected workflow requires them.
+
 ## Request To Workflow
 
 | User intent | Workflow |
@@ -34,5 +36,5 @@ Then read one workflow from `.codex/workflows/`, the matching generated task-ski
 
 - If the workflow is not named by the user, infer it from the requested output, not from implementation convenience.
 - If multiple workflows are requested, finish them in order and keep boundaries explicit.
-- Do not read raw source trees, raw worklogs, or all DD files unless the selected workflow requires it.
+- Do not read raw source trees, raw worklogs, `.codex/history/RISK_HISTORY.md`, `.codex/MAP_TREE.md`, or all DD files unless the selected workflow requires it.
 - Before expanding context, ask how to save tokens while preserving or improving output quality.
