@@ -140,5 +140,6 @@ final v1Routes = <RouteBase>[
 
 final v1Router = GoRouter(
   initialLocation: V1RoutePaths.splash,
+  redirect: V1RouteGuards.guestAllowlistGuard,
   routes: v1Routes,
 );

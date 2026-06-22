@@ -62,17 +62,31 @@ Commit de xuat: docs(worklog): ghi nhan phien audit module flow
 | P1 | Membership entitlement | App con doc `users.subscription_tier` read-model, chua dung entitlement tu `membership_subscriptions`/`plan_entitlements` va Sale axis rieng. | `supabase_auth_remote_datasource.dart` select `subscription_tier`; `docs/supabase/README.md` noi field nay chi la read-model. | Dung effective access tu Supabase/trusted backend va route/use-case gate. |
 | P2 | Sale/FamilyPlus | Moi placeholder, chua duoc coi la implemented cho BD flow. | `lib/app_versions/v3/README.md`, `lib/sale_referral/README.md`, planned feature files. | Giu planned cho toi khi DD open decisions va Supabase verification duoc chot. |
 
+### Cap nhat trang thai sau phien fix runtime
+
+| Uu tien | Module/flow | Trang thai sau fix | Bang chung moi | Con lai |
+| --- | --- | --- | --- | --- |
+| P0 | Onboarding guest first plan | Da sua + test pass: entrypoint khong return som khi guest va goi initial guest plan sau onboarding. | `lib/main.dart`, `lib/main_v2.dart`, `test/app_versions/v1/features/onboarding/onboarding_completion_flow_test.dart`. | Manual QA voi AI key hop le tren emulator/thiet bi. |
+| P0 | Generated plan service | Da sua + test pass: them `generateInitialGuestPlan()` cho guest; `generateNextPlan()` van authenticated-only cho generation tiep theo. | `lib/app_versions/v1/services/ai/generated_plan_service.dart`, `test/app_versions/v1/services/ai/generated_plan_service_auth_test.dart`. | Khi P1 quota Ready, chi wire quota vao additional generation/authenticated flow. |
+| P0 | Onboarding completed flag | Da sua + test pass: chi set completed khi callback tra `generatedInitialPlan`; skip/fail khong dua guest vao app. | `lib/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart`, `lib/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart`, `test/app_versions/v1/features/onboarding/onboarding_completion_flow_test.dart`. | Manual QA copy loi Nami khi AI/plan generation fail. |
+| P0 | Auth/onboarding sync | Da kiem chung + test pass: pending guest data push len auth user, cloud snapshot completed resolve `authenticatedReady`. | `test/app_versions/v2/features/cloud_sync/authenticated_user_data_sync_repository_test.dart`, `test/app_versions/v2/features/auth/auth_route_state_resolver_test.dart`. | Can Supabase sandbox smoke de dong NB-RISK-001. |
+| P1 | Guest/V1 route gate | Da sua route layer + test pass: centralized guest allowlist chan `community`, `ai-chat`, `nutrition`, `profile`, `/v2`. | `lib/app_versions/v1/router/v1_route_guards.dart`, `lib/app_versions/v1/router/v1_router.dart`, `lib/app_versions/v2/router/v2_router.dart`, `test/app_versions/v1/router/v1_route_guards_test.dart`. | Use-case/controller gate con phu thuoc entitlement/quota P1. |
+| P1 | v2 health scoring / dashboard score | Da sua + test pass: v1 dashboard phan biet "chua co input score" voi "co input that nhung score = 0"; v2 official health_scoring van planned do Q-05. | `lib/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart`, `lib/app_versions/v1/features/dashboard/presentation/pages/dashboard_page.dart`, `test/features/dashboard/data/dashboard_dynamic_local_datasource_test.dart`, `test/features/dashboard/domain/dashboard_companion_service_test.dart`. | Cong thuc v2 health scoring van Draft cho toi khi Q-05 duoc chot. |
+| P1 | Free quota | Blocked/Planned: chua implement production quota vi can Supabase/RPC/trusted backend va DD Q-03/Q-04. | `docs/DD/product_flow/06_FEATURE_FREE_QUOTA_AI_CHAT_AND_SCHEDULE.md` van Draft; `usage_quota.dart`, `personal_schedule_quota.dart` van planned. | Implement sau khi backend contract va Supabase verification Ready. |
+| P1 | Membership entitlement | Blocked/Planned: chua implement effective access production vi DD Q-06 va Supabase verification chua dong. | `docs/DD/product_flow/05_FEATURE_AUTH_MEMBERSHIP_ACCESS_GATE.md` van Draft; `supabase_auth_remote_datasource.dart` van doc read-model `subscription_tier`. | Dung Supabase/trusted effective access khi Ready. |
+| P2 | Sale/FamilyPlus | Planned: placeholder duoc giu nguyen, chua coi la implemented cho BD flow. | `lib/app_versions/v3/README.md`, `lib/sale_referral/README.md`. | Chi implement khi DD open decisions va Supabase verification duoc chot. |
+
 ## Checklist uu tien cho phien sau
 
-- [ ] P0 - Sua Guest onboarding sinh lich ca nhan lan dau khong can login.
-- [ ] P0 - Tach first-generation guest khoi additional-generation authenticated/quota.
-- [ ] P0 - Doi test dang bao ve unauthenticated generation block theo BD moi.
-- [ ] P0 - Khong set onboarding completed neu lich ca nhan dau tien chua tao hoac chua co fallback duoc chap nhan.
-- [ ] P0 - Kiem chung guest local data -> auth cloud sync khong ep onboarding sai.
-- [ ] P1 - Tao centralized Guest/V1 allowlist gate cho route + controller/use-case.
+- [x] P0 - Sua Guest onboarding sinh lich ca nhan lan dau khong can login.
+- [x] P0 - Tach first-generation guest khoi additional-generation authenticated/quota.
+- [x] P0 - Doi test dang bao ve unauthenticated generation block theo BD moi.
+- [x] P0 - Khong set onboarding completed neu lich ca nhan dau tien chua tao hoac chua co fallback duoc chap nhan.
+- [x] P0 - Kiem chung guest local data -> auth cloud sync khong ep onboarding sai.
+- [x] P1 - Tao centralized Guest/V1 allowlist gate cho route; controller/use-case gate con phu thuoc entitlement/quota P1.
 - [ ] P1 - Implement membership entitlement tu Supabase/trusted backend.
 - [ ] P1 - Implement quota Free cho AI chat va schedule generation.
-- [ ] P1 - Lam ro dashboard score hien tai khac v2 health_scoring BD.
+- [x] P1 - Lam ro dashboard score hien tai khac v2 health_scoring BD.
 - [ ] P2 - Giu v3/FamilyPlus/Sale o trang thai planned cho toi khi DD/open decisions va Supabase verification xong.
 
 ## File code/docs da sua

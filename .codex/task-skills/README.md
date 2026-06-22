@@ -5,7 +5,7 @@ Generated from canonical task keys. Read the file matching the selected workflow
 | Task key | Title | Workflow | Worklogs | File |
 | --- | --- | --- | ---: | --- |
 | coding | Coding | .codex/workflows/coding.md | 7 | [coding.md](coding.md) |
-| bugfix | Direct bugfix | .codex/workflows/bugfix.md | 3 | [bugfix.md](bugfix.md) |
+| bugfix | Direct bugfix | .codex/workflows/bugfix.md | 5 | [bugfix.md](bugfix.md) |
 | fix-issues | Fix documented issue | .codex/workflows/fix-issues.md | 1 | [fix-issues.md](fix-issues.md) |
 | test | Test and verification | .codex/workflows/test.md | 0 | [test.md](test.md) |
 | find-issues | Review and find issues | .codex/workflows/find-issues.md | 1 | [find-issues.md](find-issues.md) |

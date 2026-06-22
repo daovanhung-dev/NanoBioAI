@@ -3,7 +3,6 @@ import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
-import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/services/supabase/auth/auth_profile_service.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
@@ -506,10 +505,23 @@ class OnboardingController extends Notifier<OnboardingState> {
       );
       var generatedPlan = false;
       try {
-        await onCompletionCallback();
-        generatedPlan = true;
-      } on DashboardGenerationAuthRequiredException catch (error) {
-        AppLogger.info(_tag, 'Skip generated plan: $error');
+        final completionResult = await onCompletionCallback();
+        generatedPlan = completionResult.generatedInitialPlan;
+      } on AIOverloadedException {
+        rethrow;
+      } catch (error, stackTrace) {
+        AppLogger.error(
+          _tag,
+          'Initial plan generation failed',
+          error,
+          stackTrace,
+        );
+        throw const OnboardingInitialPlanException();
+      }
+
+      if (!generatedPlan) {
+        AppLogger.warning(_tag, 'Initial plan generation was not completed');
+        throw const OnboardingInitialPlanException();
       }
 
       AppLogger.info(_tag, 'Setting onboarding completed flag');
@@ -546,6 +558,8 @@ class OnboardingController extends Notifier<OnboardingState> {
 
       final message = e is AIOverloadedException
           ? AIOverloadedException.userMessage
+          : e is OnboardingInitialPlanException
+          ? OnboardingInitialPlanException.userMessage
           : 'Mình chưa thể lưu hồ sơ lúc này: $e';
 
       state = state.copyWith(isSaving: false, savedLog: message);

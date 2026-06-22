@@ -121,6 +121,10 @@ class DashboardCompanionService {
     final hasGoodTaskProgress = metrics.totalTasks > 0 && taskRate >= 0.75;
     final hasGoodMealProgress = metrics.totalMeals > 0 && mealRate >= 0.75;
 
+    if (metrics.hasDailyScoreInputs && metrics.dailyScore == 0) {
+      return 'Nami đã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.';
+    }
+
     if (metrics.dailyScore >= 85 &&
         (hasGoodTaskProgress || hasGoodMealProgress)) {
       return 'Bạn chăm mình rất ổn hôm nay, Nami thấy nhịp này rất đẹp.';

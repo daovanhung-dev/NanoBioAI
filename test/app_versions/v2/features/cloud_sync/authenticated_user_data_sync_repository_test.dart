@@ -1,4 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_profile.dart';
+import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_route_state.dart';
+import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_route_state_resolver.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/data/datasources/user_data_sync_datasource_contracts.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/data/repositories/authenticated_user_data_sync_repository_impl.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/cloud_sync_result.dart';
@@ -37,6 +40,17 @@ void main() {
       expect(local.replacedUserId, 'auth-1');
       expect(local.removedLocalUserId, 'guest-1');
       expect(await AppPrefs.pendingGuestUserId(), isNull);
+
+      final routeState = const AuthRouteStateResolver().resolve(
+        session: const AuthSessionSnapshot(
+          userId: 'auth-1',
+          email: 'auth-1@nanobio.local',
+          emailConfirmed: true,
+        ),
+        profile: AuthProfile.fromMap(remote.pullSnapshot!.user!),
+        requiresEmailConfirmation: false,
+      );
+      expect(routeState.status, AuthRouteStatus.authenticatedReady);
     });
 
     test('cloud completed onboarding wins over pending guest cache', () async {
@@ -98,6 +112,7 @@ UserDataSnapshot _snapshot(String userId, {required String tableName}) {
       'id': userId,
       'email': '$userId@nanobio.local',
       'subscription_tier': 'free',
+      'onboarding_status': 'completed',
     },
     tables: {
       tableName: [

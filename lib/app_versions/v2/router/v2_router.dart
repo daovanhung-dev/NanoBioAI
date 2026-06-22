@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/router/router.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_guards.dart';
 import 'package:nano_app/app_versions/v2/features/auth/auth.dart';
 import 'package:nano_app/app_versions/v2/features/home/presentation/pages/v2_home_page.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
@@ -51,5 +52,6 @@ final v2Routes = <RouteBase>[
 
 final v2Router = GoRouter(
   initialLocation: V1RoutePaths.splash,
+  redirect: V1RouteGuards.guestAllowlistGuard,
   routes: [...v1Routes, ...v2Routes],
 );

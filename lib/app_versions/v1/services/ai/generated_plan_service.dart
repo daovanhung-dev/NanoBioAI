@@ -72,6 +72,29 @@ class GeneratedPlanService {
   }) async {
     requireAuthenticatedGeneratedPlanUser(currentUserId());
 
+    return _generatePlan(
+      days: days,
+      startDate: startDate,
+      appendAfterExisting: appendAfterExisting,
+    );
+  }
+
+  Future<GeneratedPlanResult> generateInitialGuestPlan({
+    int days = 7,
+    DateTime? startDate,
+  }) async {
+    return _generatePlan(
+      days: days,
+      startDate: startDate,
+      appendAfterExisting: false,
+    );
+  }
+
+  Future<GeneratedPlanResult> _generatePlan({
+    required int days,
+    DateTime? startDate,
+    required bool appendAfterExisting,
+  }) async {
     final now = DateTime.now();
     final fallbackStartDate = _dateOnly(
       startDate ?? DateTime(now.year, now.month, now.day + 1),

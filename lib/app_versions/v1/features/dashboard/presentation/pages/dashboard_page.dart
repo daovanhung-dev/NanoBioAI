@@ -810,6 +810,7 @@ class _HealthScorePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final score = metrics.dailyScore;
+    final hasScoreInputs = metrics.hasDailyScoreInputs;
     return GestureDetector(
       onTap: onTap,
       child: _DashboardCard(
@@ -820,7 +821,7 @@ class _HealthScorePanel extends StatelessWidget {
               builder: (context, _) {
                 return _ScoreRing(
                   progress: (score / 100) * scoreAnimation.value,
-                  label: score == 0 ? '--' : score.toString(),
+                  label: hasScoreInputs ? score.toString() : '--',
                 );
               },
             ),
@@ -830,8 +831,10 @@ class _HealthScorePanel extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    score == 0
+                    !hasScoreInputs
                         ? 'Chưa đủ dữ liệu chấm điểm'
+                        : score == 0
+                        ? 'Mình bắt đầu thật nhẹ hôm nay'
                         : _scoreTitle(score),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
@@ -839,8 +842,10 @@ class _HealthScorePanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    score == 0
+                    !hasScoreInputs
                         ? 'Khi bạn ghi nhận sức khỏe, hoàn thành việc nhỏ hoặc dùng bữa, điểm hôm nay sẽ tự cập nhật.'
+                        : score == 0
+                        ? 'Nami đã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.'
                         : 'Điểm này được Nami tổng hợp từ sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       height: 1.45,

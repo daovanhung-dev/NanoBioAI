@@ -73,6 +73,47 @@ void main() {
     expect(result.todayWeightKg, 64.5);
   });
 
+  test('fetch keeps missing score inputs separate from zero score', () async {
+    await _insertUser(db);
+
+    final result = await DashboardDynamicLocalDatasource(db).fetch();
+
+    expect(result.metrics.dailyScore, 0);
+    expect(result.metrics.hasDailyScoreInputs, isFalse);
+  });
+
+  test(
+    'fetch treats zero score as real when today plan inputs exist',
+    () async {
+      final today = _dateKey(DateTime.now());
+      await _insertUser(db);
+      await db.insert('daily_health_tasks', {
+        'id': 'task-zero-progress',
+        'user_id': 'u1',
+        'task_date': today,
+        'task_code': 'water_daily',
+        'category': 'water',
+        'title': 'Uống nước',
+        'description': '',
+        'target_value': 1500,
+        'current_value': 0,
+        'unit': 'ml',
+        'is_completed': 0,
+        'sort_order': 1,
+        'source': 'test',
+        'encouragement': '',
+        'created_at': '2026-06-18T08:00:00',
+        'updated_at': '2026-06-18T08:00:00',
+      });
+      await _insertMealPlanDate(db, id: 'meal-zero-progress', planDate: today);
+
+      final result = await DashboardDynamicLocalDatasource(db).fetch();
+
+      expect(result.metrics.dailyScore, 0);
+      expect(result.metrics.hasDailyScoreInputs, isTrue);
+    },
+  );
+
   test('fetch includes today lifestyle schedule items in timeline', () async {
     final today = _dateKey(DateTime.now());
     await db.insert('users', {

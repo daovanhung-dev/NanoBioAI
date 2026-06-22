@@ -154,6 +154,18 @@ class DashboardDailyMetrics {
   double get mealCompletionRate =>
       totalMeals == 0 ? 0 : completedMeals / totalMeals;
 
+  bool get hasDailyScoreInputs =>
+      totalTasks > 0 ||
+      completedTasks > 0 ||
+      totalMeals > 0 ||
+      completedMeals > 0 ||
+      caloriesLogged > 0 ||
+      caloriesPlanned > 0 ||
+      waterMl > 0 ||
+      sleepHours > 0 ||
+      nutritionLogCount > 0 ||
+      dailyScore > 0;
+
   bool get hasAnyData =>
       totalTasks > 0 ||
       totalMeals > 0 ||

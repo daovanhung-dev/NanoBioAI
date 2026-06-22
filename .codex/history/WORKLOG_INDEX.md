@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 30
+- Total worklogs: 32
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -39,3 +39,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-22 | docs-dd | docs-dd | `docs/DD/product_flow`, `docs/checklist` | [Worklog - DD incomplete functions checklist](../../docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md) |
 | 2026-06-22 | docs-dd | docs-dd | `docs/DD/product_flow`, `docs/checklist/checklist_develop_DD.md`, source access/membership/quota/v3/sale. | [Worklog - DD develop checklist](../../docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md) |
 | 2026-06-22 | docs-context / audit checklist | supabase-schema | DB local, Supabase draft, `lib/app_versions/v1`, `lib/app_versions/v2`, `lib/app_versions/v3`, `lib/sale_referral` | [Worklog - Audit module va flow san pham](../../docs/worklog/2026-06-22/006-worklog-module-flow-audit.md) |
+| 2026-06-22 | bugfix | bugfix | v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog. | [Worklog - Fix module flow P0](../../docs/worklog/2026-06-22/007-worklog-fix-module-flow.md) |
+| 2026-06-22 | bugfix | bugfix | v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog. | [Worklog - Fix health scoring zero flow](../../docs/worklog/2026-06-22/008-worklog-fix-health-scoring-flow.md) |

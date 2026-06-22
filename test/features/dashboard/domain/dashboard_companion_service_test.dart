@@ -34,9 +34,39 @@ void main() {
         activityLevel: '',
       );
 
+      expect(const DashboardDailyMetrics.empty().hasDailyScoreInputs, isFalse);
       expect(summary, contains('Nami chưa có đủ tín hiệu'));
     },
   );
+
+  test('buildDailySummary supports zero score when score inputs exist', () {
+    const metrics = DashboardDailyMetrics(
+      completedTasks: 0,
+      totalTasks: 0,
+      completedMeals: 0,
+      totalMeals: 1,
+      caloriesLogged: 0,
+      caloriesPlanned: 300,
+      waterMl: 0,
+      stepsCount: 0,
+      sleepHours: 0,
+      stressLevel: 0,
+      dailyScore: 0,
+      nutritionLogCount: 0,
+    );
+
+    final summary = DashboardCompanionService.buildDailySummary(
+      metrics: metrics,
+      sleepQuality: '',
+      activityLevel: '',
+    );
+
+    expect(metrics.hasDailyScoreInputs, isTrue);
+    expect(
+      summary,
+      'Nami đã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.',
+    );
+  });
 
   test('buildDailySummary nudges water when hydration is low', () {
     final summary = DashboardCompanionService.buildDailySummary(
