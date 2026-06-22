@@ -26,6 +26,16 @@ Commit de xuat: docs(supabase): lap checklist nghiem thu Supabase
 - [ ] Authenticated user đọc được catalog active.
 - [ ] Client không insert/update/delete được catalog.
 
+## Mobile snapshot sync (SQLite <-> Supabase)
+
+- [ ] Nâng SQLite app lên database v9, kiểm tra có `sync_outbox`, `sync_runtime_state` và trigger cho các bảng user-owned.
+- [ ] Guest hoàn tất onboarding + tạo account cloud mới: snapshot local được đẩy qua `sync_my_mobile_snapshot`, sau đó local dùng auth UUID và có đủ meal/task.
+- [ ] Account đã có onboarding/meal/task cloud: đăng nhập lại phải lấy cloud đè SQLite; Guest cache pending không ghi đè cloud.
+- [ ] Account mới không có onboarding và không có Guest cache: `onboarding_status` giữ chưa hoàn tất, UI đi vào onboarding.
+- [ ] Hoàn tất/sửa task, score, profile, lịch hoặc notification khi online: marker outbox được đẩy lên cloud; khi offline marker retry sau khi có mạng.
+- [ ] Write xảy ra trong lúc snapshot RPC đang chạy không bị xóa marker; phải được đồng bộ ở lần drain tiếp theo.
+- [ ] Client thử ghi `product_access_status`, `sale_status`, payment, commission, quota hay subject của user khác qua payload: RPC phải bỏ qua/từ chối.
+
 ## Membership và quota
 
 - [ ] Seed có đủ plan `free`, `plus`, `family_plus`.
@@ -52,6 +62,15 @@ Commit de xuat: docs(supabase): lap checklist nghiem thu Supabase
 - [ ] Tầng 3 không tạo commission.
 - [ ] Nếu B không có payment kỳ này nhưng C có payment thành công, commission từ C vẫn sinh cho B và A theo tầng 1/2.
 - [ ] Client không insert/update/delete được `payment_events`, `commission_records`, `sale_profiles`, `referral_relationships`.
+
+### Sale participation và cloud-direct UI
+
+- [ ] User chưa Sale chỉ thấy CTA tham gia trong Settings; nút chuyển sang Sale chỉ hiện khi `sale_status = active`.
+- [ ] User chọn đồng ý điều lệ: `sale_profiles` lưu `terms_version`, `terms_accepted_at`; trigger đồng bộ `users.sale_status`; referral code active được tạo.
+- [ ] Sale `active` gọi được dashboard/tree/leaderboard RPC và chỉ thấy dữ liệu đã mask/aggregate.
+- [ ] Sale `none`, `suspended`, `closed` không gọi được dashboard/tree/leaderboard RPC.
+- [ ] Flutter không lưu sale profile, referral relationship, payment event hay commission record trong SQLite; Sale UI đọc cloud RPC trực tiếp.
+- [ ] Kiểm tra nghiệp vụ/pháp lý trước payout thật: không tính thưởng vì tuyển người, không cam kết thu nhập, hoa hồng chỉ theo payment hợp lệ và có xử lý refund/chargeback.
 
 ## Tiêu chí hoàn tất
 

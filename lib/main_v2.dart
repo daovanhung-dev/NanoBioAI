@@ -10,6 +10,7 @@ import 'app_versions/v1/services/notifications/notification_lifecycle_refresher.
 import 'app_versions/v1/services/notifications/notification_startup_scheduler.dart';
 import 'app_versions/v2/app/bio_ai_v2_app.dart';
 import 'core/storage/localdb/app_prefs.dart';
+import 'services/supabase/cloud_sync/user_data_sync_outbox_refresher.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,9 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+
+  // START WRITE-THROUGH CLOUD SYNC AFTER SUPABASE IS READY
+  UserDataSyncOutboxRefresher().start();
 
   // INIT LOCAL NOTIFICATIONS
   await NotificationBootstrap.initialize();

@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/migrations/migration_manager.dart';
+import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
+import 'package:nano_app/core/storage/localdb/sync/sync_runtime_state.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -236,5 +238,64 @@ void main() {
     final indexes = await db.rawQuery('PRAGMA index_list(meal_catalog)');
     final indexNames = indexes.map((index) => index['name']).toList();
     expect(indexNames, contains('idx_meal_catalog_type'));
+  });
+
+  test('migration v9 creates durable user-data sync triggers once', () async {
+    await db.execute('CREATE TABLE users (id TEXT PRIMARY KEY)');
+    for (final table in SyncOutboxSchema.userOwnedTables) {
+      await db.execute(
+        'CREATE TABLE $table (id TEXT PRIMARY KEY, user_id TEXT)',
+      );
+    }
+
+    await MigrationManager.runMigrations(db, 8, 9);
+    await MigrationManager.runMigrations(db, 8, 9);
+
+    final userColumns = await db.rawQuery('PRAGMA table_info(users)');
+    final names = userColumns.map((column) => column['name']).toList();
+    expect(names, containsAll(<String>[
+      'product_access_status',
+      'sale_status',
+      'onboarding_status',
+      'onboarding_completed_at',
+    ]));
+
+    final tables = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    );
+    final tableNames = tables.map((table) => table['name']).toList();
+    expect(tableNames, contains('sync_outbox'));
+    expect(tableNames, contains('sync_runtime_state'));
+
+    await db.insert('users', {'id': 'auth-1'});
+    await db.insert('meal_plans', {'id': 'meal-1', 'user_id': 'auth-1'});
+    await db.update(
+      'meal_plans',
+      {'user_id': 'auth-1'},
+      where: 'id = ?',
+      whereArgs: ['meal-1'],
+    );
+
+    final mealMarkers = await db.query(
+      SyncOutboxSchema.outboxTable,
+      where: 'user_id = ? AND table_name = ?',
+      whereArgs: ['auth-1', 'meal_plans'],
+    );
+    expect(mealMarkers, hasLength(1));
+    expect(mealMarkers.single['operation'], 'upsert');
+
+    await SyncRuntimeState.setApplyingCloud(db, true);
+    await db.insert('daily_health_tasks', {
+      'id': 'task-cloud-1',
+      'user_id': 'auth-1',
+    });
+    await SyncRuntimeState.setApplyingCloud(db, false);
+
+    final cloudApplyMarkers = await db.query(
+      SyncOutboxSchema.outboxTable,
+      where: 'record_id = ?',
+      whereArgs: ['task-cloud-1'],
+    );
+    expect(cloudApplyMarkers, isEmpty);
   });
 }

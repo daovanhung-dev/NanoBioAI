@@ -6,6 +6,7 @@ import '../tables/lifestyle_schedule_items_table.dart';
 import '../tables/meal_catalog_table.dart';
 import '../tables/schedule_task_catalog_table.dart';
 import '../seeders/ai_catalog_seeder.dart';
+import '../sync/sync_outbox_schema.dart';
 
 class MigrationManager {
   static Future<void> runMigrations(
@@ -33,6 +34,9 @@ class MigrationManager {
     }
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 8)) {
       await _migrateToV8(db);
+    }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 9)) {
+      await _migrateToV9(db);
     }
   }
 
@@ -189,6 +193,35 @@ class MigrationManager {
     await db.execute(ScheduleTaskCatalogTable.createTable);
     await db.execute(ScheduleTaskCatalogTable.createCategoryIndex);
     await AiCatalogSeeder.seed(db);
+  }
+
+
+  static Future<void> _migrateToV9(Database db) async {
+    await _addColumnIfMissing(
+      db,
+      tableName: 'users',
+      columnName: 'product_access_status',
+      definition: "TEXT DEFAULT 'guest'",
+    );
+    await _addColumnIfMissing(
+      db,
+      tableName: 'users',
+      columnName: 'sale_status',
+      definition: "TEXT DEFAULT 'none'",
+    );
+    await _addColumnIfMissing(
+      db,
+      tableName: 'users',
+      columnName: 'onboarding_status',
+      definition: "TEXT DEFAULT 'not_started'",
+    );
+    await _addColumnIfMissing(
+      db,
+      tableName: 'users',
+      columnName: 'onboarding_completed_at',
+      definition: 'TEXT',
+    );
+    await SyncOutboxSchema.create(db);
   }
 
   static Future<void> _addColumnIfMissing(

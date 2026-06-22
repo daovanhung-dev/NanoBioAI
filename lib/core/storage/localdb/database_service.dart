@@ -9,6 +9,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'database_constants.dart';
 import 'database_version.dart';
+import 'sync/sync_outbox_schema.dart';
 
 // TABLES
 import 'tables/users_table.dart';
@@ -123,6 +124,8 @@ class DatabaseService {
     await db.execute(ScheduleTaskCatalogTable.createTable);
     await db.execute(ScheduleTaskCatalogTable.createCategoryIndex);
     await AiCatalogSeeder.seed(db);
+
+    await SyncOutboxSchema.create(db);
   }
 
   /// Delete database

@@ -21,9 +21,10 @@ Thư mục này chứa bộ tài liệu và SQL draft để thiết kế Supabas
 4. `03-membership-quota.sql` - gói Free/Plus/FamilyPlus, entitlement, quota, usage event.
 5. `04-family-plus.sql` - nhóm gia đình và quyền xem/sửa theo FamilyPlus.
 6. `05-sale-referral-commission.sql` - Sale/referral, payment event và hoa hồng 2 tầng.
-7. `07-seed-reference-data.sql` - seed dữ liệu tham chiếu ban đầu.
-8. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tạo account test Free/Plus/FamilyPlus cố định.
-9. `06-rls-policy-matrix.md` và `08-acceptance-checks.md` - kiểm tra bảo mật và nghiệm thu.
+7. `10-mobile-sync-and-sale-rpc.sql` - RPC snapshot đồng bộ local/cloud và RPC Sale trực tiếp (draft, chạy sau 05).
+8. `07-seed-reference-data.sql` - seed dữ liệu tham chiếu ban đầu.
+9. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tạo account test Free/Plus/FamilyPlus cố định.
+10. `06-rls-policy-matrix.md` và `08-acceptance-checks.md` - kiểm tra bảo mật và nghiệm thu.
 
 ## Trạng thái
 

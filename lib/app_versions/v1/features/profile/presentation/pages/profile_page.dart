@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,8 +9,8 @@ import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_
 import 'package:nano_app/app_versions/v1/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/utils/profile_validator.dart';
-import 'package:nano_app/services/supabase/auth/auth_profile_service.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -122,16 +124,16 @@ class ProfilePage extends ConsumerWidget {
   }
 }
 
-class _EditProfileSheet extends StatefulWidget {
+class _EditProfileSheet extends ConsumerStatefulWidget {
   final DashboardEntity dashboard;
 
   const _EditProfileSheet({required this.dashboard});
 
   @override
-  State<_EditProfileSheet> createState() => _EditProfileSheetState();
+  ConsumerState<_EditProfileSheet> createState() => _EditProfileSheetState();
 }
 
-class _EditProfileSheetState extends State<_EditProfileSheet> {
+class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _fullName;
   late final TextEditingController _email;
@@ -284,28 +286,27 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
       final height = double.parse(_height.text.trim());
       final weight = double.parse(_weight.text.trim());
       final bmi = _calculateBmi(height, weight);
-      final payload = CloudProfileUpdatePayload(
-        fullName: _fullName.text.trim(),
-        phone: _phone.text.trim(),
-        gender: _gender.text.trim(),
-        birthYear: birthYear,
-        occupation: _occupation.text.trim(),
-        heightCm: height,
-        weightKg: weight,
-        bmi: bmi,
-      );
+      final localProfile = <String, dynamic>{
+        'full_name': _fullName.text.trim(),
+        'phone': _phone.text.trim(),
+        'gender': _gender.text.trim(),
+        'birth_year': birthYear,
+        'occupation': _occupation.text.trim(),
+        'height_cm': height,
+        'weight_kg': weight,
+        'bmi': bmi,
+      };
 
-      await const AuthProfileService().updateProfile(payload);
-      await const SettingsLocalDatasource().updateUserProfile(authUserId, {
-        'full_name': payload.fullName,
-        'phone': payload.phone,
-        'gender': payload.gender,
-        'birth_year': payload.birthYear,
-        'occupation': payload.occupation,
-        'height_cm': payload.heightCm,
-        'weight_kg': payload.weightKg,
-        'bmi': payload.bmi,
-      });
+      // Local data is durable first. SQLite v9 triggers enqueue both user and
+      // health-profile changes in the same transaction; the outbox pushes a
+      // complete authenticated snapshot and retries without discarding the
+      // user's edit when the device is offline.
+      await const SettingsLocalDatasource().updateUserProfile(
+        authUserId,
+        localProfile,
+      );
+      unawaited(UserDataSyncOutbox.drainForCurrentUser());
+      invalidateUserScopedProviders(ref);
 
       if (!mounted) return;
       Navigator.of(context).pop();

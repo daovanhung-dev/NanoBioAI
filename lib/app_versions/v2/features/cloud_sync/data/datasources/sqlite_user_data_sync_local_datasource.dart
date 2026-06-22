@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:nano_app/core/storage/localdb/database_service.dart';
+import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
+import 'package:nano_app/core/storage/localdb/sync/sync_runtime_state.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/user_data_snapshot.dart';
@@ -49,29 +51,45 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
 
     final db = await _db();
     await db.transaction((txn) async {
-      if (removeLocalUserId != null &&
-          removeLocalUserId.isNotEmpty &&
-          removeLocalUserId != userId) {
-        await _deleteRowsForUser(txn, removeLocalUserId, includeUser: true);
-      }
-
-      await _deleteRowsForUser(txn, userId, includeUser: false);
-
-      await txn.insert(
-        'users',
-        _localUserRow(snapshot.user!, userId),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-
-      for (final table in UserDataSyncTables.localUserOwnedTables) {
-        final rows = snapshot.tables[table] ?? const <Map<String, Object?>>[];
-        for (final row in rows) {
-          await txn.insert(
-            table,
-            _localRowFromCloud(table, row, userId),
-            conflictAlgorithm: ConflictAlgorithm.replace,
+      await SyncRuntimeState.setApplyingCloud(txn, true);
+      try {
+        if (removeLocalUserId != null &&
+            removeLocalUserId.isNotEmpty &&
+            removeLocalUserId != userId) {
+          await _deleteRowsForUser(txn, removeLocalUserId, includeUser: true);
+          await txn.delete(
+            SyncOutboxSchema.outboxTable,
+            where: 'user_id = ?',
+            whereArgs: [removeLocalUserId],
           );
         }
+
+        await _deleteRowsForUser(txn, userId, includeUser: false);
+
+        await txn.insert(
+          'users',
+          _localUserRow(snapshot.user!, userId),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+
+        for (final table in UserDataSyncTables.localUserOwnedTables) {
+          final rows = snapshot.tables[table] ?? const <Map<String, Object?>>[];
+          for (final row in rows) {
+            await txn.insert(
+              table,
+              _localRowFromCloud(table, row, userId),
+              conflictAlgorithm: ConflictAlgorithm.replace,
+            );
+          }
+        }
+
+        await txn.delete(
+          SyncOutboxSchema.outboxTable,
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        );
+      } finally {
+        await SyncRuntimeState.setApplyingCloud(txn, false);
       }
     });
   }

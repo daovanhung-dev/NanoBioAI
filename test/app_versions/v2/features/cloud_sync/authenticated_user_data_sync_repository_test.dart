@@ -15,12 +15,15 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('pushes pending guest data then pulls cloud snapshot', () async {
+    test('pushes Guest onboarding only to a fresh cloud account, then pulls',
+        () async {
       await AppPrefs.setPendingGuestUserId('guest-1');
 
       final remote = _FakeRemoteDatasource(
-        currentUser: {'id': 'auth-1', 'onboarding_status': 'not_started'},
-        pullSnapshot: _snapshot('auth-1', tableName: 'meal_plans'),
+        pullSnapshots: [
+          _freshSnapshot('auth-1'),
+          _snapshot('auth-1', tableName: 'meal_plans'),
+        ],
       );
       final local = _FakeLocalDatasource({
         'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
@@ -37,6 +40,7 @@ void main() {
       expect(result.pushedLocalGuestData, isTrue);
       expect(result.userId, 'auth-1');
       expect(remote.pushedSnapshot?.user?['id'], 'guest-1');
+      expect(remote.pushedAuthUserId, 'auth-1');
       expect(local.replacedUserId, 'auth-1');
       expect(local.removedLocalUserId, 'guest-1');
       expect(await AppPrefs.pendingGuestUserId(), isNull);
@@ -47,18 +51,17 @@ void main() {
           email: 'auth-1@nanobio.local',
           emailConfirmed: true,
         ),
-        profile: AuthProfile.fromMap(remote.pullSnapshot!.user!),
+        profile: AuthProfile.fromMap(remote.lastSnapshot!.user!),
         requiresEmailConfirmation: false,
       );
       expect(routeState.status, AuthRouteStatus.authenticatedReady);
     });
 
-    test('cloud completed onboarding wins over pending guest cache', () async {
+    test('cloud completed onboarding wins over pending Guest cache', () async {
       await AppPrefs.setPendingGuestUserId('guest-1');
 
       final remote = _FakeRemoteDatasource(
-        currentUser: {'id': 'auth-1', 'onboarding_status': 'completed'},
-        pullSnapshot: _snapshot('auth-1', tableName: 'daily_health_tasks'),
+        pullSnapshots: [_snapshot('auth-1', tableName: 'daily_health_tasks')],
       );
       final local = _FakeLocalDatasource({
         'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
@@ -79,13 +82,41 @@ void main() {
       expect(await AppPrefs.pendingGuestUserId(), isNull);
     });
 
-    test('sync failure does not clear pending guest id', () async {
+    test('existing cloud data wins even before onboarding is marked completed',
+        () async {
       await AppPrefs.setPendingGuestUserId('guest-1');
 
       final remote = _FakeRemoteDatasource(
-        currentUser: {'id': 'auth-1', 'onboarding_status': 'not_started'},
-        pullSnapshot: _snapshot('auth-1', tableName: 'meal_plans'),
-        failPull: true,
+        pullSnapshots: [
+          _snapshot(
+            'auth-1',
+            tableName: 'health_profiles',
+            onboardingStatus: 'in_progress',
+          ),
+        ],
+      );
+      final local = _FakeLocalDatasource({
+        'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
+      });
+      final repository = AuthenticatedUserDataSyncRepositoryImpl(
+        remoteDatasource: remote,
+        localDatasource: local,
+      );
+
+      await repository.syncAfterAuthenticatedSession(AuthSyncReason.signIn);
+
+      expect(remote.pushedSnapshot, isNull);
+      expect(local.replacedUserId, 'auth-1');
+      expect(await AppPrefs.isOnboardingCompleted(), isFalse);
+    });
+
+    test('sync failure after Guest upload does not clear pending Guest id',
+        () async {
+      await AppPrefs.setPendingGuestUserId('guest-1');
+
+      final remote = _FakeRemoteDatasource(
+        pullSnapshots: [_freshSnapshot('auth-1')],
+        failFromPull: 2,
       );
       final local = _FakeLocalDatasource({
         'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
@@ -106,13 +137,29 @@ void main() {
   });
 }
 
-UserDataSnapshot _snapshot(String userId, {required String tableName}) {
+UserDataSnapshot _freshSnapshot(String userId) {
   return UserDataSnapshot(
     user: {
       'id': userId,
       'email': '$userId@nanobio.local',
       'subscription_tier': 'free',
-      'onboarding_status': 'completed',
+      'onboarding_status': 'not_started',
+    },
+    tables: const {},
+  );
+}
+
+UserDataSnapshot _snapshot(
+  String userId, {
+  required String tableName,
+  String onboardingStatus = 'completed',
+}) {
+  return UserDataSnapshot(
+    user: {
+      'id': userId,
+      'email': '$userId@nanobio.local',
+      'subscription_tier': 'free',
+      'onboarding_status': onboardingStatus,
     },
     tables: {
       tableName: [
@@ -126,26 +173,36 @@ class _FakeRemoteDatasource implements UserDataSyncRemoteDatasource {
   @override
   final String? currentUserId = 'auth-1';
 
-  final Map<String, Object?>? currentUser;
-  final UserDataSnapshot? pullSnapshot;
-  final bool failPull;
+  final List<UserDataSnapshot?> pullSnapshots;
+  final int? failFromPull;
+  int _pullCalls = 0;
 
   UserDataSnapshot? pushedSnapshot;
   String? pushedAuthUserId;
 
   _FakeRemoteDatasource({
-    required this.currentUser,
-    required this.pullSnapshot,
-    this.failPull = false,
+    required this.pullSnapshots,
+    this.failFromPull,
   });
 
+  UserDataSnapshot? get lastSnapshot => pullSnapshots.isEmpty
+      ? null
+      : pullSnapshots[(pullSnapshots.length - 1).clamp(0, pullSnapshots.length - 1).toInt()];
+
   @override
-  Future<Map<String, Object?>?> currentUserRow() async => currentUser;
+  Future<Map<String, Object?>?> currentUserRow() async => lastSnapshot?.user;
 
   @override
   Future<UserDataSnapshot?> pullCurrentUserSnapshot() async {
-    if (failPull) throw StateError('pull failed');
-    return pullSnapshot;
+    _pullCalls += 1;
+    if (failFromPull != null && _pullCalls >= failFromPull!) {
+      throw StateError('pull failed');
+    }
+    if (pullSnapshots.isEmpty) return null;
+    final index = (
+      _pullCalls - 1
+    ).clamp(0, pullSnapshots.length - 1).toInt();
+    return pullSnapshots[index];
   }
 
   @override

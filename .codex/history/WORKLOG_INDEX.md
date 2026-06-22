@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 32
+- Total worklogs: 33
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -41,3 +41,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-22 | docs-context / audit checklist | supabase-schema | DB local, Supabase draft, `lib/app_versions/v1`, `lib/app_versions/v2`, `lib/app_versions/v3`, `lib/sale_referral` | [Worklog - Audit module va flow san pham](../../docs/worklog/2026-06-22/006-worklog-module-flow-audit.md) |
 | 2026-06-22 | bugfix | bugfix | v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog. | [Worklog - Fix module flow P0](../../docs/worklog/2026-06-22/007-worklog-fix-module-flow.md) |
 | 2026-06-22 | bugfix | bugfix | v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog. | [Worklog - Fix health scoring zero flow](../../docs/worklog/2026-06-22/008-worklog-fix-health-scoring-flow.md) |
+| 2026-06-22 | coding/test/docs | coding | SQLite-Supabase cloud sync, v1 onboarding/profile, v2 cloud sync, Sale UI/RPC draft | [Worklog - Cloud Sync Va Sale Interface](../../docs/worklog/2026-06-22/009-worklog-cloud-sync-sale.md) |

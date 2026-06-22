@@ -35,7 +35,8 @@ class SupabaseUserDataSyncRemoteDatasource
         .from('users')
         .select(
           'id,email,phone,full_name,avatar_url,gender,birth_year,'
-          'subscription_tier,onboarding_status,created_at,updated_at',
+          'subscription_tier,product_access_status,sale_status,onboarding_status,'
+          'onboarding_completed_at,created_at,updated_at',
         )
         .eq('id', userId)
         .maybeSingle();
@@ -72,70 +73,28 @@ class SupabaseUserDataSyncRemoteDatasource
     }
     if (!localSnapshot.hasUser) return;
 
-    await _updateUser(client, localSnapshot.user!, authUserId);
-    await _updateSingletonTable(
-      client,
-      'health_profiles',
-      localSnapshot.tables['health_profiles'] ?? const [],
-      authUserId,
-    );
-    await _updateSingletonTable(
-      client,
-      'lifestyle_habits',
-      localSnapshot.tables['lifestyle_habits'] ?? const [],
-      authUserId,
-    );
+    final payload = _cloudSnapshotPayload(localSnapshot, authUserId);
+    await client.rpc('sync_my_mobile_snapshot', params: {'p_snapshot': payload});
+  }
 
-    for (final table in UserDataSyncTables.cloudCollectionTables) {
-      await client.from(table).delete().eq('user_id', authUserId);
-    }
+  Map<String, Object?> _cloudSnapshotPayload(
+    UserDataSnapshot snapshot,
+    String authUserId,
+  ) {
+    final idMap = _buildCloudIdMap(snapshot);
+    final tables = <String, Object?>{};
 
-    final idMap = _buildCloudIdMap(localSnapshot);
-    for (final table in UserDataSyncTables.cloudCollectionTables) {
-      final sourceRows =
-          localSnapshot.tables[table] ?? const <Map<String, Object?>>[];
-      if (sourceRows.isEmpty) continue;
-
-      final cloudRows = sourceRows
+    for (final table in UserDataSyncTables.localUserOwnedTables) {
+      final sourceRows = snapshot.tables[table] ?? const <Map<String, Object?>>[];
+      tables[table] = sourceRows
           .map((row) => _cloudInsertRow(table, row, authUserId, idMap))
           .toList(growable: false);
-
-      await client.from(table).insert(cloudRows);
     }
 
-    await client
-        .from('users')
-        .update({
-          'onboarding_status': 'completed',
-          'onboarding_completed_at': DateTime.now().toUtc().toIso8601String(),
-        })
-        .eq('id', authUserId);
-  }
-
-  Future<void> _updateUser(
-    SupabaseClient client,
-    Map<String, Object?> source,
-    String authUserId,
-  ) async {
-    final row = _cloudUpdateRow('users', source);
-    row['onboarding_status'] = 'completed';
-    row['onboarding_completed_at'] = DateTime.now().toUtc().toIso8601String();
-
-    await client.from('users').update(row).eq('id', authUserId);
-  }
-
-  Future<void> _updateSingletonTable(
-    SupabaseClient client,
-    String table,
-    List<Map<String, Object?>> sourceRows,
-    String authUserId,
-  ) async {
-    if (sourceRows.isEmpty) return;
-
-    final row = _cloudUpdateRow(table, sourceRows.first);
-    if (row.isEmpty) return;
-
-    await client.from(table).update(row).eq('user_id', authUserId);
+    return {
+      'user': _cloudUpdateRow('users', snapshot.user!),
+      'tables': tables,
+    };
   }
 
   Map<String, Object?> _cloudUpdateRow(

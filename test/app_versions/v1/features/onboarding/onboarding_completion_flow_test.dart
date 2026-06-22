@@ -32,6 +32,17 @@ void main() {
       },
     );
 
+    test('persists onboarding locally before any authenticated snapshot drain', () {
+      final source = File(
+        'lib/app_versions/v1/features/onboarding/domain/repositories/'
+        'onboarding_repository_impl.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('localDatasource.saveOnboarding'));
+      expect(source, isNot(contains('saveCompletedOnboarding(')));
+      expect(source, contains('UserDataSyncOutbox.drainForCurrentUser'));
+    });
+
     test('sets completed only after initial plan callback succeeds', () async {
       final repository = _FakeOnboardingRepository();
       var callbackCalls = 0;
@@ -54,6 +65,7 @@ void main() {
       await controller.saveOnboarding();
 
       expect(repository.saveCalls, 1);
+      expect(repository.markCompletedCalls, 1);
       expect(callbackCalls, 1);
       expect(await AppPrefs.isOnboardingCompleted(), isTrue);
       expect(container.read(onboardingProvider).isSaving, isFalse);
@@ -80,6 +92,7 @@ void main() {
       );
 
       expect(repository.saveCalls, 1);
+      expect(repository.markCompletedCalls, 0);
       expect(await AppPrefs.isOnboardingCompleted(), isFalse);
       expect(container.read(onboardingProvider).isSaving, isFalse);
       expect(
@@ -100,11 +113,17 @@ void _seedValidState(OnboardingController controller) {
 
 class _FakeOnboardingRepository implements OnboardingRepository {
   int saveCalls = 0;
+  int markCompletedCalls = 0;
   OnboardingEntity? lastEntity;
 
   @override
   Future<void> save(OnboardingEntity entity) async {
     saveCalls++;
     lastEntity = entity;
+  }
+
+  @override
+  Future<void> markCompleted() async {
+    markCompletedCalls++;
   }
 }

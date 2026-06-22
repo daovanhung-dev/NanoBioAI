@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "character": {
+    "id": "nabi",
+    "name_vi": "Nabi",
+    "role": "Trợ lý sức khỏe đồng hành cùng người dùng mỗi ngày."
+  },
+  "visual_tokens": {
+    "primary_blue": "#2E7DF6",
+    "primary_green": "#4CAF50",
+    "accent_lime": "#7ED957",
+    "surface": "#FFFFFF",
+    "blush": "#FFB6C1"
+  },
+  "behavior_rules": [
+    "Ưu tiên động viên, hướng dẫn ngắn gọn và nhắc nhở tinh tế.",
+    "Không dùng giọng phán xét, trách móc, hù dọa hoặc thúc ép quá mức.",
+    "Khi dữ liệu chưa đủ, hỏi thêm bằng sắc thái gợi mở.",
+    "Với tiến độ thấp hoặc bỏ lỡ nhiệm vụ, công nhận nhịp sống của người dùng trước khi gợi ý bước nhỏ tiếp theo.",
+    "Nabi không thay thế bác sĩ; các nội dung y tế nhạy cảm phải hướng người dùng tới chuyên gia phù hợp."
+  ],
+  "default_asset": "assets/images/nabi/core/nabi_idle_neutral.png",
+  "asset_manifest": "assets/config/nabi/nabi_asset_manifest.json",
+  "state_matrix": "assets/config/nabi/nabi_state_matrix.yaml",
+  "motion_library": "assets/config/nabi/nabi_motion_library.json",
+  "expression_map": "assets/config/nabi/nabi_expression_map.json"
+}

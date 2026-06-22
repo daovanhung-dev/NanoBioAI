@@ -32,11 +32,13 @@ class AuthenticatedUserDataSyncRepositoryImpl
 
     try {
       final pendingGuestUserId = await AppPrefs.pendingGuestUserId();
-      final cloudUser = await remoteDatasource.currentUserRow();
-      final cloudCompleted =
-          cloudUser?['onboarding_status']?.toString() == 'completed';
+      var cloudSnapshot = await remoteDatasource.pullCurrentUserSnapshot();
+      final cloudHasMeaningfulData = _hasMeaningfulCloudData(cloudSnapshot);
 
-      if (pendingGuestUserId != null && !cloudCompleted) {
+      // Registering after Guest onboarding is the only local-wins case: the
+      // new auth account has only the bootstrap profile and no cloud health or
+      // schedule data yet. For every established cloud account, cloud wins.
+      if (pendingGuestUserId != null && !cloudHasMeaningfulData) {
         final guestSnapshot = await localDatasource.readSnapshot(
           pendingGuestUserId,
         );
@@ -44,24 +46,24 @@ class AuthenticatedUserDataSyncRepositoryImpl
         if (guestSnapshot != null && guestSnapshot.hasUser) {
           AppLogger.info(
             _tag,
-            'Pushing pending guest data to authenticated user $authUserId',
+            'Uploading pending Guest onboarding to authenticated user $authUserId',
           );
           await remoteDatasource.replaceCloudWithLocalSnapshot(
             guestSnapshot,
             authUserId,
           );
           pushedLocalGuestData = true;
+          cloudSnapshot = await remoteDatasource.pullCurrentUserSnapshot();
         } else {
           warnings.add('Pending guest data was not found in local SQLite.');
         }
-      } else if (pendingGuestUserId != null && cloudCompleted) {
+      } else if (pendingGuestUserId != null && cloudHasMeaningfulData) {
         AppLogger.info(
           _tag,
-          'Cloud onboarding already completed; pulling cloud over guest cache.',
+          'Established cloud data found; replacing pending guest cache from cloud.',
         );
       }
 
-      final cloudSnapshot = await remoteDatasource.pullCurrentUserSnapshot();
       if (cloudSnapshot == null || !cloudSnapshot.hasUser) {
         warnings.add('Cloud profile was not available for pull.');
         return CloudSyncResult(
@@ -73,6 +75,9 @@ class AuthenticatedUserDataSyncRepositoryImpl
         );
       }
 
+      // Full replacement is intentional. SQLite is the offline projection for
+      // exactly this authenticated user; server-owned access/Sale fields remain
+      // authoritative in the pulled `users` row.
       await localDatasource.replaceFromCloud(
         userId: authUserId,
         snapshot: cloudSnapshot,
@@ -83,6 +88,9 @@ class AuthenticatedUserDataSyncRepositoryImpl
       );
 
       await AppPrefs.clearPendingGuestUserId();
+      await AppPrefs.setOnboardingCompleted(
+        cloudSnapshot.user?['onboarding_status']?.toString() == 'completed',
+      );
       await AppPrefs.setLastCloudSyncAt(DateTime.now());
 
       final pulledTables = _pulledTables(cloudSnapshot);
@@ -102,6 +110,13 @@ class AuthenticatedUserDataSyncRepositoryImpl
       AppLogger.error(_tag, 'Cloud sync failed', error, stackTrace);
       rethrow;
     }
+  }
+
+  bool _hasMeaningfulCloudData(UserDataSnapshot? snapshot) {
+    if (snapshot == null || !snapshot.hasUser) return false;
+
+    final onboardingStatus = snapshot.user?['onboarding_status']?.toString();
+    return onboardingStatus == 'completed' || snapshot.tablesWithRows.isNotEmpty;
   }
 
   String? _oldGuestIdForRemoval(String? pendingGuestUserId, String authUserId) {

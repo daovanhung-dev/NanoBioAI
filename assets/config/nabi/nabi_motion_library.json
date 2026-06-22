@@ -1,0 +1,172 @@
+{
+  "schema_version": "1.0.0",
+  "note": "Static PNG assets; these are presentation motion recipes for Flutter/Rive implementation, not rendered animation files.",
+  "motions": {
+    "idle_breathe": {
+      "duration_ms": 2200,
+      "loop": true,
+      "scale_y": [
+        1.0,
+        1.018,
+        1.0
+      ],
+      "translate_y": [
+        0,
+        -3,
+        0
+      ],
+      "curve": "easeInOut"
+    },
+    "idle_bounce": {
+      "duration_ms": 1500,
+      "loop": true,
+      "translate_y": [
+        0,
+        -8,
+        0
+      ],
+      "curve": "easeInOut"
+    },
+    "wave": {
+      "duration_ms": 900,
+      "loop": false,
+      "entrance": "fadeScaleIn",
+      "micro_motion": "hand rotation ±8deg"
+    },
+    "point": {
+      "duration_ms": 650,
+      "loop": false,
+      "entrance": "slideFromRight 8px"
+    },
+    "listen": {
+      "duration_ms": 1200,
+      "loop": true,
+      "rotate_deg": [
+        0,
+        2,
+        0,
+        -2,
+        0
+      ],
+      "curve": "easeInOut"
+    },
+    "think": {
+      "duration_ms": 1500,
+      "loop": true,
+      "translate_y": [
+        0,
+        -4,
+        0
+      ],
+      "curve": "easeInOut"
+    },
+    "analyze": {
+      "duration_ms": 1300,
+      "loop": true,
+      "rotation_deg": [
+        0,
+        360
+      ],
+      "target": "overlay/loading icon"
+    },
+    "speak": {
+      "duration_ms": 900,
+      "loop": false,
+      "scale": [
+        1.0,
+        1.03,
+        1.0
+      ]
+    },
+    "present": {
+      "duration_ms": 750,
+      "loop": false,
+      "translate_x": [
+        0,
+        8,
+        0
+      ]
+    },
+    "typing": {
+      "duration_ms": 750,
+      "loop": true,
+      "translate_y": [
+        0,
+        -2,
+        0
+      ]
+    },
+    "exercise": {
+      "duration_ms": 700,
+      "loop": true,
+      "translate_y": [
+        0,
+        -10,
+        0
+      ]
+    },
+    "walk": {
+      "duration_ms": 800,
+      "loop": true,
+      "translate_x": [
+        0,
+        4,
+        0
+      ]
+    },
+    "stretch": {
+      "duration_ms": 900,
+      "loop": false,
+      "scale_y": [
+        1.0,
+        1.05,
+        1.0
+      ]
+    },
+    "rest": {
+      "duration_ms": 2200,
+      "loop": true,
+      "opacity": [
+        1.0,
+        0.93,
+        1.0
+      ]
+    },
+    "celebrate": {
+      "duration_ms": 850,
+      "loop": false,
+      "scale": [
+        0.92,
+        1.06,
+        1.0
+      ]
+    },
+    "encourage": {
+      "duration_ms": 700,
+      "loop": false,
+      "translate_y": [
+        0,
+        -10,
+        0
+      ]
+    },
+    "calm": {
+      "duration_ms": 1800,
+      "loop": true,
+      "translate_y": [
+        0,
+        -2,
+        0
+      ]
+    },
+    "thank": {
+      "duration_ms": 800,
+      "loop": false,
+      "translate_y": [
+        0,
+        9,
+        0
+      ]
+    }
+  }
+}

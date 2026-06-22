@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
+import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
@@ -11,6 +12,9 @@ import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_
 import 'package:nano_app/app_versions/v1/features/settings/domain/entities/settings_preferences_entity.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/services/supabase/auth/account_security_provider.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
+import 'package:nano_app/sale_referral/presentation/pages/sale_participation_page.dart';
 
 import 'dev_database_viewer_page.dart';
 
@@ -25,6 +29,8 @@ class SettingsView extends ConsumerWidget {
     final preferences =
         preferencesAsync.value ?? SettingsPreferencesEntity.defaults();
     final dashboard = dashboardAsync.value;
+    final saleStateAsync = ref.watch(saleStateProvider);
+    final isAuthenticated = currentSupabaseUserIdOrNull() != null;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -34,6 +40,7 @@ class SettingsView extends ConsumerWidget {
             ref.invalidate(dashboardProvider);
             ref.invalidate(settingsPreferencesControllerProvider);
             ref.invalidate(settingsCacheSizeProvider);
+            ref.invalidate(saleStateProvider);
             try {
               await ref.read(dashboardProvider.future);
             } catch (_) {}
@@ -101,6 +108,16 @@ class SettingsView extends ConsumerWidget {
                           ),
                         ],
                       ),
+                      if (isAuthenticated) ...[
+                        const SizedBox(height: AppSpacing.xl),
+                        _SectionTitle('Cùng Nami phát triển'),
+                        const SizedBox(height: AppSpacing.md),
+                        _MenuCard(
+                          children: [
+                            _SaleSettingsEntry(saleState: saleStateAsync),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.xl),
                       _SectionTitle('Ứng dụng'),
                       const SizedBox(height: AppSpacing.md),
@@ -433,6 +450,75 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
       );
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+}
+
+class _SaleSettingsEntry extends StatelessWidget {
+  final AsyncValue<SaleState> saleState;
+
+  const _SaleSettingsEntry({required this.saleState});
+
+  @override
+  Widget build(BuildContext context) {
+    return saleState.when(
+      loading: () => const _MenuItem(
+        icon: Icons.workspace_premium_rounded,
+        title: 'Không gian Sale',
+        subtitle: 'Nami đang kiểm tra quyền Sale của bạn...',
+        trailing: SizedBox(
+          height: 22,
+          width: 22,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      error: (_, __) => _MenuItem(
+        icon: Icons.volunteer_activism_rounded,
+        title: 'Tham gia kiếm tiền cùng Nami',
+        subtitle: 'Mở điều lệ tham gia và thử kiểm tra lại quyền Sale.',
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => const SaleParticipationPage(),
+          ),
+        ),
+      ),
+      data: (state) {
+        if (state.isActive) {
+          return _MenuItem(
+            icon: Icons.workspace_premium_rounded,
+            title: 'Chuyển sang không gian Sale',
+            subtitle: state.referralCode == null
+                ? 'Theo dõi mạng lưới, xếp hạng và công cụ Sale'
+                : 'Mã giới thiệu: ${state.referralCode}',
+            onTap: () => context.push(V2RoutePaths.sale),
+          );
+        }
+
+        return _MenuItem(
+          icon: Icons.volunteer_activism_rounded,
+          title: 'Tham gia kiếm tiền cùng Nami',
+          subtitle: _subtitleFor(state.status),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const SaleParticipationPage(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _subtitleFor(SaleStatus status) {
+    switch (status) {
+      case SaleStatus.pending:
+        return 'Xem lại điều lệ và trạng thái tham gia của bạn';
+      case SaleStatus.suspended:
+        return 'Quyền Sale đang tạm khóa; xem thông tin hỗ trợ';
+      case SaleStatus.closed:
+        return 'Quyền Sale đã đóng; xem thông tin hỗ trợ';
+      case SaleStatus.none:
+      case SaleStatus.active:
+        return 'Đọc điều lệ, chấp nhận và nhận quyền Sale cho tài khoản';
     }
   }
 }

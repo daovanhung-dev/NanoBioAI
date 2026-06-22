@@ -70,6 +70,10 @@ class OnboardingLocalDatasource {
               'full_name': model.fullName,
               'gender': model.gender,
               'birth_year': model.birthYear,
+              'onboarding_status':
+                  users.first['onboarding_status'] == 'completed'
+                      ? 'completed'
+                      : 'in_progress',
               'updated_at': now,
             },
             where: 'id = ?',
@@ -90,6 +94,9 @@ class OnboardingLocalDatasource {
             'full_name': model.fullName,
             'gender': model.gender,
             'birth_year': model.birthYear,
+            'product_access_status':
+                userIdOverride == null ? 'guest' : 'free',
+            'onboarding_status': 'in_progress',
             'created_at': now,
             'updated_at': now,
           });
@@ -337,6 +344,24 @@ class OnboardingLocalDatasource {
       AppLogger.error(_tag, 'Failed to save onboarding to SQLite', e, st);
       rethrow;
     }
+  }
+
+  Future<void> markOnboardingCompleted(String userId) async {
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty) return;
+
+    final now = DateTime.now().toUtc().toIso8601String();
+    final db = await _db();
+    await db.update(
+      'users',
+      {
+        'onboarding_status': 'completed',
+        'onboarding_completed_at': now,
+        'updated_at': now,
+      },
+      where: 'id = ?',
+      whereArgs: [normalizedUserId],
+    );
   }
 
   Map<String, Object?> _healthProfileRow(

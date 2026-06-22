@@ -1,23 +1,9 @@
+import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
+
 class UserDataSyncTables {
   UserDataSyncTables._();
 
-  static const localUserOwnedTables = <String>[
-    'health_profiles',
-    'lifestyle_habits',
-    'health_goals',
-    'health_conditions',
-    'food_allergies',
-    'medical_treatments',
-    'survey_answers',
-    'meal_plans',
-    'daily_health_tasks',
-    'lifestyle_schedule_items',
-    'notifications',
-    'health_tracking_logs',
-    'nutrition_logs',
-    'ai_insights',
-    'ai_recommendations',
-  ];
+  static const localUserOwnedTables = SyncOutboxSchema.userOwnedTables;
 
   static const cloudCollectionTables = <String>[
     'health_goals',
@@ -45,6 +31,10 @@ class UserDataSyncTables {
       'gender',
       'birth_year',
       'subscription_tier',
+      'product_access_status',
+      'sale_status',
+      'onboarding_status',
+      'onboarding_completed_at',
       'created_at',
       'updated_at',
     },
