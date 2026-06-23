@@ -124,9 +124,9 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
                       const SizedBox(height: AppSpacing.xl),
                       const _HumanSectionHeader(
                         eyebrow: 'Mục tiêu sức khỏe',
-                        title: 'Bạn muốn Nami ưu tiên chăm sóc điều gì?',
+                        title: 'Bạn muốn Nabiưu tiên chăm sóc điều gì?',
                         subtitle:
-                            'Bạn có thể chọn nhiều mục tiêu. Không cần chọn thật hoàn hảo, Nami sẽ cùng bạn điều chỉnh dần theo cơ thể và nhịp sống của bạn.',
+                            'Bạn có thể chọn nhiều mục tiêu. Không cần chọn thật hoàn hảo, Nabisẽ cùng bạn điều chỉnh dần theo cơ thể và nhịp sống của bạn.',
                       ),
                       const SizedBox(height: AppSpacing.md),
                       _GoalCategorySelector(
@@ -146,7 +146,7 @@ class _GoalsStepState extends ConsumerState<GoalsStep>
                       const SizedBox(height: AppSpacing.xl),
                       const _HumanSectionHeader(
                         eyebrow: 'Chia sẻ thêm',
-                        title: 'Có điều gì bạn muốn Nami hiểu kỹ hơn không?',
+                        title: 'Có điều gì bạn muốn Nabihiểu kỹ hơn không?',
                         subtitle:
                             'Bạn cứ viết như đang kể với một người đồng hành. Ví dụ: “Mình hay mệt về chiều”, “mình muốn ngủ sớm hơn”, hoặc “mình cần ăn uống dễ duy trì”.',
                       ),
@@ -186,8 +186,8 @@ class _HeroSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectedCount = selectedGoals.length;
     final message = selectedCount == 0
-        ? 'Nami sẽ lắng nghe điều bạn đang cần, rồi nhẹ nhàng gợi ý bữa ăn, thói quen và lời nhắc phù hợp hơn với bạn.'
-        : 'Nami đã ghi nhận $selectedCount điều bạn quan tâm. Mình sẽ ưu tiên những mục tiêu này khi xây lộ trình chăm sóc cho bạn.';
+        ? 'Nabisẽ lắng nghe điều bạn đang cần, rồi nhẹ nhàng gợi ý bữa ăn, thói quen và lời nhắc phù hợp hơn với bạn.'
+        : 'Nabiđã ghi nhận $selectedCount điều bạn quan tâm. Mình sẽ ưu tiên những mục tiêu này khi xây lộ trình chăm sóc cho bạn.';
 
     return Container(
       width: double.infinity,
@@ -268,7 +268,7 @@ class _HeroSection extends StatelessWidget {
                             ),
                             const SizedBox(width: AppSpacing.xs),
                             Text(
-                              'Nami đang lắng nghe',
+                              'Nabiđang lắng nghe',
                               style: AppTextStyles.labelLarge.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w800,
@@ -393,11 +393,11 @@ class _NamiReflectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasSelected = selectedGoals.isNotEmpty;
     final title = hasSelected
-        ? 'Nami đã hiểu điều bạn đang ưu tiên'
+        ? 'Nabiđã hiểu điều bạn đang ưu tiên'
         : 'Mình bắt đầu thật nhẹ thôi nhé';
     final body = hasSelected
-        ? 'Những lựa chọn này sẽ giúp Nami gợi ý bữa ăn, lịch sinh hoạt và lời nhắc phù hợp hơn. Bạn vẫn có thể đổi lại bất cứ lúc nào.'
-        : 'Bạn không cần đặt quá nhiều mục tiêu ngay từ đầu. Chỉ cần chọn những điều bạn thật sự muốn cải thiện trước, còn lại Nami sẽ cùng bạn đi từng bước.';
+        ? 'Những lựa chọn này sẽ giúp Nabigợi ý bữa ăn, lịch sinh hoạt và lời nhắc phù hợp hơn. Bạn vẫn có thể đổi lại bất cứ lúc nào.'
+        : 'Bạn không cần đặt quá nhiều mục tiêu ngay từ đầu. Chỉ cần chọn những điều bạn thật sự muốn cải thiện trước, còn lại Nabisẽ cùng bạn đi từng bước.';
 
     return Container(
       width: double.infinity,
@@ -836,7 +836,7 @@ class _GoalCard extends StatelessWidget {
                     radius: AppRadius.circular,
                   ),
                   child: Text(
-                    selected ? 'Nami đã ghi nhớ' : goal.microCopy,
+                    selected ? 'Nabiđã ghi nhớ' : goal.microCopy,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.labelSmall.copyWith(
@@ -900,14 +900,14 @@ class _OtherGoalCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Nami sẽ đọc phần này thật kỹ',
+                    'Nabisẽ đọc phần này thật kỹ',
                     style: AppTextStyles.heading5.copyWith(
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Những điều bạn tự viết thường là phần quan trọng nhất để Nami hiểu bạn hơn.',
+                    'Những điều bạn tự viết thường là phần quan trọng nhất để Nabihiểu bạn hơn.',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                       height: 1.45,
@@ -960,10 +960,10 @@ class _NamiPromiseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = selectedCount == 0
         ? 'Bạn có thể chọn sau, không sao cả'
-        : 'Nami sẽ bắt đầu từ những điều bạn chọn';
+        : 'Nabisẽ bắt đầu từ những điều bạn chọn';
     final body = selectedCount == 0
-        ? 'Nếu hôm nay bạn chưa chắc mình cần gì, cứ tiếp tục. Nami vẫn có thể đồng hành và giúp bạn điều chỉnh dần trong quá trình sử dụng.'
-        : 'Mình sẽ không ép bạn thay đổi quá nhanh. Nami sẽ nhắc nhẹ, gợi ý vừa sức và giúp bạn duy trì những thói quen nhỏ nhưng có ý nghĩa.';
+        ? 'Nếu hôm nay bạn chưa chắc mình cần gì, cứ tiếp tục. Nabivẫn có thể đồng hành và giúp bạn điều chỉnh dần trong quá trình sử dụng.'
+        : 'Mình sẽ không ép bạn thay đổi quá nhanh. Nabisẽ nhắc nhẹ, gợi ý vừa sức và giúp bạn duy trì những thói quen nhỏ nhưng có ý nghĩa.';
 
     return Container(
       width: double.infinity,

@@ -25,7 +25,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
       error: (_, __) => _SaleSupportPage(
         title: 'Chưa mở được giao diện Sale',
         message:
-            'Nami chưa kiểm tra được trạng thái Sale của bạn. Vui lòng thử lại sau.',
+            'Nabichưa kiểm tra được trạng thái Sale của bạn. Vui lòng thử lại sau.',
         onRetry: _refreshAll,
       ),
       data: (saleState) {
@@ -40,7 +40,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
         return Scaffold(
           backgroundColor: const Color(0xFFF7FAFC),
           appBar: AppBar(
-            title: const Text('Nami Sale'),
+            title: const Text('NabiSale'),
             backgroundColor: Colors.white,
             foregroundColor: AppColors.textPrimary,
             elevation: 0,
@@ -112,14 +112,14 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
   String _inactiveMessage(SaleStatus status) {
     switch (status) {
       case SaleStatus.pending:
-        return 'Nami đang cập nhật quyền Sale của bạn. Hãy làm mới lại sau ít phút.';
+        return 'Nabiđang cập nhật quyền Sale của bạn. Hãy làm mới lại sau ít phút.';
       case SaleStatus.suspended:
         return 'Bạn cần liên hệ hỗ trợ để kiểm tra lý do tạm khóa trước khi tiếp tục.';
       case SaleStatus.closed:
         return 'Trạng thái Sale đã đóng. Vui lòng liên hệ hỗ trợ nếu cần mở lại.';
       case SaleStatus.none:
       case SaleStatus.active:
-        return 'Vào Cài đặt > Cùng Nami phát triển để đọc và chấp nhận điều lệ Sale.';
+        return 'Vào Cài đặt > Cùng Nabiphát triển để đọc và chấp nhận điều lệ Sale.';
     }
   }
 }
@@ -200,7 +200,7 @@ class _NetworkTab extends ConsumerWidget {
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
           title: 'Chưa tải được mạng lưới',
-          message: 'Nami chỉ hiển thị dữ liệu referral được Supabase cho phép.',
+          message: 'Nabichỉ hiển thị dữ liệu referral được Supabase cho phép.',
         ),
         data: (nodes) {
           if (nodes.isEmpty) {
@@ -362,7 +362,8 @@ class _ToolsTabState extends State<_ToolsTab> {
   }
 }
 
-int _parseInt(String value) => int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+int _parseInt(String value) =>
+    int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
 
 int _parseAmountToCents(String value) => _parseInt(value);
 

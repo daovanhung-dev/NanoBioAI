@@ -2,45 +2,45 @@
   "schema_version": "1.0.0",
   "expressions": {
     "neutral": [
-      "nabi_idle_neutral.png"
+      "Nabi_idle_neutral.png"
     ],
     "happy": [
-      "nabi_idle_happy.png",
-      "nabi_wave.png",
-      "nabi_task_complete.png",
-      "nabi_day_complete.png",
-      "nabi_welcome_back.png"
+      "Nabi_idle_happy.png",
+      "Nabi_wave.png",
+      "Nabi_task_complete.png",
+      "Nabi_day_complete.png",
+      "Nabi_welcome_back.png"
     ],
     "attentive": [
-      "nabi_listen.png",
-      "nabi_chat_listen.png",
-      "nabi_mood_checkin.png"
+      "Nabi_listen.png",
+      "Nabi_chat_listen.png",
+      "Nabi_mood_checkin.png"
     ],
     "thinking": [
-      "nabi_think.png",
-      "nabi_analyze.png",
-      "nabi_ai_generating_plan.png",
-      "nabi_chat_reasoning.png"
+      "Nabi_think.png",
+      "Nabi_analyze.png",
+      "Nabi_ai_generating_plan.png",
+      "Nabi_chat_reasoning.png"
     ],
     "helpful": [
-      "nabi_point_guide.png",
-      "nabi_speak.png",
-      "nabi_onboarding_basic_info.png",
-      "nabi_view_schedule.png"
+      "Nabi_point_guide.png",
+      "Nabi_speak.png",
+      "Nabi_onboarding_basic_info.png",
+      "Nabi_view_schedule.png"
     ],
     "calm": [
-      "nabi_sleep.png",
-      "nabi_chat_rest_tip.png",
-      "nabi_task_skip_gentle.png",
-      "nabi_offline.png"
+      "Nabi_sleep.png",
+      "Nabi_chat_rest_tip.png",
+      "Nabi_task_skip_gentle.png",
+      "Nabi_offline.png"
     ],
     "encouraging": [
-      "nabi_low_progress_encourage.png",
-      "nabi_proud_of_you.png",
-      "nabi_streak_start.png"
+      "Nabi_low_progress_encourage.png",
+      "Nabi_proud_of_you.png",
+      "Nabi_streak_start.png"
     ],
     "grateful": [
-      "nabi_thank_you.png"
+      "Nabi_thank_you.png"
     ]
   }
 }

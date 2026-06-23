@@ -16,9 +16,9 @@ class V1AuthEntryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = _isRegister ? 'Tạo tài khoản BioAI' : 'Đăng nhập BioAI';
     final body = _isRegister
-        ? 'Nami sẽ đưa bạn sang khu vực tài khoản để lưu hồ sơ và mở rộng '
+        ? 'Nabisẽ đưa bạn sang khu vực tài khoản để lưu hồ sơ và mở rộng '
               'các tính năng thành viên.'
-        : 'Nami sẽ đưa bạn sang khu vực tài khoản để đồng bộ hồ sơ và kiểm '
+        : 'Nabisẽ đưa bạn sang khu vực tài khoản để đồng bộ hồ sơ và kiểm '
               'tra quyền thành viên an toàn.';
     final actionLabel = _isRegister ? 'Tạo tài khoản' : 'Đăng nhập';
 

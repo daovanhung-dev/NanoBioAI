@@ -2,7 +2,7 @@
 
 **BD nguồn:** BR-01, BR-02, BR-03, UC-01, UC-02, UC-03, AC-01, AC-02, AC-03  
 **Status:** Draft  
-**Dependencies:** 03, 12, 13, 14, 15, `.codex/playbooks/onboarding.md`, `.codex/playbooks/ai_service.md`  
+**Dependencies:** 03, 12, 13, 14, 15, `.codex/playbooks/onboarding.md`, `.codex/playbooks/ai_service.md`
 
 ## 1. Mục tiêu và outcome
 
@@ -16,12 +16,12 @@ Guest hoàn tất onboarding không cần đăng nhập, app lưu đủ dữ li�
 
 ## 3. Input contract
 
-| Field | Required | Type | Validation | Sensitive? |
-|---|---:|---|---|---|
-| Personal profile | Yes | structured form | Tuổi/giới/chiều cao/cân nặng trong range hợp lệ | Yes |
-| Health goals | Yes | list/code | Ít nhất một mục tiêu nếu UI yêu cầu | Yes |
-| Habits/conditions/allergies/treatments | No/conditional | list/code/text | Không ghi record rỗng | Yes |
-| Survey answers | Conditional | key/value | Mã câu hỏi không trùng | Yes |
+| Field                                  |       Required | Type            | Validation                                      | Sensitive? |
+| -------------------------------------- | -------------: | --------------- | ----------------------------------------------- | ---------- |
+| Personal profile                       |            Yes | structured form | Tuổi/giới/chiều cao/cân nặng trong range hợp lệ | Yes        |
+| Health goals                           |            Yes | list/code       | Ít nhất một mục tiêu nếu UI yêu cầu             | Yes        |
+| Habits/conditions/allergies/treatments | No/conditional | list/code/text  | Không ghi record rỗng                           | Yes        |
+| Survey answers                         |    Conditional | key/value       | Mã câu hỏi không trùng                          | Yes        |
 
 ## 4. Output / Postconditions
 
@@ -45,30 +45,30 @@ Guest hoàn tất onboarding không cần đăng nhập, app lưu đủ dữ li�
 
 ## 6. Alternative and error flows
 
-| Case | Detection | UI behavior | Technical behavior | Retry |
-|---|---|---|---|---|
-| Form invalid | Controller validation | Hiện lỗi nhẹ nhàng, giữ dữ liệu đã nhập | Không ghi DB/AI call | User sửa input |
-| AI timeout/quota/invalid JSON | AI service exception/validator | Thông báo Nami chưa thể tạo lịch lúc này | Không crash, không ghi partial invalid data | Cho retry nếu chưa đánh dấu đã dùng lượt |
-| Guest đã có lịch trình đầu tiên | Local/trusted state theo quyết định Q-01 | Mời đăng nhập để tạo thêm | Chặn trước khi gọi AI | Sau login đi qua quota |
-| Deep-link/module ngoài V1 | Route/use-case guard | Điều hướng đăng nhập/đăng ký | Guard chặn route và use-case | Login/signup |
+| Case                            | Detection                                | UI behavior                             | Technical behavior                          | Retry                                    |
+| ------------------------------- | ---------------------------------------- | --------------------------------------- | ------------------------------------------- | ---------------------------------------- |
+| Form invalid                    | Controller validation                    | Hiện lỗi nhẹ nhàng, giữ dữ liệu đã nhập | Không ghi DB/AI call                        | User sửa input                           |
+| AI timeout/quota/invalid JSON   | AI service exception/validator           | Thông báo Nabichưa thể tạo lịch lúc này | Không crash, không ghi partial invalid data | Cho retry nếu chưa đánh dấu đã dùng lượt |
+| Guest đã có lịch trình đầu tiên | Local/trusted state theo quyết định Q-01 | Mời đăng nhập để tạo thêm               | Chặn trước khi gọi AI                       | Sau login đi qua quota                   |
+| Deep-link/module ngoài V1       | Route/use-case guard                     | Điều hướng đăng nhập/đăng ký            | Guard chặn route và use-case                | Login/signup                             |
 
 ## 7. Persistence and ownership
 
-| Action | Target | Actor allowed | RLS/constraint |
-|---|---|---|---|
-| Save onboarding local | SQLite profile tables | Guest local user | Local only until sync decision |
-| Generate initial schedule | AI service + local DB | Guest once | Q-01 controls exact identity boundary |
-| Generate additional schedule | AI service | Guest not allowed | Requires auth + membership/quota |
+| Action                       | Target                | Actor allowed     | RLS/constraint                        |
+| ---------------------------- | --------------------- | ----------------- | ------------------------------------- |
+| Save onboarding local        | SQLite profile tables | Guest local user  | Local only until sync decision        |
+| Generate initial schedule    | AI service + local DB | Guest once        | Q-01 controls exact identity boundary |
+| Generate additional schedule | AI service            | Guest not allowed | Requires auth + membership/quota      |
 
 ## 8. Layer responsibilities / affected files
 
-| Layer | Responsibility | Proposed file |
-|---|---|---|
-| Presentation | Form, loading/error/success, no direct DB | `lib/app_versions/v1/features/onboarding/presentation/*` |
-| Controller | Validation orchestration and state | `onboarding_controller.dart` |
-| Repository/datasource | Save local onboarding data | `onboarding_repository_impl.dart`, `onboarding_local_datasource.dart` |
-| AI service | Generate and normalize plan | `generated_plan_service.dart`, AI normalizers |
-| Notification service | Schedule reminders | `lib/app_versions/v1/services/notifications/*` |
+| Layer                 | Responsibility                            | Proposed file                                                         |
+| --------------------- | ----------------------------------------- | --------------------------------------------------------------------- |
+| Presentation          | Form, loading/error/success, no direct DB | `lib/app_versions/v1/features/onboarding/presentation/*`              |
+| Controller            | Validation orchestration and state        | `onboarding_controller.dart`                                          |
+| Repository/datasource | Save local onboarding data                | `onboarding_repository_impl.dart`, `onboarding_local_datasource.dart` |
+| AI service            | Generate and normalize plan               | `generated_plan_service.dart`, AI normalizers                         |
+| Notification service  | Schedule reminders                        | `lib/app_versions/v1/services/notifications/*`                        |
 
 ## 9. Security / privacy
 
@@ -91,8 +91,7 @@ Guest hoàn tất onboarding không cần đăng nhập, app lưu đủ dữ li�
 
 ## 12. Open decisions
 
-| ID | Question | Owner | Impact |
-|---|---|---|---|
+| ID   | Question                                                                                    | Owner                     | Impact                              |
+| ---- | ------------------------------------------------------------------------------------------- | ------------------------- | ----------------------------------- |
 | Q-01 | Guest "1 lần tạo lịch trình" tính theo thiết bị, local profile, anonymous user hay account? | Product Owner / Tech Lead | Chống tạo lại và migration strategy |
-| Q-02 | Guest login/signup có sync local schedule/onboarding vào Supabase không? | Product Owner / Tech Lead | Cloud sync và ownership |
-
+| Q-02 | Guest login/signup có sync local schedule/onboarding vào Supabase không?                    | Product Owner / Tech Lead | Cloud sync và ownership             |

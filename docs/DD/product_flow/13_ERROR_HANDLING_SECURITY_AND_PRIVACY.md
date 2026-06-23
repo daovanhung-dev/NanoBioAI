@@ -2,11 +2,11 @@
 
 **BD nguồn:** Section 9, Section 12, all BR/AC  
 **Status:** Draft  
-**Dependencies:** 03, all feature DDs, `.codex/playbooks/ui_nami.md`  
+**Dependencies:** 03, all feature DDs, `.codex/playbooks/ui_nami.md`
 
 ## 1. Mục tiêu
 
-Đặt rule chung cho lỗi, quyền, dữ liệu nhạy cảm và copy Nami trong product flow/membership/Sale để implementation không mở sai quyền hoặc lộ dữ liệu.
+Đặt rule chung cho lỗi, quyền, dữ liệu nhạy cảm và copy Nabitrong product flow/membership/Sale để implementation không mở sai quyền hoặc lộ dữ liệu.
 
 ## 2. Scope / Out of scope
 
@@ -15,12 +15,12 @@
 
 ## 3. Actors và thành phần
 
-| Actor/component | Responsibility | Boundary |
-|---|---|---|
-| UI | Hiển thị lỗi thân thiện, không lộ technical terms | Không quyết định quyền |
-| Controller/use-case | Chặn trước tác vụ tốn tài nguyên/paid | Không bypass server source |
-| Repository/datasource | Map lỗi typed/safe | Không swallow lỗi dữ liệu quan trọng |
-| Supabase/backend | RLS, quota, payment, commission | Không lộ service role |
+| Actor/component       | Responsibility                                    | Boundary                             |
+| --------------------- | ------------------------------------------------- | ------------------------------------ |
+| UI                    | Hiển thị lỗi thân thiện, không lộ technical terms | Không quyết định quyền               |
+| Controller/use-case   | Chặn trước tác vụ tốn tài nguyên/paid             | Không bypass server source           |
+| Repository/datasource | Map lỗi typed/safe                                | Không swallow lỗi dữ liệu quan trọng |
+| Supabase/backend      | RLS, quota, payment, commission                   | Không lộ service role                |
 
 ## 4. Kiến trúc / flow tổng quát
 
@@ -30,7 +30,7 @@ UI action
 -> effective access/quota check
 -> repository/datasource call
 -> typed success/error
--> Nami copy + safe logging
+-> Nabicopy + safe logging
 ```
 
 ## 5. Invariants / business rules
@@ -43,13 +43,13 @@ UI action
 
 ## 6. Data ownership và security
 
-| Data | Risk | Rule |
-|---|---|---|
-| Health profile/schedule | Sensitive health data | Subject/user boundary and minimal logging |
-| Membership/quota | Paid access abuse | Server source only |
-| Referral tree | PII/business sensitive | Related-user visibility only |
-| Payment event | Financial sensitive | Trusted backend only |
-| Commission | Financial sensitive | Receiver visibility only |
+| Data                    | Risk                   | Rule                                      |
+| ----------------------- | ---------------------- | ----------------------------------------- |
+| Health profile/schedule | Sensitive health data  | Subject/user boundary and minimal logging |
+| Membership/quota        | Paid access abuse      | Server source only                        |
+| Referral tree           | PII/business sensitive | Related-user visibility only              |
+| Payment event           | Financial sensitive    | Trusted backend only                      |
+| Commission              | Financial sensitive    | Receiver visibility only                  |
 
 ## 7. Dependencies / integration points
 
@@ -67,4 +67,3 @@ UI action
 ## 9. Open decisions
 
 - Q-07, Q-09, Q-10 require privacy/legal/ops decisions before FamilyPlus sharing and payment/commission production launch.
-

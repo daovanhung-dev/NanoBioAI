@@ -49,15 +49,15 @@ class DashboardCompanionService {
   static String moodResponse(String mood) {
     switch (mood) {
       case DashboardMoodCodes.ok:
-        return 'Nami mừng vì hôm nay bạn thấy ổn. Mình giữ nhịp nhẹ nhàng nhé.';
+        return 'Nabimừng vì hôm nay bạn thấy ổn. Mình giữ nhịp nhẹ nhàng nhé.';
       case DashboardMoodCodes.tired:
         return 'Vậy hôm nay mình đi chậm lại một chút cũng được nha.';
       case DashboardMoodCodes.stressed:
-        return 'Nami ở đây rồi, mình thở chậm lại một chút nhé.';
+        return 'Nabiở đây rồi, mình thở chậm lại một chút nhé.';
       case DashboardMoodCodes.uncomfortable:
         return 'Bạn nhớ lắng nghe cơ thể nhé. Nếu khó chịu kéo dài, mình nên tìm người có chuyên môn hỗ trợ.';
       default:
-        return 'Nami vẫn ở đây để cùng bạn đi nhẹ từng chút một.';
+        return 'Nabivẫn ở đây để cùng bạn đi nhẹ từng chút một.';
     }
   }
 
@@ -85,7 +85,7 @@ class DashboardCompanionService {
 
   static String nextActionMessage(DashboardTimelineItem? item) {
     if (item == null) {
-      return 'Hôm nay bạn đang rất ổn rồi, Nami vẫn ở đây khi bạn cần.';
+      return 'Hôm nay bạn đang rất ổn rồi, Nabivẫn ở đây khi bạn cần.';
     }
 
     switch (_normalize(item.category)) {
@@ -101,7 +101,7 @@ class DashboardCompanionService {
       case 'meal':
         return 'Mình chăm bữa này gọn gàng trước, không cần vội.';
       default:
-        return 'Chỉ một việc nhỏ thôi, Nami sẽ đi cùng bạn.';
+        return 'Chỉ một việc nhỏ thôi, Nabisẽ đi cùng bạn.';
     }
   }
 
@@ -111,7 +111,7 @@ class DashboardCompanionService {
     required String activityLevel,
   }) {
     if (!metrics.hasAnyData) {
-      return 'Nami chưa có đủ tín hiệu hôm nay, mình bắt đầu bằng một việc nhỏ thôi nhé.';
+      return 'Nabichưa có đủ tín hiệu hôm nay, mình bắt đầu bằng một việc nhỏ thôi nhé.';
     }
 
     final taskRate = metrics.taskCompletionRate;
@@ -122,12 +122,12 @@ class DashboardCompanionService {
     final hasGoodMealProgress = metrics.totalMeals > 0 && mealRate >= 0.75;
 
     if (metrics.hasDailyScoreInputs && metrics.dailyScore == 0) {
-      return 'Nami đã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.';
+      return 'Nabiđã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.';
     }
 
     if (metrics.dailyScore >= 85 &&
         (hasGoodTaskProgress || hasGoodMealProgress)) {
-      return 'Bạn chăm mình rất ổn hôm nay, Nami thấy nhịp này rất đẹp.';
+      return 'Bạn chăm mình rất ổn hôm nay, Nabithấy nhịp này rất đẹp.';
     }
 
     if (hasLowTaskProgress ||
@@ -136,12 +136,12 @@ class DashboardCompanionService {
     }
 
     if (hasLowWater) {
-      return 'Hôm nay bạn đang đi đúng hướng, Nami chỉ muốn nhắc nhẹ thêm về nước.';
+      return 'Hôm nay bạn đang đi đúng hướng, Nabichỉ muốn nhắc nhẹ thêm về nước.';
     }
 
     if (_normalize(sleepQuality).contains('mệt') ||
         _normalize(activityLevel).contains('ít vận động')) {
-      return 'Cơ thể có thể cần mình chậm lại một chút, Nami sẽ nhắc thật nhẹ thôi.';
+      return 'Cơ thể có thể cần mình chậm lại một chút, Nabisẽ nhắc thật nhẹ thôi.';
     }
 
     return 'Hôm nay bạn đang đi đúng hướng, mình cứ giữ nhịp nhẹ nhàng nhé.';
@@ -156,7 +156,7 @@ class DashboardCompanionService {
       DashboardScoreBreakdownItem(
         title: 'Nhiệm vụ',
         message: metrics.totalTasks == 0
-            ? 'Chưa có việc nhỏ nào để Nami ghi nhận hôm nay.'
+            ? 'Chưa có việc nhỏ nào để Nabighi nhận hôm nay.'
             : '${metrics.completedTasks}/${metrics.totalTasks} việc nhỏ đã hoàn thành.',
         progress: metrics.totalTasks == 0 ? 0 : metrics.taskCompletionRate,
       ),
@@ -180,7 +180,7 @@ class DashboardCompanionService {
             ? 'Hôm nay bạn đã có ${metrics.stepsCount} bước chân.'
             : activityLevel.trim().isEmpty
             ? 'Chưa có tín hiệu vận động hôm nay.'
-            : 'Nami đang dựa vào nhịp vận động bạn đã chia sẻ.',
+            : 'Nabiđang dựa vào nhịp vận động bạn đã chia sẻ.',
         progress: metrics.stepsCount > 0
             ? (metrics.stepsCount / 8000).clamp(0, 1).toDouble()
             : activityLevel.trim().isEmpty
@@ -193,7 +193,7 @@ class DashboardCompanionService {
             ? 'Bạn đã ghi nhận ${metrics.sleepHours.toStringAsFixed(1)} giờ ngủ.'
             : sleepQuality.trim().isEmpty
             ? 'Chưa có tín hiệu giấc ngủ hôm nay.'
-            : 'Nami đang dựa vào chất lượng giấc ngủ bạn đã chia sẻ.',
+            : 'Nabiđang dựa vào chất lượng giấc ngủ bạn đã chia sẻ.',
         progress: metrics.sleepHours > 0
             ? (metrics.sleepHours / 8).clamp(0, 1).toDouble()
             : sleepQuality.trim().isEmpty

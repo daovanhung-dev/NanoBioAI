@@ -36,7 +36,7 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
     return _AuthScaffold(
       title: 'Mừng bạn quay lại',
       subtitle:
-          'Nami sẽ kiểm tra tài khoản rồi đưa bạn về đúng nơi cần tiếp tục.',
+          'Nabisẽ kiểm tra tài khoản rồi đưa bạn về đúng nơi cần tiếp tục.',
       child: Form(
         key: _formKey,
         child: Column(
@@ -137,7 +137,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
     return _AuthScaffold(
       title: 'Tạo tài khoản NanoBio',
       subtitle:
-          'Nami sẽ dùng email để bảo vệ hồ sơ sức khỏe và đồng bộ hành trình của bạn.',
+          'Nabisẽ dùng email để bảo vệ hồ sơ sức khỏe và đồng bộ hành trình của bạn.',
       child: Form(
         key: _formKey,
         child: Column(
@@ -272,7 +272,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
     return _AuthScaffold(
       title: 'Kiểm tra email nhé',
       subtitle:
-          'Nami đã gửi liên kết xác thực tới ${widget.email.isEmpty ? 'email của bạn' : widget.email}. Sau khi mở liên kết, mình sẽ đưa bạn đến bước tiếp theo.',
+          'Nabiđã gửi liên kết xác thực tới ${widget.email.isEmpty ? 'email của bạn' : widget.email}. Sau khi mở liên kết, mình sẽ đưa bạn đến bước tiếp theo.',
       child: Column(
         children: [
           _PrimaryAuthButton(
@@ -310,7 +310,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
       _startCooldown();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Nami đã gửi lại email xác thực.')),
+          const SnackBar(content: Text('Nabiđã gửi lại email xác thực.')),
         );
       }
     } catch (error) {
@@ -360,7 +360,7 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
     return _AuthScaffold(
       title: 'Lấy lại mật khẩu',
       subtitle:
-          'Bạn nhập email, Nami sẽ gửi một liên kết an toàn để đặt mật khẩu mới.',
+          'Bạn nhập email, Nabisẽ gửi một liên kết an toàn để đặt mật khẩu mới.',
       child: Form(
         key: _formKey,
         child: Column(
@@ -434,7 +434,7 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
   Widget build(BuildContext context) {
     return _AuthScaffold(
       title: 'Đặt mật khẩu mới',
-      subtitle: 'Chọn một mật khẩu đủ an toàn để Nami bảo vệ hồ sơ của bạn.',
+      subtitle: 'Chọn một mật khẩu đủ an toàn để Nabibảo vệ hồ sơ của bạn.',
       child: Form(
         key: _formKey,
         child: Column(
@@ -678,6 +678,6 @@ class _InfoBox extends StatelessWidget {
 void _showError(BuildContext context, Object error) {
   final message = error is AuthFailure
       ? error.userMessage
-      : 'Nami chưa thể xử lý yêu cầu lúc này. Mình thử lại sau một chút nhé.';
+      : 'Nabichưa thể xử lý yêu cầu lúc này. Mình thử lại sau một chút nhé.';
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }

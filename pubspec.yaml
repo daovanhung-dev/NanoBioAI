@@ -62,6 +62,57 @@ flutter:
   assets:
     - .env
     - assets/
+    - assets/images/
+    - assets/images/avatars/
+    - assets/images/backgrounds/
+    - assets/images/banners/
+    - assets/images/foods/
+    - assets/images/logos/
+    - assets/images/Nabi/
+    - assets/images/Nabi/chat/
+    - assets/images/Nabi/core/
+    - assets/images/Nabi/daily/
+    - assets/images/Nabi/engagement/
+    - assets/images/Nabi/future/
+    - assets/images/Nabi/onboarding/
+    - assets/images/Nabi/progress/
+    - assets/images/Nabi/system/
+    - assets/images/symptoms/
+    - assets/icons/
+    - assets/icons/custom/
+    - assets/icons/filled/
+    - assets/icons/health/
+    - assets/icons/nutrition/
+    - assets/icons/outlined/
+    - assets/illustrations/
+    - assets/illustrations/ai/
+    - assets/illustrations/auth/
+    - assets/illustrations/dashboard/
+    - assets/illustrations/health/
+    - assets/illustrations/onboarding/
+    - assets/animations/
+    - assets/animations/flare/
+    - assets/animations/lottie/
+    - assets/animations/rive/
+    - assets/audio/
+    - assets/audio/meditation/
+    - assets/audio/notification/
+    - assets/audio/sleep/
+    - assets/config/
+    - assets/config/Nabi/
+    - assets/json/
+    - assets/json/config/
+    - assets/json/mock/
+    - assets/json/seed/
+    - assets/svg/
+    - assets/svg/icons/
+    - assets/svg/illustrations/
+    - assets/svg/logos/
+    - assets/translations/
+    - assets/videos/
+    - assets/videos/exercise/
+    - assets/videos/onboarding/
+    - assets/videos/tutorial/
 
 flutter_launcher_icons:
   android: true

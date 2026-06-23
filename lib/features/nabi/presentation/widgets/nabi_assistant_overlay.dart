@@ -5,14 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../application/nabi_controller.dart';
-import '../../application/nabi_state.dart';
-import 'nabi_character.dart';
+import '../../application/Nabi_controller.dart';
+import '../../application/Nabi_state.dart';
+import 'Nabi_character.dart';
 
 /// Callback để app có thể mở chat theo chính sách điều hướng sẵn có.
 typedef NabiOpenChat = FutureOr<void> Function(BuildContext context);
 
-/// Cấu hình presentation của NaBi toàn cục.
+/// Cấu hình presentation của Nabi toàn cục.
 class NabiOverlayConfig {
   const NabiOverlayConfig({
     this.chatRoute = '/ai-chat',
@@ -32,7 +32,7 @@ class NabiOverlayConfig {
   final Alignment initialAlignment;
   final bool showSpeechBubble;
 
-  /// Có thể khóa NaBi ở một số flow nhạy cảm mà không xóa widget khỏi app.
+  /// Có thể khóa Nabi ở một số flow nhạy cảm mà không xóa widget khỏi app.
   final bool Function(BuildContext context)? isEnabled;
 }
 
@@ -41,7 +41,7 @@ class NabiOverlayConfig {
 /// - Có mặt trên mọi màn hình được bọc bởi [NabiAppShell].
 /// - Chạm: thực hiện đúng vai trò của nút AI Chat cũ.
 /// - Kéo: người dùng tự đặt vị trí nổi mà không chặn thao tác UI bên dưới.
-/// - Nhấn giữ: thu gọn/mở rộng NaBi trong phiên hiện tại.
+/// - Nhấn giữ: thu gọn/mở rộng Nabi trong phiên hiện tại.
 class NabiAssistantOverlay extends ConsumerStatefulWidget {
   const NabiAssistantOverlay({
     required this.config,
@@ -79,7 +79,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(nabiControllerProvider);
+    final state = ref.watch(NabiControllerProvider);
     final enabled = widget.config.isEnabled?.call(context) ?? true;
 
     if (!state.isVisible || !enabled) return const SizedBox.shrink();
@@ -104,7 +104,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
                       curve: Curves.easeOutBack,
                     ),
                   ),
-                  child: _NaBiFloatingControl(
+                  child: _NabiFloatingControl(
                     state: state,
                     showSpeechBubble: widget.config.showSpeechBubble,
                     characterSize: widget.config.characterSize,
@@ -113,7 +113,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
                     onTap: _dragMoved ? null : _openChat,
                     onLongPress: () {
                       HapticFeedback.selectionClick();
-                      ref.read(nabiControllerProvider.notifier).toggleMinimized();
+                      ref.read(NabiControllerProvider.notifier).toggleMinimized();
                     },
                     onPanStart: (_) {
                       setState(() {
@@ -151,18 +151,18 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
 
   Future<void> _openChat() async {
     HapticFeedback.lightImpact();
-    final controller = ref.read(nabiControllerProvider.notifier);
+    final controller = ref.read(NabiControllerProvider.notifier);
 
     if (widget.config.onOpenChat != null) {
       await widget.config.onOpenChat!(context);
       return;
     }
 
-    // Khi ở AI Chat, chạm NaBi chỉ đổi sang trạng thái lắng nghe; không push
+    // Khi ở AI Chat, chạm Nabi chỉ đổi sang trạng thái lắng nghe; không push
     // route lặp hoặc làm mất nội dung hội thoại hiện tại.
-    final state = ref.read(nabiControllerProvider);
+    final state = ref.read(NabiControllerProvider);
     if (state.isChatOpen) {
-      controller.setContext(state.context, detail: 'NaBi đang lắng nghe bạn đây.');
+      controller.setContext(state.context, detail: 'Nabi đang lắng nghe bạn đây.');
       return;
     }
 
@@ -172,8 +172,8 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
   }
 }
 
-class _NaBiFloatingControl extends StatelessWidget {
-  const _NaBiFloatingControl({
+class _NabiFloatingControl extends StatelessWidget {
+  const _NabiFloatingControl({
     required this.state,
     required this.showSpeechBubble,
     required this.characterSize,
@@ -201,7 +201,7 @@ class _NaBiFloatingControl extends StatelessWidget {
   Widget build(BuildContext context) {
     final avatar = Semantics(
       button: true,
-      label: state.isChatOpen ? 'NaBi đang lắng nghe' : 'Mở trò chuyện với NaBi',
+      label: state.isChatOpen ? 'Nabi đang lắng nghe' : 'Mở trò chuyện với Nabi',
       hint: 'Chạm để trò chuyện, nhấn giữ để thu gọn, kéo để đổi vị trí.',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -237,7 +237,7 @@ class _NaBiFloatingControl extends StatelessWidget {
     if (!showSpeechBubble || state.isMinimized) return avatar;
 
     final bubble = Flexible(
-      child: _NaBiSpeechBubble(text: state.bubbleText),
+      child: _NabiSpeechBubble(text: state.bubbleText),
     );
 
     return ConstrainedBox(
@@ -256,8 +256,8 @@ class _NaBiFloatingControl extends StatelessWidget {
   }
 }
 
-class _NaBiSpeechBubble extends StatelessWidget {
-  const _NaBiSpeechBubble({required this.text});
+class _NabiSpeechBubble extends StatelessWidget {
+  const _NabiSpeechBubble({required this.text});
 
   final String text;
 

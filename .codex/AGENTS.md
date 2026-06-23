@@ -5,7 +5,7 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 ## Snapshot
 
 - App: NanoBio / NamiAI - tro ly suc khoe AI bang Flutter.
-- Persona UI: Nami - am ap, nhe nhang, quan tam, khong phan xet.
+- Persona UI: Nabi- am ap, nhe nhang, quan tam, khong phan xet.
 - Kien truc: feature-first + Clean Architecture theo code hien co.
 - Stack: Flutter/Dart SDK `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4`, Gemini SDK `0.4.7`, local notifications `19.5.0`.
 - SQLite version: `DatabaseVersion.currentVersion = 8`.
@@ -62,7 +62,7 @@ Use `.codex/domains/README.md` and read one domain file by default:
 - Access/auth/membership/referral
 - Notification/reminder/action
 - SQLite/DAO/migration
-- UI/theme/Nami copy
+- UI/theme/Nabicopy
 - Daily health tracking
 - Lifestyle schedule/timeline
 
@@ -112,7 +112,7 @@ Access rules:
 
 ## UI And Copy
 
-- User-facing text must be Vietnamese with Nami tone.
+- User-facing text must be Vietnamese with Nabitone.
 - Do not expose internal terms: database, table, query, parser, exception, stack trace, log, tier, entitlement, gate, webhook.
 - Prefer tokens in `lib/core/theme/`.
 

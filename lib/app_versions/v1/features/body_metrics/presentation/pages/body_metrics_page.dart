@@ -17,7 +17,7 @@ class BodyMetricsPage extends StatelessWidget {
         const NamiCareSectionTitle(
           title: 'Những chỉ số nhỏ',
           subtitle:
-              'Khi bạn sẵn sàng, Nami sẽ cùng bạn nhìn lại thay đổi của cơ thể theo cách dịu dàng nhất.',
+              'Khi bạn sẵn sàng, Nabisẽ cùng bạn nhìn lại thay đổi của cơ thể theo cách dịu dàng nhất.',
         ),
         const SizedBox(height: AppSpacing.md),
         const NamiCareSurfaceCard(
@@ -52,7 +52,7 @@ class BodyMetricsPage extends StatelessWidget {
           color: AppColors.primary,
           title: 'Ghi lại chỉ số hôm nay',
           message:
-              'Nami chưa có đủ thông tin để nhìn lại cùng bạn. Khi sẵn sàng, mình ghi một vài chỉ số nhỏ nhé.',
+              'Nabichưa có đủ thông tin để nhìn lại cùng bạn. Khi sẵn sàng, mình ghi một vài chỉ số nhỏ nhé.',
         ),
       ],
     );
@@ -78,7 +78,7 @@ class _MetricRow extends StatelessWidget {
       icon: icon,
       color: color,
       title: title,
-      subtitle: 'Nami sẽ dùng thông tin này để hiểu cơ thể bạn hơn.',
+      subtitle: 'Nabisẽ dùng thông tin này để hiểu cơ thể bạn hơn.',
       trailing: value,
     );
   }

@@ -2,22 +2,25 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart';
 import 'package:nano_app/app_versions/v1/features/other/presentation/pages/other_page.dart';
 import 'package:nano_app/app_versions/v1/features/settings/presentation/pages/settings_page.dart';
-import 'package:nano_app/app_versions/v1/shared/widgets/ai_chat_fab.dart';
+import 'package:nano_app/app_versions/v1/features/Nabi/Nabi.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
 
-class MainNavigationPage extends StatefulWidget {
+class MainNavigationPage extends ConsumerStatefulWidget {
   const MainNavigationPage({super.key});
 
   @override
-  State<MainNavigationPage> createState() => _MainNavigationPageState();
+  ConsumerState<MainNavigationPage> createState() =>
+      _MainNavigationPageState();
 }
 
-class _MainNavigationPageState extends State<MainNavigationPage>
+class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
     with TickerProviderStateMixin {
   static const double _bottomNavigationReserve = 132;
 
@@ -106,6 +109,16 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       duration: AppDuration.slow,
       curve: Curves.easeOutCubic,
     );
+
+    // Cập nhật Nabi context theo tab đang active
+    final routeByTab = [
+      V1RoutePaths.dashboard,
+      V1RoutePaths.menu, // features hub
+      '/health-insights',
+      V1RoutePaths.menu, // settings
+    ];
+    final route = index < routeByTab.length ? routeByTab[index] : V1RoutePaths.menu;
+    ref.Nabi.setRoute(route);
   }
 
   @override
@@ -136,8 +149,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                   physics: const NeverScrollableScrollPhysics(),
                   children: _pages,
                 ),
-                DraggableAIChatButton(
-                  visible: _currentIndex == 0,
+                NabiFloatingOverlay(
                   bottomReserve: _bottomNavigationReserve,
                 ),
               ],

@@ -1,8 +1,8 @@
-import '../domain/entities/nabi_expression.dart';
+import '../domain/entities/Nabi_expression.dart';
 
-/// Quy tắc tập trung: event/ngữ cảnh nào thì NaBi biểu cảm và nói gì.
+/// Quy tắc tập trung: event/ngữ cảnh nào thì Nabi biểu cảm và nói gì.
 ///
-/// Các câu nói giữ tone Nami/NaBi: ấm áp, ngắn gọn, không phán xét.
+/// Các câu nói giữ tone Nami/Nabi: ấm áp, ngắn gọn, không phán xét.
 class NabiExpressionResolver {
   const NabiExpressionResolver._();
 
@@ -15,7 +15,7 @@ class NabiExpressionResolver {
       NabiEvent.appOpened => const NabiResolvedPresentation(
           context: NabiContext.app,
           emotion: NabiEmotion.greeting,
-          bubbleText: 'NaBi ở đây, mình cùng chăm sóc hôm nay nhé.',
+          bubbleText: 'Nabi ở đây, mình cùng chăm sóc hôm nay nhé.',
         ),
       NabiEvent.onboardingStarted => const NabiResolvedPresentation(
           context: NabiContext.onboarding,
@@ -25,7 +25,7 @@ class NabiExpressionResolver {
       NabiEvent.onboardingStepCompleted => const NabiResolvedPresentation(
           context: NabiContext.onboarding,
           emotion: NabiEmotion.happy,
-          bubbleText: 'Tốt lắm, NaBi đã hiểu bạn hơn một chút rồi.',
+          bubbleText: 'Tốt lắm, Nabi đã hiểu bạn hơn một chút rồi.',
         ),
       NabiEvent.onboardingCompleted => const NabiResolvedPresentation(
           context: NabiContext.dashboard,
@@ -40,7 +40,7 @@ class NabiExpressionResolver {
       NabiEvent.healthCalculationStarted => const NabiResolvedPresentation(
           context: NabiContext.healthCalculation,
           emotion: NabiEmotion.thinking,
-          bubbleText: 'NaBi đang xem các chỉ số của bạn.',
+          bubbleText: 'Nabi đang xem các chỉ số của bạn.',
         ),
       NabiEvent.healthCalculationCompleted => const NabiResolvedPresentation(
           context: NabiContext.healthCalculation,
@@ -60,7 +60,7 @@ class NabiExpressionResolver {
       NabiEvent.taskCompleted => const NabiResolvedPresentation(
           context: NabiContext.dailyTasks,
           emotion: NabiEmotion.celebrating,
-          bubbleText: 'Bạn làm tốt lắm, NaBi vui cùng bạn!',
+          bubbleText: 'Bạn làm tốt lắm, Nabi vui cùng bạn!',
         ),
       NabiEvent.taskSkipped => const NabiResolvedPresentation(
           context: NabiContext.dailyTasks,
@@ -70,37 +70,37 @@ class NabiExpressionResolver {
       NabiEvent.notificationOpened => const NabiResolvedPresentation(
           context: NabiContext.dailyTasks,
           emotion: NabiEmotion.listening,
-          bubbleText: 'NaBi nhắc bạn một việc nhỏ thôi nè.',
+          bubbleText: 'Nabi nhắc bạn một việc nhỏ thôi nè.',
         ),
       NabiEvent.aiChatOpened => const NabiResolvedPresentation(
           context: NabiContext.aiChat,
           emotion: NabiEmotion.listening,
-          bubbleText: 'NaBi đang lắng nghe bạn đây.',
+          bubbleText: 'Nabi đang lắng nghe bạn đây.',
         ),
       NabiEvent.aiThinking => const NabiResolvedPresentation(
           context: NabiContext.aiChat,
           emotion: NabiEmotion.thinking,
-          bubbleText: 'Để NaBi suy nghĩ một chút nhé.',
+          bubbleText: 'Để Nabi suy nghĩ một chút nhé.',
         ),
       NabiEvent.aiResponded => const NabiResolvedPresentation(
           context: NabiContext.aiChat,
           emotion: NabiEmotion.happy,
-          bubbleText: 'NaBi đã tìm được điều phù hợp cho bạn.',
+          bubbleText: 'Nabi đã tìm được điều phù hợp cho bạn.',
         ),
       NabiEvent.aiFailed => const NabiResolvedPresentation(
           context: NabiContext.aiChat,
           emotion: NabiEmotion.concerned,
-          bubbleText: 'NaBi chưa trả lời được lúc này. Mình thử lại sau nhé.',
+          bubbleText: 'Nabi chưa trả lời được lúc này. Mình thử lại sau nhé.',
         ),
       NabiEvent.authenticationRequired => const NabiResolvedPresentation(
           context: NabiContext.authentication,
           emotion: NabiEmotion.encouraging,
-          bubbleText: 'Đăng nhập để NaBi đồng hành cùng bạn lâu dài hơn nhé.',
+          bubbleText: 'Đăng nhập để Nabi đồng hành cùng bạn lâu dài hơn nhé.',
         ),
       NabiEvent.synchronizationStarted => const NabiResolvedPresentation(
           context: NabiContext.synchronizing,
           emotion: NabiEmotion.thinking,
-          bubbleText: 'NaBi đang cất giữ hành trình của bạn thật cẩn thận.',
+          bubbleText: 'Nabi đang cất giữ hành trình của bạn thật cẩn thận.',
         ),
       NabiEvent.synchronizationSucceeded => const NabiResolvedPresentation(
           context: NabiContext.dashboard,
@@ -110,7 +110,7 @@ class NabiExpressionResolver {
       NabiEvent.synchronizationFailed => const NabiResolvedPresentation(
           context: NabiContext.error,
           emotion: NabiEmotion.concerned,
-          bubbleText: 'NaBi chưa cập nhật được. Dữ liệu của bạn vẫn an toàn nhé.',
+          bubbleText: 'Nabi chưa cập nhật được. Dữ liệu của bạn vẫn an toàn nhé.',
         ),
       NabiEvent.formNeedsAttention => NabiResolvedPresentation(
           context: fallbackContext,
@@ -125,7 +125,7 @@ class NabiExpressionResolver {
       NabiEvent.networkUnavailable => const NabiResolvedPresentation(
           context: NabiContext.error,
           emotion: NabiEmotion.concerned,
-          bubbleText: 'NaBi chưa kết nối được. Mình thử lại khi mạng ổn định nhé.',
+          bubbleText: 'Nabi chưa kết nối được. Mình thử lại khi mạng ổn định nhé.',
         ),
     };
 
@@ -139,7 +139,7 @@ class NabiExpressionResolver {
       NabiContext.app => const NabiResolvedPresentation(
           context: NabiContext.app,
           emotion: NabiEmotion.idle,
-          bubbleText: 'Chạm vào NaBi khi bạn cần một người đồng hành nhé.',
+          bubbleText: 'Chạm vào Nabi khi bạn cần một người đồng hành nhé.',
         ),
       NabiContext.onboarding => const NabiResolvedPresentation(
           context: NabiContext.onboarding,
@@ -154,7 +154,7 @@ class NabiExpressionResolver {
       NabiContext.healthCalculation => const NabiResolvedPresentation(
           context: NabiContext.healthCalculation,
           emotion: NabiEmotion.thinking,
-          bubbleText: 'NaBi đang cùng bạn nhìn các chỉ số.',
+          bubbleText: 'Nabi đang cùng bạn nhìn các chỉ số.',
         ),
       NabiContext.mealPlan => const NabiResolvedPresentation(
           context: NabiContext.mealPlan,
@@ -169,12 +169,12 @@ class NabiExpressionResolver {
       NabiContext.dailyTasks => const NabiResolvedPresentation(
           context: NabiContext.dailyTasks,
           emotion: NabiEmotion.listening,
-          bubbleText: 'NaBi cùng bạn hoàn thành từng việc nhỏ.',
+          bubbleText: 'Nabi cùng bạn hoàn thành từng việc nhỏ.',
         ),
       NabiContext.aiChat => const NabiResolvedPresentation(
           context: NabiContext.aiChat,
           emotion: NabiEmotion.listening,
-          bubbleText: 'NaBi đang lắng nghe bạn đây.',
+          bubbleText: 'Nabi đang lắng nghe bạn đây.',
         ),
       NabiContext.authentication => const NabiResolvedPresentation(
           context: NabiContext.authentication,
@@ -184,7 +184,7 @@ class NabiExpressionResolver {
       NabiContext.synchronizing => const NabiResolvedPresentation(
           context: NabiContext.synchronizing,
           emotion: NabiEmotion.thinking,
-          bubbleText: 'NaBi đang cập nhật hành trình của bạn.',
+          bubbleText: 'Nabi đang cập nhật hành trình của bạn.',
         ),
       NabiContext.empty => const NabiResolvedPresentation(
           context: NabiContext.empty,
@@ -194,7 +194,7 @@ class NabiExpressionResolver {
       NabiContext.error => const NabiResolvedPresentation(
           context: NabiContext.error,
           emotion: NabiEmotion.concerned,
-          bubbleText: 'Không sao đâu, NaBi ở đây cùng bạn.',
+          bubbleText: 'Không sao đâu, Nabi ở đây cùng bạn.',
         ),
     };
   }

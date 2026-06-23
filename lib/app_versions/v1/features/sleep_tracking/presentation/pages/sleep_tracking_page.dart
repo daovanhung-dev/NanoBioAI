@@ -39,7 +39,7 @@ class SleepTrackingPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    'Nami đang chuẩn bị góc giấc ngủ',
+                    'Nabiđang chuẩn bị góc giấc ngủ',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.heading4.copyWith(
                       fontWeight: AppTypography.bold,

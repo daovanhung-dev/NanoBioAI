@@ -32,7 +32,7 @@ Commit de xuat: feat(onboarding,dashboard): cap nhat xac nhan va nhac tao du lie
 - Loading: CTA tao du lieu 7 ngay hien trang thai dang tao.
 - Empty: plan status hien copy chuan khi chua co ke hoach.
 - Error: giu snackbar loi tao plan hien co.
-- Success: snackbar dashboard bao Nami da them ke hoach 7 ngay.
+- Success: snackbar dashboard bao Nabida them ke hoach 7 ngay.
 
 ## Files
 

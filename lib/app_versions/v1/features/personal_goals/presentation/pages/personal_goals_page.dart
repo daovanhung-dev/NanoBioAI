@@ -17,7 +17,7 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
       icon: Icons.water_drop_rounded,
       color: AppColors.info,
       title: 'Uống đủ nước',
-      subtitle: 'Nami nhắc bạn chăm cơ thể bằng từng ngụm nhỏ.',
+      subtitle: 'Nabinhắc bạn chăm cơ thể bằng từng ngụm nhỏ.',
     ),
     _GoalOption(
       icon: Icons.bedtime_rounded,
@@ -41,7 +41,7 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
       icon: Icons.spa_rounded,
       color: AppColors.secondary,
       title: 'Giảm căng thẳng',
-      subtitle: 'Nami cùng bạn tạo vài khoảng thở nhẹ trong ngày.',
+      subtitle: 'Nabicùng bạn tạo vài khoảng thở nhẹ trong ngày.',
     ),
     _GoalOption(
       icon: Icons.restaurant_menu_rounded,
@@ -55,7 +55,7 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
   Widget build(BuildContext context) {
     return NamiCareScaffold(
       title: 'Mục tiêu của mình',
-      subtitle: 'Chọn một điều nhỏ thôi, Nami sẽ đi cùng bạn mỗi ngày.',
+      subtitle: 'Chọn một điều nhỏ thôi, Nabisẽ đi cùng bạn mỗi ngày.',
       badge: 'Một bước nhỏ',
       icon: Icons.flag_rounded,
       gradient: AppGradients.success,
@@ -63,7 +63,7 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
         const NamiCareSectionTitle(
           title: 'Hôm nay mình muốn chăm điều gì?',
           subtitle:
-              'Bạn chỉ cần chọn một mục tiêu vừa sức. Nami sẽ nhắc thật nhẹ, không tạo áp lực.',
+              'Bạn chỉ cần chọn một mục tiêu vừa sức. Nabisẽ nhắc thật nhẹ, không tạo áp lực.',
         ),
         const SizedBox(height: AppSpacing.md),
         ...List.generate(_goals.length, (index) {
@@ -88,9 +88,9 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
           NamiCareEmptyState(
             icon: Icons.favorite_rounded,
             color: _goals[_selectedIndex!].color,
-            title: 'Nami đã đặt mục tiêu này vào góc nhỏ hôm nay của bạn',
+            title: 'Nabiđã đặt mục tiêu này vào góc nhỏ hôm nay của bạn',
             message:
-                'Mình không cần làm thật nhiều ngay lập tức. Chỉ cần quay lại từng chút, Nami sẽ cùng bạn giữ nhịp.',
+                'Mình không cần làm thật nhiều ngay lập tức. Chỉ cần quay lại từng chút, Nabisẽ cùng bạn giữ nhịp.',
           ),
         ],
       ],

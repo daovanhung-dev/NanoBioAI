@@ -1,4 +1,4 @@
-# Domain - UI / Theme / Nami Copy
+# Domain - UI / Theme / NabiCopy
 
 ## Source
 

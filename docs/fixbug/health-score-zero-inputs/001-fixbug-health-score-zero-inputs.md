@@ -19,7 +19,7 @@ Commit de xuat: fix(dashboard): phan biet zero score va missing score input
 
 - Them `DashboardDailyMetrics.hasDailyScoreInputs` de tach input presence khoi score value.
 - Score panel chi hien `--` khi `hasDailyScoreInputs == false`.
-- Neu co input that va score bang `0`, UI hien `0` cung copy Nami nhe nhang.
+- Neu co input that va score bang `0`, UI hien `0` cung copy Nabinhe nhang.
 - `V2HealthScoringFeature` ghi ro v1 local daily care score khong phai cong thuc v2 official.
 
 ## Evidence

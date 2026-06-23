@@ -50,7 +50,7 @@ class OnboardingEntryPage extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Bạn có thể đăng nhập để đồng bộ hồ sơ ngay, hoặc trải nghiệm onboarding trước. Nami sẽ giữ mọi thứ thật nhẹ nhàng cho bạn.',
+                      'Bạn có thể đăng nhập để đồng bộ hồ sơ ngay, hoặc trải nghiệm onboarding trước. Nabisẽ giữ mọi thứ thật nhẹ nhàng cho bạn.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
@@ -73,7 +73,7 @@ class OnboardingEntryPage extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
-                      'Nếu onboarding trước, sau này khi đăng ký Nami sẽ đồng bộ dữ liệu vào tài khoản của bạn.',
+                      'Nếu onboarding trước, sau này khi đăng ký Nabisẽ đồng bộ dữ liệu vào tài khoản của bạn.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textMuted,

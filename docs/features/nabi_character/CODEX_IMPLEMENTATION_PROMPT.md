@@ -7,12 +7,12 @@ Bạn là AI coding agent của dự án Flutter NanoBio/NamiAI. Hãy triển kh
 1. `.codex/AGENTS.md`
 2. `.codex/PROJECT_MAP.md`
 3. `.codex/task-skills/coding.md`
-4. `docs/features/nabi_character/NABI_CHARACTER_CONTEXT.md`
-5. `docs/features/nabi_character/NABI_ASSET_MANIFEST.md`
-6. `docs/features/nabi_character/NABI_INTEGRATION_GUIDE.md`
-7. `assets/config/nabi/nabi_state_matrix.yaml`
-8. `assets/config/nabi/nabi_motion_library.json`
-9. `assets/config/nabi/nabi_expression_map.json`
+4. `docs/features/Nabi_character/Nabi_CHARACTER_CONTEXT.md`
+5. `docs/features/Nabi_character/Nabi_ASSET_MANIFEST.md`
+6. `docs/features/Nabi_character/Nabi_INTEGRATION_GUIDE.md`
+7. `assets/config/Nabi/Nabi_state_matrix.yaml`
+8. `assets/config/Nabi/Nabi_motion_library.json`
+9. `assets/config/Nabi/Nabi_expression_map.json`
 
 ## Mục tiêu
 
@@ -29,7 +29,7 @@ Tạo module `Nabi Character System` để UI chọn đúng ảnh/animation reci
 
 ## Việc cần làm
 
-1. Tạo feature/module phù hợp với cấu trúc dự án (ví dụ `lib/shared/nabi_character/` hoặc feature-specific adapter).
+1. Tạo feature/module phù hợp với cấu trúc dự án (ví dụ `lib/shared/Nabi_character/` hoặc feature-specific adapter).
 2. Tạo model typed: `NabiVisualState`, `NabiEngagementBand`, `NabiAssetDescriptor`, `NabiMotionRecipe`.
 3. Tạo một resolver/controller nhận context nghiệp vụ và trả về `NabiAssetDescriptor`.
 4. Tích hợp ít nhất các context: onboarding intro/generating/ready; chat listening/generating/answer-ready; dashboard empty; daily task pending/complete/skip; away 3d/7d/welcome back; offline/sync success/login prompt.
@@ -39,8 +39,8 @@ Tạo module `Nabi Character System` để UI chọn đúng ảnh/animation reci
 
 ## Tiêu chí chấp nhận
 
-- Chọn asset theo priority trong `nabi_state_matrix.yaml`.
-- Không có string đường dẫn `assets/images/nabi/...` bị lặp trong screen widget.
+- Chọn asset theo priority trong `Nabi_state_matrix.yaml`.
+- Không có string đường dẫn `assets/images/Nabi/...` bị lặp trong screen widget.
 - Tất cả 84 asset được manifest kiểm tra tồn tại.
 - Kịch bản skip/away không có copy gây áp lực.
 - `flutter analyze` và relevant tests pass.

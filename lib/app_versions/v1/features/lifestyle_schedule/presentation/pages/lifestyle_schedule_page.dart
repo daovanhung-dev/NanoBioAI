@@ -22,7 +22,7 @@ class LifestyleSchedulePage extends ConsumerWidget {
         error: (error, _) => _SchedulePageFrame(
           child: _ScheduleErrorState(
             message:
-                'Nami chưa mở được lịch trình. Bạn thử tải lại giúp Nami nhé.',
+                'Nabichưa mở được lịch trình. Bạn thử tải lại giúp Nabinhé.',
             onRetry: () => ref
                 .read(lifestyleScheduleControllerProvider.notifier)
                 .refresh(),
@@ -197,8 +197,8 @@ class _NamiHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = _progressValue(state);
     final title = state.isSelectedToday
-        ? 'Nami ở đây, mình cùng chăm sóc hôm nay nhé'
-        : 'Nami đã chuẩn bị lịch trình cho ngày này';
+        ? 'Nabiở đây, mình cùng chăm sóc hôm nay nhé'
+        : 'Nabiđã chuẩn bị lịch trình cho ngày này';
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadiusTokens.dialog),
@@ -265,7 +265,7 @@ class _NamiHero extends StatelessWidget {
                 children: [
                   _HeroPill(
                     icon: Icons.auto_awesome_rounded,
-                    label: 'Nami đồng hành',
+                    label: 'Nabiđồng hành',
                     value: '${state.score.round()} điểm',
                   ),
                   _HeroPill(
@@ -454,7 +454,7 @@ class _ProgressCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacingTokens.itemSpacing),
                     Text(
-                      'Nami sẽ nhẹ nhàng nhắc bạn từng bước, không vội vàng.',
+                      'Nabisẽ nhẹ nhàng nhắc bạn từng bước, không vội vàng.',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: _SchedulePalette.textSecondary(context),
                       ),
@@ -661,7 +661,7 @@ class _DateSection extends StatelessWidget {
         SectionHeader(
           title: 'Chọn ngày đồng hành',
           subtitle:
-              'Nami gom các nhịp ăn uống, vận động và nghỉ ngơi theo từng ngày.',
+              'Nabigom các nhịp ăn uống, vận động và nghỉ ngơi theo từng ngày.',
         ),
         const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
         _DateSelector(state: state),
@@ -819,7 +819,7 @@ class _Timeline extends StatelessWidget {
         icon: Icons.hourglass_empty_rounded,
         title: 'Ngày này đang thật nhẹ nhàng',
         description:
-            'Nami chưa thấy lịch trình nào. Bạn có thể kéo xuống để làm mới dữ liệu.',
+            'Nabichưa thấy lịch trình nào. Bạn có thể kéo xuống để làm mới dữ liệu.',
       );
     }
 
@@ -829,7 +829,7 @@ class _Timeline extends StatelessWidget {
         SectionHeader(
           title: 'Dòng chảy trong ngày',
           subtitle:
-              'Mỗi thẻ là một nhịp nhỏ Nami đã sắp sẵn để bạn chăm sóc cơ thể dễ hơn.',
+              'Mỗi thẻ là một nhịp nhỏ Nabiđã sắp sẵn để bạn chăm sóc cơ thể dễ hơn.',
         ),
         const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
         ...List.generate(items.length, (index) {
@@ -1079,7 +1079,7 @@ class _ScheduleItemCard extends StatelessWidget {
                 icon: Icons.schedule_rounded,
                 color: AppColorTokens.warning,
                 text:
-                    'Nami để mục này chờ đúng giờ rồi mình đánh dấu nhé, bạn không cần vội.',
+                    'Nabiđể mục này chờ đúng giờ rồi mình đánh dấu nhé, bạn không cần vội.',
               ),
             ],
           ],
@@ -1342,7 +1342,7 @@ class _ScheduleLoadingState extends StatelessWidget {
               LoadingState(variant: LoadingVariant.spinner),
               const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
               Text(
-                'Nami đang mở lịch chăm sóc của bạn...',
+                'Nabiđang mở lịch chăm sóc của bạn...',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: _SchedulePalette.textSecondary(context),
@@ -1540,15 +1540,15 @@ int _remainingItems(LifestyleScheduleState state) {
 
 String _namiCopy({required num score, required int completed}) {
   if (completed == 0) {
-    return 'Nami đã sắp từng việc nhỏ theo nhịp trong ngày. Bạn cứ bắt đầu bằng một mục dễ nhất, mình đi chậm mà đều nhé.';
+    return 'Nabiđã sắp từng việc nhỏ theo nhịp trong ngày. Bạn cứ bắt đầu bằng một mục dễ nhất, mình đi chậm mà đều nhé.';
   }
   if (score >= 90) {
-    return 'Bạn đang chăm sóc bản thân rất tốt. Nami tự hào về nhịp hôm nay của bạn lắm.';
+    return 'Bạn đang chăm sóc bản thân rất tốt. Nabitự hào về nhịp hôm nay của bạn lắm.';
   }
   if (score >= 60) {
-    return 'Mọi thứ đang đi đúng hướng rồi. Nami sẽ ở đây nhắc nhẹ phần còn lại để bạn không bị quá tải.';
+    return 'Mọi thứ đang đi đúng hướng rồi. Nabisẽ ở đây nhắc nhẹ phần còn lại để bạn không bị quá tải.';
   }
-  return 'Không cần hoàn hảo đâu. Nami chỉ mong bạn chọn thêm một việc nhỏ và làm thật dịu dàng với cơ thể mình.';
+  return 'Không cần hoàn hảo đâu. Nabichỉ mong bạn chọn thêm một việc nhỏ và làm thật dịu dàng với cơ thể mình.';
 }
 
 String _formatDate(DateTime date) {

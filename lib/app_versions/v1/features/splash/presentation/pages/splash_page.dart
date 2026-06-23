@@ -16,7 +16,7 @@ class SplashPage extends ConsumerStatefulWidget {
     super.key,
     this.title = 'Nami',
     this.subtitle =
-        'Mình ở đây rồi. Hãy để Nami chuẩn bị một không gian thật dịu dàng để chăm sóc bạn hôm nay.',
+        'Mình ở đây rồi. Hãy để Nabichuẩn bị một không gian thật dịu dàng để chăm sóc bạn hôm nay.',
   });
 
   final String title;
@@ -182,7 +182,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
-                        'NAMI ĐANG Ở ĐÂY',
+                        'NabiĐANG Ở ĐÂY',
                         style: AppTextStyles.overline.copyWith(
                           color: AppColors.textSecondary,
                           letterSpacing: 1.2,
@@ -241,7 +241,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                 const _ProgressLoader(),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Nami đang sắp xếp mọi thứ thật gọn gàng cho bạn. Chỉ một chút nữa thôi nhé.',
+                  'Nabiđang sắp xếp mọi thứ thật gọn gàng cho bạn. Chỉ một chút nữa thôi nhé.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textMuted,
@@ -340,7 +340,7 @@ class _MainSplashCard extends StatelessWidget {
                   radius: AppRadius.circular,
                 ),
                 child: Text(
-                  'NAMI · NGƯỜI ĐỒNG HÀNH CỦA BẠN',
+                  'Nabi· NGƯỜI ĐỒNG HÀNH CỦA BẠN',
                   style: AppTextStyles.overline.copyWith(
                     color: AppColors.primaryDark,
                     letterSpacing: 1.45,
@@ -388,7 +388,7 @@ class _MainSplashCard extends StatelessWidget {
                     child: _FeatureCard(
                       icon: AppIcons.health,
                       title: 'Nhịp khỏe',
-                      subtitle: 'Nami lắng nghe thật nhẹ',
+                      subtitle: 'Nabilắng nghe thật nhẹ',
                       gradient: AppGradients.health,
                     ),
                   ),

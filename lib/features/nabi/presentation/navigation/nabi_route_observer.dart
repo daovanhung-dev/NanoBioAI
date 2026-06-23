@@ -1,10 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../application/nabi_controller.dart';
-import 'nabi_route_mapper.dart';
+import '../../application/Nabi_controller.dart';
+import 'Nabi_route_mapper.dart';
 
-/// NavigatorObserver để NaBi tự đổi biểu cảm khi người dùng chuyển màn hình.
+/// NavigatorObserver để Nabi tự đổi biểu cảm khi người dùng chuyển màn hình.
 ///
 /// Thêm observer này vào GoRouter thay vì gọi setContext thủ công ở từng page.
 class NabiRouteObserver extends NavigatorObserver {
@@ -41,7 +41,7 @@ class NabiRouteObserver extends NavigatorObserver {
 NabiRouteObserver createNabiRouteObserver(Ref ref) {
   return NabiRouteObserver((location) {
     ref
-        .read(nabiControllerProvider.notifier)
+        .read(NabiControllerProvider.notifier)
         .setContext(NabiRouteMapper.fromLocation(location));
   });
 }

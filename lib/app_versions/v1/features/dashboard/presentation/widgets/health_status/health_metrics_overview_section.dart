@@ -40,7 +40,7 @@ class HealthMetricsOverviewSection extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Nami vừa tính lại sức khỏe của bạn',
+                          'Nabivừa tính lại sức khỏe của bạn',
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 color: AppColors.textPrimary,

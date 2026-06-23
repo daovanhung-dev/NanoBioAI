@@ -51,7 +51,7 @@ MembershipDisplayInfo membershipDisplayInfoForTier(String? rawTier) {
       return MembershipDisplayInfo(
         code: tier,
         label: 'Gói ${_titleCase(tier)}',
-        description: 'Nami đã ghi nhận trạng thái gói của bạn.',
+        description: 'Nabiđã ghi nhận trạng thái gói của bạn.',
         icon: Icons.verified_rounded,
       );
   }

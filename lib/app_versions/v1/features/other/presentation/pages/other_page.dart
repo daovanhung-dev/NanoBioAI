@@ -24,7 +24,7 @@ class HealthInsightsView extends ConsumerWidget {
             icon: Icons.error_outline_rounded,
             title: 'Chưa có dữ liệu hồ sơ',
             message:
-                'Nami chưa thể mở góc sức khỏe của bạn lúc này. Mình thử lại sau một chút nhé.',
+                'Nabichưa thể mở góc sức khỏe của bạn lúc này. Mình thử lại sau một chút nhé.',
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
           data: (dashboard) {
@@ -158,7 +158,7 @@ class _SummaryCard extends StatelessWidget {
         ? insights.first.content
         : recommendations.isNotEmpty
         ? recommendations.first.description
-        : 'Nami chưa có nhận xét mới cho hôm nay. Khi bạn chăm sóc thêm vài nhịp nhỏ, mình sẽ tổng hợp lại dịu dàng hơn.';
+        : 'Nabichưa có nhận xét mới cho hôm nay. Khi bạn chăm sóc thêm vài nhịp nhỏ, mình sẽ tổng hợp lại dịu dàng hơn.';
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -171,7 +171,7 @@ class _SummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Báo cáo Nami vừa tổng hợp',
+            'Báo cáo Nabivừa tổng hợp',
             style: AppTextStyles.labelMedium.copyWith(
               color: Colors.white,
               letterSpacing: 1,
@@ -433,9 +433,9 @@ class _InsightSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Section(
       title: 'Mình nhận thấy',
-      emptyTitle: 'Nami chưa có nhận xét mới',
+      emptyTitle: 'Nabichưa có nhận xét mới',
       emptyMessage:
-          'Khi có thêm tín hiệu từ ngày của bạn, Nami sẽ đặt những điều đáng chú ý ở đây.',
+          'Khi có thêm tín hiệu từ ngày của bạn, Nabisẽ đặt những điều đáng chú ý ở đây.',
       children: insights.map((item) {
         return _SurfaceCard(
           child: Row(
@@ -476,9 +476,9 @@ class _RecommendationSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Section(
       title: 'Đề xuất hôm nay',
-      emptyTitle: 'Nami chưa có gợi ý mới',
+      emptyTitle: 'Nabichưa có gợi ý mới',
       emptyMessage:
-          'Bạn cứ tiếp tục chăm mình theo nhịp hiện tại. Khi có điều phù hợp, Nami sẽ nhẹ nhàng gợi ý.',
+          'Bạn cứ tiếp tục chăm mình theo nhịp hiện tại. Khi có điều phù hợp, Nabisẽ nhẹ nhàng gợi ý.',
       children: recommendations.map((item) {
         return _SurfaceCard(
           child: Row(
@@ -732,7 +732,7 @@ class _SyncBanner extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                'Nami đang cập nhật những tín hiệu mới nhất...',
+                'Nabiđang cập nhật những tín hiệu mới nhất...',
                 style: AppTextStyles.bodySmall,
               ),
             ),
@@ -818,9 +818,9 @@ String _scoreTitle(int score) {
 
 String _scoreMessage(int score) {
   if (score <= 0) {
-    return 'Nami sẽ cập nhật điểm khi có thêm ghi nhận sức khỏe, nhiệm vụ, bữa ăn, nước uống hoặc giấc ngủ.';
+    return 'Nabisẽ cập nhật điểm khi có thêm ghi nhận sức khỏe, nhiệm vụ, bữa ăn, nước uống hoặc giấc ngủ.';
   }
-  return 'Điểm này được Nami tổng hợp từ những ghi nhận sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.';
+  return 'Điểm này được Nabitổng hợp từ những ghi nhận sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.';
 }
 
 String _scoreLabel(int score) {

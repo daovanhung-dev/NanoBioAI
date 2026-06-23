@@ -153,7 +153,7 @@ class DashboardHealthCalculator {
 
   static String _bmiMessage(double bmi) {
     if (bmi <= 0) {
-      return 'Cần chiều cao và cân nặng để Nami tính BMI chính xác hơn.';
+      return 'Cần chiều cao và cân nặng để Nabitính BMI chính xác hơn.';
     }
     if (bmi < 18.5) {
       return 'Bạn có thể cần tăng năng lượng và protein một cách nhẹ nhàng.';
@@ -212,7 +212,7 @@ class DashboardHealthCalculator {
       return 'Chỉ cần thêm một chút nước vào buổi sáng hoặc chiều.';
     }
     if (score >= 55) {
-      return 'Nami nghĩ bạn nên đặt nhắc uống nước để dễ duy trì hơn.';
+      return 'Nabinghĩ bạn nên đặt nhắc uống nước để dễ duy trì hơn.';
     }
     return 'Lượng nước hơi thấp, hôm nay mình tăng dần từng cốc nhỏ nhé.';
   }
@@ -321,7 +321,7 @@ class DashboardHealthCalculator {
       return 'Cơ thể có thể đang hơi mệt, nên có khoảng nghỉ ngắn trong ngày.';
     }
     if (score >= 55) {
-      return 'Nami gợi ý thở chậm 3 phút và ngủ sớm hơn một chút.';
+      return 'Nabigợi ý thở chậm 3 phút và ngủ sớm hơn một chút.';
     }
     return 'Căng thẳng đang ảnh hưởng rõ, mình nên ưu tiên phục hồi trước.';
   }
@@ -364,7 +364,7 @@ class DashboardHealthCalculator {
     if (conditions.isEmpty) {
       return 'Chưa ghi nhận vấn đề đặc biệt trong hồ sơ sức khỏe.';
     }
-    return 'Có ${conditions.length} điểm cần theo dõi, Nami sẽ ưu tiên gợi ý nhẹ nhàng hơn.';
+    return 'Có ${conditions.length} điểm cần theo dõi, Nabisẽ ưu tiên gợi ý nhẹ nhàng hơn.';
   }
 
   static int _goalFocusScore(List<String> goals) {
@@ -417,7 +417,7 @@ class DashboardHealthCalculator {
       case DashboardRiskLevel.attention:
         return 'Cơ thể đang gửi vài tín hiệu cần được quan tâm. Mình ưu tiên nước, ngủ và vận động nhẹ trước nhé.';
       case DashboardRiskLevel.risk:
-        return 'Nami thấy bạn nên chăm sóc bản thân chậm lại một chút và theo dõi các chỉ số đều hơn.';
+        return 'Nabithấy bạn nên chăm sóc bản thân chậm lại một chút và theo dõi các chỉ số đều hơn.';
     }
   }
 
@@ -502,7 +502,7 @@ class DashboardHealthCalculator {
         DashboardHealthInsight(
           title: 'Có ${conditions.length} vấn đề cần theo dõi',
           message:
-              'Nami sẽ ưu tiên các gợi ý an toàn, dễ áp dụng và tránh thay đổi quá đột ngột.',
+              'Nabisẽ ưu tiên các gợi ý an toàn, dễ áp dụng và tránh thay đổi quá đột ngột.',
           priority: 1,
         ),
       );

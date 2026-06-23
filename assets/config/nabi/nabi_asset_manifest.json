@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "character_id": "nabi",
+  "character_id": "Nabi",
   "generated_for": "NanoBio / NamiAI Flutter project",
   "asset_contract": {
     "format": "PNG",
@@ -12,437 +12,437 @@
   "categories": {
     "core": [
       {
-        "id": "NABI-001",
-        "file": "nabi_idle_neutral.png",
+        "id": "Nabi-001",
+        "file": "Nabi_idle_neutral.png",
         "title": "Đứng chờ nhẹ"
       },
       {
-        "id": "NABI-002",
-        "file": "nabi_idle_happy.png",
+        "id": "Nabi-002",
+        "file": "Nabi_idle_happy.png",
         "title": "Đứng vui vẻ"
       },
       {
-        "id": "NABI-003",
-        "file": "nabi_wave.png",
+        "id": "Nabi-003",
+        "file": "Nabi_wave.png",
         "title": "Chào bạn"
       },
       {
-        "id": "NABI-004",
-        "file": "nabi_point_guide.png",
+        "id": "Nabi-004",
+        "file": "Nabi_point_guide.png",
         "title": "Chỉ dẫn"
       },
       {
-        "id": "NABI-005",
-        "file": "nabi_listen.png",
+        "id": "Nabi-005",
+        "file": "Nabi_listen.png",
         "title": "Lắng nghe"
       },
       {
-        "id": "NABI-006",
-        "file": "nabi_think.png",
+        "id": "Nabi-006",
+        "file": "Nabi_think.png",
         "title": "Suy nghĩ"
       },
       {
-        "id": "NABI-007",
-        "file": "nabi_analyze.png",
+        "id": "Nabi-007",
+        "file": "Nabi_analyze.png",
         "title": "Phân tích"
       },
       {
-        "id": "NABI-008",
-        "file": "nabi_speak.png",
+        "id": "Nabi-008",
+        "file": "Nabi_speak.png",
         "title": "Giải thích"
       }
     ],
     "onboarding": [
       {
-        "id": "NABI-009",
-        "file": "nabi_onboarding_intro.png",
+        "id": "Nabi-009",
+        "file": "Nabi_onboarding_intro.png",
         "title": "Chào mừng onboarding"
       },
       {
-        "id": "NABI-010",
-        "file": "nabi_onboarding_basic_info.png",
+        "id": "Nabi-010",
+        "file": "Nabi_onboarding_basic_info.png",
         "title": "Thông tin cơ bản"
       },
       {
-        "id": "NABI-011",
-        "file": "nabi_onboarding_body_profile.png",
+        "id": "Nabi-011",
+        "file": "Nabi_onboarding_body_profile.png",
         "title": "Hồ sơ cơ thể"
       },
       {
-        "id": "NABI-012",
-        "file": "nabi_onboarding_lifestyle.png",
+        "id": "Nabi-012",
+        "file": "Nabi_onboarding_lifestyle.png",
         "title": "Thói quen sống"
       },
       {
-        "id": "NABI-013",
-        "file": "nabi_onboarding_goal.png",
+        "id": "Nabi-013",
+        "file": "Nabi_onboarding_goal.png",
         "title": "Mục tiêu sức khỏe"
       },
       {
-        "id": "NABI-014",
-        "file": "nabi_onboarding_health_check.png",
+        "id": "Nabi-014",
+        "file": "Nabi_onboarding_health_check.png",
         "title": "Kiểm tra sức khỏe"
       },
       {
-        "id": "NABI-015",
-        "file": "nabi_onboarding_review.png",
+        "id": "Nabi-015",
+        "file": "Nabi_onboarding_review.png",
         "title": "Xem lại thông tin"
       },
       {
-        "id": "NABI-016",
-        "file": "nabi_ai_generating_plan.png",
+        "id": "Nabi-016",
+        "file": "Nabi_ai_generating_plan.png",
         "title": "Đang tạo lịch"
       },
       {
-        "id": "NABI-017",
-        "file": "nabi_plan_ready.png",
+        "id": "Nabi-017",
+        "file": "Nabi_plan_ready.png",
         "title": "Lịch đã sẵn sàng"
       }
     ],
     "chat": [
       {
-        "id": "NABI-018",
-        "file": "nabi_chat_greet.png",
+        "id": "Nabi-018",
+        "file": "Nabi_chat_greet.png",
         "title": "Chào trong chat"
       },
       {
-        "id": "NABI-019",
-        "file": "nabi_chat_listen.png",
+        "id": "Nabi-019",
+        "file": "Nabi_chat_listen.png",
         "title": "Lắng nghe chat"
       },
       {
-        "id": "NABI-020",
-        "file": "nabi_chat_typing.png",
+        "id": "Nabi-020",
+        "file": "Nabi_chat_typing.png",
         "title": "Đang trả lời"
       },
       {
-        "id": "NABI-021",
-        "file": "nabi_chat_reasoning.png",
+        "id": "Nabi-021",
+        "file": "Nabi_chat_reasoning.png",
         "title": "Đang suy luận"
       },
       {
-        "id": "NABI-022",
-        "file": "nabi_chat_clarify.png",
+        "id": "Nabi-022",
+        "file": "Nabi_chat_clarify.png",
         "title": "Xin thêm thông tin"
       },
       {
-        "id": "NABI-023",
-        "file": "nabi_chat_meal_tip.png",
+        "id": "Nabi-023",
+        "file": "Nabi_chat_meal_tip.png",
         "title": "Gợi ý dinh dưỡng"
       },
       {
-        "id": "NABI-024",
-        "file": "nabi_chat_exercise_tip.png",
+        "id": "Nabi-024",
+        "file": "Nabi_chat_exercise_tip.png",
         "title": "Gợi ý vận động"
       },
       {
-        "id": "NABI-025",
-        "file": "nabi_chat_rest_tip.png",
+        "id": "Nabi-025",
+        "file": "Nabi_chat_rest_tip.png",
         "title": "Gợi ý nghỉ ngơi"
       },
       {
-        "id": "NABI-026",
-        "file": "nabi_chat_water_tip.png",
+        "id": "Nabi-026",
+        "file": "Nabi_chat_water_tip.png",
         "title": "Gợi ý uống nước"
       },
       {
-        "id": "NABI-027",
-        "file": "nabi_chat_answer_ready.png",
+        "id": "Nabi-027",
+        "file": "Nabi_chat_answer_ready.png",
         "title": "Đã có câu trả lời"
       }
     ],
     "daily": [
       {
-        "id": "NABI-028",
-        "file": "nabi_breakfast.png",
+        "id": "Nabi-028",
+        "file": "Nabi_breakfast.png",
         "title": "Bữa sáng"
       },
       {
-        "id": "NABI-029",
-        "file": "nabi_lunch.png",
+        "id": "Nabi-029",
+        "file": "Nabi_lunch.png",
         "title": "Bữa trưa"
       },
       {
-        "id": "NABI-030",
-        "file": "nabi_dinner.png",
+        "id": "Nabi-030",
+        "file": "Nabi_dinner.png",
         "title": "Bữa tối"
       },
       {
-        "id": "NABI-031",
-        "file": "nabi_healthy_snack.png",
+        "id": "Nabi-031",
+        "file": "Nabi_healthy_snack.png",
         "title": "Ăn nhẹ lành mạnh"
       },
       {
-        "id": "NABI-032",
-        "file": "nabi_drink_water.png",
+        "id": "Nabi-032",
+        "file": "Nabi_drink_water.png",
         "title": "Uống nước"
       },
       {
-        "id": "NABI-033",
-        "file": "nabi_exercise.png",
+        "id": "Nabi-033",
+        "file": "Nabi_exercise.png",
         "title": "Tập thể dục"
       },
       {
-        "id": "NABI-034",
-        "file": "nabi_walk.png",
+        "id": "Nabi-034",
+        "file": "Nabi_walk.png",
         "title": "Đi bộ"
       },
       {
-        "id": "NABI-035",
-        "file": "nabi_stretch.png",
+        "id": "Nabi-035",
+        "file": "Nabi_stretch.png",
         "title": "Giãn cơ"
       },
       {
-        "id": "NABI-036",
-        "file": "nabi_sleep.png",
+        "id": "Nabi-036",
+        "file": "Nabi_sleep.png",
         "title": "Ngủ ngon"
       },
       {
-        "id": "NABI-037",
-        "file": "nabi_morning_checkin.png",
+        "id": "Nabi-037",
+        "file": "Nabi_morning_checkin.png",
         "title": "Chào buổi sáng"
       },
       {
-        "id": "NABI-038",
-        "file": "nabi_mood_checkin.png",
+        "id": "Nabi-038",
+        "file": "Nabi_mood_checkin.png",
         "title": "Kiểm tra cảm xúc"
       },
       {
-        "id": "NABI-039",
-        "file": "nabi_body_measure.png",
+        "id": "Nabi-039",
+        "file": "Nabi_body_measure.png",
         "title": "Theo dõi chỉ số"
       },
       {
-        "id": "NABI-040",
-        "file": "nabi_view_schedule.png",
+        "id": "Nabi-040",
+        "file": "Nabi_view_schedule.png",
         "title": "Xem lịch hôm nay"
       },
       {
-        "id": "NABI-041",
-        "file": "nabi_notification_reminder.png",
+        "id": "Nabi-041",
+        "file": "Nabi_notification_reminder.png",
         "title": "Nhắc việc"
       }
     ],
     "progress": [
       {
-        "id": "NABI-042",
-        "file": "nabi_task_complete.png",
+        "id": "Nabi-042",
+        "file": "Nabi_task_complete.png",
         "title": "Hoàn thành nhiệm vụ"
       },
       {
-        "id": "NABI-043",
-        "file": "nabi_task_skip_gentle.png",
+        "id": "Nabi-043",
+        "file": "Nabi_task_skip_gentle.png",
         "title": "Bỏ qua nhẹ nhàng"
       },
       {
-        "id": "NABI-044",
-        "file": "nabi_task_pending.png",
+        "id": "Nabi-044",
+        "file": "Nabi_task_pending.png",
         "title": "Nhiệm vụ đang chờ"
       },
       {
-        "id": "NABI-045",
-        "file": "nabi_day_complete.png",
+        "id": "Nabi-045",
+        "file": "Nabi_day_complete.png",
         "title": "Hoàn thành ngày"
       },
       {
-        "id": "NABI-046",
-        "file": "nabi_streak_start.png",
+        "id": "Nabi-046",
+        "file": "Nabi_streak_start.png",
         "title": "Bắt đầu chuỗi"
       },
       {
-        "id": "NABI-047",
-        "file": "nabi_streak_7days.png",
+        "id": "Nabi-047",
+        "file": "Nabi_streak_7days.png",
         "title": "Chuỗi 7 ngày"
       },
       {
-        "id": "NABI-048",
-        "file": "nabi_milestone_badge.png",
+        "id": "Nabi-048",
+        "file": "Nabi_milestone_badge.png",
         "title": "Đạt cột mốc"
       },
       {
-        "id": "NABI-049",
-        "file": "nabi_personal_best.png",
+        "id": "Nabi-049",
+        "file": "Nabi_personal_best.png",
         "title": "Kỷ lục cá nhân"
       },
       {
-        "id": "NABI-050",
-        "file": "nabi_low_progress_encourage.png",
+        "id": "Nabi-050",
+        "file": "Nabi_low_progress_encourage.png",
         "title": "Động viên khi chậm"
       },
       {
-        "id": "NABI-051",
-        "file": "nabi_missed_task_remind.png",
+        "id": "Nabi-051",
+        "file": "Nabi_missed_task_remind.png",
         "title": "Nhắc việc lỡ"
       },
       {
-        "id": "NABI-052",
-        "file": "nabi_thank_you.png",
+        "id": "Nabi-052",
+        "file": "Nabi_thank_you.png",
         "title": "Cảm ơn"
       },
       {
-        "id": "NABI-053",
-        "file": "nabi_proud_of_you.png",
+        "id": "Nabi-053",
+        "file": "Nabi_proud_of_you.png",
         "title": "Tự hào về bạn"
       }
     ],
     "engagement": [
       {
-        "id": "NABI-054",
-        "file": "nabi_new_user.png",
+        "id": "Nabi-054",
+        "file": "Nabi_new_user.png",
         "title": "Người dùng mới"
       },
       {
-        "id": "NABI-055",
-        "file": "nabi_occasional_user.png",
+        "id": "Nabi-055",
+        "file": "Nabi_occasional_user.png",
         "title": "Dùng thỉnh thoảng"
       },
       {
-        "id": "NABI-056",
-        "file": "nabi_regular_user.png",
+        "id": "Nabi-056",
+        "file": "Nabi_regular_user.png",
         "title": "Dùng đều đặn"
       },
       {
-        "id": "NABI-057",
-        "file": "nabi_daily_user.png",
+        "id": "Nabi-057",
+        "file": "Nabi_daily_user.png",
         "title": "Gắn bó mỗi ngày"
       },
       {
-        "id": "NABI-058",
-        "file": "nabi_away_1day.png",
+        "id": "Nabi-058",
+        "file": "Nabi_away_1day.png",
         "title": "Vắng 1 ngày"
       },
       {
-        "id": "NABI-059",
-        "file": "nabi_away_3days.png",
+        "id": "Nabi-059",
+        "file": "Nabi_away_3days.png",
         "title": "Vắng 3 ngày"
       },
       {
-        "id": "NABI-060",
-        "file": "nabi_away_7days.png",
+        "id": "Nabi-060",
+        "file": "Nabi_away_7days.png",
         "title": "Vắng 7 ngày"
       },
       {
-        "id": "NABI-061",
-        "file": "nabi_away_14days.png",
+        "id": "Nabi-061",
+        "file": "Nabi_away_14days.png",
         "title": "Vắng từ 14 ngày"
       },
       {
-        "id": "NABI-062",
-        "file": "nabi_welcome_back.png",
+        "id": "Nabi-062",
+        "file": "Nabi_welcome_back.png",
         "title": "Chào mừng quay lại"
       },
       {
-        "id": "NABI-063",
-        "file": "nabi_fresh_restart.png",
+        "id": "Nabi-063",
+        "file": "Nabi_fresh_restart.png",
         "title": "Bắt đầu lại"
       }
     ],
     "system": [
       {
-        "id": "NABI-064",
-        "file": "nabi_loading.png",
+        "id": "Nabi-064",
+        "file": "Nabi_loading.png",
         "title": "Đang tải"
       },
       {
-        "id": "NABI-065",
-        "file": "nabi_empty_dashboard.png",
+        "id": "Nabi-065",
+        "file": "Nabi_empty_dashboard.png",
         "title": "Chưa có dữ liệu"
       },
       {
-        "id": "NABI-066",
-        "file": "nabi_no_schedule.png",
+        "id": "Nabi-066",
+        "file": "Nabi_no_schedule.png",
         "title": "Chưa có lịch"
       },
       {
-        "id": "NABI-067",
-        "file": "nabi_offline.png",
+        "id": "Nabi-067",
+        "file": "Nabi_offline.png",
         "title": "Ngoại tuyến"
       },
       {
-        "id": "NABI-068",
-        "file": "nabi_syncing.png",
+        "id": "Nabi-068",
+        "file": "Nabi_syncing.png",
         "title": "Đang đồng bộ"
       },
       {
-        "id": "NABI-069",
-        "file": "nabi_sync_success.png",
+        "id": "Nabi-069",
+        "file": "Nabi_sync_success.png",
         "title": "Đồng bộ thành công"
       },
       {
-        "id": "NABI-070",
-        "file": "nabi_sync_retry.png",
+        "id": "Nabi-070",
+        "file": "Nabi_sync_retry.png",
         "title": "Cần thử lại đồng bộ"
       },
       {
-        "id": "NABI-071",
-        "file": "nabi_notification_permission.png",
+        "id": "Nabi-071",
+        "file": "Nabi_notification_permission.png",
         "title": "Quyền thông báo"
       },
       {
-        "id": "NABI-072",
-        "file": "nabi_login.png",
+        "id": "Nabi-072",
+        "file": "Nabi_login.png",
         "title": "Mời đăng nhập"
       },
       {
-        "id": "NABI-073",
-        "file": "nabi_account_connected.png",
+        "id": "Nabi-073",
+        "file": "Nabi_account_connected.png",
         "title": "Đã liên kết tài khoản"
       },
       {
-        "id": "NABI-074",
-        "file": "nabi_access_locked.png",
+        "id": "Nabi-074",
+        "file": "Nabi_access_locked.png",
         "title": "Tính năng chưa mở"
       }
     ],
     "future": [
       {
-        "id": "NABI-075",
-        "file": "nabi_family_plan.png",
+        "id": "Nabi-075",
+        "file": "Nabi_family_plan.png",
         "title": "Gói gia đình"
       },
       {
-        "id": "NABI-076",
-        "file": "nabi_family_invite.png",
+        "id": "Nabi-076",
+        "file": "Nabi_family_invite.png",
         "title": "Mời người thân"
       },
       {
-        "id": "NABI-077",
-        "file": "nabi_family_shared_progress.png",
+        "id": "Nabi-077",
+        "file": "Nabi_family_shared_progress.png",
         "title": "Tiến độ gia đình"
       },
       {
-        "id": "NABI-078",
-        "file": "nabi_family_member_joined.png",
+        "id": "Nabi-078",
+        "file": "Nabi_family_member_joined.png",
         "title": "Thành viên tham gia"
       },
       {
-        "id": "NABI-079",
-        "file": "nabi_premium_unlocked.png",
+        "id": "Nabi-079",
+        "file": "Nabi_premium_unlocked.png",
         "title": "Mở khóa nâng cao"
       },
       {
-        "id": "NABI-080",
-        "file": "nabi_referral_invite.png",
+        "id": "Nabi-080",
+        "file": "Nabi_referral_invite.png",
         "title": "Mời bạn bè"
       },
       {
-        "id": "NABI-081",
-        "file": "nabi_referral_success.png",
+        "id": "Nabi-081",
+        "file": "Nabi_referral_success.png",
         "title": "Mời bạn thành công"
       },
       {
-        "id": "NABI-082",
-        "file": "nabi_sales_leaderboard.png",
+        "id": "Nabi-082",
+        "file": "Nabi_sales_leaderboard.png",
         "title": "Bảng xếp hạng sale"
       },
       {
-        "id": "NABI-083",
-        "file": "nabi_sales_reward.png",
+        "id": "Nabi-083",
+        "file": "Nabi_sales_reward.png",
         "title": "Thưởng sale"
       },
       {
-        "id": "NABI-084",
-        "file": "nabi_commission_success.png",
+        "id": "Nabi-084",
+        "file": "Nabi_commission_success.png",
         "title": "Hoa hồng thành công"
       }
     ]
@@ -451,7 +451,7 @@
     {
       "number": 1,
       "category": "core",
-      "filename": "nabi_idle_neutral.png",
+      "filename": "Nabi_idle_neutral.png",
       "title": "Đứng chờ nhẹ",
       "description": "Nabi ở trạng thái chờ, giữ nụ cười thân thiện và không gây áp lực.",
       "base": "wave",
@@ -465,7 +465,7 @@
         "angle": -2,
         "flip": false
       },
-      "path": "assets/images/nabi/core/nabi_idle_neutral.png",
+      "path": "assets/images/Nabi/core/Nabi_idle_neutral.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -475,7 +475,7 @@
     {
       "number": 2,
       "category": "core",
-      "filename": "nabi_idle_happy.png",
+      "filename": "Nabi_idle_happy.png",
       "title": "Đứng vui vẻ",
       "description": "Nabi thể hiện năng lượng tích cực khi có tiến triển tốt.",
       "base": "celebrate",
@@ -489,7 +489,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/core/nabi_idle_happy.png",
+      "path": "assets/images/Nabi/core/Nabi_idle_happy.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -499,7 +499,7 @@
     {
       "number": 3,
       "category": "core",
-      "filename": "nabi_wave.png",
+      "filename": "Nabi_wave.png",
       "title": "Chào bạn",
       "description": "Nabi vẫy tay chào người dùng.",
       "base": "wave",
@@ -513,7 +513,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/core/nabi_wave.png",
+      "path": "assets/images/Nabi/core/Nabi_wave.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -523,7 +523,7 @@
     {
       "number": 4,
       "category": "core",
-      "filename": "nabi_point_guide.png",
+      "filename": "Nabi_point_guide.png",
       "title": "Chỉ dẫn",
       "description": "Nabi chỉ tay để hướng dẫn thao tác hoặc điều hướng.",
       "base": "guide",
@@ -537,7 +537,7 @@
         "angle": -1,
         "flip": false
       },
-      "path": "assets/images/nabi/core/nabi_point_guide.png",
+      "path": "assets/images/Nabi/core/Nabi_point_guide.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -547,7 +547,7 @@
     {
       "number": 5,
       "category": "core",
-      "filename": "nabi_listen.png",
+      "filename": "Nabi_listen.png",
       "title": "Lắng nghe",
       "description": "Nabi nghiêng đầu và lắng nghe câu hỏi hoặc cảm xúc của người dùng.",
       "base": "listen",
@@ -561,7 +561,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/core/nabi_listen.png",
+      "path": "assets/images/Nabi/core/Nabi_listen.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -571,7 +571,7 @@
     {
       "number": 6,
       "category": "core",
-      "filename": "nabi_think.png",
+      "filename": "Nabi_think.png",
       "title": "Suy nghĩ",
       "description": "Nabi chạm cằm để thể hiện đang cân nhắc.",
       "base": "think",
@@ -585,7 +585,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/core/nabi_think.png",
+      "path": "assets/images/Nabi/core/Nabi_think.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -595,7 +595,7 @@
     {
       "number": 7,
       "category": "core",
-      "filename": "nabi_analyze.png",
+      "filename": "Nabi_analyze.png",
       "title": "Phân tích",
       "description": "Nabi đang phân tích dữ liệu sức khỏe bằng một thẻ biểu đồ nhỏ.",
       "base": "think",
@@ -609,7 +609,7 @@
         "angle": -1,
         "flip": true
       },
-      "path": "assets/images/nabi/core/nabi_analyze.png",
+      "path": "assets/images/Nabi/core/Nabi_analyze.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -619,7 +619,7 @@
     {
       "number": 8,
       "category": "core",
-      "filename": "nabi_speak.png",
+      "filename": "Nabi_speak.png",
       "title": "Giải thích",
       "description": "Nabi mở lòng bàn tay để giải thích một nội dung ngắn.",
       "base": "guide",
@@ -633,7 +633,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/core/nabi_speak.png",
+      "path": "assets/images/Nabi/core/Nabi_speak.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -643,7 +643,7 @@
     {
       "number": 9,
       "category": "onboarding",
-      "filename": "nabi_onboarding_intro.png",
+      "filename": "Nabi_onboarding_intro.png",
       "title": "Chào mừng onboarding",
       "description": "Chào đón người dùng mới trước khi thu thập thông tin.",
       "base": "wave",
@@ -657,7 +657,7 @@
         "angle": -1,
         "flip": false
       },
-      "path": "assets/images/nabi/onboarding/nabi_onboarding_intro.png",
+      "path": "assets/images/Nabi/onboarding/Nabi_onboarding_intro.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -667,7 +667,7 @@
     {
       "number": 10,
       "category": "onboarding",
-      "filename": "nabi_onboarding_basic_info.png",
+      "filename": "Nabi_onboarding_basic_info.png",
       "title": "Thông tin cơ bản",
       "description": "Mời người dùng hoàn thiện thông tin cơ bản bằng checklist.",
       "base": "complete",
@@ -681,7 +681,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/onboarding/nabi_onboarding_basic_info.png",
+      "path": "assets/images/Nabi/onboarding/Nabi_onboarding_basic_info.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -691,7 +691,7 @@
     {
       "number": 11,
       "category": "onboarding",
-      "filename": "nabi_onboarding_body_profile.png",
+      "filename": "Nabi_onboarding_body_profile.png",
       "title": "Hồ sơ cơ thể",
       "description": "Gợi ý điền chỉ số cơ thể bằng biểu tượng cân/đo lường.",
       "base": "guide",
@@ -705,7 +705,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/onboarding/nabi_onboarding_body_profile.png",
+      "path": "assets/images/Nabi/onboarding/Nabi_onboarding_body_profile.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -715,7 +715,7 @@
     {
       "number": 12,
       "category": "onboarding",
-      "filename": "nabi_onboarding_lifestyle.png",
+      "filename": "Nabi_onboarding_lifestyle.png",
       "title": "Thói quen sống",
       "description": "Nabi quan sát nhẹ nhàng để hỏi về nhịp sinh hoạt.",
       "base": "listen",
@@ -729,7 +729,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/onboarding/nabi_onboarding_lifestyle.png",
+      "path": "assets/images/Nabi/onboarding/Nabi_onboarding_lifestyle.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -739,7 +739,7 @@
     {
       "number": 13,
       "category": "onboarding",
-      "filename": "nabi_onboarding_goal.png",
+      "filename": "Nabi_onboarding_goal.png",
       "title": "Mục tiêu sức khỏe",
       "description": "Nabi chỉ vào cờ mục tiêu để cùng người dùng xác định hướng đi.",
       "base": "guide",
@@ -753,7 +753,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/onboarding/nabi_onboarding_goal.png",
+      "path": "assets/images/Nabi/onboarding/Nabi_onboarding_goal.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -763,7 +763,7 @@
     {
       "number": 14,
       "category": "onboarding",
-      "filename": "nabi_onboarding_health_check.png",
+      "filename": "Nabi_onboarding_health_check.png",
       "title": "Kiểm tra sức khỏe",
       "description": "Nabi cầm biểu tượng tim/lá để hỏi điều kiện sức khỏe cẩn trọng.",
       "base": "listen",
@@ -777,7 +777,7 @@
         "angle": -1,
         "flip": true
       },
-      "path": "assets/images/nabi/onboarding/nabi_onboarding_health_check.png",
+      "path": "assets/images/Nabi/onboarding/Nabi_onboarding_health_check.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -787,7 +787,7 @@
     {
       "number": 15,
       "category": "onboarding",
-      "filename": "nabi_onboarding_review.png",
+      "filename": "Nabi_onboarding_review.png",
       "title": "Xem lại thông tin",
       "description": "Nabi cùng người dùng rà soát câu trả lời trước khi lưu.",
       "base": "complete",
@@ -801,7 +801,7 @@
         "angle": 1,
         "flip": false
       },
-      "path": "assets/images/nabi/onboarding/nabi_onboarding_review.png",
+      "path": "assets/images/Nabi/onboarding/Nabi_onboarding_review.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -811,7 +811,7 @@
     {
       "number": 16,
       "category": "onboarding",
-      "filename": "nabi_ai_generating_plan.png",
+      "filename": "Nabi_ai_generating_plan.png",
       "title": "Đang tạo lịch",
       "description": "Nabi đang tổng hợp dữ liệu để tạo lịch cá nhân.",
       "base": "think",
@@ -825,7 +825,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/onboarding/nabi_ai_generating_plan.png",
+      "path": "assets/images/Nabi/onboarding/Nabi_ai_generating_plan.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -835,7 +835,7 @@
     {
       "number": 17,
       "category": "onboarding",
-      "filename": "nabi_plan_ready.png",
+      "filename": "Nabi_plan_ready.png",
       "title": "Lịch đã sẵn sàng",
       "description": "Nabi mừng vì kế hoạch cá nhân đã hoàn tất.",
       "base": "complete",
@@ -849,7 +849,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/onboarding/nabi_plan_ready.png",
+      "path": "assets/images/Nabi/onboarding/Nabi_plan_ready.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -859,7 +859,7 @@
     {
       "number": 18,
       "category": "chat",
-      "filename": "nabi_chat_greet.png",
+      "filename": "Nabi_chat_greet.png",
       "title": "Chào trong chat",
       "description": "Nabi mở cuộc trò chuyện bằng cử chỉ chào.",
       "base": "wave",
@@ -873,7 +873,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/chat/nabi_chat_greet.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_greet.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -883,7 +883,7 @@
     {
       "number": 19,
       "category": "chat",
-      "filename": "nabi_chat_listen.png",
+      "filename": "Nabi_chat_listen.png",
       "title": "Lắng nghe chat",
       "description": "Nabi lắng nghe điều người dùng vừa chia sẻ.",
       "base": "listen",
@@ -897,7 +897,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/chat/nabi_chat_listen.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_listen.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -907,7 +907,7 @@
     {
       "number": 20,
       "category": "chat",
-      "filename": "nabi_chat_typing.png",
+      "filename": "Nabi_chat_typing.png",
       "title": "Đang trả lời",
       "description": "Nabi thao tác trên thiết bị để chuẩn bị phản hồi.",
       "base": "complete",
@@ -921,7 +921,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/chat/nabi_chat_typing.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_typing.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -931,7 +931,7 @@
     {
       "number": 21,
       "category": "chat",
-      "filename": "nabi_chat_reasoning.png",
+      "filename": "Nabi_chat_reasoning.png",
       "title": "Đang suy luận",
       "description": "Nabi suy nghĩ trước khi đưa khuyến nghị.",
       "base": "think",
@@ -945,7 +945,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/chat/nabi_chat_reasoning.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_reasoning.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -955,7 +955,7 @@
     {
       "number": 22,
       "category": "chat",
-      "filename": "nabi_chat_clarify.png",
+      "filename": "Nabi_chat_clarify.png",
       "title": "Xin thêm thông tin",
       "description": "Nabi hỏi thêm dữ liệu để gợi ý chính xác hơn.",
       "base": "listen",
@@ -969,7 +969,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/chat/nabi_chat_clarify.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_clarify.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -979,7 +979,7 @@
     {
       "number": 23,
       "category": "chat",
-      "filename": "nabi_chat_meal_tip.png",
+      "filename": "Nabi_chat_meal_tip.png",
       "title": "Gợi ý dinh dưỡng",
       "description": "Nabi gợi ý một bữa ăn cân bằng.",
       "base": "food",
@@ -993,7 +993,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/chat/nabi_chat_meal_tip.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_meal_tip.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1003,7 +1003,7 @@
     {
       "number": 24,
       "category": "chat",
-      "filename": "nabi_chat_exercise_tip.png",
+      "filename": "Nabi_chat_exercise_tip.png",
       "title": "Gợi ý vận động",
       "description": "Nabi cổ vũ một bài vận động nhẹ.",
       "base": "run",
@@ -1017,7 +1017,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/chat/nabi_chat_exercise_tip.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_exercise_tip.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1027,7 +1027,7 @@
     {
       "number": 25,
       "category": "chat",
-      "filename": "nabi_chat_rest_tip.png",
+      "filename": "Nabi_chat_rest_tip.png",
       "title": "Gợi ý nghỉ ngơi",
       "description": "Nabi đề xuất nhịp nghỉ ngơi nhẹ nhàng.",
       "base": "sleep",
@@ -1041,7 +1041,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/chat/nabi_chat_rest_tip.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_rest_tip.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1051,7 +1051,7 @@
     {
       "number": 26,
       "category": "chat",
-      "filename": "nabi_chat_water_tip.png",
+      "filename": "Nabi_chat_water_tip.png",
       "title": "Gợi ý uống nước",
       "description": "Nabi nhắc bổ sung nước hợp lý.",
       "base": "water",
@@ -1065,7 +1065,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/chat/nabi_chat_water_tip.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_water_tip.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1075,7 +1075,7 @@
     {
       "number": 27,
       "category": "chat",
-      "filename": "nabi_chat_answer_ready.png",
+      "filename": "Nabi_chat_answer_ready.png",
       "title": "Đã có câu trả lời",
       "description": "Nabi đưa ra phản hồi hoàn chỉnh dưới dạng thẻ gợi ý.",
       "base": "guide",
@@ -1089,7 +1089,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/chat/nabi_chat_answer_ready.png",
+      "path": "assets/images/Nabi/chat/Nabi_chat_answer_ready.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1099,7 +1099,7 @@
     {
       "number": 28,
       "category": "daily",
-      "filename": "nabi_breakfast.png",
+      "filename": "Nabi_breakfast.png",
       "title": "Bữa sáng",
       "description": "Nhắc một bữa sáng lành mạnh.",
       "base": "food",
@@ -1113,7 +1113,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/daily/nabi_breakfast.png",
+      "path": "assets/images/Nabi/daily/Nabi_breakfast.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1123,7 +1123,7 @@
     {
       "number": 29,
       "category": "daily",
-      "filename": "nabi_lunch.png",
+      "filename": "Nabi_lunch.png",
       "title": "Bữa trưa",
       "description": "Gợi ý bữa trưa cân bằng.",
       "base": "food",
@@ -1137,7 +1137,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/daily/nabi_lunch.png",
+      "path": "assets/images/Nabi/daily/Nabi_lunch.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1147,7 +1147,7 @@
     {
       "number": 30,
       "category": "daily",
-      "filename": "nabi_dinner.png",
+      "filename": "Nabi_dinner.png",
       "title": "Bữa tối",
       "description": "Gợi ý bữa tối nhẹ nhàng.",
       "base": "food",
@@ -1161,7 +1161,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/daily/nabi_dinner.png",
+      "path": "assets/images/Nabi/daily/Nabi_dinner.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1171,7 +1171,7 @@
     {
       "number": 31,
       "category": "daily",
-      "filename": "nabi_healthy_snack.png",
+      "filename": "Nabi_healthy_snack.png",
       "title": "Ăn nhẹ lành mạnh",
       "description": "Khuyến khích một bữa phụ lành mạnh.",
       "base": "food",
@@ -1185,7 +1185,7 @@
         "angle": -1,
         "flip": true
       },
-      "path": "assets/images/nabi/daily/nabi_healthy_snack.png",
+      "path": "assets/images/Nabi/daily/Nabi_healthy_snack.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1195,7 +1195,7 @@
     {
       "number": 32,
       "category": "daily",
-      "filename": "nabi_drink_water.png",
+      "filename": "Nabi_drink_water.png",
       "title": "Uống nước",
       "description": "Nabi cầm nước và khuyến khích uống đủ.",
       "base": "water",
@@ -1209,7 +1209,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/daily/nabi_drink_water.png",
+      "path": "assets/images/Nabi/daily/Nabi_drink_water.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1219,7 +1219,7 @@
     {
       "number": 33,
       "category": "daily",
-      "filename": "nabi_exercise.png",
+      "filename": "Nabi_exercise.png",
       "title": "Tập thể dục",
       "description": "Nabi vận động và tạo năng lượng tích cực.",
       "base": "run",
@@ -1233,7 +1233,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/daily/nabi_exercise.png",
+      "path": "assets/images/Nabi/daily/Nabi_exercise.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1243,7 +1243,7 @@
     {
       "number": 34,
       "category": "daily",
-      "filename": "nabi_walk.png",
+      "filename": "Nabi_walk.png",
       "title": "Đi bộ",
       "description": "Nabi đi bộ nhẹ để nhắc duy trì vận động.",
       "base": "run",
@@ -1257,7 +1257,7 @@
         "angle": -4,
         "flip": true
       },
-      "path": "assets/images/nabi/daily/nabi_walk.png",
+      "path": "assets/images/Nabi/daily/Nabi_walk.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1267,7 +1267,7 @@
     {
       "number": 35,
       "category": "daily",
-      "filename": "nabi_stretch.png",
+      "filename": "Nabi_stretch.png",
       "title": "Giãn cơ",
       "description": "Nabi vươn người, gợi ý nghỉ giải lao ngắn.",
       "base": "encourage",
@@ -1281,7 +1281,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/daily/nabi_stretch.png",
+      "path": "assets/images/Nabi/daily/Nabi_stretch.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1291,7 +1291,7 @@
     {
       "number": 36,
       "category": "daily",
-      "filename": "nabi_sleep.png",
+      "filename": "Nabi_sleep.png",
       "title": "Ngủ ngon",
       "description": "Nabi ngủ yên bình để chúc một giấc ngủ tốt.",
       "base": "sleep",
@@ -1305,7 +1305,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/daily/nabi_sleep.png",
+      "path": "assets/images/Nabi/daily/Nabi_sleep.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1315,7 +1315,7 @@
     {
       "number": 37,
       "category": "daily",
-      "filename": "nabi_morning_checkin.png",
+      "filename": "Nabi_morning_checkin.png",
       "title": "Chào buổi sáng",
       "description": "Nabi chào ngày mới với mặt trời nhỏ.",
       "base": "wave",
@@ -1329,7 +1329,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/daily/nabi_morning_checkin.png",
+      "path": "assets/images/Nabi/daily/Nabi_morning_checkin.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1339,7 +1339,7 @@
     {
       "number": 38,
       "category": "daily",
-      "filename": "nabi_mood_checkin.png",
+      "filename": "Nabi_mood_checkin.png",
       "title": "Kiểm tra cảm xúc",
       "description": "Nabi hỏi thăm cảm xúc với biểu tượng trái tim.",
       "base": "listen",
@@ -1353,7 +1353,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/daily/nabi_mood_checkin.png",
+      "path": "assets/images/Nabi/daily/Nabi_mood_checkin.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1363,7 +1363,7 @@
     {
       "number": 39,
       "category": "daily",
-      "filename": "nabi_body_measure.png",
+      "filename": "Nabi_body_measure.png",
       "title": "Theo dõi chỉ số",
       "description": "Nabi đồng hành khi cập nhật cân nặng/chỉ số cơ thể.",
       "base": "guide",
@@ -1377,7 +1377,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/daily/nabi_body_measure.png",
+      "path": "assets/images/Nabi/daily/Nabi_body_measure.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1387,7 +1387,7 @@
     {
       "number": 40,
       "category": "daily",
-      "filename": "nabi_view_schedule.png",
+      "filename": "Nabi_view_schedule.png",
       "title": "Xem lịch hôm nay",
       "description": "Nabi cầm lịch ngày để dẫn người dùng xem nhiệm vụ.",
       "base": "complete",
@@ -1401,7 +1401,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/daily/nabi_view_schedule.png",
+      "path": "assets/images/Nabi/daily/Nabi_view_schedule.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1411,7 +1411,7 @@
     {
       "number": 41,
       "category": "daily",
-      "filename": "nabi_notification_reminder.png",
+      "filename": "Nabi_notification_reminder.png",
       "title": "Nhắc việc",
       "description": "Nabi kèm chuông nhắc một nhiệm vụ đúng thời điểm.",
       "base": "guide",
@@ -1425,7 +1425,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/daily/nabi_notification_reminder.png",
+      "path": "assets/images/Nabi/daily/Nabi_notification_reminder.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1435,7 +1435,7 @@
     {
       "number": 42,
       "category": "progress",
-      "filename": "nabi_task_complete.png",
+      "filename": "Nabi_task_complete.png",
       "title": "Hoàn thành nhiệm vụ",
       "description": "Nabi xác nhận nhiệm vụ được hoàn thành.",
       "base": "complete",
@@ -1449,7 +1449,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/progress/nabi_task_complete.png",
+      "path": "assets/images/Nabi/progress/Nabi_task_complete.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1459,7 +1459,7 @@
     {
       "number": 43,
       "category": "progress",
-      "filename": "nabi_task_skip_gentle.png",
+      "filename": "Nabi_task_skip_gentle.png",
       "title": "Bỏ qua nhẹ nhàng",
       "description": "Nabi ghi nhận việc bỏ qua mà không phán xét.",
       "base": "apologize",
@@ -1473,7 +1473,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/progress/nabi_task_skip_gentle.png",
+      "path": "assets/images/Nabi/progress/Nabi_task_skip_gentle.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1483,7 +1483,7 @@
     {
       "number": 44,
       "category": "progress",
-      "filename": "nabi_task_pending.png",
+      "filename": "Nabi_task_pending.png",
       "title": "Nhiệm vụ đang chờ",
       "description": "Nabi nhắc một nhiệm vụ còn đang chờ.",
       "base": "guide",
@@ -1497,7 +1497,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/progress/nabi_task_pending.png",
+      "path": "assets/images/Nabi/progress/Nabi_task_pending.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1507,7 +1507,7 @@
     {
       "number": 45,
       "category": "progress",
-      "filename": "nabi_day_complete.png",
+      "filename": "Nabi_day_complete.png",
       "title": "Hoàn thành ngày",
       "description": "Nabi ăn mừng khi người dùng hoàn thành lịch ngày.",
       "base": "celebrate",
@@ -1521,7 +1521,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/progress/nabi_day_complete.png",
+      "path": "assets/images/Nabi/progress/Nabi_day_complete.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1531,7 +1531,7 @@
     {
       "number": 46,
       "category": "progress",
-      "filename": "nabi_streak_start.png",
+      "filename": "Nabi_streak_start.png",
       "title": "Bắt đầu chuỗi",
       "description": "Nabi cổ vũ một chuỗi thói quen mới.",
       "base": "encourage",
@@ -1545,7 +1545,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/progress/nabi_streak_start.png",
+      "path": "assets/images/Nabi/progress/Nabi_streak_start.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1555,7 +1555,7 @@
     {
       "number": 47,
       "category": "progress",
-      "filename": "nabi_streak_7days.png",
+      "filename": "Nabi_streak_7days.png",
       "title": "Chuỗi 7 ngày",
       "description": "Nabi mừng khi duy trì thói quen 7 ngày.",
       "base": "celebrate",
@@ -1569,7 +1569,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/progress/nabi_streak_7days.png",
+      "path": "assets/images/Nabi/progress/Nabi_streak_7days.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1579,7 +1579,7 @@
     {
       "number": 48,
       "category": "progress",
-      "filename": "nabi_milestone_badge.png",
+      "filename": "Nabi_milestone_badge.png",
       "title": "Đạt cột mốc",
       "description": "Nabi trao huy hiệu cho cột mốc đáng nhớ.",
       "base": "encourage",
@@ -1593,7 +1593,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/progress/nabi_milestone_badge.png",
+      "path": "assets/images/Nabi/progress/Nabi_milestone_badge.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1603,7 +1603,7 @@
     {
       "number": 49,
       "category": "progress",
-      "filename": "nabi_personal_best.png",
+      "filename": "Nabi_personal_best.png",
       "title": "Kỷ lục cá nhân",
       "description": "Nabi chúc mừng thành tích tốt nhất của người dùng.",
       "base": "celebrate",
@@ -1617,7 +1617,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/progress/nabi_personal_best.png",
+      "path": "assets/images/Nabi/progress/Nabi_personal_best.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1627,7 +1627,7 @@
     {
       "number": 50,
       "category": "progress",
-      "filename": "nabi_low_progress_encourage.png",
+      "filename": "Nabi_low_progress_encourage.png",
       "title": "Động viên khi chậm",
       "description": "Nabi động viên khi tiến độ chưa như mong muốn.",
       "base": "encourage",
@@ -1641,7 +1641,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/progress/nabi_low_progress_encourage.png",
+      "path": "assets/images/Nabi/progress/Nabi_low_progress_encourage.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1651,7 +1651,7 @@
     {
       "number": 51,
       "category": "progress",
-      "filename": "nabi_missed_task_remind.png",
+      "filename": "Nabi_missed_task_remind.png",
       "title": "Nhắc việc lỡ",
       "description": "Nabi nhắc một nhiệm vụ đã lỡ bằng sắc thái nhẹ nhàng.",
       "base": "apologize",
@@ -1665,7 +1665,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/progress/nabi_missed_task_remind.png",
+      "path": "assets/images/Nabi/progress/Nabi_missed_task_remind.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1675,7 +1675,7 @@
     {
       "number": 52,
       "category": "progress",
-      "filename": "nabi_thank_you.png",
+      "filename": "Nabi_thank_you.png",
       "title": "Cảm ơn",
       "description": "Nabi cúi nhẹ để cảm ơn nỗ lực của người dùng.",
       "base": "apologize",
@@ -1689,7 +1689,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/progress/nabi_thank_you.png",
+      "path": "assets/images/Nabi/progress/Nabi_thank_you.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1699,7 +1699,7 @@
     {
       "number": 53,
       "category": "progress",
-      "filename": "nabi_proud_of_you.png",
+      "filename": "Nabi_proud_of_you.png",
       "title": "Tự hào về bạn",
       "description": "Nabi giơ nắm tay khích lệ vì nỗ lực của người dùng.",
       "base": "encourage",
@@ -1713,7 +1713,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/progress/nabi_proud_of_you.png",
+      "path": "assets/images/Nabi/progress/Nabi_proud_of_you.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1723,7 +1723,7 @@
     {
       "number": 54,
       "category": "engagement",
-      "filename": "nabi_new_user.png",
+      "filename": "Nabi_new_user.png",
       "title": "Người dùng mới",
       "description": "Nabi chào người dùng mới và sẵn sàng đồng hành từng bước.",
       "base": "wave",
@@ -1737,7 +1737,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/engagement/nabi_new_user.png",
+      "path": "assets/images/Nabi/engagement/Nabi_new_user.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1747,7 +1747,7 @@
     {
       "number": 55,
       "category": "engagement",
-      "filename": "nabi_occasional_user.png",
+      "filename": "Nabi_occasional_user.png",
       "title": "Dùng thỉnh thoảng",
       "description": "Nabi gợi mở nhẹ nhàng để người dùng trở lại nhịp khỏe.",
       "base": "think",
@@ -1761,7 +1761,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/engagement/nabi_occasional_user.png",
+      "path": "assets/images/Nabi/engagement/Nabi_occasional_user.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1771,7 +1771,7 @@
     {
       "number": 56,
       "category": "engagement",
-      "filename": "nabi_regular_user.png",
+      "filename": "Nabi_regular_user.png",
       "title": "Dùng đều đặn",
       "description": "Nabi công nhận việc sử dụng đều đặn.",
       "base": "celebrate",
@@ -1785,7 +1785,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/engagement/nabi_regular_user.png",
+      "path": "assets/images/Nabi/engagement/Nabi_regular_user.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1795,7 +1795,7 @@
     {
       "number": 57,
       "category": "engagement",
-      "filename": "nabi_daily_user.png",
+      "filename": "Nabi_daily_user.png",
       "title": "Gắn bó mỗi ngày",
       "description": "Nabi chủ động giới thiệu kế hoạch nhỏ mỗi ngày.",
       "base": "complete",
@@ -1809,7 +1809,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/engagement/nabi_daily_user.png",
+      "path": "assets/images/Nabi/engagement/Nabi_daily_user.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1819,7 +1819,7 @@
     {
       "number": 58,
       "category": "engagement",
-      "filename": "nabi_away_1day.png",
+      "filename": "Nabi_away_1day.png",
       "title": "Vắng 1 ngày",
       "description": "Nabi để lại lời nhắc mềm mại sau một ngày vắng.",
       "base": "wave",
@@ -1833,7 +1833,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/engagement/nabi_away_1day.png",
+      "path": "assets/images/Nabi/engagement/Nabi_away_1day.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1843,7 +1843,7 @@
     {
       "number": 59,
       "category": "engagement",
-      "filename": "nabi_away_3days.png",
+      "filename": "Nabi_away_3days.png",
       "title": "Vắng 3 ngày",
       "description": "Nabi suy nghĩ và gửi lời gợi mở sau ba ngày.",
       "base": "think",
@@ -1857,7 +1857,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/engagement/nabi_away_3days.png",
+      "path": "assets/images/Nabi/engagement/Nabi_away_3days.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1867,7 +1867,7 @@
     {
       "number": 60,
       "category": "engagement",
-      "filename": "nabi_away_7days.png",
+      "filename": "Nabi_away_7days.png",
       "title": "Vắng 7 ngày",
       "description": "Nabi bày tỏ sự nhớ người dùng theo cách không áp lực.",
       "base": "apologize",
@@ -1881,7 +1881,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/engagement/nabi_away_7days.png",
+      "path": "assets/images/Nabi/engagement/Nabi_away_7days.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1891,7 +1891,7 @@
     {
       "number": 61,
       "category": "engagement",
-      "filename": "nabi_away_14days.png",
+      "filename": "Nabi_away_14days.png",
       "title": "Vắng từ 14 ngày",
       "description": "Nabi ở đó khi người dùng sẵn sàng quay lại.",
       "base": "sleep",
@@ -1905,7 +1905,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/engagement/nabi_away_14days.png",
+      "path": "assets/images/Nabi/engagement/Nabi_away_14days.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1915,7 +1915,7 @@
     {
       "number": 62,
       "category": "engagement",
-      "filename": "nabi_welcome_back.png",
+      "filename": "Nabi_welcome_back.png",
       "title": "Chào mừng quay lại",
       "description": "Nabi dang tay mừng người dùng trở lại.",
       "base": "wave",
@@ -1929,7 +1929,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/engagement/nabi_welcome_back.png",
+      "path": "assets/images/Nabi/engagement/Nabi_welcome_back.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1939,7 +1939,7 @@
     {
       "number": 63,
       "category": "engagement",
-      "filename": "nabi_fresh_restart.png",
+      "filename": "Nabi_fresh_restart.png",
       "title": "Bắt đầu lại",
       "description": "Nabi trao checklist mới để người dùng bắt đầu lại rất nhẹ nhàng.",
       "base": "complete",
@@ -1953,7 +1953,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/engagement/nabi_fresh_restart.png",
+      "path": "assets/images/Nabi/engagement/Nabi_fresh_restart.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1963,7 +1963,7 @@
     {
       "number": 64,
       "category": "system",
-      "filename": "nabi_loading.png",
+      "filename": "Nabi_loading.png",
       "title": "Đang tải",
       "description": "Nabi chờ nhẹ với vòng tải nhỏ.",
       "base": "think",
@@ -1977,7 +1977,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/system/nabi_loading.png",
+      "path": "assets/images/Nabi/system/Nabi_loading.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -1987,7 +1987,7 @@
     {
       "number": 65,
       "category": "system",
-      "filename": "nabi_empty_dashboard.png",
+      "filename": "Nabi_empty_dashboard.png",
       "title": "Chưa có dữ liệu",
       "description": "Nabi đưa gợi ý nhẹ khi dashboard chưa có dữ liệu.",
       "base": "guide",
@@ -2001,7 +2001,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/system/nabi_empty_dashboard.png",
+      "path": "assets/images/Nabi/system/Nabi_empty_dashboard.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2011,7 +2011,7 @@
     {
       "number": 66,
       "category": "system",
-      "filename": "nabi_no_schedule.png",
+      "filename": "Nabi_no_schedule.png",
       "title": "Chưa có lịch",
       "description": "Nabi mời tạo lịch trình cá nhân.",
       "base": "complete",
@@ -2025,7 +2025,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/system/nabi_no_schedule.png",
+      "path": "assets/images/Nabi/system/Nabi_no_schedule.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2035,7 +2035,7 @@
     {
       "number": 67,
       "category": "system",
-      "filename": "nabi_offline.png",
+      "filename": "Nabi_offline.png",
       "title": "Ngoại tuyến",
       "description": "Nabi thông báo không có mạng bằng sắc thái bình tĩnh.",
       "base": "listen",
@@ -2049,7 +2049,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/system/nabi_offline.png",
+      "path": "assets/images/Nabi/system/Nabi_offline.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2059,7 +2059,7 @@
     {
       "number": 68,
       "category": "system",
-      "filename": "nabi_syncing.png",
+      "filename": "Nabi_syncing.png",
       "title": "Đang đồng bộ",
       "description": "Nabi đồng bộ dữ liệu bằng biểu tượng cloud/sync.",
       "base": "think",
@@ -2073,7 +2073,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/system/nabi_syncing.png",
+      "path": "assets/images/Nabi/system/Nabi_syncing.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2083,7 +2083,7 @@
     {
       "number": 69,
       "category": "system",
-      "filename": "nabi_sync_success.png",
+      "filename": "Nabi_sync_success.png",
       "title": "Đồng bộ thành công",
       "description": "Nabi xác nhận dữ liệu đã đồng bộ.",
       "base": "complete",
@@ -2097,7 +2097,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/system/nabi_sync_success.png",
+      "path": "assets/images/Nabi/system/Nabi_sync_success.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2107,7 +2107,7 @@
     {
       "number": 70,
       "category": "system",
-      "filename": "nabi_sync_retry.png",
+      "filename": "Nabi_sync_retry.png",
       "title": "Cần thử lại đồng bộ",
       "description": "Nabi gợi ý thử đồng bộ lại, không làm người dùng lo lắng.",
       "base": "apologize",
@@ -2121,7 +2121,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/system/nabi_sync_retry.png",
+      "path": "assets/images/Nabi/system/Nabi_sync_retry.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2131,7 +2131,7 @@
     {
       "number": 71,
       "category": "system",
-      "filename": "nabi_notification_permission.png",
+      "filename": "Nabi_notification_permission.png",
       "title": "Quyền thông báo",
       "description": "Nabi giải thích nhẹ về quyền nhận nhắc nhở.",
       "base": "guide",
@@ -2145,7 +2145,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/system/nabi_notification_permission.png",
+      "path": "assets/images/Nabi/system/Nabi_notification_permission.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2155,7 +2155,7 @@
     {
       "number": 72,
       "category": "system",
-      "filename": "nabi_login.png",
+      "filename": "Nabi_login.png",
       "title": "Mời đăng nhập",
       "description": "Nabi mời đăng nhập để bảo toàn dữ liệu và mở rộng trải nghiệm.",
       "base": "wave",
@@ -2169,7 +2169,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/system/nabi_login.png",
+      "path": "assets/images/Nabi/system/Nabi_login.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2179,7 +2179,7 @@
     {
       "number": 73,
       "category": "system",
-      "filename": "nabi_account_connected.png",
+      "filename": "Nabi_account_connected.png",
       "title": "Đã liên kết tài khoản",
       "description": "Nabi vui vì tài khoản đã được liên kết.",
       "base": "celebrate",
@@ -2193,7 +2193,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/system/nabi_account_connected.png",
+      "path": "assets/images/Nabi/system/Nabi_account_connected.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2203,7 +2203,7 @@
     {
       "number": 74,
       "category": "system",
-      "filename": "nabi_access_locked.png",
+      "filename": "Nabi_access_locked.png",
       "title": "Tính năng chưa mở",
       "description": "Nabi thông báo tính năng đang khóa theo gói bằng sắc thái lịch sự.",
       "base": "listen",
@@ -2217,7 +2217,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/system/nabi_access_locked.png",
+      "path": "assets/images/Nabi/system/Nabi_access_locked.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2227,7 +2227,7 @@
     {
       "number": 75,
       "category": "future",
-      "filename": "nabi_family_plan.png",
+      "filename": "Nabi_family_plan.png",
       "title": "Gói gia đình",
       "description": "Nabi giới thiệu trải nghiệm chăm sóc cùng gia đình.",
       "base": "wave",
@@ -2241,7 +2241,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/future/nabi_family_plan.png",
+      "path": "assets/images/Nabi/future/Nabi_family_plan.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2251,7 +2251,7 @@
     {
       "number": 76,
       "category": "future",
-      "filename": "nabi_family_invite.png",
+      "filename": "Nabi_family_invite.png",
       "title": "Mời người thân",
       "description": "Nabi gửi lời mời người thân tham gia.",
       "base": "guide",
@@ -2265,7 +2265,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/future/nabi_family_invite.png",
+      "path": "assets/images/Nabi/future/Nabi_family_invite.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2275,7 +2275,7 @@
     {
       "number": 77,
       "category": "future",
-      "filename": "nabi_family_shared_progress.png",
+      "filename": "Nabi_family_shared_progress.png",
       "title": "Tiến độ gia đình",
       "description": "Nabi ăn mừng tiến độ chung của gia đình.",
       "base": "celebrate",
@@ -2289,7 +2289,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/future/nabi_family_shared_progress.png",
+      "path": "assets/images/Nabi/future/Nabi_family_shared_progress.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2299,7 +2299,7 @@
     {
       "number": 78,
       "category": "future",
-      "filename": "nabi_family_member_joined.png",
+      "filename": "Nabi_family_member_joined.png",
       "title": "Thành viên tham gia",
       "description": "Nabi chào mừng thành viên mới trong nhóm gia đình.",
       "base": "wave",
@@ -2313,7 +2313,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/future/nabi_family_member_joined.png",
+      "path": "assets/images/Nabi/future/Nabi_family_member_joined.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2323,7 +2323,7 @@
     {
       "number": 79,
       "category": "future",
-      "filename": "nabi_premium_unlocked.png",
+      "filename": "Nabi_premium_unlocked.png",
       "title": "Mở khóa nâng cao",
       "description": "Nabi chúc mừng tính năng nâng cao được mở.",
       "base": "celebrate",
@@ -2337,7 +2337,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/future/nabi_premium_unlocked.png",
+      "path": "assets/images/Nabi/future/Nabi_premium_unlocked.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2347,7 +2347,7 @@
     {
       "number": 80,
       "category": "future",
-      "filename": "nabi_referral_invite.png",
+      "filename": "Nabi_referral_invite.png",
       "title": "Mời bạn bè",
       "description": "Nabi mời chia sẻ mã giới thiệu với bạn bè.",
       "base": "guide",
@@ -2361,7 +2361,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/future/nabi_referral_invite.png",
+      "path": "assets/images/Nabi/future/Nabi_referral_invite.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2371,7 +2371,7 @@
     {
       "number": 81,
       "category": "future",
-      "filename": "nabi_referral_success.png",
+      "filename": "Nabi_referral_success.png",
       "title": "Mời bạn thành công",
       "description": "Nabi chúc mừng khi lời mời thành công.",
       "base": "celebrate",
@@ -2385,7 +2385,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/future/nabi_referral_success.png",
+      "path": "assets/images/Nabi/future/Nabi_referral_success.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2395,7 +2395,7 @@
     {
       "number": 82,
       "category": "future",
-      "filename": "nabi_sales_leaderboard.png",
+      "filename": "Nabi_sales_leaderboard.png",
       "title": "Bảng xếp hạng sale",
       "description": "Nabi chỉ vào biểu đồ để giới thiệu bảng xếp hạng.",
       "base": "guide",
@@ -2409,7 +2409,7 @@
         "angle": 0,
         "flip": true
       },
-      "path": "assets/images/nabi/future/nabi_sales_leaderboard.png",
+      "path": "assets/images/Nabi/future/Nabi_sales_leaderboard.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2419,7 +2419,7 @@
     {
       "number": 83,
       "category": "future",
-      "filename": "nabi_sales_reward.png",
+      "filename": "Nabi_sales_reward.png",
       "title": "Thưởng sale",
       "description": "Nabi trao cúp/huy hiệu cho thành tích sale.",
       "base": "encourage",
@@ -2433,7 +2433,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/future/nabi_sales_reward.png",
+      "path": "assets/images/Nabi/future/Nabi_sales_reward.png",
       "size_px": {
         "width": 512,
         "height": 512
@@ -2443,7 +2443,7 @@
     {
       "number": 84,
       "category": "future",
-      "filename": "nabi_commission_success.png",
+      "filename": "Nabi_commission_success.png",
       "title": "Hoa hồng thành công",
       "description": "Nabi vui mừng khi hoa hồng được ghi nhận.",
       "base": "celebrate",
@@ -2457,7 +2457,7 @@
         "angle": 0,
         "flip": false
       },
-      "path": "assets/images/nabi/future/nabi_commission_success.png",
+      "path": "assets/images/Nabi/future/Nabi_commission_success.png",
       "size_px": {
         "width": 512,
         "height": 512

@@ -82,7 +82,7 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep> {
                             icon: AppIcons.meditation,
                             title: 'Một ngày thường của bạn diễn ra thế nào?',
                             subtitle:
-                                'Bạn chọn những điều gần đúng với mình nhé. Không cần hoàn hảo, Nami chỉ muốn hiểu nhịp sống thật của bạn hơn một chút.',
+                                'Bạn chọn những điều gần đúng với mình nhé. Không cần hoàn hảo, Nabichỉ muốn hiểu nhịp sống thật của bạn hơn một chút.',
                           ),
                           const SizedBox(height: AppSpacing.sectionSpacing),
                           _HabitsChoiceGrid(
@@ -95,9 +95,9 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep> {
                           const _SectionIntro(
                             icon: AppIcons.sleep,
                             title:
-                                'Nami muốn lắng nghe cơ thể bạn thêm một chút',
+                                'Nabimuốn lắng nghe cơ thể bạn thêm một chút',
                             subtitle:
-                                'Giấc ngủ, vận động và nước uống là những tín hiệu nhỏ nhưng rất quan trọng để Nami chăm sóc bạn dịu dàng hơn.',
+                                'Giấc ngủ, vận động và nước uống là những tín hiệu nhỏ nhưng rất quan trọng để Nabichăm sóc bạn dịu dàng hơn.',
                           ),
                           const SizedBox(height: AppSpacing.sectionSpacing),
                           _ResponsivePickerPanel(
@@ -200,13 +200,13 @@ class _NamiHeroCard extends StatelessWidget {
                   ),
                   _HeroBadge(
                     icon: AppIcons.favorite,
-                    label: 'Nami đang lắng nghe',
+                    label: 'Nabiđang lắng nghe',
                   ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(
-                'Nami muốn hiểu\nnhịp sống của bạn',
+                'Nabimuốn hiểu\nnhịp sống của bạn',
                 style: AppTextStyles.displaySmall.copyWith(
                   color: AppColors.textWhite,
                   height: 1.12,
@@ -215,7 +215,7 @@ class _NamiHeroCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Mỗi người có một cách sống riêng. Bạn cứ chia sẻ nhẹ nhàng, Nami sẽ ghi nhớ để đồng hành cùng bạn theo cách vừa đủ và thoải mái nhất.',
+                'Mỗi người có một cách sống riêng. Bạn cứ chia sẻ nhẹ nhàng, Nabisẽ ghi nhớ để đồng hành cùng bạn theo cách vừa đủ và thoải mái nhất.',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textWhite.withValues(alpha: 0.88),
                   height: 1.65,
@@ -233,7 +233,7 @@ class _NamiHeroCard extends StatelessWidget {
                         const SizedBox(height: AppSpacing.md),
                         const _HeroInfoTile(
                           icon: AppIcons.shield,
-                          title: 'Cách Nami dùng dữ liệu',
+                          title: 'Cách Nabidùng dữ liệu',
                           value: 'Chỉ để cá nhân hóa chăm sóc',
                         ),
                       ],
@@ -251,7 +251,7 @@ class _NamiHeroCard extends StatelessWidget {
                         const Expanded(
                           child: _HeroInfoTile(
                             icon: AppIcons.shield,
-                            title: 'Cách Nami dùng dữ liệu',
+                            title: 'Cách Nabidùng dữ liệu',
                             value: 'Chỉ để cá nhân hóa chăm sóc',
                           ),
                         ),
@@ -400,7 +400,7 @@ class _GentleReminderCard extends StatelessWidget {
               children: [
                 Text(
                   hasSelection
-                      ? 'Nami đã ghi nhớ những thói quen đầu tiên'
+                      ? 'Nabiđã ghi nhớ những thói quen đầu tiên'
                       : 'Bạn có thể bắt đầu từ vài điều đơn giản',
                   style: AppTextStyles.heading3.copyWith(
                     fontWeight: FontWeight.w700,
@@ -409,7 +409,7 @@ class _GentleReminderCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   hasSelection
-                      ? 'Những lựa chọn này giúp Nami hiểu bối cảnh sinh hoạt của bạn, từ đó gợi ý bữa ăn, giấc ngủ và nhắc nhở hằng ngày dịu dàng hơn.'
+                      ? 'Những lựa chọn này giúp Nabihiểu bối cảnh sinh hoạt của bạn, từ đó gợi ý bữa ăn, giấc ngủ và nhắc nhở hằng ngày dịu dàng hơn.'
                       : 'Chỉ cần chọn những điều đang đúng với hiện tại. Khi cuộc sống thay đổi, mình có thể điều chỉnh dần cùng nhau.',
                   style: AppTextStyles.bodyMedium.copyWith(
                     height: 1.65,
@@ -1041,7 +1041,7 @@ class _PickerBottomSheetState extends State<_PickerBottomSheet> {
                         onPressed: () =>
                             _submitCustomValue(_customController.text),
                         icon: const Icon(AppIcons.success),
-                        label: const Text('Nami ghi nhớ điều này'),
+                        label: const Text('Nabighi nhớ điều này'),
                       ),
                     ),
                   ],
@@ -1259,7 +1259,7 @@ class _NamiMemoryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Điều Nami đang ghi nhớ',
+                      'Điều Nabiđang ghi nhớ',
                       style: AppTextStyles.heading3.copyWith(
                         color: AppColors.textWhite,
                         fontWeight: FontWeight.w800,
@@ -1268,7 +1268,7 @@ class _NamiMemoryCard extends StatelessWidget {
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       hasAnyInfo
-                          ? 'Những thông tin này sẽ giúp Nami chăm sóc bạn gần gũi và đúng nhịp hơn.'
+                          ? 'Những thông tin này sẽ giúp Nabichăm sóc bạn gần gũi và đúng nhịp hơn.'
                           : 'Bạn chưa cần điền hết ngay. Mình có thể bắt đầu chậm rãi từ những điều bạn thấy thoải mái.',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.textWhite.withValues(alpha: 0.84),
@@ -1317,7 +1317,7 @@ class _NamiMemoryCard extends StatelessWidget {
 
   static String _valueOrWaiting(String? value) {
     if (_hasText(value)) return value!.trim();
-    return 'Nami sẽ chờ bạn chia sẻ thêm';
+    return 'Nabisẽ chờ bạn chia sẻ thêm';
   }
 }
 

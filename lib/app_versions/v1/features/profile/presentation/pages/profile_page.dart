@@ -34,7 +34,7 @@ class ProfilePage extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => _EmptyProfile(
             message:
-                'Nami chưa thể mở hồ sơ của bạn lúc này. Mình thử lại sau một chút nhé.',
+                'Nabichưa thể mở hồ sơ của bạn lúc này. Mình thử lại sau một chút nhé.',
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
           data: (dashboard) => RefreshIndicator(
@@ -78,15 +78,14 @@ class ProfilePage extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.lg),
                       _ChipSection(
                         title: 'Mục tiêu',
-                        emptyMessage: 'Nami chưa thấy mục tiêu nào được chọn.',
+                        emptyMessage: 'Nabichưa thấy mục tiêu nào được chọn.',
                         items: dashboard.goals,
                         icon: Icons.flag_rounded,
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       _ChipSection(
                         title: 'Tình trạng cần lưu ý',
-                        emptyMessage:
-                            'Nami chưa thấy tình trạng nào cần lưu ý.',
+                        emptyMessage: 'Nabichưa thấy tình trạng nào cần lưu ý.',
                         items: dashboard.conditions,
                         icon: Icons.health_and_safety_rounded,
                       ),
@@ -94,7 +93,7 @@ class ProfilePage extends ConsumerWidget {
                       _ChipSection(
                         title: 'Thói quen',
                         emptyMessage:
-                            'Nami chưa thấy thói quen nào được ghi nhớ.',
+                            'Nabichưa thấy thói quen nào được ghi nhớ.',
                         items: dashboard.habits,
                         icon: Icons.restaurant_rounded,
                       ),
@@ -198,7 +197,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               Text('Chỉnh sửa hồ sơ', style: AppTextStyles.heading3),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Email được quản lý bởi Supabase Auth nên Nami chỉ cập nhật hồ sơ sức khỏe và thông tin hiển thị ở đây.',
+                'Email được quản lý bởi Supabase Auth nên Nabichỉ cập nhật hồ sơ sức khỏe và thông tin hiển thị ở đây.',
                 style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -311,11 +310,11 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nami đã cập nhật hồ sơ của bạn.')),
+        const SnackBar(content: Text('Nabiđã cập nhật hồ sơ của bạn.')),
       );
     } catch (_) {
       _showMessage(
-        'Nami chưa thể cập nhật hồ sơ lúc này. Bạn thử lại sau một chút nhé.',
+        'Nabichưa thể cập nhật hồ sơ lúc này. Bạn thử lại sau một chút nhé.',
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -419,7 +418,7 @@ class _ProfileHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Nami sẽ dùng những thông tin này để chăm sóc bạn gần gũi hơn mỗi ngày.',
+                  'Nabisẽ dùng những thông tin này để chăm sóc bạn gần gũi hơn mỗi ngày.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.white.withValues(alpha: .78),
                     height: 1.35,

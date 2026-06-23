@@ -47,7 +47,7 @@ class AuthRouteStateResolver {
         );
       default:
         return const AuthRouteState.failure(
-          'Nami chưa xác định được trạng thái tài khoản lúc này.',
+          'Nabichưa xác định được trạng thái tài khoản lúc này.',
         );
     }
   }

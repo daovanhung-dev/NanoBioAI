@@ -12,7 +12,7 @@
 - Validate before save; do not bypass required fields with nullable workarounds.
 - Save enough profile data for dashboard, AI schedule, meal plan, health tasks, and notifications.
 - Guest may generate the initial personal schedule once after onboarding; additional generation requires auth/quota gate.
-- Error states must preserve user input and use Nami copy.
+- Error states must preserve user input and use Nabicopy.
 
 ## Search
 

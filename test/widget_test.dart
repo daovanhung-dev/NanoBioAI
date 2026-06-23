@@ -167,7 +167,7 @@ void main() {
 
     expect(container.read(onboardingProvider).currentStep, 6);
     expect(find.text('Bước 7/8'), findsOneWidget);
-    expect(find.text('Trước khi Nami đồng hành cùng bạn'), findsOneWidget);
+    expect(find.text('Trước khi Nabiđồng hành cùng bạn'), findsOneWidget);
 
     await _tapByText(tester, 'Tôi hiểu và đồng ý');
 

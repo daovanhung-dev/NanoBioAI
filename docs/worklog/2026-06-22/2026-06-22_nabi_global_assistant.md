@@ -1,8 +1,8 @@
-# 2026-06-22 — NaBi Global Assistant
+# 2026-06-22 — Nabi Global Assistant
 
 ## Phạm vi
 
-- Tạo feature `features/nabi` cho nhân vật NaBi nổi toàn cục.
+- Tạo feature `features/Nabi` cho nhân vật Nabi nổi toàn cục.
 - Dùng Riverpod controller và resolver tập trung để biểu cảm theo ngữ cảnh.
 - Dùng Canvas animation có nền trong suốt, không phụ thuộc ảnh tĩnh.
 - Đưa tài liệu tích hợp ShellRoute/GoRouter và event bridge.
@@ -15,6 +15,6 @@
 
 ## Files
 
-- `lib/features/nabi/**`
-- `test/features/nabi/application/nabi_controller_test.dart`
-- `docs/features/11_NABI_GLOBAL_ASSISTANT.md`
+- `lib/features/Nabi/**`
+- `test/features/Nabi/application/Nabi_controller_test.dart`
+- `docs/features/11_Nabi_GLOBAL_ASSISTANT.md`

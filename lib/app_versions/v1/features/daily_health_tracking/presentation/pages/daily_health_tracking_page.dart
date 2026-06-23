@@ -19,7 +19,7 @@ class DailyHealthTrackingPage extends ConsumerWidget {
         loading: () => const _TrackingLoading(),
         error: (error, _) => const _TrackingError(
           message:
-              'Nami chưa thể mở phần theo dõi hôm nay. Bạn thử lại sau một chút nhé.',
+              'Nabichưa thể mở phần theo dõi hôm nay. Bạn thử lại sau một chút nhé.',
         ),
         data: (state) => RefreshIndicator(
           onRefresh: () => ref

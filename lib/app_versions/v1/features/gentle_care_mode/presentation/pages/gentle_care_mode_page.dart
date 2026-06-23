@@ -23,7 +23,7 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
       icon: Icons.psychology_rounded,
       color: AppColors.info,
       title: 'Căng thẳng',
-      subtitle: 'Nami sẽ gợi ý vài khoảng thở để bạn dịu lại.',
+      subtitle: 'Nabisẽ gợi ý vài khoảng thở để bạn dịu lại.',
     ),
     _CareMood(
       icon: Icons.nights_stay_rounded,
@@ -92,7 +92,7 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
         const NamiCareSectionTitle(
           title: 'Bạn đang thấy thế nào?',
           subtitle:
-              'Chọn cảm giác gần nhất lúc này. Nami sẽ giúp bạn hạ mục tiêu xuống thật vừa sức.',
+              'Chọn cảm giác gần nhất lúc này. Nabisẽ giúp bạn hạ mục tiêu xuống thật vừa sức.',
         ),
         const SizedBox(height: AppSpacing.md),
         ...List.generate(_moods.length, (index) {
@@ -107,7 +107,7 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
               title: mood.title,
               subtitle: mood.subtitle,
               selected: selected,
-              trailing: selected ? 'Nami hiểu rồi' : null,
+              trailing: selected ? 'Nabihiểu rồi' : null,
               onTap: () => setState(() => _selectedIndex = index),
             ),
           );
@@ -119,7 +119,7 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
             color: AppColors.warning,
             title: 'Hôm nay không cần hoàn hảo đâu',
             message:
-                'Mình chỉ cần không bỏ quên bản thân là được. Nami sẽ gợi ý vài việc thật nhẹ để bạn dễ chịu hơn.',
+                'Mình chỉ cần không bỏ quên bản thân là được. Nabisẽ gợi ý vài việc thật nhẹ để bạn dễ chịu hơn.',
           ),
           const SizedBox(height: AppSpacing.lg),
           const NamiCareSectionTitle(title: 'Gợi ý nhẹ cho bạn'),

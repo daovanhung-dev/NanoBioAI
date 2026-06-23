@@ -453,7 +453,7 @@ class _ChatGptEmptyState extends StatelessWidget {
               const _NamiHeroMark(),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'Hôm nay bạn muốn Nami giúp gì?',
+                'Hôm nay bạn muốn Nabigiúp gì?',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.heading1.copyWith(
                   color: AppColors.textPrimary,
@@ -463,7 +463,7 @@ class _ChatGptEmptyState extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Bạn có thể hỏi về bữa ăn, giấc ngủ, vận động, cảm xúc hoặc chỉ đơn giản là kể cho Nami nghe điều bạn đang bận tâm.',
+                'Bạn có thể hỏi về bữa ăn, giấc ngủ, vận động, cảm xúc hoặc chỉ đơn giản là kể cho Nabinghe điều bạn đang bận tâm.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textSecondary,
@@ -529,7 +529,7 @@ class _PromptGrid extends StatelessWidget {
     _PromptAction(
       icon: Icons.bedtime_rounded,
       title: 'Cải thiện giấc ngủ',
-      subtitle: 'Nami ơi, làm sao để mình ngủ sâu hơn?',
+      subtitle: 'Nabiơi, làm sao để mình ngủ sâu hơn?',
     ),
     _PromptAction(
       icon: Icons.restaurant_rounded,
@@ -539,7 +539,7 @@ class _PromptGrid extends StatelessWidget {
     _PromptAction(
       icon: Icons.self_improvement_rounded,
       title: 'Giảm căng thẳng',
-      subtitle: 'Mình đang hơi căng thẳng, Nami giúp mình với.',
+      subtitle: 'Mình đang hơi căng thẳng, Nabigiúp mình với.',
     ),
     _PromptAction(
       icon: Icons.directions_walk_rounded,
@@ -668,7 +668,7 @@ class _CareNote extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Nami có thể đồng hành và gợi ý nhẹ nhàng. Với vấn đề sức khỏe nghiêm trọng, bạn vẫn nên hỏi bác sĩ nhé.',
+              'Nabicó thể đồng hành và gợi ý nhẹ nhàng. Với vấn đề sức khỏe nghiêm trọng, bạn vẫn nên hỏi bác sĩ nhé.',
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.45,
@@ -846,7 +846,7 @@ class _ChatComposerState extends State<_ChatComposer> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Nami có thể chưa luôn chính xác. Bạn hãy kiểm tra lại những thông tin quan trọng nhé.',
+                    'Nabicó thể chưa luôn chính xác. Bạn hãy kiểm tra lại những thông tin quan trọng nhé.',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.textMuted,

@@ -74,7 +74,7 @@ class SettingsView extends ConsumerWidget {
                             icon: Icons.person_rounded,
                             title: 'Thông tin cá nhân',
                             subtitle: dashboard == null
-                                ? 'Nami chưa thấy hồ sơ nào sẵn sàng'
+                                ? 'Nabichưa thấy hồ sơ nào sẵn sàng'
                                 : _profileSubtitle(dashboard),
                             onTap: () => context.push(V1RoutePaths.profile),
                           ),
@@ -110,7 +110,7 @@ class SettingsView extends ConsumerWidget {
                       ),
                       if (isAuthenticated) ...[
                         const SizedBox(height: AppSpacing.xl),
-                        _SectionTitle('Cùng Nami phát triển'),
+                        _SectionTitle('Cùng Nabiphát triển'),
                         const SizedBox(height: AppSpacing.md),
                         _MenuCard(
                           children: [
@@ -154,9 +154,9 @@ class SettingsView extends ConsumerWidget {
                             title: 'Dung lượng',
                             subtitle: cacheSizeAsync.when(
                               data: _formatBytes,
-                              loading: () => 'Nami đang kiểm tra dung lượng...',
+                              loading: () => 'Nabiđang kiểm tra dung lượng...',
                               error: (_, __) =>
-                                  'Nami chưa kiểm tra được dung lượng',
+                                  'Nabichưa kiểm tra được dung lượng',
                             ),
                             trailing: IconButton(
                               tooltip: 'Dọn bộ nhớ tạm',
@@ -211,7 +211,7 @@ class SettingsView extends ConsumerWidget {
                             icon: Icons.favorite_rounded,
                             title: 'Mục tiêu sức khỏe',
                             subtitle: dashboard == null
-                                ? 'Nami chưa thấy mục tiêu nào được chọn'
+                                ? 'Nabichưa thấy mục tiêu nào được chọn'
                                 : _goalsSubtitle(dashboard.goals),
                           ),
                           const _DividerLine(),
@@ -260,7 +260,7 @@ class SettingsView extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Đăng xuất?'),
         content: const Text(
-          'Nami sẽ đưa bạn về màn đăng nhập. Dữ liệu cloud của bạn vẫn được giữ nguyên.',
+          'Nabisẽ đưa bạn về màn đăng nhập. Dữ liệu cloud của bạn vẫn được giữ nguyên.',
         ),
         actions: [
           TextButton(
@@ -285,7 +285,7 @@ class SettingsView extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Nami chưa thể đăng xuất lúc này. Bạn thử lại nhé.'),
+          content: Text('Nabichưa thể đăng xuất lúc này. Bạn thử lại nhé.'),
         ),
       );
     }
@@ -300,7 +300,7 @@ class SettingsView extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Yêu cầu xóa tài khoản?'),
         content: const Text(
-          'Yêu cầu này sẽ được gửi tới hệ thống bảo mật. Nami không giữ khóa quản trị trong ứng dụng.',
+          'Yêu cầu này sẽ được gửi tới hệ thống bảo mật. Nabikhông giữ khóa quản trị trong ứng dụng.',
         ),
         actions: [
           TextButton(
@@ -329,7 +329,7 @@ class SettingsView extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Nami chưa thể gửi yêu cầu xóa tài khoản lúc này. Bạn thử lại sau nhé.',
+            'Nabichưa thể gửi yêu cầu xóa tài khoản lúc này. Bạn thử lại sau nhé.',
           ),
         ),
       );
@@ -377,7 +377,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
             Text('Đổi mật khẩu', style: AppTextStyles.heading3),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Mật khẩu mới cần có ít nhất 8 ký tự. Nami sẽ không lưu mật khẩu trong hồ sơ công khai.',
+              'Mật khẩu mới cần có ít nhất 8 ký tự. Nabisẽ không lưu mật khẩu trong hồ sơ công khai.',
               style: AppTextStyles.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -437,14 +437,14 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nami đã cập nhật mật khẩu.')),
+        const SnackBar(content: Text('Nabiđã cập nhật mật khẩu.')),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Nami chưa thể cập nhật mật khẩu lúc này. Bạn thử lại sau nhé.',
+            'Nabichưa thể cập nhật mật khẩu lúc này. Bạn thử lại sau nhé.',
           ),
         ),
       );
@@ -465,7 +465,7 @@ class _SaleSettingsEntry extends StatelessWidget {
       loading: () => const _MenuItem(
         icon: Icons.workspace_premium_rounded,
         title: 'Không gian Sale',
-        subtitle: 'Nami đang kiểm tra quyền Sale của bạn...',
+        subtitle: 'Nabiđang kiểm tra quyền Sale của bạn...',
         trailing: SizedBox(
           height: 22,
           width: 22,
@@ -545,8 +545,8 @@ class _Header extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 isLoading
-                    ? 'Nami đang mở lại các lựa chọn của bạn...'
-                    : 'Nami sẽ giữ các tùy chỉnh để ứng dụng hợp với bạn hơn.',
+                    ? 'Nabiđang mở lại các lựa chọn của bạn...'
+                    : 'Nabisẽ giữ các tùy chỉnh để ứng dụng hợp với bạn hơn.',
                 style: AppTextStyles.bodyMedium,
               ),
             ],
@@ -583,7 +583,7 @@ class _ProfileCard extends StatelessWidget {
       fallback: 'Chưa có hồ sơ',
     );
     final subtitle = dashboard == null
-        ? 'Hoàn thành phần làm quen để Nami ghi nhớ hồ sơ của bạn'
+        ? 'Hoàn thành phần làm quen để Nabighi nhớ hồ sơ của bạn'
         : _subscriptionLabel(dashboard!.subscriptionTier);
 
     return Container(
@@ -641,8 +641,8 @@ class _ProfileCard extends StatelessWidget {
                   ),
                   child: Text(
                     dashboard == null
-                        ? 'Nami đang chờ hồ sơ'
-                        : 'Nami đã ghi nhớ hồ sơ này',
+                        ? 'Nabiđang chờ hồ sơ'
+                        : 'Nabiđã ghi nhớ hồ sơ này',
                     style: AppTextStyles.labelMedium.copyWith(
                       color: Colors.white,
                     ),
@@ -798,7 +798,7 @@ class _DangerCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             email == null
-                ? 'Nami chưa thấy email tài khoản để hiển thị.'
+                ? 'Nabichưa thấy email tài khoản để hiển thị.'
                 : 'Tài khoản hiện tại: $email',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium,
@@ -850,11 +850,11 @@ String _profileSubtitle(DashboardEntity dashboard) {
     if (dashboard.email.trim().isNotEmpty) dashboard.email.trim(),
     if (dashboard.phone.trim().isNotEmpty) dashboard.phone.trim(),
   ];
-  return items.isEmpty ? 'Nami đã ghi nhớ hồ sơ của bạn' : items.join(' • ');
+  return items.isEmpty ? 'Nabiđã ghi nhớ hồ sơ của bạn' : items.join(' • ');
 }
 
 String _goalsSubtitle(List<String> goals) {
-  if (goals.isEmpty) return 'Nami chưa thấy mục tiêu nào được chọn';
+  if (goals.isEmpty) return 'Nabichưa thấy mục tiêu nào được chọn';
   if (goals.length == 1) return goals.single;
   return '${goals.length} mục tiêu đang hoạt động';
 }

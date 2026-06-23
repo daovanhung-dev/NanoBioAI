@@ -3,7 +3,7 @@ class AuthValidators {
 
   static String? email(String value) {
     final trimmed = value.trim();
-    if (trimmed.isEmpty) return 'Bạn cho Nami xin email nhé.';
+    if (trimmed.isEmpty) return 'Bạn cho Nabixin email nhé.';
     final pattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     if (!pattern.hasMatch(trimmed)) {
       return 'Email này có vẻ chưa đúng, bạn kiểm tra lại giúp mình nhé.';
@@ -29,14 +29,14 @@ class AuthValidators {
   static String? fullName(String value) {
     final trimmed = value.trim();
     if (trimmed.length > 80) {
-      return 'Tên hơi dài rồi, bạn rút gọn giúp Nami nhé.';
+      return 'Tên hơi dài rồi, bạn rút gọn giúp Nabinhé.';
     }
     return null;
   }
 
   static String? acceptedTerms(bool value) {
     if (!value) {
-      return 'Bạn cần đồng ý điều khoản để Nami tạo tài khoản nhé.';
+      return 'Bạn cần đồng ý điều khoản để Nabitạo tài khoản nhé.';
     }
     return null;
   }

@@ -82,7 +82,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Nami đã thêm kế hoạch 7 ngày tiếp theo rồi nhé.'),
+          content: Text('Nabiđã thêm kế hoạch 7 ngày tiếp theo rồi nhé.'),
         ),
       );
     } catch (error) {
@@ -92,7 +92,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           DashboardGenerationAuthRequiredException.userMessage,
         AIOverloadedException() => AIOverloadedException.userMessage,
         _ =>
-          'Nami chưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',
+          'Nabichưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',
       };
       ScaffoldMessenger.of(
         context,
@@ -105,9 +105,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       action: () => ref
           .read(dashboardControllerProvider.notifier)
           .completeTimelineItem(item),
-      successMessage: 'Nami đã ghi nhận việc nhỏ này rồi nhé.',
+      successMessage: 'Nabiđã ghi nhận việc nhỏ này rồi nhé.',
       errorMessage:
-          'Nami chưa thể cập nhật việc này lúc này. Mình thử lại sau một chút nhé.',
+          'Nabichưa thể cập nhật việc này lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -115,9 +115,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await _runDashboardAction(
       action: () =>
           ref.read(dashboardControllerProvider.notifier).saveDailyCheckIn(mood),
-      successMessage: 'Nami đã ghi nhận cảm nhận hôm nay của bạn.',
+      successMessage: 'Nabiđã ghi nhận cảm nhận hôm nay của bạn.',
       errorMessage:
-          'Nami chưa thể ghi nhận cảm nhận lúc này. Mình thử lại sau một chút nhé.',
+          'Nabichưa thể ghi nhận cảm nhận lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -125,9 +125,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await _runDashboardAction(
       action: () =>
           ref.read(dashboardControllerProvider.notifier).addWater(amountMl),
-      successMessage: 'Nami đã thêm lượng nước cho hôm nay.',
+      successMessage: 'Nabiđã thêm lượng nước cho hôm nay.',
       errorMessage:
-          'Nami chưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
+          'Nabichưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -135,9 +135,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await _runDashboardAction(
       action: () =>
           ref.read(dashboardControllerProvider.notifier).setWater(waterMl),
-      successMessage: 'Nami đã lưu lượng nước hôm nay.',
+      successMessage: 'Nabiđã lưu lượng nước hôm nay.',
       errorMessage:
-          'Nami chưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
+          'Nabichưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -145,9 +145,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await _runDashboardAction(
       action: () =>
           ref.read(dashboardControllerProvider.notifier).saveWeight(weightKg),
-      successMessage: 'Nami đã lưu cân nặng hôm nay.',
+      successMessage: 'Nabiđã lưu cân nặng hôm nay.',
       errorMessage:
-          'Nami chưa thể cập nhật cân nặng lúc này. Mình thử lại sau một chút nhé.',
+          'Nabichưa thể cập nhật cân nặng lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -180,7 +180,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       loading: () => const _DashboardLoadingView(),
       error: (error, _) => _DashboardErrorView(
         message:
-            'Nami chưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
+            'Nabichưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
         onRetry: () => ref.invalidate(dashboardProvider),
       ),
       data: (dashboard) {
@@ -201,7 +201,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                 dynamicData: dynamicData,
                 isDynamicLoading: dynamicAsync.isLoading,
                 dynamicError: dynamicAsync.hasError
-                    ? 'Nami chưa thể cập nhật một vài tín hiệu mới nhất. Bạn có thể kéo xuống để thử lại nhé.'
+                    ? 'Nabichưa thể cập nhật một vài tín hiệu mới nhất. Bạn có thể kéo xuống để thử lại nhé.'
                     : null,
                 isGeneratingPlan: generationState.isLoading,
                 onGeneratePlan: _generateAdditionalPlan,
@@ -356,7 +356,7 @@ class _DashboardContent extends StatelessWidget {
                     ..showSnackBar(
                       const SnackBar(
                         content: Text(
-                          'Mình để việc này lại một chút, Nami vẫn nhắc nhẹ thôi nhé.',
+                          'Mình để việc này lại một chút, Nabivẫn nhắc nhẹ thôi nhé.',
                         ),
                       ),
                     );
@@ -557,7 +557,7 @@ class _HeroPanel extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Nami đã lấy dữ liệu mới nhất từ hệ thống để cùng bạn nhìn lại hôm nay.',
+            'Nabiđã lấy dữ liệu mới nhất từ hệ thống để cùng bạn nhìn lại hôm nay.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.white.withValues(alpha: 0.88),
               height: 1.45,
@@ -647,7 +647,7 @@ class _GeneratePlanCta extends StatelessWidget {
                   children: [
                     Text(
                       isLoading
-                          ? 'Nami đang tạo dữ liệu 7 ngày...'
+                          ? 'Nabiđang tạo dữ liệu 7 ngày...'
                           : 'Tạo dữ liệu 7 ngày',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: AppColors.textPrimary,
@@ -723,7 +723,7 @@ class _PlanRenewalBanner extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Bạn có thể tạo dữ liệu 7 ngày mới để Nami tiếp tục đồng hành.',
+                      'Bạn có thể tạo dữ liệu 7 ngày mới để Nabitiếp tục đồng hành.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         height: 1.45,
                         color: AppColors.textSecondary,
@@ -746,9 +746,7 @@ class _PlanRenewalBanner extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.auto_awesome_rounded),
-              label: Text(
-                isLoading ? 'Nami đang tạo...' : 'Tạo dữ liệu 7 ngày',
-              ),
+              label: Text(isLoading ? 'Nabiđang tạo...' : 'Tạo dữ liệu 7 ngày'),
             ),
           ),
         ],
@@ -845,8 +843,8 @@ class _HealthScorePanel extends StatelessWidget {
                     !hasScoreInputs
                         ? 'Khi bạn ghi nhận sức khỏe, hoàn thành việc nhỏ hoặc dùng bữa, điểm hôm nay sẽ tự cập nhật.'
                         : score == 0
-                        ? 'Nami đã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.'
-                        : 'Điểm này được Nami tổng hợp từ sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.',
+                        ? 'Nabiđã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.'
+                        : 'Điểm này được Nabitổng hợp từ sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       height: 1.45,
                       color: Theme.of(
@@ -882,7 +880,7 @@ class _HealthScorePanel extends StatelessWidget {
     if (score >= 85) return 'Hôm nay của bạn rất ổn';
     if (score >= 65) return 'Bạn đang đi đúng hướng';
     if (score >= 40) return 'Mình cùng cải thiện nhẹ nhé';
-    return 'Nami sẽ theo sát bạn hơn hôm nay';
+    return 'Nabisẽ theo sát bạn hơn hôm nay';
   }
 }
 
@@ -994,7 +992,7 @@ class _TodayMetricsGrid extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Dữ liệu hôm nay',
-          subtitle: 'Nami gom lại những tín hiệu chính của hôm nay',
+          subtitle: 'Nabigom lại những tín hiệu chính của hôm nay',
           icon: Icons.query_stats_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1099,8 +1097,8 @@ class _InsightSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionTitle(
-          title: 'Nami nhận thấy',
-          subtitle: 'Những điều Nami muốn bạn để ý một chút hôm nay',
+          title: 'Nabinhận thấy',
+          subtitle: 'Những điều Nabimuốn bạn để ý một chút hôm nay',
           icon: Icons.auto_awesome_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1130,9 +1128,9 @@ class _InsightSection extends StatelessWidget {
         if (insights.isEmpty && recommendations.isEmpty)
           const _EmptyDataCard(
             icon: Icons.auto_awesome_outlined,
-            title: 'Nami chưa có nhận xét mới',
+            title: 'Nabichưa có nhận xét mới',
             message:
-                'Khi có thêm tín hiệu từ ngày của bạn, Nami sẽ đặt những điều đáng chú ý ở đây.',
+                'Khi có thêm tín hiệu từ ngày của bạn, Nabisẽ đặt những điều đáng chú ý ở đây.',
           )
         else ...[
           ...insights.map(
@@ -1263,7 +1261,7 @@ class _TimelineSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Hôm nay của chúng ta',
-          subtitle: 'Bữa ăn, việc nhỏ và lời nhắc được Nami gom lại cho bạn',
+          subtitle: 'Bữa ăn, việc nhỏ và lời nhắc được Nabigom lại cho bạn',
           icon: Icons.timeline_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1272,7 +1270,7 @@ class _TimelineSection extends StatelessWidget {
             icon: Icons.timeline_outlined,
             title: 'Chưa có timeline hôm nay',
             message:
-                'Khi hôm nay có bữa ăn, việc nhỏ hoặc lời nhắc mới, Nami sẽ sắp chúng thành một nhịp dễ theo dõi.',
+                'Khi hôm nay có bữa ăn, việc nhỏ hoặc lời nhắc mới, Nabisẽ sắp chúng thành một nhịp dễ theo dõi.',
           )
         else
           _DashboardCard(
@@ -1389,7 +1387,7 @@ class _GoalProgressSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Tiến độ mục tiêu',
-          subtitle: 'Nâng cao sức khỏe mỗi ngày cùng Nami nha',
+          subtitle: 'Nâng cao sức khỏe mỗi ngày cùng Nabinha',
           icon: Icons.flag_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1488,7 +1486,7 @@ class _LifestyleSection extends StatelessWidget {
         const _SectionTitle(
           title: 'Nhịp sống của bạn',
           subtitle:
-              'Nami tổng hợp các ghi nhận sức khỏe, việc nhỏ và bữa ăn để hiểu nhịp sống của bạn hơn.',
+              'Nabitổng hợp các ghi nhận sức khỏe, việc nhỏ và bữa ăn để hiểu nhịp sống của bạn hơn.',
           icon: Icons.spa_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1590,7 +1588,7 @@ class _GoalChipsSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Điều chúng ta đang hướng tới',
-          subtitle: 'Những mục tiêu Nami sẽ cùng bạn chăm từng chút một',
+          subtitle: 'Những mục tiêu Nabisẽ cùng bạn chăm từng chút một',
           icon: Icons.track_changes_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1821,7 +1819,7 @@ class _SyncBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Nami đang cập nhật những tín hiệu mới nhất...',
+                'Nabiđang cập nhật những tín hiệu mới nhất...',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),

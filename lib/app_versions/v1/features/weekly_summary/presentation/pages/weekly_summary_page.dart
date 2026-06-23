@@ -18,7 +18,7 @@ class WeeklySummaryPage extends StatelessWidget {
         icon: Icons.bedtime_rounded,
         color: AppColors.primary,
         title: 'Giấc ngủ',
-        subtitle: 'Nhịp nghỉ ngơi sẽ được Nami nhìn lại thật nhẹ.',
+        subtitle: 'Nhịp nghỉ ngơi sẽ được Nabinhìn lại thật nhẹ.',
       ),
       _SummaryItem(
         icon: Icons.restaurant_rounded,
@@ -36,13 +36,13 @@ class WeeklySummaryPage extends StatelessWidget {
         icon: Icons.auto_graph_rounded,
         color: AppColors.warning,
         title: 'Điểm chăm sóc',
-        subtitle: 'Nami sẽ tổng hợp khi đã có đủ thông tin trong tuần.',
+        subtitle: 'Nabisẽ tổng hợp khi đã có đủ thông tin trong tuần.',
       ),
     ];
 
     return NamiCareScaffold(
       title: 'Tổng kết tuần',
-      subtitle: 'Nami cùng bạn nhìn lại những điều nhỏ đã làm được.',
+      subtitle: 'Nabicùng bạn nhìn lại những điều nhỏ đã làm được.',
       badge: 'Nhìn lại dịu dàng',
       icon: Icons.insights_rounded,
       gradient: AppGradients.premium,
@@ -52,11 +52,11 @@ class WeeklySummaryPage extends StatelessWidget {
           color: AppColors.secondary,
           title: 'Tuần này mình bắt đầu từ hôm nay nhé',
           message:
-              'Tuần này Nami chưa có đủ thông tin để tổng kết thật trọn vẹn. Mình cứ bắt đầu từ hôm nay nhé.',
+              'Tuần này Nabichưa có đủ thông tin để tổng kết thật trọn vẹn. Mình cứ bắt đầu từ hôm nay nhé.',
         ),
         const SizedBox(height: AppSpacing.lg),
         const NamiCareSectionTitle(
-          title: 'Nami sẽ nhìn lại những điều này',
+          title: 'Nabisẽ nhìn lại những điều này',
           subtitle:
               'Khi các góc chăm sóc có thêm ghi nhận, tổng kết tuần sẽ đầy đủ và gần với bạn hơn.',
         ),

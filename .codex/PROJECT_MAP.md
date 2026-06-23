@@ -19,34 +19,34 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 
 ## Workflow Routing
 
-| Task | Workflow | Domain |
-| --- | --- | --- |
-| Read project context | `.codex/workflows/context-read.md` | optional |
-| Implement feature/change | `.codex/workflows/coding.md` | matching domain |
-| Direct bug fix | `.codex/workflows/bugfix.md` | matching domain |
-| Fix issue from todo | `.codex/workflows/fix-issues.md` | matching domain |
-| Test/analyze/build | `.codex/workflows/test.md` | matching domain |
-| Audit/review/find bugs | `.codex/workflows/find-issues.md` | matching domain |
-| Create issue docs | `.codex/workflows/create-issues.md` | optional |
-| Create todo docs | `.codex/workflows/create-todo.md` | optional |
-| Create/update/read DD | `.codex/workflows/docs-dd.md` | product/domain as needed |
-| Update `.codex`/maps/checklists | `.codex/workflows/docs-context.md` | optional |
-| Refactor scaffold/version boundaries | `.codex/workflows/refactor-scaffold.md` | access/membership |
-| Supabase schema/RLS/quota/sale | `.codex/workflows/supabase-schema.md` | access/membership |
+| Task                                 | Workflow                                | Domain                   |
+| ------------------------------------ | --------------------------------------- | ------------------------ |
+| Read project context                 | `.codex/workflows/context-read.md`      | optional                 |
+| Implement feature/change             | `.codex/workflows/coding.md`            | matching domain          |
+| Direct bug fix                       | `.codex/workflows/bugfix.md`            | matching domain          |
+| Fix issue from todo                  | `.codex/workflows/fix-issues.md`        | matching domain          |
+| Test/analyze/build                   | `.codex/workflows/test.md`              | matching domain          |
+| Audit/review/find bugs               | `.codex/workflows/find-issues.md`       | matching domain          |
+| Create issue docs                    | `.codex/workflows/create-issues.md`     | optional                 |
+| Create todo docs                     | `.codex/workflows/create-todo.md`       | optional                 |
+| Create/update/read DD                | `.codex/workflows/docs-dd.md`           | product/domain as needed |
+| Update `.codex`/maps/checklists      | `.codex/workflows/docs-context.md`      | optional                 |
+| Refactor scaffold/version boundaries | `.codex/workflows/refactor-scaffold.md` | access/membership        |
+| Supabase schema/RLS/quota/sale       | `.codex/workflows/supabase-schema.md`   | access/membership        |
 
 ## Domain Routing
 
-| Domain | Context | Source/tests |
-| --- | --- | --- |
-| Dashboard / Health Score | `.codex/domains/dashboard.md` | `lib/app_versions/v1/features/dashboard/`, `test/features/dashboard/` |
-| Onboarding | `.codex/domains/onboarding.md` | `lib/app_versions/v1/features/onboarding/`, `test/app_versions/v1/features/onboarding/` |
-| AI / Meal / Exercise / Chat | `.codex/domains/ai-service.md` | `lib/app_versions/v1/services/ai/`, meal/schedule/task/chat tests |
+| Domain                                | Context                                        | Source/tests                                                                                   |
+| ------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Dashboard / Health Score              | `.codex/domains/dashboard.md`                  | `lib/app_versions/v1/features/dashboard/`, `test/features/dashboard/`                          |
+| Onboarding                            | `.codex/domains/onboarding.md`                 | `lib/app_versions/v1/features/onboarding/`, `test/app_versions/v1/features/onboarding/`        |
+| AI / Meal / Exercise / Chat           | `.codex/domains/ai-service.md`                 | `lib/app_versions/v1/services/ai/`, meal/schedule/task/chat tests                              |
 | Access / Auth / Membership / Referral | `.codex/domains/access-membership-referral.md` | `lib/app_versions/v2/`, `lib/app_versions/v3/`, `lib/sale_referral/`, `lib/services/supabase/` |
-| Notification / Reminder | `.codex/domains/notification.md` | `lib/app_versions/v1/services/notifications/`, `test/services/notifications/` |
-| SQLite / DAO / Migration | `.codex/domains/sqlite.md` | `lib/core/storage/localdb/`, `test/core/storage/localdb/` |
-| UI / Theme / Nami Copy | `.codex/domains/ui-nami.md` | `lib/core/theme/`, feature presentation files |
-| Daily Health Tracking | `.codex/domains/health-tracking.md` | `lib/app_versions/v1/features/daily_health_tracking/`, `test/features/daily_health_tracking/` |
-| Lifestyle Schedule | `.codex/domains/lifestyle-schedule.md` | `lib/app_versions/v1/features/lifestyle_schedule/`, `test/features/lifestyle_schedule/` |
+| Notification / Reminder               | `.codex/domains/notification.md`               | `lib/app_versions/v1/services/notifications/`, `test/services/notifications/`                  |
+| SQLite / DAO / Migration              | `.codex/domains/sqlite.md`                     | `lib/core/storage/localdb/`, `test/core/storage/localdb/`                                      |
+| UI / Theme / NabiCopy                 | `.codex/domains/ui-nami.md`                    | `lib/core/theme/`, feature presentation files                                                  |
+| Daily Health Tracking                 | `.codex/domains/health-tracking.md`            | `lib/app_versions/v1/features/daily_health_tracking/`, `test/features/daily_health_tracking/`  |
+| Lifestyle Schedule                    | `.codex/domains/lifestyle-schedule.md`         | `lib/app_versions/v1/features/lifestyle_schedule/`, `test/features/lifestyle_schedule/`        |
 
 ## Critical Files
 

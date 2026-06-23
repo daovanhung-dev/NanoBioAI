@@ -1,6 +1,6 @@
-import '../../domain/entities/nabi_expression.dart';
+import '../../domain/entities/Nabi_expression.dart';
 
-/// Quy đổi tên đường dẫn sang ngữ cảnh NaBi.
+/// Quy đổi tên đường dẫn sang ngữ cảnh Nabi.
 ///
 /// Các từ khoá bên dưới khớp với các route phổ biến của NanoBio. Khi dự án có
 /// route khác, chỉ bổ sung keyword ở đây, không rải điều kiện vào các màn hình.

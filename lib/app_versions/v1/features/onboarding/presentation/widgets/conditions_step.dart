@@ -200,7 +200,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
                           icon: AppIcons.health,
                           title: 'Cơ thể bạn đang muốn được quan tâm điều gì?',
                           subtitle:
-                              'Bạn chỉ cần chọn những điều đang đúng với mình. Không cần hoàn hảo ngay từ đầu, Nami sẽ cùng bạn điều chỉnh dần.',
+                              'Bạn chỉ cần chọn những điều đang đúng với mình. Không cần hoàn hảo ngay từ đầu, Nabisẽ cùng bạn điều chỉnh dần.',
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         _ConditionPickerField(
@@ -218,9 +218,9 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
                         const SizedBox(height: AppSpacing.xl),
                         const _FriendlySectionHeader(
                           icon: AppIcons.chat,
-                          title: 'Có điều gì khác bạn muốn kể với Nami không?',
+                          title: 'Có điều gì khác bạn muốn kể với Nabikhông?',
                           subtitle:
-                              'Bạn có thể viết theo cách tự nhiên nhất. Nami sẽ lắng nghe nhẹ nhàng, không phán xét và không ép buộc.',
+                              'Bạn có thể viết theo cách tự nhiên nhất. Nabisẽ lắng nghe nhẹ nhàng, không phán xét và không ép buộc.',
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         _OtherConditionCard(
@@ -285,7 +285,7 @@ class _NamiHeroCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(
-                'Nami muốn hiểu bạn hơn một chút',
+                'Nabimuốn hiểu bạn hơn một chút',
                 style: AppTextStyles.displaySmall.copyWith(
                   color: AppColors.textWhite,
                   fontWeight: FontWeight.w800,
@@ -294,7 +294,7 @@ class _NamiHeroCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Những chia sẻ ở bước này giúp Nami chăm sóc bạn tinh tế hơn: từ bữa ăn, nhịp sinh hoạt đến những lời nhắc nhẹ nhàng hằng ngày.',
+                'Những chia sẻ ở bước này giúp Nabichăm sóc bạn tinh tế hơn: từ bữa ăn, nhịp sinh hoạt đến những lời nhắc nhẹ nhàng hằng ngày.',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textWhite.withValues(alpha: 0.92),
                   height: 1.65,
@@ -309,7 +309,7 @@ class _NamiHeroCard extends StatelessWidget {
                     width: metricWidth,
                     child: _HeroMetric(
                       icon: AppIcons.success,
-                      title: 'Nami đã ghi nhận',
+                      title: 'Nabiđã ghi nhận',
                       value: selectedCount == 0
                           ? 'Chưa chọn mục nào'
                           : '$selectedCount điều cần quan tâm',
@@ -319,7 +319,7 @@ class _NamiHeroCard extends StatelessWidget {
                     width: metricWidth,
                     child: const _HeroMetric(
                       icon: AppIcons.favorite,
-                      title: 'Cách Nami đồng hành',
+                      title: 'Cách Nabiđồng hành',
                       value: 'Nhẹ nhàng và tôn trọng',
                     ),
                   ),
@@ -380,7 +380,7 @@ class _SoftHeroBadge extends StatelessWidget {
           const Icon(AppIcons.verified, color: AppColors.textWhite, size: 18),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            'Nami đang lắng nghe',
+            'Nabiđang lắng nghe',
             style: AppTextStyles.labelLarge.copyWith(
               color: AppColors.textWhite,
               fontWeight: FontWeight.w700,
@@ -462,10 +462,10 @@ class _NamiInsightCard extends StatelessWidget {
       icon: hasSelection ? AppIcons.favorite : AppIcons.info,
       iconGradient: hasSelection ? AppGradients.health : AppGradients.ai,
       title: hasSelection
-          ? 'Nami đã ghi nhớ điều này'
+          ? 'Nabiđã ghi nhớ điều này'
           : 'Bạn có thể bắt đầu thật nhẹ nhàng',
       message: hasSelection
-          ? 'Từ những điều bạn chọn, Nami sẽ ưu tiên gợi ý chăm sóc phù hợp hơn, không đưa ra lời khuyên quá chung chung.'
+          ? 'Từ những điều bạn chọn, Nabisẽ ưu tiên gợi ý chăm sóc phù hợp hơn, không đưa ra lời khuyên quá chung chung.'
           : 'Bạn chỉ cần chọn những tình trạng gần đúng nhất. Nếu chưa chắc, bạn có thể bỏ qua hoặc kể thêm ở phần bên dưới.',
     );
   }
@@ -683,7 +683,7 @@ class _ConditionPickerField extends StatelessWidget {
                           const SizedBox(height: AppSpacing.xs),
                           Text(
                             hasSelection
-                                ? 'Nami sẽ ưu tiên quan tâm những điều này.'
+                                ? 'Nabisẽ ưu tiên quan tâm những điều này.'
                                 : 'Có $totalCount lựa chọn sẵn, bạn không cần nhập tay.',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary,
@@ -854,7 +854,7 @@ class _SelectedConditionsPreview extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Những điều Nami đang ghi nhớ',
+            'Những điều Nabiđang ghi nhớ',
             style: AppTextStyles.heading5.copyWith(
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
@@ -977,7 +977,7 @@ class _OtherConditionCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   hasText
-                      ? 'Nami đã nhận thêm chia sẻ của bạn'
+                      ? 'Nabiđã nhận thêm chia sẻ của bạn'
                       : 'Phần này hoàn toàn tuỳ bạn',
                   style: AppTextStyles.heading5.copyWith(
                     fontWeight: FontWeight.w800,
@@ -989,7 +989,7 @@ class _OtherConditionCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           OnboardingTextField(
-            label: 'Bạn muốn Nami lưu ý thêm điều gì?',
+            label: 'Bạn muốn Nabilưu ý thêm điều gì?',
             hint:
                 'Ví dụ: mình hay đau đầu khi thiếu ngủ, mình dị ứng hải sản, mình dễ mệt vào buổi chiều...',
             initialValue: otherCondition,
@@ -1078,8 +1078,8 @@ class _NamiClosingCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 hasSelection
-                    ? 'Nami sẽ dùng những thông tin này để chăm sóc bạn tinh tế hơn trong các gợi ý tiếp theo.'
-                    : 'Nếu chưa muốn chọn gì ở bước này, bạn có thể đi tiếp. Nami sẽ dần hiểu bạn hơn qua quá trình sử dụng.',
+                    ? 'Nabisẽ dùng những thông tin này để chăm sóc bạn tinh tế hơn trong các gợi ý tiếp theo.'
+                    : 'Nếu chưa muốn chọn gì ở bước này, bạn có thể đi tiếp. Nabisẽ dần hiểu bạn hơn qua quá trình sử dụng.',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textWhite.withValues(alpha: 0.82),
                   height: 1.65,
@@ -1165,7 +1165,7 @@ class _PickerHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Nami nên chú ý điều gì?',
+                  'Nabinên chú ý điều gì?',
                   style: AppTextStyles.heading4.copyWith(
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
@@ -1270,8 +1270,8 @@ class _ConditionOptionTile extends StatelessWidget {
                           const SizedBox(height: AppSpacing.xs),
                           Text(
                             selected
-                                ? 'Nami đã ghi nhớ điều này'
-                                : 'Chạm để Nami lưu ý hơn',
+                                ? 'Nabiđã ghi nhớ điều này'
+                                : 'Chạm để Nabilưu ý hơn',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.bodySmall.copyWith(
@@ -1342,7 +1342,7 @@ class _PickerFooter extends StatelessWidget {
             Text(
               selectedCount == 0
                   ? 'Bạn có thể chọn sau nếu chưa chắc.'
-                  : 'Nami đã ghi nhớ $selectedCount điều để chăm sóc bạn tốt hơn.',
+                  : 'Nabiđã ghi nhớ $selectedCount điều để chăm sóc bạn tốt hơn.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary,

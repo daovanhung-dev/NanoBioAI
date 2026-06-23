@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../../lib/features/nabi/application/nabi_expression_resolver.dart';
-import '../../../../lib/features/nabi/domain/entities/nabi_expression.dart';
+import '../../../../lib/features/Nabi/application/Nabi_expression_resolver.dart';
+import '../../../../lib/features/Nabi/domain/entities/Nabi_expression.dart';
 
 void main() {
   group('NabiExpressionResolver', () {

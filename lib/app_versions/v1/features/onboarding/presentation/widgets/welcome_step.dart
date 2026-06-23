@@ -92,7 +92,7 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
           isScrollable: false,
           title: '',
           subtitle: '',
-          nextLabel: 'Để Nami hiểu mình hơn',
+          nextLabel: 'Để Nabihiểu mình hơn',
           onNext: controller.nextStep,
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -117,11 +117,11 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
                     const _HumanMessageCard(),
                     SizedBox(height: _adaptive(maxWidth, 22, 28, 32)),
                     const _TitleSection(
-                      eyebrow: 'Nami sẽ đồng hành như thế nào?',
+                      eyebrow: 'Nabisẽ đồng hành như thế nào?',
                       title:
                           'Mỗi ngày một chút, mình cùng chăm cơ thể bạn nhẹ nhàng hơn.',
                       subtitle:
-                          'Không ép bạn phải hoàn hảo. Nami chỉ giúp bạn nhìn thấy cơ thể mình đang cần gì và nhắc bạn chăm bản thân đúng lúc.',
+                          'Không ép bạn phải hoàn hảo. Nabichỉ giúp bạn nhìn thấy cơ thể mình đang cần gì và nhắc bạn chăm bản thân đúng lúc.',
                     ),
                     SizedBox(height: _adaptive(maxWidth, 16, 20, 24)),
                     _CareFeatureGrid(isWide: isWide),
@@ -320,7 +320,7 @@ class _NamiHeroHeader extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: _StatusPill(
                             icon: Icons.favorite_rounded,
-                            label: compact ? 'Nami' : 'Nami · Trợ lý sức khỏe',
+                            label: compact ? 'Nami' : 'Nabi· Trợ lý sức khỏe',
                           ),
                         ),
                       ),
@@ -594,7 +594,7 @@ class _MessageContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Trước khi bắt đầu, Nami muốn nói với bạn một điều nhỏ.',
+          'Trước khi bắt đầu, Nabimuốn nói với bạn một điều nhỏ.',
           style: AppTextStyles.heading3.copyWith(
             fontWeight: FontWeight.w900,
             height: 1.3,
@@ -602,7 +602,7 @@ class _MessageContent extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Bạn không cần thay đổi thật nhanh. Chỉ cần thành thật với cơ thể mình hôm nay. Nami sẽ dựa vào những điều bạn chia sẻ để gợi ý từng bước vừa sức hơn.',
+          'Bạn không cần thay đổi thật nhanh. Chỉ cần thành thật với cơ thể mình hôm nay. Nabisẽ dựa vào những điều bạn chia sẻ để gợi ý từng bước vừa sức hơn.',
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.textSecondary,
             height: 1.7,
@@ -680,21 +680,21 @@ class _CareFeatureGrid extends StatelessWidget {
         icon: Icons.monitor_heart_rounded,
         title: 'Lắng nghe cơ thể bạn',
         description:
-            'Nami giúp bạn ghi lại giấc ngủ, cân nặng, bữa ăn và những tín hiệu nhỏ mà đôi khi bạn bỏ qua.',
+            'Nabigiúp bạn ghi lại giấc ngủ, cân nặng, bữa ăn và những tín hiệu nhỏ mà đôi khi bạn bỏ qua.',
         gradient: AppGradients.primary,
       ),
       _CareFeatureData(
         icon: Icons.restaurant_menu_rounded,
         title: 'Gợi ý bữa ăn vừa sức',
         description:
-            'Không phải thực đơn khô khan. Nami ưu tiên món dễ ăn, gần gũi và phù hợp với thói quen của bạn.',
+            'Không phải thực đơn khô khan. Nabiưu tiên món dễ ăn, gần gũi và phù hợp với thói quen của bạn.',
         gradient: AppGradients.health,
       ),
       _CareFeatureData(
         icon: Icons.notifications_active_rounded,
         title: 'Nhắc bạn đúng lúc',
         description:
-            'Khi bạn bận, Nami sẽ nhẹ nhàng nhắc uống nước, nghỉ mắt, vận động và ngủ đúng giờ hơn.',
+            'Khi bạn bận, Nabisẽ nhẹ nhàng nhắc uống nước, nghỉ mắt, vận động và ngủ đúng giờ hơn.',
         gradient: AppGradients.ai,
       ),
     ];
@@ -937,7 +937,7 @@ class _GentleStartCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Nami sẽ hỏi từng bước ngắn thôi: bạn là ai, cơ thể bạn đang thế nào và bạn muốn được chăm sóc ra sao. Bạn có thể chọn gần đúng, không cần áp lực.',
+                'Nabisẽ hỏi từng bước ngắn thôi: bạn là ai, cơ thể bạn đang thế nào và bạn muốn được chăm sóc ra sao. Bạn có thể chọn gần đúng, không cần áp lực.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: Colors.white.withValues(alpha: 0.94),

@@ -119,7 +119,7 @@ class _RecordingDashboardRepository implements DashboardRepository {
     fetchCalls++;
     return const DashboardEntity(
       userId: 'guest-1',
-      fullName: 'Nami Guest',
+      fullName: 'NabiGuest',
       email: 'guest@example.com',
       phone: '',
       gender: 'female',
@@ -159,7 +159,7 @@ class _RecordingDailyHealthDatasource
     fetchProfileCalls++;
     return const DailyHealthProfileEntity(
       userId: 'guest-1',
-      fullName: 'Nami Guest',
+      fullName: 'NabiGuest',
       goals: ['overall_health'],
       conditions: [],
       habits: [],
@@ -309,7 +309,7 @@ class _FakeCatalogDatasource extends AiCatalogLocalDatasource {
           endTime: '21:45',
           targetValue: 1,
           unit: 'lần',
-          encouragement: 'Ngủ đủ giúp Nami theo dõi sức khỏe tốt hơn.',
+          encouragement: 'Ngủ đủ giúp Nabitheo dõi sức khỏe tốt hơn.',
           sortOrder: 3,
           createdAt: now,
           updatedAt: now,

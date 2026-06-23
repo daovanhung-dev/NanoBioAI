@@ -186,7 +186,7 @@ Database / API
 | Supabase for auth only | Minimize cloud dependency |
 | Gemini AI for meal plans | Personalized nutrition recommendations |
 | Riverpod Notifier (Gen 3) | Type-safe, modern state management |
-| Feature-first structure | Better scalability & maintainability |
+| Feature-first structure | Better scalability & maintaiNability |
 
 ---
 

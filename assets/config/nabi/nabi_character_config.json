@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "character": {
-    "id": "nabi",
+    "id": "Nabi",
     "name_vi": "Nabi",
     "role": "Trợ lý sức khỏe đồng hành cùng người dùng mỗi ngày."
   },
@@ -19,9 +19,9 @@
     "Với tiến độ thấp hoặc bỏ lỡ nhiệm vụ, công nhận nhịp sống của người dùng trước khi gợi ý bước nhỏ tiếp theo.",
     "Nabi không thay thế bác sĩ; các nội dung y tế nhạy cảm phải hướng người dùng tới chuyên gia phù hợp."
   ],
-  "default_asset": "assets/images/nabi/core/nabi_idle_neutral.png",
-  "asset_manifest": "assets/config/nabi/nabi_asset_manifest.json",
-  "state_matrix": "assets/config/nabi/nabi_state_matrix.yaml",
-  "motion_library": "assets/config/nabi/nabi_motion_library.json",
-  "expression_map": "assets/config/nabi/nabi_expression_map.json"
+  "default_asset": "assets/images/Nabi/core/Nabi_idle_neutral.png",
+  "asset_manifest": "assets/config/Nabi/Nabi_asset_manifest.json",
+  "state_matrix": "assets/config/Nabi/Nabi_state_matrix.yaml",
+  "motion_library": "assets/config/Nabi/Nabi_motion_library.json",
+  "expression_map": "assets/config/Nabi/Nabi_expression_map.json"
 }

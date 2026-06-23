@@ -18,7 +18,7 @@ class AIChatFAB extends StatefulWidget {
     super.key,
     this.size = 64,
     this.showStatusDot = true,
-    this.tooltip = 'Nami ở đây khi bạn cần',
+    this.tooltip = 'Nabiở đây khi bạn cần',
     this.onPressed,
   });
 
@@ -114,8 +114,7 @@ class _AIChatFABState extends State<AIChatFAB> with TickerProviderStateMixin {
         message: widget.tooltip,
         waitDuration: const Duration(milliseconds: 450),
         child: Semantics(
-          label:
-              'Mở Nami chat, nơi Nami có thể lắng nghe và đồng hành cùng bạn.',
+          label: 'Mở Nabichat, nơi Nabicó thể lắng nghe và đồng hành cùng bạn.',
           hint: 'Chạm hai lần để bắt đầu trò chuyện.',
           button: true,
           child: AnimatedBuilder(

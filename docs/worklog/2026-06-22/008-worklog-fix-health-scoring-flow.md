@@ -19,7 +19,7 @@ Commit de xuat: docs(worklog): ghi nhan phien fix health scoring flow
 ## Da lam
 
 - Them `DashboardDailyMetrics.hasDailyScoreInputs` de phan biet missing score input voi score bang 0.
-- Doi dashboard score panel: chi hien `--` khi chua co input; neu co input that va score = 0 thi hien `0` va copy Nami nhe nhang.
+- Doi dashboard score panel: chi hien `--` khi chua co input; neu co input that va score = 0 thi hien `0` va copy Nabinhe nhang.
 - Doi daily summary de zero score co input that khong bi xem nhu missing-data state.
 - Cap nhat `V2HealthScoringFeature` de ghi ro v1 local daily care score khac v2 official health scoring formula.
 - Them regression tests cho no-input score va zero-progress score.

@@ -1,4 +1,4 @@
-# NABI_INTEGRATION_GUIDE
+# Nabi_INTEGRATION_GUIDE
 
 ## 1. Khai báo asset
 
@@ -7,8 +7,8 @@ Bổ sung vào `pubspec.yaml` (nếu chưa có):
 ```yaml
 flutter:
   assets:
-    - assets/images/nabi/
-    - assets/config/nabi/
+    - assets/images/Nabi/
+    - assets/config/Nabi/
 ```
 
 Sau đó chạy `flutter pub get`.
@@ -21,7 +21,7 @@ Giữ hướng phụ thuộc hiện có của dự án:
 
 - Widget chỉ nhận `NabiVisualState` hoặc `NabiAssetDescriptor`; không tự kiểm tra SQLite/Supabase.
 - Controller/Provider lấy dữ liệu use case: onboarding state, task completion, last open, sync state, quota, membership.
-- Repository/Datasource trả về dữ liệu nghiệp vụ. Controller chuyển dữ liệu thành `NabiVisualState` theo `nabi_state_matrix.yaml`.
+- Repository/Datasource trả về dữ liệu nghiệp vụ. Controller chuyển dữ liệu thành `NabiVisualState` theo `Nabi_state_matrix.yaml`.
 - Không hard-code đường dẫn asset rải rác ở màn hình. Chỉ đọc từ manifest/config hoặc một registry typed.
 
 ## 3. Gợi ý typed contract

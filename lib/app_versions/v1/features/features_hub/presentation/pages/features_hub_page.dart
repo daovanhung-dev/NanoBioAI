@@ -11,14 +11,14 @@ class FeaturesHubPage extends StatelessWidget {
     final features = [
       _FeatureAction(
         title: 'Lịch trình cá nhân',
-        subtitle: 'Nami giúp bạn nhìn lại nhịp sống trong tuần.',
+        subtitle: 'Nabigiúp bạn nhìn lại nhịp sống trong tuần.',
         icon: Icons.event_note_rounded,
         color: AppColors.primary,
         onTap: () => context.push(V1RoutePaths.lifestyleSchedule),
       ),
       _FeatureAction(
         title: 'Nhiệm vụ hôm nay',
-        subtitle: 'Từng việc nhỏ, Nami sẽ cùng bạn hoàn thành nhẹ nhàng.',
+        subtitle: 'Từng việc nhỏ, Nabisẽ cùng bạn hoàn thành nhẹ nhàng.',
         icon: Icons.favorite_rounded,
         color: AppColors.success,
         onTap: () => context.push(V1RoutePaths.healthTracking),
@@ -60,7 +60,7 @@ class FeaturesHubPage extends StatelessWidget {
       ),
       _FeatureAction(
         title: 'Trò chuyện với Nami',
-        subtitle: 'Hỏi Nami bất cứ điều gì bạn đang băn khoăn hôm nay.',
+        subtitle: 'Hỏi Nabibất cứ điều gì bạn đang băn khoăn hôm nay.',
         icon: Icons.auto_awesome_rounded,
         color: AppColors.secondary,
         onTap: () => context.push(V1RoutePaths.aiChat),
@@ -123,7 +123,7 @@ class FeaturesHubPage extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        'Chọn một mục, Nami sẽ đưa bạn đến đúng nơi cần thiết.',
+                        'Chọn một mục, Nabisẽ đưa bạn đến đúng nơi cần thiết.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                           height: 1.45,
@@ -203,7 +203,7 @@ class _HeaderSection extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Nami đã sắp sẵn những công cụ nhỏ cho bạn.',
+                'Nabiđã sắp sẵn những công cụ nhỏ cho bạn.',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.35,
@@ -252,7 +252,7 @@ class _NamiCareCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.circular),
             ),
             child: Text(
-              'Nami gợi ý',
+              'Nabigợi ý',
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.primary,
                 fontWeight: AppTypography.bold,
@@ -270,7 +270,7 @@ class _NamiCareCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Bạn không cần làm mọi thứ cùng lúc. Chỉ cần chọn một mục phù hợp với mình lúc này, Nami sẽ đồng hành từng bước.',
+            'Bạn không cần làm mọi thứ cùng lúc. Chỉ cần chọn một mục phù hợp với mình lúc này, Nabisẽ đồng hành từng bước.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
               height: 1.55,

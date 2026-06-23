@@ -196,9 +196,9 @@ class _ProfileForm extends StatelessWidget {
       children: [
         const _SectionHeader(
           eyebrow: 'Bước 2',
-          title: 'Nami muốn hiểu bạn hơn một chút',
+          title: 'Nabimuốn hiểu bạn hơn một chút',
           subtitle:
-              'Bạn chỉ cần chọn hoặc nhập nhanh vài thông tin cơ bản. Nami sẽ dùng những dữ liệu này để gợi ý chăm sóc sức khỏe gần gũi và vừa vặn hơn.',
+              'Bạn chỉ cần chọn hoặc nhập nhanh vài thông tin cơ bản. Nabisẽ dùng những dữ liệu này để gợi ý chăm sóc sức khỏe gần gũi và vừa vặn hơn.',
         ),
         const SizedBox(height: AppSpacing.lg),
         _GlassCard(
@@ -224,7 +224,7 @@ class _ProfileForm extends StatelessWidget {
                     icon: AppIcons.dashboard,
                     title: 'Một ngày của bạn thường như thế nào?',
                     subtitle:
-                        'Chọn nhóm gần đúng nhất để Nami hiểu nhịp sống của bạn.',
+                        'Chọn nhóm gần đúng nhất để Nabihiểu nhịp sống của bạn.',
                     value: state.occupation,
                     hint: 'Chọn nhóm công việc',
                     options: _OccupationOptions.items,
@@ -238,7 +238,7 @@ class _ProfileForm extends StatelessWidget {
         const SizedBox(height: AppSpacing.xl),
         const _SectionHeader(
           eyebrow: 'Cá nhân hóa',
-          title: 'Nami nên ghi nhận giới tính của bạn thế nào?',
+          title: 'Nabinên ghi nhận giới tính của bạn thế nào?',
           subtitle:
               'Thông tin này giúp các gợi ý về dinh dưỡng, năng lượng và thể trạng sát với bạn hơn.',
         ),
@@ -268,9 +268,9 @@ class _BodyMetricsForm extends StatelessWidget {
       children: [
         const _SectionHeader(
           eyebrow: 'Thể trạng hiện tại',
-          title: 'Nami xin thêm chiều cao và cân nặng nhé',
+          title: 'Nabixin thêm chiều cao và cân nặng nhé',
           subtitle:
-              'Bạn có thể chọn nhanh hoặc tự nhập con số riêng. Chỉ cần gần đúng là đủ để Nami bắt đầu cá nhân hóa kế hoạch.',
+              'Bạn có thể chọn nhanh hoặc tự nhập con số riêng. Chỉ cần gần đúng là đủ để Nabibắt đầu cá nhân hóa kế hoạch.',
         ),
         const SizedBox(height: AppSpacing.lg),
         _GlassCard(
@@ -280,7 +280,7 @@ class _BodyMetricsForm extends StatelessWidget {
               _NumberPickerField(
                 icon: AppIcons.fitness,
                 title: 'Chiều cao hiện tại',
-                subtitle: 'Giúp Nami ước tính BMI và mức vận động phù hợp.',
+                subtitle: 'Giúp Nabiước tính BMI và mức vận động phù hợp.',
                 value: state.heightCm > 0 ? state.heightCm.round() : null,
                 hint: 'Chọn chiều cao',
                 unit: 'cm',
@@ -291,7 +291,7 @@ class _BodyMetricsForm extends StatelessWidget {
                 icon: AppIcons.weight,
                 title: 'Cân nặng hiện tại',
                 subtitle:
-                    'Không cần quá chính xác ngay lúc này, Nami sẽ cùng bạn cập nhật sau.',
+                    'Không cần quá chính xác ngay lúc này, Nabisẽ cùng bạn cập nhật sau.',
                 value: state.weightKg > 0 ? state.weightKg.round() : null,
                 hint: 'Chọn cân nặng',
                 unit: 'kg',
@@ -363,7 +363,7 @@ class _HeroCard extends StatelessWidget {
                     ),
                     SizedBox(height: compact ? AppSpacing.lg : AppSpacing.xl),
                     Text(
-                      'Nami sẽ chăm sóc bạn\ntheo cách riêng của bạn',
+                      'Nabisẽ chăm sóc bạn\ntheo cách riêng của bạn',
                       style:
                           (compact
                                   ? AppTextStyles.heading1
@@ -376,7 +376,7 @@ class _HeroCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      'Mình là Nami, trợ lý sức khỏe ảo của bạn. Chỉ vài thông tin nhẹ nhàng thôi, Nami sẽ giúp bạn xây một lộ trình dễ theo, vừa sức và có thể duy trì mỗi ngày.',
+                      'Mình là Nami, trợ lý sức khỏe ảo của bạn. Chỉ vài thông tin nhẹ nhàng thôi, Nabisẽ giúp bạn xây một lộ trình dễ theo, vừa sức và có thể duy trì mỗi ngày.',
                       style: AppTextStyles.bodyLarge.copyWith(
                         color: Colors.white.withValues(alpha: 0.92),
                         height: 1.62,
@@ -415,7 +415,7 @@ class _HeroBadge extends StatelessWidget {
           const Icon(AppIcons.ai, size: 16, color: Colors.white),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            'Nami đồng hành',
+            'Nabiđồng hành',
             style: AppTextStyles.labelLarge.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
@@ -665,7 +665,7 @@ class _YearPickerField extends StatelessWidget {
         return _PickerSheet(
           title: 'Chọn năm sinh',
           subtitle:
-              'Nami sẽ dùng năm sinh để cá nhân hóa nhịp ăn uống, vận động và lời nhắc phù hợp hơn.',
+              'Nabisẽ dùng năm sinh để cá nhân hóa nhịp ăn uống, vận động và lời nhắc phù hợp hơn.',
           child: _YearPickerList(
             years: years,
             selectedYear: value,

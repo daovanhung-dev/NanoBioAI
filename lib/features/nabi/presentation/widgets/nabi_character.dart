@@ -2,9 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../domain/entities/nabi_expression.dart';
+import '../../domain/entities/Nabi_expression.dart';
 
-/// Nhân vật NaBi dạng vector Canvas, nền trong suốt.
+/// Nhân vật Nabi dạng vector Canvas, nền trong suốt.
 ///
 /// Canvas giúp biểu cảm thực sự thay đổi theo state, không phụ thuộc bộ ảnh
 /// bitmap, chạy tốt ở mọi density và sẵn sàng thay bằng Rive/sprite sau này.
@@ -198,7 +198,7 @@ class _NabiCharacterPainter extends CustomPainter {
       ..close();
     canvas.drawPath(fringe, Paint()..color = primaryColor);
 
-    // Kẹp tóc nhận diện NaBi.
+    // Kẹp tóc nhận diện Nabi.
     canvas.drawCircle(
       Offset(71 * u + sway, 24 * u),
       5.2 * u,

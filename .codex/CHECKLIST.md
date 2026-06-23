@@ -20,7 +20,7 @@
 - [ ] Do not add production mock/fake/sample data.
 - [ ] Do not edit real `.env` or expose secrets unless explicitly requested.
 - [ ] Do not trust client/local cache for membership, sale, referral, payment, commission, or quota.
-- [ ] Keep user-facing copy Vietnamese, Nami tone, no internal technical terms.
+- [ ] Keep user-facing copy Vietnamese, Nabitone, no internal technical terms.
 - [ ] If schema changes: update version, migration, table, model, DAO, onCreate, datasource/repository, and tests.
 - [ ] Before expanding context or running broad checks, confirm the added cost improves the result.
 

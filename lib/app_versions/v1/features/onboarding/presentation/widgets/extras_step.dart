@@ -123,7 +123,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
     _OptionItem(
       icon: AppIcons.heartRate,
       title: 'Thuốc huyết áp',
-      subtitle: 'Nami sẽ lưu ý hơn khi gợi ý thói quen hằng ngày.',
+      subtitle: 'Nabisẽ lưu ý hơn khi gợi ý thói quen hằng ngày.',
       value: 'Thuốc huyết áp',
     ),
     _OptionItem(
@@ -147,7 +147,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
     _OptionItem(
       icon: AppIcons.warning,
       title: 'Thuốc dị ứng',
-      subtitle: 'Thông tin này giúp Nami thận trọng hơn.',
+      subtitle: 'Thông tin này giúp Nabithận trọng hơn.',
       value: 'Thuốc dị ứng',
     ),
     _OptionItem(
@@ -159,7 +159,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
     _OptionItem(
       icon: AppIcons.sleep,
       title: 'Thuốc hỗ trợ ngủ',
-      subtitle: 'Nami sẽ lưu ý hơn về lịch nghỉ ngơi.',
+      subtitle: 'Nabisẽ lưu ý hơn về lịch nghỉ ngơi.',
       value: 'Thuốc hỗ trợ ngủ',
     ),
   ];
@@ -204,7 +204,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
     _OptionItem(
       icon: AppIcons.water,
       title: 'Hay quên uống nước',
-      subtitle: 'Nami có thể nhắc bạn chăm cơ thể đều hơn.',
+      subtitle: 'Nabicó thể nhắc bạn chăm cơ thể đều hơn.',
       value: 'Hay quên uống nước',
     ),
     _OptionItem(
@@ -262,9 +262,9 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                           const SizedBox(height: AppSpacing.xl),
                           const _SectionHeader(
                             icon: AppIcons.warning,
-                            title: 'Có món nào bạn muốn Nami lưu ý không?',
+                            title: 'Có món nào bạn muốn Nabilưu ý không?',
                             subtitle:
-                                'Bạn có thể chọn nhanh trước. Nếu có điều gì rất riêng, cứ ghi thêm, Nami sẽ tôn trọng điều đó.',
+                                'Bạn có thể chọn nhanh trước. Nếu có điều gì rất riêng, cứ ghi thêm, Nabisẽ tôn trọng điều đó.',
                           ),
                           const SizedBox(height: AppSpacing.md),
                           _SurfaceCard(
@@ -276,7 +276,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                                   hint: 'Chọn dị ứng hoặc món bạn muốn hạn chế',
                                   value: state.allergyName,
                                   options: _allergyOptions,
-                                  sheetTitle: 'Món nào Nami nên tránh cho bạn?',
+                                  sheetTitle: 'Món nào Nabinên tránh cho bạn?',
                                   sheetSubtitle:
                                       'Chọn những mục phù hợp. Bạn vẫn có thể tự nhập nếu danh sách chưa đủ.',
                                   onChanged: controller.updateAllergyName,
@@ -304,7 +304,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                             icon: AppIcons.health,
                             title: 'Hiện tại cơ thể bạn cần được chăm sóc gì?',
                             subtitle:
-                                'Nami hỏi phần này để gợi ý nhẹ nhàng và an toàn hơn, không để bạn phải tự xoay xở một mình.',
+                                'Nabihỏi phần này để gợi ý nhẹ nhàng và an toàn hơn, không để bạn phải tự xoay xở một mình.',
                           ),
                           const SizedBox(height: AppSpacing.md),
                           _SurfaceCard(
@@ -320,7 +320,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                                   sheetTitle:
                                       'Bạn đang theo dõi điều gì gần đây?',
                                   sheetSubtitle:
-                                      'Không cần chia sẻ quá nhiều nếu bạn chưa sẵn sàng. Chọn nhanh là đủ để Nami hiểu hơn.',
+                                      'Không cần chia sẻ quá nhiều nếu bạn chưa sẵn sàng. Chọn nhanh là đủ để Nabihiểu hơn.',
                                   onChanged: controller.updateTreatmentName,
                                 ),
                                 const SizedBox(height: AppSpacing.lg),
@@ -334,7 +334,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                                   sheetTitle:
                                       'Bạn đang dùng thuốc hoặc sản phẩm nào?',
                                   sheetSubtitle:
-                                      'Thông tin này chỉ để Nami thận trọng hơn khi cá nhân hóa gợi ý chăm sóc.',
+                                      'Thông tin này chỉ để Nabithận trọng hơn khi cá nhân hóa gợi ý chăm sóc.',
                                   onChanged: controller.updateMedicationName,
                                 ),
                                 const SizedBox(height: AppSpacing.lg),
@@ -342,7 +342,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                                   icon: AppIcons.edit,
                                   title: 'Ghi chú điều trị',
                                   subtitle:
-                                      'Nếu bác sĩ có dặn gì quan trọng, bạn có thể ghi lại ở đây để Nami nhớ giúp.',
+                                      'Nếu bác sĩ có dặn gì quan trọng, bạn có thể ghi lại ở đây để Nabinhớ giúp.',
                                   child: OnboardingTextField(
                                     label: 'Thông tin bổ sung',
                                     hint:
@@ -359,7 +359,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                           const _SectionHeader(
                             icon: AppIcons.stress,
                             title:
-                                'Gần đây bạn muốn Nami quan tâm điều gì trước?',
+                                'Gần đây bạn muốn Nabiquan tâm điều gì trước?',
                             subtitle:
                                 'Không cần hoàn hảo ngay từ đầu. Mình sẽ cùng bạn điều chỉnh dần từng chút một.',
                           ),
@@ -501,7 +501,7 @@ class _HeroSection extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(
-                'Nami muốn hiểu bạn hơn một chút',
+                'Nabimuốn hiểu bạn hơn một chút',
                 style: AppTextStyles.displaySmall.copyWith(
                   color: AppColors.textWhite,
                   fontWeight: FontWeight.w800,
@@ -510,7 +510,7 @@ class _HeroSection extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Những chia sẻ ở bước này giúp Nami chăm sóc bữa ăn, thói quen và lời nhắc của bạn tinh tế hơn. Bạn có thể chọn nhanh, bỏ qua điều chưa chắc, rồi chỉnh lại sau.',
+                'Những chia sẻ ở bước này giúp Nabichăm sóc bữa ăn, thói quen và lời nhắc của bạn tinh tế hơn. Bạn có thể chọn nhanh, bỏ qua điều chưa chắc, rồi chỉnh lại sau.',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textWhite.withValues(alpha: 0.92),
                   height: 1.65,
@@ -585,7 +585,7 @@ class _HeroInfoWrap extends StatelessWidget {
               width: itemWidth,
               child: _HeroInfo(
                 icon: AppIcons.checkIn,
-                title: 'Nami đã hiểu',
+                title: 'Nabiđã hiểu',
                 value: '$completedFields nhóm thông tin',
               ),
             ),
@@ -684,7 +684,7 @@ class _NamiStatusCard extends StatelessWidget {
               children: [
                 Text(
                   hasData
-                      ? 'Nami đã bắt đầu ghi nhớ điều quan trọng'
+                      ? 'Nabiđã bắt đầu ghi nhớ điều quan trọng'
                       : 'Mình bắt đầu thật nhẹ thôi nhé',
                   style: AppTextStyles.heading4.copyWith(
                     fontWeight: FontWeight.w800,
@@ -693,7 +693,7 @@ class _NamiStatusCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   hasData
-                      ? 'Bạn đã chia sẻ $completedFields nhóm thông tin. Nami sẽ dùng chúng để gợi ý chăm sóc cá nhân hơn, không máy móc.'
+                      ? 'Bạn đã chia sẻ $completedFields nhóm thông tin. Nabisẽ dùng chúng để gợi ý chăm sóc cá nhân hơn, không máy móc.'
                       : 'Bạn có thể chọn nhanh bằng các thẻ gợi ý bên dưới. Điều nào chưa chắc thì mình để sau cũng được.',
                   style: AppTextStyles.bodyMedium.copyWith(height: 1.6),
                 ),
@@ -918,7 +918,7 @@ class _NamiChoiceField extends StatelessWidget {
                 children: [
                   _ChoiceFieldHeader(
                     icon: icon,
-                    title: hasValue ? 'Nami đã ghi nhớ' : 'Chạm để chọn nhanh',
+                    title: hasValue ? 'Nabiđã ghi nhớ' : 'Chạm để chọn nhanh',
                     subtitle: hasValue
                         ? 'Bạn có thể sửa lại bất cứ lúc nào'
                         : hint,
@@ -1413,7 +1413,7 @@ class _CustomInputBox extends StatelessWidget {
             ),
             decoration: InputDecoration(
               hintText:
-                  'Viết thêm điều Nami chưa liệt kê, cách nhau bằng dấu phẩy nếu có nhiều mục...',
+                  'Viết thêm điều Nabichưa liệt kê, cách nhau bằng dấu phẩy nếu có nhiều mục...',
               prefixIcon: const Icon(AppIcons.edit),
               filled: true,
               fillColor: AppColors.card,
@@ -1483,7 +1483,7 @@ class _BottomSheetActions extends StatelessWidget {
           final doneButton = ElevatedButton.icon(
             onPressed: onDone,
             icon: const Icon(AppIcons.success),
-            label: const Text('Nami ghi nhớ'),
+            label: const Text('Nabighi nhớ'),
           );
 
           if (compact) {
@@ -1570,8 +1570,8 @@ class _CareNoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final message = completedFields == 0
-        ? 'Bạn chưa cần điền hết ngay. Chỉ cần chia sẻ điều quan trọng nhất, Nami sẽ cùng bạn hoàn thiện dần.'
-        : 'Nami sẽ dùng những thông tin này để cá nhân hóa gợi ý. Khi có dấu hiệu bất thường, bạn vẫn nên ưu tiên lời khuyên từ bác sĩ.';
+        ? 'Bạn chưa cần điền hết ngay. Chỉ cần chia sẻ điều quan trọng nhất, Nabisẽ cùng bạn hoàn thiện dần.'
+        : 'Nabisẽ dùng những thông tin này để cá nhân hóa gợi ý. Khi có dấu hiệu bất thường, bạn vẫn nên ưu tiên lời khuyên từ bác sĩ.';
 
     return Container(
       width: double.infinity,
@@ -1657,7 +1657,7 @@ class _SummaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Nami đã gần hiểu đủ để bắt đầu',
+                      'Nabiđã gần hiểu đủ để bắt đầu',
                       style: AppTextStyles.heading3.copyWith(
                         color: AppColors.textWhite,
                         fontWeight: FontWeight.w800,
@@ -1717,7 +1717,7 @@ class _SummaryRows extends StatelessWidget {
               child: const _SummaryItem(
                 icon: AppIcons.aiChat,
                 title: 'Trợ lý',
-                value: 'Nami sẵn sàng',
+                value: 'Nabisẵn sàng',
               ),
             ),
           ],

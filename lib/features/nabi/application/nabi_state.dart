@@ -1,6 +1,6 @@
-import '../domain/entities/nabi_expression.dart';
+import '../domain/entities/Nabi_expression.dart';
 
-/// State duy nhất điều khiển biểu cảm, lời gợi ý và hiển thị của NaBi.
+/// State duy nhất điều khiển biểu cảm, lời gợi ý và hiển thị của Nabi.
 class NabiState {
   const NabiState({
     required this.context,
@@ -14,7 +14,7 @@ class NabiState {
   factory NabiState.initial() => const NabiState(
         context: NabiContext.app,
         emotion: NabiEmotion.greeting,
-        bubbleText: 'NaBi ở đây, mình cùng chăm sóc hôm nay nhé.',
+        bubbleText: 'Nabi ở đây, mình cùng chăm sóc hôm nay nhé.',
       );
 
   final NabiContext context;

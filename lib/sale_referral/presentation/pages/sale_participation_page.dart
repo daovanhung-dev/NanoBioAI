@@ -29,7 +29,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text('Cùng Nami phát triển'),
+        title: const Text('Cùng Nabiphát triển'),
       ),
       body: SafeArea(
         top: false,
@@ -82,7 +82,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Nami đã ghi nhận điều lệ bạn vừa chấp nhận.'),
+          content: Text('Nabiđã ghi nhận điều lệ bạn vừa chấp nhận.'),
         ),
       );
     } catch (_) {
@@ -90,7 +90,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Nami chưa thể mở quyền Sale lúc này. Bạn thử lại sau nhé.',
+            'Nabichưa thể mở quyền Sale lúc này. Bạn thử lại sau nhé.',
           ),
         ),
       );
@@ -119,8 +119,8 @@ class _BuildTermsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canJoin = state.status == SaleStatus.none ||
-        state.status == SaleStatus.pending;
+    final canJoin =
+        state.status == SaleStatus.none || state.status == SaleStatus.pending;
     final stateNote = _stateNote(state.status);
 
     return SingleChildScrollView(
@@ -243,7 +243,7 @@ class _BuildTermsBody extends StatelessWidget {
           if (!authenticated) ...[
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Bạn cần đăng nhập để Nami lưu điều lệ và cấp quyền Sale cho đúng tài khoản.',
+              'Bạn cần đăng nhập để Nabilưu điều lệ và cấp quyền Sale cho đúng tài khoản.',
               style: AppTextStyles.bodySmall,
             ),
           ],
@@ -261,7 +261,7 @@ class _BuildTermsBody extends StatelessWidget {
       case SaleStatus.closed:
         return 'Quyền Sale đã đóng. Bạn cần liên hệ hỗ trợ nếu muốn được xem xét lại.';
       case SaleStatus.pending:
-        return 'Nami đã ghi nhận điều lệ gần nhất. Hệ thống sẽ cập nhật quyền theo trạng thái tài khoản.';
+        return 'Nabiđã ghi nhận điều lệ gần nhất. Hệ thống sẽ cập nhật quyền theo trạng thái tài khoản.';
       case SaleStatus.none:
         return null;
     }

@@ -38,7 +38,7 @@
 ## Source Worklogs
 
 - [Worklog - AI sinh thêm kế hoạch sau onboarding](../../docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md) - Dashboard, AI service, lifestyle schedule
-- [Worklog - Dashboard Nami Companion](../../docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md) - `dashboard`, `daily_health_tracking`, `lifestyle_schedule`, `meal_plan`, `shared/widgets`
+- [Worklog - Dashboard NabiCompanion](../../docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md) - `dashboard`, `daily_health_tracking`, `lifestyle_schedule`, `meal_plan`, `shared/widgets`
 - [Worklog - Onboarding Dashboard Refresh](../../docs/worklog/2026-06-20/001-worklog-onboarding-dashboard-refresh.md) - onboarding, dashboard
 - [Worklog - Authentication V2](../../docs/worklog/2026-06-20/002-worklog-authentication-v2.md) - authentication
 - [Worklog - Authentication V2 Code Gaps](../../docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md) - authentication v2

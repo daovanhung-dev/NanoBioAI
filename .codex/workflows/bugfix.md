@@ -16,7 +16,7 @@ Use for a concrete bug fix when there is no existing issue/todo pair.
 - Reproduce or confirm the root cause before patching.
 - Keep the patch minimal and scoped to the failing behavior.
 - If a different bug is discovered, do not fix it unless it blocks the requested fix; record it separately if needed.
-- User-facing error/copy stays Vietnamese, Nami tone, no internal technical terms.
+- User-facing error/copy stays Vietnamese, Nabitone, no internal technical terms.
 
 ## Completion
 

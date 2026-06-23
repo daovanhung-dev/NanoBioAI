@@ -35,7 +35,7 @@ void main() {
       );
 
       expect(const DashboardDailyMetrics.empty().hasDailyScoreInputs, isFalse);
-      expect(summary, contains('Nami chưa có đủ tín hiệu'));
+      expect(summary, contains('Nabichưa có đủ tín hiệu'));
     },
   );
 
@@ -64,7 +64,7 @@ void main() {
     expect(metrics.hasDailyScoreInputs, isTrue);
     expect(
       summary,
-      'Nami đã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.',
+      'Nabiđã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.',
     );
   });
 

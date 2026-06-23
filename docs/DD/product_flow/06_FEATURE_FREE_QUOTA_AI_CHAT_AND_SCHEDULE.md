@@ -2,7 +2,7 @@
 
 **BD nguồn:** BR-05, UC-06, UC-07, AC-04, AC-05, Section 9.2  
 **Status:** Draft  
-**Dependencies:** 03, 05, 13, 14, 15, `.codex/playbooks/ai_service.md`  
+**Dependencies:** 03, 05, 13, 14, 15, `.codex/playbooks/ai_service.md`
 
 ## 1. Mục tiêu và outcome
 
@@ -16,12 +16,12 @@ Free user có AI Chat tối đa 3 lượt/ngày và tạo lịch trình cá nhâ
 
 ## 3. Input contract
 
-| Field | Required | Type | Validation | Sensitive? |
-|---|---:|---|---|---|
-| userId | Yes | UUID | Current auth user only | Yes |
-| featureKey | Yes | enum | `ai_chat_message` hoặc `personal_schedule_generation` | No |
-| periodKey | Yes | string | Derived by server/RPC from reset policy | No |
-| idempotencyKey | Yes for consume | string | Unique per request | No |
+| Field          |        Required | Type   | Validation                                            | Sensitive? |
+| -------------- | --------------: | ------ | ----------------------------------------------------- | ---------- |
+| userId         |             Yes | UUID   | Current auth user only                                | Yes        |
+| featureKey     |             Yes | enum   | `ai_chat_message` hoặc `personal_schedule_generation` | No         |
+| periodKey      |             Yes | string | Derived by server/RPC from reset policy               | No         |
+| idempotencyKey | Yes for consume | string | Unique per request                                    | No         |
 
 ## 4. Output / Postconditions
 
@@ -42,30 +42,30 @@ Free user có AI Chat tối đa 3 lượt/ngày và tạo lịch trình cá nhâ
 
 ## 6. Alternative and error flows
 
-| Case | Detection | UI behavior | Technical behavior | Retry |
-|---|---|---|---|---|
-| Free vượt 3 chat/ngày | quota check false | Mời quay lại ngày mai/nâng cấp | Không gọi AI | Sau reset/nâng cấp |
-| Free vượt 3 schedule/tháng | quota check false | Mời đăng nhập/nâng cấp phù hợp | Không gọi AI/save schedule | Sau reset/nâng cấp |
-| Quota service unavailable | network/server error | Báo chưa thể kiểm tra lượt | Fail closed với paid/resource action | Retry |
-| AI call fail after quota reserved | action error | Báo lỗi thử lại | Idempotency/reversal policy phụ thuộc backend | Retry theo policy |
+| Case                              | Detection            | UI behavior                    | Technical behavior                            | Retry              |
+| --------------------------------- | -------------------- | ------------------------------ | --------------------------------------------- | ------------------ |
+| Free vượt 3 chat/ngày             | quota check false    | Mời quay lại ngày mai/nâng cấp | Không gọi AI                                  | Sau reset/nâng cấp |
+| Free vượt 3 schedule/tháng        | quota check false    | Mời đăng nhập/nâng cấp phù hợp | Không gọi AI/save schedule                    | Sau reset/nâng cấp |
+| Quota service unavailable         | network/server error | Báo chưa thể kiểm tra lượt     | Fail closed với paid/resource action          | Retry              |
+| AI call fail after quota reserved | action error         | Báo lỗi thử lại                | Idempotency/reversal policy phụ thuộc backend | Retry theo policy  |
 
 ## 7. Persistence and ownership
 
-| Action | Target | Actor allowed | RLS/constraint |
-|---|---|---|---|
-| Read quota rule/counter | Supabase quota tables | authenticated user own rows | RLS own read |
-| Consume quota | RPC/Edge/trusted backend | server-side only | Client cannot write counter directly |
-| Generate schedule | meal/tasks/schedule tables | authenticated allowed subject | quota must pass first |
+| Action                  | Target                     | Actor allowed                 | RLS/constraint                       |
+| ----------------------- | -------------------------- | ----------------------------- | ------------------------------------ |
+| Read quota rule/counter | Supabase quota tables      | authenticated user own rows   | RLS own read                         |
+| Consume quota           | RPC/Edge/trusted backend   | server-side only              | Client cannot write counter directly |
+| Generate schedule       | meal/tasks/schedule tables | authenticated allowed subject | quota must pass first                |
 
 ## 8. Layer responsibilities / affected files
 
-| Layer | Responsibility | Proposed file |
-|---|---|---|
-| Presentation | Show quota exhausted state with Nami copy | AI chat / dashboard/generate pages |
-| Controller | Block before AI call | AI chat controller, dashboard/generated plan controller |
-| Domain | Quota service contract | `v2/features/usage_quota`, `personal_schedule_quota` |
-| Datasource | Supabase/RPC quota calls | v2 data layer / trusted backend wrapper |
-| AI service | No quota decision, only generation | `lib/app_versions/v1/services/ai/*` |
+| Layer        | Responsibility                           | Proposed file                                           |
+| ------------ | ---------------------------------------- | ------------------------------------------------------- |
+| Presentation | Show quota exhausted state with Nabicopy | AI chat / dashboard/generate pages                      |
+| Controller   | Block before AI call                     | AI chat controller, dashboard/generated plan controller |
+| Domain       | Quota service contract                   | `v2/features/usage_quota`, `personal_schedule_quota`    |
+| Datasource   | Supabase/RPC quota calls                 | v2 data layer / trusted backend wrapper                 |
+| AI service   | No quota decision, only generation       | `lib/app_versions/v1/services/ai/*`                     |
 
 ## 9. Security / privacy
 
@@ -87,8 +87,7 @@ Free user có AI Chat tối đa 3 lượt/ngày và tạo lịch trình cá nhâ
 
 ## 12. Open decisions
 
-| ID | Question | Owner | Impact |
-|---|---|---|---|
-| Q-03 | Một lượt AI Chat là tin nhắn, phiên chat hay AI request thành công? | Product Owner / Tech Lead | Khi nào consume quota |
+| ID   | Question                                                               | Owner                     | Impact                              |
+| ---- | ---------------------------------------------------------------------- | ------------------------- | ----------------------------------- |
+| Q-03 | Một lượt AI Chat là tin nhắn, phiên chat hay AI request thành công?    | Product Owner / Tech Lead | Khi nào consume quota               |
 | Q-04 | Reset quota ngày/tháng theo timezone nào và xử lý đổi timezone ra sao? | Product Owner / Tech Lead | `periodKey`, reset time, anti-abuse |
-

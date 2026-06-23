@@ -39,7 +39,7 @@ class CommunityPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    'Nami đang chuẩn bị góc cộng đồng',
+                    'Nabiđang chuẩn bị góc cộng đồng',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.heading4.copyWith(
                       fontWeight: AppTypography.bold,
@@ -47,7 +47,7 @@ class CommunityPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Đây sẽ là nơi bạn tìm thấy những chia sẻ tích cực và cảm giác được đồng hành. Nami sẽ mở không gian này khi mọi thứ đủ dịu dàng và an toàn.',
+                    'Đây sẽ là nơi bạn tìm thấy những chia sẻ tích cực và cảm giác được đồng hành. Nabisẽ mở không gian này khi mọi thứ đủ dịu dàng và an toàn.',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,

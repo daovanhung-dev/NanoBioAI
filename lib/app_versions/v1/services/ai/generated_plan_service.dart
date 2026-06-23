@@ -11,7 +11,7 @@ import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 class DashboardGenerationAuthRequiredException implements Exception {
   static const userMessage =
-      'Bạn cần đăng nhập để Nami tạo dữ liệu lịch trình 7 ngày mới nhé.';
+      'Bạn cần đăng nhập để Nabitạo dữ liệu lịch trình 7 ngày mới nhé.';
 
   const DashboardGenerationAuthRequiredException();
 

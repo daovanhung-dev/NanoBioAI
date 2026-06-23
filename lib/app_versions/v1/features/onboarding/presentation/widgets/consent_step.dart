@@ -34,7 +34,7 @@ class ConsentStep extends ConsumerWidget {
                 ..showSnackBar(
                   const SnackBar(
                     content: Text(
-                      'Bạn xác nhận đã hiểu trách nhiệm và giới hạn của Nami trước khi tiếp tục nhé.',
+                      'Bạn xác nhận đã hiểu trách nhiệm và giới hạn của Nabitrước khi tiếp tục nhé.',
                     ),
                   ),
                 );
@@ -113,7 +113,7 @@ class _ConsentHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Trước khi Nami đồng hành cùng bạn',
+            'Trước khi Nabiđồng hành cùng bạn',
             style: AppTextStyles.heading2.copyWith(
               color: AppColors.textWhite,
               fontWeight: FontWeight.w900,
@@ -122,7 +122,7 @@ class _ConsentHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Mình muốn nói rõ vai trò của Nami để bạn sử dụng app nhẹ nhàng, chủ động và an toàn hơn.',
+            'Mình muốn nói rõ vai trò của Nabiđể bạn sử dụng app nhẹ nhàng, chủ động và an toàn hơn.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textWhite.withValues(alpha: 0.9),
               height: 1.55,
@@ -264,7 +264,7 @@ class _ConfirmCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Tôi hiểu rằng Nami chỉ cung cấp thông tin tham khảo và tôi sẽ chủ động tham khảo chuyên gia khi cần.',
+                  'Tôi hiểu rằng Nabichỉ cung cấp thông tin tham khảo và tôi sẽ chủ động tham khảo chuyên gia khi cần.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: agreed
                         ? AppColors.textWhite.withValues(alpha: 0.9)

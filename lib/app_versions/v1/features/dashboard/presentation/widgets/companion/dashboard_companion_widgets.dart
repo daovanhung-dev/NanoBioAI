@@ -25,7 +25,7 @@ class DashboardDailySummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Nami nhìn nhanh hôm nay',
+                  'Nabinhìn nhanh hôm nay',
                   style: Theme.of(
                     context,
                   ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
@@ -64,7 +64,7 @@ class DashboardSlowDayBanner extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Hôm nay mình đi chậm lại cũng được. Nami sẽ chỉ nhắc những điều thật nhẹ thôi.',
+              'Hôm nay mình đi chậm lại cũng được. Nabisẽ chỉ nhắc những điều thật nhẹ thôi.',
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(height: 1.45),
@@ -148,7 +148,7 @@ class DashboardNextActionSection extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               const _InlineHint(
                 icon: Icons.spa_rounded,
-                label: 'Nami đang ưu tiên những việc nhẹ cho bạn.',
+                label: 'Nabiđang ưu tiên những việc nhẹ cho bạn.',
               ),
             ],
             const SizedBox(height: AppSpacing.md),
@@ -194,7 +194,7 @@ class DashboardDailyCheckInCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  'Nami muốn hỏi nhẹ một chút...',
+                  'Nabimuốn hỏi nhẹ một chút...',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
@@ -248,14 +248,14 @@ class DashboardPlanStatusCard extends StatelessWidget {
     final hasPlan = planStatus.hasPlan;
     final title = hasPlan
         ? 'Kế hoạch hiện có đến ${_formatDate(planStatus.lastPlanDate!)}'
-        : 'Nami có thể chuẩn bị nhịp 7 ngày đầu tiên cho bạn.';
+        : 'Nabicó thể chuẩn bị nhịp 7 ngày đầu tiên cho bạn.';
     final message = !hasPlan
-        ? 'Khi sẵn sàng, bạn có thể để Nami sắp nhẹ thực đơn, vận động và nhắc nhở.'
+        ? 'Khi sẵn sàng, bạn có thể để Nabisắp nhẹ thực đơn, vận động và nhắc nhở.'
         : planStatus.remainingDays == 1
-        ? 'Hôm nay là ngày cuối trong lịch trình hiện tại. Bạn có thể tạo nhịp 7 ngày mới để Nami tiếp tục đồng hành liền mạch.'
+        ? 'Hôm nay là ngày cuối trong lịch trình hiện tại. Bạn có thể tạo nhịp 7 ngày mới để Nabitiếp tục đồng hành liền mạch.'
         : planStatus.remainingDays > 0
         ? 'Còn ${planStatus.remainingDays} ngày trong kế hoạch. Kế hoạch của bạn vẫn còn đủ dùng, mình cứ đi nhẹ từng ngày nhé.'
-        : 'Kế hoạch hiện tại đã đến hạn, Nami có thể chuẩn bị thêm nhịp mới cho bạn.';
+        : 'Kế hoạch hiện tại đã đến hạn, Nabicó thể chuẩn bị thêm nhịp mới cho bạn.';
 
     return _CompanionCard(
       child: Row(
@@ -304,7 +304,7 @@ class DashboardSelfCareStreakCard extends StatelessWidget {
         ? 'Tuần này bạn đã có những lần quay lại với bản thân'
         : 'Mình bắt đầu chuỗi đầu tiên từ hôm nay nhé.';
     final message = hasCurrentStreak
-        ? 'Nami rất vui vì bạn vẫn quay lại với bản thân mỗi ngày.'
+        ? 'Nabirất vui vì bạn vẫn quay lại với bản thân mỗi ngày.'
         : hasData
         ? 'Chỉ cần hôm nay thêm một ghi nhận nhỏ là mình nối lại nhịp được rồi.'
         : 'Chỉ cần một ghi nhận nhỏ cũng đủ để bắt đầu.';
@@ -386,7 +386,7 @@ class DashboardHealthScoreBreakdownSheet extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Điểm hôm nay được Nami tổng hợp từ',
+              'Điểm hôm nay được Nabitổng hợp từ',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
@@ -564,7 +564,7 @@ class _DashboardWeightUpdateSheetState
             ),
             const SizedBox(height: 6),
             Text(
-              'Nami sẽ dùng ghi nhận hôm nay để dashboard phản ánh sát hơn.',
+              'Nabisẽ dùng ghi nhận hôm nay để dashboard phản ánh sát hơn.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.md),

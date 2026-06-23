@@ -1,4 +1,4 @@
-# NABI_CHARACTER_CONTEXT
+# Nabi_CHARACTER_CONTEXT
 
 ## Vai trò
 
@@ -23,9 +23,9 @@ Nabi là trợ lý sức khỏe ảo đồng hành cùng người dùng mỗi ng
 
 | Mức độ | Trigger | Asset gợi ý | Sắc thái |
 |---|---|---|---|
-| Người dùng mới | Vừa cài/chưa có thói quen | `nabi_new_user.png` | Chào đón, dịu dàng |
-| Dùng thỉnh thoảng | 1–2 lần/tuần | `nabi_occasional_user.png` | Gợi mở, thân thiện |
-| Dùng đều | 3–5 lần/tuần | `nabi_regular_user.png` | Khích lệ, công nhận |
-| Gắn bó hằng ngày | Mở app mỗi ngày | `nabi_daily_user.png` | Thân quen, chủ động vừa đủ |
-| Ít quay lại | 3–7 ngày không mở | `nabi_away_3days.png`/`nabi_away_7days.png` | Nhẹ nhàng, không phán xét |
-| Quay lại | Mở lại app sau thời gian vắng | `nabi_welcome_back.png` | Ấm áp, chào mừng |
+| Người dùng mới | Vừa cài/chưa có thói quen | `Nabi_new_user.png` | Chào đón, dịu dàng |
+| Dùng thỉnh thoảng | 1–2 lần/tuần | `Nabi_occasional_user.png` | Gợi mở, thân thiện |
+| Dùng đều | 3–5 lần/tuần | `Nabi_regular_user.png` | Khích lệ, công nhận |
+| Gắn bó hằng ngày | Mở app mỗi ngày | `Nabi_daily_user.png` | Thân quen, chủ động vừa đủ |
+| Ít quay lại | 3–7 ngày không mở | `Nabi_away_3days.png`/`Nabi_away_7days.png` | Nhẹ nhàng, không phán xét |
+| Quay lại | Mở lại app sau thời gian vắng | `Nabi_welcome_back.png` | Ấm áp, chào mừng |

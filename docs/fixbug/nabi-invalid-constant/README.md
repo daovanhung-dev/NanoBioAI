@@ -1,4 +1,4 @@
-# Fix NaBi Invalid Constant
+# Fix Nabi Invalid Constant
 
 - **Phạm vi:** `NabiExpressionResolver.fromEvent`
 - **Lỗi:** `Invalid constant value` khi xử lý `NabiEvent.formNeedsAttention`.

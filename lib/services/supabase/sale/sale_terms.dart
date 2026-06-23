@@ -23,7 +23,7 @@ class SaleTerms {
     SaleTermsSection(
       title: '2. Thông tin phải trung thực',
       body:
-          'Bạn không được cam kết kết quả sức khỏe, thu nhập, ưu đãi hoặc quyền lợi khác ngoài nội dung Nami đã công bố. '
+          'Bạn không được cam kết kết quả sức khỏe, thu nhập, ưu đãi hoặc quyền lợi khác ngoài nội dung Nabiđã công bố. '
           'Không dùng tên, hình ảnh, dữ liệu khách hàng hoặc mã giới thiệu để gây hiểu nhầm.',
     ),
     SaleTermsSection(
@@ -40,7 +40,7 @@ class SaleTerms {
     SaleTermsSection(
       title: '5. Quyền quản lý của Nami',
       body:
-          'Nami có thể tạm khóa hoặc đóng quyền Sale khi phát hiện dấu hiệu gian lận, giả mạo, vi phạm chính sách hoặc yêu cầu của pháp luật. '
+          'Nabicó thể tạm khóa hoặc đóng quyền Sale khi phát hiện dấu hiệu gian lận, giả mạo, vi phạm chính sách hoặc yêu cầu của pháp luật. '
           'Các điều khoản có thể được cập nhật; phiên bản mới sẽ được hiển thị trước khi bạn tiếp tục sử dụng.',
     ),
   ];

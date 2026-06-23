@@ -18,7 +18,7 @@ class AuthGatePage extends ConsumerWidget {
     return state.when(
       loading: () => const _AuthLoading(),
       error: (_, __) => _AuthSupportState(
-        title: 'Nami chưa mở được tài khoản',
+        title: 'Nabichưa mở được tài khoản',
         message:
             'Mình chưa kiểm tra được phiên đăng nhập. Bạn thử lại sau một chút nhé.',
         onRetry: () => controller.refresh(),
@@ -36,13 +36,13 @@ class AuthGatePage extends ConsumerWidget {
           return _AuthSupportState(
             title: 'Hồ sơ đang được chuẩn bị',
             message:
-                'Nami đã thấy phiên đăng nhập, nhưng hồ sơ nền chưa sẵn sàng. Bạn thử lại sau một chút hoặc liên hệ hỗ trợ nhé.',
+                'Nabiđã thấy phiên đăng nhập, nhưng hồ sơ nền chưa sẵn sàng. Bạn thử lại sau một chút hoặc liên hệ hỗ trợ nhé.',
             onRetry: () => controller.refresh(),
           );
         }
 
         return _AuthSupportState(
-          title: 'Nami cần kiểm tra thêm',
+          title: 'Nabicần kiểm tra thêm',
           message:
               routeState.message ??
               'Trạng thái tài khoản chưa rõ ràng. Mình thử làm mới lại nhé.',

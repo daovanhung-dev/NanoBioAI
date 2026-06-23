@@ -4,7 +4,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-manifest_path = ROOT / 'assets/config/nabi/nabi_asset_manifest.json'
+manifest_path = ROOT / 'assets/config/Nabi/Nabi_asset_manifest.json'
 manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
 assets = manifest['assets']
 assert len(assets) == 84, f'Expected 84 asset manifest entries, got {len(assets)}'

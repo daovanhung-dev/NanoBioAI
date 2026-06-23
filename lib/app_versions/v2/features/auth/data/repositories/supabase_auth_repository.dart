@@ -149,7 +149,7 @@ class SupabaseAuthRepository implements AuthRepository {
       throw const AuthFailure(
         code: AuthFailureCode.deepLinkInvalid,
         userMessage:
-            'Liên kết này chưa mở được. Bạn thử mở lại từ email giúp Nami nhé.',
+            'Liên kết này chưa mở được. Bạn thử mở lại từ email giúp Nabinhé.',
       );
     } catch (_) {
       throw _genericFailure();
@@ -174,7 +174,7 @@ class SupabaseAuthRepository implements AuthRepository {
       throw _mapAuthException(error);
     } catch (_) {
       throw _genericFailure(
-        'Nami chưa thể gửi yêu cầu xóa tài khoản lúc này. Mình thử lại sau một chút nhé.',
+        'Nabichưa thể gửi yêu cầu xóa tài khoản lúc này. Mình thử lại sau một chút nhé.',
       );
     }
   }
@@ -236,7 +236,7 @@ class SupabaseAuthRepository implements AuthRepository {
       return const AuthFailure(
         code: AuthFailureCode.rateLimited,
         userMessage:
-            'Nami cần chờ một chút trước khi thử lại. Bạn quay lại sau ít phút nhé.',
+            'Nabicần chờ một chút trước khi thử lại. Bạn quay lại sau ít phút nhé.',
       );
     }
 
@@ -252,7 +252,7 @@ class SupabaseAuthRepository implements AuthRepository {
       return const AuthFailure(
         code: AuthFailureCode.invalidCredentials,
         userMessage:
-            'Email hoặc mật khẩu chưa đúng. Bạn kiểm tra lại giúp Nami nhé.',
+            'Email hoặc mật khẩu chưa đúng. Bạn kiểm tra lại giúp Nabinhé.',
       );
     }
 
@@ -260,7 +260,7 @@ class SupabaseAuthRepository implements AuthRepository {
       return const AuthFailure(
         code: AuthFailureCode.network,
         userMessage:
-            'Nami chưa kết nối được lúc này. Bạn thử lại sau một chút nhé.',
+            'Nabichưa kết nối được lúc này. Bạn thử lại sau một chút nhé.',
       );
     }
 
@@ -269,7 +269,7 @@ class SupabaseAuthRepository implements AuthRepository {
 
   AuthFailure _genericFailure([
     String message =
-        'Nami chưa thể xử lý yêu cầu lúc này. Mình thử lại sau một chút nhé.',
+        'Nabichưa thể xử lý yêu cầu lúc này. Mình thử lại sau một chút nhé.',
   ]) {
     return AuthFailure(code: AuthFailureCode.unknown, userMessage: message);
   }
