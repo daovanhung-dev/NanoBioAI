@@ -1,0 +1,11 @@
+--- /mnt/data/work_nabi_fix/patch/lib/features/nabi/application/nabi_expression_resolver.dart	2026-06-22 16:36:27.000000000 +0000
++++ /mnt/data/work_nabi_fix/hotfix/lib/features/nabi/application/nabi_expression_resolver.dart	2026-06-22 16:44:40.141049722 +0000
+@@ -112,7 +112,7 @@
+           emotion: NabiEmotion.concerned,
+           bubbleText: 'NaBi chưa cập nhật được. Dữ liệu của bạn vẫn an toàn nhé.',
+         ),
+-      NabiEvent.formNeedsAttention => const NabiResolvedPresentation(
++      NabiEvent.formNeedsAttention => NabiResolvedPresentation(
+           context: fallbackContext,
+           emotion: NabiEmotion.concerned,
+           bubbleText: 'Mình xem lại một chút để kết quả chính xác hơn nhé.',
