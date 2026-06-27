@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create DD from BD"
+  short_description: "Creates NanoBio DD modules from BD sources."
+  default_prompt: "Use $create-dd-from-bd to create or update a NanoBio module DD from the provided BD source."

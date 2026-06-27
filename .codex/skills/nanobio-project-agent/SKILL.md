@@ -14,7 +14,8 @@ Canonical project-local skill. The repo-discovered wrapper at `.agents/skills/na
 3. Select exactly one workflow from `.codex/workflows/` based on the user request.
 4. Read `.codex/task-skills/README.md` and the matching generated task-skill if present.
 5. Read only the matching domain file from `.codex/domains/` unless the workflow says otherwise.
-6. If the user only says "doc context" or "read .codex" without a work type, follow `.codex/workflows/context-read.md`.
+6. If the selected task is creating or updating a module DD from BD, read `.codex/skills/create-dd-from-bd/SKILL.md`.
+7. If the user only says "doc context" or "read .codex" without a work type, follow `.codex/workflows/context-read.md`.
 
 ## Workflow Selection
 
@@ -30,7 +31,7 @@ Core workflows:
 - `find-issues`: audit/review and create issue docs, no code fixes.
 - `create-issues`: convert findings to issue docs.
 - `create-todo`: convert issue docs to todo docs.
-- `docs-dd`: create/update/read DD from BD.
+- `docs-dd`: create/update/read DD from BD. For module DD creation, use the `create-dd-from-bd` project skill.
 - `docs-context`: update .codex, project docs, checklists, maps, or context rules.
 - `refactor-scaffold`: restructure version/module scaffolds.
 - `supabase-schema`: work on Supabase SQL/RLS/membership/family/sale schema docs.

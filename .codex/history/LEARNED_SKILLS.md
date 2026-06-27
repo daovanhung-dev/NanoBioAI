@@ -4,11 +4,11 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- docs-context - Context and docs update: 11 worklog(s)
+- docs-context - Context and docs update: 13 worklog(s)
 - coding - Coding: 7 worklog(s)
 - bugfix - Direct bugfix: 5 worklog(s)
+- supabase-schema - Supabase schema and RLS: 3 worklog(s)
 - docs-dd - Design docs: 3 worklog(s)
-- supabase-schema - Supabase schema and RLS: 2 worklog(s)
 - refactor-scaffold - Scaffold refactor: 1 worklog(s)
 - find-issues - Review and find issues: 1 worklog(s)
 - create-todo - Create todo docs: 1 worklog(s)
@@ -16,18 +16,18 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 2
+- unknown: 4
+- .codex: 2
 - docs/issues, docs/todo: 2
 - authentication: 2
-- `.codex`: 2
-- `.codex`, workflow router, domain context, worklog learning, project skill.: 1
 - Product Flow, Membership, Quota, FamilyPlus, Sale/referral, DD workflow.: 1
-- `.codex`, history learning, task-skills, project skill: 1
+- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
+- .codex, workflow router, domain context, worklog learning, project skill.: 1
+- .codex, root AGENTS.md, .agents skill bridge: 1
 - Authentication v2, Settings account security: 1
 - v1 onboarding/splash/dashboard, v2 auth/membership/cloud sync, Supabase docs.: 1
-- `docs/DD/product_flow`, `docs/checklist`: 1
-- `docs/DD/product_flow`, `docs/checklist/checklist_develop_DD.md`, source access/membership/quota/v3/sale.: 1
-- DB local, Supabase draft, `lib/app_versions/v1`, `lib/app_versions/v2`, `lib/app_versions/v3`, `lib/sale_referral`: 1
+- docs/DD/product_flow, docs/checklist: 1
+- docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
 
 ## Reusable Project Skills
 

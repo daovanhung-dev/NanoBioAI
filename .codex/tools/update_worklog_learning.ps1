@@ -193,6 +193,12 @@ function Escape-MarkdownInlineText {
   return $escaped
 }
 
+function Strip-MarkdownCodeSpans {
+  param([string]$Text)
+  if ($null -eq $Text) { return "" }
+  return ($Text -replace '`([^`]+)`', '$1')
+}
+
 function Get-ProjectRelativePath {
   param([Parameter(Mandatory = $true)][string]$Path)
   $full = (Resolve-Path $Path).Path
@@ -226,15 +232,15 @@ foreach ($file in $files) {
   if ([string]::IsNullOrWhiteSpace($title)) {
     $title = [IO.Path]::GetFileNameWithoutExtension($file.Name)
   }
-  $date = Normalize-ContextText (Value-AfterColon (Get-FirstMatch $lines "^- Ng.*y:"))
+  $date = Normalize-ContextText (Value-AfterColon (Get-FirstMatch $lines "^-\s*(Ng.*y|Date):"))
   if ([string]::IsNullOrWhiteSpace($date)) {
     $date = ($relative -split "/")[2]
   }
-  $type = Normalize-ContextText (Value-AfterColon (Get-FirstMatch $lines "^- Lo.*task:"))
+  $type = Strip-MarkdownCodeSpans (Normalize-ContextText (Value-AfterColon (Get-FirstMatch $lines "^-\s*(Lo.*task|Task type):")))
   if ([string]::IsNullOrWhiteSpace($type)) { $type = "unknown" }
-  $module = Normalize-ContextText (Value-AfterColon (Get-FirstMatch $lines "^- Module ch.*:"))
+  $module = Strip-MarkdownCodeSpans (Normalize-ContextText (Value-AfterColon (Get-FirstMatch $lines "^-\s*(Module ch.*|Main module):")))
   if ([string]::IsNullOrWhiteSpace($module)) { $module = "unknown" }
-  $request = Normalize-ContextText (Value-AfterColon (Get-FirstMatch $lines "^- Y.*u c.*u.*:"))
+  $request = Strip-MarkdownCodeSpans (Normalize-ContextText (Value-AfterColon (Get-FirstMatch $lines "^-\s*(Y.*u c.*u.*|Original request):")))
   $taskKey = Get-CanonicalTaskKey -TaskType $type -Module $module -Title $title -Path $relative -Request $request
 
   $entries += [pscustomobject]@{

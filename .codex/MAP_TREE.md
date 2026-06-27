@@ -13,7 +13,9 @@ project inventory. Use `rg --files` for the current truth.
 - Docs/context workflow: `.codex/workflows/docs-context.md`
 - Worklog rules: `.codex/DOCS_WORKFLOW.md`
 - Project-local skill: `.codex/skills/nanobio-project-agent/SKILL.md`
+- Project-local DD creation skill: `.codex/skills/create-dd-from-bd/SKILL.md`
 - Repo-discovered skill bridge: `.agents/skills/nanobio-project-agent/SKILL.md`
+- Repo-discovered DD creation bridge: `.agents/skills/create-dd-from-bd/SKILL.md`
 
 ## .codex Layout
 
@@ -22,6 +24,7 @@ project inventory. Use `rg --files` for the current truth.
 - `.codex/task-skills/`: generated canonical task skills.
 - `.codex/history/`: generated memory from worklogs.
 - `.codex/skills/nanobio-project-agent/`: canonical project skill and references.
+- `.codex/skills/create-dd-from-bd/`: canonical DD-from-BD skill and reference.
 - `.codex/tools/`: context/history validation and refresh scripts.
 - `.codex/tool/`: Flutter/Dart validation wrappers.
 - `.codex/playbooks/` and `.codex/workRule/`: legacy aliases only; not default context.

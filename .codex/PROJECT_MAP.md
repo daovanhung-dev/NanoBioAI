@@ -80,10 +80,10 @@ rg --files -g '!build/**' -g '!.dart_tool/**' -g '!.git/**'
 ## Docs Routing
 
 - Product flow BD: `docs/BD/project_flow/BD_Product_Flow_Membership_Sale.md`
-- Product flow DD: `docs/DD/product_flow/00_READ_FIRST.md`
+- DD creation guide: `docs/DD/DD_Module_Creation_Guide_EN.md`
+- DD module template: `docs/DD/DD_Module_Template/README.md`
 - Auth BD: `docs/BD/authentication/BD_Authentication_Registration_Login_NanoBio.md`
-- Auth DD: `docs/DD/authentication/00_READ_FIRST.md`
 - DD checklist: `docs/checklist/checklist_create_DD.md`
 - Supabase context: `docs/supabase/README.md`
 
-Product flow DD still has open decisions Q-01..Q-10. Do not implement dependent behavior as final while those decisions remain open.
+Legacy product-flow/auth DD folders are not present in the current working tree. Create or update module DDs through the live DD guide/template unless the user provides a specific existing DD path.

@@ -11,9 +11,9 @@
 
 ## Common Modules
 
-- `docs/DD/product_flow`, `docs/checklist/checklist_develop_DD.md`, source access/membership/quota/v3/sale.: 1
-- `docs/DD/product_flow`, `docs/checklist`: 1
-- `docs/DD`: 1
+- docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
+- docs/DD/product_flow, docs/checklist: 1
+- docs/DD: 1
 
 ## Work Pattern
 
@@ -31,6 +31,6 @@
 
 ## Source Worklogs
 
-- [Worklog - DD redesign](../../docs/worklog/2026-06-19/008-worklog-dd-redesign.md) - `docs/DD`
-- [Worklog - DD incomplete functions checklist](../../docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md) - `docs/DD/product_flow`, `docs/checklist`
-- [Worklog - DD develop checklist](../../docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md) - `docs/DD/product_flow`, `docs/checklist/checklist_develop_DD.md`, source access/membership/quota/v3/sale.
+- [Worklog - DD redesign](../../docs/worklog/2026-06-19/008-worklog-dd-redesign.md) - docs/DD
+- [Worklog - DD incomplete functions checklist](../../docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md) - docs/DD/product_flow, docs/checklist
+- [Worklog - DD develop checklist](../../docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md) - docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.

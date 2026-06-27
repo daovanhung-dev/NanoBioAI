@@ -27,7 +27,7 @@ Read `.codex/history/OPEN_RISKS.md` only for release readiness, auth, Supabase, 
 | audit, review, find bugs | `find-issues.md` |
 | create issue docs | `create-issues.md` |
 | create todo from issues | `create-todo.md` |
-| create/update/read DD from BD | `docs-dd.md` |
+| create/update/read DD from BD, create module DD from business request | `docs-dd.md`; also load `.codex/skills/create-dd-from-bd/SKILL.md` for module DD creation |
 | update .codex/docs/checklist/project map/history | `docs-context.md` |
 | scaffold/refactor version folders | `refactor-scaffold.md` |
 | Supabase SQL/RLS/membership/quota/family/sale schema | `supabase-schema.md` |

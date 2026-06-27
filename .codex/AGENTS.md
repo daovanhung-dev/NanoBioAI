@@ -48,6 +48,8 @@ Do not mix modes unless the user explicitly asks for a chain.
 
 After choosing the workflow, read `.codex/task-skills/README.md` and then the matching task file if present. If no exact task key exists, continue with the workflow and record the missing/needed task-skill in the worklog self-review.
 
+For user requests that create or update a module DD from BD/BRD/product-flow sources, also read `.codex/skills/create-dd-from-bd/SKILL.md` after selecting the `docs-dd` workflow.
+
 Before expanding context, ask and answer: how can this task use fewer tokens while producing equal or better work? Prefer router files, indexes, `rg`, and targeted file reads before raw directories, raw worklogs, all DD files, or broad test output.
 
 Read `.codex/history/OPEN_RISKS.md` only when the task touches release readiness, auth, Supabase, DD status, or testing.

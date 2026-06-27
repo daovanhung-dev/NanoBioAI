@@ -2,16 +2,18 @@
 
 - Canonical key: supabase-schema
 - Workflow: .codex/workflows/supabase-schema.md
-- Generated from 2 worklog(s).
+- Generated from 3 worklog(s).
 
 ## When To Read
 
+- Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)
 - Historical task type: docs-context / audit checklist (1)
 - Historical task type: docs/coding (1)
 
 ## Common Modules
 
-- DB local, Supabase draft, `lib/app_versions/v1`, `lib/app_versions/v2`, `lib/app_versions/v3`, `lib/sale_referral`: 1
+- unknown: 1
+- DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
 - Supabase database, membership, quota, FamilyPlus, Sale/referral: 1
 
 ## Work Pattern
@@ -31,4 +33,5 @@
 ## Source Worklogs
 
 - [Worklog - Supabase database draft](../../docs/worklog/2026-06-21/002-worklog-supabase-database-draft.md) - Supabase database, membership, quota, FamilyPlus, Sale/referral
-- [Worklog - Audit module va flow san pham](../../docs/worklog/2026-06-22/006-worklog-module-flow-audit.md) - DB local, Supabase draft, `lib/app_versions/v1`, `lib/app_versions/v2`, `lib/app_versions/v3`, `lib/sale_referral`
+- [Worklog - Audit module va flow san pham](../../docs/worklog/2026-06-22/006-worklog-module-flow-audit.md) - DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral
+- [Worklog - Cloud Sync Va Sale Interface](../../docs/worklog/2026-06-22/009-worklog-cloud-sync-sale.md) - unknown
