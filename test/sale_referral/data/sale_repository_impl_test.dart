@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/sale_referral/data/datasources/sale_remote_datasource.dart';
 import 'package:nano_app/sale_referral/data/repositories/sale_repository_impl.dart';
+import 'package:nano_app/sale_referral/domain/entities/sale_models.dart';
 
 void main() {
   group('SaleRepositoryImpl', () {
@@ -76,6 +77,32 @@ void main() {
       expect(result.success, isTrue);
       expect(result.referrerDisplayName, 'Sale A');
     });
+
+    test('passes conversion idempotency key and maps request result', () async {
+      final datasource = _FakeSaleRemoteDatasource(
+        conversionResult: {
+          'id': 'conversion-1',
+          'requested_point_cents': 10000,
+          'money_amount_cents': 10000,
+          'currency': 'VND',
+          'status': 'requested',
+        },
+      );
+      final repository = SaleRepositoryImpl(datasource: datasource);
+
+      final result = await repository.requestConversion(
+        const SaleConversionCommand(
+          pointCents: 10000,
+          idempotencyKey: 'stable-key',
+        ),
+      );
+
+      expect(datasource.requestedPointCents, 10000);
+      expect(datasource.requestedIdempotencyKey, 'stable-key');
+      expect(result.id, 'conversion-1');
+      expect(result.requestedPointCents, 10000);
+      expect(result.status, 'requested');
+    });
   });
 }
 
@@ -84,12 +111,16 @@ class _FakeSaleRemoteDatasource implements SaleRemoteDatasource {
   final Object? customers;
   final Object? ledger;
   final Object? attachResult;
+  final Object? conversionResult;
+  int? requestedPointCents;
+  String? requestedIdempotencyKey;
 
-  const _FakeSaleRemoteDatasource({
+  _FakeSaleRemoteDatasource({
     this.dashboard,
     this.customers,
     this.ledger,
     this.attachResult,
+    this.conversionResult,
   });
 
   @override
@@ -124,11 +155,14 @@ class _FakeSaleRemoteDatasource implements SaleRemoteDatasource {
     required int pointCents,
     required String idempotencyKey,
   }) async {
-    return {
-      'id': 'conversion-1',
-      'requested_point_cents': pointCents,
-      'money_amount_cents': pointCents,
-      'status': 'requested',
-    };
+    requestedPointCents = pointCents;
+    requestedIdempotencyKey = idempotencyKey;
+    return conversionResult ??
+        {
+          'id': 'conversion-1',
+          'requested_point_cents': pointCents,
+          'money_amount_cents': pointCents,
+          'status': 'requested',
+        };
   }
 }

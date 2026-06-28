@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/data/datasources/admin_supabase_datasource.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
+import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 
 void main() {
   group('AdminSession', () {
@@ -42,6 +44,32 @@ void main() {
 
       expect(command.reason, isNotEmpty);
       expect(command.idempotencyKey, startsWith('payments-'));
+    });
+
+    test('maps Sale conversion queue to review RPC and params', () {
+      const command = AdminMutationCommand(
+        section: AdminPanelSection.saleConversions,
+        action: 'mark_paid',
+        targetId: 'conversion-id',
+        reason: 'Finance confirmed payout.',
+        idempotencyKey: 'sale-conversions-conversion-id-1',
+      );
+
+      expect(
+        adminListRpcForSection(AdminPanelSection.saleConversions),
+        'admin_list_sale_point_conversions',
+      );
+      expect(
+        adminRpcFunctionFor(command),
+        'admin_review_sale_point_conversion',
+      );
+      expect(adminRpcParamsFor(command), {
+        'p_reason': 'Finance confirmed payout.',
+        'p_idempotency_key': 'sale-conversions-conversion-id-1',
+        'p_conversion_id': 'conversion-id',
+        'p_decision': 'mark_paid',
+      });
+      expect(AdminRoutePaths.saleConversions, '/admin/sale-conversions');
     });
   });
 }

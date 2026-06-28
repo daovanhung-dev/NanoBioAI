@@ -551,19 +551,12 @@ class _ConversionHistory extends StatelessWidget {
 class _EstimateLine extends StatelessWidget {
   final String label;
   final String value;
-  final bool emphasized;
 
-  const _EstimateLine({
-    required this.label,
-    required this.value,
-    this.emphasized = false,
-  });
+  const _EstimateLine({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
-    final style = emphasized
-        ? AppTextStyles.labelLarge.copyWith(color: AppColors.primary)
-        : AppTextStyles.bodyMedium;
+    final style = AppTextStyles.bodyMedium;
     return Row(
       children: [
         Expanded(child: Text(label, style: style)),

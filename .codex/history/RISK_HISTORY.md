@@ -276,3 +276,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - Can kiem tra tiep: Khi Q-14/Q-15 va Supabase/FamilyPlus contract duoc chot, can them cloud sync/subject/consent acceptance tests.
 - docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - Can kiem tra tiep: Worktree da co nhieu thay doi onboarding/Nabi/cloud-sync truoc phien nay; khong revert cac thay doi khong thuoc M01 safe hardening.
 - docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - Bang chung kiem chung: onboarding tests, storage/cloud-sync targeted tests, architecture tests; quick check fail duoc ghi ro.
+- docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md :: - Mo rong Sale widget tests cho pending/suspended/closed state, active dashboard, conversion disabled/enabled, duplicate submit guard, failed retry giu cung idempotency key, va estimator local khong con hien.
+- docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md :: - Chua fix: SQL 12 chua chay tren Supabase sandbox/staging; khong claim production-ready.
+- docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md :: - Chua fix: Payout provider, tax/invoice, refund/chargeback, reconciliation policy va Q-02..Q-10/Q-13 van open theo DD.
+- docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md :: - Can kiem tra tiep: Sandbox smoke user A/B/Admin cho request Sale, approve/reject/suspend, attach referral code, request/review conversion, RLS cross-user.

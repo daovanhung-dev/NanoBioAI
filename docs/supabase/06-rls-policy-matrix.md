@@ -25,7 +25,7 @@ Commit de xuat: docs(supabase): cap nhat ma tran rls
 | `payment_events` | Payer doc giao dich cua minh | Khong | Webhook/backend/Admin ghi | Khong tin Flutter bao thanh toan thanh cong |
 | `commission_rates` | Authenticated user doc rate active | Khong | Migration/Admin ghi | Direct-only 10% |
 | `commission_records` | Receiver doc diem Sale cua minh | Khong | Trigger/backend/Admin ghi | Chi tao tu payment event hop le |
-| `sale_point_conversions` | Sale doc yeu cau quy doi cua minh; Admin finance doc qua permission | Khong ghi bang truc tiep | Sale/Admin RPC co config, idempotency va audit | Khong tich hop payout provider that trong app |
+| `sale_point_conversions` | Sale doc yeu cau quy doi cua minh; Admin co `sales.write` doc qua queue RPC | Khong ghi bang truc tiep | Sale/Admin RPC co config, idempotency va audit | Khong tich hop payout provider that trong app |
 | Admin roles/config/audit | Admin co permission doc | Khong | Super/Admin RPC ghi | Moi write nhay cam can audit |
 
 ## Quy tac trien khai app

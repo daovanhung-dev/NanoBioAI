@@ -72,6 +72,46 @@ void main() {
       }
     });
 
+    test('keeps Sale conversion review under sales.write permission', () {
+      final sql = File(
+        'docs/supabase/12-sale-module-update.sql',
+      ).readAsStringSync();
+
+      expect(sql, contains("public.admin_assert_permission('sales.write')"));
+      expect(sql, contains("public.admin_has_permission('sales.write')"));
+      expect(
+        sql,
+        isNot(contains("public.admin_has_permission('payments.write')")),
+      );
+    });
+
+    test('revokes direct client writes to Sale financial tables', () {
+      final sql = [
+        File(
+          'docs/supabase/05-sale-referral-commission.sql',
+        ).readAsStringSync(),
+        File('docs/supabase/12-sale-module-update.sql').readAsStringSync(),
+      ].join('\n');
+
+      for (final table in [
+        'public.sale_profiles',
+        'public.referral_relationships',
+        'public.payment_events',
+        'public.commission_records',
+        'public.sale_point_conversions',
+      ]) {
+        expect(sql, contains(table), reason: table);
+      }
+
+      expect(
+        sql,
+        contains('revoke insert, update, delete on'),
+        reason:
+            'Server-owned Sale/payment tables must not be writable by Flutter.',
+      );
+      expect(sql, contains('from anon, authenticated'));
+    });
+
     test('documents the Sale SQL update in Supabase run order', () {
       final readme = File('docs/supabase/README.md').readAsStringSync();
       final checks = File(

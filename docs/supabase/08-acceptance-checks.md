@@ -55,7 +55,7 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
   `sale_point_conversions`.
 - [ ] Khi `sale_point_conversion.enabled = false` hoac thieu config, Sale UI
   chi hien trang thai chua mo quy doi; khi bat config thi Sale tao duoc yeu cau
-  quy doi va Finance/Admin duyet qua RPC co audit.
+  quy doi va Admin co `sales.write` duyet qua RPC co audit.
 - [ ] Sale UI doc cloud RPC truc tiep, khong luu payment/referral/commission
   trong SQLite.
 
