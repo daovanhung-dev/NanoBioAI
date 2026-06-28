@@ -5,8 +5,8 @@ class SaleCommissionFeature {
   static const productAxis = 'sale-referral';
 
   static const responsibilities = <String>[
-    'Represent direct 10% and second-level 5% commission records.',
-    'Cap commission depth at two levels from the paying user.',
+    'Represent direct 10% commission records.',
+    'Keep commission depth to the direct referred customer only.',
     'Create commission only from trusted successful payment events.',
     'Keep payout and accounting workflows out of Flutter client code.',
   ];

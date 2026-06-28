@@ -23,9 +23,9 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
     return state.when(
       loading: () => const _SaleLoading(),
       error: (_, __) => _SaleSupportPage(
-        title: 'Chưa mở được giao diện Sale',
+        title: 'Chua mo duoc giao dien Sale',
         message:
-            'Nabichưa kiểm tra được trạng thái Sale của bạn. Vui lòng thử lại sau.',
+            'Nabi chua kiem tra duoc trang thai Sale. Ban thu lam moi lai nhe.',
         onRetry: _refreshAll,
       ),
       data: (saleState) {
@@ -38,7 +38,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
         }
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF7FAFC),
+          backgroundColor: AppColors.background,
           appBar: AppBar(
             title: const Text('NabiSale'),
             backgroundColor: Colors.white,
@@ -46,7 +46,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
             elevation: 0,
             actions: [
               IconButton(
-                tooltip: 'Làm mới',
+                tooltip: 'Lam moi',
                 onPressed: _refreshAll,
                 icon: const Icon(Icons.refresh_rounded),
               ),
@@ -67,19 +67,19 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
             destinations: const [
               NavigationDestination(
                 icon: Icon(Icons.space_dashboard_rounded),
-                label: 'Tổng quan',
+                label: 'Tong quan',
               ),
               NavigationDestination(
-                icon: Icon(Icons.account_tree_rounded),
-                label: 'Mạng lưới',
+                icon: Icon(Icons.person_add_alt_1_rounded),
+                label: 'Truc tiep',
               ),
               NavigationDestination(
                 icon: Icon(Icons.leaderboard_rounded),
-                label: 'Xếp hạng',
+                label: 'Xep hang',
               ),
               NavigationDestination(
                 icon: Icon(Icons.handyman_rounded),
-                label: 'Công cụ',
+                label: 'Cong cu',
               ),
             ],
           ),
@@ -96,31 +96,25 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
   }
 
   String _inactiveTitle(SaleStatus status) {
-    switch (status) {
-      case SaleStatus.pending:
-        return 'Hồ sơ Sale đang được cập nhật';
-      case SaleStatus.suspended:
-        return 'Tài khoản Sale đang tạm khóa';
-      case SaleStatus.closed:
-        return 'Tài khoản Sale đã đóng';
-      case SaleStatus.none:
-      case SaleStatus.active:
-        return 'Bạn chưa có quyền Sale';
-    }
+    return switch (status) {
+      SaleStatus.pending => 'Ho so Sale dang duoc cap nhat',
+      SaleStatus.suspended => 'Tai khoan Sale dang tam khoa',
+      SaleStatus.closed => 'Tai khoan Sale da dong',
+      SaleStatus.none || SaleStatus.active => 'Ban chua co quyen Sale',
+    };
   }
 
   String _inactiveMessage(SaleStatus status) {
-    switch (status) {
-      case SaleStatus.pending:
-        return 'Nabiđang cập nhật quyền Sale của bạn. Hãy làm mới lại sau ít phút.';
-      case SaleStatus.suspended:
-        return 'Bạn cần liên hệ hỗ trợ để kiểm tra lý do tạm khóa trước khi tiếp tục.';
-      case SaleStatus.closed:
-        return 'Trạng thái Sale đã đóng. Vui lòng liên hệ hỗ trợ nếu cần mở lại.';
-      case SaleStatus.none:
-      case SaleStatus.active:
-        return 'Vào Cài đặt > Cùng Nabiphát triển để đọc và chấp nhận điều lệ Sale.';
-    }
+    return switch (status) {
+      SaleStatus.pending =>
+        'Nabi dang cap nhat quyen Sale cua ban. Hay lam moi lai sau it phut.',
+      SaleStatus.suspended =>
+        'Ban can lien he ho tro de kiem tra ly do tam khoa truoc khi tiep tuc.',
+      SaleStatus.closed =>
+        'Trang thai Sale da dong. Vui long lien he ho tro neu can mo lai.',
+      SaleStatus.none || SaleStatus.active =>
+        'Vao Cai dat > Cung Nabi phat trien de doc va chap nhan dieu le Sale.',
+    };
   }
 }
 
@@ -136,19 +130,19 @@ class _OverviewTab extends ConsumerWidget {
       child: summary.when(
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
-          title: 'Chưa tải được tổng quan',
+          title: 'Chua tai duoc tong quan',
           message:
-              'Dữ liệu Sale được đọc trực tiếp từ Supabase. Bạn thử làm mới lại nhé.',
+              'Du lieu Sale duoc doc truc tiep tu Supabase. Ban thu lam moi lai nhe.',
         ),
         data: (data) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _HeroPanel(
-                title: 'Tổng quan Sale',
+                title: 'Tong quan Sale',
                 subtitle: state.referralCode == null
-                    ? 'Mã giới thiệu sẽ hiển thị sau khi hệ thống cấp.'
-                    : 'Mã giới thiệu: ${state.referralCode}',
+                    ? 'Ma gioi thieu se hien thi sau khi he thong cap.'
+                    : 'Ma gioi thieu: ${state.referralCode}',
               ),
               const SizedBox(height: AppSpacing.lg),
               GridView.count(
@@ -160,24 +154,24 @@ class _OverviewTab extends ConsumerWidget {
                 childAspectRatio: 1.25,
                 children: [
                   _MetricTile(
-                    label: 'Tầng 1',
+                    label: 'Truc tiep',
                     value: data.directReferrals.toString(),
                     icon: Icons.group_rounded,
                   ),
                   _MetricTile(
-                    label: 'Tầng 2',
-                    value: data.secondLevelReferrals.toString(),
-                    icon: Icons.hub_rounded,
-                  ),
-                  _MetricTile(
-                    label: 'Đang chờ',
+                    label: 'Dang cho',
                     value: _money(data.pendingCommissionCents, data.currency),
                     icon: Icons.pending_actions_rounded,
                   ),
                   _MetricTile(
-                    label: 'Đã duyệt',
+                    label: 'Da duyet',
                     value: _money(data.approvedCommissionCents, data.currency),
                     icon: Icons.verified_rounded,
+                  ),
+                  _MetricTile(
+                    label: 'Da chi tra',
+                    value: _money(data.paidCommissionCents, data.currency),
+                    icon: Icons.account_balance_wallet_rounded,
                   ),
                 ],
               ),
@@ -199,15 +193,15 @@ class _NetworkTab extends ConsumerWidget {
       child: tree.when(
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
-          title: 'Chưa tải được mạng lưới',
-          message: 'Nabichỉ hiển thị dữ liệu referral được Supabase cho phép.',
+          title: 'Chua tai duoc danh sach truc tiep',
+          message: 'Nabi chi hien thi du lieu referral duoc Supabase cho phep.',
         ),
         data: (nodes) {
           if (nodes.isEmpty) {
             return const _EmptySaleState(
-              title: 'Chưa có người trong mạng lưới',
+              title: 'Chua co khach truc tiep',
               message:
-                  'Khi có người dùng hợp lệ trong tầng 1 hoặc tầng 2, danh sách sẽ xuất hiện tại đây.',
+                  'Khi co khach duoc gioi thieu truc tiep hop le, danh sach se hien thi tai day.',
             );
           }
 
@@ -215,12 +209,10 @@ class _NetworkTab extends ConsumerWidget {
             children: nodes
                 .map(
                   (node) => _ListTilePanel(
-                    icon: node.level == 1
-                        ? Icons.person_add_alt_1_rounded
-                        : Icons.groups_2_rounded,
-                    title: 'Tầng ${node.level} · ${node.displayName}',
+                    icon: Icons.person_add_alt_1_rounded,
+                    title: 'Truc tiep - ${node.displayName}',
                     subtitle:
-                        '${node.successfulPayments} thanh toán hợp lệ được ghi nhận',
+                        '${node.successfulPayments} thanh toan hop le duoc ghi nhan',
                   ),
                 )
                 .toList(),
@@ -241,16 +233,16 @@ class _LeaderboardTab extends ConsumerWidget {
       child: leaderboard.when(
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
-          title: 'Chưa tải được xếp hạng',
+          title: 'Chua tai duoc xep hang',
           message:
-              'Bảng xếp hạng được tính từ Supabase và có thể được giới hạn theo chính sách hiển thị.',
+              'Bang xep hang duoc tinh tu Supabase va co the gioi han theo chinh sach hien thi.',
         ),
         data: (entries) {
           if (entries.isEmpty) {
             return const _EmptySaleState(
-              title: 'Chưa có dữ liệu xếp hạng',
+              title: 'Chua co du lieu xep hang',
               message:
-                  'Bảng xếp hạng sẽ xuất hiện khi hệ thống có dữ liệu Sale hợp lệ.',
+                  'Bang xep hang se hien thi khi he thong co du lieu Sale hop le.',
             );
           }
 
@@ -259,9 +251,9 @@ class _LeaderboardTab extends ConsumerWidget {
                 .map(
                   (entry) => _ListTilePanel(
                     icon: Icons.emoji_events_rounded,
-                    title: '#${entry.rank} · ${entry.displayName}',
+                    title: '#${entry.rank} - ${entry.displayName}',
                     subtitle:
-                        '${entry.directReferrals} giới thiệu trực tiếp · ${_money(entry.approvedCommissionCents, entry.currency)} đã duyệt',
+                        '${entry.directReferrals} gioi thieu truc tiep - ${_money(entry.approvedCommissionCents, entry.currency)} da duyet',
                   ),
                 )
                 .toList(),
@@ -284,13 +276,11 @@ class _ToolsTab extends StatefulWidget {
 class _ToolsTabState extends State<_ToolsTab> {
   final _amountController = TextEditingController(text: '99000');
   final _directController = TextEditingController(text: '0');
-  final _secondController = TextEditingController(text: '0');
 
   @override
   void dispose() {
     _amountController.dispose();
     _directController.dispose();
-    _secondController.dispose();
     super.dispose();
   }
 
@@ -300,16 +290,16 @@ class _ToolsTabState extends State<_ToolsTab> {
     final estimate = SaleCommissionCalculator.estimate(
       planAmountCents: _parseAmountToCents(_amountController.text),
       directSuccessfulPayments: _parseInt(_directController.text),
-      secondLevelSuccessfulPayments: _parseInt(_secondController.text),
     );
+
     return _SaleScroll(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _HeroPanel(
-            title: 'Công cụ Sale',
+          const _HeroPanel(
+            title: 'Cong cu Sale',
             subtitle:
-                'Dữ liệu Sale được đọc trực tiếp từ Supabase và không lưu vào SQLite.',
+                'Du lieu Sale duoc doc truc tiep tu Supabase va khong luu vao SQLite.',
           ),
           const SizedBox(height: AppSpacing.lg),
           Container(
@@ -319,10 +309,10 @@ class _ToolsTabState extends State<_ToolsTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Mã giới thiệu', style: AppTextStyles.labelLarge),
+                Text('Ma gioi thieu', style: AppTextStyles.labelLarge),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  referralCode ?? 'Chưa có mã đang hoạt động',
+                  referralCode ?? 'Chua co ma dang hoat dong',
                   style: AppTextStyles.heading2.copyWith(
                     color: AppColors.primary,
                   ),
@@ -337,7 +327,7 @@ class _ToolsTabState extends State<_ToolsTab> {
                           );
                         },
                   icon: const Icon(Icons.copy_rounded),
-                  label: const Text('Sao chép mã'),
+                  label: const Text('Sao chep ma'),
                 ),
               ],
             ),
@@ -346,14 +336,13 @@ class _ToolsTabState extends State<_ToolsTab> {
           _CommissionEstimator(
             amountController: _amountController,
             directController: _directController,
-            secondController: _secondController,
             estimate: estimate,
             onChanged: () => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.lg),
           _ListTilePanel(
             icon: Icons.policy_rounded,
-            title: 'Điều lệ phiên bản ${SaleTerms.currentVersion}',
+            title: 'Dieu le phien ban ${SaleTerms.currentVersion}',
             subtitle: SaleTerms.bullets.first,
           ),
         ],
@@ -370,14 +359,12 @@ int _parseAmountToCents(String value) => _parseInt(value);
 class _CommissionEstimator extends StatelessWidget {
   final TextEditingController amountController;
   final TextEditingController directController;
-  final TextEditingController secondController;
   final SaleCommissionEstimate estimate;
   final VoidCallback onChanged;
 
   const _CommissionEstimator({
     required this.amountController,
     required this.directController,
-    required this.secondController,
     required this.estimate,
     required this.onChanged,
   });
@@ -391,10 +378,10 @@ class _CommissionEstimator extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Ước tính hoa hồng', style: AppTextStyles.labelLarge),
+          Text('Uoc tinh hoa hong', style: AppTextStyles.labelLarge),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Công cụ này chỉ giúp bạn hình dung. Số chính thức do Supabase đối soát từ giao dịch hợp lệ.',
+            'Cong cu nay chi giup ban hinh dung. So chinh thuc do Supabase doi soat tu giao dich hop le.',
             style: AppTextStyles.bodySmall.copyWith(height: 1.45),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -404,59 +391,35 @@ class _CommissionEstimator extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: (_) => onChanged(),
             decoration: const InputDecoration(
-              labelText: 'Giá trị một thanh toán hợp lệ (VND)',
+              labelText: 'Gia tri mot thanh toan hop le (VND)',
               prefixIcon: Icon(Icons.payments_rounded),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: directController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (_) => onChanged(),
-                  decoration: const InputDecoration(
-                    labelText: 'Tầng 1',
-                    prefixIcon: Icon(Icons.looks_one_rounded),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: TextField(
-                  controller: secondController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (_) => onChanged(),
-                  decoration: const InputDecoration(
-                    labelText: 'Tầng 2',
-                    prefixIcon: Icon(Icons.looks_two_rounded),
-                  ),
-                ),
-              ),
-            ],
+          TextField(
+            controller: directController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (_) => onChanged(),
+            decoration: const InputDecoration(
+              labelText: 'So thanh toan truc tiep hop le',
+              prefixIcon: Icon(Icons.person_add_alt_1_rounded),
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           _EstimateLine(
-            label: 'Tầng 1 (10%)',
+            label: 'Truc tiep (10%)',
             value: _money(estimate.directCommissionCents, 'VND'),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _EstimateLine(
-            label: 'Tầng 2 (5%)',
-            value: _money(estimate.secondLevelCommissionCents, 'VND'),
           ),
           const Divider(height: AppSpacing.lg),
           _EstimateLine(
-            label: 'Tổng ước tính',
+            label: 'Tong uoc tinh',
             value: _money(estimate.totalCommissionCents, 'VND'),
             emphasized: true,
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Không phải cam kết thu nhập. Hoa hồng có thể thay đổi hoặc đảo ngược khi hoàn tiền, tranh chấp hay vi phạm điều lệ.',
+            'Khong phai cam ket thu nhap. Hoa hong co the thay doi hoac dao nguoc khi hoan tien, tranh chap hay vi pham dieu le.',
             style: AppTextStyles.bodySmall.copyWith(height: 1.45),
           ),
         ],
@@ -516,10 +479,8 @@ class _HeroPanel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F766E), Color(0xFF2563EB)],
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -673,7 +634,7 @@ class _SaleLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFFF7FAFC),
+      backgroundColor: AppColors.background,
       body: Center(child: CircularProgressIndicator()),
     );
   }
@@ -693,7 +654,7 @@ class _SaleSupportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAFC),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -731,7 +692,7 @@ class _SaleSupportPage extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Kiểm tra lại'),
+                    label: const Text('Kiem tra lai'),
                   ),
                 ],
               ),
@@ -746,7 +707,7 @@ class _SaleSupportPage extends StatelessWidget {
 BoxDecoration _panelDecoration() {
   return BoxDecoration(
     color: Colors.white,
-    borderRadius: BorderRadius.circular(AppRadius.lg),
+    borderRadius: BorderRadius.circular(AppRadius.sm),
     border: Border.all(color: AppColors.borderLight),
   );
 }

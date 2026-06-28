@@ -35,7 +35,6 @@ class SaleState {
 
 class SaleDashboardSummary {
   final int directReferrals;
-  final int secondLevelReferrals;
   final int pendingCommissionCents;
   final int approvedCommissionCents;
   final int paidCommissionCents;
@@ -43,7 +42,6 @@ class SaleDashboardSummary {
 
   const SaleDashboardSummary({
     required this.directReferrals,
-    required this.secondLevelReferrals,
     required this.pendingCommissionCents,
     required this.approvedCommissionCents,
     required this.paidCommissionCents,
@@ -53,7 +51,6 @@ class SaleDashboardSummary {
   factory SaleDashboardSummary.fromMap(Map<String, Object?> map) {
     return SaleDashboardSummary(
       directReferrals: _readInt(map['direct_referrals']),
-      secondLevelReferrals: _readInt(map['second_level_referrals']),
       pendingCommissionCents: _readInt(map['pending_commission_cents']),
       approvedCommissionCents: _readInt(map['approved_commission_cents']),
       paidCommissionCents: _readInt(map['paid_commission_cents']),

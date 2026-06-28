@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 36
+- Total worklogs: 37
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -45,3 +45,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-22 | unknown | docs-context | unknown | [2026-06-22_nabi_global_assistant](../../docs/worklog/2026-06-22/2026-06-22_nabi_global_assistant.md) |
 | 2026-06-28 | docs-context | docs-context | .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD | [Worklog - Create DD From BD Skill](../../docs/worklog/2026-06-28/001-worklog-create-dd-from-bd-skill.md) |
 | 2026-06-28 | docs-dd | docs-dd | docs/DD M01-M19 | [Worklog - Create project DD from BD v2](../../docs/worklog/2026-06-28/002-worklog-create-project-dd.md) |
+| 2026-06-28 | coding + Supabase schema draft + test/docs | supabase-schema | Admin app, Supabase Admin, Sale direct-only | [Worklog - Admin App Surface Va Supabase Admin](../../docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md) |

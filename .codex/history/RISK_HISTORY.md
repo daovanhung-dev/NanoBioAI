@@ -255,3 +255,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-28/002-worklog-create-project-dd.md :: ## Loi/Rui ro
 - docs/worklog/2026-06-28/002-worklog-create-project-dd.md :: - Chua fix: Q-01..Q-18 van la open questions; Q-02..Q-10 va Q-17 chan coding tai chinh/Sale.
 - docs/worklog/2026-06-28/002-worklog-create-project-dd.md :: - Can kiem tra tiep: API contract, schema/RLS vat ly, UI mockup, payment provider, refund/chargeback policy.
+- docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1`: FAIL - repo-wide `dart format --set-exit-if-changed .` found/rewrote 22 pre-existing unformatted files outside task before analyze/test could run; those formatter-only changes were reverted.
+- docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md :: - Chua fix: Supabase SQL chua chay tren sandbox/staging; chi la draft review.
+- docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md :: - Can kiem tra tiep: Full `codex_quick_check` after repo-wide formatting is handled; Edge Function/payment provider thuc te chua co trong repo.
+- docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md :: - Bang chung kiem chung: targeted analyze/test PASS, `git diff --check` PASS; quick check blocked by repo-wide format drift outside task.

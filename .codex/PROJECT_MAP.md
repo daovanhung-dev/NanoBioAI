@@ -8,6 +8,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 - v1 guest/basic app: `lib/app_versions/v1/`
 - v2 authenticated free app: `lib/app_versions/v2/`
 - v3 Plus/FamilyPlus planned app: `lib/app_versions/v3/`
+- Admin app surface: `lib/app_versions/admin/`
 - Sale/referral independent axis: `lib/sale_referral/`
 - Core constants/theme/storage/network/utils: `lib/core/`
 - Shared services: `lib/services/`
@@ -85,5 +86,6 @@ rg --files -g '!build/**' -g '!.dart_tool/**' -g '!.git/**'
 - Auth BD: `docs/BD/authentication/BD_Authentication_Registration_Login_NanoBio.md`
 - DD checklist: `docs/checklist/checklist_create_DD.md`
 - Supabase context: `docs/supabase/README.md`
+- Admin Supabase draft: `docs/supabase/11-admin-access-dashboard.sql`
 
 Legacy product-flow/auth DD folders are not present in the current working tree. Create or update module DDs through the live DD guide/template unless the user provides a specific existing DD path.

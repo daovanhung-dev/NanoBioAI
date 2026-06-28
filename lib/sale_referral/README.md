@@ -15,6 +15,5 @@ Current status:
 Business guardrails from BD:
 
 - Direct referral commission is 10% from successful package payment.
-- Indirect referral commission is 5% for the second level.
-- Referral depth is capped at two levels for commission.
+- Referral commission is direct-only; no indirect or multi-level payout.
 - No commission is created from client-reported payment success.

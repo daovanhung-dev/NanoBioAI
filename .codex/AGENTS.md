@@ -9,7 +9,7 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 - Kien truc: feature-first + Clean Architecture theo code hien co.
 - Stack: Flutter/Dart SDK `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4`, Gemini SDK `0.4.7`, local notifications `19.5.0`.
 - SQLite version: `DatabaseVersion.currentVersion = 8`.
-- Source version: `v1` guest/basic, `v2` authenticated free, `v3` Plus/FamilyPlus planned, `sale_referral` independent.
+- Source version: `v1` guest/basic, `v2` authenticated free, `v3` Plus/FamilyPlus planned, `admin` app surface, `sale_referral` independent.
 
 ## Required Read Pack
 

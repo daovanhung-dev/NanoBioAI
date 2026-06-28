@@ -316,7 +316,6 @@ $$;
 create or replace function public.get_my_sale_dashboard()
 returns table (
   direct_referrals integer,
-  second_level_referrals integer,
   pending_commission_cents integer,
   approved_commission_cents integer,
   paid_commission_cents integer,
@@ -334,10 +333,6 @@ begin
     select rr.referred_user_id
     from public.referral_relationships rr
     where rr.referrer_user_id = v_user_id
-  ), second_nodes as (
-    select rr.referred_user_id
-    from public.referral_relationships rr
-    join direct_nodes d on d.referred_user_id = rr.referrer_user_id
   ), commission as (
     select
       coalesce(sum(amount_cents) filter (where status = 'pending'), 0)::integer as pending_cents,
@@ -349,7 +344,6 @@ begin
   )
   select
     (select count(*)::integer from direct_nodes),
-    (select count(*)::integer from second_nodes),
     c.pending_cents,
     c.approved_cents,
     c.paid_cents,
@@ -377,28 +371,20 @@ begin
     select 1 as depth, rr.referred_user_id, rr.accepted_at
     from public.referral_relationships rr
     where rr.referrer_user_id = v_user_id
-  ), second_nodes as (
-    select 2 as depth, rr.referred_user_id, rr.accepted_at
-    from public.referral_relationships rr
-    join direct_nodes d on d.referred_user_id = rr.referrer_user_id
-  ), network as (
-    select * from direct_nodes
-    union all
-    select * from second_nodes
   )
   select
-    n.depth,
+    d.depth,
     case
       when nullif(btrim(u.full_name), '') is null then 'Người dùng Nami'
       else split_part(btrim(u.full_name), ' ', 1) || ' •••'
     end,
-    n.accepted_at,
+    d.accepted_at,
     count(distinct pe.id) filter (where pe.status = 'succeeded')::integer
-  from network n
-  join public.users u on u.id = n.referred_user_id
-  left join public.payment_events pe on pe.payer_user_id = n.referred_user_id
-  group by n.depth, n.accepted_at, u.full_name
-  order by n.depth asc, n.accepted_at desc;
+  from direct_nodes d
+  join public.users u on u.id = d.referred_user_id
+  left join public.payment_events pe on pe.payer_user_id = d.referred_user_id
+  group by d.depth, d.accepted_at, u.full_name
+  order by d.accepted_at desc;
 end;
 $$;
 

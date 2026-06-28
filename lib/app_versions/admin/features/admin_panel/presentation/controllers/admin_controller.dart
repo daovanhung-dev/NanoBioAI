@@ -1,0 +1,159 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_dependencies.dart';
+
+class AdminPanelState {
+  final AdminSession session;
+  final AdminPanelSection section;
+  final List<AdminDashboardMetric> metrics;
+  final List<AdminWorkItem> items;
+  final List<AdminAuditEvent> auditEvents;
+  final String query;
+  final String? lastMessage;
+
+  const AdminPanelState({
+    required this.session,
+    required this.section,
+    required this.metrics,
+    required this.items,
+    required this.auditEvents,
+    required this.query,
+    this.lastMessage,
+  });
+
+  AdminPanelState copyWith({
+    AdminSession? session,
+    AdminPanelSection? section,
+    List<AdminDashboardMetric>? metrics,
+    List<AdminWorkItem>? items,
+    List<AdminAuditEvent>? auditEvents,
+    String? query,
+    String? lastMessage,
+  }) {
+    return AdminPanelState(
+      session: session ?? this.session,
+      section: section ?? this.section,
+      metrics: metrics ?? this.metrics,
+      items: items ?? this.items,
+      auditEvents: auditEvents ?? this.auditEvents,
+      query: query ?? this.query,
+      lastMessage: lastMessage,
+    );
+  }
+}
+
+class AdminController extends AsyncNotifier<AdminPanelState> {
+  AdminRepository get _repository => ref.read(adminRepositoryProvider);
+
+  @override
+  Future<AdminPanelState> build() async {
+    return _load(AdminPanelSection.dashboard, query: '');
+  }
+
+  Future<void> signInWithEmail({
+    required String email,
+    required String password,
+  }) {
+    return _repository.signInWithEmail(email: email, password: password);
+  }
+
+  Future<void> signOut() {
+    return _repository.signOut();
+  }
+
+  Future<void> selectSection(AdminPanelSection section) async {
+    final currentQuery = state.asData?.value.query ?? '';
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _load(section, query: currentQuery));
+  }
+
+  Future<void> search(String query) async {
+    final section = state.asData?.value.section ?? AdminPanelSection.dashboard;
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _load(section, query: query));
+  }
+
+  Future<void> refresh() async {
+    final current = state.asData?.value;
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(
+      () => _load(
+        current?.section ?? AdminPanelSection.dashboard,
+        query: current?.query ?? '',
+      ),
+    );
+  }
+
+  Future<void> runMutation({
+    required AdminPanelSection section,
+    required String action,
+    required String targetId,
+    required String reason,
+  }) async {
+    final current = state.asData?.value;
+    if (reason.trim().isEmpty) {
+      throw StateError('Can ly do cho thao tac quan tri.');
+    }
+
+    final result = await _repository.runMutation(
+      AdminMutationCommand(
+        section: section,
+        action: action,
+        targetId: targetId,
+        reason: reason.trim(),
+        idempotencyKey:
+            '${section.value}-$targetId-${DateTime.now().microsecondsSinceEpoch}',
+      ),
+    );
+
+    final next = await _load(section, query: current?.query ?? '');
+    state = AsyncData(
+      next.copyWith(
+        lastMessage: result.message.isEmpty
+            ? (result.success ? 'Da cap nhat.' : 'Chua cap nhat duoc.')
+            : result.message,
+      ),
+    );
+  }
+
+  Future<AdminPanelState> _load(
+    AdminPanelSection section, {
+    required String query,
+  }) async {
+    final session = await _repository.fetchSession();
+    if (!session.isAdmin) {
+      return AdminPanelState(
+        session: session,
+        section: section,
+        metrics: const [],
+        items: const [],
+        auditEvents: const [],
+        query: query,
+      );
+    }
+
+    final now = DateTime.now();
+    final from = now.subtract(const Duration(days: 30));
+    final metrics = await _repository.fetchDashboardSummary(
+      from: from,
+      to: now,
+      scope: 'global',
+    );
+    final items = section == AdminPanelSection.dashboard
+        ? const <AdminWorkItem>[]
+        : await _repository.fetchSectionItems(section: section, query: query);
+    final auditEvents = section == AdminPanelSection.audit
+        ? await _repository.fetchAuditEvents(query: query)
+        : const <AdminAuditEvent>[];
+
+    return AdminPanelState(
+      session: session,
+      section: section,
+      metrics: metrics,
+      items: items,
+      auditEvents: auditEvents,
+      query: query,
+    );
+  }
+}

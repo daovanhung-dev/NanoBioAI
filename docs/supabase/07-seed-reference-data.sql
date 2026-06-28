@@ -59,11 +59,10 @@ set
   is_active = excluded.is_active,
   updated_at = now();
 
-insert into public.commission_rates (level, rate, is_active)
+insert into public.commission_rates (code, rate, is_active)
 values
-  (1, 0.1000, true),
-  (2, 0.0500, true)
-on conflict (level) do update
+  ('direct_referral', 0.1000, true)
+on conflict (code) do update
 set
   rate = excluded.rate,
   is_active = excluded.is_active,

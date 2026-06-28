@@ -1,6 +1,7 @@
--- Commit de xuat: docs(supabase): tao sale referral commission schema
--- NanoBio / BioAI - Sale/referral, payment event and commission draft.
+-- Commit de xuat: docs(supabase): cap nhat sale referral direct-only
+-- NanoBio / BioAI - Sale/referral, payment event and direct 10% commission draft.
 -- Run after 01-core-auth-profile.sql and 03-membership-quota.sql.
+-- Draft only: review in sandbox/staging before production migration.
 
 begin;
 
@@ -10,6 +11,8 @@ create table if not exists public.sale_profiles (
   approved_at timestamptz,
   suspended_at timestamptz,
   closed_at timestamptz,
+  terms_version text,
+  terms_accepted_at timestamptz,
   note text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -36,6 +39,8 @@ create table if not exists public.referral_relationships (
   accepted_at timestamptz not null default now(),
   source text not null default 'signup'
     check (source in ('signup', 'manual_admin', 'migration')),
+  status text not null default 'active'
+    check (status in ('active', 'voided')),
   created_at timestamptz not null default now(),
   constraint referral_relationship_no_self
     check (referrer_user_id <> referred_user_id),
@@ -57,6 +62,10 @@ create table if not exists public.payment_events (
   status text not null
     check (status in ('pending', 'succeeded', 'refunded', 'chargeback', 'failed')),
   paid_at timestamptz,
+  reviewed_by uuid references public.users(id) on delete set null,
+  reviewed_at timestamptz,
+  review_reason text,
+  idempotency_key text,
   raw_event_hash text,
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
@@ -67,7 +76,7 @@ create index if not exists idx_payment_events_payer_paid
   on public.payment_events (payer_user_id, paid_at desc);
 
 create table if not exists public.commission_rates (
-  level integer primary key check (level in (1, 2)),
+  code text primary key default 'direct_referral',
   rate numeric(5, 4) not null check (rate >= 0 and rate <= 1),
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
@@ -80,7 +89,6 @@ create table if not exists public.commission_records (
   receiver_user_id uuid not null references public.users(id) on delete restrict,
   payer_user_id uuid not null references public.users(id) on delete restrict,
   source_referral_id uuid references public.referral_relationships(id) on delete set null,
-  level integer not null check (level in (1, 2)),
   rate numeric(5, 4) not null check (rate >= 0 and rate <= 1),
   amount_cents integer not null check (amount_cents >= 0),
   currency text not null default 'VND',
@@ -88,7 +96,7 @@ create table if not exists public.commission_records (
     check (status in ('pending', 'approved', 'reversed', 'paid')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (payment_event_id, receiver_user_id, level)
+  unique (payment_event_id, receiver_user_id)
 );
 
 create index if not exists idx_commission_records_receiver_created
@@ -118,18 +126,13 @@ as $$
 begin
   if TG_OP = 'DELETE' then
     update public.users
-    set
-      sale_status = 'none',
-      updated_at = now()
+    set sale_status = 'none', updated_at = now()
     where id = old.user_id;
-
     return old;
   end if;
 
   update public.users
-  set
-    sale_status = new.status,
-    updated_at = now()
+  set sale_status = new.status, updated_at = now()
   where id = new.user_id;
 
   return new;
@@ -141,7 +144,9 @@ create trigger trg_sale_profiles_sync_user
   after insert or update or delete on public.sale_profiles
   for each row execute function public.sync_user_sale_status();
 
-create or replace function public.create_commission_records_for_payment(p_payment_event_id uuid)
+create or replace function public.create_commission_records_for_payment(
+  p_payment_event_id uuid
+)
 returns void
 language plpgsql
 security definer
@@ -150,9 +155,7 @@ as $$
 declare
   v_payment public.payment_events%rowtype;
   v_direct public.referral_relationships%rowtype;
-  v_indirect public.referral_relationships%rowtype;
-  v_rate_1 numeric(5, 4);
-  v_rate_2 numeric(5, 4);
+  v_rate numeric(5, 4);
 begin
   select * into v_payment
   from public.payment_events
@@ -167,17 +170,22 @@ begin
   select * into v_direct
   from public.referral_relationships
   where referred_user_id = v_payment.payer_user_id
+    and status = 'active'
   limit 1;
 
   if not found then
     return;
   end if;
 
-  select rate into v_rate_1
+  select rate into v_rate
   from public.commission_rates
-  where level = 1 and is_active = true;
+  where code = 'direct_referral' and is_active = true;
 
-  if v_rate_1 is not null and exists (
+  if v_rate is null then
+    return;
+  end if;
+
+  if exists (
     select 1 from public.sale_profiles
     where user_id = v_direct.referrer_user_id
       and status = 'active'
@@ -187,63 +195,22 @@ begin
       receiver_user_id,
       payer_user_id,
       source_referral_id,
-      level,
       rate,
       amount_cents,
-      currency
+      currency,
+      status
     )
     values (
       v_payment.id,
       v_direct.referrer_user_id,
       v_payment.payer_user_id,
       v_direct.id,
-      1,
-      v_rate_1,
-      round(v_payment.amount_cents * v_rate_1)::integer,
-      v_payment.currency
+      v_rate,
+      round(v_payment.amount_cents * v_rate)::integer,
+      v_payment.currency,
+      'approved'
     )
-    on conflict (payment_event_id, receiver_user_id, level) do nothing;
-  end if;
-
-  select * into v_indirect
-  from public.referral_relationships
-  where referred_user_id = v_direct.referrer_user_id
-  limit 1;
-
-  if not found then
-    return;
-  end if;
-
-  select rate into v_rate_2
-  from public.commission_rates
-  where level = 2 and is_active = true;
-
-  if v_rate_2 is not null and exists (
-    select 1 from public.sale_profiles
-    where user_id = v_indirect.referrer_user_id
-      and status = 'active'
-  ) then
-    insert into public.commission_records (
-      payment_event_id,
-      receiver_user_id,
-      payer_user_id,
-      source_referral_id,
-      level,
-      rate,
-      amount_cents,
-      currency
-    )
-    values (
-      v_payment.id,
-      v_indirect.referrer_user_id,
-      v_payment.payer_user_id,
-      v_indirect.id,
-      2,
-      v_rate_2,
-      round(v_payment.amount_cents * v_rate_2)::integer,
-      v_payment.currency
-    )
-    on conflict (payment_event_id, receiver_user_id, level) do nothing;
+    on conflict (payment_event_id, receiver_user_id) do nothing;
   end if;
 end;
 $$;
