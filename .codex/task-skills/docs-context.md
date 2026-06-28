@@ -2,12 +2,12 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 13 worklog(s).
+- Generated from 14 worklog(s).
 
 ## When To Read
 
+- Historical task type: docs-context (5)
 - Historical task type: docs (5)
-- Historical task type: docs-context (4)
 - Historical task type: unknown (3)
 - Historical task type: docs/context update (1)
 
@@ -16,10 +16,10 @@
 - unknown: 3
 - .codex: 2
 - .codex, history learning, task-skills, project skill: 1
-- .codex, workflow router, domain context, worklog learning, project skill.: 1
-- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
 - .codex, root AGENTS.md, .agents skill bridge: 1
-- .codex project workflow: 1
+- docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
+- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
+- .codex, workflow router, domain context, worklog learning, project skill.: 1
 - authentication: 1
 
 ## Work Pattern

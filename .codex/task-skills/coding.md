@@ -24,6 +24,9 @@
 ## Work Pattern
 
 - Start from the selected workflow, then this task skill, then one domain file.
+- Read docs/checklist/checklist_complete_DD.md first to identify DD module progress, blockers, and next step; then read docs/checklist/checklist_task_coding.md for prior-session coding notes.
+- Before coding from a DD module, state the module, current progress percentages, blockers, and exact next task from the checklist.
+- After coding, update docs/checklist/checklist_complete_DD.md and record upcoming work in docs/checklist/checklist_task_coding.md.
 - Prefer targeted `rg` and focused tests over broad reads/checks.
 - Record exact evidence in the worklog and add the self-review section.
 - Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.

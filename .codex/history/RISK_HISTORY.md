@@ -264,3 +264,6 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-28/004-worklog-sale-module-internal.md :: - Chua fix: SQL 12 chua chay tren Supabase sandbox/staging; chi la draft update.
 - docs/worklog/2026-06-28/004-worklog-sale-module-internal.md :: - Chua fix: Payout provider, tax/invoice, bank transfer va webhook provider that
 - docs/worklog/2026-06-28/004-worklog-sale-module-internal.md :: - Can kiem tra tiep: Chay SQL 12 tren staging, test RLS/RPC bang user A/B/Admin,
+- docs/worklog/2026-06-28/005-worklog-dd-progress-checklist.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-28/005-worklog-dd-progress-checklist.md :: - Chua fix: Cac DD module van `Draft`; checklist chi theo doi tien do, khong dong nghia approval de coding behavior bi blocker.
+- docs/worklog/2026-06-28/005-worklog-dd-progress-checklist.md :: - Can kiem tra tiep: Sau khi chot open questions, can cap nhat lai `DD readiness %` va `Coding progress %` theo bang chung moi.

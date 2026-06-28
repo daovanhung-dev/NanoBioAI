@@ -442,6 +442,11 @@ foreach ($task in $canonicalTasks) {
   $taskDoc.Add("## Work Pattern") | Out-Null
   $taskDoc.Add("") | Out-Null
   $taskDoc.Add("- Start from the selected workflow, then this task skill, then one domain file.") | Out-Null
+  if ($taskKey -eq "coding") {
+    $taskDoc.Add("- Read `docs/checklist/checklist_complete_DD.md` first to identify DD module progress, blockers, and next step; then read `docs/checklist/checklist_task_coding.md` for prior-session coding notes.") | Out-Null
+    $taskDoc.Add("- Before coding from a DD module, state the module, current progress percentages, blockers, and exact next task from the checklist.") | Out-Null
+    $taskDoc.Add("- After coding, update `docs/checklist/checklist_complete_DD.md` and record upcoming work in `docs/checklist/checklist_task_coding.md`.") | Out-Null
+  }
   $taskDoc.Add('- Prefer targeted `rg` and focused tests over broad reads/checks.') | Out-Null
   $taskDoc.Add("- Record exact evidence in the worklog and add the self-review section.") | Out-Null
   $taskDoc.Add("- Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.") | Out-Null
