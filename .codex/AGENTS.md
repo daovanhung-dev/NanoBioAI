@@ -112,6 +112,18 @@ Access rules:
 - Sale/referral: independent role; not a membership tier.
 - Membership, quota, sale status, referral tree, payment success, and commission must come from Supabase/trusted backend.
 
+## Supabase Rebuild Contract
+
+- Before any task that changes Supabase database behavior, schema, RLS, RPC,
+  seed data, payment/membership/Sale/Admin contracts, or Supabase docs, read
+  `docs/supabase/README.md`, `docs/supabase/config.sql`, and the directly
+  related SQL/MD files under `docs/supabase/`.
+- Any module or feature change that modifies Supabase schema/RLS/RPC/seed/docs
+  must update `docs/supabase/config.sql` in the same change. This file is the
+  single local/sandbox rebuild entrypoint used after resetting Supabase.
+- If `docs/supabase/config.sql` cannot be updated, record the blocker in the
+  worklog and do not claim the Supabase state is rebuild-ready.
+
 ## UI And Copy
 
 - User-facing text must be Vietnamese with Nabitone.

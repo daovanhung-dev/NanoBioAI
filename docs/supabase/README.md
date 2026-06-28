@@ -24,7 +24,26 @@ lieu tin cay cho NanoBio/BioAI.
 - Sale theo BD v2.0 la direct-only: Sale nhan 10% tu payment hop le cua khach
   duoc gioi thieu truc tiep; khong co tang gian tiep.
 
-## Thu tu doc/chay de xuat
+## Rebuild local/sandbox bang mot file
+
+Chay `config.sql` khi can xoa va dung lai Supabase local/sandbox tu dau.
+File nay la destructive script: wipe `auth.users` bang cascade, drop/recreate
+schema `public`, sau do tao lai schema/RLS/RPC/seed/dev users/Admin bootstrap.
+
+- Khong chay `config.sql` tren production.
+- Can quyen SQL Editor/postgres co the thao tac `auth.*` va `public`.
+- Dev users mac dinh dung password `NanoBio@123456`:
+  `dev.free@nanobio.local`, `dev.plus@nanobio.local`,
+  `dev.family@nanobio.local`, `dev.admin@nanobio.local`.
+- `dev.admin@nanobio.local` duoc bootstrap role `super_admin`.
+- SQL khong deploy duoc Edge Function `delete-account`, Auth redirect URL,
+  payment webhook/provider hoac storage bucket; cac phan do can cau hinh rieng.
+
+## File module tham chieu
+
+`config.sql` la entrypoint rebuild chinh. Cac file module ben duoi la nguon
+tham chieu/review de cap nhat `config.sql` khi schema, RLS, RPC hoac seed thay
+doi:
 
 1. `00-system-database-design.md` - doc truoc de hieu domain va pham vi.
 2. `01-core-auth-profile.sql` - nen Auth, `public.users`, `health_subjects`,
@@ -36,23 +55,30 @@ lieu tin cay cho NanoBio/BioAI.
 5. `04-family-plus.sql` - nhom gia dinh va quyen xem/sua theo FamilyPlus.
 6. `05-sale-referral-commission.sql` - Sale/referral, payment event va hoa hong
    Sale truc tiep 10%.
-7. `10-mobile-sync-and-sale-rpc.sql` - RPC snapshot dong bo local/cloud va RPC
-   Sale truc tiep.
+7. `10-mobile-sync-and-sale-rpc.sql` - RPC snapshot dong bo local/cloud. Phan
+   RPC Sale cu trong file nay da duoc `12-sale-module-update.sql` thay the
+   trong `config.sql`.
 8. `11-admin-access-dashboard.sql` - Admin roles, permissions, dashboard, audit
    va RPC quan tri.
 9. `12-sale-module-update.sql` - Sale dang ky cho Admin duyet, attach ma gioi
    thieu, ledger diem va queue quy doi noi bo.
 10. `07-seed-reference-data.sql` - seed du lieu tham chieu ban dau.
 11. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tao account
-   test Free/Plus/FamilyPlus co dinh.
+   test Free/Plus/FamilyPlus co dinh; `config.sql` co dev seed rieng va them
+   `dev.admin@nanobio.local`.
 12. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
    va nghiem thu.
 
+Moi thay doi Supabase schema/RLS/RPC/seed/docs phai cap nhat `config.sql` cung
+luc. Neu khong cap nhat duoc, ghi blocker trong worklog va khong claim rebuild
+Supabase da san sang.
+
 ## Trang thai
 
-Tat ca SQL trong thu muc nay la draft de review va lam nguon cho migration
-Supabase chinh thuc. Chua ap dung truc tiep len production neu chua duoc review
-bang moi truong sandbox/staging.
+`config.sql` la destructive rebuild script cho local/sandbox. Cac SQL module
+con lai la draft de review va lam nguon cho migration Supabase chinh thuc. Chua
+ap dung truc tiep len production neu chua duoc review bang moi truong
+sandbox/staging.
 
 ## Nguon tham chieu
 

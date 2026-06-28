@@ -15,7 +15,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 - Shared widgets: `lib/shared/widgets/`
 - Tests: `test/`
 - BD/DD docs: `docs/BD/`, `docs/DD/`
-- Supabase draft docs: `docs/supabase/`
+- Supabase config and draft docs: `docs/supabase/config.sql`, `docs/supabase/`
 - Issues/todo/worklog: `docs/issues/`, `docs/todo/`, `docs/worklog/`
 
 ## Workflow Routing
@@ -53,6 +53,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 
 Open only when relevant:
 
+- `docs/supabase/config.sql`
 - `lib/app_versions/v1/router/v1_router.dart`
 - `lib/app_versions/v1/router/v1_route_guards.dart`
 - `lib/app_versions/v2/router/v2_router.dart`
@@ -85,7 +86,14 @@ rg --files -g '!build/**' -g '!.dart_tool/**' -g '!.git/**'
 - DD module template: `docs/DD/DD_Module_Template/README.md`
 - Auth BD: `docs/BD/authentication/BD_Authentication_Registration_Login_NanoBio.md`
 - DD checklist: `docs/checklist/checklist_create_DD.md`
+- Supabase rebuild config: `docs/supabase/config.sql`
 - Supabase context: `docs/supabase/README.md`
 - Admin Supabase draft: `docs/supabase/11-admin-access-dashboard.sql`
+
+For any Supabase database schema/RLS/RPC/seed/docs change, read
+`docs/supabase/README.md`, `docs/supabase/config.sql`, and the directly related
+`docs/supabase/*.sql` or `*.md` module file before editing. Update
+`docs/supabase/config.sql` in the same change, or record a blocker and do not
+claim the Supabase rebuild path is current.
 
 Legacy product-flow/auth DD folders are not present in the current working tree. Create or update module DDs through the live DD guide/template unless the user provides a specific existing DD path.
