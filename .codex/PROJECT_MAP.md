@@ -79,7 +79,7 @@ rg --files -g '!build/**' -g '!.dart_tool/**' -g '!.git/**'
 
 ## Docs Routing
 
-- Product flow BD: `docs/BD/project_flow/BD_Product_Flow_Membership_Sale.md`
+- Product flow BD: `docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md`
 - DD creation guide: `docs/DD/DD_Module_Creation_Guide_EN.md`
 - DD module template: `docs/DD/DD_Module_Template/README.md`
 - Auth BD: `docs/BD/authentication/BD_Authentication_Registration_Login_NanoBio.md`

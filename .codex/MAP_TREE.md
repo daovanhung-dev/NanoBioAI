@@ -114,3 +114,26 @@ If a context layout changes, update this compact map and run:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1
 ```
+## Project DD Modules
+
+Generated DD folders for docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md:
+
+- docs/DD/onboarding_profile/: DD M01 ONBOARDING_PROFILE from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/personal_schedule_ai/: DD M02 PERSONAL_SCHEDULE_AI from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/dashboard_schedule/: DD M03 DASHBOARD_SCHEDULE from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/basic_health_calculators/: DD M04 BASIC_HEALTH_CALC from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/auth_profile_sync/: DD M05 AUTH_PROFILE_SYNC from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/membership_quota/: DD M06 MEMBERSHIP_QUOTA from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/ai_chat/: DD M07 AI_CHAT from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/health_score_habits/: DD M08 HEALTH_SCORE_HABITS from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/schedule_notifications/: DD M09 SCHEDULE_NOTIFICATIONS from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/advanced_tracking_goals/: DD M10 ADVANCED_TRACKING_GOALS from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/familyplus/: DD M11 FAMILYPLUS from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/referral_direct/: DD M12 REFERRAL_DIRECT from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/payment_membership/: DD M13 PAYMENT_MEMBERSHIP from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/sale_points/: DD M14 SALE_POINTS from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/admin_dashboard/: DD M15 ADMIN_DASHBOARD from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/admin_operations/: DD M16 ADMIN_OPS from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/reconciliation/: DD M17 RECONCILIATION from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/reporting/: DD M18 REPORTING from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/audit_security/: DD M19 AUDIT_SECURITY from BD-BIOAI-PRODUCT-FLOW-002.

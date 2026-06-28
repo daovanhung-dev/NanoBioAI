@@ -251,3 +251,7 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-22/008-worklog-fix-health-scoring-flow.md :: - NB-RISK-002: Product flow DD open decisions Q-01..Q-10.
 - docs/worklog/2026-06-22/009-worklog-cloud-sync-sale.md :: ## Rui ro / viec tiep theo
 - docs/worklog/2026-06-28/001-worklog-create-dd-from-bd-skill.md :: - Generated history still mentions old `docs/DD/product_flow` paths as plain historical evidence, but they are no longer emitted as live backticked paths that fail integrity validation.
+- docs/worklog/2026-06-28/002-worklog-create-project-dd.md :: - Giu tat ca module o `Status: Draft` vi BD con Q-01..Q-18.
+- docs/worklog/2026-06-28/002-worklog-create-project-dd.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-28/002-worklog-create-project-dd.md :: - Chua fix: Q-01..Q-18 van la open questions; Q-02..Q-10 va Q-17 chan coding tai chinh/Sale.
+- docs/worklog/2026-06-28/002-worklog-create-project-dd.md :: - Can kiem tra tiep: API contract, schema/RLS vat ly, UI mockup, payment provider, refund/chargeback policy.

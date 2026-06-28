@@ -52,3 +52,37 @@ Commit de xuat: docs(dd): cap nhat checklist tao DD
 | Error/security/privacy và Flutter layer contracts | 13, 14 | Chưa hoàn thành | Backend/quota/Sale contracts chưa approved; test TC-PF-33..38 vẫn `Draft`. |
 | Test acceptance toàn bộ product flow | 15 | Chưa hoàn thành | 38/38 test case trong DD đang `Draft`; security checklist chưa tick. |
 | Các phase triển khai B..G | 16 | Chưa hoàn thành | Phase B Supabase, C Guest hardening, D Auth/Free quota, E Health score, F Plus/FamilyPlus, G Sale/payment đều chưa có gate pass trong DD. |
+## BioAI / NanoBio Product Flow v2.0
+
+**BD nguồn:** docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002)
+**DD folder:** docs/DD/ split by module M01-M19
+**Ngày cập nhật:** 2026-06-28
+
+| # | DD | Status | BD source | Output path | Ngày hoàn thành | Ghi chú |
+|---:|---|---|---|---|---|---|
+| 1 | DD-ONBOARDING_PROFILE-001 | Draft | M01, BD sections 6/M01, 13, 16.1 AC-01, Appendix A UC-01 | docs/DD/onboarding_profile/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 2 | DD-PERSONAL_SCHEDULE_AI-001 | Draft | M02, BD sections 6/M02, 13, 16.1 AC-01/AC-02/AC-05/AC-06, Appendix A UC-02/UC-08 | docs/DD/personal_schedule_ai/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 3 | DD-DASHBOARD_SCHEDULE-001 | Draft | M03, BD sections 6/M03, 13, Appendix A UC-09 | docs/DD/dashboard_schedule/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 4 | DD-BASIC_HEALTH_CALC-001 | Draft | M04, BD sections 6/M04, 18.2 Q-14, Appendix A UC-03 | docs/DD/basic_health_calculators/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 5 | DD-AUTH_PROFILE_SYNC-001 | Draft | M05, BD sections 6/M05, 13, Appendix A UC-05 | docs/DD/auth_profile_sync/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 6 | DD-MEMBERSHIP_QUOTA-001 | Draft | M06, BD sections 6/M06, 13, 16.1 AC-04..AC-08, Appendix A UC-06 | docs/DD/membership_quota/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 7 | DD-AI_CHAT-001 | Draft | M07, BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07 | docs/DD/ai_chat/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 8 | DD-HEALTH_SCORE_HABITS-001 | Draft | M08, BD sections 6/M08, 9, 13, Appendix A UC-09 | docs/DD/health_score_habits/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 9 | DD-SCHEDULE_NOTIFICATIONS-001 | Draft | M09, BD sections 6/M09, 13, Appendix A UC-04 | docs/DD/schedule_notifications/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 10 | DD-ADVANCED_TRACKING_GOALS-001 | Draft | M10, BD sections 6/M10, 16.1 AC-06, Appendix A UC-10 | docs/DD/advanced_tracking_goals/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 11 | DD-FAMILYPLUS-001 | Draft | M11, BD sections 10/M11, 13, 14.2, 16.1 AC-06, Appendix A UC-11 | docs/DD/familyplus/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 12 | DD-REFERRAL_DIRECT-001 | Draft | M12, BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14 | docs/DD/referral_direct/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 13 | DD-PAYMENT_MEMBERSHIP-001 | Draft | M13, BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16 | docs/DD/payment_membership/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 14 | DD-SALE_POINTS-001 | Draft | M14, BD sections 7.5..7.10, 9, 12.1, 14.4, 16.2 AC-11..AC-18, Appendix A UC-17..UC-19 | docs/DD/sale_points/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 15 | DD-ADMIN_DASHBOARD-001 | Draft | M15, BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 | docs/DD/admin_dashboard/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 16 | DD-ADMIN_OPS-001 | Draft | M16, BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 | docs/DD/admin_operations/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 17 | DD-RECONCILIATION-001 | Draft | M17, BD section 12.1, 14.4, 15, Appendix A UC-22 | docs/DD/reconciliation/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 18 | DD-REPORTING-001 | Draft | M18, BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 | docs/DD/reporting/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 19 | DD-AUDIT_SECURITY-001 | Draft | M19, BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 | docs/DD/audit_security/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+
+### Ghi chú v2.0
+
+- Draft nghĩa là DD đã được tạo nhưng chưa Ready for implementation.
+- Q-01..Q-18 trong BD v2.0 phải được PO/Tech Lead chốt hoặc chuyển thành assumption được duyệt trước khi coding phần bị ảnh hưởng.
+- Q-02..Q-10 và Q-17 là blocker cho payment, commission, Sale point conversion và reconciliation tài chính.
+- Logic Sale cũ nhiều tầng, tier 2 hoặc 5% không được dùng làm source implementation.
