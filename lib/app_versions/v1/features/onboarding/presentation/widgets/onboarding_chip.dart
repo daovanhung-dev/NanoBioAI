@@ -1,24 +1,21 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
 
-class OnboardingChip extends StatefulWidget {
+import 'nabi_onboarding_experience.dart';
+
+/// Legacy-compatible selectable chip aligned with the NaBi visual language.
+class OnboardingChip extends StatelessWidget {
   final String label;
   final String emoji;
   final bool selected;
   final VoidCallback onTap;
-
   final bool enabled;
   final double? width;
   final double? height;
-
   final Gradient? selectedGradient;
   final Color? selectedColor;
-
   final EdgeInsetsGeometry? padding;
-
   final Widget? trailing;
   final IconData? icon;
   final String? description;
@@ -41,187 +38,93 @@ class OnboardingChip extends StatefulWidget {
   });
 
   @override
-  State<OnboardingChip> createState() => _OnboardingChipState();
-}
-
-class _OnboardingChipState extends State<OnboardingChip>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  bool _hovered = false;
-  bool _pressed = false;
-
-  bool get _selected => widget.selected;
-
-  Gradient get _activeGradient =>
-      widget.selectedGradient ?? AppGradients.primary;
-
-  Color get _activeColor => widget.selectedColor ?? AppColors.primary;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: AppDuration.button,
-      lowerBound: 0.965,
-      upperBound: 1,
-      value: 1,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _animatePress(bool pressed) {
-    if (!widget.enabled) return;
-
-    setState(() {
-      _pressed = pressed;
-    });
-
-    if (pressed) {
-      _controller.reverse();
-    } else {
-      _controller.forward();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final hasDescription =
-        widget.description != null && widget.description!.trim().isNotEmpty;
+    final activeColor = selectedColor ?? NabiPalette.royalBlue;
+    final foreground = selected ? Colors.white : NabiPalette.ink;
 
-    return MouseRegion(
-      cursor: widget.enabled
-          ? SystemMouseCursors.click
-          : SystemMouseCursors.basic,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: widget.enabled ? widget.onTap : null,
-        onTapDown: (_) => _animatePress(true),
-        onTapUp: (_) => _animatePress(false),
-        onTapCancel: () => _animatePress(false),
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (_, child) {
-            return Transform.scale(scale: _controller.value, child: child);
-          },
+    return SizedBox(
+      width: width,
+      height: height ?? 54,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          onTap: enabled ? onTap : null,
+          splashColor: Colors.white.withValues(alpha: 0.18),
           child: AnimatedContainer(
-            duration: AppDuration.normal,
-            curve: AppAnimations.smoothCurve,
-            width: widget.width,
-            height: widget.height,
+            duration: const Duration(milliseconds: 170),
             padding:
-                widget.padding ??
-                const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-            decoration: _buildDecoration(),
-            child: AnimatedOpacity(
-              duration: AppDuration.fast,
-              opacity: widget.enabled ? 1 : 0.45,
+                padding ??
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              gradient: selected
+                  ? (selectedGradient ?? NabiPalette.selection)
+                  : NabiPalette.card,
+              color:
+                  selected && selectedGradient == null && selectedColor != null
+                  ? activeColor
+                  : null,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(
+                color: selected ? activeColor : NabiPalette.line,
+                width: selected ? 1.4 : 1,
+              ),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: activeColor.withValues(alpha: 0.20),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : const [],
+            ),
+            child: Opacity(
+              opacity: enabled ? 1 : 0.45,
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _LeadingSection(
-                    emoji: widget.emoji,
-                    selected: _selected,
-                    gradient: _activeGradient,
-                  ),
-
-                  const SizedBox(width: AppSpacing.sm),
-
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            if (widget.icon != null) ...[
-                              AnimatedContainer(
-                                duration: AppDuration.fast,
-                                width: 28,
-                                height: 28,
-                                decoration: AppDecoration.circle(
-                                  color: _selected
-                                      ? Colors.white.withValues(alpha: 0.14)
-                                      : AppColors.primarySoft,
-                                ),
-                                child: Icon(
-                                  widget.icon,
-                                  size: 16,
-                                  color: _selected
-                                      ? Colors.white
-                                      : AppColors.primary,
-                                ),
-                              ),
-
-                              const SizedBox(width: AppSpacing.sm),
-                            ],
-
-                            Expanded(
-                              child: AnimatedDefaultTextStyle(
-                                duration: AppDuration.normal,
-                                curve: AppAnimations.smoothCurve,
-                                style: AppTextStyles.heading5.copyWith(
-                                  color: _selected
-                                      ? Colors.white
-                                      : AppColors.textPrimary,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                child: Text(
-                                  widget.label,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-
-                            if (widget.trailing != null)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: AppSpacing.sm,
-                                ),
-                                child: widget.trailing!,
-                              ),
-
-                            const SizedBox(width: AppSpacing.xs),
-
-                            _SelectionIndicator(visible: _selected),
-                          ],
-                        ),
-
-                        if (hasDescription) ...[
-                          const SizedBox(height: AppSpacing.xs),
-
-                          AnimatedDefaultTextStyle(
-                            duration: AppDuration.normal,
-                            curve: AppAnimations.smoothCurve,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: _selected
-                                  ? Colors.white.withValues(alpha: 0.82)
-                                  : AppColors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                              height: 1.45,
-                            ),
-                            child: Text(
-                              widget.description!,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ],
+                  Container(
+                    width: 29,
+                    height: 29,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? Colors.white.withValues(alpha: 0.16)
+                          : NabiPalette.royalBlue.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    child: icon != null
+                        ? Icon(
+                            icon,
+                            size: 17,
+                            color: selected ? Colors.white : activeColor,
+                          )
+                        : Text(emoji, style: const TextStyle(fontSize: 17)),
+                  ),
+                  const SizedBox(width: 7),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: description == null ? 2 : 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: foreground,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ),
+                  if (trailing != null) ...[
+                    const SizedBox(width: 6),
+                    trailing!,
+                  ],
+                  const SizedBox(width: 5),
+                  Icon(
+                    selected ? Icons.check_rounded : Icons.add_rounded,
+                    size: 18,
+                    color: selected ? Colors.white : NabiPalette.royalBlue,
                   ),
                 ],
               ),
@@ -229,120 +132,6 @@ class _OnboardingChipState extends State<OnboardingChip>
           ),
         ),
       ),
-    );
-  }
-
-  BoxDecoration _buildDecoration() {
-    if (_selected) {
-      return AppDecoration.base(
-        gradient: _activeGradient,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-        shadows: [
-          ...AppShadows.primary,
-          BoxShadow(
-            color: _activeColor.withValues(alpha: _pressed ? 0.18 : 0.30),
-            blurRadius: _hovered ? 34 : 24,
-            spreadRadius: -8,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      );
-    }
-
-    return AppDecoration.card(
-      color: Colors.white,
-      radius: AppRadius.xl,
-      border: Border.all(
-        color: _hovered
-            ? AppColors.primary.withValues(alpha: 0.32)
-            : AppColors.border.withValues(alpha: 0.7),
-        width: _hovered ? 1.4 : 1,
-      ),
-      shadows: _hovered ? AppShadows.soft : AppShadows.card,
-    );
-  }
-}
-
-class _LeadingSection extends StatelessWidget {
-  final String emoji;
-  final bool selected;
-  final Gradient gradient;
-
-  const _LeadingSection({
-    required this.emoji,
-    required this.selected,
-    required this.gradient,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: AppDuration.normal,
-      curve: AppAnimations.smoothCurve,
-      width: 44,
-      height: 44,
-      decoration: AppDecoration.base(
-        gradient: selected ? AppGradients.glass : AppGradients.primarySoft,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: selected
-              ? Colors.white.withValues(alpha: 0.12)
-              : AppColors.border.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Center(
-        child: AnimatedScale(
-          duration: AppDuration.normal,
-          curve: AppAnimations.bounceCurve,
-          scale: selected ? 1.12 : 1,
-          child: Text(
-            emoji,
-            style: AppTextStyles.heading4.copyWith(fontSize: 22, height: 1),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SelectionIndicator extends StatelessWidget {
-  final bool visible;
-
-  const _SelectionIndicator({required this.visible});
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: AppDuration.normal,
-      switchInCurve: AppAnimations.smoothCurve,
-      switchOutCurve: AppAnimations.accelerateCurve,
-      child: visible
-          ? ClipRRect(
-              key: const ValueKey('selected'),
-              borderRadius: BorderRadius.circular(AppRadius.circular),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: AppDecoration.circle(
-                    color: Colors.white.withValues(alpha: 0.14),
-                    shadows: AppShadows.glass,
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.all(2),
-                    decoration: AppDecoration.circle(color: Colors.white),
-                    child: const Icon(
-                      AppIcons.checkIn,
-                      size: 14,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ),
-            )
-          : const SizedBox(key: ValueKey('unselected'), width: 24, height: 24),
     );
   }
 }

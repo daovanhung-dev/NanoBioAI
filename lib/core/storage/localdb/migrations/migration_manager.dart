@@ -195,7 +195,6 @@ class MigrationManager {
     await AiCatalogSeeder.seed(db);
   }
 
-
   static Future<void> _migrateToV9(Database db) async {
     await _addColumnIfMissing(
       db,

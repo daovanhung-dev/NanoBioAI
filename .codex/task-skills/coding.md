@@ -2,23 +2,24 @@
 
 - Canonical key: coding
 - Workflow: .codex/workflows/coding.md
-- Generated from 7 worklog(s).
+- Generated from 8 worklog(s).
 
 ## When To Read
 
-- Historical task type: coding (3)
+- Historical task type: coding (4)
 - Historical task type: coding/test/docs (2)
 - Historical task type: feature (1)
 - Historical task type: feature Dashboard/UI + data write path (1)
 
 ## Common Modules
 
-- authentication v2: 1
 - Authentication v2, Settings account security: 1
+- authentication v2: 1
+- M01 ONBOARDING_PROFILE: 1
 - v1 onboarding/splash/dashboard, v2 auth/membership/cloud sync, Supabase docs.: 1
-- authentication: 1
-- Dashboard, AI service, lifestyle schedule: 1
 - dashboard, daily_health_tracking, lifestyle_schedule, meal_plan, shared/widgets: 1
+- Dashboard, AI service, lifestyle schedule: 1
+- authentication: 1
 - onboarding, dashboard: 1
 
 ## Work Pattern
@@ -47,3 +48,4 @@
 - [Worklog - Authentication V2 Code Gaps](../../docs/worklog/2026-06-20/004-worklog-authentication-code-gaps.md) - authentication v2
 - [Worklog - Riverpod Account State](../../docs/worklog/2026-06-21/005-worklog-riverpod-account-state.md) - Authentication v2, Settings account security
 - [Worklog - Onboarding Auth Sync](../../docs/worklog/2026-06-21/006-worklog-onboarding-auth-sync.md) - v1 onboarding/splash/dashboard, v2 auth/membership/cloud sync, Supabase docs.
+- [Worklog - M01 Onboarding Safe Hardening](../../docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md) - M01 ONBOARDING_PROFILE

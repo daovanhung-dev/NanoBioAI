@@ -253,12 +253,15 @@ void main() {
 
     final userColumns = await db.rawQuery('PRAGMA table_info(users)');
     final names = userColumns.map((column) => column['name']).toList();
-    expect(names, containsAll(<String>[
-      'product_access_status',
-      'sale_status',
-      'onboarding_status',
-      'onboarding_completed_at',
-    ]));
+    expect(
+      names,
+      containsAll(<String>[
+        'product_access_status',
+        'sale_status',
+        'onboarding_status',
+        'onboarding_completed_at',
+      ]),
+    );
 
     final tables = await db.rawQuery(
       "SELECT name FROM sqlite_master WHERE type = 'table'",

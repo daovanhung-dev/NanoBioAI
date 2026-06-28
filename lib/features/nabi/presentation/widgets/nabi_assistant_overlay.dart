@@ -43,15 +43,13 @@ class NabiOverlayConfig {
 /// - Kéo: người dùng tự đặt vị trí nổi mà không chặn thao tác UI bên dưới.
 /// - Nhấn giữ: thu gọn/mở rộng Nabi trong phiên hiện tại.
 class NabiAssistantOverlay extends ConsumerStatefulWidget {
-  const NabiAssistantOverlay({
-    required this.config,
-    super.key,
-  });
+  const NabiAssistantOverlay({required this.config, super.key});
 
   final NabiOverlayConfig config;
 
   @override
-  ConsumerState<NabiAssistantOverlay> createState() => _NabiAssistantOverlayState();
+  ConsumerState<NabiAssistantOverlay> createState() =>
+      _NabiAssistantOverlayState();
 }
 
 class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
@@ -113,7 +111,9 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
                     onTap: _dragMoved ? null : _openChat,
                     onLongPress: () {
                       HapticFeedback.selectionClick();
-                      ref.read(NabiControllerProvider.notifier).toggleMinimized();
+                      ref
+                          .read(NabiControllerProvider.notifier)
+                          .toggleMinimized();
                     },
                     onPanStart: (_) {
                       setState(() {
@@ -122,8 +122,12 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
                       });
                     },
                     onPanUpdate: (details) {
-                      final nextX = _alignment.x + details.delta.dx / constraints.maxWidth * 2;
-                      final nextY = _alignment.y + details.delta.dy / constraints.maxHeight * 2;
+                      final nextX =
+                          _alignment.x +
+                          details.delta.dx / constraints.maxWidth * 2;
+                      final nextY =
+                          _alignment.y +
+                          details.delta.dy / constraints.maxHeight * 2;
                       setState(() {
                         _dragMoved = true;
                         _alignment = Alignment(
@@ -135,9 +139,12 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
                     onPanEnd: (_) {
                       setState(() => _isDragging = false);
                       // GestureDetector kích hoạt onTap sau pan trong một số thiết bị.
-                      Future<void>.delayed(const Duration(milliseconds: 90), () {
-                        if (mounted) setState(() => _dragMoved = false);
-                      });
+                      Future<void>.delayed(
+                        const Duration(milliseconds: 90),
+                        () {
+                          if (mounted) setState(() => _dragMoved = false);
+                        },
+                      );
                     },
                   ),
                 ),
@@ -162,7 +169,10 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
     // route lặp hoặc làm mất nội dung hội thoại hiện tại.
     final state = ref.read(NabiControllerProvider);
     if (state.isChatOpen) {
-      controller.setContext(state.context, detail: 'Nabi đang lắng nghe bạn đây.');
+      controller.setContext(
+        state.context,
+        detail: 'Nabi đang lắng nghe bạn đây.',
+      );
       return;
     }
 
@@ -201,7 +211,9 @@ class _NabiFloatingControl extends StatelessWidget {
   Widget build(BuildContext context) {
     final avatar = Semantics(
       button: true,
-      label: state.isChatOpen ? 'Nabi đang lắng nghe' : 'Mở trò chuyện với Nabi',
+      label: state.isChatOpen
+          ? 'Nabi đang lắng nghe'
+          : 'Mở trò chuyện với Nabi',
       hint: 'Chạm để trò chuyện, nhấn giữ để thu gọn, kéo để đổi vị trí.',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -236,9 +248,7 @@ class _NabiFloatingControl extends StatelessWidget {
 
     if (!showSpeechBubble || state.isMinimized) return avatar;
 
-    final bubble = Flexible(
-      child: _NabiSpeechBubble(text: state.bubbleText),
-    );
+    final bubble = Flexible(child: _NabiSpeechBubble(text: state.bubbleText));
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 286),
@@ -246,11 +256,7 @@ class _NabiFloatingControl extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         textDirection: isRightSide ? TextDirection.rtl : TextDirection.ltr,
-        children: <Widget>[
-          avatar,
-          const SizedBox(width: 4),
-          bubble,
-        ],
+        children: <Widget>[avatar, const SizedBox(width: 4), bubble],
       ),
     );
   }
@@ -271,7 +277,9 @@ class _NabiSpeechBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.surface.withOpacity(0.98),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.colorScheme.primary.withOpacity(0.12)),
+          border: Border.all(
+            color: theme.colorScheme.primary.withOpacity(0.12),
+          ),
           boxShadow: <BoxShadow>[
             BoxShadow(
               color: Colors.black.withOpacity(0.08),

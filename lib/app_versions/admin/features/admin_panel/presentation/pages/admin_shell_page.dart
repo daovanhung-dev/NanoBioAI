@@ -675,6 +675,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.users => 'Nguoi dung',
       AdminPanelSection.payments => 'Thanh toan',
       AdminPanelSection.sales => 'Sale',
+      AdminPanelSection.saleConversions => 'Quy doi diem Sale',
       AdminPanelSection.plans => 'Goi',
       AdminPanelSection.reports => 'Bao cao',
       AdminPanelSection.audit => 'Audit',
@@ -688,6 +689,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.users => AdminRoutePaths.users,
       AdminPanelSection.payments => AdminRoutePaths.payments,
       AdminPanelSection.sales => AdminRoutePaths.sales,
+      AdminPanelSection.saleConversions => AdminRoutePaths.saleConversions,
       AdminPanelSection.plans => AdminRoutePaths.plans,
       AdminPanelSection.reports => AdminRoutePaths.reports,
       AdminPanelSection.audit => AdminRoutePaths.audit,
@@ -701,6 +703,8 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.users => Icons.people_outline_rounded,
       AdminPanelSection.payments => Icons.payments_outlined,
       AdminPanelSection.sales => Icons.badge_outlined,
+      AdminPanelSection.saleConversions =>
+        Icons.published_with_changes_outlined,
       AdminPanelSection.plans => Icons.workspace_premium_outlined,
       AdminPanelSection.reports => Icons.summarize_outlined,
       AdminPanelSection.audit => Icons.history_outlined,
@@ -714,6 +718,8 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.users => Icons.people_rounded,
       AdminPanelSection.payments => Icons.payments_rounded,
       AdminPanelSection.sales => Icons.badge_rounded,
+      AdminPanelSection.saleConversions =>
+        Icons.published_with_changes_rounded,
       AdminPanelSection.plans => Icons.workspace_premium_rounded,
       AdminPanelSection.reports => Icons.summarize_rounded,
       AdminPanelSection.audit => Icons.history_rounded,
@@ -733,7 +739,13 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       ],
       AdminPanelSection.sales => const [
         _AdminAction('approve', 'Duyet', Icons.verified_user_rounded),
+        _AdminAction('reject', 'Tu choi', Icons.block_rounded),
         _AdminAction('suspend', 'Tam dung', Icons.pause_circle_rounded),
+      ],
+      AdminPanelSection.saleConversions => const [
+        _AdminAction('approve', 'Duyet', Icons.verified_rounded),
+        _AdminAction('reject', 'Tu choi', Icons.block_rounded),
+        _AdminAction('mark_paid', 'Da chi tra', Icons.payments_rounded),
       ],
       AdminPanelSection.plans => const [
         _AdminAction('upsert', 'Cap nhat', Icons.save_rounded),

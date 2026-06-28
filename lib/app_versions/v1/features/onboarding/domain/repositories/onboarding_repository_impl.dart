@@ -49,10 +49,13 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
   @override
   Future<void> markCompleted() async {
-    final userId = authProfileService.currentUserId ??
-        await AppPrefs.pendingGuestUserId();
+    final userId =
+        authProfileService.currentUserId ?? await AppPrefs.pendingGuestUserId();
     if (userId == null || userId.trim().isEmpty) {
-      AppLogger.warning(_tag, 'No local user found to mark onboarding complete');
+      AppLogger.warning(
+        _tag,
+        'No local user found to mark onboarding complete',
+      );
       return;
     }
 

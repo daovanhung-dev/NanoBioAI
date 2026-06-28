@@ -21,6 +21,7 @@ enum AdminPanelSection {
   users('users'),
   payments('payments'),
   sales('sales'),
+  saleConversions('sale_conversions'),
   plans('plans'),
   reports('reports'),
   audit('audit'),

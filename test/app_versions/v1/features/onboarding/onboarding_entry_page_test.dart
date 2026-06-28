@@ -31,15 +31,18 @@ void main() {
     expect(find.byKey(const Key('onboarding_entry_guest_cta')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('onboarding_entry_login_cta')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('login'), findsOneWidget);
 
     router.go(V1RoutePaths.onboardingEntry);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     await tester.tap(find.byKey(const Key('onboarding_entry_guest_cta')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('onboarding'), findsOneWidget);
   });

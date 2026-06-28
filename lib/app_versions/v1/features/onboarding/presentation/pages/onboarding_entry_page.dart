@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/nabi_onboarding_experience.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
@@ -10,77 +11,85 @@ class OnboardingEntryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: AppDecoration.card(
-                  radius: AppRadius.xxl,
-                  shadows: AppShadows.soft,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      width: 76,
-                      height: 76,
-                      alignment: Alignment.center,
-                      decoration: AppDecoration.circle(
-                        gradient: AppGradients.primary,
+      backgroundColor: Colors.transparent,
+      body: NabiAmbientBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(18),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: NabiGlassPanel(
+                  padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+                  borderRadius: BorderRadius.circular(28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const NabiCompanionAvatar(size: 106),
+                      const SizedBox(height: 12),
+                      ShaderMask(
+                        blendMode: BlendMode.srcIn,
+                        shaderCallback: (bounds) =>
+                            NabiPalette.hero.createShader(bounds),
+                        child: Text(
+                          'Bắt đầu cùng NaBi',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.heading3.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.favorite_rounded,
-                        color: Colors.white,
-                        size: 36,
+                      const SizedBox(height: 7),
+                      Text(
+                        'Bạn có thể đăng nhập để đồng bộ hành trình, hoặc bắt đầu ngay để NaBi làm quen với bạn.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: NabiPalette.mutedInk,
+                          height: 1.42,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      'Bắt đầu cùng Nami',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.heading2.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w900,
+                      const SizedBox(height: 14),
+                      const Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 7,
+                        runSpacing: 7,
+                        children: [
+                          NabiMoodPill(
+                            icon: Icons.cloud_sync_outlined,
+                            label: 'Đồng bộ khi cần',
+                            color: NabiPalette.cyan,
+                          ),
+                          NabiMoodPill(
+                            icon: Icons.shield_outlined,
+                            label: 'Dữ liệu riêng tư',
+                            color: NabiPalette.violet,
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'Bạn có thể đăng nhập để đồng bộ hồ sơ ngay, hoặc trải nghiệm onboarding trước. Nabisẽ giữ mọi thứ thật nhẹ nhàng cho bạn.',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        height: 1.5,
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: NabiPrimaryButton(
+                          key: const Key('onboarding_entry_login_cta'),
+                          onPressed: () => context.go(AuthRoutePaths.login),
+                          label: 'Đăng nhập hoặc tạo tài khoản',
+                          icon: Icons.login_rounded,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    FilledButton.icon(
-                      key: const Key('onboarding_entry_login_cta'),
-                      onPressed: () => context.go(AuthRoutePaths.login),
-                      icon: const Icon(Icons.lock_rounded),
-                      label: const Text('Đăng nhập hoặc tạo tài khoản'),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    OutlinedButton.icon(
-                      key: const Key('onboarding_entry_guest_cta'),
-                      onPressed: () => context.go(V1RoutePaths.onboarding),
-                      icon: const Icon(Icons.spa_rounded),
-                      label: const Text('Onboarding ngay'),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      'Nếu onboarding trước, sau này khi đăng ký Nabisẽ đồng bộ dữ liệu vào tài khoản của bạn.',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textMuted,
-                        height: 1.45,
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: NabiSecondaryButton(
+                          key: const Key('onboarding_entry_guest_cta'),
+                          onPressed: () => context.go(V1RoutePaths.onboarding),
+                          label: 'Trải nghiệm ngay với NaBi',
+                          icon: Icons.spa_outlined,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

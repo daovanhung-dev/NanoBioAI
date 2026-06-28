@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/domain/entities/onboarding_entity.dart';
@@ -32,16 +34,19 @@ void main() {
       },
     );
 
-    test('persists onboarding locally before any authenticated snapshot drain', () {
-      final source = File(
-        'lib/app_versions/v1/features/onboarding/domain/repositories/'
-        'onboarding_repository_impl.dart',
-      ).readAsStringSync();
+    test(
+      'persists onboarding locally before any authenticated snapshot drain',
+      () {
+        final source = File(
+          'lib/app_versions/v1/features/onboarding/domain/repositories/'
+          'onboarding_repository_impl.dart',
+        ).readAsStringSync();
 
-      expect(source, contains('localDatasource.saveOnboarding'));
-      expect(source, isNot(contains('saveCompletedOnboarding(')));
-      expect(source, contains('UserDataSyncOutbox.drainForCurrentUser'));
-    });
+        expect(source, contains('localDatasource.saveOnboarding'));
+        expect(source, isNot(contains('saveCompletedOnboarding(')));
+        expect(source, contains('UserDataSyncOutbox.drainForCurrentUser'));
+      },
+    );
 
     test('sets completed only after initial plan callback succeeds', () async {
       final repository = _FakeOnboardingRepository();
@@ -100,6 +105,81 @@ void main() {
         OnboardingInitialPlanException.userMessage,
       );
     });
+
+    test(
+      'ignores duplicate submit while save is already in progress',
+      () async {
+        final saveBlocker = Completer<void>();
+        final repository = _FakeOnboardingRepository(saveBlocker: saveBlocker);
+        var callbackCalls = 0;
+        final container = ProviderContainer(
+          overrides: [
+            onboardingRepositoryProvider.overrideWithValue(repository),
+            onboardingCompletionCallbackProvider.overrideWith((ref) {
+              return () async {
+                callbackCalls++;
+                return const OnboardingCompletionResult.generatedInitialPlan();
+              };
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final controller = container.read(onboardingProvider.notifier);
+        _seedValidState(controller);
+
+        final firstSave = controller.saveOnboarding();
+        final duplicateSave = controller.saveOnboarding();
+
+        expect(repository.saveCalls, 1);
+        expect(callbackCalls, 0);
+
+        saveBlocker.complete();
+        await Future.wait([firstSave, duplicateSave]);
+
+        expect(repository.saveCalls, 1);
+        expect(repository.markCompletedCalls, 1);
+        expect(callbackCalls, 1);
+        expect(container.read(onboardingProvider).isSaving, isFalse);
+      },
+    );
+
+    test('does not emit raw onboarding PII in controller logs', () async {
+      final repository = _FakeOnboardingRepository();
+      final container = ProviderContainer(
+        overrides: [
+          onboardingRepositoryProvider.overrideWithValue(repository),
+          onboardingCompletionCallbackProvider.overrideWith((ref) {
+            return () async =>
+                const OnboardingCompletionResult.generatedInitialPlan();
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final logs = await _captureDebugPrint(() async {
+        final controller = container.read(onboardingProvider.notifier);
+        _seedSensitiveState(controller);
+
+        await controller.saveOnboarding();
+      });
+
+      final output = logs.join('\n');
+      for (final forbidden in const [
+        'Sensitive Person',
+        'secret@example.com',
+        '0909999999',
+        'Private concern',
+        'User:',
+        'User ID',
+        'BMI:',
+        '23.',
+        'snapshot',
+        'StackTrace',
+      ]) {
+        expect(output, isNot(contains(forbidden)));
+      }
+    });
   });
 }
 
@@ -111,15 +191,52 @@ void _seedValidState(OnboardingController controller) {
   controller.setAgreed(true);
 }
 
+void _seedSensitiveState(OnboardingController controller) {
+  controller.updateEmail('secret@example.com');
+  controller.updatePhone('0909999999');
+  controller.updateFullName('Sensitive Person');
+  controller.updateGender('Nam');
+  controller.updateBirthYear('1995');
+  controller.updateOccupation('Nhan vien van phong');
+  controller.updateHeight('181');
+  controller.updateWeight('77');
+  controller.updateConcernText('Private concern');
+  controller.toggleGoal('lose_weight');
+  controller.toggleCondition('stress');
+  controller.toggleHabit('skip_breakfast');
+  controller.setAgreed(true);
+}
+
+Future<List<String>> _captureDebugPrint(Future<void> Function() action) async {
+  final messages = <String>[];
+  final previousDebugPrint = debugPrint;
+
+  debugPrint = (String? message, {int? wrapWidth}) {
+    if (message != null) messages.add(message);
+  };
+
+  try {
+    await action();
+  } finally {
+    debugPrint = previousDebugPrint;
+  }
+
+  return messages;
+}
+
 class _FakeOnboardingRepository implements OnboardingRepository {
+  final Completer<void>? saveBlocker;
   int saveCalls = 0;
   int markCompletedCalls = 0;
   OnboardingEntity? lastEntity;
+
+  _FakeOnboardingRepository({this.saveBlocker});
 
   @override
   Future<void> save(OnboardingEntity entity) async {
     saveCalls++;
     lastEntity = entity;
+    await saveBlocker?.future;
   }
 
   @override

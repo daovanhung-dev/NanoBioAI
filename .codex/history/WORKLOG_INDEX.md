@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 39
+- Total worklogs: 40
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -48,3 +48,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-28 | coding + Supabase schema draft + test/docs | supabase-schema | Admin app, Supabase Admin, Sale direct-only | [Worklog - Admin App Surface Va Supabase Admin](../../docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md) |
 | 2026-06-28 | coding + Supabase schema draft + test/docs. | supabase-schema | lib/sale_referral, lib/services/supabase/sale, | [Worklog - Sale Module Full Noi Bo](../../docs/worklog/2026-06-28/004-worklog-sale-module-internal.md) |
 | 2026-06-28 | docs-context | docs-context | docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1 | [Worklog - DD Progress Checklist Va Coding Gate](../../docs/worklog/2026-06-28/005-worklog-dd-progress-checklist.md) |
+| 2026-06-28 | coding | coding | M01 ONBOARDING_PROFILE | [Worklog - M01 Onboarding Safe Hardening](../../docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md) |

@@ -10,8 +10,7 @@ import '../domain/nabi_visual_state.dart';
 ///   ```dart
 ///   ref.read(NabiContextProvider.notifier).update((ctx) => ctx.copyWith(...));
 ///   ```
-final NabiContextProvider =
-    NotifierProvider<NabiContextNotifier, NabiContext>(
+final NabiContextProvider = NotifierProvider<NabiContextNotifier, NabiContext>(
   NabiContextNotifier.new,
 );
 

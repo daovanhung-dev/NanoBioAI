@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
+
 import '../../providers/onboarding_provider.dart';
+import 'nabi_onboarding_experience.dart';
+import 'onboarding_compact_ui.dart';
 import 'onboarding_step_shell.dart';
 
 class ConsentStep extends ConsumerWidget {
@@ -13,120 +16,78 @@ class ConsentStep extends ConsumerWidget {
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
 
-    return Stack(
-      children: [
-        const Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(gradient: AppGradients.onboarding),
-          ),
-        ),
-        OnboardingStepShell(
-          stepIndex: 6,
-          title: '',
-          subtitle: '',
-          isScrollable: false,
-          onBack: controller.previousStep,
-          nextLabel: 'Tôi hiểu và đồng ý',
-          onNext: () {
-            if (!state.agreed) {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Bạn xác nhận đã hiểu trách nhiệm và giới hạn của Nabitrước khi tiếp tục nhé.',
-                    ),
-                  ),
-                );
-              return;
-            }
-            controller.nextStep();
-          },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final maxWidth = constraints.maxWidth >= 900
-                  ? 820.0
-                  : constraints.maxWidth;
-              final horizontalPadding = constraints.maxWidth >= 720
-                  ? AppSpacing.pagePaddingLarge
-                  : AppSpacing.pagePadding;
-
-              return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(
-                  horizontalPadding,
-                  AppSpacing.sm,
-                  horizontalPadding,
-                  AppSpacing.xxxl,
+    return OnboardingStepShell(
+      stepIndex: 6,
+      title: 'Trước khi bắt đầu',
+      subtitle:
+          'NaBi đưa ra gợi ý chăm sóc hằng ngày, không thay thế chẩn đoán hay điều trị y tế.',
+      onBack: controller.previousStep,
+      nextLabel: 'Tôi hiểu và đồng ý',
+      onNext: () {
+        if (!state.agreed) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Bạn hãy xác nhận đã hiểu trước khi tiếp tục nhé.',
                 ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: maxWidth),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const _ConsentHeroCard(),
-                        const SizedBox(height: AppSpacing.lg),
-                        const _ResponsibilityCard(),
-                        const SizedBox(height: AppSpacing.lg),
-                        _ConfirmCard(
-                          agreed: state.agreed,
-                          onChanged: controller.setAgreed,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ConsentHeroCard extends StatelessWidget {
-  const _ConsentHeroCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: AppDecoration.premiumGradient(radius: AppRadius.xxl),
+              ),
+            );
+          return;
+        }
+        controller.nextStep();
+      },
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: AppDecoration.glass(
-              radius: AppRadius.lg,
-              opacity: 0.16,
-            ),
-            child: const Icon(
-              AppIcons.shield,
-              color: AppColors.textWhite,
-              size: 28,
+          OnboardingSectionCard(
+            title: 'NaBi cam kết',
+            child: const Column(
+              children: [
+                _ConsentLine(
+                  icon: Icons.lock_outline_rounded,
+                  text:
+                      'Bảo vệ dữ liệu hồ sơ và chỉ dùng để cá nhân hóa trải nghiệm.',
+                ),
+                SizedBox(height: 10),
+                _ConsentLine(
+                  icon: Icons.tips_and_updates_outlined,
+                  text:
+                      'Đưa ra lời nhắc, thực đơn và vận động phù hợp với thông tin bạn chọn.',
+                ),
+                SizedBox(height: 10),
+                _ConsentLine(
+                  icon: Icons.health_and_safety_outlined,
+                  text:
+                      'Khuyến khích bạn gặp chuyên gia khi có dấu hiệu cần theo dõi.',
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Trước khi Nabiđồng hành cùng bạn',
-            style: AppTextStyles.heading2.copyWith(
-              color: AppColors.textWhite,
-              fontWeight: FontWeight.w900,
-              height: 1.18,
+          const SizedBox(height: 12),
+          OnboardingSectionCard(
+            title: 'Bạn xác nhận',
+            child: CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              value: state.agreed,
+              onChanged: (value) => controller.setAgreed(value ?? false),
+              title: Text(
+                'Tôi hiểu đây là gợi ý hỗ trợ, không thay thế tư vấn bác sĩ.',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: NabiPalette.ink,
+                  fontWeight: FontWeight.w600,
+                  height: 1.35,
+                ),
+              ),
+              activeColor: NabiPalette.royalBlue,
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Mình muốn nói rõ vai trò của Nabiđể bạn sử dụng app nhẹ nhàng, chủ động và an toàn hơn.',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textWhite.withValues(alpha: 0.9),
-              height: 1.55,
-            ),
+          const SizedBox(height: 12),
+          const OnboardingInlineInfo(
+            icon: Icons.edit_outlined,
+            text:
+                'Bạn có thể thay đổi hồ sơ và sở thích chăm sóc sau khi hoàn tất.',
           ),
         ],
       ),
@@ -134,149 +95,29 @@ class _ConsentHeroCard extends StatelessWidget {
   }
 }
 
-class _ResponsibilityCard extends StatelessWidget {
-  const _ResponsibilityCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: AppDecoration.card(
-        radius: AppRadius.xxl,
-        border: Border.all(color: AppColors.border),
-        shadows: AppShadows.soft,
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _InfoBullet(
-            icon: AppIcons.info,
-            title: 'Thông tin chỉ để tham khảo',
-            message:
-                'Các gợi ý về ăn uống, vận động, thói quen và nhắc nhở trong app không thay thế tư vấn, chẩn đoán hoặc điều trị y tế.',
-          ),
-          SizedBox(height: AppSpacing.md),
-          _InfoBullet(
-            icon: AppIcons.profile,
-            title: 'Bạn chịu trách nhiệm với thông tin đã nhập',
-            message:
-                'Bạn cần nhập thông tin trung thực và tự cân nhắc trước khi áp dụng bất kỳ gợi ý nào vào sinh hoạt hằng ngày.',
-          ),
-          SizedBox(height: AppSpacing.md),
-          _InfoBullet(
-            icon: AppIcons.health,
-            title: 'Hãy lắng nghe cơ thể',
-            message:
-                'Nếu có bệnh nền, đang dùng thuốc, đang điều trị, mang thai, hoặc có triệu chứng bất thường, bạn nên hỏi bác sĩ hoặc chuyên gia phù hợp.',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoBullet extends StatelessWidget {
+class _ConsentLine extends StatelessWidget {
   final IconData icon;
-  final String title;
-  final String message;
+  final String text;
 
-  const _InfoBullet({
-    required this.icon,
-    required this.title,
-    required this.message,
-  });
+  const _ConsentLine({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 38,
-          height: 38,
-          decoration: AppDecoration.circle(color: AppColors.primarySoft),
-          child: Icon(icon, color: AppColors.primary, size: 20),
-        ),
-        const SizedBox(width: AppSpacing.sm),
+        Icon(icon, size: 19, color: NabiPalette.royalBlue),
+        const SizedBox(width: 9),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                message,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.5,
-                ),
-              ),
-            ],
+          child: Text(
+            text,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: NabiPalette.mutedInk,
+              height: 1.38,
+            ),
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ConfirmCard extends StatelessWidget {
-  final bool agreed;
-  final ValueChanged<bool> onChanged;
-
-  const _ConfirmCard({required this.agreed, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: AppDuration.normal,
-      curve: AppAnimations.smoothCurve,
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: agreed
-          ? AppDecoration.primaryGradient(radius: AppRadius.xxl)
-          : AppDecoration.card(
-              radius: AppRadius.xxl,
-              border: Border.all(color: AppColors.border),
-              shadows: AppShadows.card,
-            ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Switch(value: agreed, onChanged: onChanged),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  agreed ? 'Cảm ơn bạn đã xác nhận' : 'Mình đã hiểu và đồng ý',
-                  style: AppTextStyles.heading5.copyWith(
-                    color: agreed ? AppColors.textWhite : AppColors.textPrimary,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Tôi hiểu rằng Nabichỉ cung cấp thông tin tham khảo và tôi sẽ chủ động tham khảo chuyên gia khi cần.',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: agreed
-                        ? AppColors.textWhite.withValues(alpha: 0.9)
-                        : AppColors.textSecondary,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

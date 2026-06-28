@@ -116,7 +116,8 @@ class AuthenticatedUserDataSyncRepositoryImpl
     if (snapshot == null || !snapshot.hasUser) return false;
 
     final onboardingStatus = snapshot.user?['onboarding_status']?.toString();
-    return onboardingStatus == 'completed' || snapshot.tablesWithRows.isNotEmpty;
+    return onboardingStatus == 'completed' ||
+        snapshot.tablesWithRows.isNotEmpty;
   }
 
   String? _oldGuestIdForRemoval(String? pendingGuestUserId, String authUserId) {

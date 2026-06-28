@@ -12,10 +12,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 typedef SyncMutationPusher = Future<void> Function(SyncOutboxMutation mutation);
-typedef SyncSnapshotPusher = Future<void> Function(
-  String userId,
-  Database database,
-);
+typedef SyncSnapshotPusher =
+    Future<void> Function(String userId, Database database);
 
 class SyncOutboxMutation {
   final String id;
@@ -183,7 +181,10 @@ class UserDataSyncOutbox {
     try {
       final db = database ?? await _db();
       final rows = await _pendingRows(db, userId, limit);
-      final mutations = rows.map(_mutationFromRow).whereType<SyncOutboxMutation>().toList();
+      final mutations = rows
+          .map(_mutationFromRow)
+          .whereType<SyncOutboxMutation>()
+          .toList();
       if (mutations.isEmpty) return 0;
 
       if (mutationPusher != null) {
@@ -207,7 +208,12 @@ class UserDataSyncOutbox {
           await _markFailed(db, mutation, error);
         }
         AppLogger.warning(_tag, 'Full snapshot retry queued: $error');
-        AppLogger.error(_tag, 'Failed to push full local snapshot', error, stackTrace);
+        AppLogger.error(
+          _tag,
+          'Failed to push full local snapshot',
+          error,
+          stackTrace,
+        );
         return 0;
       }
     } finally {
@@ -278,7 +284,9 @@ class UserDataSyncOutbox {
 
     final remote = const SupabaseUserDataSyncRemoteDatasource();
     if (remote.currentUserId != userId) {
-      throw const AuthException('Cloud sync session does not match local data.');
+      throw const AuthException(
+        'Cloud sync session does not match local data.',
+      );
     }
 
     final snapshot = await SqliteUserDataSyncLocalDatasource(

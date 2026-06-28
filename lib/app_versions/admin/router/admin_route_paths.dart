@@ -5,6 +5,7 @@ abstract class AdminRoutePaths {
   static const users = '/admin/users';
   static const payments = '/admin/payments';
   static const sales = '/admin/sales';
+  static const saleConversions = '/admin/sale-conversions';
   static const plans = '/admin/plans';
   static const reports = '/admin/reports';
   static const audit = '/admin/audit';

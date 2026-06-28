@@ -15,47 +15,49 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('pushes Guest onboarding only to a fresh cloud account, then pulls',
-        () async {
-      await AppPrefs.setPendingGuestUserId('guest-1');
+    test(
+      'pushes Guest onboarding only to a fresh cloud account, then pulls',
+      () async {
+        await AppPrefs.setPendingGuestUserId('guest-1');
 
-      final remote = _FakeRemoteDatasource(
-        pullSnapshots: [
-          _freshSnapshot('auth-1'),
-          _snapshot('auth-1', tableName: 'meal_plans'),
-        ],
-      );
-      final local = _FakeLocalDatasource({
-        'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
-      });
-      final repository = AuthenticatedUserDataSyncRepositoryImpl(
-        remoteDatasource: remote,
-        localDatasource: local,
-      );
+        final remote = _FakeRemoteDatasource(
+          pullSnapshots: [
+            _freshSnapshot('auth-1'),
+            _snapshot('auth-1', tableName: 'meal_plans'),
+          ],
+        );
+        final local = _FakeLocalDatasource({
+          'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
+        });
+        final repository = AuthenticatedUserDataSyncRepositoryImpl(
+          remoteDatasource: remote,
+          localDatasource: local,
+        );
 
-      final result = await repository.syncAfterAuthenticatedSession(
-        AuthSyncReason.signUpSessionReady,
-      );
+        final result = await repository.syncAfterAuthenticatedSession(
+          AuthSyncReason.signUpSessionReady,
+        );
 
-      expect(result.pushedLocalGuestData, isTrue);
-      expect(result.userId, 'auth-1');
-      expect(remote.pushedSnapshot?.user?['id'], 'guest-1');
-      expect(remote.pushedAuthUserId, 'auth-1');
-      expect(local.replacedUserId, 'auth-1');
-      expect(local.removedLocalUserId, 'guest-1');
-      expect(await AppPrefs.pendingGuestUserId(), isNull);
+        expect(result.pushedLocalGuestData, isTrue);
+        expect(result.userId, 'auth-1');
+        expect(remote.pushedSnapshot?.user?['id'], 'guest-1');
+        expect(remote.pushedAuthUserId, 'auth-1');
+        expect(local.replacedUserId, 'auth-1');
+        expect(local.removedLocalUserId, 'guest-1');
+        expect(await AppPrefs.pendingGuestUserId(), isNull);
 
-      final routeState = const AuthRouteStateResolver().resolve(
-        session: const AuthSessionSnapshot(
-          userId: 'auth-1',
-          email: 'auth-1@nanobio.local',
-          emailConfirmed: true,
-        ),
-        profile: AuthProfile.fromMap(remote.lastSnapshot!.user!),
-        requiresEmailConfirmation: false,
-      );
-      expect(routeState.status, AuthRouteStatus.authenticatedReady);
-    });
+        final routeState = const AuthRouteStateResolver().resolve(
+          session: const AuthSessionSnapshot(
+            userId: 'auth-1',
+            email: 'auth-1@nanobio.local',
+            emailConfirmed: true,
+          ),
+          profile: AuthProfile.fromMap(remote.lastSnapshot!.user!),
+          requiresEmailConfirmation: false,
+        );
+        expect(routeState.status, AuthRouteStatus.authenticatedReady);
+      },
+    );
 
     test('cloud completed onboarding wins over pending Guest cache', () async {
       await AppPrefs.setPendingGuestUserId('guest-1');
@@ -82,58 +84,62 @@ void main() {
       expect(await AppPrefs.pendingGuestUserId(), isNull);
     });
 
-    test('existing cloud data wins even before onboarding is marked completed',
-        () async {
-      await AppPrefs.setPendingGuestUserId('guest-1');
+    test(
+      'existing cloud data wins even before onboarding is marked completed',
+      () async {
+        await AppPrefs.setPendingGuestUserId('guest-1');
 
-      final remote = _FakeRemoteDatasource(
-        pullSnapshots: [
-          _snapshot(
-            'auth-1',
-            tableName: 'health_profiles',
-            onboardingStatus: 'in_progress',
-          ),
-        ],
-      );
-      final local = _FakeLocalDatasource({
-        'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
-      });
-      final repository = AuthenticatedUserDataSyncRepositoryImpl(
-        remoteDatasource: remote,
-        localDatasource: local,
-      );
+        final remote = _FakeRemoteDatasource(
+          pullSnapshots: [
+            _snapshot(
+              'auth-1',
+              tableName: 'health_profiles',
+              onboardingStatus: 'in_progress',
+            ),
+          ],
+        );
+        final local = _FakeLocalDatasource({
+          'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
+        });
+        final repository = AuthenticatedUserDataSyncRepositoryImpl(
+          remoteDatasource: remote,
+          localDatasource: local,
+        );
 
-      await repository.syncAfterAuthenticatedSession(AuthSyncReason.signIn);
+        await repository.syncAfterAuthenticatedSession(AuthSyncReason.signIn);
 
-      expect(remote.pushedSnapshot, isNull);
-      expect(local.replacedUserId, 'auth-1');
-      expect(await AppPrefs.isOnboardingCompleted(), isFalse);
-    });
+        expect(remote.pushedSnapshot, isNull);
+        expect(local.replacedUserId, 'auth-1');
+        expect(await AppPrefs.isOnboardingCompleted(), isFalse);
+      },
+    );
 
-    test('sync failure after Guest upload does not clear pending Guest id',
-        () async {
-      await AppPrefs.setPendingGuestUserId('guest-1');
+    test(
+      'sync failure after Guest upload does not clear pending Guest id',
+      () async {
+        await AppPrefs.setPendingGuestUserId('guest-1');
 
-      final remote = _FakeRemoteDatasource(
-        pullSnapshots: [_freshSnapshot('auth-1')],
-        failFromPull: 2,
-      );
-      final local = _FakeLocalDatasource({
-        'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
-      });
-      final repository = AuthenticatedUserDataSyncRepositoryImpl(
-        remoteDatasource: remote,
-        localDatasource: local,
-      );
+        final remote = _FakeRemoteDatasource(
+          pullSnapshots: [_freshSnapshot('auth-1')],
+          failFromPull: 2,
+        );
+        final local = _FakeLocalDatasource({
+          'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
+        });
+        final repository = AuthenticatedUserDataSyncRepositoryImpl(
+          remoteDatasource: remote,
+          localDatasource: local,
+        );
 
-      await expectLater(
-        repository.syncAfterAuthenticatedSession(AuthSyncReason.signIn),
-        throwsStateError,
-      );
+        await expectLater(
+          repository.syncAfterAuthenticatedSession(AuthSyncReason.signIn),
+          throwsStateError,
+        );
 
-      expect(remote.pushedSnapshot, isNotNull);
-      expect(await AppPrefs.pendingGuestUserId(), 'guest-1');
-    });
+        expect(remote.pushedSnapshot, isNotNull);
+        expect(await AppPrefs.pendingGuestUserId(), 'guest-1');
+      },
+    );
   });
 }
 
@@ -180,14 +186,13 @@ class _FakeRemoteDatasource implements UserDataSyncRemoteDatasource {
   UserDataSnapshot? pushedSnapshot;
   String? pushedAuthUserId;
 
-  _FakeRemoteDatasource({
-    required this.pullSnapshots,
-    this.failFromPull,
-  });
+  _FakeRemoteDatasource({required this.pullSnapshots, this.failFromPull});
 
   UserDataSnapshot? get lastSnapshot => pullSnapshots.isEmpty
       ? null
-      : pullSnapshots[(pullSnapshots.length - 1).clamp(0, pullSnapshots.length - 1).toInt()];
+      : pullSnapshots[(pullSnapshots.length - 1)
+            .clamp(0, pullSnapshots.length - 1)
+            .toInt()];
 
   @override
   Future<Map<String, Object?>?> currentUserRow() async => lastSnapshot?.user;
@@ -199,9 +204,7 @@ class _FakeRemoteDatasource implements UserDataSyncRemoteDatasource {
       throw StateError('pull failed');
     }
     if (pullSnapshots.isEmpty) return null;
-    final index = (
-      _pullCalls - 1
-    ).clamp(0, pullSnapshots.length - 1).toInt();
+    final index = (_pullCalls - 1).clamp(0, pullSnapshots.length - 1).toInt();
     return pullSnapshots[index];
   }
 

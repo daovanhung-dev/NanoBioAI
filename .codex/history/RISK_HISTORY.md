@@ -267,3 +267,12 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-28/005-worklog-dd-progress-checklist.md :: ## Loi/Rui ro
 - docs/worklog/2026-06-28/005-worklog-dd-progress-checklist.md :: - Chua fix: Cac DD module van `Draft`; checklist chi theo doi tien do, khong dong nghia approval de coding behavior bi blocker.
 - docs/worklog/2026-06-28/005-worklog-dd-progress-checklist.md :: - Can kiem tra tiep: Sau khi chot open questions, can cap nhat lai `DD readiness %` va `Coding progress %` theo bang chung moi.
+- docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - Mo rong completion flow tests cho save/callback/mark completed, skipped initial plan, duplicate submit, va captured log khong chua raw sensitive markers.
+- docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - `test/app_versions/v1/features/onboarding/onboarding_entry_page_test.dart` - sua - tranh `pumpAndSettle` timeout voi animation lien tuc.
+- docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1`: FAIL - stopped at `flutter analyze` with 47 repo-wide issues, mostly existing Nabi analyzer/case-sensitive warnings and unrelated deprecations/import warnings outside this M01 slice.
+- docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - Chua fix: M01 van `Draft`; Supabase/profile sync, FamilyPlus subject/consent, health formula Q-14/Q-15 chua chot.
+- docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - Chua fix: Quick check toan cuc fail o `flutter analyze` do analyzer issues ngoai pham vi M01.
+- docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - Can kiem tra tiep: Khi Q-14/Q-15 va Supabase/FamilyPlus contract duoc chot, can them cloud sync/subject/consent acceptance tests.
+- docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - Can kiem tra tiep: Worktree da co nhieu thay doi onboarding/Nabi/cloud-sync truoc phien nay; khong revert cac thay doi khong thuoc M01 safe hardening.
+- docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md :: - Bang chung kiem chung: onboarding tests, storage/cloud-sync targeted tests, architecture tests; quick check fail duoc ghi ro.

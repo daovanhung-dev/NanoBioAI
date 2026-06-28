@@ -119,8 +119,14 @@ class _NabiCharacterPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final unit = size.width / 100;
-    final bob = math.sin(motion * math.pi * 2) * (emotion == NabiEmotion.celebrating ? 2.4 : 1.3) * unit;
-    final sway = math.sin(motion * math.pi * 2) * (emotion == NabiEmotion.thinking ? 1.2 : 0.55) * unit;
+    final bob =
+        math.sin(motion * math.pi * 2) *
+        (emotion == NabiEmotion.celebrating ? 2.4 : 1.3) *
+        unit;
+    final sway =
+        math.sin(motion * math.pi * 2) *
+        (emotion == NabiEmotion.thinking ? 1.2 : 0.55) *
+        unit;
 
     canvas.save();
     canvas.translate(0, bob);
@@ -175,13 +181,25 @@ class _NabiCharacterPainter extends CustomPainter {
 
     // Tóc phía sau.
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(headCenter.dx, 34 * u), width: 64 * u, height: 61 * u),
+      Rect.fromCenter(
+        center: Offset(headCenter.dx, 34 * u),
+        width: 64 * u,
+        height: 61 * u,
+      ),
       Paint()..color = primaryColor.withOpacity(0.95),
     );
 
     // Tai + khuôn mặt.
-    canvas.drawCircle(Offset(21 * u + sway, 40 * u), 6.5 * u, Paint()..color = skin);
-    canvas.drawCircle(Offset(79 * u + sway, 40 * u), 6.5 * u, Paint()..color = skin);
+    canvas.drawCircle(
+      Offset(21 * u + sway, 40 * u),
+      6.5 * u,
+      Paint()..color = skin,
+    );
+    canvas.drawCircle(
+      Offset(79 * u + sway, 40 * u),
+      6.5 * u,
+      Paint()..color = skin,
+    );
     canvas.drawOval(
       Rect.fromCenter(center: headCenter, width: 55 * u, height: 58 * u),
       Paint()..color = skin,
@@ -224,10 +242,26 @@ class _NabiCharacterPainter extends CustomPainter {
     _drawEyes(canvas, u, left, right, browPaint);
     _drawMouth(canvas, u, sway);
 
-    if (emotion == NabiEmotion.happy || emotion == NabiEmotion.celebrating || emotion == NabiEmotion.encouraging) {
+    if (emotion == NabiEmotion.happy ||
+        emotion == NabiEmotion.celebrating ||
+        emotion == NabiEmotion.encouraging) {
       final blush = Paint()..color = secondaryColor.withOpacity(0.20);
-      canvas.drawOval(Rect.fromCenter(center: Offset(31 * u + sway, 50 * u), width: 10 * u, height: 4.7 * u), blush);
-      canvas.drawOval(Rect.fromCenter(center: Offset(69 * u + sway, 50 * u), width: 10 * u, height: 4.7 * u), blush);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(31 * u + sway, 50 * u),
+          width: 10 * u,
+          height: 4.7 * u,
+        ),
+        blush,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(69 * u + sway, 50 * u),
+          width: 10 * u,
+          height: 4.7 * u,
+        ),
+        blush,
+      );
     }
   }
 
@@ -263,7 +297,13 @@ class _NabiCharacterPainter extends CustomPainter {
     }
   }
 
-  void _drawEyes(Canvas canvas, double u, Offset left, Offset right, Paint linePaint) {
+  void _drawEyes(
+    Canvas canvas,
+    double u,
+    Offset left,
+    Offset right,
+    Paint linePaint,
+  ) {
     if (emotion == NabiEmotion.celebrating) {
       _drawStar(canvas, left, 4.8 * u, secondaryColor);
       _drawStar(canvas, right, 4.8 * u, secondaryColor);
@@ -271,26 +311,51 @@ class _NabiCharacterPainter extends CustomPainter {
     }
 
     if (emotion == NabiEmotion.happy || emotion == NabiEmotion.encouraging) {
-      final rectLeft = Rect.fromCenter(center: left, width: 11 * u, height: 8 * u);
-      final rectRight = Rect.fromCenter(center: right, width: 11 * u, height: 8 * u);
+      final rectLeft = Rect.fromCenter(
+        center: left,
+        width: 11 * u,
+        height: 8 * u,
+      );
+      final rectRight = Rect.fromCenter(
+        center: right,
+        width: 11 * u,
+        height: 8 * u,
+      );
       canvas.drawArc(rectLeft, 0, math.pi, false, linePaint);
       canvas.drawArc(rectRight, 0, math.pi, false, linePaint);
       return;
     }
 
     if (emotion == NabiEmotion.sleepy) {
-      canvas.drawLine(left - Offset(4.5 * u, 0), left + Offset(4.5 * u, 0), linePaint);
-      canvas.drawLine(right - Offset(4.5 * u, 0), right + Offset(4.5 * u, 0), linePaint);
+      canvas.drawLine(
+        left - Offset(4.5 * u, 0),
+        left + Offset(4.5 * u, 0),
+        linePaint,
+      );
+      canvas.drawLine(
+        right - Offset(4.5 * u, 0),
+        right + Offset(4.5 * u, 0),
+        linePaint,
+      );
       return;
     }
 
     final eyeScale = (1 - blink).clamp(0.12, 1.0).toDouble();
-    final openHeight = (emotion == NabiEmotion.listening ? 10.5 : 8.2) * u * eyeScale;
+    final openHeight =
+        (emotion == NabiEmotion.listening ? 10.5 : 8.2) * u * eyeScale;
     final eyePaint = Paint()..color = outlineColor;
     final highlightPaint = Paint()..color = Colors.white.withOpacity(0.92);
 
-    final leftRect = Rect.fromCenter(center: left, width: 8.8 * u, height: openHeight);
-    final rightRect = Rect.fromCenter(center: right, width: 8.8 * u, height: openHeight);
+    final leftRect = Rect.fromCenter(
+      center: left,
+      width: 8.8 * u,
+      height: openHeight,
+    );
+    final rightRect = Rect.fromCenter(
+      center: right,
+      width: 8.8 * u,
+      height: openHeight,
+    );
     canvas.drawOval(leftRect, eyePaint);
     canvas.drawOval(rightRect, eyePaint);
 
@@ -300,8 +365,16 @@ class _NabiCharacterPainter extends CustomPainter {
       NabiEmotion.listening => Offset(0, 0.6 * u),
       _ => Offset.zero,
     };
-    canvas.drawCircle(left + lookOffset - Offset(1.15 * u, 1.1 * u), 1.25 * u, highlightPaint);
-    canvas.drawCircle(right + lookOffset - Offset(1.15 * u, 1.1 * u), 1.25 * u, highlightPaint);
+    canvas.drawCircle(
+      left + lookOffset - Offset(1.15 * u, 1.1 * u),
+      1.25 * u,
+      highlightPaint,
+    );
+    canvas.drawCircle(
+      right + lookOffset - Offset(1.15 * u, 1.1 * u),
+      1.25 * u,
+      highlightPaint,
+    );
   }
 
   void _drawMouth(Canvas canvas, double u, double sway) {
@@ -436,8 +509,22 @@ class _NabiCharacterPainter extends CustomPainter {
   void _drawHeart(Canvas canvas, Offset center, double radius, Color color) {
     final path = Path()
       ..moveTo(center.dx, center.dy + radius)
-      ..cubicTo(center.dx - radius * 1.8, center.dy - radius * 0.15, center.dx - radius, center.dy - radius * 1.65, center.dx, center.dy - radius * 0.45)
-      ..cubicTo(center.dx + radius, center.dy - radius * 1.65, center.dx + radius * 1.8, center.dy - radius * 0.15, center.dx, center.dy + radius)
+      ..cubicTo(
+        center.dx - radius * 1.8,
+        center.dy - radius * 0.15,
+        center.dx - radius,
+        center.dy - radius * 1.65,
+        center.dx,
+        center.dy - radius * 0.45,
+      )
+      ..cubicTo(
+        center.dx + radius,
+        center.dy - radius * 1.65,
+        center.dx + radius * 1.8,
+        center.dy - radius * 0.15,
+        center.dx,
+        center.dy + radius,
+      )
       ..close();
     canvas.drawPath(path, Paint()..color = color);
   }
@@ -447,7 +534,10 @@ class _NabiCharacterPainter extends CustomPainter {
     for (var i = 0; i < 10; i++) {
       final r = i.isEven ? radius : radius * 0.44;
       final angle = -math.pi / 2 + i * math.pi / 5;
-      final point = Offset(center.dx + math.cos(angle) * r, center.dy + math.sin(angle) * r);
+      final point = Offset(
+        center.dx + math.cos(angle) * r,
+        center.dy + math.sin(angle) * r,
+      );
       if (i == 0) {
         path.moveTo(point.dx, point.dy);
       } else {
@@ -463,8 +553,16 @@ class _NabiCharacterPainter extends CustomPainter {
       ..color = color
       ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(center - Offset(radius, 0), center + Offset(radius, 0), paint);
-    canvas.drawLine(center - Offset(0, radius), center + Offset(0, radius), paint);
+    canvas.drawLine(
+      center - Offset(radius, 0),
+      center + Offset(radius, 0),
+      paint,
+    );
+    canvas.drawLine(
+      center - Offset(0, radius),
+      center + Offset(0, radius),
+      paint,
+    );
   }
 
   void _drawZ(Canvas canvas, Offset origin, double size, Color color) {

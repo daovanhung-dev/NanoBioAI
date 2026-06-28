@@ -69,34 +69,4 @@ class OnboardingEntity {
       treatmentName.trim().isNotEmpty ||
       medicationName.trim().isNotEmpty ||
       treatmentNote.trim().isNotEmpty;
-
-  Map<String, Object?> toDebugMap() {
-    return {
-      'id': id,
-      'email': email,
-      'phone': phone,
-      'fullName': fullName,
-      'gender': gender,
-      'birthYear': birthYear,
-      'occupation': occupation,
-      'heightCm': heightCm,
-      'weightKg': weightKg,
-      'bmi': bmi,
-      'goals': goals,
-      'otherGoal': otherGoal,
-      'conditions': conditions,
-      'otherCondition': otherCondition,
-      'habits': habits,
-      'sleepQuality': sleepQuality,
-      'activityLevel': activityLevel,
-      'waterPerDay': waterPerDay,
-      'allergyName': allergyName,
-      'allergyNote': allergyNote,
-      'treatmentName': treatmentName,
-      'medicationName': medicationName,
-      'treatmentNote': treatmentNote,
-      'concernText': concernText,
-      'agreed': agreed,
-    };
-  }
 }

@@ -5,7 +5,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Canonical Work Types Seen
 
 - docs-context - Context and docs update: 14 worklog(s)
-- coding - Coding: 7 worklog(s)
+- coding - Coding: 8 worklog(s)
 - supabase-schema - Supabase schema and RLS: 5 worklog(s)
 - bugfix - Direct bugfix: 5 worklog(s)
 - docs-dd - Design docs: 4 worklog(s)
@@ -27,7 +27,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - Product Flow, Membership, Quota, FamilyPlus, Sale/referral, DD workflow.: 1
 - .codex, workflow router, domain context, worklog learning, project skill.: 1
 - .codex, history learning, task-skills, project skill: 1
-- Admin app, Supabase Admin, Sale direct-only: 1
+- v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.: 1
 
 ## Reusable Project Skills
 

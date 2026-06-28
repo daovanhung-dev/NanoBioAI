@@ -14,15 +14,15 @@ import '../../providers/nabi_provider.dart';
 
 /// Loại hoạt ảnh chính gắn với mỗi nhóm state.
 enum _NabiAnimProfile {
-  idle,         // float + sway nhẹ
-  happy,        // bounce + sparkle
-  thinking,     // pulse + wobble nhẹ
-  wave,         // swing xoay
-  celebrate,    // burst scale + particles
-  sad,          // droop chậm
-  chat,         // nhịp đập typing
-  onboarding,   // slide-up + shine
-  loading,      // spin nhẹ
+  idle, // float + sway nhẹ
+  happy, // bounce + sparkle
+  thinking, // pulse + wobble nhẹ
+  wave, // swing xoay
+  celebrate, // burst scale + particles
+  sad, // droop chậm
+  chat, // nhịp đập typing
+  onboarding, // slide-up + shine
+  loading, // spin nhẹ
 }
 
 _NabiAnimProfile _profileFor(NabiVisualState s) {
@@ -118,7 +118,6 @@ class NabiCharacterWidget extends ConsumerStatefulWidget {
 
 class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
     with TickerProviderStateMixin {
-
   // ── Shared: float / sway ──────────────────────────────────────────────────
   late final AnimationController _floatCtrl;
   late final AnimationController _swayCtrl;
@@ -233,9 +232,10 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    _droopAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _droopCtrl, curve: Curves.easeOut),
-    );
+    _droopAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _droopCtrl, curve: Curves.easeOut));
 
     _celebCtrl = AnimationController(
       vsync: this,
@@ -247,9 +247,10 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
-    _chatAnim = Tween<double>(begin: 0.96, end: 1.04).animate(
-      CurvedAnimation(parent: _chatCtrl, curve: Curves.easeInOut),
-    );
+    _chatAnim = Tween<double>(
+      begin: 0.96,
+      end: 1.04,
+    ).animate(CurvedAnimation(parent: _chatCtrl, curve: Curves.easeInOut));
 
     _shineCtrl = AnimationController(
       vsync: this,
@@ -381,8 +382,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
     }
   }
 
-  void _handleTapDown(TapDownDetails _) =>
-      setState(() => _isPressed = true);
+  void _handleTapDown(TapDownDetails _) => setState(() => _isPressed = true);
 
   void _handleTapUp(_) {
     setState(() => _isPressed = false);
@@ -414,10 +414,18 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
       button: widget.onTap != null,
       child: AnimatedBuilder(
         animation: Listenable.merge([
-          _floatCtrl, _swayCtrl, _fadeCtrl, _auraCtrl,
-          _bounceCtrl, _wobbleCtrl, _swingCtrl,
-          _droopCtrl, _celebCtrl, _chatCtrl,
-          _shineCtrl, _spinCtrl,
+          _floatCtrl,
+          _swayCtrl,
+          _fadeCtrl,
+          _auraCtrl,
+          _bounceCtrl,
+          _wobbleCtrl,
+          _swingCtrl,
+          _droopCtrl,
+          _celebCtrl,
+          _chatCtrl,
+          _shineCtrl,
+          _spinCtrl,
         ]),
         builder: (context, _) {
           final state = _currentState;
@@ -429,22 +437,28 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
 
           final bounceScale = _bounceCtrl.isAnimating ? _bounceAnim.value : 1.0;
           final chatScale = profile == _NabiAnimProfile.chat
-              ? _chatAnim.value : 1.0;
+              ? _chatAnim.value
+              : 1.0;
           final pressScale = _isPressed ? 0.90 : 1.0;
           final droopY = profile == _NabiAnimProfile.sad
-              ? lerpDouble(0, 6, _droopAnim.value)! : 0.0;
+              ? lerpDouble(0, 6, _droopAnim.value)!
+              : 0.0;
           final celebScale = profile == _NabiAnimProfile.celebrate
-              ? lerpDouble(1.0, 1.18, _celebAnim.value)! : 1.0;
+              ? lerpDouble(1.0, 1.18, _celebAnim.value)!
+              : 1.0;
 
           // Wobble = rotation trad. ──────────────────────────────────────────
           final wobbleAngle = profile == _NabiAnimProfile.thinking
-              ? _wobbleAnim.value : 0.0;
+              ? _wobbleAnim.value
+              : 0.0;
           // Swing = rotation wave ────────────────────────────────────────────
           final swingAngle = profile == _NabiAnimProfile.wave
-              ? _swingAnim.value : 0.0;
+              ? _swingAnim.value
+              : 0.0;
           // Loading spin ─────────────────────────────────────────────────────
           final spinAngle = profile == _NabiAnimProfile.loading
-              ? _spinCtrl.value * math.pi * 2 * 0.08 : 0.0;
+              ? _spinCtrl.value * math.pi * 2 * 0.08
+              : 0.0;
 
           final totalScale = bounceScale * chatScale * pressScale * celebScale;
           final totalAngle = wobbleAngle + swingAngle + spinAngle;
@@ -557,22 +571,22 @@ class _NabiAura extends StatelessWidget {
 
   Color _color() => switch (profile) {
     _NabiAnimProfile.celebrate => AppColors.warning,
-    _NabiAnimProfile.happy     => AppColors.success,
-    _NabiAnimProfile.sad       => AppColors.textHint,
+    _NabiAnimProfile.happy => AppColors.success,
+    _NabiAnimProfile.sad => AppColors.textHint,
     _NabiAnimProfile.thinking ||
-    _NabiAnimProfile.loading   => AppColors.secondary,
-    _NabiAnimProfile.chat      => AppColors.tertiary,
-    _NabiAnimProfile.wave      => AppColors.primaryLight,
+    _NabiAnimProfile.loading => AppColors.secondary,
+    _NabiAnimProfile.chat => AppColors.tertiary,
+    _NabiAnimProfile.wave => AppColors.primaryLight,
     _NabiAnimProfile.onboarding => AppColors.primary,
-    _NabiAnimProfile.idle      => AppColors.primary,
+    _NabiAnimProfile.idle => AppColors.primary,
   };
 
   double _intensity() => switch (profile) {
     _NabiAnimProfile.celebrate => 0.38,
-    _NabiAnimProfile.happy     => 0.28,
-    _NabiAnimProfile.sad       => 0.08,
-    _NabiAnimProfile.chat      => 0.20,
-    _                          => 0.18,
+    _NabiAnimProfile.happy => 0.28,
+    _NabiAnimProfile.sad => 0.08,
+    _NabiAnimProfile.chat => 0.20,
+    _ => 0.18,
   };
 
   @override
@@ -591,7 +605,9 @@ class _NabiAura extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: RadialGradient(
           colors: [
-            color.withValues(alpha: lerpDouble(intensity * 0.6, intensity, pulseValue)!),
+            color.withValues(
+              alpha: lerpDouble(intensity * 0.6, intensity, pulseValue)!,
+            ),
             color.withValues(alpha: 0.0),
           ],
         ),
@@ -632,10 +648,7 @@ class _NabiImage extends StatelessWidget {
               opacity: (1 - fadeValue).clamp(0.0, 1.0),
               child: _img(prev),
             ),
-          Opacity(
-            opacity: fadeValue.clamp(0.0, 1.0),
-            child: _img(curr),
-          ),
+          Opacity(opacity: fadeValue.clamp(0.0, 1.0), child: _img(curr)),
         ],
       ),
     );
@@ -667,8 +680,11 @@ class _NabiFallbackIcon extends StatelessWidget {
           colors: [Color(0xFF60A5FA), Color(0xFF2563EB)],
         ),
       ),
-      child: Icon(Icons.auto_awesome_rounded,
-          color: Colors.white, size: size * 0.48),
+      child: Icon(
+        Icons.auto_awesome_rounded,
+        color: Colors.white,
+        size: size * 0.48,
+      ),
     );
   }
 }
@@ -699,16 +715,24 @@ class _ParticlesPainter extends CustomPainter {
   static const _count = 10;
   static final _rng = math.Random(42);
   static final _angles = List.generate(
-    _count, (i) => i * (math.pi * 2 / _count) + _rng.nextDouble() * 0.4,
+    _count,
+    (i) => i * (math.pi * 2 / _count) + _rng.nextDouble() * 0.4,
   );
   static final _speeds = List.generate(
-    _count, (_) => 0.55 + _rng.nextDouble() * 0.45,
+    _count,
+    (_) => 0.55 + _rng.nextDouble() * 0.45,
   );
   static final _colors = [
-    AppColors.warning, AppColors.success, AppColors.primary,
-    AppColors.secondary, AppColors.tertiary,
-    AppColors.primaryLight, AppColors.secondaryLight,
-    AppColors.warning, AppColors.success, AppColors.primary,
+    AppColors.warning,
+    AppColors.success,
+    AppColors.primary,
+    AppColors.secondary,
+    AppColors.tertiary,
+    AppColors.primaryLight,
+    AppColors.secondaryLight,
+    AppColors.warning,
+    AppColors.success,
+    AppColors.primary,
   ];
 
   _ParticlesPainter({required this.progress, required this.size});
@@ -750,9 +774,7 @@ class _NabiShine extends StatelessWidget {
       width: size,
       height: size,
       child: ClipOval(
-        child: CustomPaint(
-          painter: _ShinePainter(progress: progress),
-        ),
+        child: CustomPaint(painter: _ShinePainter(progress: progress)),
       ),
     );
   }
@@ -795,9 +817,7 @@ class _NabiLoadingRing extends StatelessWidget {
     return SizedBox(
       width: size + 12,
       height: size + 12,
-      child: CustomPaint(
-        painter: _LoadingRingPainter(progress: progress),
-      ),
+      child: CustomPaint(painter: _LoadingRingPainter(progress: progress)),
     );
   }
 }
@@ -814,7 +834,8 @@ class _LoadingRingPainter extends CustomPainter {
 
     // Track
     canvas.drawCircle(
-      center, radius,
+      center,
+      radius,
       Paint()
         ..color = AppColors.secondary.withValues(alpha: 0.15)
         ..style = PaintingStyle.stroke
@@ -838,7 +859,10 @@ class _LoadingRingPainter extends CustomPainter {
 
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      angle, math.pi * 1.4, false, arcPaint,
+      angle,
+      math.pi * 1.4,
+      false,
+      arcPaint,
     );
   }
 
@@ -868,14 +892,20 @@ class _NabiThinkingDotsState extends State<_NabiThinkingDots>
   @override
   void initState() {
     super.initState();
-    _ctls = List.generate(3, (_) => AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 480),
-    ));
+    _ctls = List.generate(
+      3,
+      (_) => AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 480),
+      ),
+    );
     _anims = _ctls
-        .map((c) => Tween<double>(begin: 0, end: 1).animate(
-              CurvedAnimation(parent: c, curve: Curves.easeInOut),
-            ))
+        .map(
+          (c) => Tween<double>(
+            begin: 0,
+            end: 1,
+          ).animate(CurvedAnimation(parent: c, curve: Curves.easeInOut)),
+        )
         .toList();
 
     for (int i = 0; i < 3; i++) {
@@ -939,10 +969,13 @@ class _NabiChatWaveState extends State<_NabiChatWave>
   @override
   void initState() {
     super.initState();
-    _ctls = List.generate(_barCount, (i) => AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 350 + i * 80),
-    ));
+    _ctls = List.generate(
+      _barCount,
+      (i) => AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 350 + i * 80),
+      ),
+    );
     for (int i = 0; i < _barCount; i++) {
       Future.delayed(Duration(milliseconds: i * 120), () {
         if (mounted) _ctls[i].repeat(reverse: true);

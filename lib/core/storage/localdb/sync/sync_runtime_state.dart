@@ -11,10 +11,7 @@ import 'sync_outbox_schema.dart';
 class SyncRuntimeState {
   SyncRuntimeState._();
 
-  static Future<void> setApplyingCloud(
-    DatabaseExecutor executor,
-    bool value,
-  ) {
+  static Future<void> setApplyingCloud(DatabaseExecutor executor, bool value) {
     return executor.insert(
       SyncOutboxSchema.runtimeStateTable,
       {

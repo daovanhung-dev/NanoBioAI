@@ -26,24 +26,26 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('a local table write produces one snapshot push and clears that marker',
-      () async {
-    await db.insert('meal_plans', {'id': 'meal-1', 'user_id': 'auth-1'});
+  test(
+    'a local table write produces one snapshot push and clears that marker',
+    () async {
+      await db.insert('meal_plans', {'id': 'meal-1', 'user_id': 'auth-1'});
 
-    var pushCalls = 0;
-    final outbox = UserDataSyncOutbox(
-      databaseOverride: db,
-      currentUserId: () => 'auth-1',
-      snapshotPusher: (_, __) async => pushCalls++,
-    );
+      var pushCalls = 0;
+      final outbox = UserDataSyncOutbox(
+        databaseOverride: db,
+        currentUserId: () => 'auth-1',
+        snapshotPusher: (_, __) async => pushCalls++,
+      );
 
-    final drained = await outbox.drainPending();
+      final drained = await outbox.drainPending();
 
-    expect(drained, 1);
-    expect(pushCalls, 1);
-    final remaining = await db.query(SyncOutboxSchema.outboxTable);
-    expect(remaining, isEmpty);
-  });
+      expect(drained, 1);
+      expect(pushCalls, 1);
+      final remaining = await db.query(SyncOutboxSchema.outboxTable);
+      expect(remaining, isEmpty);
+    },
+  );
 
   test('a write during snapshot push is retained for the next sync', () async {
     await db.insert('meal_plans', {'id': 'meal-1', 'user_id': 'auth-1'});
@@ -55,10 +57,10 @@ void main() {
       snapshotPusher: (_, database) async {
         pushCalls++;
         if (pushCalls == 1) {
-          await database.insert(
-            'daily_health_tasks',
-            {'id': 'task-1', 'user_id': 'auth-1'},
-          );
+          await database.insert('daily_health_tasks', {
+            'id': 'task-1',
+            'user_id': 'auth-1',
+          });
         }
       },
     );

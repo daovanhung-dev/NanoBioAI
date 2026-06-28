@@ -74,7 +74,10 @@ class SupabaseUserDataSyncRemoteDatasource
     if (!localSnapshot.hasUser) return;
 
     final payload = _cloudSnapshotPayload(localSnapshot, authUserId);
-    await client.rpc('sync_my_mobile_snapshot', params: {'p_snapshot': payload});
+    await client.rpc(
+      'sync_my_mobile_snapshot',
+      params: {'p_snapshot': payload},
+    );
   }
 
   Map<String, Object?> _cloudSnapshotPayload(
@@ -85,16 +88,14 @@ class SupabaseUserDataSyncRemoteDatasource
     final tables = <String, Object?>{};
 
     for (final table in UserDataSyncTables.localUserOwnedTables) {
-      final sourceRows = snapshot.tables[table] ?? const <Map<String, Object?>>[];
+      final sourceRows =
+          snapshot.tables[table] ?? const <Map<String, Object?>>[];
       tables[table] = sourceRows
           .map((row) => _cloudInsertRow(table, row, authUserId, idMap))
           .toList(growable: false);
     }
 
-    return {
-      'user': _cloudUpdateRow('users', snapshot.user!),
-      'tables': tables,
-    };
+    return {'user': _cloudUpdateRow('users', snapshot.user!), 'tables': tables};
   }
 
   Map<String, Object?> _cloudUpdateRow(

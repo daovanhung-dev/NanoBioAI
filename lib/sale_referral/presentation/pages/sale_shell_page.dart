@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/sale_referral/domain/entities/sale_models.dart';
-import 'package:nano_app/sale_referral/domain/services/sale_commission_calculator.dart';
 import 'package:nano_app/sale_referral/domain/services/sale_conversion_policy_service.dart';
 import 'package:nano_app/sale_referral/providers/sale_providers.dart';
 import 'package:nano_app/services/supabase/sale/sale_terms.dart';
@@ -304,15 +303,12 @@ class _ConversionToolsTab extends ConsumerStatefulWidget {
 
 class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
   final _pointController = TextEditingController();
-  final _amountController = TextEditingController(text: '99000');
-  final _directController = TextEditingController(text: '1');
   var _submitting = false;
+  String? _pendingIdempotencyKey;
 
   @override
   void dispose() {
     _pointController.dispose();
-    _amountController.dispose();
-    _directController.dispose();
     super.dispose();
   }
 
@@ -320,10 +316,6 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
   Widget build(BuildContext context) {
     final dashboard = ref.watch(saleDashboardProvider);
     final conversions = ref.watch(saleConversionsProvider);
-    final estimate = SaleCommissionCalculator.estimate(
-      planAmountCents: _parseInt(_amountController.text),
-      directSuccessfulPayments: _parseInt(_directController.text),
-    );
 
     return _SaleScroll(
       child: Column(
@@ -341,16 +333,9 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
               dashboard: data,
               pointController: _pointController,
               submitting: _submitting,
-              onChanged: () => setState(() {}),
+              onChanged: () => setState(() => _pendingIdempotencyKey = null),
               onSubmit: _submitConversion,
             ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          _CommissionEstimator(
-            amountController: _amountController,
-            directController: _directController,
-            estimate: estimate,
-            onChanged: () => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.lg),
           conversions.when(
@@ -370,6 +355,8 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
   }
 
   Future<void> _submitConversion(SaleDashboard dashboard) async {
+    if (_submitting) return;
+
     final requested = _parseInt(_pointController.text);
     final error = const SaleConversionPolicyService().validateRequest(
       policy: dashboard.conversionPolicy,
@@ -382,19 +369,23 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
     }
 
     setState(() => _submitting = true);
+    final idempotencyKey =
+        _pendingIdempotencyKey ?? _buildConversionIdempotencyKey(requested);
+    _pendingIdempotencyKey = idempotencyKey;
+
     try {
       await ref
           .read(saleRepositoryProvider)
           .requestConversion(
             SaleConversionCommand(
               pointCents: requested,
-              idempotencyKey:
-                  'sale-conversion-${DateTime.now().millisecondsSinceEpoch}',
+              idempotencyKey: idempotencyKey,
             ),
           );
       ref.invalidate(saleDashboardProvider);
       ref.invalidate(saleConversionsProvider);
       _pointController.clear();
+      _pendingIdempotencyKey = null;
       _showSnack('Da gui yeu cau quy doi diem Sale.');
     } catch (_) {
       _showSnack('Chua gui duoc yeu cau quy doi. Ban thu lai sau.');
@@ -408,6 +399,11 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  String _buildConversionIdempotencyKey(int requestedPointCents) {
+    final code = widget.state.referralCode ?? 'sale';
+    return 'sale-conversion-$code-$requestedPointCents-${DateTime.now().millisecondsSinceEpoch}';
   }
 }
 
@@ -548,73 +544,6 @@ class _ConversionHistory extends StatelessWidget {
             ),
           )
           .toList(),
-    );
-  }
-}
-
-class _CommissionEstimator extends StatelessWidget {
-  final TextEditingController amountController;
-  final TextEditingController directController;
-  final SaleCommissionEstimate estimate;
-  final VoidCallback onChanged;
-
-  const _CommissionEstimator({
-    required this.amountController,
-    required this.directController,
-    required this.estimate,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: _panelDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Uoc tinh diem Sale', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Cong cu nay chi giup ban hinh dung. Diem chinh thuc do he thong tinh tu payment duoc duyet.',
-            style: AppTextStyles.bodySmall.copyWith(height: 1.45),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          TextField(
-            controller: amountController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: (_) => onChanged(),
-            decoration: const InputDecoration(
-              labelText: 'Gia tri payment hop le',
-              prefixIcon: Icon(Icons.payments_rounded),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          TextField(
-            controller: directController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: (_) => onChanged(),
-            decoration: const InputDecoration(
-              labelText: 'So payment truc tiep',
-              prefixIcon: Icon(Icons.person_add_alt_1_rounded),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          _EstimateLine(
-            label: 'Truc tiep 10%',
-            value: _money(estimate.directCommissionCents, 'VND'),
-          ),
-          const Divider(height: AppSpacing.lg),
-          _EstimateLine(
-            label: 'Tong uoc tinh',
-            value: _money(estimate.totalCommissionCents, 'VND'),
-            emphasized: true,
-          ),
-        ],
-      ),
     );
   }
 }

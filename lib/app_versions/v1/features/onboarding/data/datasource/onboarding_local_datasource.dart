@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -12,10 +12,12 @@ import '../models/onboarding_model.dart';
 class OnboardingLocalDatasource {
   static const _tag = 'ONBOARDING';
 
-  const OnboardingLocalDatasource();
+  final Database? database;
+
+  const OnboardingLocalDatasource({this.database});
 
   Future<Database> _db() async {
-    return DatabaseService.database;
+    return database ?? DatabaseService.database;
   }
 
   Future<String> saveOnboarding(
@@ -59,7 +61,7 @@ class OnboardingLocalDatasource {
 
         if (users.isNotEmpty) {
           userId = users.first['id'] as String;
-          AppLogger.database(_tag, 'Existing user found: $userId');
+          AppLogger.database(_tag, 'Existing onboarding user found');
           AppLogger.database(_tag, 'Updating user record');
 
           await txn.update(
@@ -72,8 +74,8 @@ class OnboardingLocalDatasource {
               'birth_year': model.birthYear,
               'onboarding_status':
                   users.first['onboarding_status'] == 'completed'
-                      ? 'completed'
-                      : 'in_progress',
+                  ? 'completed'
+                  : 'in_progress',
               'updated_at': now,
             },
             where: 'id = ?',
@@ -85,7 +87,7 @@ class OnboardingLocalDatasource {
           final generatedId =
               userIdOverride ??
               DateTime.now().millisecondsSinceEpoch.toString();
-          AppLogger.database(_tag, 'New user, generating ID: $generatedId');
+          AppLogger.database(_tag, 'New onboarding user, generating local ID');
 
           await txn.insert('users', {
             'id': generatedId,
@@ -94,8 +96,7 @@ class OnboardingLocalDatasource {
             'full_name': model.fullName,
             'gender': model.gender,
             'birth_year': model.birthYear,
-            'product_access_status':
-                userIdOverride == null ? 'guest' : 'free',
+            'product_access_status': userIdOverride == null ? 'guest' : 'free',
             'onboarding_status': 'in_progress',
             'created_at': now,
             'updated_at': now,
@@ -105,8 +106,7 @@ class OnboardingLocalDatasource {
           AppLogger.success(_tag, 'New user record inserted');
         }
 
-        debugPrint('🔥 USER ID: $userId');
-        AppLogger.info(_tag, 'User ID: $userId');
+        AppLogger.info(_tag, 'Onboarding local user resolved');
 
         /// =========================
         /// DELETE OLD
@@ -272,73 +272,8 @@ class OnboardingLocalDatasource {
         AppLogger.database(_tag, 'Transaction completed successfully');
       });
 
-      /// =========================
-      /// DEBUG LOG
-      /// =========================
-
-      final snapshot = <String, Object?>{
-        'users': await db.query(
-          'users',
-          where: 'id = ?',
-          whereArgs: [userId],
-          limit: 1,
-        ),
-
-        'health_profiles': await db.query(
-          'health_profiles',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        ),
-
-        'health_goals': await db.query(
-          'health_goals',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        ),
-
-        'health_conditions': await db.query(
-          'health_conditions',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        ),
-
-        'lifestyle_habits': await db.query(
-          'lifestyle_habits',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        ),
-
-        'food_allergies': await db.query(
-          'food_allergies',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        ),
-
-        'medical_treatments': await db.query(
-          'medical_treatments',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        ),
-
-        'survey_answers': await db.query(
-          'survey_answers',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        ),
-      };
-
-      debugPrint('╔══════════════════════════════════════════════');
-
-      debugPrint('║ ONBOARDING SAVED TO SQLITE');
-
-      debugPrint('╟─ userId: $userId');
-
-      debugPrint(const JsonEncoder.withIndent('  ').convert(snapshot));
-
-      debugPrint('╚══════════════════════════════════════════════');
-
       AppLogger.success(_tag, 'Onboarding data saved to SQLite successfully');
-      AppLogger.info(_tag, 'User ID: $userId');
+      AppLogger.info(_tag, 'Onboarding local data committed');
       return userId;
     } catch (e, st) {
       AppLogger.error(_tag, 'Failed to save onboarding to SQLite', e, st);
@@ -574,76 +509,52 @@ class OnboardingLocalDatasource {
         'answer_value': model.concernText,
         'created_at': now,
       },
+      {
+        'user_id': userId,
+        'question_code': 'occupation_code',
+        'answer_value': model.occupation,
+        'created_at': now,
+      },
+      {
+        'user_id': userId,
+        'question_code': 'lifestyle_habit_codes',
+        'answer_value': jsonEncode(model.habits),
+        'created_at': now,
+      },
+      {
+        'user_id': userId,
+        'question_code': 'sleep_quality',
+        'answer_value': model.sleepQuality,
+        'created_at': now,
+      },
+      {
+        'user_id': userId,
+        'question_code': 'activity_level',
+        'answer_value': model.activityLevel,
+        'created_at': now,
+      },
+      {
+        'user_id': userId,
+        'question_code': 'water_per_day',
+        'answer_value': model.waterPerDay,
+        'created_at': now,
+      },
     ];
   }
 
   String _goalLabel(String code) {
-    const labels = {
-      'lose_weight': 'Giảm cân',
-
-      'gain_weight': 'Tăng cân',
-
-      'lose_belly_fat': 'Giảm mỡ bụng',
-
-      'gain_muscle': 'Tăng cơ',
-
-      'improve_digestion': 'Cải thiện tiêu hóa',
-
-      'sleep_better': 'Ngủ ngon hơn',
-
-      'reduce_fatigue': 'Giảm mệt mỏi',
-
-      'increase_energy': 'Tăng năng lượng',
-
-      'beautify_skin': 'Làm đẹp da',
-
-      'immune_boost': 'Tăng đề kháng',
-
-      'stable_blood_sugar': 'Ổn định đường huyết',
-
-      'stable_blood_pressure': 'Ổn định huyết áp',
-
-      'joint_health': 'Cải thiện xương khớp',
-
-      'detox_body': 'Thanh lọc cơ thể',
-
-      'overall_health': 'Cải thiện sức khỏe tổng thể',
-    };
-
-    return labels[code] ?? code;
+    return OnboardingCatalog.labelOf(
+      OnboardingCatalog.goals,
+      code,
+      fallback: code,
+    );
   }
 
   String _conditionLabel(String code) {
-    const labels = {
-      'stomach_pain': 'Đau dạ dày',
-
-      'constipation': 'Táo bón',
-
-      'bloating': 'Đầy hơi, khó tiêu',
-
-      'insomnia': 'Mất ngủ',
-
-      'stress': 'Stress, căng thẳng',
-
-      'joint_pain': 'Đau nhức xương khớp',
-
-      'high_blood_sugar': 'Đường huyết cao',
-
-      'blood_pressure_issue': 'Huyết áp cao/thấp',
-
-      'high_cholesterol': 'Mỡ máu cao',
-
-      'fatty_liver': 'Gan nhiễm mỡ',
-
-      'tired_always': 'Hay mệt mỏi',
-
-      'overweight': 'Thừa cân/béo phì',
-
-      'underweight': 'Gầy yếu, khó hấp thu',
-
-      'no_special_issue': 'Không có vấn đề đặc biệt',
-    };
-
-    return labels[code] ?? code;
+    return OnboardingCatalog.labelOf(
+      OnboardingCatalog.conditions,
+      code,
+      fallback: code,
+    );
   }
 }

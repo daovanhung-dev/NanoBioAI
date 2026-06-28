@@ -50,6 +50,13 @@ final adminRouter = GoRouter(
           const AdminShellPage(initialSection: AdminPanelSection.sales),
     ),
     GoRoute(
+      path: AdminRoutePaths.saleConversions,
+      name: AdminRoutePaths.saleConversions,
+      builder: (context, state) => const AdminShellPage(
+        initialSection: AdminPanelSection.saleConversions,
+      ),
+    ),
+    GoRoute(
       path: AdminRoutePaths.plans,
       name: AdminRoutePaths.plans,
       builder: (context, state) =>

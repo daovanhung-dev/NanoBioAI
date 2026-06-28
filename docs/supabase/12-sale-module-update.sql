@@ -668,7 +668,7 @@ security definer
 set search_path = public, pg_temp
 as $$
 begin
-  perform public.admin_assert_permission('payments.write');
+  perform public.admin_assert_permission('sales.write');
 
   return query
   select
@@ -703,7 +703,7 @@ as $$
 declare
   v_status text;
 begin
-  perform public.admin_assert_permission('payments.write');
+  perform public.admin_assert_permission('sales.write');
 
   v_status := case p_decision
     when 'approve' then 'approved'
@@ -751,7 +751,7 @@ create policy sale_point_conversions_select_own
   on public.sale_point_conversions for select to authenticated
   using (
     sale_user_id = (select auth.uid())
-    or public.admin_has_permission('payments.write')
+    or public.admin_has_permission('sales.write')
   );
 
 grant select on public.sale_point_conversions to authenticated;

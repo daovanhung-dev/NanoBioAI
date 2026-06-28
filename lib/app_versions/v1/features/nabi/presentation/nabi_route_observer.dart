@@ -17,14 +17,12 @@ class NabiRouteObserver extends NavigatorObserver {
   final ProviderContainer? _container;
 
   /// Dùng khi có [WidgetRef] (widget context).
-  NabiRouteObserver.fromRef(WidgetRef ref)
-      : _ref = ref,
-        _container = null;
+  NabiRouteObserver.fromRef(WidgetRef ref) : _ref = ref, _container = null;
 
   /// Dùng khi chỉ có [ProviderContainer] (root/router level).
   NabiRouteObserver.fromContainer(ProviderContainer container)
-      : _ref = null,
-        _container = container;
+    : _ref = null,
+      _container = container;
 
   void _updateRoute(String? routeName) {
     if (routeName == null) return;
@@ -32,9 +30,7 @@ class NabiRouteObserver extends NavigatorObserver {
       if (_ref != null) {
         _ref.read(NabiContextProvider.notifier).setRoute(routeName);
       } else {
-        _container
-            ?.read(NabiContextProvider.notifier)
-            .setRoute(routeName);
+        _container?.read(NabiContextProvider.notifier).setRoute(routeName);
       }
     } catch (_) {
       // Observer có thể bị gọi trước provider được khởi tạo – bỏ qua

@@ -63,7 +63,7 @@ class OnboardingState {
     this.habits = const [],
     this.sleepQuality = 'Ngủ ngon',
     this.activityLevel = 'Ít vận động',
-    this.waterPerDay = 'Dưới 1 lít nước/ngày',
+    this.waterPerDay = 'Dưới 1 lít/ngày',
     this.allergyName = '',
     this.allergyNote = '',
     this.treatmentName = '',
@@ -228,7 +228,7 @@ class OnboardingController extends Notifier<OnboardingState> {
   }
 
   void goToStep(int step) {
-    final safeStep = step.clamp(0, OnboardingCatalog.totalSteps - 1);
+    final safeStep = step.clamp(0, OnboardingCatalog.totalSteps - 1).toInt();
     final oldStep = state.currentStep;
 
     AppLogger.action(_tag, 'Jump to Step ${safeStep + 1}');
@@ -260,107 +260,129 @@ class OnboardingController extends Notifier<OnboardingState> {
     return titles[step];
   }
 
+  void _logFieldPresence(String field, String value) {
+    AppLogger.form(_tag, field, value.trim().isEmpty ? 'empty' : 'provided');
+  }
+
+  void _logNumericField(String field, num _) {
+    AppLogger.form(_tag, field, 'provided');
+  }
+
+  void _logSelectionCount(String field, int count) {
+    AppLogger.form(_tag, field, 'count=$count');
+  }
+
+  bool _isExpectedSaveError(Object error) {
+    return error is AIOverloadedException ||
+        error is OnboardingInitialPlanException ||
+        error is StateError;
+  }
+
+  String _safeErrorName(Object error) {
+    return error.runtimeType.toString();
+  }
+
   void updateEmail(String value) {
-    AppLogger.form(_tag, 'email', value);
+    _logFieldPresence('email', value);
     state = state.copyWith(email: value);
   }
 
   void updatePhone(String value) {
-    AppLogger.form(_tag, 'phone', value);
+    _logFieldPresence('phone', value);
     state = state.copyWith(phone: value);
   }
 
   void updateFullName(String value) {
-    AppLogger.form(_tag, 'fullName', value);
+    _logFieldPresence('fullName', value);
     state = state.copyWith(fullName: value);
   }
 
   void updateGender(String value) {
-    AppLogger.form(_tag, 'gender', value);
+    _logFieldPresence('gender', value);
     state = state.copyWith(gender: value);
   }
 
   void updateBirthYear(String value) {
     final year = int.tryParse(value) ?? state.birthYear;
-    AppLogger.form(_tag, 'birthYear', year);
+    _logNumericField('birthYear', year);
     state = state.copyWith(birthYear: year);
   }
 
   void updateOccupation(String value) {
-    AppLogger.form(_tag, 'occupation', value);
+    _logFieldPresence('occupation', value);
     state = state.copyWith(occupation: value);
   }
 
   void updateHeight(String value) {
     final height = double.tryParse(value) ?? state.heightCm;
-    AppLogger.form(_tag, 'heightCm', height);
+    _logNumericField('heightCm', height);
     state = state.copyWith(heightCm: height);
   }
 
   void updateWeight(String value) {
     final weight = double.tryParse(value) ?? state.weightKg;
-    AppLogger.form(_tag, 'weightKg', weight);
-    AppLogger.info(_tag, 'BMI calculated: ${state.bmi.toStringAsFixed(2)}');
+    _logNumericField('weightKg', weight);
     state = state.copyWith(weightKg: weight);
+    AppLogger.info(_tag, 'BMI recalculated after weight update');
   }
 
   void updateOtherGoal(String value) {
-    AppLogger.form(_tag, 'otherGoal', value);
+    _logFieldPresence('otherGoal', value);
     state = state.copyWith(otherGoal: value);
   }
 
   void updateOtherCondition(String value) {
-    AppLogger.form(_tag, 'otherCondition', value);
+    _logFieldPresence('otherCondition', value);
     state = state.copyWith(otherCondition: value);
   }
 
   void updateSleepQuality(String value) {
-    AppLogger.form(_tag, 'sleepQuality', value);
+    _logFieldPresence('sleepQuality', value);
     state = state.copyWith(sleepQuality: value);
   }
 
   void updateActivityLevel(String value) {
-    AppLogger.form(_tag, 'activityLevel', value);
+    _logFieldPresence('activityLevel', value);
     state = state.copyWith(activityLevel: value);
   }
 
   void updateWaterPerDay(String value) {
-    AppLogger.form(_tag, 'waterPerDay', value);
+    _logFieldPresence('waterPerDay', value);
     state = state.copyWith(waterPerDay: value);
   }
 
   void updateAllergyName(String value) {
-    AppLogger.form(_tag, 'allergyName', value);
+    _logFieldPresence('allergyName', value);
     state = state.copyWith(allergyName: value);
   }
 
   void updateAllergyNote(String value) {
-    AppLogger.form(_tag, 'allergyNote', value);
+    _logFieldPresence('allergyNote', value);
     state = state.copyWith(allergyNote: value);
   }
 
   void updateTreatmentName(String value) {
-    AppLogger.form(_tag, 'treatmentName', value);
+    _logFieldPresence('treatmentName', value);
     state = state.copyWith(treatmentName: value);
   }
 
   void updateMedicationName(String value) {
-    AppLogger.form(_tag, 'medicationName', value);
+    _logFieldPresence('medicationName', value);
     state = state.copyWith(medicationName: value);
   }
 
   void updateTreatmentNote(String value) {
-    AppLogger.form(_tag, 'treatmentNote', value);
+    _logFieldPresence('treatmentNote', value);
     state = state.copyWith(treatmentNote: value);
   }
 
   void updateConcernText(String value) {
-    AppLogger.form(_tag, 'concernText', value);
+    _logFieldPresence('concernText', value);
     state = state.copyWith(concernText: value);
   }
 
   void setAgreed(bool value) {
-    AppLogger.form(_tag, 'agreed', value);
+    AppLogger.form(_tag, 'agreed', value ? 'accepted' : 'not_accepted');
     state = state.copyWith(agreed: value);
   }
 
@@ -374,25 +396,35 @@ class OnboardingController extends Notifier<OnboardingState> {
       items.add(code);
     }
 
-    AppLogger.form(_tag, 'selectedGoals', items);
-    AppLogger.info(_tag, 'Goal "$code" $action');
+    _logSelectionCount('selectedGoals', items.length);
+    AppLogger.info(_tag, 'Goal selection $action');
 
     state = state.copyWith(goals: items);
   }
 
   void toggleCondition(String code) {
+    const noneCode = 'no_special_issue';
     final items = [...state.conditions];
-    final action = items.contains(code) ? 'removed' : 'added';
 
-    if (items.contains(code)) {
-      items.remove(code);
+    if (code == noneCode) {
+      if (items.contains(noneCode)) {
+        items.remove(noneCode);
+      } else {
+        items
+          ..clear()
+          ..add(noneCode);
+      }
     } else {
-      items.add(code);
+      items.remove(noneCode);
+      if (items.contains(code)) {
+        items.remove(code);
+      } else {
+        items.add(code);
+      }
     }
 
-    AppLogger.form(_tag, 'selectedConditions', items);
-    AppLogger.info(_tag, 'Condition "$code" $action');
-
+    _logSelectionCount('selectedConditions', items.length);
+    AppLogger.info(_tag, 'Condition selection toggled');
     state = state.copyWith(conditions: items);
   }
 
@@ -406,8 +438,8 @@ class OnboardingController extends Notifier<OnboardingState> {
       items.add(code);
     }
 
-    AppLogger.form(_tag, 'selectedHabits', items);
-    AppLogger.info(_tag, 'Habit "$code" $action');
+    _logSelectionCount('selectedHabits', items.length);
+    AppLogger.info(_tag, 'Habit selection $action');
 
     state = state.copyWith(habits: items);
   }
@@ -483,11 +515,8 @@ class OnboardingController extends Notifier<OnboardingState> {
     state = state.copyWith(isSaving: true);
 
     try {
-      // Log the data being saved
       final entity = state.toEntity();
       AppLogger.info(_tag, 'Saving onboarding profile...');
-      AppLogger.info(_tag, 'User: ${entity.fullName} (${entity.email})');
-      AppLogger.info(_tag, 'BMI: ${entity.bmi.toStringAsFixed(2)}');
       AppLogger.info(_tag, 'Goals: ${entity.goals.length} selected');
       AppLogger.info(_tag, 'Conditions: ${entity.conditions.length} selected');
       AppLogger.info(_tag, 'Habits: ${entity.habits.length} selected');
@@ -520,7 +549,7 @@ class OnboardingController extends Notifier<OnboardingState> {
         throw const OnboardingInitialPlanException();
       }
 
-      AppLogger.info(_tag, 'Marking local onboarding snapshot complete');
+      AppLogger.info(_tag, 'Marking local onboarding record complete');
       await _repository.markCompleted();
 
       AppLogger.info(_tag, 'Setting onboarding completed flag');
@@ -541,33 +570,42 @@ class OnboardingController extends Notifier<OnboardingState> {
         'Total Steps': OnboardingCatalog.totalSteps,
         'Completed Steps': OnboardingCatalog.totalSteps,
         'Duration': '${duration.inMinutes}m ${duration.inSeconds % 60}s',
-        'User ID': entity.email.isNotEmpty ? entity.email : entity.phone,
         'Goals Count': entity.goals.length,
         'Conditions Count': entity.conditions.length,
         'Habits Count': entity.habits.length,
-        'Has Allergy': entity.hasAllergy,
-        'Has Treatment': entity.hasTreatment,
+        'Allergy Data': entity.hasAllergy ? 'provided' : 'empty',
+        'Treatment Data': entity.hasTreatment ? 'provided' : 'empty',
         'Saved To Database': true,
         'Meal Plan Generated': generatedPlan,
         'Daily Health Tasks Generated': generatedPlan,
       });
       AppLogger.separator(_tag);
     } catch (e, st) {
-      AppLogger.error(_tag, 'Save onboarding failed', e, st);
+      final expectedError = _isExpectedSaveError(e);
+      AppLogger.error(
+        _tag,
+        'Save onboarding failed',
+        _safeErrorName(e),
+        expectedError ? null : st,
+      );
 
       final message = e is AIOverloadedException
           ? AIOverloadedException.userMessage
           : e is OnboardingInitialPlanException
           ? OnboardingInitialPlanException.userMessage
-          : 'Mình chưa thể lưu hồ sơ lúc này: $e';
+          : 'Mình chưa thể lưu hồ sơ lúc này. Bạn thử lại sau một chút nhé.';
 
       state = state.copyWith(isSaving: false, savedLog: message);
 
       AppLogger.separator(_tag);
-      AppLogger.error(_tag, 'Onboarding Completed With Error', e);
+      AppLogger.error(
+        _tag,
+        'Onboarding Completed With Error',
+        _safeErrorName(e),
+      );
       AppLogger.summary(_tag, 'ONBOARDING_SUMMARY', {
         'Status': 'Failed',
-        'Error': e.toString(),
+        'Error Type': _safeErrorName(e),
         'Saved To Database': false,
       });
       AppLogger.separator(_tag);

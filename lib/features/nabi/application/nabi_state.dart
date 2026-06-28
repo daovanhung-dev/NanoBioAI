@@ -12,10 +12,10 @@ class NabiState {
   });
 
   factory NabiState.initial() => const NabiState(
-        context: NabiContext.app,
-        emotion: NabiEmotion.greeting,
-        bubbleText: 'Nabi ở đây, mình cùng chăm sóc hôm nay nhé.',
-      );
+    context: NabiContext.app,
+    emotion: NabiEmotion.greeting,
+    bubbleText: 'Nabi ở đây, mình cùng chăm sóc hôm nay nhé.',
+  );
 
   final NabiContext context;
   final NabiEmotion emotion;

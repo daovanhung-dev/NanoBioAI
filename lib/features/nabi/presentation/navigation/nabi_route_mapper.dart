@@ -23,10 +23,14 @@ class NabiRouteMapper {
     if (path.contains('exercise') || path.contains('workout')) {
       return NabiContext.exercisePlan;
     }
-    if (path.contains('task') || path.contains('schedule') || path.contains('reminder')) {
+    if (path.contains('task') ||
+        path.contains('schedule') ||
+        path.contains('reminder')) {
       return NabiContext.dailyTasks;
     }
-    if (path.contains('login') || path.contains('register') || path.contains('auth')) {
+    if (path.contains('login') ||
+        path.contains('register') ||
+        path.contains('auth')) {
       return NabiContext.authentication;
     }
     if (path.contains('error')) return NabiContext.error;

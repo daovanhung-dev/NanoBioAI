@@ -42,19 +42,8 @@ class AdminSupabaseDatasource {
     required AdminPanelSection section,
     required String query,
   }) async {
-    final functionName = switch (section) {
-      AdminPanelSection.users => 'admin_search_users',
-      AdminPanelSection.payments => 'admin_list_payments',
-      AdminPanelSection.sales => 'admin_list_sales',
-      AdminPanelSection.plans => 'admin_list_config_versions',
-      AdminPanelSection.reports => 'admin_list_report_exports',
-      AdminPanelSection.config => 'admin_list_config_versions',
-      AdminPanelSection.audit => 'admin_list_audit_events',
-      AdminPanelSection.dashboard => 'admin_search_users',
-    };
-
     final response = await _client().rpc(
-      functionName,
+      adminListRpcForSection(section),
       params: {'p_query': query, 'p_limit': 50},
     );
     return _maps(response).map(AdminWorkItem.fromMap).toList();
@@ -72,8 +61,8 @@ class AdminSupabaseDatasource {
 
   Future<AdminMutationResult> runMutation(AdminMutationCommand command) async {
     final response = await _client().rpc(
-      _functionFor(command),
-      params: _paramsFor(command),
+      adminRpcFunctionFor(command),
+      params: adminRpcParamsFor(command),
     );
     return AdminMutationResult.fromMap(_firstMap(response));
   }
@@ -81,11 +70,12 @@ class AdminSupabaseDatasource {
   SupabaseClient _client() => clientOverride ?? Supabase.instance.client;
 }
 
-String _functionFor(AdminMutationCommand command) {
+String adminRpcFunctionFor(AdminMutationCommand command) {
   return switch (command.section) {
     AdminPanelSection.users => 'admin_update_user_status',
     AdminPanelSection.payments => 'admin_review_payment',
     AdminPanelSection.sales => 'admin_review_sale_profile',
+    AdminPanelSection.saleConversions => 'admin_review_sale_point_conversion',
     AdminPanelSection.plans => 'admin_upsert_config_version',
     AdminPanelSection.reports => 'admin_request_report_export',
     AdminPanelSection.config => 'admin_upsert_config_version',
@@ -94,7 +84,21 @@ String _functionFor(AdminMutationCommand command) {
   };
 }
 
-Map<String, Object?> _paramsFor(AdminMutationCommand command) {
+String adminListRpcForSection(AdminPanelSection section) {
+  return switch (section) {
+    AdminPanelSection.users => 'admin_search_users',
+    AdminPanelSection.payments => 'admin_list_payments',
+    AdminPanelSection.sales => 'admin_list_sales',
+    AdminPanelSection.saleConversions => 'admin_list_sale_point_conversions',
+    AdminPanelSection.plans => 'admin_list_config_versions',
+    AdminPanelSection.reports => 'admin_list_report_exports',
+    AdminPanelSection.config => 'admin_list_config_versions',
+    AdminPanelSection.audit => 'admin_list_audit_events',
+    AdminPanelSection.dashboard => 'admin_search_users',
+  };
+}
+
+Map<String, Object?> adminRpcParamsFor(AdminMutationCommand command) {
   final base = <String, Object?>{
     'p_reason': command.reason,
     'p_idempotency_key': command.idempotencyKey,
@@ -117,6 +121,12 @@ Map<String, Object?> _paramsFor(AdminMutationCommand command) {
       return {
         ...base,
         'p_sale_user_id': command.targetId,
+        'p_decision': command.action,
+      };
+    case AdminPanelSection.saleConversions:
+      return {
+        ...base,
+        'p_conversion_id': command.targetId,
         'p_decision': command.action,
       };
     case AdminPanelSection.plans:

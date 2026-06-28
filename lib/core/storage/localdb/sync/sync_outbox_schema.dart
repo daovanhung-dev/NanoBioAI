@@ -77,15 +77,11 @@ ON sync_outbox(user_id, table_name, record_id)
   }
 
   static Future<void> _ensureRuntimeState(Database db) {
-    return db.insert(
-      runtimeStateTable,
-      {
-        'key': applyingCloudKey,
-        'value': '0',
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      },
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
+    return db.insert(runtimeStateTable, {
+      'key': applyingCloudKey,
+      'value': '0',
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
   static Future<void> _createTriggers(Database db) async {
@@ -100,11 +96,14 @@ ON sync_outbox(user_id, table_name, record_id)
     }
   }
 
-  static String _insertTriggerForUsers() => _upsertTriggerForUsers('insert', 'INSERT');
+  static String _insertTriggerForUsers() =>
+      _upsertTriggerForUsers('insert', 'INSERT');
 
-  static String _updateTriggerForUsers() => _upsertTriggerForUsers('update', 'UPDATE');
+  static String _updateTriggerForUsers() =>
+      _upsertTriggerForUsers('update', 'UPDATE');
 
-  static String _upsertTriggerForUsers(String suffix, String event) => '''
+  static String _upsertTriggerForUsers(String suffix, String event) =>
+      '''
 CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_users_$suffix
 AFTER $event ON users
 WHEN NEW.id IS NOT NULL
@@ -130,7 +129,8 @@ BEGIN
 END
 ''';
 
-  static String _deleteTriggerForUsers() => '''
+  static String _deleteTriggerForUsers() =>
+      '''
 CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_users_delete
 AFTER DELETE ON users
 WHEN OLD.id IS NOT NULL
@@ -166,7 +166,8 @@ END
     String table,
     String suffix,
     String event,
-  ) => '''
+  ) =>
+      '''
 CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_${table}_$suffix
 AFTER $event ON $table
 WHEN NEW.user_id IS NOT NULL
@@ -193,7 +194,8 @@ BEGIN
 END
 ''';
 
-  static String _deleteTriggerForUserOwnedTable(String table) => '''
+  static String _deleteTriggerForUserOwnedTable(String table) =>
+      '''
 CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_${table}_delete
 AFTER DELETE ON $table
 WHEN OLD.user_id IS NOT NULL

@@ -16,8 +16,7 @@ class MainNavigationPage extends ConsumerStatefulWidget {
   const MainNavigationPage({super.key});
 
   @override
-  ConsumerState<MainNavigationPage> createState() =>
-      _MainNavigationPageState();
+  ConsumerState<MainNavigationPage> createState() => _MainNavigationPageState();
 }
 
 class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
@@ -117,7 +116,9 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
       '/health-insights',
       V1RoutePaths.menu, // settings
     ];
-    final route = index < routeByTab.length ? routeByTab[index] : V1RoutePaths.menu;
+    final route = index < routeByTab.length
+        ? routeByTab[index]
+        : V1RoutePaths.menu;
     ref.Nabi.setRoute(route);
   }
 
@@ -149,9 +150,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
                   physics: const NeverScrollableScrollPhysics(),
                   children: _pages,
                 ),
-                NabiFloatingOverlay(
-                  bottomReserve: _bottomNavigationReserve,
-                ),
+                NabiFloatingOverlay(bottomReserve: _bottomNavigationReserve),
               ],
             );
           },
