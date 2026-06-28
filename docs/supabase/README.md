@@ -40,10 +40,12 @@ lieu tin cay cho NanoBio/BioAI.
    Sale truc tiep.
 8. `11-admin-access-dashboard.sql` - Admin roles, permissions, dashboard, audit
    va RPC quan tri.
-9. `07-seed-reference-data.sql` - seed du lieu tham chieu ban dau.
-10. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tao account
+9. `12-sale-module-update.sql` - Sale dang ky cho Admin duyet, attach ma gioi
+   thieu, ledger diem va queue quy doi noi bo.
+10. `07-seed-reference-data.sql` - seed du lieu tham chieu ban dau.
+11. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tao account
    test Free/Plus/FamilyPlus co dinh.
-11. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
+12. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
    va nghiem thu.
 
 ## Trang thai

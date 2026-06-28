@@ -29,7 +29,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text('Cùng Nabiphát triển'),
+        title: const Text('Cung NanoBio phat trien'),
       ),
       body: SafeArea(
         top: false,
@@ -72,8 +72,9 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
           .requestParticipation(termsVersion: SaleTerms.currentVersion);
       ref.invalidate(saleStateProvider);
       ref.invalidate(saleDashboardProvider);
-      ref.invalidate(saleReferralTreeProvider);
-      ref.invalidate(saleLeaderboardProvider);
+      ref.invalidate(saleDirectCustomersProvider);
+      ref.invalidate(salePointLedgerProvider);
+      ref.invalidate(saleConversionsProvider);
 
       if (!mounted) return;
       if (updatedState.isActive) {
@@ -82,16 +83,14 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Nabiđã ghi nhận điều lệ bạn vừa chấp nhận.'),
+          content: Text('Da ghi nhan yeu cau Sale. Vui long cho Admin duyet.'),
         ),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Nabichưa thể mở quyền Sale lúc này. Bạn thử lại sau nhé.',
-          ),
+          content: Text('Chua the gui yeu cau Sale luc nay. Ban thu lai sau.'),
         ),
       );
     } finally {
@@ -207,7 +206,7 @@ class _BuildTermsBody extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
               controlAffinity: ListTileControlAffinity.leading,
               title: Text(
-                'Tôi đã đọc, hiểu và chấp nhận điều lệ phiên bản ${SaleTerms.currentVersion}.',
+                'Toi da doc, hieu va chap nhan dieu le phien ban ${SaleTerms.currentVersion}.',
                 style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
               ),
             ),
@@ -233,9 +232,7 @@ class _BuildTermsBody extends StatelessWidget {
                             : Icons.login_rounded,
                       ),
                 label: Text(
-                  authenticated
-                      ? 'Chấp nhận và mở không gian Sale'
-                      : 'Đăng nhập để tham gia',
+                  authenticated ? 'Gui yeu cau Sale' : 'Dang nhap de tham gia',
                 ),
               ),
             ),
@@ -243,7 +240,7 @@ class _BuildTermsBody extends StatelessWidget {
           if (!authenticated) ...[
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Bạn cần đăng nhập để Nabilưu điều lệ và cấp quyền Sale cho đúng tài khoản.',
+              'Ban can dang nhap de he thong luu dieu le va tao yeu cau cho dung tai khoan.',
               style: AppTextStyles.bodySmall,
             ),
           ],
@@ -255,13 +252,13 @@ class _BuildTermsBody extends StatelessWidget {
   String? _stateNote(SaleStatus status) {
     switch (status) {
       case SaleStatus.active:
-        return 'Tài khoản của bạn đã có quyền Sale. Bạn có thể mở không gian Sale từ Cài đặt.';
+        return 'Tai khoan cua ban da co quyen Sale. Ban co the mo khong gian Sale tu Cai dat.';
       case SaleStatus.suspended:
-        return 'Quyền Sale đang tạm khóa. Bạn cần liên hệ hỗ trợ trước khi tham gia lại.';
+        return 'Quyen Sale dang tam dung. Ban can lien he ho tro truoc khi tham gia lai.';
       case SaleStatus.closed:
-        return 'Quyền Sale đã đóng. Bạn cần liên hệ hỗ trợ nếu muốn được xem xét lại.';
+        return 'Quyen Sale da dong. Ban can lien he ho tro neu muon duoc xem xet lai.';
       case SaleStatus.pending:
-        return 'Nabiđã ghi nhận điều lệ gần nhất. Hệ thống sẽ cập nhật quyền theo trạng thái tài khoản.';
+        return 'Yeu cau Sale dang cho Admin duyet. Ban chua co ma gioi thieu cho den khi duoc duyet.';
       case SaleStatus.none:
         return null;
     }

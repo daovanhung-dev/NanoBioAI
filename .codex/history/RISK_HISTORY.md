@@ -260,3 +260,7 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md :: - Chua fix: Supabase SQL chua chay tren sandbox/staging; chi la draft review.
 - docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md :: - Can kiem tra tiep: Full `codex_quick_check` after repo-wide formatting is handled; Edge Function/payment provider thuc te chua co trong repo.
 - docs/worklog/2026-06-28/003-worklog-admin-app-supabase.md :: - Bang chung kiem chung: targeted analyze/test PASS, `git diff --check` PASS; quick check blocked by repo-wide format drift outside task.
+- docs/worklog/2026-06-28/004-worklog-sale-module-internal.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-28/004-worklog-sale-module-internal.md :: - Chua fix: SQL 12 chua chay tren Supabase sandbox/staging; chi la draft update.
+- docs/worklog/2026-06-28/004-worklog-sale-module-internal.md :: - Chua fix: Payout provider, tax/invoice, bank transfer va webhook provider that
+- docs/worklog/2026-06-28/004-worklog-sale-module-internal.md :: - Can kiem tra tiep: Chay SQL 12 tren staging, test RLS/RPC bang user A/B/Admin,

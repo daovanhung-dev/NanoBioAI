@@ -9,6 +9,7 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_vali
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
 
 class V2LoginPage extends ConsumerStatefulWidget {
   const V2LoginPage({super.key});
@@ -118,6 +119,8 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirmPassword = TextEditingController();
+  final _referralCode = TextEditingController();
+  final _referralCodeValidator = const SaleReferralCodeValidator();
   var _acceptedTerms = false;
   var _loading = false;
   var _obscure = true;
@@ -129,6 +132,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
     _email.dispose();
     _password.dispose();
     _confirmPassword.dispose();
+    _referralCode.dispose();
     super.dispose();
   }
 
@@ -178,6 +182,13 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
               obscureText: true,
               validator: (value) =>
                   AuthValidators.confirmPassword(_password.text, value ?? ''),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _AuthTextField(
+              controller: _referralCode,
+              label: 'Ma gioi thieu (khong bat buoc)',
+              validator: (value) =>
+                  _referralCodeValidator.validate(value ?? ''),
             ),
             const SizedBox(height: AppSpacing.md),
             CheckboxListTile(
@@ -232,6 +243,8 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
             ),
           );
       if (!mounted) return;
+      await _attachReferralCodeIfPossible(result);
+      if (!mounted) return;
       if (result == RegistrationResult.verificationRequired) {
         context.go(
           '${V2RoutePaths.verifyEmail}?email=${Uri.encodeComponent(_email.text.trim())}',
@@ -243,6 +256,26 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
       if (mounted) _showError(context, error);
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _attachReferralCodeIfPossible(RegistrationResult result) async {
+    final code = _referralCodeValidator.normalize(_referralCode.text);
+    if (code.isEmpty || result != RegistrationResult.sessionReady) return;
+
+    try {
+      await ref.read(saleParticipationServiceProvider).attachReferralCode(code);
+      ref.invalidate(saleStateProvider);
+      ref.invalidate(saleDashboardProvider);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tai khoan da tao. Ma gioi thieu chua gan duoc, ban co the nhap lai trong Cai dat.',
+          ),
+        ),
+      );
     }
   }
 }

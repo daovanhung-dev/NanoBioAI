@@ -21,10 +21,11 @@ Commit de xuat: docs(supabase): cap nhat ma tran rls
 | Catalog | Authenticated user doc | Khong | Migration/Admin ghi | Du lieu dung chung |
 | Membership/quota | User doc du lieu cua minh; plan/rule active doc chung | Khong | Payment backend/Admin ghi | Client khong tu tang quota |
 | FamilyPlus | Owner/member duoc phep doc | Khong o draft nay | Backend xac thuc FamilyPlus/consent ghi | Can test chong lo family data |
-| Sale/referral | Sale/referrer/referred doc phan lien quan | Khong | Backend/Admin ghi | Sale doc lap membership |
+| Sale/referral | Sale/referrer/referred doc phan lien quan | Chi goi RPC attach ma gioi thieu co guard | Backend/Admin ghi | Sale doc lap membership |
 | `payment_events` | Payer doc giao dich cua minh | Khong | Webhook/backend/Admin ghi | Khong tin Flutter bao thanh toan thanh cong |
 | `commission_rates` | Authenticated user doc rate active | Khong | Migration/Admin ghi | Direct-only 10% |
 | `commission_records` | Receiver doc diem Sale cua minh | Khong | Trigger/backend/Admin ghi | Chi tao tu payment event hop le |
+| `sale_point_conversions` | Sale doc yeu cau quy doi cua minh; Admin finance doc qua permission | Khong ghi bang truc tiep | Sale/Admin RPC co config, idempotency va audit | Khong tich hop payout provider that trong app |
 | Admin roles/config/audit | Admin co permission doc | Khong | Super/Admin RPC ghi | Moi write nhay cam can audit |
 
 ## Quy tac trien khai app
@@ -33,5 +34,5 @@ Commit de xuat: docs(supabase): cap nhat ma tran rls
   duoc thiet ke rieng; presentation/controller khong ghi bang truc tiep.
 - Admin action quan trong can `reason`, actor, timestamp, idempotency key va
   audit log.
-- Sale dashboard chi hien thi du lieu direct/aggregate/masked, khong hien thi
-  health data cua khach.
+- Sale dashboard chi hien thi ten khach truc tiep va so lieu tong hop; khong
+  hien thi email, phone, payment evidence hay health data cua khach.

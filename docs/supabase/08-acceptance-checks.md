@@ -41,14 +41,21 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 
 ## Sale direct-only
 
-- [ ] Tao Sale active cho A va referral code cho A bang backend/Admin.
-- [ ] Gan quan he A gioi thieu B; payment thanh cong cua B tao commission 10%
+- [ ] User A gui yeu cau Sale thi trang thai la `pending`; chi sau khi Admin
+  approve moi thanh `active` va co referral code.
+- [ ] Gan quan he A gioi thieu B bang `attach_my_referral_code`; user da co
+  relationship hoac payment khong gan duoc trong app.
+- [ ] Payment thanh cong cua B tao commission/diem 10%
   cho A.
 - [ ] Cho B thanh Sale active, gan quan he B gioi thieu C; payment thanh cong
   cua C chi tao commission 10% cho B, khong tao commission cho A.
 - [ ] Neu C la khach truc tiep cua B, payment cua C chi sinh commission cho B.
 - [ ] Client khong insert/update/delete duoc `payment_events`,
-  `commission_records`, `sale_profiles`, `referral_relationships`.
+  `commission_records`, `sale_profiles`, `referral_relationships`,
+  `sale_point_conversions`.
+- [ ] Khi `sale_point_conversion.enabled = false` hoac thieu config, Sale UI
+  chi hien trang thai chua mo quy doi; khi bat config thi Sale tao duoc yeu cau
+  quy doi va Finance/Admin duyet qua RPC co audit.
 - [ ] Sale UI doc cloud RPC truc tiep, khong luu payment/referral/commission
   trong SQLite.
 

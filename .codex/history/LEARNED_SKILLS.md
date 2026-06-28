@@ -6,8 +6,8 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 - docs-context - Context and docs update: 13 worklog(s)
 - coding - Coding: 7 worklog(s)
+- supabase-schema - Supabase schema and RLS: 5 worklog(s)
 - bugfix - Direct bugfix: 5 worklog(s)
-- supabase-schema - Supabase schema and RLS: 4 worklog(s)
 - docs-dd - Design docs: 4 worklog(s)
 - refactor-scaffold - Scaffold refactor: 1 worklog(s)
 - find-issues - Review and find issues: 1 worklog(s)
@@ -20,14 +20,14 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - docs/issues, docs/todo: 2
 - authentication: 2
 - .codex: 2
-- .codex, workflow router, domain context, worklog learning, project skill.: 1
 - .codex, history learning, task-skills, project skill: 1
-- docs/DD M01-M19: 1
-- Admin app, Supabase Admin, Sale direct-only: 1
+- .codex, root AGENTS.md, .agents skill bridge: 1
+- lib/sale_referral, lib/services/supabase/sale,: 1
 - v1 onboarding/splash/dashboard, v2 auth/membership/cloud sync, Supabase docs.: 1
 - Product Flow, Membership, Quota, FamilyPlus, Sale/referral, DD workflow.: 1
-- .codex, root AGENTS.md, .agents skill bridge: 1
-- DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
+- .codex, workflow router, domain context, worklog learning, project skill.: 1
+- docs/DD/product_flow, docs/checklist: 1
+- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
 
 ## Reusable Project Skills
 

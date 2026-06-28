@@ -1,7 +1,7 @@
 class SaleDashboardFeature {
   const SaleDashboardFeature._();
 
-  static const status = 'planned';
+  static const status = 'implemented-internal-v1';
   static const productAxis = 'sale-referral';
 
   static const responsibilities = <String>[
@@ -12,5 +12,5 @@ class SaleDashboardFeature {
   ];
 
   static const blockedUntil =
-      'Sale dashboard DD defines visible fields, privacy rules, and UX copy.';
+      'Production payout/provider verification remains outside Flutter.';
 }

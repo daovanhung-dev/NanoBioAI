@@ -1,7 +1,7 @@
 class ReferralCodeFeature {
   const ReferralCodeFeature._();
 
-  static const status = 'planned';
+  static const status = 'implemented-internal-v1';
   static const productAxis = 'sale-referral';
 
   static const responsibilities = <String>[
@@ -12,5 +12,5 @@ class ReferralCodeFeature {
   ];
 
   static const blockedUntil =
-      'Referral code DD defines generation, attachment, fraud checks, and tests.';
+      'Advanced fraud scoring and Admin manual reassign flow remain backend decisions.';
 }

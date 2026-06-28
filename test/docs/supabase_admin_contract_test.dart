@@ -50,6 +50,38 @@ void main() {
   });
 
   group('Sale direct-only contract', () {
+    test('declares Sale internal module update RPCs and conversion table', () {
+      final sql = File(
+        'docs/supabase/12-sale-module-update.sql',
+      ).readAsStringSync();
+
+      for (final token in [
+        'create table if not exists public.sale_point_conversions',
+        'request_sale_participation',
+        'attach_my_referral_code',
+        'get_my_sale_direct_customers',
+        'get_my_sale_point_ledger',
+        'get_my_sale_conversions',
+        'request_sale_point_conversion',
+        'admin_list_sale_point_conversions',
+        'admin_review_sale_point_conversion',
+        'sale_point_conversions_select_own',
+        "config_key = 'sale_point_conversion'",
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
+    });
+
+    test('documents the Sale SQL update in Supabase run order', () {
+      final readme = File('docs/supabase/README.md').readAsStringSync();
+      final checks = File(
+        'docs/supabase/08-acceptance-checks.md',
+      ).readAsStringSync();
+
+      expect(readme, contains('12-sale-module-update.sql'));
+      expect(checks, contains('sale_point_conversions'));
+    });
+
     test(
       'removes second-level commission markers from Supabase and Sale code',
       () {

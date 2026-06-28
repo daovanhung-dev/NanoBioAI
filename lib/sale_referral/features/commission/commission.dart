@@ -1,7 +1,7 @@
 class SaleCommissionFeature {
   const SaleCommissionFeature._();
 
-  static const status = 'planned';
+  static const status = 'implemented-internal-v1';
   static const productAxis = 'sale-referral';
 
   static const responsibilities = <String>[
@@ -12,5 +12,5 @@ class SaleCommissionFeature {
   ];
 
   static const blockedUntil =
-      'Commission DD defines payment event source, adjustments, payout, and tests.';
+      'External payout, tax and bank transfer policy remain out of Flutter scope.';
 }

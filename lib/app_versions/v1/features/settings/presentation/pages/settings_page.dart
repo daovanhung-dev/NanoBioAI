@@ -115,6 +115,8 @@ class SettingsView extends ConsumerWidget {
                         _MenuCard(
                           children: [
                             _SaleSettingsEntry(saleState: saleStateAsync),
+                            const _DividerLine(),
+                            const _ReferralCodeSettingsEntry(),
                           ],
                         ),
                       ],
@@ -519,6 +521,134 @@ class _SaleSettingsEntry extends StatelessWidget {
       case SaleStatus.none:
       case SaleStatus.active:
         return 'Đọc điều lệ, chấp nhận và nhận quyền Sale cho tài khoản';
+    }
+  }
+}
+
+class _ReferralCodeSettingsEntry extends StatelessWidget {
+  const _ReferralCodeSettingsEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    return _MenuItem(
+      icon: Icons.confirmation_number_rounded,
+      title: 'Nhap ma gioi thieu',
+      subtitle:
+          'Gan tai khoan cua ban voi mot Sale truc tiep neu ban chua co quan he gioi thieu.',
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (_) => const _ReferralCodeSheet(),
+      ),
+    );
+  }
+}
+
+class _ReferralCodeSheet extends ConsumerStatefulWidget {
+  const _ReferralCodeSheet();
+
+  @override
+  ConsumerState<_ReferralCodeSheet> createState() => _ReferralCodeSheetState();
+}
+
+class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _controller = TextEditingController();
+  final _validator = const SaleReferralCodeValidator();
+  var _submitting = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        bottomInset + AppSpacing.lg,
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Nhap ma gioi thieu', style: AppTextStyles.heading3),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Ma chi duoc gan mot lan cho tai khoan hop le. He thong se khong hien thong tin lien he cua Sale.',
+              style: AppTextStyles.bodyMedium,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            TextFormField(
+              controller: _controller,
+              textCapitalization: TextCapitalization.characters,
+              decoration: const InputDecoration(
+                labelText: 'Ma gioi thieu',
+                prefixIcon: Icon(Icons.confirmation_number_rounded),
+              ),
+              validator: (value) => _validator.validate(value ?? ''),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _submitting ? null : _submit,
+                icon: _submitting
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.check_rounded),
+                label: const Text('Gan ma gioi thieu'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final code = _validator.normalize(_controller.text);
+    if (code.isEmpty || _submitting) return;
+
+    setState(() => _submitting = true);
+    try {
+      final result = await ref
+          .read(saleParticipationServiceProvider)
+          .attachReferralCode(code);
+      ref.invalidate(saleStateProvider);
+      ref.invalidate(saleDashboardProvider);
+      ref.invalidate(saleDirectCustomersProvider);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.message.isEmpty ? 'Da gan ma gioi thieu.' : result.message,
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Chua gan duoc ma gioi thieu. Ban kiem tra va thu lai.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _submitting = false);
     }
   }
 }

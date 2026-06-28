@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/sale_referral/domain/entities/sale_models.dart';
 import 'package:nano_app/sale_referral/domain/services/sale_commission_calculator.dart';
-import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
+import 'package:nano_app/sale_referral/domain/services/sale_conversion_policy_service.dart';
+import 'package:nano_app/sale_referral/providers/sale_providers.dart';
 import 'package:nano_app/services/supabase/sale/sale_terms.dart';
 
 class SaleShellPage extends ConsumerStatefulWidget {
@@ -23,9 +25,9 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
     return state.when(
       loading: () => const _SaleLoading(),
       error: (_, __) => _SaleSupportPage(
-        title: 'Chua mo duoc giao dien Sale',
+        title: 'Chua mo duoc khong gian Sale',
         message:
-            'Nabi chua kiem tra duoc trang thai Sale. Ban thu lam moi lai nhe.',
+            'He thong chua kiem tra duoc trang thai Sale. Ban thu lam moi lai.',
         onRetry: _refreshAll,
       ),
       data: (saleState) {
@@ -40,7 +42,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: const Text('NabiSale'),
+            title: const Text('NanoBio Sale'),
             backgroundColor: Colors.white,
             foregroundColor: AppColors.textPrimary,
             elevation: 0,
@@ -56,9 +58,9 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
             index: _index,
             children: [
               _OverviewTab(state: saleState),
-              const _NetworkTab(),
-              const _LeaderboardTab(),
-              _ToolsTab(state: saleState),
+              const _DirectCustomersTab(),
+              const _PointLedgerTab(),
+              _ConversionToolsTab(state: saleState),
             ],
           ),
           bottomNavigationBar: NavigationBar(
@@ -70,12 +72,12 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
                 label: 'Tong quan',
               ),
               NavigationDestination(
-                icon: Icon(Icons.person_add_alt_1_rounded),
-                label: 'Truc tiep',
+                icon: Icon(Icons.group_rounded),
+                label: 'Khach',
               ),
               NavigationDestination(
-                icon: Icon(Icons.leaderboard_rounded),
-                label: 'Xep hang',
+                icon: Icon(Icons.account_balance_wallet_rounded),
+                label: 'Diem',
               ),
               NavigationDestination(
                 icon: Icon(Icons.handyman_rounded),
@@ -91,14 +93,15 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
   void _refreshAll() {
     ref.invalidate(saleStateProvider);
     ref.invalidate(saleDashboardProvider);
-    ref.invalidate(saleReferralTreeProvider);
-    ref.invalidate(saleLeaderboardProvider);
+    ref.invalidate(saleDirectCustomersProvider);
+    ref.invalidate(salePointLedgerProvider);
+    ref.invalidate(saleConversionsProvider);
   }
 
   String _inactiveTitle(SaleStatus status) {
     return switch (status) {
-      SaleStatus.pending => 'Ho so Sale dang duoc cap nhat',
-      SaleStatus.suspended => 'Tai khoan Sale dang tam khoa',
+      SaleStatus.pending => 'Ho so Sale dang cho Admin duyet',
+      SaleStatus.suspended => 'Tai khoan Sale dang tam dung',
       SaleStatus.closed => 'Tai khoan Sale da dong',
       SaleStatus.none || SaleStatus.active => 'Ban chua co quyen Sale',
     };
@@ -107,13 +110,13 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
   String _inactiveMessage(SaleStatus status) {
     return switch (status) {
       SaleStatus.pending =>
-        'Nabi dang cap nhat quyen Sale cua ban. Hay lam moi lai sau it phut.',
+        'Yeu cau cua ban da duoc ghi nhan. Khi Admin duyet, ma gioi thieu va dashboard se duoc mo.',
       SaleStatus.suspended =>
-        'Ban can lien he ho tro de kiem tra ly do tam khoa truoc khi tiep tuc.',
+        'Ban can lien he ho tro de kiem tra ly do tam dung truoc khi tiep tuc.',
       SaleStatus.closed =>
-        'Trang thai Sale da dong. Vui long lien he ho tro neu can mo lai.',
+        'Trang thai Sale da dong. Vui long lien he ho tro neu can xem xet lai.',
       SaleStatus.none || SaleStatus.active =>
-        'Vao Cai dat > Cung Nabi phat trien de doc va chap nhan dieu le Sale.',
+        'Vao Cai dat > Cung NanoBio phat trien de doc va chap nhan dieu le Sale.',
     };
   }
 }
@@ -132,7 +135,7 @@ class _OverviewTab extends ConsumerWidget {
         error: (_, __) => const _EmptySaleState(
           title: 'Chua tai duoc tong quan',
           message:
-              'Du lieu Sale duoc doc truc tiep tu Supabase. Ban thu lam moi lai nhe.',
+              'Du lieu Sale duoc doc tu he thong. Ban thu lam moi lai sau.',
         ),
         data: (data) {
           return Column(
@@ -141,39 +144,51 @@ class _OverviewTab extends ConsumerWidget {
               _HeroPanel(
                 title: 'Tong quan Sale',
                 subtitle: state.referralCode == null
-                    ? 'Ma gioi thieu se hien thi sau khi he thong cap.'
+                    ? 'Ma gioi thieu se hien thi sau khi Admin duyet.'
                     : 'Ma gioi thieu: ${state.referralCode}',
               ),
               const SizedBox(height: AppSpacing.lg),
               GridView.count(
-                crossAxisCount: MediaQuery.sizeOf(context).width > 700 ? 4 : 2,
+                crossAxisCount: MediaQuery.sizeOf(context).width > 760 ? 4 : 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: AppSpacing.md,
                 crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 1.25,
+                childAspectRatio: 1.22,
                 children: [
                   _MetricTile(
-                    label: 'Truc tiep',
-                    value: data.directReferrals.toString(),
+                    label: 'Khach truc tiep',
+                    value: data.directCustomers.toString(),
                     icon: Icons.group_rounded,
                   ),
                   _MetricTile(
-                    label: 'Dang cho',
-                    value: _money(data.pendingCommissionCents, data.currency),
-                    icon: Icons.pending_actions_rounded,
-                  ),
-                  _MetricTile(
-                    label: 'Da duyet',
-                    value: _money(data.approvedCommissionCents, data.currency),
+                    label: 'Payment hop le',
+                    value: data.successfulPayments.toString(),
                     icon: Icons.verified_rounded,
                   ),
                   _MetricTile(
-                    label: 'Da chi tra',
-                    value: _money(data.paidCommissionCents, data.currency),
+                    label: 'Diem da duyet',
+                    value: _money(data.approvedPointCents, data.currency),
+                    icon: Icons.stars_rounded,
+                  ),
+                  _MetricTile(
+                    label: 'Diem kha dung',
+                    value: _money(data.availablePointCents, data.currency),
                     icon: Icons.account_balance_wallet_rounded,
                   ),
                 ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _ListTilePanel(
+                icon: data.conversionPolicy.enabled
+                    ? Icons.published_with_changes_rounded
+                    : Icons.lock_clock_rounded,
+                title: data.conversionPolicy.enabled
+                    ? 'Quy doi diem dang mo'
+                    : 'Quy doi diem chua mo',
+                subtitle: data.conversionPolicy.enabled
+                    ? 'Toi thieu ${_money(data.conversionPolicy.minimumPointCents, data.conversionPolicy.currency)} moi yeu cau quy doi.'
+                    : 'He thong se hien thi nut yeu cau khi Admin bat cau hinh sale_point_conversion.',
               ),
             ],
           );
@@ -183,39 +198,45 @@ class _OverviewTab extends ConsumerWidget {
   }
 }
 
-class _NetworkTab extends ConsumerWidget {
-  const _NetworkTab();
+class _DirectCustomersTab extends ConsumerWidget {
+  const _DirectCustomersTab();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tree = ref.watch(saleReferralTreeProvider);
+    final customers = ref.watch(saleDirectCustomersProvider);
     return _SaleScroll(
-      child: tree.when(
+      child: customers.when(
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
-          title: 'Chua tai duoc danh sach truc tiep',
-          message: 'Nabi chi hien thi du lieu referral duoc Supabase cho phep.',
+          title: 'Chua tai duoc khach truc tiep',
+          message: 'He thong chi hien thi khach duoc gan truc tiep voi ban.',
         ),
-        data: (nodes) {
-          if (nodes.isEmpty) {
+        data: (items) {
+          if (items.isEmpty) {
             return const _EmptySaleState(
               title: 'Chua co khach truc tiep',
               message:
-                  'Khi co khach duoc gioi thieu truc tiep hop le, danh sach se hien thi tai day.',
+                  'Khi khach nhap ma gioi thieu hop le, danh sach se hien thi tai day.',
             );
           }
 
           return Column(
-            children: nodes
-                .map(
-                  (node) => _ListTilePanel(
-                    icon: Icons.person_add_alt_1_rounded,
-                    title: 'Truc tiep - ${node.displayName}',
-                    subtitle:
-                        '${node.successfulPayments} thanh toan hop le duoc ghi nhan',
-                  ),
-                )
-                .toList(),
+            children: [
+              const _HeroPanel(
+                title: 'Khach truc tiep',
+                subtitle:
+                    'Ban duoc xem ten khach va so lieu tong hop; khong hien email, so dien thoai hay du lieu suc khoe.',
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              ...items.map(
+                (item) => _ListTilePanel(
+                  icon: Icons.person_rounded,
+                  title: item.displayName,
+                  subtitle:
+                      '${item.successfulPayments} payment hop le - ${_money(item.approvedPointCents, item.currency)} diem da duyet',
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -223,40 +244,47 @@ class _NetworkTab extends ConsumerWidget {
   }
 }
 
-class _LeaderboardTab extends ConsumerWidget {
-  const _LeaderboardTab();
+class _PointLedgerTab extends ConsumerWidget {
+  const _PointLedgerTab();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final leaderboard = ref.watch(saleLeaderboardProvider);
+    final ledger = ref.watch(salePointLedgerProvider);
     return _SaleScroll(
-      child: leaderboard.when(
+      child: ledger.when(
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
-          title: 'Chua tai duoc xep hang',
+          title: 'Chua tai duoc diem Sale',
           message:
-              'Bang xep hang duoc tinh tu Supabase va co the gioi han theo chinh sach hien thi.',
+              'Diem Sale chi duoc tao tu payment hop le da duoc he thong tin cay ghi nhan.',
         ),
-        data: (entries) {
-          if (entries.isEmpty) {
+        data: (items) {
+          if (items.isEmpty) {
             return const _EmptySaleState(
-              title: 'Chua co du lieu xep hang',
+              title: 'Chua co diem Sale',
               message:
-                  'Bang xep hang se hien thi khi he thong co du lieu Sale hop le.',
+                  'Khi khach truc tiep co payment duoc duyet, diem se hien thi tai day.',
             );
           }
 
           return Column(
-            children: entries
-                .map(
-                  (entry) => _ListTilePanel(
-                    icon: Icons.emoji_events_rounded,
-                    title: '#${entry.rank} - ${entry.displayName}',
-                    subtitle:
-                        '${entry.directReferrals} gioi thieu truc tiep - ${_money(entry.approvedCommissionCents, entry.currency)} da duyet',
-                  ),
-                )
-                .toList(),
+            children: [
+              const _HeroPanel(
+                title: 'Ledger diem Sale',
+                subtitle:
+                    'Moi dong lien ket voi mot payment hop le va khong duoc tao tu client.',
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              ...items.map(
+                (item) => _ListTilePanel(
+                  icon: Icons.receipt_long_rounded,
+                  title:
+                      '${item.customerName} - ${_money(item.pointAmountCents, item.currency)}',
+                  subtitle:
+                      '${item.planCode} - ${_money(item.paymentAmountCents, item.currency)} - ${_statusLabel(item.status)}',
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -264,21 +292,25 @@ class _LeaderboardTab extends ConsumerWidget {
   }
 }
 
-class _ToolsTab extends StatefulWidget {
+class _ConversionToolsTab extends ConsumerStatefulWidget {
   final SaleState state;
 
-  const _ToolsTab({required this.state});
+  const _ConversionToolsTab({required this.state});
 
   @override
-  State<_ToolsTab> createState() => _ToolsTabState();
+  ConsumerState<_ConversionToolsTab> createState() =>
+      _ConversionToolsTabState();
 }
 
-class _ToolsTabState extends State<_ToolsTab> {
+class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
+  final _pointController = TextEditingController();
   final _amountController = TextEditingController(text: '99000');
-  final _directController = TextEditingController(text: '0');
+  final _directController = TextEditingController(text: '1');
+  var _submitting = false;
 
   @override
   void dispose() {
+    _pointController.dispose();
     _amountController.dispose();
     _directController.dispose();
     super.dispose();
@@ -286,9 +318,10 @@ class _ToolsTabState extends State<_ToolsTab> {
 
   @override
   Widget build(BuildContext context) {
-    final referralCode = widget.state.referralCode;
+    final dashboard = ref.watch(saleDashboardProvider);
+    final conversions = ref.watch(saleConversionsProvider);
     final estimate = SaleCommissionCalculator.estimate(
-      planAmountCents: _parseAmountToCents(_amountController.text),
+      planAmountCents: _parseInt(_amountController.text),
       directSuccessfulPayments: _parseInt(_directController.text),
     );
 
@@ -296,40 +329,20 @@ class _ToolsTabState extends State<_ToolsTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _HeroPanel(
-            title: 'Cong cu Sale',
-            subtitle:
-                'Du lieu Sale duoc doc truc tiep tu Supabase va khong luu vao SQLite.',
-          ),
+          _ReferralCodePanel(referralCode: widget.state.referralCode),
           const SizedBox(height: AppSpacing.lg),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: _panelDecoration(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Ma gioi thieu', style: AppTextStyles.labelLarge),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  referralCode ?? 'Chua co ma dang hoat dong',
-                  style: AppTextStyles.heading2.copyWith(
-                    color: AppColors.primary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                FilledButton.icon(
-                  onPressed: referralCode == null
-                      ? null
-                      : () async {
-                          await Clipboard.setData(
-                            ClipboardData(text: referralCode),
-                          );
-                        },
-                  icon: const Icon(Icons.copy_rounded),
-                  label: const Text('Sao chep ma'),
-                ),
-              ],
+          dashboard.when(
+            loading: () => const _CenteredProgress(),
+            error: (_, __) => const _EmptySaleState(
+              title: 'Chua tai duoc cau hinh quy doi',
+              message: 'Ban thu lam moi lai sau.',
+            ),
+            data: (data) => _ConversionRequestPanel(
+              dashboard: data,
+              pointController: _pointController,
+              submitting: _submitting,
+              onChanged: () => setState(() {}),
+              onSubmit: _submitConversion,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -338,6 +351,12 @@ class _ToolsTabState extends State<_ToolsTab> {
             directController: _directController,
             estimate: estimate,
             onChanged: () => setState(() {}),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          conversions.when(
+            loading: () => const _CenteredProgress(),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (items) => _ConversionHistory(items: items),
           ),
           const SizedBox(height: AppSpacing.lg),
           _ListTilePanel(
@@ -349,12 +368,189 @@ class _ToolsTabState extends State<_ToolsTab> {
       ),
     );
   }
+
+  Future<void> _submitConversion(SaleDashboard dashboard) async {
+    final requested = _parseInt(_pointController.text);
+    final error = const SaleConversionPolicyService().validateRequest(
+      policy: dashboard.conversionPolicy,
+      availablePointCents: dashboard.availablePointCents,
+      requestedPointCents: requested,
+    );
+    if (error != null) {
+      _showSnack(error);
+      return;
+    }
+
+    setState(() => _submitting = true);
+    try {
+      await ref
+          .read(saleRepositoryProvider)
+          .requestConversion(
+            SaleConversionCommand(
+              pointCents: requested,
+              idempotencyKey:
+                  'sale-conversion-${DateTime.now().millisecondsSinceEpoch}',
+            ),
+          );
+      ref.invalidate(saleDashboardProvider);
+      ref.invalidate(saleConversionsProvider);
+      _pointController.clear();
+      _showSnack('Da gui yeu cau quy doi diem Sale.');
+    } catch (_) {
+      _showSnack('Chua gui duoc yeu cau quy doi. Ban thu lai sau.');
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
 }
 
-int _parseInt(String value) =>
-    int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+class _ReferralCodePanel extends StatelessWidget {
+  final String? referralCode;
 
-int _parseAmountToCents(String value) => _parseInt(value);
+  const _ReferralCodePanel({required this.referralCode});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: _panelDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Ma gioi thieu', style: AppTextStyles.labelLarge),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            referralCode ?? 'Chua co ma dang hoat dong',
+            style: AppTextStyles.heading2.copyWith(color: AppColors.primary),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          FilledButton.icon(
+            onPressed: referralCode == null
+                ? null
+                : () => Clipboard.setData(ClipboardData(text: referralCode!)),
+            icon: const Icon(Icons.copy_rounded),
+            label: const Text('Sao chep ma'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConversionRequestPanel extends StatelessWidget {
+  final SaleDashboard dashboard;
+  final TextEditingController pointController;
+  final bool submitting;
+  final VoidCallback onChanged;
+  final ValueChanged<SaleDashboard> onSubmit;
+
+  const _ConversionRequestPanel({
+    required this.dashboard,
+    required this.pointController,
+    required this.submitting,
+    required this.onChanged,
+    required this.onSubmit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final requested = _parseInt(pointController.text);
+    final money = dashboard.conversionPolicy.estimateMoneyCents(requested);
+    final canSubmit =
+        dashboard.conversionPolicy.canRequest(dashboard.availablePointCents) &&
+        requested > 0 &&
+        !submitting;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: _panelDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Yeu cau quy doi diem', style: AppTextStyles.labelLarge),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            dashboard.conversionPolicy.enabled
+                ? 'Diem kha dung: ${_money(dashboard.availablePointCents, dashboard.currency)}'
+                : 'Quy doi diem Sale chua duoc Admin mo cau hinh.',
+            style: AppTextStyles.bodySmall.copyWith(height: 1.45),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: pointController,
+            enabled: dashboard.conversionPolicy.enabled && !submitting,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (_) => onChanged(),
+            decoration: const InputDecoration(
+              labelText: 'So diem muon quy doi',
+              prefixIcon: Icon(Icons.stars_rounded),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _EstimateLine(
+            label: 'Gia tri uoc tinh',
+            value: _money(money, dashboard.conversionPolicy.currency),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: canSubmit ? () => onSubmit(dashboard) : null,
+              icon: submitting
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.send_rounded),
+              label: const Text('Gui yeu cau quy doi'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConversionHistory extends StatelessWidget {
+  final List<SaleConversionRequest> items;
+
+  const _ConversionHistory({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return const _ListTilePanel(
+        icon: Icons.history_rounded,
+        title: 'Chua co yeu cau quy doi',
+        subtitle: 'Cac yeu cau quy doi diem Sale se hien thi tai day.',
+      );
+    }
+
+    return Column(
+      children: items
+          .map(
+            (item) => _ListTilePanel(
+              icon: Icons.history_rounded,
+              title:
+                  '${_money(item.requestedPointCents, item.currency)} - ${_statusLabel(item.status)}',
+              subtitle:
+                  'Gia tri: ${_money(item.moneyAmountCents, item.currency)}',
+            ),
+          )
+          .toList(),
+    );
+  }
+}
 
 class _CommissionEstimator extends StatelessWidget {
   final TextEditingController amountController;
@@ -378,10 +574,10 @@ class _CommissionEstimator extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Uoc tinh hoa hong', style: AppTextStyles.labelLarge),
+          Text('Uoc tinh diem Sale', style: AppTextStyles.labelLarge),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Cong cu nay chi giup ban hinh dung. So chinh thuc do Supabase doi soat tu giao dich hop le.',
+            'Cong cu nay chi giup ban hinh dung. Diem chinh thuc do he thong tinh tu payment duoc duyet.',
             style: AppTextStyles.bodySmall.copyWith(height: 1.45),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -391,7 +587,7 @@ class _CommissionEstimator extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: (_) => onChanged(),
             decoration: const InputDecoration(
-              labelText: 'Gia tri mot thanh toan hop le (VND)',
+              labelText: 'Gia tri payment hop le',
               prefixIcon: Icon(Icons.payments_rounded),
             ),
           ),
@@ -402,13 +598,13 @@ class _CommissionEstimator extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: (_) => onChanged(),
             decoration: const InputDecoration(
-              labelText: 'So thanh toan truc tiep hop le',
+              labelText: 'So payment truc tiep',
               prefixIcon: Icon(Icons.person_add_alt_1_rounded),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
           _EstimateLine(
-            label: 'Truc tiep (10%)',
+            label: 'Truc tiep 10%',
             value: _money(estimate.directCommissionCents, 'VND'),
           ),
           const Divider(height: AppSpacing.lg),
@@ -416,11 +612,6 @@ class _CommissionEstimator extends StatelessWidget {
             label: 'Tong uoc tinh',
             value: _money(estimate.totalCommissionCents, 'VND'),
             emphasized: true,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Khong phai cam ket thu nhap. Hoa hong co the thay doi hoac dao nguoc khi hoan tien, tranh chap hay vi pham dieu le.',
-            style: AppTextStyles.bodySmall.copyWith(height: 1.45),
           ),
         ],
       ),
@@ -712,7 +903,39 @@ BoxDecoration _panelDecoration() {
   );
 }
 
-String _money(int cents, String currency) {
-  final amount = cents / 100;
-  return '${amount.toStringAsFixed(0)} $currency';
+int _parseInt(String value) {
+  return int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+}
+
+String _money(int amount, String currency) {
+  final sign = amount < 0 ? '-' : '';
+  final digits = amount.abs().toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < digits.length; i++) {
+    final remaining = digits.length - i;
+    buffer.write(digits[i]);
+    if (remaining > 1 && remaining % 3 == 1) buffer.write(',');
+  }
+  return '$sign$buffer $currency';
+}
+
+String _statusLabel(String value) {
+  switch (value.trim().toLowerCase()) {
+    case 'approved':
+    case 'points_credited':
+      return 'Da duyet';
+    case 'paid':
+      return 'Da chi tra';
+    case 'requested':
+    case 'pending':
+    case 'pending_review':
+      return 'Dang cho';
+    case 'rejected':
+      return 'Tu choi';
+    case 'reversed':
+    case 'points_reversed':
+      return 'Da dao';
+    default:
+      return value;
+  }
 }
