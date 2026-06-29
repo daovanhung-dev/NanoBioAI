@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/controllers/admin_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 const _desktopBreakpoint = 920.0;
 const _wideBreakpoint = 1180.0;
@@ -176,7 +179,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
   Future<void> _runAction(
     AdminPanelSection section,
     String action,
-    String targetId,
+    AdminWorkItem item,
     String actionLabel,
   ) async {
     final reason = await showDialog<String>(
@@ -185,14 +188,58 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
     );
     if (reason == null || reason.trim().isEmpty) return;
 
+    final payload = <String, Object?>{};
+    if (section == AdminPanelSection.saleConversions && action == 'mark_paid') {
+      final proofPath = await _pickAndUploadSalePayoutProof(item.id);
+      if (proofPath != null) payload['payment_proof_path'] = proofPath;
+    }
+
     await ref
         .read(adminControllerProvider.notifier)
         .runMutation(
           section: section,
           action: action,
-          targetId: targetId,
+          targetId: item.id,
           reason: reason,
+          payload: payload,
         );
+  }
+
+  Future<String?> _pickAndUploadSalePayoutProof(String conversionId) async {
+    try {
+      final image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (image == null) return null;
+
+      final bytes = await image.readAsBytes();
+      final safeName = image.name.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+      final path =
+          'sale-point-conversions/$conversionId/${DateTime.now().millisecondsSinceEpoch}-$safeName';
+      final contentType = image.mimeType ?? 'image/jpeg';
+
+      await Supabase.instance.client.storage
+          .from('sale-payout-proofs')
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: contentType, upsert: true),
+          );
+
+      return path;
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Chua upload duoc anh minh chung. Admin co the confirm khong anh.',
+            ),
+          ),
+        );
+      }
+      return null;
+    }
   }
 }
 
@@ -885,7 +932,7 @@ class _AdminContent extends StatelessWidget {
   final void Function(
     AdminPanelSection section,
     String action,
-    String targetId,
+    AdminWorkItem item,
     String actionLabel,
   )
   onAction;
@@ -1215,7 +1262,7 @@ class _WorkQueueView extends StatelessWidget {
   final void Function(
     AdminPanelSection section,
     String action,
-    String targetId,
+    AdminWorkItem item,
     String actionLabel,
   )
   onAction;
@@ -1259,7 +1306,7 @@ class _WorkItemRow extends StatelessWidget {
   final void Function(
     AdminPanelSection section,
     String action,
-    String targetId,
+    AdminWorkItem item,
     String actionLabel,
   )
   onAction;
@@ -1312,12 +1359,19 @@ class _WorkItemRow extends StatelessWidget {
                 item: item,
                 onAction: onAction,
               );
+              final payoutDetail = section == AdminPanelSection.saleConversions
+                  ? _SaleConversionPayoutDetail(item: item)
+                  : null;
 
               if (narrow) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     header,
+                    if (payoutDetail != null) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      payoutDetail,
+                    ],
                     if (actions.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.md),
                       actionWrap,
@@ -1326,19 +1380,145 @@ class _WorkItemRow extends StatelessWidget {
                 );
               }
 
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: header),
-                  if (actions.isNotEmpty) ...[
-                    const SizedBox(width: AppSpacing.md),
-                    Flexible(child: actionWrap),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(child: header),
+                      if (actions.isNotEmpty) ...[
+                        const SizedBox(width: AppSpacing.md),
+                        Flexible(child: actionWrap),
+                      ],
+                    ],
+                  ),
+                  if (payoutDetail != null) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    payoutDetail,
                   ],
                 ],
               );
             },
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SaleConversionPayoutDetail extends StatelessWidget {
+  final AdminWorkItem item;
+
+  const _SaleConversionPayoutDetail({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final metadata = item.metadata;
+    if (metadata.isEmpty) return const SizedBox.shrink();
+
+    final bankBin = _metadataString(metadata, 'bank_bin');
+    final bankName = _metadataString(metadata, 'bank_name');
+    final accountNumber = _metadataString(metadata, 'bank_account_number');
+    final accountName = _metadataString(metadata, 'bank_account_name');
+    final proofPath = _metadataString(metadata, 'payment_proof_path');
+    final shortId = item.id.length <= 8 ? item.id : item.id.substring(0, 8);
+    final content =
+        _metadataString(metadata, 'payment_content') ?? 'SALE $shortId';
+    final currency = _metadataString(metadata, 'currency') ?? 'VND';
+    final amount = _metadataInt(metadata, 'money_amount_cents');
+    final qrPayload =
+        _buildVietQrPayload(
+          bankBin: bankBin,
+          accountNumber: accountNumber,
+          accountName: accountName,
+          amount: amount,
+          content: content,
+        ) ??
+        _metadataString(metadata, 'vietqr_payload') ??
+        _buildFallbackQrPayload(
+          bankBin: bankBin,
+          accountNumber: accountNumber,
+          accountName: accountName,
+          amount: amount,
+          currency: currency,
+          content: content,
+        );
+
+    if (bankBin == null &&
+        bankName == null &&
+        accountNumber == null &&
+        accountName == null &&
+        amount == 0 &&
+        proofPath == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Wrap(
+        spacing: AppSpacing.md,
+        runSpacing: AppSpacing.md,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          if (qrPayload != null)
+            Container(
+              width: 132,
+              height: 132,
+              padding: const EdgeInsets.all(AppSpacing.xs),
+              color: Colors.white,
+              child: QrImageView(data: qrPayload, version: QrVersions.auto),
+            ),
+          SizedBox(
+            width: 420,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Thong tin chi tra', style: AppTextStyles.labelLarge),
+                const SizedBox(height: AppSpacing.xs),
+                _PayoutLine(label: 'Ngan hang', value: bankName ?? bankBin),
+                _PayoutLine(label: 'BIN', value: bankBin),
+                _PayoutLine(label: 'So tai khoan', value: accountNumber),
+                _PayoutLine(label: 'Chu tai khoan', value: accountName),
+                _PayoutLine(
+                  label: 'So tien',
+                  value: _formatMoney(amount, currency),
+                ),
+                _PayoutLine(label: 'Noi dung', value: content),
+                if (proofPath != null)
+                  _PayoutLine(label: 'Minh chung', value: proofPath),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PayoutLine extends StatelessWidget {
+  final String label;
+  final String? value;
+
+  const _PayoutLine({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    if (value == null || value!.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Text(
+        '$label: $value',
+        style: AppTextStyles.bodySmall.copyWith(height: 1.35),
       ),
     );
   }
@@ -1390,7 +1570,7 @@ class _ActionWrap extends StatelessWidget {
   final void Function(
     AdminPanelSection section,
     String action,
-    String targetId,
+    AdminWorkItem item,
     String actionLabel,
   )
   onAction;
@@ -1421,8 +1601,7 @@ class _ActionWrap extends StatelessWidget {
                     : AppColors.border,
               ),
             ),
-            onPressed: () =>
-                onAction(section, action.key, item.id, action.label),
+            onPressed: () => onAction(section, action.key, item, action.label),
             icon: Icon(action.icon, size: 18),
             label: Text(action.label),
           ),
@@ -2335,6 +2514,102 @@ IconData _statusIcon(String status) {
     return Icons.task_alt_rounded;
   }
   return Icons.insights_rounded;
+}
+
+String? _metadataString(Map<String, Object?> metadata, String key) {
+  final value = metadata[key]?.toString().trim();
+  return value == null || value.isEmpty ? null : value;
+}
+
+int _metadataInt(Map<String, Object?> metadata, String key) {
+  final value = metadata[key];
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+String? _buildVietQrPayload({
+  required String? bankBin,
+  required String? accountNumber,
+  required String? accountName,
+  required int amount,
+  required String content,
+}) {
+  if (bankBin == null ||
+      accountNumber == null ||
+      accountName == null ||
+      amount <= 0) {
+    return null;
+  }
+
+  final beneficiary = _emv('00', bankBin) + _emv('01', accountNumber);
+  final merchantAccount =
+      "${_emv('00', 'A000000727')}${_emv('01', beneficiary)}${_emv('02', 'QRIBFTTA')}";
+  final additionalData = _emv('08', _qrAscii(content, maxLength: 40));
+  final raw =
+      "${_emv('00', '01')}${_emv('01', '12')}${_emv('38', merchantAccount)}${_emv('53', '704')}${_emv('54', amount.toString())}${_emv('58', 'VN')}${_emv('59', _qrAscii(accountName, maxLength: 25))}${_emv('62', additionalData)}6304";
+  return '$raw${_crc16Ccitt(raw)}';
+}
+
+String _emv(String id, String value) {
+  final length = value.length.toString().padLeft(2, '0');
+  return '$id$length$value';
+}
+
+String _qrAscii(String value, {required int maxLength}) {
+  final ascii = value
+      .toUpperCase()
+      .replaceAll(RegExp(r'[^A-Z0-9 ]'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+  if (ascii.isEmpty) return 'NANOBIO';
+  return ascii.length <= maxLength ? ascii : ascii.substring(0, maxLength);
+}
+
+String _crc16Ccitt(String input) {
+  var crc = 0xFFFF;
+  for (final unit in input.codeUnits) {
+    crc ^= unit << 8;
+    for (var i = 0; i < 8; i++) {
+      crc = (crc & 0x8000) != 0 ? (crc << 1) ^ 0x1021 : crc << 1;
+      crc &= 0xFFFF;
+    }
+  }
+  return crc.toRadixString(16).toUpperCase().padLeft(4, '0');
+}
+
+String? _buildFallbackQrPayload({
+  required String? bankBin,
+  required String? accountNumber,
+  required String? accountName,
+  required int amount,
+  required String currency,
+  required String content,
+}) {
+  if (bankBin == null || accountNumber == null || accountName == null) {
+    return null;
+  }
+  return [
+    'VIETQR',
+    bankBin,
+    accountNumber,
+    accountName,
+    amount.toString(),
+    currency,
+    content,
+  ].join('|');
+}
+
+String _formatMoney(int amount, String currency) {
+  final sign = amount < 0 ? '-' : '';
+  final digits = amount.abs().toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < digits.length; i++) {
+    final remaining = digits.length - i;
+    buffer.write(digits[i]);
+    if (remaining > 1 && remaining % 3 == 1) buffer.write(',');
+  }
+  return '$sign$buffer $currency';
 }
 
 String _formatDateTime(DateTime? dateTime) {

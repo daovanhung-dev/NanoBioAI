@@ -75,6 +75,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
       ref.invalidate(saleDirectCustomersProvider);
       ref.invalidate(salePointLedgerProvider);
       ref.invalidate(saleConversionsProvider);
+      ref.invalidate(salePayoutProfileProvider);
 
       if (!mounted) return;
       if (updatedState.isActive) {
@@ -198,6 +199,11 @@ class _BuildTermsBody extends StatelessWidget {
           ],
           const SizedBox(height: AppSpacing.md),
           if (canJoin) ...[
+            const _StatusNotice(
+              message:
+                  'Dieu kien tham gia: tai khoan phai co goi Plus hoac FamilyPlus dang hoat dong. Admin se duyet thu cong truoc khi cap ma Sale.',
+            ),
+            const SizedBox(height: AppSpacing.sm),
             CheckboxListTile(
               value: accepted,
               onChanged: submitting

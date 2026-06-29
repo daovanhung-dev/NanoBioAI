@@ -43,6 +43,7 @@ void main() {
         state: const SaleState(
           status: SaleStatus.active,
           referralCode: 'NANO-1234',
+          payoutProfileComplete: true,
         ),
       ),
     );
@@ -61,6 +62,23 @@ void main() {
     );
   });
 
+  testWidgets('blocks active Sale dashboard until payout profile is complete', (
+    tester,
+  ) async {
+    await _pumpSaleShell(
+      tester,
+      _FakeSaleRepository(
+        state: const SaleState(
+          status: SaleStatus.active,
+          referralCode: 'NANO-1234',
+        ),
+      ),
+    );
+
+    expect(find.text('Cap nhat CCCD va ngan hang'), findsOneWidget);
+    expect(find.text('Tong quan Sale'), findsNothing);
+  });
+
   testWidgets('submits enabled conversion with trusted RPC values', (
     tester,
   ) async {
@@ -68,6 +86,7 @@ void main() {
       state: const SaleState(
         status: SaleStatus.active,
         referralCode: 'NANO-1234',
+        payoutProfileComplete: true,
       ),
       dashboard: _enabledDashboard(),
     );
@@ -97,6 +116,7 @@ void main() {
       state: const SaleState(
         status: SaleStatus.active,
         referralCode: 'NANO-1234',
+        payoutProfileComplete: true,
       ),
       dashboard: _enabledDashboard(),
       requestBlocker: blocker,
@@ -125,6 +145,7 @@ void main() {
       state: const SaleState(
         status: SaleStatus.active,
         referralCode: 'NANO-1234',
+        payoutProfileComplete: true,
       ),
       dashboard: _enabledDashboard(),
       failFirstConversion: true,
@@ -217,13 +238,35 @@ class _FakeSaleRepository implements SaleRepository {
   @override
   Future<SaleState> requestSaleParticipation({
     required String termsVersion,
+    required String deviceHash,
   }) async {
     return const SaleState(status: SaleStatus.pending);
   }
 
   @override
-  Future<SaleReferralAttachment> attachReferralCode(String code) async {
+  Future<SaleReferralAttachment> attachReferralCode(
+    String code, {
+    required String deviceHash,
+  }) async {
     return const SaleReferralAttachment(success: true, message: 'ok');
+  }
+
+  @override
+  Future<SalePayoutProfile?> fetchPayoutProfile() async {
+    return null;
+  }
+
+  @override
+  Future<SalePayoutProfile> upsertPayoutProfile(
+    SalePayoutProfileCommand command,
+  ) async {
+    return SalePayoutProfile(
+      citizenId: command.citizenId,
+      bankBin: command.bankBin,
+      bankName: command.bankName,
+      bankAccountNumber: command.bankAccountNumber,
+      bankAccountName: command.bankAccountName,
+    );
   }
 
   @override

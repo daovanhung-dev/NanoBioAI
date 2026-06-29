@@ -176,6 +176,10 @@ void main() {
         targetId: 'conversion-id',
         reason: 'Finance confirmed payout.',
         idempotencyKey: 'sale-conversions-conversion-id-1',
+        payload: {
+          'payment_proof_path':
+              'sale-point-conversions/conversion-id/proof.jpg',
+        },
       );
 
       expect(
@@ -191,6 +195,8 @@ void main() {
         'p_idempotency_key': 'sale-conversions-conversion-id-1',
         'p_conversion_id': 'conversion-id',
         'p_decision': 'mark_paid',
+        'p_payment_proof_path':
+            'sale-point-conversions/conversion-id/proof.jpg',
       });
       expect(AdminRoutePaths.saleConversions, '/admin/sale-conversions');
     });

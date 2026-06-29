@@ -38,6 +38,8 @@ schema `public`, sau do tao lai schema/RLS/RPC/seed/dev users/Admin bootstrap.
 - `dev.admin@nanobio.local` duoc bootstrap role `super_admin`.
 - SQL khong deploy duoc Edge Function `delete-account`, Auth redirect URL,
   payment webhook/provider hoac storage bucket; cac phan do can cau hinh rieng.
+  Bucket private `sale-payout-proofs` cho minh chung chi tra Sale duoc huong
+  dan trong `13-sale-payout-storage.md`.
 
 ## File module tham chieu
 
@@ -62,11 +64,13 @@ doi:
    va RPC quan tri.
 9. `12-sale-module-update.sql` - Sale dang ky cho Admin duyet, attach ma gioi
    thieu, ledger diem va queue quy doi noi bo.
-10. `07-seed-reference-data.sql` - seed du lieu tham chieu ban dau.
-11. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tao account
+10. `13-sale-payout-storage.md` - runbook bucket private cho anh minh chung
+   chi tra Sale.
+11. `07-seed-reference-data.sql` - seed du lieu tham chieu ban dau.
+12. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tao account
    test Free/Plus/FamilyPlus co dinh; `config.sql` co dev seed rieng va them
    `dev.admin@nanobio.local`.
-12. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
+13. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
    va nghiem thu.
 
 Moi thay doi Supabase schema/RLS/RPC/seed/docs phai cap nhat `config.sql` cung

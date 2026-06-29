@@ -21,11 +21,12 @@ Commit de xuat: docs(supabase): cap nhat ma tran rls
 | Catalog | Authenticated user doc | Khong | Migration/Admin ghi | Du lieu dung chung |
 | Membership/quota | User doc du lieu cua minh; plan/rule active doc chung | Khong | Payment backend/Admin ghi | Client khong tu tang quota |
 | FamilyPlus | Owner/member duoc phep doc | Khong o draft nay | Backend xac thuc FamilyPlus/consent ghi | Can test chong lo family data |
-| Sale/referral | Sale/referrer/referred doc phan lien quan | Chi goi RPC attach ma gioi thieu co guard | Backend/Admin ghi | Sale doc lap membership |
+| Sale/referral | Sale/referrer/referred doc phan lien quan; Sale doc summary khach truc tiep qua RPC | Chi goi RPC attach ma gioi thieu/upsert payout profile co guard | Backend/Admin ghi | Sale requires paid Plus/FamilyPlus; attach co email/phone/device/payment-history guard |
 | `payment_events` | Payer doc giao dich cua minh | Khong | Webhook/backend/Admin ghi | Khong tin Flutter bao thanh toan thanh cong |
 | `commission_rates` | Authenticated user doc rate active | Khong | Migration/Admin ghi | Direct-only 10% |
-| `commission_records` | Receiver doc diem Sale cua minh | Khong | Trigger/backend/Admin ghi | Chi tao tu payment event hop le; diem giu 24h truoc khi kha dung |
+| `commission_records` | Receiver doc diem Sale cua minh | Khong | Trigger/backend/Admin ghi | Chi tao tu payment approved; tinh theo list-price/base snapshot; diem giu 24h truoc khi kha dung |
 | `sale_point_conversions` | Sale doc yeu cau quy doi cua minh; Admin co `sales.write` doc qua queue RPC | Khong ghi bang truc tiep | Sale/Admin RPC co config, idempotency va audit | Khong tich hop payout provider that trong app |
+| `sale_payout_profiles` | Khong grant doc truc tiep; Sale/Admin doc qua RPC | Khong ghi bang truc tiep | Sale RPC upsert, Admin queue RPC doc snapshot | Chua CCCD + bank; proof anh o private Storage `sale-payout-proofs` |
 | `sale_point_adjustments` | Admin co `points.write` doc qua RPC | Khong | Admin RPC ghi | Dieu chinh thu cong can 1 Admin, reason, idempotency va audit |
 | Admin roles/config/audit/reconciliation | Admin co permission doc | Khong | Admin RPC ghi | Moi write nhay cam can audit; reconciliation khong overwrite ledger lich su |
 
@@ -35,6 +36,7 @@ Commit de xuat: docs(supabase): cap nhat ma tran rls
   duoc thiet ke rieng; presentation/controller khong ghi bang truc tiep.
 - Admin action quan trong can `reason`, actor, timestamp, idempotency key va
   audit log.
-- Sale dashboard chi hien thi ten khach truc tiep, thong tin co ban neu can
-  (email/phone khi co trong profile nghiep vu) va so lieu tong hop; khong hien
-  thi health data, AI content, secret, payment evidence hay raw payment payload.
+- Sale dashboard chi hien thi khach truc tiep qua RPC summary: ho ten, tuoi, so
+  dien thoai, tom tat health conditions cua self subject va so lieu tong hop;
+  khong hien raw daily logs, AI content, secret, payment evidence hay raw
+  payment payload.

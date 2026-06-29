@@ -14,18 +14,49 @@ class SupabaseSaleRemoteDatasource implements SaleRemoteDatasource {
   }
 
   @override
-  Future<Object?> requestSaleParticipation({required String termsVersion}) {
+  Future<Object?> requestSaleParticipation({
+    required String termsVersion,
+    required String deviceHash,
+  }) {
     return _client().rpc(
       'request_sale_participation',
-      params: {'p_terms_version': termsVersion},
+      params: {'p_terms_version': termsVersion, 'p_device_hash': deviceHash},
     );
   }
 
   @override
-  Future<Object?> attachReferralCode(String code) {
+  Future<Object?> attachReferralCode(
+    String code, {
+    required String deviceHash,
+  }) {
     return _client().rpc(
       'attach_my_referral_code',
-      params: {'p_referral_code': code},
+      params: {'p_referral_code': code, 'p_device_hash': deviceHash},
+    );
+  }
+
+  @override
+  Future<Object?> getPayoutProfile() {
+    return _client().rpc('get_my_sale_payout_profile');
+  }
+
+  @override
+  Future<Object?> upsertPayoutProfile({
+    required String citizenId,
+    required String bankBin,
+    required String bankName,
+    required String bankAccountNumber,
+    required String bankAccountName,
+  }) {
+    return _client().rpc(
+      'upsert_my_sale_payout_profile',
+      params: {
+        'p_citizen_id': citizenId,
+        'p_bank_bin': bankBin,
+        'p_bank_name': bankName,
+        'p_bank_account_number': bankAccountNumber,
+        'p_bank_account_name': bankAccountName,
+      },
     );
   }
 

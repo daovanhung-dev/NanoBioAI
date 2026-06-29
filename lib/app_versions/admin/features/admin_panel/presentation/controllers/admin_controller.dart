@@ -96,6 +96,7 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     required String action,
     required String targetId,
     required String reason,
+    Map<String, Object?> payload = const {},
   }) async {
     final current = state.asData?.value;
     if (reason.trim().isEmpty) {
@@ -109,6 +110,7 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       reason: reason.trim(),
       idempotencyKey:
           '${section.value}-$targetId-${DateTime.now().microsecondsSinceEpoch}',
+      payload: payload,
     );
 
     final session = current?.session ?? await _repository.fetchSession();

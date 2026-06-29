@@ -533,8 +533,7 @@ class _ReferralCodeSettingsEntry extends StatelessWidget {
     return _MenuItem(
       icon: Icons.confirmation_number_rounded,
       title: 'Nhap ma gioi thieu',
-      subtitle:
-          'Gan tai khoan cua ban voi mot Sale truc tiep neu ban chua co quan he gioi thieu.',
+      subtitle: 'Ma gioi thieu chi duoc nhap trong luc dang ky tai khoan moi.',
       onTap: () => showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
@@ -556,7 +555,7 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
   final _formKey = GlobalKey<FormState>();
   final _controller = TextEditingController();
   final _validator = const SaleReferralCodeValidator();
-  var _submitting = false;
+  final bool _submitting = false;
 
   @override
   void dispose() {
@@ -583,7 +582,7 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
             Text('Nhap ma gioi thieu', style: AppTextStyles.heading3),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Ma chi duoc gan mot lan cho tai khoan hop le. He thong se khong hien thong tin lien he cua Sale.',
+              'Theo chinh sach Sale moi, ma gioi thieu chi duoc gan trong luc dang ky tai khoan. Tai khoan da tao khong the gan ma tu man hinh cai dat.',
               style: AppTextStyles.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -621,35 +620,12 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
     final code = _validator.normalize(_controller.text);
     if (code.isEmpty || _submitting) return;
 
-    setState(() => _submitting = true);
-    try {
-      final result = await ref
-          .read(saleParticipationServiceProvider)
-          .attachReferralCode(code);
-      ref.invalidate(saleStateProvider);
-      ref.invalidate(saleDashboardProvider);
-      ref.invalidate(saleDirectCustomersProvider);
-      if (!mounted) return;
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result.message.isEmpty ? 'Da gan ma gioi thieu.' : result.message,
-          ),
-        ),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Chua gan duoc ma gioi thieu. Ban kiem tra va thu lai.',
-          ),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Ma gioi thieu chi duoc gan khi dang ky tai khoan moi.'),
+      ),
+    );
   }
 }
 

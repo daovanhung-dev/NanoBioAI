@@ -554,6 +554,8 @@ create or replace function public.record_trusted_payment_event(
   p_provider text,
   p_provider_event_id text,
   p_amount_cents integer,
+  p_list_price_cents integer default null,
+  p_commission_base_cents integer default null,
   p_currency text default 'VND',
   p_auto_approve boolean default false,
   p_raw_event_hash text default null,
@@ -566,13 +568,29 @@ set search_path = public, pg_temp
 as $$
 declare
   v_payment_id uuid;
+  v_metadata jsonb := coalesce(p_metadata, '{}'::jsonb);
+  v_list_price_cents integer;
+  v_commission_base_cents integer;
 begin
+  v_list_price_cents := coalesce(
+    p_list_price_cents,
+    nullif(v_metadata ->> 'list_price_cents', '')::integer
+  );
+  v_commission_base_cents := coalesce(
+    p_commission_base_cents,
+    v_list_price_cents,
+    nullif(v_metadata ->> 'commission_base_cents', '')::integer,
+    p_amount_cents
+  );
+
   insert into public.payment_events (
     payer_user_id,
     plan_code,
     provider,
     provider_event_id,
     amount_cents,
+    list_price_cents,
+    commission_base_cents,
     currency,
     status,
     paid_at,
@@ -585,22 +603,85 @@ begin
     p_provider,
     p_provider_event_id,
     p_amount_cents,
+    v_list_price_cents,
+    v_commission_base_cents,
     coalesce(nullif(p_currency, ''), 'VND'),
     'pending',
     null,
     p_raw_event_hash,
-    coalesce(p_metadata, '{}'::jsonb) || jsonb_build_object(
+    v_metadata || jsonb_build_object(
       'manual_approval_required',
       true,
       'auto_approve_requested',
-      coalesce(p_auto_approve, false)
+      coalesce(p_auto_approve, false),
+      'commission_base_policy',
+      'list_price_owner_package_only'
     )
   )
   on conflict (provider, provider_event_id) do update
-  set metadata = public.payment_events.metadata || excluded.metadata
+  set
+    list_price_cents = coalesce(public.payment_events.list_price_cents, excluded.list_price_cents),
+    commission_base_cents = coalesce(public.payment_events.commission_base_cents, excluded.commission_base_cents),
+    metadata = public.payment_events.metadata || excluded.metadata
   returning id into v_payment_id;
 
   return v_payment_id;
+end;
+$$;
+
+create or replace function public.create_sale_point_reversal_for_payment(
+  p_payment_event_id uuid,
+  p_decision text,
+  p_reason text,
+  p_idempotency_key text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_record record;
+begin
+  for v_record in
+    select
+      cr.id,
+      cr.receiver_user_id,
+      cr.amount_cents,
+      cr.currency
+    from public.commission_records cr
+    where cr.payment_event_id = p_payment_event_id
+      and cr.amount_cents > 0
+  loop
+    insert into public.sale_point_adjustments (
+      sale_user_id,
+      point_delta_cents,
+      currency,
+      reason,
+      reviewed_by,
+      idempotency_key,
+      metadata
+    )
+    values (
+      v_record.receiver_user_id,
+      -v_record.amount_cents,
+      v_record.currency,
+      btrim(p_reason),
+      auth.uid(),
+      concat('sale-reversal-', v_record.id::text),
+      jsonb_build_object(
+        'payment_event_id',
+        p_payment_event_id,
+        'commission_record_id',
+        v_record.id,
+        'reversal_decision',
+        p_decision,
+        'ledger_policy',
+        'negative_adjustment_without_overwriting_commission'
+      )
+    )
+    on conflict (idempotency_key) do nothing;
+  end loop;
 end;
 $$;
 
@@ -617,12 +698,11 @@ set search_path = public, pg_temp
 as $$
 declare
   v_payment public.payment_events%rowtype;
-  v_effective_at timestamptz;
   v_status text;
 begin
   perform public.admin_assert_permission('payments.write');
 
-  if p_decision not in ('refund', 'cancel') then
+  if p_decision not in ('refund', 'cancel', 'chargeback') then
     raise exception 'INVALID_PAYMENT_REVERSAL_DECISION' using errcode = '22023';
   end if;
 
@@ -635,12 +715,11 @@ begin
     raise exception 'PAYMENT_NOT_FOUND' using errcode = '22023';
   end if;
 
-  v_effective_at := coalesce(v_payment.paid_at, v_payment.created_at);
-  if now() > v_effective_at + interval '24 hours' then
-    raise exception 'PACKAGE_REFUND_CANCEL_WINDOW_CLOSED' using errcode = '22023';
-  end if;
-
-  v_status := case when p_decision = 'refund' then 'refunded' else 'failed' end;
+  v_status := case
+    when p_decision = 'refund' then 'refunded'
+    when p_decision = 'chargeback' then 'chargeback'
+    else 'failed'
+  end;
 
   update public.payment_events
   set
@@ -650,6 +729,13 @@ begin
     review_reason = btrim(p_reason),
     metadata = metadata || jsonb_build_object('admin_decision', p_decision)
   where id = p_payment_event_id;
+
+  perform public.create_sale_point_reversal_for_payment(
+    p_payment_event_id,
+    p_decision,
+    p_reason,
+    p_idempotency_key
+  );
 
   if v_payment.subscription_id is not null then
     update public.membership_subscriptions
@@ -664,10 +750,15 @@ begin
     p_payment_event_id::text,
     p_reason,
     p_idempotency_key,
-    jsonb_build_object('decision', p_decision, 'window_hours', 24)
+    jsonb_build_object(
+      'decision',
+      p_decision,
+      'reversal_policy',
+      'negative_sale_point_adjustment'
+    )
   );
 
-  return query select true, 'Da xu ly hoan huy trong cua so 24 gio.';
+  return query select true, 'Da xu ly hoan huy va tru diem Sale neu co.';
 end;
 $$;
 
@@ -1380,10 +1471,19 @@ revoke all on function public.record_trusted_payment_event(
   text,
   text,
   integer,
+  integer,
+  integer,
   text,
   boolean,
   text,
   jsonb
+) from public, anon, authenticated;
+
+revoke all on function public.create_sale_point_reversal_for_payment(
+  uuid,
+  text,
+  text,
+  text
 ) from public, anon, authenticated;
 
 commit;

@@ -9,17 +9,37 @@ export 'package:nano_app/sale_referral/providers/sale_providers.dart';
 
 class SaleParticipationService {
   final SaleRepository repository;
+  final Future<String> Function() deviceHashResolver;
 
-  const SaleParticipationService({required this.repository});
+  const SaleParticipationService({
+    required this.repository,
+    required this.deviceHashResolver,
+  });
 
   Future<SaleState> fetchState() => repository.fetchSaleState();
 
-  Future<SaleState> requestParticipation({required String termsVersion}) {
-    return repository.requestSaleParticipation(termsVersion: termsVersion);
+  Future<SaleState> requestParticipation({required String termsVersion}) async {
+    return repository.requestSaleParticipation(
+      termsVersion: termsVersion,
+      deviceHash: await deviceHashResolver(),
+    );
   }
 
-  Future<SaleReferralAttachment> attachReferralCode(String code) {
-    return repository.attachReferralCode(code);
+  Future<SaleReferralAttachment> attachReferralCode(String code) async {
+    return repository.attachReferralCode(
+      code,
+      deviceHash: await deviceHashResolver(),
+    );
+  }
+
+  Future<SalePayoutProfile?> fetchPayoutProfile() {
+    return repository.fetchPayoutProfile();
+  }
+
+  Future<SalePayoutProfile> upsertPayoutProfile(
+    SalePayoutProfileCommand command,
+  ) {
+    return repository.upsertPayoutProfile(command);
   }
 
   Future<SaleDashboard> fetchDashboard() => repository.fetchDashboard();
@@ -48,5 +68,6 @@ final saleParticipationServiceProvider = Provider<SaleParticipationService>((
 ) {
   return SaleParticipationService(
     repository: ref.watch(saleRepositoryProvider),
+    deviceHashResolver: () => ref.read(saleDeviceHashProvider.future),
   );
 });

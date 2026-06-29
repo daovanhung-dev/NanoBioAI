@@ -38,6 +38,10 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
           );
         }
 
+        if (!saleState.payoutProfileComplete) {
+          return _SalePayoutProfileGate(onSaved: _refreshAll);
+        }
+
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
@@ -95,6 +99,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
     ref.invalidate(saleDirectCustomersProvider);
     ref.invalidate(salePointLedgerProvider);
     ref.invalidate(saleConversionsProvider);
+    ref.invalidate(salePayoutProfileProvider);
   }
 
   String _inactiveTitle(SaleStatus status) {
@@ -117,6 +122,194 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
       SaleStatus.none || SaleStatus.active =>
         'Vao Cai dat > Cung NanoBio phat trien de doc va chap nhan dieu le Sale.',
     };
+  }
+}
+
+class _SalePayoutProfileGate extends ConsumerStatefulWidget {
+  final VoidCallback onSaved;
+
+  const _SalePayoutProfileGate({required this.onSaved});
+
+  @override
+  ConsumerState<_SalePayoutProfileGate> createState() =>
+      _SalePayoutProfileGateState();
+}
+
+class _SalePayoutProfileGateState
+    extends ConsumerState<_SalePayoutProfileGate> {
+  final _formKey = GlobalKey<FormState>();
+  final _citizenId = TextEditingController();
+  final _bankBin = TextEditingController();
+  final _bankName = TextEditingController();
+  final _bankAccountNumber = TextEditingController();
+  final _bankAccountName = TextEditingController();
+  var _saving = false;
+
+  @override
+  void dispose() {
+    _citizenId.dispose();
+    _bankBin.dispose();
+    _bankName.dispose();
+    _bankAccountNumber.dispose();
+    _bankAccountName.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Ho so chi tra Sale'),
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Lam moi',
+            onPressed: widget.onSaved,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
+      ),
+      body: _SaleScroll(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: _panelDecoration(),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cap nhat CCCD va ngan hang',
+                      style: AppTextStyles.heading3,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Can hoan tat thong tin nay truoc khi vao dashboard Sale hoac gui yeu cau rut tien.',
+                      style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    TextFormField(
+                      controller: _citizenId,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                        labelText: 'So can cuoc cong dan',
+                        prefixIcon: Icon(Icons.badge_rounded),
+                      ),
+                      validator: (value) => _required(value, minimumLength: 9),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _bankBin,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                        labelText: 'Ma ngan hang/BIN',
+                        prefixIcon: Icon(Icons.account_balance_rounded),
+                      ),
+                      validator: (value) => _required(value, minimumLength: 3),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _bankName,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Ten ngan hang',
+                        prefixIcon: Icon(Icons.business_rounded),
+                      ),
+                      validator: _required,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _bankAccountNumber,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                        labelText: 'So tai khoan',
+                        prefixIcon: Icon(Icons.numbers_rounded),
+                      ),
+                      validator: (value) => _required(value, minimumLength: 4),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    TextFormField(
+                      controller: _bankAccountName,
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: const InputDecoration(
+                        labelText: 'Ten chu tai khoan',
+                        prefixIcon: Icon(Icons.person_pin_rounded),
+                      ),
+                      validator: _required,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _saving ? null : _save,
+                        icon: _saving
+                            ? const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.save_rounded),
+                        label: const Text('Luu ho so chi tra'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate() || _saving) return;
+    setState(() => _saving = true);
+
+    try {
+      await ref
+          .read(saleRepositoryProvider)
+          .upsertPayoutProfile(
+            SalePayoutProfileCommand(
+              citizenId: _citizenId.text.trim(),
+              bankBin: _bankBin.text.trim(),
+              bankName: _bankName.text.trim(),
+              bankAccountNumber: _bankAccountNumber.text.trim(),
+              bankAccountName: _bankAccountName.text.trim().toUpperCase(),
+            ),
+          );
+      ref.invalidate(saleStateProvider);
+      ref.invalidate(salePayoutProfileProvider);
+      widget.onSaved();
+      _showSnack('Da luu ho so chi tra Sale.');
+    } catch (_) {
+      _showSnack('Chua luu duoc ho so chi tra. Ban thu lai sau.');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  String? _required(String? value, {int minimumLength = 1}) {
+    final text = value?.trim() ?? '';
+    if (text.length < minimumLength) return 'Can nhap day du thong tin.';
+    return null;
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -166,9 +359,9 @@ class _OverviewTab extends ConsumerWidget {
                     icon: Icons.verified_rounded,
                   ),
                   _MetricTile(
-                    label: 'Diem da duyet',
-                    value: _money(data.approvedPointCents, data.currency),
-                    icon: Icons.stars_rounded,
+                    label: 'Diem dang giu',
+                    value: _money(data.pendingPointCents, data.currency),
+                    icon: Icons.lock_clock_rounded,
                   ),
                   _MetricTile(
                     label: 'Diem kha dung',
@@ -186,7 +379,7 @@ class _OverviewTab extends ConsumerWidget {
                     ? 'Quy doi diem dang mo'
                     : 'Quy doi diem chua mo',
                 subtitle: data.conversionPolicy.enabled
-                    ? 'Toi thieu ${_money(data.conversionPolicy.minimumPointCents, data.conversionPolicy.currency)} moi yeu cau quy doi.'
+                    ? 'Chi diem giao dich Sale da qua 24h moi duoc quy doi. Toi thieu ${_money(data.conversionPolicy.minimumPointCents, data.conversionPolicy.currency)}.'
                     : 'He thong se hien thi nut yeu cau khi Admin bat cau hinh sale_point_conversion.',
               ),
             ],
@@ -224,15 +417,14 @@ class _DirectCustomersTab extends ConsumerWidget {
               const _HeroPanel(
                 title: 'Khach truc tiep',
                 subtitle:
-                    'Ban duoc xem ten khach va so lieu tong hop; khong hien email, so dien thoai hay du lieu suc khoe.',
+                    'Thong tin hien thi theo moi quan he gioi thieu truc tiep da duoc he thong xac nhan.',
               ),
               const SizedBox(height: AppSpacing.lg),
               ...items.map(
                 (item) => _ListTilePanel(
                   icon: Icons.person_rounded,
                   title: item.displayName,
-                  subtitle:
-                      '${item.successfulPayments} payment hop le - ${_money(item.approvedPointCents, item.currency)} diem da duyet',
+                  subtitle: _customerSubtitle(item),
                 ),
               ),
             ],
@@ -241,6 +433,16 @@ class _DirectCustomersTab extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _customerSubtitle(SaleDirectCustomer item) {
+  final age = item.age == null ? 'Tuoi: chua co' : 'Tuoi: ${item.age}';
+  final phone = item.phone == null ? 'SDT: chua co' : 'SDT: ${item.phone}';
+  final health = item.healthConditionSummary == null
+      ? 'Suc khoe: chua co tom tat'
+      : 'Suc khoe: ${item.healthConditionSummary}';
+  final points = _money(item.approvedPointCents, item.currency);
+  return '$age - $phone - $health - ${item.successfulPayments} payment hop le - $points diem da duyet';
 }
 
 class _PointLedgerTab extends ConsumerWidget {

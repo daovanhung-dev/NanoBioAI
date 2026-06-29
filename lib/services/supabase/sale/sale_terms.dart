@@ -5,7 +5,7 @@
 class SaleTerms {
   const SaleTerms._();
 
-  static const currentVersion = '2026-06-22';
+  static const currentVersion = '2026-06-29';
 
   static const title = 'Dieu le tham gia Sale cung NanoBio';
 
@@ -17,8 +17,8 @@ class SaleTerms {
     SaleTermsSection(
       title: '1. Cach ghi nhan ket qua',
       body:
-          'Diem Sale chi co the phat sinh tu giao dich thanh toan hop le do he thong tin cay xac nhan. '
-          'Khong co diem cho viec tuyen nguoi, nap tien ho, hay tao giao dich khong dung thuc te.',
+          'Chi thanh vien dang co goi Plus hoac FamilyPlus hop le moi duoc gui yeu cau Sale. '
+          'Diem giao dich Sale chi phat sinh tu thanh toan hop le cua khach truc tiep, tinh 10% theo gia niem yet cua chu goi.',
     ),
     SaleTermsSection(
       title: '2. Thong tin phai trung thuc',
@@ -29,26 +29,31 @@ class SaleTerms {
     SaleTermsSection(
       title: '3. Bao ve khach hang va du lieu',
       body:
-          'Chi chia se ma gioi thieu cua chinh ban. Khong yeu cau mat khau, OTP, du lieu suc khoe hay thong tin thanh toan cua khach hang. '
+          'Chi chia se ma gioi thieu cua chinh ban. Ma chi duoc gan trong luc dang ky tai khoan va co the bi chan khi trung email, so dien thoai, thiet bi hoac lich su thanh toan. '
           'Khong spam, quay roi hoac lien he ngoai su dong y cua nguoi nhan.',
     ),
     SaleTermsSection(
       title: '4. Dieu kien doi soat',
       body:
-          'Bang tong quan la du lieu tham khao theo thoi diem. Diem Sale co the cho duyet, bi dieu chinh hoac dao nguoc khi giao dich hoan tien, bi huy, co tranh chap hoac vi pham dieu le.',
+          'Diem giao dich Sale hien thi ngay sau khi thanh toan duoc duyet nhung chi kha dung sau 24 gio. '
+          'Neu hoan tien, huy don hoac tranh chap, diem giao dich Sale bi tru ngay va co the lam so du am.',
     ),
     SaleTermsSection(
       title: '5. Quyen quan ly cua NanoBio',
       body:
+          'Ban can cap nhat so can cuoc cong dan va tai khoan ngan hang truoc khi vao dashboard hoac rut tien. '
+          'Diem giao dich Sale duoc quy doi 1 diem = 1 VND theo cau hinh Admin; diem thuong chuyen can chi dung cho voucher va khong rut tien. '
           'NanoBio co the tam dung hoac dong quyen Sale khi phat hien dau hieu gian lan, gia mao, vi pham chinh sach hoac yeu cau cua phap luat. '
           'Cac dieu khoan co the duoc cap nhat; phien ban moi se duoc hien thi truoc khi ban tiep tuc su dung.',
     ),
   ];
 
   static const bullets = <String>[
-    'Chi ghi nhan khi thanh toan hop le duoc he thong tin cay xac nhan.',
+    'Chi paid member Plus/FamilyPlus duoc dang ky Sale.',
+    'Hoa hong Sale tinh 10% theo gia niem yet cua chu goi.',
+    'Diem giao dich Sale giu 24 gio truoc khi quy doi 1 diem = 1 VND.',
     'Khong cam ket thu nhap, khong tra thuong vi tuyen nguoi.',
-    'Khong thu thap mat khau, OTP, du lieu suc khoe hoac thong tin thanh toan cua khach hang.',
+    'Can CCCD va tai khoan ngan hang truoc khi vao dashboard/rut tien.',
     'So lieu va diem Sale co the duoc dieu chinh theo giao dich hoan tien, tranh chap hoac vi pham.',
   ];
 }

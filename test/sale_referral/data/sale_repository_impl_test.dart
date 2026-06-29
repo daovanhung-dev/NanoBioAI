@@ -36,6 +36,9 @@ void main() {
           customers: [
             {
               'display_name': 'Nguyen Van A',
+              'age': 34,
+              'phone': '0900000000',
+              'health_condition_summary': 'Tang huyet ap',
               'successful_payments': 1,
               'approved_point_cents': 9900,
             },
@@ -57,6 +60,9 @@ void main() {
       final ledger = await repository.fetchPointLedger();
 
       expect(customers.single.displayName, 'Nguyen Van A');
+      expect(customers.single.age, 34);
+      expect(customers.single.phone, '0900000000');
+      expect(customers.single.healthConditionSummary, 'Tang huyet ap');
       expect(ledger.single.pointAmountCents, 9900);
       expect(ledger.single.status, 'approved');
     });
@@ -72,7 +78,10 @@ void main() {
         ),
       );
 
-      final result = await repository.attachReferralCode('NANO-1234');
+      final result = await repository.attachReferralCode(
+        'NANO-1234',
+        deviceHash: 'sale-device-test',
+      );
 
       expect(result.success, isTrue);
       expect(result.referrerDisplayName, 'Sale A');
@@ -129,13 +138,37 @@ class _FakeSaleRemoteDatasource implements SaleRemoteDatasource {
   @override
   Future<Object?> requestSaleParticipation({
     required String termsVersion,
+    required String deviceHash,
   }) async {
     return {'sale_status': 'pending', 'terms_version': termsVersion};
   }
 
   @override
-  Future<Object?> attachReferralCode(String code) async {
+  Future<Object?> attachReferralCode(
+    String code, {
+    required String deviceHash,
+  }) async {
     return attachResult ?? {'success': false, 'message': 'failed'};
+  }
+
+  @override
+  Future<Object?> getPayoutProfile() async => const {};
+
+  @override
+  Future<Object?> upsertPayoutProfile({
+    required String citizenId,
+    required String bankBin,
+    required String bankName,
+    required String bankAccountNumber,
+    required String bankAccountName,
+  }) async {
+    return {
+      'citizen_id': citizenId,
+      'bank_bin': bankBin,
+      'bank_name': bankName,
+      'bank_account_number': bankAccountNumber,
+      'bank_account_name': bankAccountName,
+    };
   }
 
   @override

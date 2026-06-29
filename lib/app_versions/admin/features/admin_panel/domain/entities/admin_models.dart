@@ -175,6 +175,7 @@ class AdminWorkItem {
   final String status;
   final String section;
   final DateTime? createdAt;
+  final Map<String, Object?> metadata;
 
   const AdminWorkItem({
     required this.id,
@@ -183,6 +184,7 @@ class AdminWorkItem {
     required this.status,
     required this.section,
     this.createdAt,
+    this.metadata = const {},
   });
 
   factory AdminWorkItem.fromMap(Map<String, Object?> map) {
@@ -193,6 +195,7 @@ class AdminWorkItem {
       status: _readString(map['status']) ?? 'ready',
       section: _readString(map['section']) ?? '',
       createdAt: _readDate(map['created_at']),
+      metadata: _readMap(map['metadata']),
     );
   }
 }
@@ -275,6 +278,11 @@ bool? _readBool(Object? value) {
   if (text == 'true') return true;
   if (text == 'false') return false;
   return null;
+}
+
+Map<String, Object?> _readMap(Object? value) {
+  if (value is! Map) return const {};
+  return value.map((key, entry) => MapEntry(key.toString(), entry));
 }
 
 DateTime? _readDate(Object? value) {

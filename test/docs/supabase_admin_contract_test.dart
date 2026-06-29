@@ -79,6 +79,8 @@ void main() {
 
         expect(sql, contains('record_trusted_payment_event'));
         expect(sql, contains('p_auto_approve boolean default false'));
+        expect(sql, contains('p_list_price_cents integer default null'));
+        expect(sql, contains('p_commission_base_cents integer default null'));
         expect(sql, contains("'manual_approval_required'"));
         expect(sql, contains("'pending'"));
         expect(
@@ -114,8 +116,9 @@ void main() {
 
       for (final token in [
         'PAYMENT_ALREADY_REVIEWED',
-        'PACKAGE_REFUND_CANCEL_WINDOW_CLOSED',
-        "interval '24 hours'",
+        'create_sale_point_reversal_for_payment',
+        'negative_adjustment_without_overwriting_commission',
+        "'chargeback'",
         "'approval_count_required'",
         "'admin_adjust_sale_points'",
         "'admin_update_reconciliation_discrepancy_status'",
@@ -133,8 +136,11 @@ void main() {
 
       for (final token in [
         'create table if not exists public.sale_point_conversions',
+        'create table if not exists public.sale_payout_profiles',
         'request_sale_participation',
         'attach_my_referral_code',
+        'get_my_sale_payout_profile',
+        'upsert_my_sale_payout_profile',
         'get_my_sale_direct_customers',
         'get_my_sale_point_ledger',
         'get_my_sale_conversions',
@@ -142,6 +148,10 @@ void main() {
         'admin_list_sale_point_conversions',
         'admin_review_sale_point_conversion',
         'sale_point_adjustments',
+        'payout_profile_complete',
+        'health_condition_summary',
+        'p_device_hash',
+        'p_payment_proof_path',
         'manual_adjustment',
         'sale_point_conversions_select_own',
         'available_at <= now()',
@@ -178,6 +188,7 @@ void main() {
         'public.payment_events',
         'public.commission_records',
         'public.sale_point_conversions',
+        'public.sale_payout_profiles',
       ]) {
         expect(sql, contains(table), reason: table);
       }
@@ -195,6 +206,8 @@ void main() {
         contains("coalesce(v_payment.paid_at, now()) + interval '24 hours'"),
       );
       expect(sql, contains("and status = 'active'"));
+      expect(sql, contains('commission_base_cents'));
+      expect(sql, contains('list_price_cents'));
     });
 
     test('documents the Sale SQL update in Supabase run order', () {
@@ -202,9 +215,16 @@ void main() {
       final checks = File(
         'docs/supabase/08-acceptance-checks.md',
       ).readAsStringSync();
+      final storage = File(
+        'docs/supabase/13-sale-payout-storage.md',
+      ).readAsStringSync();
 
       expect(readme, contains('12-sale-module-update.sql'));
+      expect(readme, contains('13-sale-payout-storage.md'));
       expect(checks, contains('sale_point_conversions'));
+      expect(checks, contains('sale_payout_profiles'));
+      expect(storage, contains('sale-payout-proofs'));
+      expect(storage, contains('public.admin_has_permission'));
     });
 
     test(

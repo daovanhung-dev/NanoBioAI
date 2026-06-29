@@ -41,16 +41,23 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 
 ## Sale direct-only
 
-- [ ] User A gui yeu cau Sale thi trang thai la `pending`; chi sau khi Admin
-  approve moi thanh `active` va co referral code.
-- [ ] Gan quan he A gioi thieu B bang `attach_my_referral_code`; user da co
-  relationship hoac payment khong gan duoc trong app.
+- [ ] User Free bi chan dang ky Sale; user Plus/FamilyPlus active gui yeu cau
+  Sale thi trang thai la `pending`; chi sau khi Admin approve moi thanh
+  `active` va co referral code.
+- [ ] Gan quan he A gioi thieu B bang `attach_my_referral_code` trong luc dang
+  ky tai khoan; self/email/phone/device trung, user da co relationship hoac
+  payment history khong gan duoc trong app.
 - [ ] Trusted payment recorder chi tao `pending`; chi sau khi Admin duyet thu
   cong payment moi thanh `succeeded`, kich hoat goi va bat dau giu diem 24h.
-- [ ] Payment thanh cong cua B tao commission/diem 10% cho A o trang thai
-  pending/hold; Sale chi quy doi duoc sau `available_at` 24h.
-- [ ] Yeu cau quy doi diem bi tu choi khi diem van trong 24h hold.
-- [ ] Hoan/huy goi sau 24h tu thoi diem duyet/effective bi tu choi theo policy.
+- [ ] Payment thanh cong cua B tao commission/diem 10% theo gia niem yet/base
+  snapshot cho A o trang thai pending/hold; Sale chi quy doi duoc sau
+  `available_at` 24h.
+- [ ] Yeu cau quy doi diem bi tu choi khi diem van trong 24h hold hoac Sale
+  chua co CCCD + thong tin tai khoan ngan hang.
+- [ ] Hoan/huy/chargeback tao `sale_point_adjustments` am ngay, khong overwrite
+  `commission_records`; so du Sale co the am va bu bang diem tuong lai.
+- [ ] Admin queue quy doi hien thong tin payout, QR payload va co the luu path
+  anh minh chung trong private bucket `sale-payout-proofs` khi mark paid.
 - [ ] Cho B thanh Sale active, gan quan he B gioi thieu C; payment thanh cong
   cua C chi tao commission 10% cho B, khong tao commission cho A.
 - [ ] Neu C la khach truc tiep cua B, payment cua C chi sinh commission cho B.
@@ -58,7 +65,7 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
   commission/diem moi cho Sale do.
 - [ ] Client khong insert/update/delete duoc `payment_events`,
   `commission_records`, `sale_profiles`, `referral_relationships`,
-  `sale_point_conversions`.
+  `sale_point_conversions`, `sale_payout_profiles`.
 - [ ] Khi `sale_point_conversion.enabled = false` hoac thieu config, Sale UI
   chi hien trang thai chua mo quy doi; khi bat config thi Sale tao duoc yeu cau
   quy doi va Admin co `sales.write` duyet qua RPC co audit.

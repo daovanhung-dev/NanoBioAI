@@ -6,6 +6,7 @@ class SaleState {
   final String? termsVersion;
   final DateTime? approvedAt;
   final String? note;
+  final bool payoutProfileComplete;
 
   const SaleState({
     required this.status,
@@ -13,6 +14,7 @@ class SaleState {
     this.termsVersion,
     this.approvedAt,
     this.note,
+    this.payoutProfileComplete = false,
   });
 
   static const none = SaleState(status: SaleStatus.none);
@@ -27,8 +29,62 @@ class SaleState {
       termsVersion: readString(map['terms_version']),
       approvedAt: readDate(map['approved_at']),
       note: readString(map['note']),
+      payoutProfileComplete: readBool(map['payout_profile_complete']),
     );
   }
+}
+
+class SalePayoutProfile {
+  final String citizenId;
+  final String bankBin;
+  final String bankName;
+  final String bankAccountNumber;
+  final String bankAccountName;
+  final DateTime? updatedAt;
+
+  const SalePayoutProfile({
+    required this.citizenId,
+    required this.bankBin,
+    required this.bankName,
+    required this.bankAccountNumber,
+    required this.bankAccountName,
+    this.updatedAt,
+  });
+
+  bool get isComplete {
+    return citizenId.isNotEmpty &&
+        bankBin.isNotEmpty &&
+        bankName.isNotEmpty &&
+        bankAccountNumber.isNotEmpty &&
+        bankAccountName.isNotEmpty;
+  }
+
+  factory SalePayoutProfile.fromMap(Map<String, Object?> map) {
+    return SalePayoutProfile(
+      citizenId: readString(map['citizen_id']) ?? '',
+      bankBin: readString(map['bank_bin']) ?? '',
+      bankName: readString(map['bank_name']) ?? '',
+      bankAccountNumber: readString(map['bank_account_number']) ?? '',
+      bankAccountName: readString(map['bank_account_name']) ?? '',
+      updatedAt: readDate(map['updated_at']),
+    );
+  }
+}
+
+class SalePayoutProfileCommand {
+  final String citizenId;
+  final String bankBin;
+  final String bankName;
+  final String bankAccountNumber;
+  final String bankAccountName;
+
+  const SalePayoutProfileCommand({
+    required this.citizenId,
+    required this.bankBin,
+    required this.bankName,
+    required this.bankAccountNumber,
+    required this.bankAccountName,
+  });
 }
 
 class SaleDashboard {
@@ -79,6 +135,9 @@ class SaleDashboard {
 
 class SaleDirectCustomer {
   final String displayName;
+  final int? age;
+  final String? phone;
+  final String? healthConditionSummary;
   final DateTime? acceptedAt;
   final int successfulPayments;
   final int approvedPointCents;
@@ -86,6 +145,9 @@ class SaleDirectCustomer {
 
   const SaleDirectCustomer({
     required this.displayName,
+    this.age,
+    this.phone,
+    this.healthConditionSummary,
     this.acceptedAt,
     required this.successfulPayments,
     required this.approvedPointCents,
@@ -95,6 +157,9 @@ class SaleDirectCustomer {
   factory SaleDirectCustomer.fromMap(Map<String, Object?> map) {
     return SaleDirectCustomer(
       displayName: readString(map['display_name']) ?? 'Nguoi dung NanoBio',
+      age: readNullableInt(map['age']),
+      phone: readString(map['phone']),
+      healthConditionSummary: readString(map['health_condition_summary']),
       acceptedAt: readDate(map['accepted_at']),
       successfulPayments: readInt(map['successful_payments']),
       approvedPointCents: readInt(map['approved_point_cents']),
@@ -274,6 +339,13 @@ int readInt(Object? value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
   return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+int? readNullableInt(Object? value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value.toString());
 }
 
 double readDouble(Object? value) {

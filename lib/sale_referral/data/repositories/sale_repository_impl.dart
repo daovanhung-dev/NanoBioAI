@@ -16,17 +16,47 @@ class SaleRepositoryImpl implements SaleRepository {
   @override
   Future<SaleState> requestSaleParticipation({
     required String termsVersion,
+    required String deviceHash,
   }) async {
     final response = await datasource.requestSaleParticipation(
       termsVersion: termsVersion,
+      deviceHash: deviceHash,
     );
     return SaleState.fromMap(_firstMap(response));
   }
 
   @override
-  Future<SaleReferralAttachment> attachReferralCode(String code) async {
-    final response = await datasource.attachReferralCode(code);
+  Future<SaleReferralAttachment> attachReferralCode(
+    String code, {
+    required String deviceHash,
+  }) async {
+    final response = await datasource.attachReferralCode(
+      code,
+      deviceHash: deviceHash,
+    );
     return SaleReferralAttachment.fromMap(_firstMap(response));
+  }
+
+  @override
+  Future<SalePayoutProfile?> fetchPayoutProfile() async {
+    final response = await datasource.getPayoutProfile();
+    final map = _firstMap(response);
+    if (map.isEmpty) return null;
+    return SalePayoutProfile.fromMap(map);
+  }
+
+  @override
+  Future<SalePayoutProfile> upsertPayoutProfile(
+    SalePayoutProfileCommand command,
+  ) async {
+    final response = await datasource.upsertPayoutProfile(
+      citizenId: command.citizenId,
+      bankBin: command.bankBin,
+      bankName: command.bankName,
+      bankAccountNumber: command.bankAccountNumber,
+      bankAccountName: command.bankAccountName,
+    );
+    return SalePayoutProfile.fromMap(_firstMap(response));
   }
 
   @override

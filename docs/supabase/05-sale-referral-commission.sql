@@ -13,7 +13,9 @@ create table if not exists public.sale_profiles (
   closed_at timestamptz,
   terms_version text,
   terms_accepted_at timestamptz,
+  participation_device_hash text,
   note text,
+  metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -41,6 +43,8 @@ create table if not exists public.referral_relationships (
     check (source in ('signup', 'manual_admin', 'migration')),
   status text not null default 'active'
     check (status in ('active', 'voided')),
+  device_hash text,
+  metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   constraint referral_relationship_no_self
     check (referrer_user_id <> referred_user_id),
@@ -50,6 +54,10 @@ create table if not exists public.referral_relationships (
 create index if not exists idx_referral_relationships_referrer
   on public.referral_relationships (referrer_user_id, created_at desc);
 
+create index if not exists idx_referral_relationships_device_hash
+  on public.referral_relationships (device_hash)
+  where device_hash is not null;
+
 create table if not exists public.payment_events (
   id uuid primary key default gen_random_uuid(),
   payer_user_id uuid not null references public.users(id) on delete restrict,
@@ -58,6 +66,8 @@ create table if not exists public.payment_events (
   provider text not null,
   provider_event_id text not null,
   amount_cents integer not null check (amount_cents >= 0),
+  list_price_cents integer check (list_price_cents is null or list_price_cents >= 0),
+  commission_base_cents integer check (commission_base_cents is null or commission_base_cents >= 0),
   currency text not null default 'VND',
   status text not null
     check (status in ('pending', 'succeeded', 'refunded', 'chargeback', 'failed')),
@@ -157,6 +167,7 @@ declare
   v_payment public.payment_events%rowtype;
   v_direct public.referral_relationships%rowtype;
   v_rate numeric(5, 4);
+  v_base_cents integer;
 begin
   select * into v_payment
   from public.payment_events
@@ -186,6 +197,14 @@ begin
     return;
   end if;
 
+  v_base_cents := coalesce(
+    v_payment.commission_base_cents,
+    v_payment.list_price_cents,
+    nullif(v_payment.metadata ->> 'commission_base_cents', '')::integer,
+    nullif(v_payment.metadata ->> 'list_price_cents', '')::integer,
+    v_payment.amount_cents
+  );
+
   if exists (
     select 1 from public.sale_profiles
     where user_id = v_direct.referrer_user_id
@@ -208,7 +227,7 @@ begin
       v_payment.payer_user_id,
       v_direct.id,
       v_rate,
-      round(v_payment.amount_cents * v_rate)::integer,
+      round(v_base_cents * v_rate)::integer,
       v_payment.currency,
       'pending',
       coalesce(v_payment.paid_at, now()) + interval '24 hours'

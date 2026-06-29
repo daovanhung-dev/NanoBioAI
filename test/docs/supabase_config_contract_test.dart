@@ -31,12 +31,15 @@ void main() {
         'create table if not exists public.admin_roles',
         'create table if not exists public.admin_audit_events',
         'create table if not exists public.sale_point_conversions',
+        'create table if not exists public.sale_payout_profiles',
         'create table if not exists public.sale_point_adjustments',
         'create table if not exists public.admin_reconciliation_discrepancies',
         'sync_my_mobile_snapshot',
         'get_my_sale_state',
         'request_sale_participation',
         'attach_my_referral_code',
+        'get_my_sale_payout_profile',
+        'upsert_my_sale_payout_profile',
         'get_my_sale_dashboard',
         'get_my_sale_direct_customers',
         'get_my_sale_point_ledger',
@@ -69,6 +72,8 @@ void main() {
       expect(sql, contains("'NANO-'"));
       expect(sql, isNot(contains("'NAMI-'")));
       expect(sql, contains('public.admin_assert_permission'));
+      expect(sql, contains('SALE_REQUIRES_ACTIVE_PAID_PLAN'));
+      expect(sql, contains('payout_profile_complete'));
     });
 
     test('seeds reference data, dev users and super admin bootstrap', () {
@@ -89,6 +94,8 @@ void main() {
     test('does not grant trusted payment recorder to Flutter roles', () {
       expect(sql, contains('record_trusted_payment_event'));
       expect(sql, contains('p_auto_approve boolean default false'));
+      expect(sql, contains('p_list_price_cents integer default null'));
+      expect(sql, contains('p_commission_base_cents integer default null'));
       expect(sql, contains("'manual_approval_required'"));
       expect(
         sql,
@@ -141,7 +148,10 @@ void main() {
     test('keeps selected Admin financial policies in rebuild file', () {
       for (final token in [
         'Asia/Ho_Chi_Minh',
-        'PACKAGE_REFUND_CANCEL_WINDOW_CLOSED',
+        'create_sale_point_reversal_for_payment',
+        'negative_adjustment_without_overwriting_commission',
+        'commission_base_cents',
+        'list_price_cents',
         "available_at timestamptz not null default (now() + interval '24 hours')",
         "available_at <= now()",
         "'approval_count_required'",

@@ -2,26 +2,28 @@
 
 - Canonical key: supabase-schema
 - Workflow: .codex/workflows/supabase-schema.md
-- Generated from 7 worklog(s).
+- Generated from 8 worklog(s).
 
 ## When To Read
 
-- Historical task type: coding + Supabase schema draft + test/docs. (1)
 - Historical task type: coding + test + docs-context (1)
+- Historical task type: coding + Supabase schema draft + test/docs. (1)
+- Historical task type: coding + Supabase schema draft + Admin UI + tests + docs (1)
 - Historical task type: coding + Supabase schema draft + tests + DD/checklist docs (1)
-- Historical task type: coding + Supabase schema draft + test/docs (1)
-- Historical task type: docs/coding (1)
 - Historical task type: docs-context / audit checklist (1)
+- Historical task type: docs/coding (1)
+- Historical task type: coding + Supabase schema draft + test/docs (1)
 - Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)
 
 ## Common Modules
 
-- lib/sale_referral, lib/services/supabase/sale,: 1
 - M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
+- lib/sale_referral, lib/services/supabase/sale,: 1
+- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
-- Admin app, Supabase Admin, Sale direct-only: 1
-- Supabase database, membership, quota, FamilyPlus, Sale/referral: 1
 - DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
+- Supabase database, membership, quota, FamilyPlus, Sale/referral: 1
+- Admin app, Supabase Admin, Sale direct-only: 1
 - unknown: 1
 
 ## Work Pattern
@@ -47,3 +49,4 @@
 - [Worklog - Sale Module Full Noi Bo](../../docs/worklog/2026-06-28/004-worklog-sale-module-internal.md) - lib/sale_referral, lib/services/supabase/sale,
 - [Worklog - Sale Repo-Ready M12 M14](../../docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md) - M12 REFERRAL_DIRECT, M14 SALE_POINTS
 - [Worklog - M15-M19 Admin Selected Policy](../../docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md) - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY
+- [Worklog - Sale Module Production Policy](../../docs/worklog/2026-06-29/008-worklog-sale-module-production-policy.md) - M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue

@@ -1350,7 +1350,9 @@ create table if not exists public.sale_profiles (
   closed_at timestamptz,
   terms_version text,
   terms_accepted_at timestamptz,
+  participation_device_hash text,
   note text,
+  metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -1378,6 +1380,8 @@ create table if not exists public.referral_relationships (
     check (source in ('signup', 'manual_admin', 'migration')),
   status text not null default 'active'
     check (status in ('active', 'voided')),
+  device_hash text,
+  metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   constraint referral_relationship_no_self
     check (referrer_user_id <> referred_user_id),
@@ -1387,6 +1391,10 @@ create table if not exists public.referral_relationships (
 create index if not exists idx_referral_relationships_referrer
   on public.referral_relationships (referrer_user_id, created_at desc);
 
+create index if not exists idx_referral_relationships_device_hash
+  on public.referral_relationships (device_hash)
+  where device_hash is not null;
+
 create table if not exists public.payment_events (
   id uuid primary key default gen_random_uuid(),
   payer_user_id uuid not null references public.users(id) on delete restrict,
@@ -1395,6 +1403,8 @@ create table if not exists public.payment_events (
   provider text not null,
   provider_event_id text not null,
   amount_cents integer not null check (amount_cents >= 0),
+  list_price_cents integer check (list_price_cents is null or list_price_cents >= 0),
+  commission_base_cents integer check (commission_base_cents is null or commission_base_cents >= 0),
   currency text not null default 'VND',
   status text not null
     check (status in ('pending', 'succeeded', 'refunded', 'chargeback', 'failed')),
@@ -1494,6 +1504,7 @@ declare
   v_payment public.payment_events%rowtype;
   v_direct public.referral_relationships%rowtype;
   v_rate numeric(5, 4);
+  v_base_cents integer;
 begin
   select * into v_payment
   from public.payment_events
@@ -1523,6 +1534,14 @@ begin
     return;
   end if;
 
+  v_base_cents := coalesce(
+    v_payment.commission_base_cents,
+    v_payment.list_price_cents,
+    nullif(v_payment.metadata ->> 'commission_base_cents', '')::integer,
+    nullif(v_payment.metadata ->> 'list_price_cents', '')::integer,
+    v_payment.amount_cents
+  );
+
   if exists (
     select 1 from public.sale_profiles
     where user_id = v_direct.referrer_user_id
@@ -1545,7 +1564,7 @@ begin
       v_payment.payer_user_id,
       v_direct.id,
       v_rate,
-      round(v_payment.amount_cents * v_rate)::integer,
+      round(v_base_cents * v_rate)::integer,
       v_payment.currency,
       'pending',
       coalesce(v_payment.paid_at, now()) + interval '24 hours'
@@ -1632,8 +1651,6 @@ revoke insert, update, delete on
   public.commission_rates,
   public.commission_records
 from anon, authenticated;
-
--- ---------------------------------------------------------------------------
 
 -- 10A. Mobile snapshot sync
 
@@ -2402,6 +2419,8 @@ create or replace function public.record_trusted_payment_event(
   p_provider text,
   p_provider_event_id text,
   p_amount_cents integer,
+  p_list_price_cents integer default null,
+  p_commission_base_cents integer default null,
   p_currency text default 'VND',
   p_auto_approve boolean default false,
   p_raw_event_hash text default null,
@@ -2414,13 +2433,29 @@ set search_path = public, pg_temp
 as $$
 declare
   v_payment_id uuid;
+  v_metadata jsonb := coalesce(p_metadata, '{}'::jsonb);
+  v_list_price_cents integer;
+  v_commission_base_cents integer;
 begin
+  v_list_price_cents := coalesce(
+    p_list_price_cents,
+    nullif(v_metadata ->> 'list_price_cents', '')::integer
+  );
+  v_commission_base_cents := coalesce(
+    p_commission_base_cents,
+    v_list_price_cents,
+    nullif(v_metadata ->> 'commission_base_cents', '')::integer,
+    p_amount_cents
+  );
+
   insert into public.payment_events (
     payer_user_id,
     plan_code,
     provider,
     provider_event_id,
     amount_cents,
+    list_price_cents,
+    commission_base_cents,
     currency,
     status,
     paid_at,
@@ -2433,22 +2468,85 @@ begin
     p_provider,
     p_provider_event_id,
     p_amount_cents,
+    v_list_price_cents,
+    v_commission_base_cents,
     coalesce(nullif(p_currency, ''), 'VND'),
     'pending',
     null,
     p_raw_event_hash,
-    coalesce(p_metadata, '{}'::jsonb) || jsonb_build_object(
+    v_metadata || jsonb_build_object(
       'manual_approval_required',
       true,
       'auto_approve_requested',
-      coalesce(p_auto_approve, false)
+      coalesce(p_auto_approve, false),
+      'commission_base_policy',
+      'list_price_owner_package_only'
     )
   )
   on conflict (provider, provider_event_id) do update
-  set metadata = public.payment_events.metadata || excluded.metadata
+  set
+    list_price_cents = coalesce(public.payment_events.list_price_cents, excluded.list_price_cents),
+    commission_base_cents = coalesce(public.payment_events.commission_base_cents, excluded.commission_base_cents),
+    metadata = public.payment_events.metadata || excluded.metadata
   returning id into v_payment_id;
 
   return v_payment_id;
+end;
+$$;
+
+create or replace function public.create_sale_point_reversal_for_payment(
+  p_payment_event_id uuid,
+  p_decision text,
+  p_reason text,
+  p_idempotency_key text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_record record;
+begin
+  for v_record in
+    select
+      cr.id,
+      cr.receiver_user_id,
+      cr.amount_cents,
+      cr.currency
+    from public.commission_records cr
+    where cr.payment_event_id = p_payment_event_id
+      and cr.amount_cents > 0
+  loop
+    insert into public.sale_point_adjustments (
+      sale_user_id,
+      point_delta_cents,
+      currency,
+      reason,
+      reviewed_by,
+      idempotency_key,
+      metadata
+    )
+    values (
+      v_record.receiver_user_id,
+      -v_record.amount_cents,
+      v_record.currency,
+      btrim(p_reason),
+      auth.uid(),
+      concat('sale-reversal-', v_record.id::text),
+      jsonb_build_object(
+        'payment_event_id',
+        p_payment_event_id,
+        'commission_record_id',
+        v_record.id,
+        'reversal_decision',
+        p_decision,
+        'ledger_policy',
+        'negative_adjustment_without_overwriting_commission'
+      )
+    )
+    on conflict (idempotency_key) do nothing;
+  end loop;
 end;
 $$;
 
@@ -2465,12 +2563,11 @@ set search_path = public, pg_temp
 as $$
 declare
   v_payment public.payment_events%rowtype;
-  v_effective_at timestamptz;
   v_status text;
 begin
   perform public.admin_assert_permission('payments.write');
 
-  if p_decision not in ('refund', 'cancel') then
+  if p_decision not in ('refund', 'cancel', 'chargeback') then
     raise exception 'INVALID_PAYMENT_REVERSAL_DECISION' using errcode = '22023';
   end if;
 
@@ -2483,12 +2580,11 @@ begin
     raise exception 'PAYMENT_NOT_FOUND' using errcode = '22023';
   end if;
 
-  v_effective_at := coalesce(v_payment.paid_at, v_payment.created_at);
-  if now() > v_effective_at + interval '24 hours' then
-    raise exception 'PACKAGE_REFUND_CANCEL_WINDOW_CLOSED' using errcode = '22023';
-  end if;
-
-  v_status := case when p_decision = 'refund' then 'refunded' else 'failed' end;
+  v_status := case
+    when p_decision = 'refund' then 'refunded'
+    when p_decision = 'chargeback' then 'chargeback'
+    else 'failed'
+  end;
 
   update public.payment_events
   set
@@ -2498,6 +2594,13 @@ begin
     review_reason = btrim(p_reason),
     metadata = metadata || jsonb_build_object('admin_decision', p_decision)
   where id = p_payment_event_id;
+
+  perform public.create_sale_point_reversal_for_payment(
+    p_payment_event_id,
+    p_decision,
+    p_reason,
+    p_idempotency_key
+  );
 
   if v_payment.subscription_id is not null then
     update public.membership_subscriptions
@@ -2512,10 +2615,15 @@ begin
     p_payment_event_id::text,
     p_reason,
     p_idempotency_key,
-    jsonb_build_object('decision', p_decision, 'window_hours', 24)
+    jsonb_build_object(
+      'decision',
+      p_decision,
+      'reversal_policy',
+      'negative_sale_point_adjustment'
+    )
   );
 
-  return query select true, 'Da xu ly hoan huy trong cua so 24 gio.';
+  return query select true, 'Da xu ly hoan huy va tru diem Sale neu co.';
 end;
 $$;
 
@@ -3228,13 +3336,20 @@ revoke all on function public.record_trusted_payment_event(
   text,
   text,
   integer,
+  integer,
+  integer,
   text,
   boolean,
   text,
   jsonb
 ) from public, anon, authenticated;
 
--- ---------------------------------------------------------------------------
+revoke all on function public.create_sale_point_reversal_for_payment(
+  uuid,
+  text,
+  text,
+  text
+) from public, anon, authenticated;
 
 -- 12. Sale module final internal update
 
@@ -3276,6 +3391,33 @@ create unique index if not exists idx_sale_point_conversions_idempotency
 create index if not exists idx_sale_point_conversions_sale_created
   on public.sale_point_conversions (sale_user_id, created_at desc);
 
+create table if not exists public.sale_payout_profiles (
+  sale_user_id uuid primary key references public.sale_profiles(user_id) on delete cascade,
+  citizen_id text not null,
+  bank_bin text not null,
+  bank_name text not null,
+  bank_account_number text not null,
+  bank_account_name text not null,
+  updated_by uuid references public.users(id) on delete set null,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint sale_payout_profile_complete
+    check (
+      length(btrim(citizen_id)) >= 9
+      and length(btrim(bank_bin)) >= 3
+      and length(btrim(bank_name)) > 0
+      and length(btrim(bank_account_number)) >= 4
+      and length(btrim(bank_account_name)) > 0
+    )
+);
+
+drop trigger if exists trg_sale_payout_profiles_updated_at
+  on public.sale_payout_profiles;
+create trigger trg_sale_payout_profiles_updated_at
+  before update on public.sale_payout_profiles
+  for each row execute function public.set_updated_at();
+
 drop trigger if exists trg_sale_point_conversions_updated_at
   on public.sale_point_conversions;
 create trigger trg_sale_point_conversions_updated_at
@@ -3302,13 +3444,15 @@ where not exists (
     and status = 'active'
 );
 
+drop function if exists public.get_my_sale_state();
 create or replace function public.get_my_sale_state()
 returns table (
   sale_status text,
   referral_code text,
   terms_version text,
   approved_at timestamptz,
-  note text
+  note text,
+  payout_profile_complete boolean
 )
 language sql
 security definer
@@ -3319,9 +3463,11 @@ as $$
     rc.code as referral_code,
     sp.terms_version,
     sp.approved_at,
-    sp.note
+    sp.note,
+    (spp.sale_user_id is not null) as payout_profile_complete
   from public.users u
   left join public.sale_profiles sp on sp.user_id = u.id
+  left join public.sale_payout_profiles spp on spp.sale_user_id = u.id
   left join lateral (
     select code
     from public.referral_codes
@@ -3332,15 +3478,18 @@ as $$
   where u.id = auth.uid()
 $$;
 
+drop function if exists public.request_sale_participation(text);
 create or replace function public.request_sale_participation(
-  p_terms_version text
+  p_terms_version text,
+  p_device_hash text
 )
 returns table (
   sale_status text,
   referral_code text,
   terms_version text,
   approved_at timestamptz,
-  note text
+  note text,
+  payout_profile_complete boolean
 )
 language plpgsql
 security definer
@@ -3358,6 +3507,22 @@ begin
     raise exception 'TERMS_VERSION_REQUIRED' using errcode = '22023';
   end if;
 
+  if nullif(btrim(p_device_hash), '') is null then
+    raise exception 'DEVICE_HASH_REQUIRED' using errcode = '22023';
+  end if;
+
+  if not exists (
+    select 1
+    from public.membership_subscriptions ms
+    where ms.user_id = v_user_id
+      and ms.plan_code in ('plus', 'family_plus')
+      and ms.status = 'active'
+      and ms.starts_at <= now()
+      and (ms.ends_at is null or ms.ends_at > now())
+  ) then
+    raise exception 'SALE_REQUIRES_ACTIVE_PAID_PLAN' using errcode = '42501';
+  end if;
+
   select status into v_existing_status
   from public.sale_profiles
   where user_id = v_user_id
@@ -3372,6 +3537,7 @@ begin
     set
       terms_version = btrim(p_terms_version),
       terms_accepted_at = now(),
+      participation_device_hash = btrim(p_device_hash),
       note = 'Da cap nhat dieu le Sale trong ung dung.',
       updated_at = now()
     where user_id = v_user_id;
@@ -3381,6 +3547,7 @@ begin
       status,
       terms_version,
       terms_accepted_at,
+      participation_device_hash,
       note
     )
     values (
@@ -3388,6 +3555,7 @@ begin
       'pending',
       btrim(p_terms_version),
       now(),
+      btrim(p_device_hash),
       'Da gui yeu cau Sale; dang cho Admin duyet.'
     )
     on conflict (user_id) do update
@@ -3395,6 +3563,7 @@ begin
       status = 'pending',
       terms_version = excluded.terms_version,
       terms_accepted_at = excluded.terms_accepted_at,
+      participation_device_hash = excluded.participation_device_hash,
       note = excluded.note,
       updated_at = now();
   end if;
@@ -3403,8 +3572,10 @@ begin
 end;
 $$;
 
+drop function if exists public.attach_my_referral_code(text);
 create or replace function public.attach_my_referral_code(
-  p_referral_code text
+  p_referral_code text,
+  p_device_hash text
 )
 returns table (
   success boolean,
@@ -3418,8 +3589,13 @@ as $$
 declare
   v_user_id uuid := auth.uid();
   v_code text := upper(replace(btrim(coalesce(p_referral_code, '')), ' ', ''));
+  v_device_hash text := btrim(coalesce(p_device_hash, ''));
   v_referrer_id uuid;
   v_referrer_name text;
+  v_user_email text;
+  v_user_phone text;
+  v_referrer_email text;
+  v_referrer_phone text;
 begin
   if v_user_id is null then
     raise exception 'AUTH_REQUIRED' using errcode = '42501';
@@ -3430,8 +3606,22 @@ begin
     return;
   end if;
 
-  select rc.sale_user_id, coalesce(nullif(u.full_name, ''), 'Sale NanoBio')
-  into v_referrer_id, v_referrer_name
+  if v_device_hash = '' then
+    return query select false, 'Can xac thuc thiet bi truoc khi gan ma gioi thieu.', null::text;
+    return;
+  end if;
+
+  select email, phone
+  into v_user_email, v_user_phone
+  from public.users
+  where id = v_user_id;
+
+  select
+    rc.sale_user_id,
+    coalesce(nullif(u.full_name, ''), 'Sale NanoBio'),
+    u.email,
+    u.phone
+  into v_referrer_id, v_referrer_name, v_referrer_email, v_referrer_phone
   from public.referral_codes rc
   join public.sale_profiles sp
     on sp.user_id = rc.sale_user_id
@@ -3451,6 +3641,28 @@ begin
     return;
   end if;
 
+  if nullif(lower(coalesce(v_user_email, '')), '') is not null
+    and lower(v_user_email) = lower(coalesce(v_referrer_email, '')) then
+    return query select false, 'Email co dau hieu trung voi Sale gioi thieu.', null::text;
+    return;
+  end if;
+
+  if nullif(coalesce(v_user_phone, ''), '') is not null
+    and v_user_phone = coalesce(v_referrer_phone, '') then
+    return query select false, 'So dien thoai co dau hieu trung voi Sale gioi thieu.', null::text;
+    return;
+  end if;
+
+  if exists (
+    select 1
+    from public.sale_profiles sp
+    where sp.user_id = v_referrer_id
+      and sp.participation_device_hash = v_device_hash
+  ) then
+    return query select false, 'Thiet bi co dau hieu trung voi Sale gioi thieu.', null::text;
+    return;
+  end if;
+
   if exists (
     select 1
     from public.referral_relationships
@@ -3458,6 +3670,16 @@ begin
       and status = 'active'
   ) then
     return query select false, 'Tai khoan da co ma gioi thieu.', null::text;
+    return;
+  end if;
+
+  if exists (
+    select 1
+    from public.referral_relationships rr
+    where rr.device_hash = v_device_hash
+      and rr.status = 'active'
+  ) then
+    return query select false, 'Thiet bi nay da duoc dung de gan ma gioi thieu.', null::text;
     return;
   end if;
 
@@ -3476,17 +3698,120 @@ begin
     referred_user_id,
     referral_code,
     source,
-    status
+    status,
+    device_hash,
+    metadata
   )
   values (
     v_referrer_id,
     v_user_id,
     v_code,
     'signup',
-    'active'
+    'active',
+    v_device_hash,
+    jsonb_build_object(
+      'anti_fraud_checks',
+      jsonb_build_array('self', 'existing_referral', 'payment_history', 'email', 'phone', 'device'),
+      'attached_during',
+      'account_registration'
+    )
   );
 
   return query select true, 'Da gan ma gioi thieu.', v_referrer_name;
+end;
+$$;
+
+create or replace function public.get_my_sale_payout_profile()
+returns table (
+  citizen_id text,
+  bank_bin text,
+  bank_name text,
+  bank_account_number text,
+  bank_account_name text,
+  updated_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_user_id uuid := public.require_active_sale_user();
+begin
+  return query
+  select
+    spp.citizen_id,
+    spp.bank_bin,
+    spp.bank_name,
+    spp.bank_account_number,
+    spp.bank_account_name,
+    spp.updated_at
+  from public.sale_payout_profiles spp
+  where spp.sale_user_id = v_user_id;
+end;
+$$;
+
+create or replace function public.upsert_my_sale_payout_profile(
+  p_citizen_id text,
+  p_bank_bin text,
+  p_bank_name text,
+  p_bank_account_number text,
+  p_bank_account_name text
+)
+returns table (
+  citizen_id text,
+  bank_bin text,
+  bank_name text,
+  bank_account_number text,
+  bank_account_name text,
+  updated_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_user_id uuid := public.require_active_sale_user();
+begin
+  if length(btrim(coalesce(p_citizen_id, ''))) < 9
+    or length(btrim(coalesce(p_bank_bin, ''))) < 3
+    or nullif(btrim(coalesce(p_bank_name, '')), '') is null
+    or length(btrim(coalesce(p_bank_account_number, ''))) < 4
+    or nullif(btrim(coalesce(p_bank_account_name, '')), '') is null then
+    raise exception 'SALE_PAYOUT_PROFILE_INCOMPLETE' using errcode = '22023';
+  end if;
+
+  insert into public.sale_payout_profiles (
+    sale_user_id,
+    citizen_id,
+    bank_bin,
+    bank_name,
+    bank_account_number,
+    bank_account_name,
+    updated_by,
+    metadata
+  )
+  values (
+    v_user_id,
+    btrim(p_citizen_id),
+    btrim(p_bank_bin),
+    btrim(p_bank_name),
+    btrim(p_bank_account_number),
+    upper(btrim(p_bank_account_name)),
+    v_user_id,
+    jsonb_build_object('updated_from', 'sale_app_rpc')
+  )
+  on conflict (sale_user_id) do update
+  set
+    citizen_id = excluded.citizen_id,
+    bank_bin = excluded.bank_bin,
+    bank_name = excluded.bank_name,
+    bank_account_number = excluded.bank_account_number,
+    bank_account_name = excluded.bank_account_name,
+    updated_by = excluded.updated_by,
+    metadata = public.sale_payout_profiles.metadata || excluded.metadata,
+    updated_at = now();
+
+  return query select * from public.get_my_sale_payout_profile();
 end;
 $$;
 
@@ -3518,6 +3843,18 @@ begin
 
   if v_status is null then
     raise exception 'INVALID_SALE_DECISION' using errcode = '22023';
+  end if;
+
+  if v_status = 'active' and not exists (
+    select 1
+    from public.membership_subscriptions ms
+    where ms.user_id = p_sale_user_id
+      and ms.plan_code in ('plus', 'family_plus')
+      and ms.status = 'active'
+      and ms.starts_at <= now()
+      and (ms.ends_at is null or ms.ends_at > now())
+  ) then
+    raise exception 'SALE_REQUIRES_ACTIVE_PAID_PLAN' using errcode = '42501';
   end if;
 
   insert into public.sale_profiles (user_id, status, approved_at, note)
@@ -3658,10 +3995,10 @@ begin
     (select count(*)::integer from direct_nodes),
     coalesce(ps.success_count, 0),
     pts.pending_cents,
-    greatest(pts.approved_cents + ads.adjustment_cents, 0)::integer,
+    (pts.approved_cents + ads.adjustment_cents)::integer,
     pts.paid_cents,
     cs.converted_cents,
-    greatest(pts.approved_cents + ads.adjustment_cents - cs.converted_cents, 0)::integer,
+    (pts.approved_cents + ads.adjustment_cents - cs.converted_cents)::integer,
     pts.result_currency,
     v_enabled,
     v_rate,
@@ -3674,9 +4011,14 @@ begin
 end;
 $$;
 
+drop function if exists public.get_my_sale_direct_customers();
 create or replace function public.get_my_sale_direct_customers()
 returns table (
   display_name text,
+  full_name text,
+  age integer,
+  phone text,
+  health_condition_summary text,
   accepted_at timestamptz,
   successful_payments integer,
   approved_point_cents integer,
@@ -3711,15 +4053,40 @@ begin
     from public.commission_records
     where receiver_user_id = v_user_id
     group by payer_user_id
+  ), health_summary as (
+    select
+      hs.owner_user_id,
+      string_agg(
+        coalesce(nullif(hc.condition_name, ''), hc.condition_code),
+        ', '
+        order by coalesce(nullif(hc.condition_name, ''), hc.condition_code)
+      ) as condition_summary
+    from public.health_subjects hs
+    join public.health_conditions hc on hc.subject_id = hs.id
+    where hs.subject_type = 'self'
+      and hs.is_active = true
+    group by hs.owner_user_id
   )
   select
     coalesce(nullif(u.full_name, ''), 'Nguoi dung NanoBio'),
+    coalesce(nullif(u.full_name, ''), 'Nguoi dung NanoBio'),
+    case
+      when coalesce(u.birth_year, hs_self.birth_year) is null then null
+      else extract(year from age(make_date(coalesce(u.birth_year, hs_self.birth_year), 1, 1)))::integer
+    end,
+    u.phone,
+    coalesce(hs.condition_summary, 'Chua co tinh trang suc khoe'),
     dn.accepted_at,
     coalesce(p.success_count, 0),
     coalesce(pt.approved_cents, 0),
     coalesce(pt.result_currency, 'VND')
   from direct_nodes dn
   join public.users u on u.id = dn.referred_user_id
+  left join public.health_subjects hs_self
+    on hs_self.owner_user_id = dn.referred_user_id
+   and hs_self.subject_type = 'self'
+   and hs_self.is_active = true
+  left join health_summary hs on hs.owner_user_id = dn.referred_user_id
   left join payments p on p.payer_user_id = dn.referred_user_id
   left join points pt on pt.payer_user_id = dn.referred_user_id
   order by dn.accepted_at desc;
@@ -3837,6 +4204,7 @@ declare
   v_held integer := 0;
   v_available integer := 0;
   v_conversion_id uuid;
+  v_payout public.sale_payout_profiles%rowtype;
 begin
   if p_requested_point_cents is null or p_requested_point_cents <= 0 then
     raise exception 'INVALID_CONVERSION_POINTS' using errcode = '22023';
@@ -3857,6 +4225,14 @@ begin
 
   if not v_enabled or v_rate <= 0 then
     raise exception 'SALE_CONVERSION_DISABLED' using errcode = '42501';
+  end if;
+
+  select * into v_payout
+  from public.sale_payout_profiles spp
+  where spp.sale_user_id = v_user_id;
+
+  if not found then
+    raise exception 'SALE_PAYOUT_PROFILE_REQUIRED' using errcode = '42501';
   end if;
 
   if p_requested_point_cents < v_minimum then
@@ -3894,7 +4270,8 @@ begin
     money_amount_cents,
     currency,
     status,
-    idempotency_key
+    idempotency_key,
+    metadata
   )
   values (
     v_user_id,
@@ -3903,7 +4280,21 @@ begin
     round(p_requested_point_cents * v_rate)::integer,
     v_currency,
     'requested',
-    nullif(btrim(p_idempotency_key), '')
+    nullif(btrim(p_idempotency_key), ''),
+    jsonb_build_object(
+      'citizen_id',
+      v_payout.citizen_id,
+      'bank_bin',
+      v_payout.bank_bin,
+      'bank_name',
+      v_payout.bank_name,
+      'bank_account_number',
+      v_payout.bank_account_number,
+      'bank_account_name',
+      v_payout.bank_account_name,
+      'payment_content',
+      concat('SALE ', substr(replace(gen_random_uuid()::text, '-', ''), 1, 10))
+    )
   )
   on conflict (sale_user_id, idempotency_key)
   where idempotency_key is not null
@@ -3925,6 +4316,7 @@ begin
 end;
 $$;
 
+drop function if exists public.admin_list_sale_point_conversions(text, integer);
 create or replace function public.admin_list_sale_point_conversions(
   p_query text default '',
   p_limit integer default 50
@@ -3935,7 +4327,8 @@ returns table (
   subtitle text,
   status text,
   section text,
-  created_at timestamptz
+  created_at timestamptz,
+  metadata jsonb
 )
 language plpgsql
 stable
@@ -3952,9 +4345,45 @@ begin
     concat_ws(' - ', spc.money_amount_cents::text || ' ' || spc.currency, spc.review_reason),
     spc.status,
     'sale_point_conversions',
-    spc.created_at
+    spc.created_at,
+    jsonb_build_object(
+      'sale_user_id',
+      spc.sale_user_id,
+      'requested_point_cents',
+      spc.requested_point_cents,
+      'money_amount_cents',
+      spc.money_amount_cents,
+      'currency',
+      spc.currency,
+      'citizen_id',
+      coalesce(spc.metadata ->> 'citizen_id', spp.citizen_id),
+      'bank_bin',
+      coalesce(spc.metadata ->> 'bank_bin', spp.bank_bin),
+      'bank_name',
+      coalesce(spc.metadata ->> 'bank_name', spp.bank_name),
+      'bank_account_number',
+      coalesce(spc.metadata ->> 'bank_account_number', spp.bank_account_number),
+      'bank_account_name',
+      coalesce(spc.metadata ->> 'bank_account_name', spp.bank_account_name),
+      'payment_content',
+      coalesce(spc.metadata ->> 'payment_content', concat('SALE ', substr(spc.id::text, 1, 8))),
+      'payment_proof_path',
+      spc.metadata ->> 'payment_proof_path',
+      'vietqr_payload',
+      concat_ws(
+        '|',
+        'VIETQR',
+        coalesce(spc.metadata ->> 'bank_bin', spp.bank_bin),
+        coalesce(spc.metadata ->> 'bank_account_number', spp.bank_account_number),
+        coalesce(spc.metadata ->> 'bank_account_name', spp.bank_account_name),
+        spc.money_amount_cents::text,
+        spc.currency,
+        coalesce(spc.metadata ->> 'payment_content', concat('SALE ', substr(spc.id::text, 1, 8)))
+      )
+    )
   from public.sale_point_conversions spc
   join public.users u on u.id = spc.sale_user_id
+  left join public.sale_payout_profiles spp on spp.sale_user_id = spc.sale_user_id
   where coalesce(p_query, '') = ''
      or u.email ilike '%' || p_query || '%'
      or u.full_name ilike '%' || p_query || '%'
@@ -3964,11 +4393,13 @@ begin
 end;
 $$;
 
+drop function if exists public.admin_review_sale_point_conversion(uuid, text, text, text);
 create or replace function public.admin_review_sale_point_conversion(
   p_conversion_id uuid,
   p_decision text,
   p_reason text,
-  p_idempotency_key text
+  p_idempotency_key text,
+  p_payment_proof_path text default null
 )
 returns table (success boolean, message text)
 language plpgsql
@@ -3998,7 +4429,12 @@ begin
     reviewed_at = now(),
     review_reason = btrim(p_reason),
     paid_at = case when v_status = 'paid' then now() else paid_at end,
-    metadata = metadata || jsonb_build_object('admin_decision', p_decision)
+    metadata = metadata
+      || jsonb_build_object('admin_decision', p_decision)
+      || case
+        when nullif(btrim(coalesce(p_payment_proof_path, '')), '') is null then '{}'::jsonb
+        else jsonb_build_object('payment_proof_path', btrim(p_payment_proof_path))
+      end
   where id = p_conversion_id;
 
   if not found then
@@ -4011,7 +4447,14 @@ begin
     p_conversion_id::text,
     p_reason,
     p_idempotency_key,
-    jsonb_build_object('decision', p_decision, 'status', v_status)
+    jsonb_build_object(
+      'decision',
+      p_decision,
+      'status',
+      v_status,
+      'payment_proof_path',
+      nullif(btrim(coalesce(p_payment_proof_path, '')), '')
+    )
   );
 
   return query select true, 'Da cap nhat yeu cau quy doi diem Sale.';
@@ -4019,6 +4462,7 @@ end;
 $$;
 
 alter table public.sale_point_conversions enable row level security;
+alter table public.sale_payout_profiles enable row level security;
 
 drop policy if exists sale_point_conversions_select_own
   on public.sale_point_conversions;
@@ -4029,11 +4473,29 @@ create policy sale_point_conversions_select_own
     or public.admin_has_permission('sales.write')
   );
 
+drop policy if exists sale_payout_profiles_select_own
+  on public.sale_payout_profiles;
+create policy sale_payout_profiles_select_own
+  on public.sale_payout_profiles for select to authenticated
+  using (
+    sale_user_id = (select auth.uid())
+    or public.admin_has_permission('sales.write')
+  );
+
 grant select on public.sale_point_conversions to authenticated;
 revoke insert, update, delete on public.sale_point_conversions
 from anon, authenticated;
+revoke all on table public.sale_payout_profiles from anon, authenticated;
 
-revoke all on function public.attach_my_referral_code(text) from public, anon;
+revoke all on function public.get_my_sale_state() from public, anon;
+revoke all on function public.request_sale_participation(text, text)
+from public, anon;
+revoke all on function public.attach_my_referral_code(text, text)
+from public, anon;
+revoke all on function public.get_my_sale_payout_profile()
+from public, anon;
+revoke all on function public.upsert_my_sale_payout_profile(text, text, text, text, text)
+from public, anon;
 revoke all on function public.get_my_sale_direct_customers() from public, anon;
 revoke all on function public.get_my_sale_point_ledger() from public, anon;
 revoke all on function public.get_my_sale_conversions() from public, anon;
@@ -4041,10 +4503,18 @@ revoke all on function public.request_sale_point_conversion(integer, text)
 from public, anon;
 revoke all on function public.admin_list_sale_point_conversions(text, integer)
 from public, anon;
-revoke all on function public.admin_review_sale_point_conversion(uuid, text, text, text)
+revoke all on function public.admin_review_sale_point_conversion(uuid, text, text, text, text)
 from public, anon;
 
-grant execute on function public.attach_my_referral_code(text) to authenticated;
+grant execute on function public.get_my_sale_state() to authenticated;
+grant execute on function public.request_sale_participation(text, text)
+to authenticated;
+grant execute on function public.attach_my_referral_code(text, text)
+to authenticated;
+grant execute on function public.get_my_sale_payout_profile()
+to authenticated;
+grant execute on function public.upsert_my_sale_payout_profile(text, text, text, text, text)
+to authenticated;
 grant execute on function public.get_my_sale_direct_customers() to authenticated;
 grant execute on function public.get_my_sale_point_ledger() to authenticated;
 grant execute on function public.get_my_sale_conversions() to authenticated;
@@ -4052,37 +4522,8 @@ grant execute on function public.request_sale_point_conversion(integer, text)
 to authenticated;
 grant execute on function public.admin_list_sale_point_conversions(text, integer)
 to authenticated;
-grant execute on function public.admin_review_sale_point_conversion(uuid, text, text, text)
+grant execute on function public.admin_review_sale_point_conversion(uuid, text, text, text, text)
 to authenticated;
-
--- ---------------------------------------------------------------------------
--- 12B. Final Sale RPC grants after Sale module overrides
--- ---------------------------------------------------------------------------
-
-revoke all on function public.require_active_sale_user() from public, anon, authenticated;
-revoke all on function public.get_my_sale_state() from public, anon;
-revoke all on function public.request_sale_participation(text) from public, anon;
-revoke all on function public.attach_my_referral_code(text) from public, anon;
-revoke all on function public.get_my_sale_dashboard() from public, anon;
-revoke all on function public.get_my_sale_direct_customers() from public, anon;
-revoke all on function public.get_my_sale_point_ledger() from public, anon;
-revoke all on function public.get_my_sale_conversions() from public, anon;
-revoke all on function public.request_sale_point_conversion(integer, text) from public, anon;
-revoke all on function public.admin_list_sale_point_conversions(text, integer) from public, anon;
-revoke all on function public.admin_review_sale_point_conversion(uuid, text, text, text) from public, anon;
-
-grant execute on function public.get_my_sale_state() to authenticated;
-grant execute on function public.request_sale_participation(text) to authenticated;
-grant execute on function public.attach_my_referral_code(text) to authenticated;
-grant execute on function public.get_my_sale_dashboard() to authenticated;
-grant execute on function public.get_my_sale_direct_customers() to authenticated;
-grant execute on function public.get_my_sale_point_ledger() to authenticated;
-grant execute on function public.get_my_sale_conversions() to authenticated;
-grant execute on function public.request_sale_point_conversion(integer, text) to authenticated;
-grant execute on function public.admin_list_sale_point_conversions(text, integer) to authenticated;
-grant execute on function public.admin_review_sale_point_conversion(uuid, text, text, text) to authenticated;
-
--- ---------------------------------------------------------------------------
 
 -- 13. Reference seed data
 
@@ -4460,4 +4901,3 @@ from public, anon, authenticated;
 select public.bootstrap_admin_by_email('dev.admin@nanobio.local', 'super_admin');
 
 commit;
-

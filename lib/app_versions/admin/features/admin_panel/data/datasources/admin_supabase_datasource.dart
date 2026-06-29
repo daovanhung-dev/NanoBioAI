@@ -146,6 +146,10 @@ Map<String, Object?> adminRpcParamsFor(AdminMutationCommand command) {
         ...base,
         'p_conversion_id': command.targetId,
         'p_decision': command.action,
+        if (_readPayloadString(command.payload['payment_proof_path']) != null)
+          'p_payment_proof_path': _readPayloadString(
+            command.payload['payment_proof_path'],
+          ),
       };
     case AdminPanelSection.reconciliation:
       return {
@@ -194,4 +198,9 @@ int _readPayloadInt(Object? value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
   return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+String? _readPayloadString(Object? value) {
+  final text = value?.toString().trim();
+  return text == null || text.isEmpty ? null : text;
 }
