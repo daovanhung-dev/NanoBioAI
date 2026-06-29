@@ -16,16 +16,24 @@ void main() {
         'create table if not exists public.admin_audit_events',
         'create table if not exists public.system_config_versions',
         'create table if not exists public.report_exports',
+        'create table if not exists public.sale_point_adjustments',
+        'create table if not exists public.admin_reconciliation_runs',
+        'create table if not exists public.admin_reconciliation_discrepancies',
         'get_my_admin_session',
         'get_admin_dashboard_summary',
         'admin_search_users',
         'admin_update_user_status',
         'admin_list_payments',
         'admin_review_payment',
+        'admin_refund_or_cancel_payment',
         'admin_list_sales',
         'admin_review_sale_profile',
         'admin_upsert_config_version',
         'admin_request_report_export',
+        'admin_adjust_sale_points',
+        'admin_create_reconciliation_run',
+        'admin_list_reconciliation_discrepancies',
+        'admin_update_reconciliation_discrepancy_status',
         'admin_list_audit_events',
       ]) {
         expect(sql, contains(token), reason: token);
@@ -40,6 +48,9 @@ void main() {
         ).readAsStringSync();
 
         expect(sql, contains('record_trusted_payment_event'));
+        expect(sql, contains('p_auto_approve boolean default false'));
+        expect(sql, contains("'manual_approval_required'"));
+        expect(sql, contains("'pending'"));
         expect(
           sql,
           contains('from public, anon, authenticated'),
@@ -48,31 +59,39 @@ void main() {
       },
     );
 
-    test('documents draft Admin role permission matrix', () {
+    test('grants all active Admin roles full audited capability', () {
       final sql = File(
         'docs/supabase/11-admin-access-dashboard.sql',
       ).readAsStringSync();
 
       for (final token in [
         "('super_admin', '*')",
-        "('finance_admin', 'dashboard.read')",
-        "('finance_admin', 'payments.write')",
-        "('finance_admin', 'reports.write')",
-        "('finance_admin', 'audit.read')",
-        "('operations_admin', 'dashboard.read')",
-        "('operations_admin', 'users.write')",
-        "('operations_admin', 'sales.write')",
-        "('operations_admin', 'audit.read')",
+        "('finance_admin', '*')",
+        "('operations_admin', '*')",
+        "'reconciliation.write'",
+        "'points.write'",
         "when p_config_key ilike 'plan%' then 'plans.write'",
         "perform public.admin_assert_permission('config.write')",
       ]) {
         expect(sql, contains(token), reason: token);
       }
+    });
 
-      expect(sql, isNot(contains("('finance_admin', 'sales.write')")));
-      expect(sql, isNot(contains("('operations_admin', 'payments.write')")));
-      expect(sql, isNot(contains("('operations_admin', 'reports.write')")));
-      expect(sql, isNot(contains("('finance_admin', 'config.write')")));
+    test('documents Admin payment and point policy decisions', () {
+      final sql = File(
+        'docs/supabase/11-admin-access-dashboard.sql',
+      ).readAsStringSync();
+
+      for (final token in [
+        'PAYMENT_ALREADY_REVIEWED',
+        'PACKAGE_REFUND_CANCEL_WINDOW_CLOSED',
+        "interval '24 hours'",
+        "'approval_count_required'",
+        "'admin_adjust_sale_points'",
+        "'admin_update_reconciliation_discrepancy_status'",
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
     });
   });
 
@@ -92,7 +111,10 @@ void main() {
         'request_sale_point_conversion',
         'admin_list_sale_point_conversions',
         'admin_review_sale_point_conversion',
+        'sale_point_adjustments',
+        'manual_adjustment',
         'sale_point_conversions_select_own',
+        'available_at <= now()',
         "config_key = 'sale_point_conversion'",
       ]) {
         expect(sql, contains(token), reason: token);
@@ -137,6 +159,12 @@ void main() {
             'Server-owned Sale/payment tables must not be writable by Flutter.',
       );
       expect(sql, contains('from anon, authenticated'));
+      expect(sql, contains("'pending',"));
+      expect(
+        sql,
+        contains("coalesce(v_payment.paid_at, now()) + interval '24 hours'"),
+      );
+      expect(sql, contains("and status = 'active'"));
     });
 
     test('documents the Sale SQL update in Supabase run order', () {

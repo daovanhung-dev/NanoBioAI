@@ -2,15 +2,16 @@
 
 - Canonical key: test
 - Workflow: .codex/workflows/test.md
-- Generated from 0 worklog(s).
+- Generated from 2 worklog(s).
 
 ## When To Read
 
-- Read this when the current request maps to test; no historical worklog has used this canonical key yet.
+- Historical task type: coding + tests + checklist. (2)
 
 ## Common Modules
 
-- No historical module data yet.
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
+- M08 HEALTH_SCORE_HABITS.: 1
 
 ## Work Pattern
 
@@ -28,4 +29,5 @@
 
 ## Source Worklogs
 
-- None yet.
+- [Worklog - M08 Health Score Local Draft](../../docs/worklog/2026-06-29/002-worklog-m08-health-score-local-draft.md) - M08 HEALTH_SCORE_HABITS.
+- [Worklog - M15/M16 Admin Permission Hardening](../../docs/worklog/2026-06-29/003-worklog-m15-m16-admin-permission-hardening.md) - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.

@@ -74,15 +74,16 @@ Commit de xuat: docs(dd): cap nhat checklist tao DD
 | 12 | DD-REFERRAL_DIRECT-001 | Draft | M12, BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14 | docs/DD/referral_direct/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
 | 13 | DD-PAYMENT_MEMBERSHIP-001 | Draft | M13, BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16 | docs/DD/payment_membership/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
 | 14 | DD-SALE_POINTS-001 | Draft | M14, BD sections 7.5..7.10, 9, 12.1, 14.4, 16.2 AC-11..AC-18, Appendix A UC-17..UC-19 | docs/DD/sale_points/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
-| 15 | DD-ADMIN_DASHBOARD-001 | Draft | M15, BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 | docs/DD/admin_dashboard/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
-| 16 | DD-ADMIN_OPS-001 | Draft | M16, BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 | docs/DD/admin_operations/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
-| 17 | DD-RECONCILIATION-001 | Draft | M17, BD section 12.1, 14.4, 15, Appendix A UC-22 | docs/DD/reconciliation/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
-| 18 | DD-REPORTING-001 | Draft | M18, BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 | docs/DD/reporting/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
-| 19 | DD-AUDIT_SECURITY-001 | Draft | M19, BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 | docs/DD/audit_security/ | 2026-06-28 | Created from BD v2.0; open questions remain where listed in module README. |
+| 15 | DD-ADMIN_DASHBOARD-001 | Draft - selected policy implementation-ready | M15, BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 | docs/DD/admin_dashboard/ | 2026-06-29 | Q-12/Q-18 selected policy recorded; sandbox acceptance still required. |
+| 16 | DD-ADMIN_OPS-001 | Draft - selected policy implementation-ready | M16, BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 | docs/DD/admin_operations/ | 2026-06-29 | Q-12/Q-13/Q-17/Q-18 selected policy recorded; sandbox acceptance still required. |
+| 17 | DD-RECONCILIATION-001 | Draft - selected policy implementation-ready | M17, BD section 12.1, 14.4, 15, Appendix A UC-22 | docs/DD/reconciliation/ | 2026-06-29 | Q-05/Q-10/Q-13/Q-17 selected policy recorded; sandbox acceptance still required. |
+| 18 | DD-REPORTING-001 | Draft - selected policy implementation-ready | M18, BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 | docs/DD/reporting/ | 2026-06-29 | Q-12/Q-16/Q-18 selected policy recorded; sandbox acceptance still required. |
+| 19 | DD-AUDIT_SECURITY-001 | Draft - selected policy implementation-ready | M19, BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 | docs/DD/audit_security/ | 2026-06-29 | Q-12/Q-13/Q-18 selected policy recorded; sandbox acceptance still required. |
 
 ### Ghi chú v2.0
 
 - Draft nghĩa là DD đã được tạo nhưng chưa Ready for implementation.
-- Q-01..Q-18 trong BD v2.0 phải được PO/Tech Lead chốt hoặc chuyển thành assumption được duyệt trước khi coding phần bị ảnh hưởng.
-- Q-02..Q-10 và Q-17 là blocker cho payment, commission, Sale point conversion và reconciliation tài chính.
+- Q-05/Q-10/Q-12/Q-13/Q-16/Q-17/Q-18 đã được chốt cho selected policy ngày 2026-06-29 và đã ghi vào DD M15-M19.
+- Các Q còn lại trong BD v2.0 phải được PO/Tech Lead chốt hoặc chuyển thành assumption được duyệt trước khi coding phần bị ảnh hưởng.
+- Các phần payment/provider/chargeback/reconciliation ngoài selected policy vẫn cần sandbox/staging evidence trước khi production-ready.
 - Logic Sale cũ nhiều tầng, tier 2 hoặc 5% không được dùng làm source implementation.

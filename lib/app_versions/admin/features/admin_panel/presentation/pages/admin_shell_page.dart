@@ -344,7 +344,8 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    final target = AdminPanelSection.fromValue(metric.targetSection);
+    final content = DecoratedBox(
       decoration: _panelDecoration(),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -366,6 +367,17 @@ class _MetricCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+
+    if (target == null) return content;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        onTap: () => context.go(target.routePath),
+        child: content,
       ),
     );
   }
@@ -437,7 +449,8 @@ class _WorkItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actions = section.actions
+    final actions = section
+        .actionsForStatus(item.status)
         .where((action) {
           return session.canRunMutation(
             AdminMutationCommand(
@@ -773,6 +786,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.payments => 'Thanh toan',
       AdminPanelSection.sales => 'Sale',
       AdminPanelSection.saleConversions => 'Quy doi diem Sale',
+      AdminPanelSection.reconciliation => 'Doi soat',
       AdminPanelSection.plans => 'Goi',
       AdminPanelSection.reports => 'Bao cao',
       AdminPanelSection.audit => 'Audit',
@@ -787,6 +801,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.payments => AdminRoutePaths.payments,
       AdminPanelSection.sales => AdminRoutePaths.sales,
       AdminPanelSection.saleConversions => AdminRoutePaths.saleConversions,
+      AdminPanelSection.reconciliation => AdminRoutePaths.reconciliation,
       AdminPanelSection.plans => AdminRoutePaths.plans,
       AdminPanelSection.reports => AdminRoutePaths.reports,
       AdminPanelSection.audit => AdminRoutePaths.audit,
@@ -802,6 +817,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.sales => Icons.badge_outlined,
       AdminPanelSection.saleConversions =>
         Icons.published_with_changes_outlined,
+      AdminPanelSection.reconciliation => Icons.fact_check_outlined,
       AdminPanelSection.plans => Icons.workspace_premium_outlined,
       AdminPanelSection.reports => Icons.summarize_outlined,
       AdminPanelSection.audit => Icons.history_outlined,
@@ -816,6 +832,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.payments => Icons.payments_rounded,
       AdminPanelSection.sales => Icons.badge_rounded,
       AdminPanelSection.saleConversions => Icons.published_with_changes_rounded,
+      AdminPanelSection.reconciliation => Icons.fact_check_rounded,
       AdminPanelSection.plans => Icons.workspace_premium_rounded,
       AdminPanelSection.reports => Icons.summarize_rounded,
       AdminPanelSection.audit => Icons.history_rounded,
@@ -837,11 +854,22 @@ extension _AdminPanelSectionUi on AdminPanelSection {
         _AdminAction('approve', 'Duyet', Icons.verified_user_rounded),
         _AdminAction('reject', 'Tu choi', Icons.block_rounded),
         _AdminAction('suspend', 'Tam dung', Icons.pause_circle_rounded),
+        _AdminAction('close', 'Dong Sale', Icons.cancel_rounded),
       ],
       AdminPanelSection.saleConversions => const [
         _AdminAction('approve', 'Duyet', Icons.verified_rounded),
         _AdminAction('reject', 'Tu choi', Icons.block_rounded),
         _AdminAction('mark_paid', 'Da chi tra', Icons.payments_rounded),
+      ],
+      AdminPanelSection.reconciliation => const [
+        _AdminAction('resolved', 'Da doi soat', Icons.task_alt_rounded),
+        _AdminAction(
+          'needs_follow_up',
+          'Can theo doi',
+          Icons.manage_search_rounded,
+        ),
+        _AdminAction('adjusted', 'Dieu chinh diem', Icons.tune_rounded),
+        _AdminAction('dismissed', 'Bo qua', Icons.close_rounded),
       ],
       AdminPanelSection.plans => const [
         _AdminAction('upsert', 'Cap nhat', Icons.save_rounded),
@@ -854,6 +882,53 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       ],
       AdminPanelSection.dashboard => const [],
       AdminPanelSection.audit => const [],
+    };
+  }
+
+  List<_AdminAction> actionsForStatus(String status) {
+    final normalized = status.toLowerCase();
+    final all = actions;
+
+    return switch (this) {
+      AdminPanelSection.users when normalized.contains('closed') => const [],
+      AdminPanelSection.users when normalized.contains('active') =>
+        all
+            .where((action) => action.key == 'suspended')
+            .toList(growable: false),
+      AdminPanelSection.users when normalized.contains('suspended') =>
+        all.where((action) => action.key == 'active').toList(growable: false),
+      AdminPanelSection.payments
+          when !normalized.contains('pending') &&
+              !normalized.contains('review') =>
+        const [],
+      AdminPanelSection.sales when normalized.contains('closed') => const [],
+      AdminPanelSection.sales when normalized.contains('pending') =>
+        all
+            .where(
+              (action) => action.key == 'approve' || action.key == 'reject',
+            )
+            .toList(growable: false),
+      AdminPanelSection.sales when normalized.contains('active') =>
+        all
+            .where((action) => action.key == 'suspend' || action.key == 'close')
+            .toList(growable: false),
+      AdminPanelSection.sales when normalized.contains('suspended') =>
+        all
+            .where((action) => action.key == 'approve' || action.key == 'close')
+            .toList(growable: false),
+      AdminPanelSection.saleConversions when normalized.contains('approved') =>
+        all
+            .where((action) => action.key == 'mark_paid')
+            .toList(growable: false),
+      AdminPanelSection.saleConversions
+          when normalized.contains('paid') || normalized.contains('rejected') =>
+        const [],
+      AdminPanelSection.reconciliation
+          when normalized.contains('resolved') ||
+              normalized.contains('dismissed') ||
+              normalized.contains('adjusted') =>
+        const [],
+      _ => all,
     };
   }
 }

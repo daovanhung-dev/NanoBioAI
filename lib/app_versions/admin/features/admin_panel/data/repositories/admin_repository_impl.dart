@@ -30,8 +30,14 @@ class AdminRepositoryImpl implements AdminRepository {
     required DateTime from,
     required DateTime to,
     required String scope,
+    required String timeZone,
   }) {
-    return datasource.fetchDashboardSummary(from: from, to: to, scope: scope);
+    return datasource.fetchDashboardSummary(
+      from: from,
+      to: to,
+      scope: scope,
+      timeZone: timeZone,
+    );
   }
 
   @override

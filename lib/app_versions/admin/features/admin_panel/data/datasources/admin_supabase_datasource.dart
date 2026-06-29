@@ -26,6 +26,7 @@ class AdminSupabaseDatasource {
     required DateTime from,
     required DateTime to,
     required String scope,
+    required String timeZone,
   }) async {
     final response = await _client().rpc(
       'get_admin_dashboard_summary',
@@ -33,6 +34,7 @@ class AdminSupabaseDatasource {
         'p_from': from.toIso8601String(),
         'p_to': to.toIso8601String(),
         'p_scope': scope,
+        'p_time_zone': timeZone,
       },
     );
     return _maps(response).map(AdminDashboardMetric.fromMap).toList();
@@ -75,12 +77,17 @@ String adminRpcFunctionFor(AdminMutationCommand command) {
     AdminPanelSection.users => 'admin_update_user_status',
     AdminPanelSection.payments => 'admin_review_payment',
     AdminPanelSection.sales => 'admin_review_sale_profile',
-    AdminPanelSection.saleConversions => 'admin_review_sale_point_conversion',
+    AdminPanelSection.saleConversions =>
+      command.action == 'adjust_points'
+          ? 'admin_adjust_sale_points'
+          : 'admin_review_sale_point_conversion',
+    AdminPanelSection.reconciliation =>
+      'admin_update_reconciliation_discrepancy_status',
     AdminPanelSection.plans => 'admin_upsert_config_version',
     AdminPanelSection.reports => 'admin_request_report_export',
     AdminPanelSection.config => 'admin_upsert_config_version',
-    AdminPanelSection.audit => 'admin_list_audit_events',
-    AdminPanelSection.dashboard => 'get_admin_dashboard_summary',
+    AdminPanelSection.audit || AdminPanelSection.dashboard =>
+      throw UnsupportedError('Read-only Admin sections cannot mutate.'),
   };
 }
 
@@ -90,7 +97,9 @@ String adminListRpcForSection(AdminPanelSection section) {
     AdminPanelSection.payments => 'admin_list_payments',
     AdminPanelSection.sales => 'admin_list_sales',
     AdminPanelSection.saleConversions => 'admin_list_sale_point_conversions',
-    AdminPanelSection.plans => 'admin_list_config_versions',
+    AdminPanelSection.reconciliation =>
+      'admin_list_reconciliation_discrepancies',
+    AdminPanelSection.plans => 'admin_list_plan_config_versions',
     AdminPanelSection.reports => 'admin_list_report_exports',
     AdminPanelSection.config => 'admin_list_config_versions',
     AdminPanelSection.audit => 'admin_list_audit_events',
@@ -124,10 +133,25 @@ Map<String, Object?> adminRpcParamsFor(AdminMutationCommand command) {
         'p_decision': command.action,
       };
     case AdminPanelSection.saleConversions:
+      if (command.action == 'adjust_points') {
+        return {
+          ...base,
+          'p_sale_user_id': command.targetId,
+          'p_point_delta_cents': _readPayloadInt(
+            command.payload['point_delta_cents'],
+          ),
+        };
+      }
       return {
         ...base,
         'p_conversion_id': command.targetId,
         'p_decision': command.action,
+      };
+    case AdminPanelSection.reconciliation:
+      return {
+        ...base,
+        'p_discrepancy_id': command.targetId,
+        'p_status': command.action,
       };
     case AdminPanelSection.plans:
     case AdminPanelSection.config:
@@ -144,7 +168,7 @@ Map<String, Object?> adminRpcParamsFor(AdminMutationCommand command) {
       };
     case AdminPanelSection.audit:
     case AdminPanelSection.dashboard:
-      return base;
+      throw UnsupportedError('Read-only Admin sections cannot mutate.');
   }
 }
 
@@ -164,4 +188,10 @@ List<Map<String, Object?>> _maps(Object? response) {
 
 Map<String, Object?> _copyMap(Map<dynamic, dynamic> map) {
   return map.map((key, value) => MapEntry(key.toString(), value));
+}
+
+int _readPayloadInt(Object? value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value?.toString() ?? '') ?? 0;
 }

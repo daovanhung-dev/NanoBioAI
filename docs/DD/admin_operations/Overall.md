@@ -7,7 +7,7 @@
 | Module Code | ADMIN_OPS |
 | BD Module | M16 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - selected policy implementation-ready |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-28 |
@@ -102,6 +102,7 @@ Module này chuẩn hóa admin operations theo permission, lý do, timestamp, id
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
+| ADMIN_OPS-ADR02 | Q-12/Q-13/Q-17/Q-18 selected policy: active Admin has full audited RPC capability; manual point adjustment needs one Admin approval; payment approval is manual; customer visibility is basic summary only. | User decision 2026-06-29; implemented in Admin runtime and Supabase draft contract. | Accepted |
 | ADMIN_OPS-ADR01 | Keep this module DD in Draft until PO/Tech Lead closes related open questions and implementation contracts. | BD v2.0 contains Q-01..Q-18 and explicit DD-before-coding gates. | Accepted |
 
 ## 13. Traceability Matrix

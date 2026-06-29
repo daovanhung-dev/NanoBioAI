@@ -289,3 +289,16 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - Chua fix: trusted M06 quota RPC/RLS sandbox chua co, nen production adapter mac dinh fail-safe khi backend contract chua san sang.
 - docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - Can kiem tra tiep: Q-16 timezone approval, FamilyPlus subject/ownership, Supabase acceptance evidence.
 - docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - Muc do hoan thanh task: runtime scope hoan thanh; backend production con blocked theo DD.
+- docs/worklog/2026-06-29/002-worklog-m08-health-score-local-draft.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-29/003-worklog-m15-m16-admin-permission-hardening.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-29/004-worklog-m15-m16-admin-contract-sync.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1`: FAIL - dung o `dart format --set-exit-if-changed .` vi 7 file v1 onboarding/splash ngoai pham vi chua format; cac thay doi format ngoai pham vi do validation tao ra da duoc restore.
+- docs/worklog/2026-06-29/004-worklog-m15-m16-admin-contract-sync.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-29/004-worklog-m15-m16-admin-contract-sync.md :: - Chua fix:
+- docs/worklog/2026-06-29/004-worklog-m15-m16-admin-contract-sync.md :: - Can kiem tra tiep:
+- docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: - Yeu cau goc: Implement revised plan theo Q-05/Q-10/Q-12/Q-13/Q-16/Q-17/Q-18 da duoc user chot.
+- docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: - Admin runtime: them `reconciliation` section/route/nav/RPC mapping, dashboard metric drill-down, timezone default `Asia/Ho_Chi_Minh`, full active-Admin wildcard access policy, status-aware work queue actions, and manual point-adjustment RPC mapping.
+- docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: - Supabase draft: cap nhat `11-admin-access-dashboard.sql` va `config.sql` cho full Admin roles, manual payment approval, 24h refund/cancel window, 24h Sale point hold, no-new-points cho Sale suspended/closed, audited point adjustment, and reconciliation run/list/classify RPCs.
+- docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: - Da fix: Q-05/Q-10/Q-12/Q-13/Q-16/Q-17/Q-18 selected policy da duoc encode vao runtime, SQL draft, docs, and tests.
+- docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: - Chua fix: chua chay Supabase sandbox/staging SQL/RPC/RLS/audit smoke; provider/chargeback-specific production contract van can evidence rieng.
+- docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: - Can kiem tra tiep: run sandbox acceptance for payment approval, 24h hold, conversion reject under hold, refund/cancel >24h, suspended/closed Sale no-new-points, reconciliation adjustment, and audit row completeness.

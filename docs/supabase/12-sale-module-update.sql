@@ -391,12 +391,23 @@ begin
     where pe.status = 'succeeded'
   ), point_summary as (
     select
-      coalesce(sum(amount_cents) filter (where status = 'pending'), 0)::integer as pending_cents,
-      coalesce(sum(amount_cents) filter (where status = 'approved'), 0)::integer as approved_cents,
+      coalesce(sum(amount_cents) filter (
+        where status in ('pending', 'approved')
+          and available_at > now()
+      ), 0)::integer as pending_cents,
+      coalesce(sum(amount_cents) filter (
+        where status in ('pending', 'approved')
+          and available_at <= now()
+      ), 0)::integer as approved_cents,
       coalesce(sum(amount_cents) filter (where status = 'paid'), 0)::integer as paid_cents,
       coalesce(max(currency), 'VND') as result_currency
     from public.commission_records
     where receiver_user_id = v_user_id
+  ), adjustment_summary as (
+    select coalesce(sum(point_delta_cents), 0)::integer as adjustment_cents
+    from public.sale_point_adjustments
+    where sale_user_id = v_user_id
+      and status = 'approved'
   ), conversion_summary as (
     select coalesce(sum(requested_point_cents), 0)::integer as converted_cents
     from public.sale_point_conversions
@@ -407,10 +418,10 @@ begin
     (select count(*)::integer from direct_nodes),
     coalesce(ps.success_count, 0),
     pts.pending_cents,
-    pts.approved_cents,
+    greatest(pts.approved_cents + ads.adjustment_cents, 0)::integer,
     pts.paid_cents,
     cs.converted_cents,
-    greatest(pts.approved_cents - cs.converted_cents, 0)::integer,
+    greatest(pts.approved_cents + ads.adjustment_cents - cs.converted_cents, 0)::integer,
     pts.result_currency,
     v_enabled,
     v_rate,
@@ -418,6 +429,7 @@ begin
     v_conversion_currency
   from payment_summary ps
   cross join point_summary pts
+  cross join adjustment_summary ads
   cross join conversion_summary cs;
 end;
 $$;
@@ -451,7 +463,10 @@ begin
   ), points as (
     select
       payer_user_id,
-      coalesce(sum(amount_cents) filter (where status = 'approved'), 0)::integer as approved_cents,
+      coalesce(sum(amount_cents) filter (
+        where status in ('pending', 'approved')
+          and available_at <= now()
+      ), 0)::integer as approved_cents,
       coalesce(max(currency), 'VND') as result_currency
     from public.commission_records
     where receiver_user_id = v_user_id
@@ -503,7 +518,19 @@ begin
   join public.payment_events pe on pe.id = cr.payment_event_id
   join public.users u on u.id = cr.payer_user_id
   where cr.receiver_user_id = v_user_id
-  order by cr.created_at desc;
+  union all
+  select
+    spa.id::text,
+    'Dieu chinh Admin' as customer_name,
+    'manual_adjustment' as plan_code,
+    0 as payment_amount_cents,
+    spa.point_delta_cents,
+    spa.currency,
+    spa.status,
+    spa.created_at
+  from public.sale_point_adjustments spa
+  where spa.sale_user_id = v_user_id
+  order by created_at desc;
 end;
 $$;
 
@@ -596,10 +623,18 @@ begin
     raise exception 'SALE_CONVERSION_MINIMUM_NOT_MET' using errcode = '22023';
   end if;
 
-  select coalesce(sum(amount_cents), 0)::integer into v_approved
-  from public.commission_records
-  where receiver_user_id = v_user_id
-    and status = 'approved';
+  select (
+    select coalesce(sum(amount_cents), 0)::integer
+    from public.commission_records
+    where receiver_user_id = v_user_id
+      and status in ('pending', 'approved')
+      and available_at <= now()
+  ) + (
+    select coalesce(sum(point_delta_cents), 0)::integer
+    from public.sale_point_adjustments
+    where sale_user_id = v_user_id
+      and status = 'approved'
+  ) into v_approved;
 
   select coalesce(sum(requested_point_cents), 0)::integer into v_held
   from public.sale_point_conversions

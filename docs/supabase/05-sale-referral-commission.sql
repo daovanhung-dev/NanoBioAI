@@ -94,6 +94,7 @@ create table if not exists public.commission_records (
   currency text not null default 'VND',
   status text not null default 'pending'
     check (status in ('pending', 'approved', 'reversed', 'paid')),
+  available_at timestamptz not null default (now() + interval '24 hours'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (payment_event_id, receiver_user_id)
@@ -198,7 +199,8 @@ begin
       rate,
       amount_cents,
       currency,
-      status
+      status,
+      available_at
     )
     values (
       v_payment.id,
@@ -208,7 +210,8 @@ begin
       v_rate,
       round(v_payment.amount_cents * v_rate)::integer,
       v_payment.currency,
-      'approved'
+      'pending',
+      coalesce(v_payment.paid_at, now()) + interval '24 hours'
     )
     on conflict (payment_event_id, receiver_user_id) do nothing;
   end if;

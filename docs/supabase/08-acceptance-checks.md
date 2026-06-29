@@ -45,11 +45,17 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
   approve moi thanh `active` va co referral code.
 - [ ] Gan quan he A gioi thieu B bang `attach_my_referral_code`; user da co
   relationship hoac payment khong gan duoc trong app.
-- [ ] Payment thanh cong cua B tao commission/diem 10%
-  cho A.
+- [ ] Trusted payment recorder chi tao `pending`; chi sau khi Admin duyet thu
+  cong payment moi thanh `succeeded`, kich hoat goi va bat dau giu diem 24h.
+- [ ] Payment thanh cong cua B tao commission/diem 10% cho A o trang thai
+  pending/hold; Sale chi quy doi duoc sau `available_at` 24h.
+- [ ] Yeu cau quy doi diem bi tu choi khi diem van trong 24h hold.
+- [ ] Hoan/huy goi sau 24h tu thoi diem duyet/effective bi tu choi theo policy.
 - [ ] Cho B thanh Sale active, gan quan he B gioi thieu C; payment thanh cong
   cua C chi tao commission 10% cho B, khong tao commission cho A.
 - [ ] Neu C la khach truc tiep cua B, payment cua C chi sinh commission cho B.
+- [ ] Neu Sale bi `suspended` hoac `closed`, payment moi cua khach cu khong sinh
+  commission/diem moi cho Sale do.
 - [ ] Client khong insert/update/delete duoc `payment_events`,
   `commission_records`, `sale_profiles`, `referral_relationships`,
   `sale_point_conversions`.
@@ -61,12 +67,19 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 
 ## Admin
 
-- [ ] `super_admin`, `finance_admin`, `operations_admin` co permission dung ma
-  tran.
-- [ ] Admin dashboard chi tra metric theo permission.
+- [ ] `super_admin`, `finance_admin`, `operations_admin` deu la Admin active
+  full capability qua RPC/backend co audit; Flutter khong ghi truc tiep bang
+  server-only.
+- [ ] Admin dashboard dung filter thoi gian `Asia/Ho_Chi_Minh` va metric co
+  drill-down theo section.
 - [ ] Finance Admin duyet/reject payment thanh cong, co reason/timestamp/actor
   va audit.
-- [ ] Admin khong co `payments.write` goi `admin_review_payment` bi tu choi.
+- [ ] Payment approval bat buoc thu cong; `record_trusted_payment_event` khong
+  duoc grant cho Flutter roles va khong auto-approve.
+- [ ] Admin dieu chinh thu cong Diem Sale qua RPC co reason/idempotency/audit;
+  chi can mot Admin duyet.
+- [ ] Admin tao/list/classify reconciliation discrepancy qua RPC; adjustment
+  tao ledger rieng, khong overwrite lich su.
 - [ ] Admin update Sale/user/config/report export deu ghi `admin_audit_events`.
 - [ ] Flutter Admin khong co service-role key va khong ghi bang server-only truc
   tiep.

@@ -7,7 +7,7 @@ import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin
 void main() {
   group('AdminController permission guard', () {
     test('blocks inaccessible section before list RPC', () async {
-      final repository = _FakeAdminRepository(session: _operationsSession());
+      final repository = _FakeAdminRepository(session: _limitedSession());
       final container = _container(repository);
       addTearDown(container.dispose);
 
@@ -23,24 +23,43 @@ void main() {
       expect(repository.sectionItemCalls, isEmpty);
     });
 
-    test('loads accessible section through repository', () async {
+    test(
+      'loads reconciliation section through repository for full Admin',
+      () async {
+        final repository = _FakeAdminRepository(session: _operationsSession());
+        final container = _container(repository);
+        addTearDown(container.dispose);
+
+        await container.read(adminControllerProvider.future);
+        await container
+            .read(adminControllerProvider.notifier)
+            .selectSection(AdminPanelSection.reconciliation);
+
+        final state = container.read(adminControllerProvider).requireValue;
+        expect(state.isPermissionDenied, isFalse);
+        expect(repository.sectionItemCalls, [AdminPanelSection.reconciliation]);
+        expect(
+          state.items.single.section,
+          AdminPanelSection.reconciliation.value,
+        );
+      },
+    );
+
+    test('uses Vietnam timezone when loading dashboard metrics', () async {
       final repository = _FakeAdminRepository(session: _operationsSession());
       final container = _container(repository);
       addTearDown(container.dispose);
 
       await container.read(adminControllerProvider.future);
-      await container
-          .read(adminControllerProvider.notifier)
-          .selectSection(AdminPanelSection.sales);
 
-      final state = container.read(adminControllerProvider).requireValue;
-      expect(state.isPermissionDenied, isFalse);
-      expect(repository.sectionItemCalls, [AdminPanelSection.sales]);
-      expect(state.items.single.section, AdminPanelSection.sales.value);
+      expect(repository.dashboardSummaryCalls, 1);
+      expect(repository.dashboardTimeZones, [
+        AdminTimeDefaults.vietnamTimeZone,
+      ]);
     });
 
     test('blocks mutation without permission before RPC', () async {
-      final repository = _FakeAdminRepository(session: _operationsSession());
+      final repository = _FakeAdminRepository(session: _limitedSession());
       final container = _container(repository);
       addTearDown(container.dispose);
 
@@ -76,6 +95,15 @@ AdminSession _operationsSession() {
   return const AdminSession(
     userId: 'operations-admin',
     roles: [AdminRoleCode.operationsAdmin],
+    permissions: {AdminPermissions.wildcard},
+    active: true,
+  );
+}
+
+AdminSession _limitedSession() {
+  return const AdminSession(
+    userId: 'limited-admin',
+    roles: [AdminRoleCode.operationsAdmin],
     permissions: {
       AdminPermissions.dashboardRead,
       AdminPermissions.usersWrite,
@@ -90,6 +118,7 @@ class _FakeAdminRepository implements AdminRepository {
   final AdminSession session;
   final sectionItemCalls = <AdminPanelSection>[];
   final mutationCalls = <AdminMutationCommand>[];
+  final dashboardTimeZones = <String>[];
   int dashboardSummaryCalls = 0;
   int auditEventCalls = 0;
   int signOutCalls = 0;
@@ -115,14 +144,17 @@ class _FakeAdminRepository implements AdminRepository {
     required DateTime from,
     required DateTime to,
     required String scope,
+    required String timeZone,
   }) async {
     dashboardSummaryCalls++;
+    dashboardTimeZones.add(timeZone);
     return const [
       AdminDashboardMetric(
         key: 'users_total',
         label: 'Nguoi dung',
         value: 1,
         status: 'ready',
+        targetSection: 'users',
       ),
     ];
   }

@@ -5,10 +5,10 @@
 | Module Code | ADMIN_OPS |
 | BD Module | M16 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - selected policy implementation-ready |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-29 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
 
 ## Purpose
@@ -41,6 +41,12 @@ Quản trị người dùng, gói, Sale, payment, conversion, nội dung, cấu 
 | Q-13 | Admin có được điều chỉnh thủ công Điểm Sale và cần hai người duyệt không? | Audit and separation of duties. | Open |
 | Q-17 | Payment phải duyệt thủ công toàn bộ hay webhook tự động có thể tạo payment_approved? | Payment architecture and operations. | Open |
 | Q-18 | Sale xem được định danh nào của khách hay chỉ số liệu tổng hợp? | Privacy and Sale dashboard. | Open |
+
+## Product Decisions Applied (2026-06-29)
+- Q-12: Admin active has full audited operational CRUD capability through Admin RPC/backend, not direct Flutter writes to every Supabase table.
+- Q-13: Manual Sale point adjustment is allowed and requires exactly one Admin approval with reason/idempotency/audit.
+- Q-17: Payment approval is mandatory manual; trusted recorder only creates pending payment evidence for Admin review.
+- Q-18: Admin/Sale may see customer name and basic profile/contact/status summaries; health data, AI content, secrets, and raw payment payloads stay hidden.
 
 ## Approval Status
 | Role | Approver | Status | Date |

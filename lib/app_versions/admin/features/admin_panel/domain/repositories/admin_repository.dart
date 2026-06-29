@@ -14,6 +14,7 @@ abstract class AdminRepository {
     required DateTime from,
     required DateTime to,
     required String scope,
+    required String timeZone,
   });
 
   Future<List<AdminWorkItem>> fetchSectionItems({

@@ -5,10 +5,10 @@
 | Module Code | RECONCILIATION |
 | BD Module | M17 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - selected policy implementation-ready |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-29 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD section 12.1, 14.4, 15, Appendix A UC-22 |
 
 ## Purpose
@@ -40,6 +40,12 @@
 | Q-10 | Sale suspended/closed thì khách cũ có còn phát sinh điểm không? | Sale state machine and disputes. | Open |
 | Q-13 | Admin có được điều chỉnh thủ công Điểm Sale và cần hai người duyệt không? | Audit and separation of duties. | Open |
 | Q-17 | Payment phải duyệt thủ công toàn bộ hay webhook tự động có thể tạo payment_approved? | Payment architecture and operations. | Open |
+
+## Product Decisions Applied (2026-06-29)
+- Q-05: No package refund/cancel is allowed after 24h from approval/effective time; Sale points become usable only after the same 24h hold.
+- Q-10: Suspended/closed Sale accounts do not receive new points from later payments by existing referred customers.
+- Q-13: Manual Sale point adjustment is allowed and requires exactly one Admin approval with reason/idempotency/audit.
+- Q-17: Payment approval is mandatory manual; trusted recorder only creates pending payment evidence for Admin review.
 
 ## Approval Status
 | Role | Approver | Status | Date |

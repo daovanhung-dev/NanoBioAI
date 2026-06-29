@@ -5,10 +5,10 @@
 | Module Code | ADMIN_DASHBOARD |
 | BD Module | M15 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - selected policy implementation-ready |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-29 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 |
 
 ## Purpose
@@ -38,6 +38,10 @@ Cung cấp dashboard vận hành toàn dự án theo quyền Admin và phạm vi
 |---|---|---|---|
 | Q-12 | Admin có bao nhiêu nhóm quyền? | Permission matrix and UI. | Open |
 | Q-18 | Sale xem được định danh nào của khách hay chỉ số liệu tổng hợp? | Privacy and Sale dashboard. | Open |
+
+## Product Decisions Applied (2026-06-29)
+- Q-12: Admin active has full audited operational CRUD capability through Admin RPC/backend, not direct Flutter writes to every Supabase table.
+- Q-18: Admin/Sale may see customer name and basic profile/contact/status summaries; health data, AI content, secrets, and raw payment payloads stay hidden.
 
 ## Approval Status
 | Role | Approver | Status | Date |

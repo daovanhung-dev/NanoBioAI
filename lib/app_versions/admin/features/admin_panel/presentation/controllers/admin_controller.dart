@@ -193,6 +193,7 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       from: from,
       to: now,
       scope: 'global',
+      timeZone: AdminTimeDefaults.vietnamTimeZone,
     );
   }
 

@@ -31,6 +31,8 @@ void main() {
         'create table if not exists public.admin_roles',
         'create table if not exists public.admin_audit_events',
         'create table if not exists public.sale_point_conversions',
+        'create table if not exists public.sale_point_adjustments',
+        'create table if not exists public.admin_reconciliation_discrepancies',
         'sync_my_mobile_snapshot',
         'get_my_sale_state',
         'request_sale_participation',
@@ -44,7 +46,11 @@ void main() {
         'get_admin_dashboard_summary',
         'admin_search_users',
         'admin_review_payment',
+        'admin_refund_or_cancel_payment',
         'admin_review_sale_profile',
+        'admin_adjust_sale_points',
+        'admin_list_reconciliation_discrepancies',
+        'admin_update_reconciliation_discrepancy_status',
         'admin_list_audit_events',
       ]) {
         expect(sql, contains(token), reason: token);
@@ -82,6 +88,8 @@ void main() {
 
     test('does not grant trusted payment recorder to Flutter roles', () {
       expect(sql, contains('record_trusted_payment_event'));
+      expect(sql, contains('p_auto_approve boolean default false'));
+      expect(sql, contains("'manual_approval_required'"));
       expect(
         sql,
         contains('from public, anon, authenticated'),
@@ -89,21 +97,33 @@ void main() {
       );
     });
 
-    test('keeps Admin draft role permission matrix in rebuild file', () {
+    test('keeps Admin full-access policy in rebuild file', () {
       for (final token in [
         "('super_admin', '*')",
-        "('finance_admin', 'payments.write')",
-        "('finance_admin', 'reports.write')",
-        "('operations_admin', 'users.write')",
-        "('operations_admin', 'sales.write')",
+        "('finance_admin', '*')",
+        "('operations_admin', '*')",
+        "'reconciliation.write'",
+        "'points.write'",
         "when p_config_key ilike 'plan%' then 'plans.write'",
         "perform public.admin_assert_permission('config.write')",
       ]) {
         expect(sql, contains(token), reason: token);
       }
+    });
 
-      expect(sql, isNot(contains("('finance_admin', 'sales.write')")));
-      expect(sql, isNot(contains("('operations_admin', 'payments.write')")));
+    test('keeps selected Admin financial policies in rebuild file', () {
+      for (final token in [
+        'Asia/Ho_Chi_Minh',
+        'PACKAGE_REFUND_CANCEL_WINDOW_CLOSED',
+        "available_at timestamptz not null default (now() + interval '24 hours')",
+        "available_at <= now()",
+        "'approval_count_required'",
+        "'manual_approval_required'",
+        'manual_adjustment',
+        "'pending',",
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
     });
 
     test('does not reintroduce second-level commission markers', () {

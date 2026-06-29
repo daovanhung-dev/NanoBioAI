@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): khoi tao task coding theo DD progress
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md` |
-| Ngay cap nhat | 2026-06-28 |
+| Ngay cap nhat | 2026-06-29 |
 | Muc dich | Ghi lai cong viec coding tiep theo tu tien do DD module cua phien truoc. |
 
 ## DD Progress Next Tasks
@@ -21,11 +21,11 @@ Commit de xuat: docs(checklist): khoi tao task coding theo DD progress
 
 | Priority | Module | Viec can lam tiep | Ly do |
 |---:|---|---|---|
-| 1 | M15/M16 Admin | Chot role matrix Q-12/Q-18, resolve `plans.write` vs `config.write`, verify Admin SQL/RPC sandbox va ghi acceptance evidence. | Admin da co scaffold + SQL draft + permission/error-state tests; can policy + sandbox verification de tang tu 60 len 80. |
+| 1 | M15-M19 Admin | Verify Admin SQL/RPC sandbox, RLS, audit rows, 24h hold, reconciliation, point adjustment, and privacy filters; record acceptance evidence. | Q-05/Q-10/Q-12/Q-13/Q-16/Q-17/Q-18 da chot va runtime/SQL/tests da update; con thieu sandbox/staging evidence de dat acceptance. |
 | 2 | M12/M14 Sale | Repo-ready da co; tiep theo verify Sale RPC/RLS sandbox va ghi acceptance evidence cho request Sale/referral/conversion queue. | Sale direct-only co app/Admin/SQL contract/tests, nhung chua production-ready khi sandbox va financial open questions chua dong. |
 | 3 | M06/M07 Quota + AI Chat | Chot quota reset/trusted write va wire trusted quota backend cho AI chat; M02 runtime guard da co interface truoc AI nhung production adapter van blocked. | Quota la dependency production cho AI Chat va Personal Schedule. |
 | 4 | M01/M02/M03 Guest flow | M02 runtime local da harden; tiep theo doi chieu M03 dashboard state va M01 cloud/FamilyPlus contract. | V1 runtime local da tien len, nhung cloud sync, subject/consent va dashboard state van bi open questions chan. |
-| 5 | M13/M17 Payment/Reconciliation | Chot provider/refund/chargeback/reconciliation policy truoc khi code them. | Financial behavior bi chan boi Q-03..Q-10 va Q-17. |
+| 5 | M13/M17 Payment/Reconciliation | Verify selected payment/reconciliation policy in sandbox, then finish provider/chargeback-specific contracts not covered by current local draft. | Q-05/Q-10/Q-13/Q-17 da chot cho selected policy; provider/staging evidence van thieu. |
 
 ## Notes tu phien coding gan nhat
 
@@ -35,3 +35,5 @@ Commit de xuat: docs(checklist): khoi tao task coding theo DD progress
 - 2026-06-29: M02 runtime guard da code/test local: SQLite v10 request ledger + `guest_initial_plan_used`, `GeneratedPlanService` request/idempotency guard, member quota gateway truoc AI, dashboard append generation, safe quota/guest-used errors, targeted generated-plan/onboarding/migration/lifestyle tests pass. Con blocker production: M06 trusted quota RPC/RLS sandbox, Q-16, FamilyPlus subject/ownership.
 - 2026-06-29: M08 local draft da code/test: `lib/app_versions/v2/features/health_scoring/` co calculator version `m08_local_draft_2026_06`, SQLite read model, providers, route `/v2/health-score`, widget/provider/datasource/domain tests pass. Con blocker official: Q-14 formula/weights/skip-miss va Q-15 FamilyPlus subject/consent.
 - 2026-06-29: M15/M16 Admin permission/error-state hardening da code/test: Admin domain co section/mutation permission helpers, controller khong goi section/mutation RPC khi thieu quyen, UI filter nav/action va hien denied state, Admin/docs targeted analyze/test pass. Con blocker: Q-12/Q-18, `plans.write` vs `config.write`, sandbox SQL/RPC/audit evidence.
+- 2026-06-29: M15/M16 Admin contract sync da code/test: `plans` dung `plans.write` + `admin_list_plan_config_versions`, `config` giu `config.write`, Sale conversion queue trong `config.sql` dong bo lai `sales.write` theo `12-sale-module-update.sql`, va dashboard/audit bi chan mutation RPC. Targeted Admin analyze/test pass; quick check dung o global dart format check do 7 file v1 ngoai pham vi chua format. Con blocker: Q-12/Q-18, sandbox SQL/RPC/audit evidence.
+- 2026-06-29: M15-M19 selected policy implementation da code/test local draft: Admin active full CRUD qua audited RPC/backend, reconciliation section/RPC mapping, dashboard timezone `Asia/Ho_Chi_Minh`, manual payment approval, 24h hold/refund-cancel window, no-new-points cho Sale suspended/closed, one-Admin point adjustment, DD/checklist/Supabase contracts updated. Con blocker: sandbox/staging SQL/RPC/RLS/audit evidence.

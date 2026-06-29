@@ -7,7 +7,7 @@
 | Module Code | RECONCILIATION |
 | BD Module | M17 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - selected policy implementation-ready |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD section 12.1, 14.4, 15, Appendix A UC-22 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-28 |
@@ -100,6 +100,7 @@ Module này bảo đảm dữ liệu nguồn và dữ liệu tổng hợp nhất
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
+| RECONCILIATION-ADR02 | Q-05/Q-10/Q-13/Q-17 selected policy: no refund/cancel after 24h, Sale points become usable after 24h hold, suspended/closed Sale receives no later new points, manual point adjustment needs one Admin approval, payment approval is manual. | User decision 2026-06-29; implemented in Supabase draft contract. | Accepted |
 | RECONCILIATION-ADR01 | Keep this module DD in Draft until PO/Tech Lead closes related open questions and implementation contracts. | BD v2.0 contains Q-01..Q-18 and explicit DD-before-coding gates. | Accepted |
 
 ## 13. Traceability Matrix

@@ -57,6 +57,13 @@ final adminRouter = GoRouter(
       ),
     ),
     GoRoute(
+      path: AdminRoutePaths.reconciliation,
+      name: AdminRoutePaths.reconciliation,
+      builder: (context, state) => const AdminShellPage(
+        initialSection: AdminPanelSection.reconciliation,
+      ),
+    ),
+    GoRoute(
       path: AdminRoutePaths.plans,
       name: AdminRoutePaths.plans,
       builder: (context, state) =>

@@ -22,6 +22,7 @@ enum AdminPanelSection {
   payments('payments'),
   sales('sales'),
   saleConversions('sale_conversions'),
+  reconciliation('reconciliation'),
   plans('plans'),
   reports('reports'),
   audit('audit'),
@@ -30,6 +31,14 @@ enum AdminPanelSection {
   final String value;
 
   const AdminPanelSection(this.value);
+
+  static AdminPanelSection? fromValue(Object? value) {
+    final text = value?.toString().trim();
+    for (final section in values) {
+      if (section.value == text) return section;
+    }
+    return null;
+  }
 }
 
 abstract class AdminPermissions {
@@ -38,10 +47,16 @@ abstract class AdminPermissions {
   static const usersWrite = 'users.write';
   static const paymentsWrite = 'payments.write';
   static const salesWrite = 'sales.write';
+  static const reconciliationWrite = 'reconciliation.write';
+  static const pointsWrite = 'points.write';
   static const plansWrite = 'plans.write';
   static const reportsWrite = 'reports.write';
   static const auditRead = 'audit.read';
   static const configWrite = 'config.write';
+}
+
+abstract class AdminTimeDefaults {
+  static const vietnamTimeZone = 'Asia/Ho_Chi_Minh';
 }
 
 String adminPermissionForSection(AdminPanelSection section) {
@@ -51,14 +66,23 @@ String adminPermissionForSection(AdminPanelSection section) {
     AdminPanelSection.payments => AdminPermissions.paymentsWrite,
     AdminPanelSection.sales => AdminPermissions.salesWrite,
     AdminPanelSection.saleConversions => AdminPermissions.salesWrite,
-    AdminPanelSection.plans => AdminPermissions.configWrite,
+    AdminPanelSection.reconciliation => AdminPermissions.reconciliationWrite,
+    AdminPanelSection.plans => AdminPermissions.plansWrite,
     AdminPanelSection.reports => AdminPermissions.reportsWrite,
     AdminPanelSection.audit => AdminPermissions.auditRead,
     AdminPanelSection.config => AdminPermissions.configWrite,
   };
 }
 
+bool adminSectionSupportsMutation(AdminPanelSection section) {
+  return switch (section) {
+    AdminPanelSection.dashboard || AdminPanelSection.audit => false,
+    _ => true,
+  };
+}
+
 String adminPermissionForMutation(AdminMutationCommand command) {
+  if (command.action == 'adjust_points') return AdminPermissions.pointsWrite;
   return adminPermissionForSection(command.section);
 }
 
@@ -85,11 +109,12 @@ class AdminSession {
   bool get isAdmin => active && roles.isNotEmpty;
 
   bool get hasWildcardPermission {
-    return permissions.contains(AdminPermissions.wildcard);
+    return isAdmin && permissions.contains(AdminPermissions.wildcard);
   }
 
   bool hasPermission(String permission) {
-    return hasWildcardPermission || permissions.contains(permission);
+    return isAdmin &&
+        (hasWildcardPermission || permissions.contains(permission));
   }
 
   bool canAccessSection(AdminPanelSection section) {
@@ -97,7 +122,9 @@ class AdminSession {
   }
 
   bool canRunMutation(AdminMutationCommand command) {
-    return isAdmin && hasPermission(adminPermissionForMutation(command));
+    return isAdmin &&
+        adminSectionSupportsMutation(command.section) &&
+        hasPermission(adminPermissionForMutation(command));
   }
 
   factory AdminSession.fromMap(Map<String, Object?> map) {
@@ -120,12 +147,14 @@ class AdminDashboardMetric {
   final String label;
   final int value;
   final String status;
+  final String? targetSection;
 
   const AdminDashboardMetric({
     required this.key,
     required this.label,
     required this.value,
     required this.status,
+    this.targetSection,
   });
 
   factory AdminDashboardMetric.fromMap(Map<String, Object?> map) {
@@ -134,6 +163,7 @@ class AdminDashboardMetric {
       label: _readString(map['label']) ?? 'Metric',
       value: _readInt(map['metric_value']),
       status: _readString(map['status']) ?? 'ready',
+      targetSection: _readString(map['target_section']),
     );
   }
 }
@@ -202,6 +232,7 @@ class AdminMutationCommand {
   final String targetId;
   final String reason;
   final String idempotencyKey;
+  final Map<String, Object?> payload;
 
   const AdminMutationCommand({
     required this.section,
@@ -209,6 +240,7 @@ class AdminMutationCommand {
     required this.targetId,
     required this.reason,
     required this.idempotencyKey,
+    this.payload = const {},
   });
 }
 

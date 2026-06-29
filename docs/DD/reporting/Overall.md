@@ -7,7 +7,7 @@
 | Module Code | REPORTING |
 | BD Module | M18 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - selected policy implementation-ready |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-28 |
@@ -99,6 +99,7 @@ Module này lấy báo cáo từ dữ liệu nguồn/ledger, không từ cache U
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
+| REPORTING-ADR02 | Q-12/Q-16/Q-18 selected policy: active Admin has full audited RPC capability, reporting time windows use `Asia/Ho_Chi_Minh`, exports must limit customer visibility to basic summaries. | User decision 2026-06-29; implemented in Admin runtime and Supabase draft contract. | Accepted |
 | REPORTING-ADR01 | Keep this module DD in Draft until PO/Tech Lead closes related open questions and implementation contracts. | BD v2.0 contains Q-01..Q-18 and explicit DD-before-coding gates. | Accepted |
 
 ## 13. Traceability Matrix
