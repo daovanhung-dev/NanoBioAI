@@ -301,4 +301,59 @@ void main() {
     );
     expect(cloudApplyMarkers, isEmpty);
   });
+
+  test(
+    'migration v10 creates personal schedule AI request ledger once',
+    () async {
+      await db.execute('CREATE TABLE users (id TEXT PRIMARY KEY)');
+
+      await MigrationManager.runMigrations(db, 9, 10);
+      await MigrationManager.runMigrations(db, 9, 10);
+
+      final userColumns = await db.rawQuery('PRAGMA table_info(users)');
+      final userNames = userColumns.map((column) => column['name']).toList();
+      expect(userNames, contains('guest_initial_plan_used'));
+      expect(
+        userNames.where((name) => name == 'guest_initial_plan_used'),
+        hasLength(1),
+      );
+
+      final tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type = 'table'",
+      );
+      final tableNames = tables.map((table) => table['name']).toList();
+      expect(tableNames, contains('personal_schedule_ai_requests'));
+
+      final requestColumns = await db.rawQuery(
+        'PRAGMA table_info(personal_schedule_ai_requests)',
+      );
+      final requestNames = requestColumns
+          .map((column) => column['name'])
+          .toList();
+      expect(
+        requestNames,
+        containsAll(<String>[
+          'request_id',
+          'user_id',
+          'actor_mode',
+          'status',
+          'start_date',
+          'days',
+          'meal_count',
+          'exercise_count',
+          'schedule_item_count',
+          'error_code',
+        ]),
+      );
+
+      final indexes = await db.rawQuery(
+        'PRAGMA index_list(personal_schedule_ai_requests)',
+      );
+      final indexNames = indexes.map((index) => index['name']).toList();
+      expect(
+        indexNames,
+        contains('idx_personal_schedule_ai_requests_user_mode'),
+      );
+    },
+  );
 }

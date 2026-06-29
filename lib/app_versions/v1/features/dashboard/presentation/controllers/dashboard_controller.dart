@@ -83,16 +83,18 @@ class DashboardController extends AsyncNotifier<void> {
   }
 
   Future<GeneratedPlanResult> generateAdditionalPlan() async {
-    requireAuthenticatedGeneratedPlanUser(currentSupabaseUserIdOrNull());
+    final authUserId = currentSupabaseUserIdOrNull();
+    requireAuthenticatedGeneratedPlanUser(authUserId);
 
     state = const AsyncLoading<void>();
     try {
       final result = await ref
           .read(generatedPlanServiceProvider)
           .generateNextPlan(
+            requestId: _memberPlanRequestId(authUserId!),
             days: 7,
             startDate: _today(),
-            appendAfterExisting: false,
+            appendAfterExisting: true,
           );
 
       ref.invalidate(dashboardProvider);
@@ -108,6 +110,11 @@ class DashboardController extends AsyncNotifier<void> {
       state = AsyncError<void>(error, stackTrace);
       rethrow;
     }
+  }
+
+  String _memberPlanRequestId(String userId) {
+    final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
+    return 'member_plan:$userId:$timestamp';
   }
 
   Future<void> completeTimelineItem(DashboardTimelineItem item) async {

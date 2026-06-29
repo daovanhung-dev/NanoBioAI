@@ -281,3 +281,11 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md :: - Chua fix: SQL 12 chua chay tren Supabase sandbox/staging; khong claim production-ready.
 - docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md :: - Chua fix: Payout provider, tax/invoice, refund/chargeback, reconciliation policy va Q-02..Q-10/Q-13 van open theo DD.
 - docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md :: - Can kiem tra tiep: Sandbox smoke user A/B/Admin cho request Sale, approve/reject/suspend, attach referral code, request/review conversion, RLS cross-user.
+- docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - Doi `GeneratedPlanService` sang request-based flow co `requestId`, idempotent retry, guest one-time guard va failed request record.
+- docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - Them `PersonalScheduleQuotaGateway` cho member generation: check truoc AI, commit sau transaction thanh cong; trusted backend production van blocked neu RPC chua san sang.
+- docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1`: FAIL - script stopped at `dart format --set-exit-if-changed .` after formatting files; unrelated formatter churn was reverted, touched M02 files kept formatted, targeted analyze/tests reran PASS.
+- docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - Da fix: guest initial generation khong con phu thuoc auth; guest tao lai bi chan truoc AI; member quota denied bi chan truoc AI; AI fail khong commit quota/request success.
+- docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - Chua fix: trusted M06 quota RPC/RLS sandbox chua co, nen production adapter mac dinh fail-safe khi backend contract chua san sang.
+- docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - Can kiem tra tiep: Q-16 timezone approval, FamilyPlus subject/ownership, Supabase acceptance evidence.
+- docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md :: - Muc do hoan thanh task: runtime scope hoan thanh; backend production con blocked theo DD.

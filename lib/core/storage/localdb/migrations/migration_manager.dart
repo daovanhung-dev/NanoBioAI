@@ -4,6 +4,7 @@ import '../tables/daily_health_tasks_table.dart';
 import '../tables/exercise_catalog_table.dart';
 import '../tables/lifestyle_schedule_items_table.dart';
 import '../tables/meal_catalog_table.dart';
+import '../tables/personal_schedule_ai_requests_table.dart';
 import '../tables/schedule_task_catalog_table.dart';
 import '../seeders/ai_catalog_seeder.dart';
 import '../sync/sync_outbox_schema.dart';
@@ -37,6 +38,9 @@ class MigrationManager {
     }
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 9)) {
       await _migrateToV9(db);
+    }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 10)) {
+      await _migrateToV10(db);
     }
   }
 
@@ -221,6 +225,17 @@ class MigrationManager {
       definition: 'TEXT',
     );
     await SyncOutboxSchema.create(db);
+  }
+
+  static Future<void> _migrateToV10(Database db) async {
+    await _addColumnIfMissing(
+      db,
+      tableName: 'users',
+      columnName: 'guest_initial_plan_used',
+      definition: 'INTEGER DEFAULT 0',
+    );
+    await db.execute(PersonalScheduleAiRequestsTable.createTable);
+    await db.execute(PersonalScheduleAiRequestsTable.createUserModeIndex);
   }
 
   static Future<void> _addColumnIfMissing(

@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 41
+- Total worklogs: 42
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -50,3 +50,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-28 | docs-context | docs-context | docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1 | [Worklog - DD Progress Checklist Va Coding Gate](../../docs/worklog/2026-06-28/005-worklog-dd-progress-checklist.md) |
 | 2026-06-28 | coding | coding | M01 ONBOARDING_PROFILE | [Worklog - M01 Onboarding Safe Hardening](../../docs/worklog/2026-06-28/006-worklog-m01-onboarding-safe-hardening.md) |
 | 2026-06-28 | coding + test + docs-context | supabase-schema | M12 REFERRAL_DIRECT, M14 SALE_POINTS | [Worklog - Sale Repo-Ready M12 M14](../../docs/worklog/2026-06-28/007-worklog-sale-repo-ready.md) |
+| 2026-06-29 | coding/test/docs | coding | M02 PERSONAL_SCHEDULE_AI | [Worklog - M02 Runtime Guard](../../docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md) |

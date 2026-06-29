@@ -36,6 +36,7 @@ void main() {
         V1RoutePaths.profile,
         V1RoutePaths.community,
         V2RoutePaths.home,
+        V2RoutePaths.healthScore,
       ]) {
         expect(
           V1RouteGuards.isGuestAllowedPath(path),

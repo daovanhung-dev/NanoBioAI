@@ -15,6 +15,7 @@ class UsersTable {
     sale_status TEXT DEFAULT 'none',
     onboarding_status TEXT DEFAULT 'not_started',
     onboarding_completed_at TEXT,
+    guest_initial_plan_used INTEGER DEFAULT 0,
     created_at TEXT,
     updated_at TEXT
   )

@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/router/router.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_guards.dart';
 import 'package:nano_app/app_versions/v2/features/auth/auth.dart';
+import 'package:nano_app/app_versions/v2/features/health_scoring/health_scoring.dart';
 import 'package:nano_app/app_versions/v2/features/home/presentation/pages/v2_home_page.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_shell_page.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
@@ -48,6 +49,11 @@ final v2Routes = <RouteBase>[
     path: V2RoutePaths.sale,
     name: V2RoutePaths.sale,
     builder: (context, state) => const SaleShellPage(),
+  ),
+  GoRoute(
+    path: V2RoutePaths.healthScore,
+    name: V2RoutePaths.healthScore,
+    builder: (context, state) => const HealthScoreHabitsPage(),
   ),
   GoRoute(
     path: V2RoutePaths.home,

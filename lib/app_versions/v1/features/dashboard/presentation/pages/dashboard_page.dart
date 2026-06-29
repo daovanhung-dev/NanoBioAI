@@ -10,6 +10,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
+import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/app_versions/v1/shared/widgets/ai_chat_fab.dart';
 import 'package:nano_app/core/membership/membership_display_info.dart';
 
@@ -90,6 +91,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       final message = switch (error) {
         DashboardGenerationAuthRequiredException() =>
           DashboardGenerationAuthRequiredException.userMessage,
+        GuestInitialPlanAlreadyUsedException() =>
+          GuestInitialPlanAlreadyUsedException.userMessage,
+        PersonalScheduleQuotaExceededException() =>
+          PersonalScheduleQuotaExceededException.userMessage,
+        PersonalScheduleQuotaUnavailableException() =>
+          PersonalScheduleQuotaUnavailableException.userMessage,
         AIOverloadedException() => AIOverloadedException.userMessage,
         _ =>
           'Nabichưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',

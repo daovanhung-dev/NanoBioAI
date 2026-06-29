@@ -5,7 +5,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Canonical Work Types Seen
 
 - docs-context - Context and docs update: 14 worklog(s)
-- coding - Coding: 8 worklog(s)
+- coding - Coding: 9 worklog(s)
 - supabase-schema - Supabase schema and RLS: 6 worklog(s)
 - bugfix - Direct bugfix: 5 worklog(s)
 - docs-dd - Design docs: 4 worklog(s)
@@ -21,13 +21,13 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - authentication: 2
 - .codex: 2
 - DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
-- .codex, root AGENTS.md, .agents skill bridge: 1
-- docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
-- .codex, history learning, task-skills, project skill: 1
-- .codex, workflow router, domain context, worklog learning, project skill.: 1
 - docs/DD/product_flow, docs/checklist: 1
 - v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.: 1
-- docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
+- .codex, history learning, task-skills, project skill: 1
+- .codex, root AGENTS.md, .agents skill bridge: 1
+- docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
+- .codex, workflow router, domain context, worklog learning, project skill.: 1
+- M01 ONBOARDING_PROFILE: 1
 
 ## Reusable Project Skills
 

@@ -4,6 +4,7 @@ import 'package:nano_app/core/storage/localdb/tables/exercise_catalog_table.dart
 import 'package:nano_app/core/storage/localdb/tables/schedule_task_catalog_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/daily_health_tasks_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -116,6 +117,8 @@ class DatabaseService {
     await db.execute(SurveyAnswersTable.createTable);
 
     await db.execute(MealPlansTable.createTable);
+    await db.execute(PersonalScheduleAiRequestsTable.createTable);
+    await db.execute(PersonalScheduleAiRequestsTable.createUserModeIndex);
 
     await db.execute(MealCatalogTable.createTable);
     await db.execute(MealCatalogTable.createTypeIndex);

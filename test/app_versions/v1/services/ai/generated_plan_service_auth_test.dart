@@ -11,6 +11,8 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
+import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
+import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
 
 void main() {
@@ -35,7 +37,7 @@ void main() {
       );
 
       await expectLater(
-        service.generateNextPlan(days: 7),
+        service.generateNextPlan(requestId: 'member-request-1', days: 7),
         throwsA(isA<DashboardGenerationAuthRequiredException>()),
       );
 
@@ -58,6 +60,7 @@ void main() {
       final dailyHealthDatasource = _RecordingDailyHealthDatasource();
       final scheduleDatasource = _RecordingScheduleDatasource();
       final aiService = _RecordingAIService();
+      final requestStore = _RecordingRequestStore();
       var reminderCalls = 0;
 
       final service = GeneratedPlanService(
@@ -66,6 +69,7 @@ void main() {
         scheduleDatasource: scheduleDatasource,
         aiService: aiService,
         catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
         currentUserId: () => null,
         scheduleReminders: () async {
           reminderCalls++;
@@ -81,16 +85,203 @@ void main() {
       expect(result.mealCount, 5);
       expect(result.exerciseCount, 2);
       expect(result.scheduleItemCount, 10);
+      expect(requestStore.commitCalls, 1);
+      expect(requestStore.guestInitialPlanUsed, isTrue);
       expect(repository.fetchCalls, 1);
-      expect(repository.saveCalls, 1);
+      expect(repository.saveCalls, 0);
       expect(dailyHealthDatasource.fetchProfileCalls, 1);
       expect(scheduleDatasource.nextStartCalls, 0);
-      expect(scheduleDatasource.getMealSeedCalls, 1);
-      expect(scheduleDatasource.seedCalls, 1);
-      expect(scheduleDatasource.lastReplaceExistingRange, isTrue);
+      expect(scheduleDatasource.getMealSeedCalls, 0);
+      expect(scheduleDatasource.seedCalls, 0);
       expect(aiService.mealCalls, 1);
       expect(aiService.exerciseCalls, 1);
       expect(reminderCalls, 1);
+    },
+  );
+
+  test(
+    'generateInitialGuestPlan retries same request without AI duplication',
+    () async {
+      final repository = _RecordingDashboardRepository();
+      final dailyHealthDatasource = _RecordingDailyHealthDatasource();
+      final scheduleDatasource = _RecordingScheduleDatasource();
+      final aiService = _RecordingAIService();
+      final requestStore = _RecordingRequestStore();
+
+      final service = GeneratedPlanService(
+        dashboardRepository: repository,
+        dailyHealthDatasource: dailyHealthDatasource,
+        scheduleDatasource: scheduleDatasource,
+        aiService: aiService,
+        catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
+        currentUserId: () => null,
+        scheduleReminders: () async {},
+      );
+
+      await service.generateInitialGuestPlan(
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+        requestId: 'guest-request-1',
+      );
+      final retried = await service.generateInitialGuestPlan(
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+        requestId: 'guest-request-1',
+      );
+
+      expect(retried.reusedExistingRequest, isTrue);
+      expect(aiService.mealCalls, 1);
+      expect(aiService.exerciseCalls, 1);
+      expect(requestStore.commitCalls, 1);
+    },
+  );
+
+  test(
+    'generateInitialGuestPlan blocks a second guest request before AI',
+    () async {
+      final requestStore = _RecordingRequestStore();
+      final aiService = _RecordingAIService();
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: aiService,
+        catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
+        currentUserId: () => null,
+        scheduleReminders: () async {},
+      );
+
+      await service.generateInitialGuestPlan(
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+        requestId: 'guest-request-1',
+      );
+
+      await expectLater(
+        service.generateInitialGuestPlan(
+          days: 1,
+          startDate: DateTime(2026, 1, 3),
+          requestId: 'guest-request-2',
+        ),
+        throwsA(isA<GuestInitialPlanAlreadyUsedException>()),
+      );
+
+      expect(aiService.mealCalls, 1);
+      expect(aiService.exerciseCalls, 1);
+      expect(requestStore.commitCalls, 1);
+    },
+  );
+
+  test('generateNextPlan blocks quota denied members before AI', () async {
+    final requestStore = _RecordingRequestStore();
+    final quotaGateway = _RecordingQuotaGateway(allowed: false);
+    final aiService = _RecordingAIService();
+    final service = GeneratedPlanService(
+      dashboardRepository: _RecordingDashboardRepository(userId: 'auth-user-1'),
+      dailyHealthDatasource: _RecordingDailyHealthDatasource(
+        userId: 'auth-user-1',
+      ),
+      scheduleDatasource: _RecordingScheduleDatasource(),
+      aiService: aiService,
+      catalogDatasource: const _FakeCatalogDatasource(),
+      requestStore: requestStore,
+      quotaGateway: quotaGateway,
+      currentUserId: () => 'auth-user-1',
+      scheduleReminders: () async {},
+    );
+
+    await expectLater(
+      service.generateNextPlan(
+        requestId: 'member-request-1',
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+      ),
+      throwsA(isA<PersonalScheduleQuotaExceededException>()),
+    );
+
+    expect(quotaGateway.checkCalls, 1);
+    expect(quotaGateway.commitCalls, 0);
+    expect(aiService.mealCalls, 0);
+    expect(aiService.exerciseCalls, 0);
+    expect(requestStore.generatingCalls, 0);
+    expect(requestStore.commitCalls, 0);
+  });
+
+  test(
+    'generateNextPlan commits quota only after successful transaction',
+    () async {
+      final requestStore = _RecordingRequestStore();
+      final quotaGateway = _RecordingQuotaGateway();
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(
+          userId: 'auth-user-1',
+        ),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(
+          userId: 'auth-user-1',
+        ),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: _RecordingAIService(),
+        catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
+        quotaGateway: quotaGateway,
+        currentUserId: () => 'auth-user-1',
+        scheduleReminders: () async {},
+      );
+
+      final result = await service.generateNextPlan(
+        requestId: 'member-request-1',
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+      );
+
+      expect(result.scheduleItemCount, 10);
+      expect(requestStore.generatingCalls, 1);
+      expect(requestStore.commitCalls, 1);
+      expect(quotaGateway.checkCalls, 1);
+      expect(quotaGateway.commitCalls, 1);
+    },
+  );
+
+  test(
+    'generateNextPlan does not commit quota when AI generation fails',
+    () async {
+      final requestStore = _RecordingRequestStore();
+      final quotaGateway = _RecordingQuotaGateway();
+      final aiService = _FailingExerciseAIService();
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(
+          userId: 'auth-user-1',
+        ),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(
+          userId: 'auth-user-1',
+        ),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: aiService,
+        catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
+        quotaGateway: quotaGateway,
+        currentUserId: () => 'auth-user-1',
+        scheduleReminders: () async {},
+      );
+
+      await expectLater(
+        service.generateNextPlan(
+          requestId: 'member-request-1',
+          days: 1,
+          startDate: DateTime(2026, 1, 2),
+        ),
+        throwsStateError,
+      );
+
+      expect(quotaGateway.checkCalls, 1);
+      expect(quotaGateway.commitCalls, 0);
+      expect(requestStore.generatingCalls, 1);
+      expect(requestStore.failedCalls, 1);
+      expect(requestStore.commitCalls, 0);
+      expect(aiService.mealCalls, 1);
+      expect(aiService.exerciseCalls, 1);
     },
   );
 
@@ -111,14 +302,17 @@ void main() {
 }
 
 class _RecordingDashboardRepository implements DashboardRepository {
+  final String userId;
   int fetchCalls = 0;
   int saveCalls = 0;
+
+  _RecordingDashboardRepository({this.userId = 'guest-1'});
 
   @override
   Future<DashboardEntity> fetchDashboard() async {
     fetchCalls++;
-    return const DashboardEntity(
-      userId: 'guest-1',
+    return DashboardEntity(
+      userId: userId,
       fullName: 'NabiGuest',
       email: 'guest@example.com',
       phone: '',
@@ -152,13 +346,16 @@ class _RecordingDashboardRepository implements DashboardRepository {
 
 class _RecordingDailyHealthDatasource
     extends DailyHealthTrackingLocalDatasource {
+  final String userId;
   int fetchProfileCalls = 0;
+
+  _RecordingDailyHealthDatasource({this.userId = 'guest-1'});
 
   @override
   Future<DailyHealthProfileEntity> fetchLatestProfile() async {
     fetchProfileCalls++;
-    return const DailyHealthProfileEntity(
-      userId: 'guest-1',
+    return DailyHealthProfileEntity(
+      userId: userId,
       fullName: 'NabiGuest',
       goals: ['overall_health'],
       conditions: [],
@@ -167,6 +364,132 @@ class _RecordingDailyHealthDatasource
       activityLevel: 'moderate',
       waterPerDay: '2l',
     );
+  }
+}
+
+class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
+  final records = <String, PersonalScheduleAiRequestRecord>{};
+  var guestInitialPlanUsed = false;
+  var generatingCalls = 0;
+  var failedCalls = 0;
+  var commitCalls = 0;
+
+  @override
+  Future<PersonalScheduleAiRequestRecord?> findByRequestId(
+    String requestId,
+  ) async {
+    return records[requestId];
+  }
+
+  @override
+  Future<bool> isGuestInitialPlanUsed(String userId) async {
+    return guestInitialPlanUsed;
+  }
+
+  @override
+  Future<void> markGenerating({
+    required String requestId,
+    required String userId,
+    required String actorMode,
+    required DateTime startDate,
+    required int days,
+  }) async {
+    generatingCalls++;
+    records[requestId] = PersonalScheduleAiRequestRecord(
+      requestId: requestId,
+      userId: userId,
+      actorMode: actorMode,
+      status: GeneratedPlanRequestStatuses.generating,
+      startDate: startDate,
+      days: days,
+      mealCount: 0,
+      exerciseCount: 0,
+      scheduleItemCount: 0,
+    );
+  }
+
+  @override
+  Future<void> markFailed({
+    required String requestId,
+    required String userId,
+    required String actorMode,
+    required DateTime startDate,
+    required int days,
+    required String errorCode,
+  }) async {
+    failedCalls++;
+    records[requestId] = PersonalScheduleAiRequestRecord(
+      requestId: requestId,
+      userId: userId,
+      actorMode: actorMode,
+      status: GeneratedPlanRequestStatuses.failed,
+      startDate: startDate,
+      days: days,
+      mealCount: 0,
+      exerciseCount: 0,
+      scheduleItemCount: 0,
+      errorCode: errorCode,
+    );
+  }
+
+  @override
+  Future<void> commitGeneratedPlan({
+    required String requestId,
+    required String userId,
+    required String actorMode,
+    required DateTime startDate,
+    required int days,
+    required List<MealPlanModel> meals,
+    required List<LifestyleScheduleItemModel> schedule,
+    required bool replaceExistingRange,
+    required bool markGuestInitialPlanUsed,
+  }) async {
+    commitCalls++;
+    if (markGuestInitialPlanUsed) {
+      guestInitialPlanUsed = true;
+    }
+    records[requestId] = PersonalScheduleAiRequestRecord(
+      requestId: requestId,
+      userId: userId,
+      actorMode: actorMode,
+      status: GeneratedPlanRequestStatuses.succeeded,
+      startDate: startDate,
+      days: days,
+      mealCount: meals.length,
+      exerciseCount: schedule
+          .where((item) => item.sourceType == 'exercise_task')
+          .length,
+      scheduleItemCount: schedule.length,
+    );
+  }
+}
+
+class _RecordingQuotaGateway implements PersonalScheduleQuotaGateway {
+  final bool allowed;
+  int checkCalls = 0;
+  int commitCalls = 0;
+
+  _RecordingQuotaGateway({this.allowed = true});
+
+  @override
+  Future<PersonalScheduleQuotaDecision> checkGeneration({
+    required String userId,
+    required String requestId,
+    required DateTime at,
+  }) async {
+    checkCalls++;
+    return allowed
+        ? const PersonalScheduleQuotaDecision.allowed()
+        : const PersonalScheduleQuotaDecision.denied();
+  }
+
+  @override
+  Future<void> commitGeneration({
+    required String userId,
+    required String requestId,
+    required DateTime at,
+  }) async {
+    commitCalls++;
   }
 }
 
@@ -259,6 +582,18 @@ class _RecordingAIService extends AIService {
         updatedAt: now,
       ),
     ].map((item) => item.copyWith(scheduleDate: date)).toList();
+  }
+}
+
+class _FailingExerciseAIService extends _RecordingAIService {
+  @override
+  Future<List<ExerciseTaskModel>> generateExerciseTasks({
+    required DailyHealthProfileEntity profile,
+    required DateTime startDate,
+    int days = 7,
+  }) async {
+    exerciseCalls++;
+    throw StateError('exercise generation failed');
   }
 }
 

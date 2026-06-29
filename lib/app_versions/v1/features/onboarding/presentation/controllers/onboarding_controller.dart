@@ -3,6 +3,7 @@ import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
 import '../../domain/repositories/onboarding_repository.dart';
@@ -274,6 +275,7 @@ class OnboardingController extends Notifier<OnboardingState> {
 
   bool _isExpectedSaveError(Object error) {
     return error is AIOverloadedException ||
+        error is GuestInitialPlanAlreadyUsedException ||
         error is OnboardingInitialPlanException ||
         error is StateError;
   }
@@ -591,6 +593,8 @@ class OnboardingController extends Notifier<OnboardingState> {
 
       final message = e is AIOverloadedException
           ? AIOverloadedException.userMessage
+          : e is GuestInitialPlanAlreadyUsedException
+          ? GuestInitialPlanAlreadyUsedException.userMessage
           : e is OnboardingInitialPlanException
           ? OnboardingInitialPlanException.userMessage
           : 'Mình chưa thể lưu hồ sơ lúc này. Bạn thử lại sau một chút nhé.';

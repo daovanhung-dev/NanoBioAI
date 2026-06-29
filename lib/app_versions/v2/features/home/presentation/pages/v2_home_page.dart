@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 class V2HomePage extends StatelessWidget {
@@ -43,6 +45,12 @@ class V2HomePage extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              FilledButton.icon(
+                onPressed: () => context.go(V2RoutePaths.healthScore),
+                icon: const Icon(Icons.monitor_heart_rounded),
+                label: const Text('Open health score'),
               ),
             ],
           ),

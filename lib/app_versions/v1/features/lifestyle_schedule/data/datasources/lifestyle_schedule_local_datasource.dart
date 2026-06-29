@@ -31,7 +31,7 @@ class LifestyleScheduleLocalDatasource {
     int days = 7,
   }) async {
     if (requireComplete) {
-      _validateGeneratedSchedule(items, startDate: startDate, days: days);
+      validateGeneratedSchedule(items, startDate: startDate, days: days);
     }
 
     final db = await _db();
@@ -48,6 +48,14 @@ class LifestyleScheduleLocalDatasource {
     }
 
     await dao.upsertMany(items);
+  }
+
+  void validateGeneratedSchedule(
+    List<LifestyleScheduleItemModel> items, {
+    required DateTime? startDate,
+    required int days,
+  }) {
+    _validateGeneratedSchedule(items, startDate: startDate, days: days);
   }
 
   Future<LifestyleScheduleSummaryEntity> getWeekSchedule({
