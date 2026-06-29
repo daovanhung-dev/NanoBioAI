@@ -10,6 +10,7 @@ class AdminPanelState {
   final List<AdminWorkItem> items;
   final List<AdminAuditEvent> auditEvents;
   final String query;
+  final String? deniedPermission;
   final String? lastMessage;
 
   const AdminPanelState({
@@ -19,8 +20,11 @@ class AdminPanelState {
     required this.items,
     required this.auditEvents,
     required this.query,
+    this.deniedPermission,
     this.lastMessage,
   });
+
+  bool get isPermissionDenied => deniedPermission != null;
 
   AdminPanelState copyWith({
     AdminSession? session,
@@ -29,6 +33,7 @@ class AdminPanelState {
     List<AdminWorkItem>? items,
     List<AdminAuditEvent>? auditEvents,
     String? query,
+    String? deniedPermission,
     String? lastMessage,
   }) {
     return AdminPanelState(
@@ -38,6 +43,7 @@ class AdminPanelState {
       items: items ?? this.items,
       auditEvents: auditEvents ?? this.auditEvents,
       query: query ?? this.query,
+      deniedPermission: deniedPermission ?? this.deniedPermission,
       lastMessage: lastMessage,
     );
   }
@@ -96,16 +102,31 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       throw StateError('Can ly do cho thao tac quan tri.');
     }
 
-    final result = await _repository.runMutation(
-      AdminMutationCommand(
-        section: section,
-        action: action,
-        targetId: targetId,
-        reason: reason.trim(),
-        idempotencyKey:
-            '${section.value}-$targetId-${DateTime.now().microsecondsSinceEpoch}',
-      ),
+    final command = AdminMutationCommand(
+      section: section,
+      action: action,
+      targetId: targetId,
+      reason: reason.trim(),
+      idempotencyKey:
+          '${section.value}-$targetId-${DateTime.now().microsecondsSinceEpoch}',
     );
+
+    final session = current?.session ?? await _repository.fetchSession();
+    if (!session.canRunMutation(command)) {
+      final denied = _permissionDeniedState(
+        session: session,
+        section: current?.section ?? section,
+        query: current?.query ?? '',
+        permission: adminPermissionForMutation(command),
+        lastMessage: _permissionDeniedMessage(
+          adminPermissionForMutation(command),
+        ),
+      );
+      state = AsyncData(denied);
+      return;
+    }
+
+    final result = await _repository.runMutation(command);
 
     final next = await _load(section, query: current?.query ?? '');
     state = AsyncData(
@@ -133,14 +154,22 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       );
     }
 
-    final now = DateTime.now();
-    final from = now.subtract(const Duration(days: 30));
-    final metrics = await _repository.fetchDashboardSummary(
-      from: from,
-      to: now,
-      scope: 'global',
-    );
-    final items = section == AdminPanelSection.dashboard
+    final requiredPermission = adminPermissionForSection(section);
+    if (!session.canAccessSection(section)) {
+      return _permissionDeniedState(
+        session: session,
+        section: section,
+        query: query,
+        permission: requiredPermission,
+      );
+    }
+
+    final metrics = section == AdminPanelSection.dashboard
+        ? await _fetchDashboardMetrics()
+        : const <AdminDashboardMetric>[];
+    final items =
+        section == AdminPanelSection.dashboard ||
+            section == AdminPanelSection.audit
         ? const <AdminWorkItem>[]
         : await _repository.fetchSectionItems(section: section, query: query);
     final auditEvents = section == AdminPanelSection.audit
@@ -155,5 +184,38 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       auditEvents: auditEvents,
       query: query,
     );
+  }
+
+  Future<List<AdminDashboardMetric>> _fetchDashboardMetrics() {
+    final now = DateTime.now();
+    final from = now.subtract(const Duration(days: 30));
+    return _repository.fetchDashboardSummary(
+      from: from,
+      to: now,
+      scope: 'global',
+    );
+  }
+
+  AdminPanelState _permissionDeniedState({
+    required AdminSession session,
+    required AdminPanelSection section,
+    required String query,
+    required String permission,
+    String? lastMessage,
+  }) {
+    return AdminPanelState(
+      session: session,
+      section: section,
+      metrics: const [],
+      items: const [],
+      auditEvents: const [],
+      query: query,
+      deniedPermission: permission,
+      lastMessage: lastMessage,
+    );
+  }
+
+  String _permissionDeniedMessage(String permission) {
+    return 'Tai khoan Admin chua co quyen $permission.';
   }
 }

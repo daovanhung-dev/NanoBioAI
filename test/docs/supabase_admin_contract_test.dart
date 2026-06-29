@@ -47,6 +47,33 @@ void main() {
         );
       },
     );
+
+    test('documents draft Admin role permission matrix', () {
+      final sql = File(
+        'docs/supabase/11-admin-access-dashboard.sql',
+      ).readAsStringSync();
+
+      for (final token in [
+        "('super_admin', '*')",
+        "('finance_admin', 'dashboard.read')",
+        "('finance_admin', 'payments.write')",
+        "('finance_admin', 'reports.write')",
+        "('finance_admin', 'audit.read')",
+        "('operations_admin', 'dashboard.read')",
+        "('operations_admin', 'users.write')",
+        "('operations_admin', 'sales.write')",
+        "('operations_admin', 'audit.read')",
+        "when p_config_key ilike 'plan%' then 'plans.write'",
+        "perform public.admin_assert_permission('config.write')",
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
+
+      expect(sql, isNot(contains("('finance_admin', 'sales.write')")));
+      expect(sql, isNot(contains("('operations_admin', 'payments.write')")));
+      expect(sql, isNot(contains("('operations_admin', 'reports.write')")));
+      expect(sql, isNot(contains("('finance_admin', 'config.write')")));
+    });
   });
 
   group('Sale direct-only contract', () {

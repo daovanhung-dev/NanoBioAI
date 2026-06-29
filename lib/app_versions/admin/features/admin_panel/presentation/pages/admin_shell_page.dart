@@ -75,7 +75,13 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
 
           return Row(
             children: [
-              _AdminNavRail(selected: data.section, onSelected: _goToSection),
+              _AdminNavRail(
+                selected: data.section,
+                sections: AdminPanelSection.values
+                    .where(data.session.canAccessSection)
+                    .toList(growable: false),
+                onSelected: _goToSection,
+              ),
               const VerticalDivider(width: 1),
               Expanded(
                 child: Column(
@@ -139,18 +145,41 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
 
 class _AdminNavRail extends StatelessWidget {
   final AdminPanelSection selected;
+  final List<AdminPanelSection> sections;
   final ValueChanged<AdminPanelSection> onSelected;
 
-  const _AdminNavRail({required this.selected, required this.onSelected});
+  const _AdminNavRail({
+    required this.selected,
+    required this.sections,
+    required this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (sections.isEmpty) {
+      return const SizedBox(
+        width: 96,
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Icon(
+              Icons.admin_panel_settings_rounded,
+              color: AppColors.primary,
+              size: 32,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final selectedIndex = sections.indexOf(selected);
     return NavigationRail(
       minWidth: 96,
       extended: MediaQuery.sizeOf(context).width >= 1180,
-      selectedIndex: AdminPanelSection.values.indexOf(selected),
+      selectedIndex: selectedIndex < 0 ? null : selectedIndex,
       onDestinationSelected: (index) {
-        onSelected(AdminPanelSection.values[index]);
+        onSelected(sections[index]);
       },
       leading: const Padding(
         padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
@@ -160,7 +189,7 @@ class _AdminNavRail extends StatelessWidget {
           size: 32,
         ),
       ),
-      destinations: AdminPanelSection.values
+      destinations: sections
           .map(
             (section) => NavigationRailDestination(
               icon: Icon(section.icon),
@@ -214,7 +243,8 @@ class _TopBar extends StatelessWidget {
               ],
             ),
           ),
-          if (state.section != AdminPanelSection.dashboard)
+          if (state.section != AdminPanelSection.dashboard &&
+              !state.isPermissionDenied)
             SizedBox(
               width: 320,
               child: TextField(
@@ -259,11 +289,16 @@ class _AdminContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.xl),
-      child: switch (state.section) {
-        AdminPanelSection.dashboard => _DashboardView(state: state),
-        AdminPanelSection.audit => _AuditView(events: state.auditEvents),
-        _ => _WorkQueueView(state: state, onAction: onAction),
-      },
+      child: state.isPermissionDenied
+          ? _PermissionDeniedPanel(
+              section: state.section,
+              permission: state.deniedPermission!,
+            )
+          : switch (state.section) {
+              AdminPanelSection.dashboard => _DashboardView(state: state),
+              AdminPanelSection.audit => _AuditView(events: state.auditEvents),
+              _ => _WorkQueueView(state: state, onAction: onAction),
+            },
     );
   }
 }
@@ -293,6 +328,7 @@ class _DashboardView extends StatelessWidget {
           runSpacing: AppSpacing.md,
           children: AdminPanelSection.values
               .where((section) => section != AdminPanelSection.dashboard)
+              .where(state.session.canAccessSection)
               .map((section) => _ShortcutCard(section: section))
               .toList(),
         ),
@@ -375,6 +411,7 @@ class _WorkQueueView extends StatelessWidget {
           .map(
             (item) => _WorkItemRow(
               section: state.section,
+              session: state.session,
               item: item,
               onAction: onAction,
             ),
@@ -386,19 +423,33 @@ class _WorkQueueView extends StatelessWidget {
 
 class _WorkItemRow extends StatelessWidget {
   final AdminPanelSection section;
+  final AdminSession session;
   final AdminWorkItem item;
   final void Function(AdminPanelSection section, String action, String targetId)
   onAction;
 
   const _WorkItemRow({
     required this.section,
+    required this.session,
     required this.item,
     required this.onAction,
   });
 
   @override
   Widget build(BuildContext context) {
-    final actions = section.actions;
+    final actions = section.actions
+        .where((action) {
+          return session.canRunMutation(
+            AdminMutationCommand(
+              section: section,
+              action: action.key,
+              targetId: item.id,
+              reason: 'permission-check',
+              idempotencyKey: 'permission-check',
+            ),
+          );
+        })
+        .toList(growable: false);
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -605,6 +656,52 @@ class _EmptyPanel extends StatelessWidget {
   }
 }
 
+class _PermissionDeniedPanel extends StatelessWidget {
+  final AdminPanelSection section;
+  final String permission;
+
+  const _PermissionDeniedPanel({
+    required this.section,
+    required this.permission,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: DecoratedBox(
+          decoration: _panelDecoration(),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.lock_person_rounded,
+                  color: AppColors.warning,
+                  size: 44,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Khong du quyen ${section.label}',
+                  style: AppTextStyles.heading3,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Tai khoan Admin hien tai can quyen $permission de mo muc nay.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _BlockingState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -718,8 +815,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.users => Icons.people_rounded,
       AdminPanelSection.payments => Icons.payments_rounded,
       AdminPanelSection.sales => Icons.badge_rounded,
-      AdminPanelSection.saleConversions =>
-        Icons.published_with_changes_rounded,
+      AdminPanelSection.saleConversions => Icons.published_with_changes_rounded,
       AdminPanelSection.plans => Icons.workspace_premium_rounded,
       AdminPanelSection.reports => Icons.summarize_rounded,
       AdminPanelSection.audit => Icons.history_rounded,

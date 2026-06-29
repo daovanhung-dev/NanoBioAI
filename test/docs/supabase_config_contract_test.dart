@@ -89,6 +89,23 @@ void main() {
       );
     });
 
+    test('keeps Admin draft role permission matrix in rebuild file', () {
+      for (final token in [
+        "('super_admin', '*')",
+        "('finance_admin', 'payments.write')",
+        "('finance_admin', 'reports.write')",
+        "('operations_admin', 'users.write')",
+        "('operations_admin', 'sales.write')",
+        "when p_config_key ilike 'plan%' then 'plans.write'",
+        "perform public.admin_assert_permission('config.write')",
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
+
+      expect(sql, isNot(contains("('finance_admin', 'sales.write')")));
+      expect(sql, isNot(contains("('operations_admin', 'payments.write')")));
+    });
+
     test('does not reintroduce second-level commission markers', () {
       for (final token in [
         'secondLevel',

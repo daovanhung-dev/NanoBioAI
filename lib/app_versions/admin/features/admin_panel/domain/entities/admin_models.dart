@@ -33,6 +33,7 @@ enum AdminPanelSection {
 }
 
 abstract class AdminPermissions {
+  static const wildcard = '*';
   static const dashboardRead = 'dashboard.read';
   static const usersWrite = 'users.write';
   static const paymentsWrite = 'payments.write';
@@ -41,6 +42,24 @@ abstract class AdminPermissions {
   static const reportsWrite = 'reports.write';
   static const auditRead = 'audit.read';
   static const configWrite = 'config.write';
+}
+
+String adminPermissionForSection(AdminPanelSection section) {
+  return switch (section) {
+    AdminPanelSection.dashboard => AdminPermissions.dashboardRead,
+    AdminPanelSection.users => AdminPermissions.usersWrite,
+    AdminPanelSection.payments => AdminPermissions.paymentsWrite,
+    AdminPanelSection.sales => AdminPermissions.salesWrite,
+    AdminPanelSection.saleConversions => AdminPermissions.salesWrite,
+    AdminPanelSection.plans => AdminPermissions.configWrite,
+    AdminPanelSection.reports => AdminPermissions.reportsWrite,
+    AdminPanelSection.audit => AdminPermissions.auditRead,
+    AdminPanelSection.config => AdminPermissions.configWrite,
+  };
+}
+
+String adminPermissionForMutation(AdminMutationCommand command) {
+  return adminPermissionForSection(command.section);
 }
 
 class AdminSession {
@@ -65,8 +84,20 @@ class AdminSession {
 
   bool get isAdmin => active && roles.isNotEmpty;
 
+  bool get hasWildcardPermission {
+    return permissions.contains(AdminPermissions.wildcard);
+  }
+
   bool hasPermission(String permission) {
-    return permissions.contains('*') || permissions.contains(permission);
+    return hasWildcardPermission || permissions.contains(permission);
+  }
+
+  bool canAccessSection(AdminPanelSection section) {
+    return isAdmin && hasPermission(adminPermissionForSection(section));
+  }
+
+  bool canRunMutation(AdminMutationCommand command) {
+    return isAdmin && hasPermission(adminPermissionForMutation(command));
   }
 
   factory AdminSession.fromMap(Map<String, Object?> map) {
