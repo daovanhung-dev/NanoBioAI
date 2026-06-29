@@ -3,20 +3,85 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/nabi_onboarding_experience.dart';
 
 import 'package:nano_app/app_versions/v1/router/router.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+
 import '../../domain/services/splash_route_decision.dart';
 import '../../providers/splash_provider.dart';
+
+enum _BootStage {
+  preparing,
+  checkingProfile,
+  ready,
+}
+
+extension _BootStagePresentation on _BootStage {
+  String get statusLabel {
+    switch (this) {
+      case _BootStage.preparing:
+        return 'ĐANG KHỞI TẠO';
+      case _BootStage.checkingProfile:
+        return 'ĐANG KIỂM TRA';
+      case _BootStage.ready:
+        return 'SẴN SÀNG';
+    }
+  }
+
+  String get title {
+    switch (this) {
+      case _BootStage.preparing:
+        return 'Đang chuẩn bị không gian của bạn';
+      case _BootStage.checkingProfile:
+        return 'Đang xác định điểm bắt đầu phù hợp';
+      case _BootStage.ready:
+        return 'Mọi thứ đã sẵn sàng';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case _BootStage.preparing:
+        return 'NaBi đang khởi tạo những thành phần cần thiết để trải nghiệm diễn ra mượt mà.';
+      case _BootStage.checkingProfile:
+        return 'NaBi đang kiểm tra để đưa bạn đến đúng bước tiếp theo trong hành trình.';
+      case _BootStage.ready:
+        return 'Không gian chăm sóc cá nhân của bạn đã sẵn sàng để bắt đầu.';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case _BootStage.preparing:
+        return Icons.auto_awesome_rounded;
+      case _BootStage.checkingProfile:
+        return Icons.account_tree_outlined;
+      case _BootStage.ready:
+        return Icons.verified_rounded;
+    }
+  }
+
+  Color get accent {
+    switch (this) {
+      case _BootStage.preparing:
+        return NabiPalette.violet;
+      case _BootStage.checkingProfile:
+        return NabiPalette.cyan;
+      case _BootStage.ready:
+        return NabiPalette.rose;
+    }
+  }
+}
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({
     super.key,
-    this.title = 'Nami',
+    this.title = 'NaBi',
     this.subtitle =
-        'Mình ở đây rồi. Hãy để Nabichuẩn bị một không gian thật dịu dàng để chăm sóc bạn hôm nay.',
+        'Một không gian nhỏ để lắng nghe cơ thể, chăm sóc thói quen và bắt đầu ngày mới theo cách vừa vặn với bạn.',
   });
 
   final String title;
@@ -28,48 +93,139 @@ class SplashPage extends ConsumerStatefulWidget {
 
 class _SplashPageState extends ConsumerState<SplashPage>
     with TickerProviderStateMixin {
-  late final AnimationController _floatingController;
-  late final AnimationController _rotationController;
+  late final AnimationController _ambientController;
   late final AnimationController _pulseController;
+  late final AnimationController _entryController;
+
+  bool _hasNavigated = false;
+  bool _reduceMotion = false;
+  _BootStage _bootStage = _BootStage.preparing;
 
   @override
   void initState() {
     super.initState();
 
-    _floatingController = AnimationController(
+    _ambientController = AnimationController(
       vsync: this,
-      duration: AppDuration.xSlow,
-    )..repeat(reverse: true);
-
-    _rotationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 18),
-    )..repeat();
+      duration: const Duration(seconds: 12),
+    );
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: AppDuration.pulse,
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 1900),
+    );
 
-    Future.microtask(() async {
-      await ref.read(splashProvider.notifier).initialize();
-      await _handleRouting();
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 720),
+    );
+
+    Future.microtask(_bootstrap);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final shouldReduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
+    if (_reduceMotion == shouldReduceMotion &&
+        (_ambientController.isAnimating || shouldReduceMotion)) {
+      return;
+    }
+
+    _reduceMotion = shouldReduceMotion;
+
+    if (_reduceMotion) {
+      _ambientController
+        ..stop()
+        ..value = 0.5;
+
+      _pulseController
+        ..stop()
+        ..value = 0.5;
+
+      _entryController.value = 1;
+      return;
+    }
+
+    if (!_ambientController.isAnimating) {
+      _ambientController.repeat();
+    }
+
+    if (!_pulseController.isAnimating) {
+      _pulseController.repeat(reverse: true);
+    }
+
+    if (!_entryController.isCompleted) {
+      _entryController.forward();
+    }
+  }
+
+  Future<void> _bootstrap() async {
+    _setStage(_BootStage.preparing);
+
+    final onboardingCompletedFuture = _readOnboardingCompletedSafely();
+
+    await Future.wait([
+      _initializeSafely(),
+      Future<void>.delayed(AppDuration.loading),
+      _advanceToProfileCheckStage(),
+    ]);
+
+    final onboardingCompleted = await onboardingCompletedFuture;
+
+    if (!mounted || _hasNavigated) return;
+
+    _setStage(_BootStage.ready);
+
+    final target = const SplashRouteDecision().resolve(
+      hasAuthenticatedSession: currentSupabaseUserIdOrNull() != null,
+      onboardingCompleted: onboardingCompleted,
+    );
+
+    _navigate(target);
+  }
+
+  Future<void> _advanceToProfileCheckStage() async {
+    await Future<void>.delayed(const Duration(milliseconds: 280));
+
+    if (!mounted || _hasNavigated) return;
+    _setStage(_BootStage.checkingProfile);
+  }
+
+  void _setStage(_BootStage stage) {
+    if (!mounted || _bootStage == stage) return;
+
+    setState(() {
+      _bootStage = stage;
     });
   }
 
-  Future<void> _handleRouting() async {
-    final hasSession = currentSupabaseUserIdOrNull() != null;
-    final completed = await AppPrefs.isOnboardingCompleted();
-    final target = const SplashRouteDecision().resolve(
-      hasAuthenticatedSession: hasSession,
-      onboardingCompleted: completed,
-    );
+  Future<void> _initializeSafely() async {
+    try {
+      await ref.read(splashProvider.notifier).initialize();
+    } catch (error, stackTrace) {
+      debugPrint('Splash initialization failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
 
-    if (!mounted) return;
+  Future<bool> _readOnboardingCompletedSafely() async {
+    try {
+      return await AppPrefs.isOnboardingCompleted();
+    } catch (error, stackTrace) {
+      debugPrint('Unable to read onboarding state: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      return false;
+    }
+  }
 
-    await Future.delayed(AppDuration.loading);
+  void _navigate(SplashRouteTarget target) {
+    if (!mounted || _hasNavigated) return;
 
-    if (!mounted) return;
+    _hasNavigated = true;
 
     switch (target) {
       case SplashRouteTarget.authGate:
@@ -89,9 +245,9 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
   @override
   void dispose() {
-    _floatingController.dispose();
-    _rotationController.dispose();
+    _ambientController.dispose();
     _pulseController.dispose();
+    _entryController.dispose();
     super.dispose();
   }
 
@@ -101,572 +257,391 @@ class _SplashPageState extends ConsumerState<SplashPage>
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          const _SplashBackground(),
-
           Positioned.fill(
-            child: IgnorePointer(
-              child: AnimatedBuilder(
-                animation: _rotationController,
-                builder: (context, child) {
-                  return Transform.rotate(
-                    angle: _rotationController.value * math.pi * 2,
-                    child: child,
-                  );
-                },
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: RadialGradient(
-                      radius: 1.2,
-                      center: Alignment.center,
-                      colors: [Color(0x1606B6D4), Colors.transparent],
-                    ),
-                  ),
-                ),
+            child: RepaintBoundary(
+              child: _SplashAtmosphere(
+                controller: _ambientController,
+                reduceMotion: _reduceMotion,
               ),
             ),
           ),
-
-          Positioned(
-            top: -120,
-            left: -80,
-            child: _AnimatedOrb(
-              controller: _floatingController,
-              size: 280,
-              gradient: AppGradients.ai,
-              opacity: 0.18,
-              xFactor: 28,
-              yFactor: 18,
-            ),
-          ),
-
-          Positioned(
-            bottom: -140,
-            right: -100,
-            child: _AnimatedOrb(
-              controller: _floatingController,
-              size: 340,
-              gradient: AppGradients.hero,
-              opacity: 0.14,
-              xFactor: -24,
-              yFactor: -16,
-            ),
-          ),
-
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 24,
-            left: 24,
-            right: 24,
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: AppDecoration.glass(
-                    opacity: 0.18,
-                    radius: AppRadius.circular,
-                    borderColor: Colors.white.withValues(alpha: 0.18),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: AppColors.success,
-                          shape: BoxShape.circle,
-                          boxShadow: AppShadows.success,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        'NabiĐANG Ở ĐÂY',
-                        style: AppTextStyles.overline.copyWith(
-                          color: AppColors.textSecondary,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.pagePaddingLarge,
-                    92,
-                    AppSpacing.pagePaddingLarge,
-                    126,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: math.max(0, constraints.maxHeight - 218),
-                    ),
-                    child: Center(
-                      child: AnimatedBuilder(
-                        animation: _pulseController,
-                        builder: (context, child) {
-                          final value = 0.96 + (_pulseController.value * 0.04);
+                final layout = _SplashLayout.fromConstraints(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                );
 
-                          return Transform.scale(scale: value, child: child);
-                        },
-                        child: _MainSplashCard(
-                          title: widget.title,
-                          subtitle: widget.subtitle,
-                          pulseController: _pulseController,
-                          floatingController: _floatingController,
+                return Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: layout.horizontalPadding,
+                    vertical: layout.verticalPadding,
+                  ),
+                  child: Column(
+                    children: [
+                      _SplashTopBar(
+                        stage: _bootStage,
+                        pulseController: _pulseController,
+                        compact: layout.isCompact,
+                      ),
+                      SizedBox(height: layout.headerGap),
+                      Expanded(
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 620),
+                            child: FadeTransition(
+                              opacity: CurvedAnimation(
+                                parent: _entryController,
+                                curve: Curves.easeOutCubic,
+                              ),
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0, 0.035),
+                                  end: Offset.zero,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: _entryController,
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                ),
+                                child: _SplashExperience(
+                                  title: widget.title,
+                                  subtitle: widget.subtitle,
+                                  stage: _bootStage,
+                                  layout: layout,
+                                  ambientController: _ambientController,
+                                  pulseController: _pulseController,
+                                  reduceMotion: _reduceMotion,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      SizedBox(height: layout.footerGap),
+                      _LoadingFooter(
+                        stage: _bootStage,
+                        controller: _ambientController,
+                        compact: layout.isCompact,
+                        showDescription: layout.showFooterDescription,
+                      ),
+                    ],
                   ),
                 );
               },
             ),
           ),
-
-          Positioned(
-            bottom: 42,
-            left: 24,
-            right: 24,
-            child: Column(
-              children: [
-                const _ProgressLoader(),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  'Nabiđang sắp xếp mọi thứ thật gọn gàng cho bạn. Chỉ một chút nữa thôi nhé.',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textMuted,
-                    letterSpacing: 0.3,
-                    height: 1.45,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _SplashBackground extends StatelessWidget {
-  const _SplashBackground();
+class _SplashLayout {
+  final bool isCompact;
+  final bool showWellnessTags;
+  final bool showFooterDescription;
+  final bool showPrivacyCaption;
+  final double horizontalPadding;
+  final double verticalPadding;
+  final double headerGap;
+  final double footerGap;
+  final double brandMarkSize;
+
+  const _SplashLayout({
+    required this.isCompact,
+    required this.showWellnessTags,
+    required this.showFooterDescription,
+    required this.showPrivacyCaption,
+    required this.horizontalPadding,
+    required this.verticalPadding,
+    required this.headerGap,
+    required this.footerGap,
+    required this.brandMarkSize,
+  });
+
+  factory _SplashLayout.fromConstraints({
+    required double width,
+    required double height,
+  }) {
+    final isCompact = width < 365 || height < 630;
+
+    return _SplashLayout(
+      isCompact: isCompact,
+      showWellnessTags: width >= 355 && height >= 660,
+      showFooterDescription: height >= 590,
+      showPrivacyCaption: width >= 340 && height >= 620,
+      horizontalPadding: width < 360 ? 20 : width < 700 ? 27 : 48,
+      verticalPadding: isCompact ? 14 : 22,
+      headerGap: isCompact ? 14 : 21,
+      footerGap: isCompact ? 13 : 21,
+      brandMarkSize: isCompact ? 86 : width >= 700 ? 118 : 106,
+    );
+  }
+}
+
+class _SplashAtmosphere extends StatelessWidget {
+  const _SplashAtmosphere({
+    required this.controller,
+    required this.reduceMotion,
+  });
+
+  final AnimationController controller;
+  final bool reduceMotion;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
+    return DecoratedBox(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             AppColors.background,
-            AppColors.primarySoft,
-            AppColors.secondarySoft,
-            AppColors.scaffold,
+            Color.lerp(AppColors.background, NabiPalette.violet, 0.08)!,
+            Color.lerp(AppColors.background, NabiPalette.cyan, 0.09)!,
+            AppColors.background,
           ],
         ),
       ),
-      child: Stack(
-        children: [
-          Positioned.fill(child: CustomPaint(painter: _GridPainter())),
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-              child: const SizedBox.expand(),
+      child: AnimatedBuilder(
+        animation: controller,
+        builder: (context, _) {
+          return CustomPaint(
+            painter: _SplashAtmospherePainter(
+              phase: reduceMotion ? 0.5 : controller.value,
             ),
-          ),
-        ],
+            child: const SizedBox.expand(),
+          );
+        },
       ),
     );
   }
 }
 
-class _MainSplashCard extends StatelessWidget {
-  const _MainSplashCard({
-    required this.title,
-    required this.subtitle,
-    required this.pulseController,
-    required this.floatingController,
+class _SplashAtmospherePainter extends CustomPainter {
+  const _SplashAtmospherePainter({
+    required this.phase,
   });
 
-  final String title;
-  final String subtitle;
+  final double phase;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final wave = math.sin(phase * math.pi * 2);
+    final inverseWave = math.cos(phase * math.pi * 2);
+
+    final glowPaint = Paint()
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 64);
+
+    glowPaint.color = NabiPalette.violet.withValues(alpha: 0.15);
+    canvas.drawCircle(
+      Offset(
+        size.width * 0.12 + (wave * 22),
+        size.height * 0.15,
+      ),
+      size.width * 0.22,
+      glowPaint,
+    );
+
+    glowPaint.color = NabiPalette.cyan.withValues(alpha: 0.14);
+    canvas.drawCircle(
+      Offset(
+        size.width * 0.88,
+        size.height * 0.76 + (inverseWave * 24),
+      ),
+      size.width * 0.29,
+      glowPaint,
+    );
+
+    glowPaint.color = NabiPalette.rose.withValues(alpha: 0.09);
+    canvas.drawCircle(
+      Offset(
+        size.width * 0.48 + (inverseWave * 18),
+        size.height * 0.49,
+      ),
+      size.width * 0.18,
+      glowPaint,
+    );
+
+    final linePaint = Paint()
+      ..color = NabiPalette.violet.withValues(alpha: 0.06)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1;
+
+    final upperWave = Path()
+      ..moveTo(-20, size.height * 0.24)
+      ..quadraticBezierTo(
+        size.width * 0.35,
+        size.height * (0.14 + (wave * 0.025)),
+        size.width + 20,
+        size.height * 0.28,
+      );
+
+    final lowerWave = Path()
+      ..moveTo(-20, size.height * 0.76)
+      ..quadraticBezierTo(
+        size.width * 0.52,
+        size.height * (0.64 + (inverseWave * 0.03)),
+        size.width + 20,
+        size.height * 0.79,
+      );
+
+    canvas.drawPath(upperWave, linePaint);
+    canvas.drawPath(lowerWave, linePaint);
+
+    final particlePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.50);
+
+    for (var index = 0; index < 8; index++) {
+      final fraction = index / 8;
+      final x = size.width * (0.06 + fraction * 0.9);
+      final y = size.height *
+          (0.12 +
+              ((math.sin((phase * math.pi * 2) + index) + 1) * 0.32));
+
+      canvas.drawCircle(
+        Offset(x, y),
+        index.isEven ? 1.75 : 1.2,
+        particlePaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SplashAtmospherePainter oldDelegate) {
+    return oldDelegate.phase != phase;
+  }
+}
+
+class _SplashTopBar extends StatelessWidget {
+  const _SplashTopBar({
+    required this.stage,
+    required this.pulseController,
+    required this.compact,
+  });
+
+  final _BootStage stage;
   final AnimationController pulseController;
-  final AnimationController floatingController;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.containerPaddingXl),
-      decoration: AppDecoration.glass(
-        opacity: 0.22,
-        radius: AppRadius.xxl,
-        borderColor: Colors.white.withValues(alpha: 0.25),
-        shadows: AppShadows.xl,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _AnimatedLogo(
-                pulseController: pulseController,
-                floatingController: floatingController,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: AppDecoration.gradient(
-                  colors: [
-                    AppColors.primary.withValues(alpha: 0.12),
-                    AppColors.secondary.withValues(alpha: 0.10),
-                  ],
-                  radius: AppRadius.circular,
-                ),
-                child: Text(
-                  'Nabi· NGƯỜI ĐỒNG HÀNH CỦA BẠN',
-                  style: AppTextStyles.overline.copyWith(
-                    color: AppColors.primaryDark,
-                    letterSpacing: 1.45,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              ShaderMask(
-                shaderCallback: (bounds) {
-                  return AppGradients.hero.createShader(bounds);
-                },
-                child: Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.displayMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -1.2,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.7,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              const _CareMessage(),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              Row(
-                children: const [
-                  Expanded(
-                    child: _FeatureCard(
-                      icon: AppIcons.health,
-                      title: 'Nhịp khỏe',
-                      subtitle: 'Nabilắng nghe thật nhẹ',
-                      gradient: AppGradients.health,
-                    ),
-                  ),
-                  SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _FeatureCard(
-                      icon: AppIcons.ai,
-                      title: 'Gợi ý riêng',
-                      subtitle: 'Vừa với cơ thể bạn',
-                      gradient: AppGradients.ai,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              Row(
-                children: const [
-                  Expanded(
-                    child: _FeatureCard(
-                      icon: AppIcons.sleep,
-                      title: 'Giấc ngủ',
-                      subtitle: 'Cùng bạn nghỉ sâu hơn',
-                      gradient: AppGradients.sleep,
-                    ),
-                  ),
-                  SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _FeatureCard(
-                      icon: AppIcons.nutrition,
-                      title: 'Bữa ăn',
-                      subtitle: 'Ấm bụng, hợp cơ thể',
-                      gradient: AppGradients.energy,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              const _LoadingIndicator(),
-            ],
+    return Row(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _LaunchStatusPill(
+              stage: stage,
+              pulseController: pulseController,
+              compact: compact,
+            ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _CareMessage extends StatelessWidget {
-  const _CareMessage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: AppDecoration.glass(
-        opacity: 0.12,
-        radius: AppRadius.xl,
-        borderColor: Colors.white.withValues(alpha: 0.14),
-      ),
-      child: Row(
-        children: [
+        if (!compact)
           Container(
-            width: 42,
-            height: 42,
-            decoration: AppDecoration.circle(
-              gradient: AppGradients.primary,
-              shadows: AppShadows.sm,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 7,
             ),
-            child: const Icon(Icons.spa_rounded, color: Colors.white, size: 21),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.42),
+              borderRadius: BorderRadius.circular(99),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.76),
+              ),
+            ),
             child: Text(
-              'Hôm nay mình sẽ đi chậm cùng bạn: từng bữa ăn, từng giấc ngủ, từng thói quen nhỏ đều sẽ được chăm chút.',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-                height: 1.55,
+              'CHĂM SÓC CÁ NHÂN',
+              style: AppTextStyles.overline.copyWith(
+                color: NabiPalette.mutedInk,
+                fontSize: 8.4,
+                height: 1,
+                letterSpacing: 1.05,
+                fontWeight: FontWeight.w900,
               ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }
 
-class _AnimatedLogo extends StatelessWidget {
-  const _AnimatedLogo({
+class _LaunchStatusPill extends StatelessWidget {
+  const _LaunchStatusPill({
+    required this.stage,
     required this.pulseController,
-    required this.floatingController,
+    required this.compact,
   });
 
+  final _BootStage stage;
   final AnimationController pulseController;
-  final AnimationController floatingController;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([pulseController, floatingController]),
-      builder: (context, _) {
-        final pulse =
-            1 + (math.sin(pulseController.value * math.pi * 2) * 0.04);
+    return Semantics(
+      liveRegion: true,
+      label: stage.statusLabel,
+      child: AnimatedBuilder(
+        animation: pulseController,
+        builder: (context, _) {
+          final pulse = 0.78 + (pulseController.value * 0.22);
 
-        final dy = math.sin(floatingController.value * math.pi * 2) * 8;
-
-        return Transform.translate(
-          offset: Offset(0, dy),
-          child: Transform.scale(
-            scale: pulse,
-            child: Container(
-              width: 132,
-              height: 132,
-              decoration: AppDecoration.circle(
-                gradient: AppGradients.futuristic,
-                shadows: AppShadows.primary,
+          return Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 10 : 12,
+              vertical: compact ? 7 : 8,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.50),
+              borderRadius: BorderRadius.circular(99),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.78),
               ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 108,
-                    height: 108,
+              boxShadow: [
+                BoxShadow(
+                  color: stage.accent.withValues(alpha: 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Transform.scale(
+                  scale: pulse,
+                  child: Container(
+                    width: 7,
+                    height: 7,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.12),
-                      ),
+                      color: stage.accent,
+                      boxShadow: [
+                        BoxShadow(
+                          color: stage.accent.withValues(alpha: 0.42),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
                   ),
-                  Container(
-                    width: 88,
-                    height: 88,
-                    decoration: AppDecoration.glass(
-                      opacity: 0.18,
-                      radius: AppRadius.circular,
-                      borderColor: Colors.white.withValues(alpha: 0.25),
-                    ),
-                    child: const Icon(
-                      AppIcons.health,
-                      size: 42,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _FeatureCard extends StatelessWidget {
-  const _FeatureCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.gradient,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Gradient gradient;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: AppDecoration.glass(
-        opacity: 0.12,
-        radius: AppRadius.xl,
-        borderColor: Colors.white.withValues(alpha: 0.14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: AppDecoration.circle(
-              gradient: gradient,
-              shadows: AppShadows.sm,
-            ),
-            child: Icon(icon, color: Colors.white, size: 22),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            title,
-            style: AppTextStyles.labelLarge.copyWith(
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            subtitle,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textMuted,
-              height: 1.35,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LoadingIndicator extends StatelessWidget {
-  const _LoadingIndicator();
-
-  @override
-  Widget build(BuildContext context) {
-    final state = context.findAncestorStateOfType<_SplashPageState>();
-
-    final controller = state?._pulseController;
-
-    if (controller == null) {
-      return const SizedBox.shrink();
-    }
-
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, _) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(4, (index) {
-            final phase = (controller.value + (index * 0.15)) % 1;
-
-            final scale = 0.7 + (math.sin(phase * math.pi * 2) * 0.3);
-
-            return Transform.scale(
-              scale: scale,
-              child: Container(
-                width: 10,
-                height: 10,
-                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                decoration: BoxDecoration(
-                  gradient: AppGradients.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: AppShadows.primary,
                 ),
-              ),
-            );
-          }),
-        );
-      },
-    );
-  }
-}
-
-class _ProgressLoader extends StatelessWidget {
-  const _ProgressLoader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 6,
-      decoration: BoxDecoration(
-        color: AppColors.borderLight,
-        borderRadius: BorderRadius.circular(AppRadius.circular),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: 1),
-        duration: const Duration(seconds: 2),
-        curve: Curves.easeInOut,
-        builder: (context, value, _) {
-          return Align(
-            alignment: Alignment.centerLeft,
-            child: FractionallySizedBox(
-              widthFactor: value,
-              child: Container(
-                decoration: const BoxDecoration(gradient: AppGradients.hero),
-              ),
+                const SizedBox(width: 7),
+                Text(
+                  stage.statusLabel,
+                  style: AppTextStyles.overline.copyWith(
+                    color: NabiPalette.mutedInk,
+                    fontSize: compact ? 8.4 : 9,
+                    height: 1,
+                    letterSpacing: 1.08,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -675,67 +650,803 @@ class _ProgressLoader extends StatelessWidget {
   }
 }
 
-class _AnimatedOrb extends StatelessWidget {
-  const _AnimatedOrb({
-    required this.controller,
-    required this.size,
-    required this.gradient,
-    required this.opacity,
-    required this.xFactor,
-    required this.yFactor,
+class _SplashExperience extends StatelessWidget {
+  const _SplashExperience({
+    required this.title,
+    required this.subtitle,
+    required this.stage,
+    required this.layout,
+    required this.ambientController,
+    required this.pulseController,
+    required this.reduceMotion,
   });
 
-  final AnimationController controller;
+  final String title;
+  final String subtitle;
+  final _BootStage stage;
+  final _SplashLayout layout;
+  final AnimationController ambientController;
+  final AnimationController pulseController;
+  final bool reduceMotion;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'NaBi đang chuẩn bị trải nghiệm chăm sóc sức khỏe cá nhân',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ExcludeSemantics(
+            child: _BrandMark(
+              size: layout.brandMarkSize,
+              ambientController: ambientController,
+              pulseController: pulseController,
+              reduceMotion: reduceMotion,
+            ),
+          ),
+          SizedBox(height: layout.isCompact ? 16 : 21),
+          _EyebrowLabel(compact: layout.isCompact),
+          SizedBox(height: layout.isCompact ? 10 : 13),
+          ShaderMask(
+            shaderCallback: (bounds) {
+              return LinearGradient(
+                colors: [
+                  NabiPalette.violet,
+                  NabiPalette.cyan,
+                ],
+              ).createShader(bounds);
+            },
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.displayMedium.copyWith(
+                color: Colors.white,
+                fontSize: layout.isCompact ? 34 : 42,
+                height: 1,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.5,
+              ),
+            ),
+          ),
+          SizedBox(height: layout.isCompact ? 11 : 14),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 540),
+            child: Text(
+              subtitle,
+              maxLines: layout.isCompact ? 3 : 4,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: NabiPalette.mutedInk,
+                fontSize: layout.isCompact ? 13 : 15,
+                height: 1.52,
+              ),
+            ),
+          ),
+          if (layout.showWellnessTags) ...[
+            const SizedBox(height: 20),
+            const _WellnessTags(),
+          ],
+          SizedBox(height: layout.isCompact ? 20 : 25),
+          _ReadinessPanel(
+            stage: stage,
+            compact: layout.isCompact,
+            showPrivacyCaption: layout.showPrivacyCaption,
+            pulseController: pulseController,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BrandMark extends StatelessWidget {
+  const _BrandMark({
+    required this.size,
+    required this.ambientController,
+    required this.pulseController,
+    required this.reduceMotion,
+  });
+
   final double size;
-  final Gradient gradient;
-  final double opacity;
-  final double xFactor;
-  final double yFactor;
+  final AnimationController ambientController;
+  final AnimationController pulseController;
+  final bool reduceMotion;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        final value = math.sin(controller.value * math.pi * 2);
+      animation: Listenable.merge([
+        ambientController,
+        pulseController,
+      ]),
+      builder: (context, _) {
+        final phase = reduceMotion ? 0.5 : ambientController.value;
+        final floatingOffset =
+            reduceMotion ? 0.0 : math.sin(phase * math.pi * 2) * 5;
+        final scale =
+            reduceMotion ? 1.0 : 0.985 + (pulseController.value * 0.025);
 
         return Transform.translate(
-          offset: Offset(value * xFactor, value * yFactor),
-          child: child,
+          offset: Offset(0, floatingOffset),
+          child: Transform.scale(
+            scale: scale,
+            child: SizedBox(
+              width: size,
+              height: size,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CustomPaint(
+                    size: Size.square(size),
+                    painter: _BrandOrbitPainter(
+                      phase: phase,
+                    ),
+                  ),
+                  Container(
+                    width: size * 0.66,
+                    height: size * 0.66,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          NabiPalette.violet,
+                          NabiPalette.cyan,
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: NabiPalette.violet.withValues(alpha: 0.25),
+                          blurRadius: 27,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Container(
+                      margin: EdgeInsets.all(size * 0.08),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.16),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.36),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.favorite_rounded,
+                        color: Colors.white,
+                        size: size * 0.28,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
-      child: Opacity(
-        opacity: opacity,
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(shape: BoxShape.circle, gradient: gradient),
+    );
+  }
+}
+
+class _BrandOrbitPainter extends CustomPainter {
+  const _BrandOrbitPainter({
+    required this.phase,
+  });
+
+  final double phase;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+
+    final outerPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = NabiPalette.violet.withValues(alpha: 0.22);
+
+    final innerPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = NabiPalette.cyan.withValues(alpha: 0.21);
+
+    canvas.drawCircle(center, size.width * 0.46, outerPaint);
+    canvas.drawCircle(center, size.width * 0.37, innerPaint);
+
+    final arcPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round
+      ..color = NabiPalette.violet.withValues(alpha: 0.86);
+
+    final arcRect = Rect.fromCircle(
+      center: center,
+      radius: size.width * 0.46,
+    );
+
+    canvas.drawArc(
+      arcRect,
+      phase * math.pi * 2,
+      math.pi * 0.42,
+      false,
+      arcPaint,
+    );
+
+    final angle = (phase * math.pi * 2) - (math.pi / 3);
+    final dotRadius = size.width * 0.46;
+
+    final dotCenter = Offset(
+      center.dx + math.cos(angle) * dotRadius,
+      center.dy + math.sin(angle) * dotRadius,
+    );
+
+    canvas.drawCircle(
+      dotCenter,
+      size.width * 0.035,
+      Paint()..color = NabiPalette.cyan,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BrandOrbitPainter oldDelegate) {
+    return oldDelegate.phase != phase;
+  }
+}
+
+class _EyebrowLabel extends StatelessWidget {
+  const _EyebrowLabel({
+    required this.compact,
+  });
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 10 : 12,
+        vertical: compact ? 6 : 7,
+      ),
+      decoration: BoxDecoration(
+        color: NabiPalette.violet.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(
+          color: NabiPalette.violet.withValues(alpha: 0.14),
+        ),
+      ),
+      child: Text(
+        'SỨC KHỎE THEO CÁCH CỦA BẠN',
+        style: AppTextStyles.overline.copyWith(
+          color: NabiPalette.violet,
+          fontSize: compact ? 8 : 8.8,
+          height: 1,
+          letterSpacing: 1.08,
+          fontWeight: FontWeight.w900,
         ),
       ),
     );
   }
 }
 
-class _GridPainter extends CustomPainter {
+class _WellnessTags extends StatelessWidget {
+  const _WellnessTags();
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.035)
-      ..strokeWidth = 1;
-
-    const gap = 36.0;
-
-    for (double x = 0; x < size.width; x += gap) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-
-    for (double y = 0; y < size.height; y += gap) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
+  Widget build(BuildContext context) {
+    return const Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _WellnessTag(
+          icon: Icons.restaurant_outlined,
+          label: 'Ăn uống cân bằng',
+          color: NabiPalette.cyan,
+        ),
+        _WellnessTag(
+          icon: Icons.directions_walk_rounded,
+          label: 'Vận động phù hợp',
+          color: NabiPalette.violet,
+        ),
+        _WellnessTag(
+          icon: Icons.notifications_active_outlined,
+          label: 'Nhắc đúng lúc',
+          color: NabiPalette.rose,
+        ),
+      ],
+    );
   }
+}
+
+class _WellnessTag extends StatelessWidget {
+  const _WellnessTag({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 7,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.50),
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.80),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 15,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: NabiPalette.ink,
+              fontSize: 11,
+              height: 1,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReadinessPanel extends StatelessWidget {
+  const _ReadinessPanel({
+    required this.stage,
+    required this.compact,
+    required this.showPrivacyCaption,
+    required this.pulseController,
+  });
+
+  final _BootStage stage;
+  final bool compact;
+  final bool showPrivacyCaption;
+  final AnimationController pulseController;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: pulseController,
+      builder: (context, _) {
+        final glowOpacity = 0.12 + (pulseController.value * 0.08);
+
+        return Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 510),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 13 : 16,
+            vertical: compact ? 12 : 14,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.53),
+            borderRadius: BorderRadius.circular(compact ? 18 : 21),
+            border: Border.all(
+              color: stage.accent.withValues(alpha: glowOpacity),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: stage.accent.withValues(alpha: 0.06),
+                blurRadius: 24,
+                offset: const Offset(0, 11),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 260),
+                    width: compact ? 36 : 41,
+                    height: compact ? 36 : 41,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: stage.accent.withValues(alpha: 0.12),
+                    ),
+                    child: Icon(
+                      stage.icon,
+                      color: stage.accent,
+                      size: compact ? 18 : 20,
+                    ),
+                  ),
+                  SizedBox(width: compact ? 10 : 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          stage.title,
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: NabiPalette.ink,
+                            fontSize: compact ? 13 : 14,
+                            height: 1.15,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          stage.description,
+                          maxLines: compact ? 2 : 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: NabiPalette.mutedInk,
+                            fontSize: compact ? 10.8 : 11.5,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: compact ? 11 : 13),
+              _BootTimeline(
+                stage: stage,
+                compact: compact,
+              ),
+              if (showPrivacyCaption) ...[
+                SizedBox(height: compact ? 10 : 12),
+                const _PrivacyCaption(),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _BootTimeline extends StatelessWidget {
+  const _BootTimeline({
+    required this.stage,
+    required this.compact,
+  });
+
+  final _BootStage stage;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = [
+      _TimelineItem(
+        label: 'Khởi tạo',
+        icon: Icons.auto_awesome_rounded,
+        color: NabiPalette.violet,
+      ),
+      _TimelineItem(
+        label: 'Kiểm tra',
+        icon: Icons.account_tree_outlined,
+        color: NabiPalette.cyan,
+      ),
+      _TimelineItem(
+        label: 'Bắt đầu',
+        icon: Icons.play_arrow_rounded,
+        color: NabiPalette.rose,
+      ),
+    ];
+
+    return Row(
+      children: [
+        for (var index = 0; index < steps.length; index++) ...[
+          Expanded(
+            child: _TimelineStep(
+              item: steps[index],
+              active: index <= stage.index,
+              current: index == stage.index,
+              compact: compact,
+            ),
+          ),
+          if (index != steps.length - 1)
+            Expanded(
+              child: _TimelineConnector(
+                active: index < stage.index,
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+}
+
+class _TimelineItem {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _TimelineItem({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+}
+
+class _TimelineStep extends StatelessWidget {
+  const _TimelineStep({
+    required this.item,
+    required this.active,
+    required this.current,
+    required this.compact,
+  });
+
+  final _TimelineItem item;
+  final bool active;
+  final bool current;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          width: compact ? 25 : 29,
+          height: compact ? 25 : 29,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: active
+                ? item.color.withValues(alpha: current ? 0.18 : 0.12)
+                : NabiPalette.ink.withValues(alpha: 0.05),
+            border: Border.all(
+              color: active
+                  ? item.color.withValues(alpha: current ? 0.56 : 0.22)
+                  : NabiPalette.ink.withValues(alpha: 0.08),
+            ),
+          ),
+          child: Icon(
+            active ? item.icon : Icons.circle_outlined,
+            color: active ? item.color : NabiPalette.mutedInk,
+            size: compact ? 13 : 15,
+          ),
+        ),
+        if (!compact) ...[
+          const SizedBox(height: 5),
+          Text(
+            item.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: active ? NabiPalette.ink : NabiPalette.mutedInk,
+              fontSize: 9.5,
+              height: 1,
+              fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _TimelineConnector extends StatelessWidget {
+  const _TimelineConnector({
+    required this.active,
+  });
+
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      height: 1.5,
+      margin: const EdgeInsets.only(bottom: 18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(99),
+        color: active
+            ? NabiPalette.cyan.withValues(alpha: 0.62)
+            : NabiPalette.ink.withValues(alpha: 0.09),
+      ),
+    );
+  }
+}
+
+class _PrivacyCaption extends StatelessWidget {
+  const _PrivacyCaption();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.lock_outline_rounded,
+          size: 13,
+          color: NabiPalette.mutedInk,
+        ),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            'Bạn luôn kiểm soát những thông tin mình chia sẻ.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: NabiPalette.mutedInk,
+              fontSize: 10.5,
+              height: 1.2,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LoadingFooter extends StatelessWidget {
+  const _LoadingFooter({
+    required this.stage,
+    required this.controller,
+    required this.compact,
+    required this.showDescription,
+  });
+
+  final _BootStage stage;
+  final AnimationController controller;
+  final bool compact;
+  final bool showDescription;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      label: stage.title,
+      child: Column(
+        children: [
+          _ShimmerLoadingTrack(
+            accent: stage.accent,
+            controller: controller,
+            compact: compact,
+          ),
+          if (showDescription) ...[
+            SizedBox(height: compact ? 8 : 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _BreathingDots(
+                  accent: stage.accent,
+                  controller: controller,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    stage == _BootStage.checkingProfile
+                        ? 'Đang chuẩn bị điểm bắt đầu phù hợp cho bạn'
+                        : 'Đang chuẩn bị trải nghiệm của bạn',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: NabiPalette.mutedInk,
+                      fontSize: compact ? 10.5 : 11.5,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ShimmerLoadingTrack extends StatelessWidget {
+  const _ShimmerLoadingTrack({
+    required this.accent,
+    required this.controller,
+    required this.compact,
+  });
+
+  final Color accent;
+  final AnimationController controller;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return Container(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: SizedBox(
+              height: compact ? 4 : 5,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final shimmerWidth = constraints.maxWidth * 0.42;
+                  final left =
+                      ((constraints.maxWidth + shimmerWidth) *
+                              controller.value) -
+                          shimmerWidth;
+
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ColoredBox(
+                          color: accent.withValues(alpha: 0.10),
+                        ),
+                      ),
+                      Positioned(
+                        left: left,
+                        top: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: shimmerWidth,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.transparent,
+                                NabiPalette.violet.withValues(alpha: 0.68),
+                                NabiPalette.cyan.withValues(alpha: 0.78),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _BreathingDots extends StatelessWidget {
+  const _BreathingDots({
+    required this.accent,
+    required this.controller,
+  });
+
+  final Color accent;
+  final AnimationController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (index) {
+            final phase = (controller.value + (index * 0.16)) % 1;
+            final size = 4.2 + (math.sin(phase * math.pi * 2).abs() * 2.1);
+
+            return Container(
+              width: size,
+              height: size,
+              margin: const EdgeInsets.symmetric(horizontal: 1.5),
+              decoration: BoxDecoration(
+                color: index == 1 ? accent : NabiPalette.violet,
+                shape: BoxShape.circle,
+              ),
+            );
+          }),
+        );
+      },
+    );
   }
 }
