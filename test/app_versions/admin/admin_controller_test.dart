@@ -79,7 +79,7 @@ void main() {
       expect(state.deniedPermission, AdminPermissions.paymentsWrite);
       expect(
         state.lastMessage,
-        'Tai khoan Admin chua co quyen payments.write.',
+        'Tài khoản Admin chưa có quyền payments.write.',
       );
     });
   });
@@ -151,7 +151,7 @@ class _FakeAdminRepository implements AdminRepository {
     return const [
       AdminDashboardMetric(
         key: 'users_total',
-        label: 'Nguoi dung',
+        label: 'Người dùng',
         value: 1,
         status: 'ready',
         targetSection: 'users',

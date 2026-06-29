@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 46
+- Total worklogs: 48
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -55,3 +55,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-29 | coding + tests + checklist. | test | M15 ADMIN_DASHBOARD, M16 ADMIN_OPS. | [Worklog - M15/M16 Admin Permission Hardening](../../docs/worklog/2026-06-29/003-worklog-m15-m16-admin-permission-hardening.md) |
 | 2026-06-29 | coding | coding | M15 ADMIN_DASHBOARD, M16 ADMIN_OPS | [Worklog - M15/M16 Admin Contract Sync](../../docs/worklog/2026-06-29/004-worklog-m15-m16-admin-contract-sync.md) |
 | 2026-06-29 | coding + Supabase schema draft + tests + DD/checklist docs | supabase-schema | M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY | [Worklog - M15-M19 Admin Selected Policy](../../docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md) |
+| 2026-06-29 | bugfix | bugfix | Admin dashboard / Supabase RPC | [Worklog - Admin dashboard login blocker](../../docs/worklog/2026-06-29/006-worklog-admin-dashboard-login.md) |
+| 2026-06-29 | coding | coding | M15 ADMIN_DASHBOARD, M16 ADMIN_OPS | [Worklog - Admin UI Polish](../../docs/worklog/2026-06-29/007-worklog-admin-ui-polish.md) |

@@ -2169,24 +2169,24 @@ begin
   from public.users
   union all
   select 'payments_pending', 'Payment cho duyet', count(*)::integer, 'pending', 'payments'
-  from public.payment_events
-  where status = 'pending'
-    and created_at between p_from and p_to
+  from public.payment_events pe
+  where pe.status = 'pending'
+    and pe.created_at between p_from and p_to
   union all
   select 'sales_active', 'Sale active', count(*)::integer, 'active', 'sales'
-  from public.sale_profiles
-  where status = 'active'
+  from public.sale_profiles sp
+  where sp.status = 'active'
   union all
   select
     'commission_available',
     'Diem Sale kha dung',
-    coalesce(sum(amount_cents), 0)::integer,
+    coalesce(sum(cr.amount_cents), 0)::integer,
     'approved',
     'sale_conversions'
-  from public.commission_records
-  where status in ('pending', 'approved')
-    and available_at <= now()
-    and created_at between p_from and p_to;
+  from public.commission_records cr
+  where cr.status in ('pending', 'approved')
+    and cr.available_at <= now()
+    and cr.created_at between p_from and p_to;
 end;
 $$;
 

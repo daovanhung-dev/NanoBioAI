@@ -40,6 +40,36 @@ void main() {
       }
     });
 
+    test('qualifies Admin dashboard summary metric filters', () {
+      final sql = File(
+        'docs/supabase/11-admin-access-dashboard.sql',
+      ).readAsStringSync();
+      final block = _adminDashboardSummaryBlock(sql);
+
+      for (final token in [
+        'from public.payment_events pe',
+        "where pe.status = 'pending'",
+        'and pe.created_at between p_from and p_to',
+        'from public.sale_profiles sp',
+        "where sp.status = 'active'",
+        'coalesce(sum(cr.amount_cents), 0)::integer',
+        'from public.commission_records cr',
+        "where cr.status in ('pending', 'approved')",
+        'and cr.available_at <= now()',
+        'and cr.created_at between p_from and p_to',
+      ]) {
+        expect(block, contains(token), reason: token);
+      }
+
+      expect(
+        _hasUnqualifiedDashboardStatusFilter(block),
+        isFalse,
+        reason:
+            'get_admin_dashboard_summary returns a status column, so source '
+            'status filters must stay table-qualified.',
+      );
+    });
+
     test(
       'keeps service-role style payment function away from Flutter grants',
       () {
@@ -223,4 +253,24 @@ void main() {
       },
     );
   });
+}
+
+String _adminDashboardSummaryBlock(String sql) {
+  const startToken =
+      'create or replace function public.get_admin_dashboard_summary';
+  const endToken = 'create or replace function public.admin_search_users';
+  final start = sql.indexOf(startToken);
+  final end = sql.indexOf(endToken, start);
+  if (start < 0 || end < 0) {
+    throw StateError('Cannot locate Admin dashboard summary SQL block.');
+  }
+  return sql.substring(start, end);
+}
+
+bool _hasUnqualifiedDashboardStatusFilter(String block) {
+  final withoutLineComments = block.replaceAll(RegExp(r'--.*'), '');
+  return RegExp(
+    r'(\bwhere|\band|\bfilter\s*\(\s*where)\s+status\b',
+    caseSensitive: false,
+  ).hasMatch(withoutLineComments);
 }

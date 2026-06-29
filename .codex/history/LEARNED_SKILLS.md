@@ -5,9 +5,9 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Canonical Work Types Seen
 
 - docs-context - Context and docs update: 14 worklog(s)
-- coding - Coding: 10 worklog(s)
+- coding - Coding: 11 worklog(s)
 - supabase-schema - Supabase schema and RLS: 7 worklog(s)
-- bugfix - Direct bugfix: 5 worklog(s)
+- bugfix - Direct bugfix: 6 worklog(s)
 - docs-dd - Design docs: 4 worklog(s)
 - test - Test and verification: 2 worklog(s)
 - find-issues - Review and find issues: 1 worklog(s)
@@ -18,17 +18,17 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Frequent Modules
 
 - unknown: 4
-- authentication: 2
 - docs/issues, docs/todo: 2
 - .codex: 2
-- v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.: 1
-- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
+- authentication: 2
+- Admin app, Supabase Admin, Sale direct-only: 1
 - docs/DD M01-M19: 1
-- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
-- DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
+- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
 - docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
-- .codex, root AGENTS.md, .agents skill bridge: 1
 - docs/DD/product_flow, docs/checklist: 1
+- DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
+- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
 
 ## Reusable Project Skills
 

@@ -99,7 +99,7 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
   }) async {
     final current = state.asData?.value;
     if (reason.trim().isEmpty) {
-      throw StateError('Can ly do cho thao tac quan tri.');
+      throw StateError('Cần lý do cho thao tác quản trị.');
     }
 
     final command = AdminMutationCommand(
@@ -132,8 +132,8 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     state = AsyncData(
       next.copyWith(
         lastMessage: result.message.isEmpty
-            ? (result.success ? 'Da cap nhat.' : 'Chua cap nhat duoc.')
-            : result.message,
+            ? (result.success ? 'Đã cập nhật.' : 'Chưa cập nhật được.')
+            : _adminUiMessage(result.message),
       ),
     );
   }
@@ -217,6 +217,25 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
   }
 
   String _permissionDeniedMessage(String permission) {
-    return 'Tai khoan Admin chua co quyen $permission.';
+    return 'Tài khoản Admin chưa có quyền $permission.';
+  }
+
+  String _adminUiMessage(String message) {
+    return switch (message) {
+      'Da cap nhat trang thai nguoi dung.' =>
+        'Đã cập nhật trạng thái người dùng.',
+      'Da xu ly payment.' => 'Đã xử lý thanh toán.',
+      'Da xu ly hoan huy trong cua so 24 gio.' =>
+        'Đã xử lý hoàn/hủy trong cửa sổ 24 giờ.',
+      'Da cap nhat Sale.' => 'Đã cập nhật Sale.',
+      'Da luu phien ban cau hinh.' => 'Đã lưu phiên bản cấu hình.',
+      'Da tao yeu cau xuat bao cao.' => 'Đã tạo yêu cầu xuất báo cáo.',
+      'Da ghi dieu chinh diem Sale.' => 'Đã ghi điều chỉnh điểm Sale.',
+      'Da tao phien doi soat.' => 'Đã tạo phiên đối soát.',
+      'Da cap nhat doi soat.' => 'Đã cập nhật đối soát.',
+      'Da cap nhat yeu cau quy doi diem Sale.' =>
+        'Đã cập nhật yêu cầu quy đổi điểm Sale.',
+      _ => message,
+    };
   }
 }

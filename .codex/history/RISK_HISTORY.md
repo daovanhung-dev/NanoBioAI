@@ -302,3 +302,14 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: - Da fix: Q-05/Q-10/Q-12/Q-13/Q-16/Q-17/Q-18 selected policy da duoc encode vao runtime, SQL draft, docs, and tests.
 - docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: - Chua fix: chua chay Supabase sandbox/staging SQL/RPC/RLS/audit smoke; provider/chargeback-specific production contract van can evidence rieng.
 - docs/worklog/2026-06-29/005-worklog-m15-m19-admin-selected-policy.md :: - Can kiem tra tiep: run sandbox acceptance for payment approval, 24h hold, conversion reject under hold, refund/cancel >24h, suspended/closed Sale no-new-points, reconciliation adjustment, and audit row completeness.
+- docs/worklog/2026-06-29/006-worklog-admin-dashboard-login.md :: FAIL - dung o `dart format --set-exit-if-changed .` do format drift ngoai
+- docs/worklog/2026-06-29/006-worklog-admin-dashboard-login.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-29/006-worklog-admin-dashboard-login.md :: - Chua fix: Supabase database dang active chua tu dong nhan thay doi SQL tu repo.
+- docs/worklog/2026-06-29/006-worklog-admin-dashboard-login.md :: - Can kiem tra tiep: Apply SQL len local/dev Supabase va dang nhap bang tai
+- docs/worklog/2026-06-29/006-worklog-admin-dashboard-login.md :: - Dang do: Manual Supabase/UI validation sau khi apply SQL vao database active.
+- docs/worklog/2026-06-29/006-worklog-admin-dashboard-login.md :: - Muc do hoan thanh task: hoan thanh phan repo; manual DB apply/validation con
+- docs/worklog/2026-06-29/006-worklog-admin-dashboard-login.md :: - Bang chung kiem chung: targeted Flutter/docs tests PASS; quick check FAIL do
+- docs/worklog/2026-06-29/007-worklog-admin-ui-polish.md :: - Playwright screenshot desktop/tablet/mobile: SKIPPED - browser plugin `iab` khong kha dung, may khong co Chrome/Edge, Playwright package co san nhung browser binary chua duoc cai; khong tu cai browser moi trong phien nay.
+- docs/worklog/2026-06-29/007-worklog-admin-ui-polish.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-29/007-worklog-admin-ui-polish.md :: - Chua fix: chua co screenshot tu dong 3 viewport do thieu browser runtime local; can kiem tra thu cong tai URL web-server.
+- docs/worklog/2026-06-29/007-worklog-admin-ui-polish.md :: - Can kiem tra tiep: dang nhap bang `dev.admin@nanobio.local` khi Supabase sandbox/local san sang; kiem tra dashboard sau login tren desktop/tablet/mobile; bam nut `Huong dan` va cac action co dialog ly do.
