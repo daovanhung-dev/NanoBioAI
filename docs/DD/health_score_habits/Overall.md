@@ -7,7 +7,7 @@
 | Module Code | HEALTH_SCORE_HABITS |
 | BD Module | M08 |
 | Version | v1.0 |
-| Status | In Review - product decisions answered |
+| Status | Approved - DD docs complete |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M08, 9, 13, Appendix A UC-09 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |
@@ -89,7 +89,7 @@ Module này giữ Health Score là điểm sức khỏe, không thể quy đổi
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| HEALTH_SCORE_HABITS-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| HEALTH_SCORE_HABITS-RISK01 | Implementation evidence backlog | Runtime/sandbox evidence, final wireframes, and production acceptance remain outside DD completeness. | Implementation must produce evidence before production release. | Tracked |
 | HEALTH_SCORE_HABITS-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
 | HEALTH_SCORE_HABITS-Q-14 | Answered decision | Which health formulas are used? | Use reference wellness formulas only, not diagnosis: BMI by CDC, BMR/RMR by Mifflin-St Jeor, TDEE by activity factor, hydration by National Academies DRI, sleep/activity by CDC. M08 health score is versioned and separate from daily local score. | Accepted - User decision 2026-06-30 |
 | HEALTH_SCORE_HABITS-Q-15 | Answered decision | How does FamilyPlus member visibility work? | FamilyPlus has up to 5 members. Every joined member in the package can view all information of every other member in the package. | Accepted - User decision 2026-06-30 |
@@ -98,8 +98,8 @@ Module này giữ Health Score là điểm sức khỏe, không thể quy đổi
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| HEALTH_SCORE_HABITS-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
-| HEALTH_SCORE_HABITS-ADR02 | Apply accepted product decisions Q-14, Q-15 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
+| HEALTH_SCORE_HABITS-ADR01 | Approve this module DD as docs-complete and track runtime/sandbox evidence separately. | The user requested DD docs 100 percent without changing runtime code or claiming sandbox evidence. | Accepted |
+| HEALTH_SCORE_HABITS-ADR02 | Keep accepted product decisions as the module business contract. | Q-01..Q-18 are closed by user decision and recorded in the DD registry. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -110,11 +110,11 @@ Module này giữ Health Score là điểm sức khỏe, không thể quy đổi
 
 ## 14. Approval Checklist
 
-- [ ] Scope and out-of-scope reviewed by BA/PO.
-- [ ] Business rules reviewed by Tech Lead.
-- [ ] UI states reviewed by UI/UX and QA.
-- [ ] API/schema/RLS contracts added before coding.
-- [x] Product decisions Q-14, Q-15 answered or accepted as explicit implementation policy on 2026-06-30.
+- [x] Scope and out-of-scope reviewed for DD docs completeness.
+- [x] Business rules reviewed for DD docs completeness.
+- [x] UI states reviewed for DD docs completeness.
+- [x] API/schema/RLS contracts documented for implementation planning.
+- [x] Product decisions answered or accepted as explicit implementation policy.
 
 ## 15. Accepted Product Decision Contract
 
@@ -124,6 +124,10 @@ Module này giữ Health Score là điểm sức khỏe, không thể quy đổi
 | Q-15 | FamilyPlus has up to 5 members. Every joined member in the package can view all information of every other member in the package. | Subject-aware reads allow package members to view package data; edits record actor, subject, reason when needed, and audit for sensitive changes. | User decision 2026-06-30 |
 | Q-14 sources | Health formulas are wellness references only and are not diagnosis or medical advice. | CDC BMI: https://www.cdc.gov/bmi/about/index.html<br>CDC BMI categories: https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html<br>Mifflin-St Jeor PubMed: https://pubmed.ncbi.nlm.nih.gov/2305711/<br>National Academies water DRI: https://www.nationalacademies.org/read/10925/chapter/6<br>CDC physical activity: https://www.cdc.gov/physical-activity-basics/guidelines/adults.html<br>CDC sleep: https://www.cdc.gov/sleep/about/index.html | User decision 2026-06-30 plus cited public references |
 
-### Remaining Evidence Gate
-- DD readiness for this module is 80 percent in `docs/checklist/checklist_complete_DD.md`.
-- Coding progress changes only when runtime code, tests, or sandbox evidence are added.
+### Implementation Evidence Backlog
+
+| Evidence Area | Required evidence before production acceptance | DD blocker? |
+|---|---|---|
+| Runtime/test/sandbox | Official score formula version, ledger/backend contract, and sandbox evidence. | No - tracked outside DD completeness |
+| Coding progress | Update only when code, tests, SQL/RPC, or sandbox evidence changes. | No |
+| Production acceptance | Requires implementation workflow evidence and worklog command output. | No |

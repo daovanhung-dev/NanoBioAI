@@ -4,8 +4,8 @@
 
 | ID | View Name | Route / Entry Point | Actor | Feature | Type | Data Source | Status | Mockup |
 |---|---|---|---|---|---|---|---|---|
-| REFERRAL_DIRECT-V01 | Sale registration | planned route/action for referral_direct | Member, Admin | REFERRAL_DIRECT-F01 | Page / Flow / Admin view | REFERRAL_DIRECT-API01 | Draft | assets/README.md |
-| REFERRAL_DIRECT-V02 | Referral code entry | planned route/action for referral_direct | Guest, Member | REFERRAL_DIRECT-F02 | Page / Flow / Admin view | REFERRAL_DIRECT-API02 | Draft | assets/README.md |
+| REFERRAL_DIRECT-V01 | Sale registration | planned route/action for referral_direct | Member, Admin | REFERRAL_DIRECT-F01 | Page / Flow / Admin view | REFERRAL_DIRECT-API01 | Approved - DD docs complete | assets/README.md |
+| REFERRAL_DIRECT-V02 | Referral code entry | planned route/action for referral_direct | Guest, Member | REFERRAL_DIRECT-F02 | Page / Flow / Admin view | REFERRAL_DIRECT-API02 | Approved - DD docs complete | assets/README.md |
 
 ## 1. Navigation Map
 
@@ -31,7 +31,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | Optional future asset: BD v2.0 has no required mockup; view state/action contract is complete in this DD |
 
 ## B. Layout và thành phần giao diện
 
@@ -62,12 +62,15 @@
 | REFERRAL_DIRECT-V01-I01 | Member gửi yêu cầu Sale | Input và quyền hợp lệ | REFERRAL_DIRECT-FN01 | Refresh trạng thái Sale & mã giới thiệu trực tiếp | Hiển thị lỗi an toàn | Giữ view hoặc tới bước kế tiếp |
 | REFERRAL_DIRECT-V01-I02 | Tải lại dữ liệu | User có quyền xem | REFERRAL_DIRECT-FN02 hoặc API đọc | Cập nhật view | Empty/error state | Không đổi route |
 
-## E. Acceptance checklist cho QA/UI
+## E. Documented View Acceptance Requirements
 
-- [ ] View chỉ hiển thị đúng role và trạng thái.
-- [ ] Các state bắt buộc đều có thiết kế và test.
-- [ ] Action chính gọi đúng REFERRAL_DIRECT-FN01.
-- [ ] Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| REFERRAL_DIRECT-VIEW-EV01-01 | View chỉ hiển thị đúng role và trạng thái. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-VIEW-EV01-02 | Các state bắt buộc đều có thiết kế và test. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-VIEW-EV01-03 | Action chính gọi đúng REFERRAL_DIRECT-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-VIEW-EV01-04 | Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="referral_direct-v02"></a>
@@ -84,7 +87,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | Optional future asset: BD v2.0 has no required mockup; view state/action contract is complete in this DD |
 
 ## B. Layout và thành phần giao diện
 
@@ -115,9 +118,11 @@
 | REFERRAL_DIRECT-V02-I01 | Nhập mã giới thiệu | Input và quyền hợp lệ | REFERRAL_DIRECT-FN02 | Refresh trạng thái Sale & mã giới thiệu trực tiếp | Hiển thị lỗi an toàn | Giữ view hoặc tới bước kế tiếp |
 | REFERRAL_DIRECT-V02-I02 | Tải lại dữ liệu | User có quyền xem | REFERRAL_DIRECT-FN02 hoặc API đọc | Cập nhật view | Empty/error state | Không đổi route |
 
-## E. Acceptance checklist cho QA/UI
+## E. Documented View Acceptance Requirements
 
-- [ ] View chỉ hiển thị đúng role và trạng thái.
-- [ ] Các state bắt buộc đều có thiết kế và test.
-- [ ] Action chính gọi đúng REFERRAL_DIRECT-FN02.
-- [ ] Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| REFERRAL_DIRECT-VIEW-EV02-01 | View chỉ hiển thị đúng role và trạng thái. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-VIEW-EV02-02 | Các state bắt buộc đều có thiết kế và test. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-VIEW-EV02-03 | Action chính gọi đúng REFERRAL_DIRECT-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-VIEW-EV02-04 | Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

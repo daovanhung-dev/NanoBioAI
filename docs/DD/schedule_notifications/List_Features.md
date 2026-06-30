@@ -7,15 +7,15 @@
 | Module | SCHEDULE_NOTIFICATIONS |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M09, 13, Appendix A UC-04 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| SCHEDULE_NOTIFICATIONS-F01 | Lên lịch thông báo | Tạo lịch nhắc từ kế hoạch đang active. | System | Plan activated or updated | P1 | BD M09 luồng, UC-04 | SCHEDULE_NOTIFICATIONS-FN01 | SCHEDULE_NOTIFICATIONS-V01 | Draft |
-| SCHEDULE_NOTIFICATIONS-F02 | Xử lý action từ thông báo | Complete/skip item từ notification đúng subject. | Guest, Member, Family | Notification action complete/skip | P1 | BD M09 quy tắc | SCHEDULE_NOTIFICATIONS-FN02 | SCHEDULE_NOTIFICATIONS-V02 | Draft |
+| SCHEDULE_NOTIFICATIONS-F01 | Lên lịch thông báo | Tạo lịch nhắc từ kế hoạch đang active. | System | Plan activated or updated | P1 | BD M09 luồng, UC-04 | SCHEDULE_NOTIFICATIONS-FN01 | SCHEDULE_NOTIFICATIONS-V01 | Approved - DD docs complete |
+| SCHEDULE_NOTIFICATIONS-F02 | Xử lý action từ thông báo | Complete/skip item từ notification đúng subject. | Guest, Member, Family | Notification action complete/skip | P1 | BD M09 quy tắc | SCHEDULE_NOTIFICATIONS-FN02 | SCHEDULE_NOTIFICATIONS-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | SCHEDULE_NOTIFICATIONS-E-main | Dữ liệu nghiệp vụ chính của Thông báo lịch trình | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | SCHEDULE_NOTIFICATIONS-API01 | Contract dự kiến cho SCHEDULE_NOTIFICATIONS-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M09 luồng, UC-04, feature tạo đúng outcome: Tạo lịch nhắc từ kế hoạch đang active..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] SCHEDULE_NOTIFICATIONS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| SCHEDULE_NOTIFICATIONS-AC01-01 | Với source BD M09 luồng, UC-04, feature tạo đúng outcome: Tạo lịch nhắc từ kế hoạch đang active.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-AC01-04 | SCHEDULE_NOTIFICATIONS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="schedule_notifications-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | SCHEDULE_NOTIFICATIONS-E-main | Dữ liệu nghiệp vụ chính của Thông báo lịch trình | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | SCHEDULE_NOTIFICATIONS-API02 | Contract dự kiến cho SCHEDULE_NOTIFICATIONS-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M09 quy tắc, feature tạo đúng outcome: Complete/skip item từ notification đúng subject..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] SCHEDULE_NOTIFICATIONS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| SCHEDULE_NOTIFICATIONS-AC02-01 | Với source BD M09 quy tắc, feature tạo đúng outcome: Complete/skip item từ notification đúng subject.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-AC02-04 | SCHEDULE_NOTIFICATIONS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

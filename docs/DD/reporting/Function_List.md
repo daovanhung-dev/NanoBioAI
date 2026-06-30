@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| REPORTING-FN01 | generateScopedReport | REPORTING-F01 | Use case / Service | planned:lib/app_versions/v3/features/reporting/application/reporting_fn01.dart | Select report and filters | Command + actor context | Result/Error | Audit/event when required | Draft |
-| REPORTING-FN02 | exportReportWithAudit | REPORTING-F02 | Use case / Service | planned:lib/app_versions/v3/features/reporting/application/reporting_fn02.dart | Click export | Command + actor context | Result/Error | Audit/event when required | Draft |
+| REPORTING-FN01 | generateScopedReport | REPORTING-F01 | Use case / Service | planned:lib/app_versions/v3/features/reporting/application/reporting_fn01.dart | Select report and filters | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| REPORTING-FN02 | exportReportWithAudit | REPORTING-F02 | Use case / Service | planned:lib/app_versions/v3/features/reporting/application/reporting_fn02.dart | Click export | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho REPORTING-FN01.
-- [ ] Business rule violation cho REPORTING-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| REPORTING-FN-EV01-01 | Happy path cho REPORTING-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-FN-EV01-02 | Business rule violation cho REPORTING-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="reporting-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho REPORTING-FN02.
-- [ ] Business rule violation cho REPORTING-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| REPORTING-FN-EV02-01 | Happy path cho REPORTING-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-FN-EV02-02 | Business rule violation cho REPORTING-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

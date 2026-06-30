@@ -7,15 +7,15 @@
 | Module | HEALTH_SCORE_HABITS |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M08, 9, 13, Appendix A UC-09 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| HEALTH_SCORE_HABITS-F01 | Tính điểm sức khỏe | Tạo điểm từ lịch sử thực hiện theo công thức version hóa. | System, Member | Completion event or scheduled recalculation | P1 | BD M08, section 9 | HEALTH_SCORE_HABITS-FN01 | HEALTH_SCORE_HABITS-V01 | Draft |
-| HEALTH_SCORE_HABITS-F02 | Theo dõi thói quen | Hiển thị tiến độ theo lịch sử thực hiện. | Member, Family member | Open progress view | P1 | BD M08 luồng | HEALTH_SCORE_HABITS-FN02 | HEALTH_SCORE_HABITS-V02 | Draft |
+| HEALTH_SCORE_HABITS-F01 | Tính điểm sức khỏe | Tạo điểm từ lịch sử thực hiện theo công thức version hóa. | System, Member | Completion event or scheduled recalculation | P1 | BD M08, section 9 | HEALTH_SCORE_HABITS-FN01 | HEALTH_SCORE_HABITS-V01 | Approved - DD docs complete |
+| HEALTH_SCORE_HABITS-F02 | Theo dõi thói quen | Hiển thị tiến độ theo lịch sử thực hiện. | Member, Family member | Open progress view | P1 | BD M08 luồng | HEALTH_SCORE_HABITS-FN02 | HEALTH_SCORE_HABITS-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | HEALTH_SCORE_HABITS-E-main | Dữ liệu nghiệp vụ chính của Điểm sức khỏe & thói quen | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | HEALTH_SCORE_HABITS-API01 | Contract dự kiến cho HEALTH_SCORE_HABITS-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M08, section 9, feature tạo đúng outcome: Tạo điểm từ lịch sử thực hiện theo công thức version hóa..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] HEALTH_SCORE_HABITS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| HEALTH_SCORE_HABITS-AC01-01 | Với source BD M08, section 9, feature tạo đúng outcome: Tạo điểm từ lịch sử thực hiện theo công thức version hóa.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-AC01-04 | HEALTH_SCORE_HABITS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="health_score_habits-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | HEALTH_SCORE_HABITS-E-main | Dữ liệu nghiệp vụ chính của Điểm sức khỏe & thói quen | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | HEALTH_SCORE_HABITS-API02 | Contract dự kiến cho HEALTH_SCORE_HABITS-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M08 luồng, feature tạo đúng outcome: Hiển thị tiến độ theo lịch sử thực hiện..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] HEALTH_SCORE_HABITS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| HEALTH_SCORE_HABITS-AC02-01 | Với source BD M08 luồng, feature tạo đúng outcome: Hiển thị tiến độ theo lịch sử thực hiện.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-AC02-04 | HEALTH_SCORE_HABITS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

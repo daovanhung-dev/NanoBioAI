@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| AUDIT_SECURITY-FN01 | recordMandatoryAudit | AUDIT_SECURITY-F01 | Use case / Service | planned:lib/services/security_audit/application/audit_security_fn01.dart | Sensitive write/read/export/action | Command + actor context | Result/Error | Audit/event when required | Draft |
-| AUDIT_SECURITY-FN02 | enforceSecurityAndReviewEvents | AUDIT_SECURITY-F02 | Use case / Service | planned:lib/services/security_audit/application/audit_security_fn02.dart | Permission check, suspicious event, support action | Command + actor context | Result/Error | Audit/event when required | Draft |
+| AUDIT_SECURITY-FN01 | recordMandatoryAudit | AUDIT_SECURITY-F01 | Use case / Service | planned:lib/services/security_audit/application/audit_security_fn01.dart | Sensitive write/read/export/action | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| AUDIT_SECURITY-FN02 | enforceSecurityAndReviewEvents | AUDIT_SECURITY-F02 | Use case / Service | planned:lib/services/security_audit/application/audit_security_fn02.dart | Permission check, suspicious event, support action | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho AUDIT_SECURITY-FN01.
-- [ ] Business rule violation cho AUDIT_SECURITY-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUDIT_SECURITY-FN-EV01-01 | Happy path cho AUDIT_SECURITY-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-FN-EV01-02 | Business rule violation cho AUDIT_SECURITY-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="audit_security-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho AUDIT_SECURITY-FN02.
-- [ ] Business rule violation cho AUDIT_SECURITY-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUDIT_SECURITY-FN-EV02-01 | Happy path cho AUDIT_SECURITY-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-FN-EV02-02 | Business rule violation cho AUDIT_SECURITY-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

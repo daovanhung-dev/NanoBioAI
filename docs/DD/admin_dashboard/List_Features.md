@@ -7,15 +7,15 @@
 | Module | ADMIN_DASHBOARD |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| ADMIN_DASHBOARD-F01 | Xem dashboard Admin | Admin xem chỉ số vận hành theo permission. | Admin | Admin opens dashboard | P0 | BD section 11.2, AC-19, UC-20 | ADMIN_DASHBOARD-FN01 | ADMIN_DASHBOARD-V01 | Draft |
-| ADMIN_DASHBOARD-F02 | Drill-down theo quyền | Admin đi từ chỉ số sang module chi tiết đúng quyền. | Admin | Click metric/filter | P1 | BD section 11.2 workflow | ADMIN_DASHBOARD-FN02 | ADMIN_DASHBOARD-V02 | Draft |
+| ADMIN_DASHBOARD-F01 | Xem dashboard Admin | Admin xem chỉ số vận hành theo permission. | Admin | Admin opens dashboard | P0 | BD section 11.2, AC-19, UC-20 | ADMIN_DASHBOARD-FN01 | ADMIN_DASHBOARD-V01 | Approved - DD docs complete |
+| ADMIN_DASHBOARD-F02 | Drill-down theo quyền | Admin đi từ chỉ số sang module chi tiết đúng quyền. | Admin | Click metric/filter | P1 | BD section 11.2 workflow | ADMIN_DASHBOARD-FN02 | ADMIN_DASHBOARD-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | ADMIN_DASHBOARD-E-main | Dữ liệu nghiệp vụ chính của Admin View / Dashboard | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | ADMIN_DASHBOARD-API01 | Contract dự kiến cho ADMIN_DASHBOARD-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD section 11.2, AC-19, UC-20, feature tạo đúng outcome: Admin xem chỉ số vận hành theo permission..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] ADMIN_DASHBOARD-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADMIN_DASHBOARD-AC01-01 | Với source BD section 11.2, AC-19, UC-20, feature tạo đúng outcome: Admin xem chỉ số vận hành theo permission.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-AC01-04 | ADMIN_DASHBOARD-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="admin_dashboard-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | ADMIN_DASHBOARD-E-main | Dữ liệu nghiệp vụ chính của Admin View / Dashboard | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | ADMIN_DASHBOARD-API02 | Contract dự kiến cho ADMIN_DASHBOARD-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD section 11.2 workflow, feature tạo đúng outcome: Admin đi từ chỉ số sang module chi tiết đúng quyền..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] ADMIN_DASHBOARD-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADMIN_DASHBOARD-AC02-01 | Với source BD section 11.2 workflow, feature tạo đúng outcome: Admin đi từ chỉ số sang module chi tiết đúng quyền.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-AC02-04 | ADMIN_DASHBOARD-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

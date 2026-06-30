@@ -7,15 +7,15 @@
 | Module | PAYMENT_MEMBERSHIP |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| PAYMENT_MEMBERSHIP-F01 | Tạo thanh toán mua/gia hạn gói | Member tạo payment pending có dữ liệu đối soát. | Member | Chọn mua/gia hạn gói | P0 | BD sections 8.2, UC-15 | PAYMENT_MEMBERSHIP-FN01 | PAYMENT_MEMBERSHIP-V01 | Draft |
-| PAYMENT_MEMBERSHIP-F02 | Admin duyệt/từ chối payment | Kích hoạt quyền hoặc từ chối payment có lý do/audit. | Admin | Admin review payment queue | P0 | BD sections 8.4, AC-07/AC-08/AC-20/AC-21, UC-16 | PAYMENT_MEMBERSHIP-FN02 | PAYMENT_MEMBERSHIP-V02 | Draft |
+| PAYMENT_MEMBERSHIP-F01 | Tạo thanh toán mua/gia hạn gói | Member tạo payment pending có dữ liệu đối soát. | Member | Chọn mua/gia hạn gói | P0 | BD sections 8.2, UC-15 | PAYMENT_MEMBERSHIP-FN01 | PAYMENT_MEMBERSHIP-V01 | Approved - DD docs complete |
+| PAYMENT_MEMBERSHIP-F02 | Admin duyệt/từ chối payment | Kích hoạt quyền hoặc từ chối payment có lý do/audit. | Admin | Admin review payment queue | P0 | BD sections 8.4, AC-07/AC-08/AC-20/AC-21, UC-16 | PAYMENT_MEMBERSHIP-FN02 | PAYMENT_MEMBERSHIP-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | PAYMENT_MEMBERSHIP-E-main | Dữ liệu nghiệp vụ chính của Thanh toán, xác minh và quyền gói | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | PAYMENT_MEMBERSHIP-API01 | Contract dự kiến cho PAYMENT_MEMBERSHIP-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD sections 8.2, UC-15, feature tạo đúng outcome: Member tạo payment pending có dữ liệu đối soát..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] PAYMENT_MEMBERSHIP-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| PAYMENT_MEMBERSHIP-AC01-01 | Với source BD sections 8.2, UC-15, feature tạo đúng outcome: Member tạo payment pending có dữ liệu đối soát.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-AC01-04 | PAYMENT_MEMBERSHIP-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="payment_membership-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | PAYMENT_MEMBERSHIP-E-main | Dữ liệu nghiệp vụ chính của Thanh toán, xác minh và quyền gói | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | PAYMENT_MEMBERSHIP-API02 | Contract dự kiến cho PAYMENT_MEMBERSHIP-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD sections 8.4, AC-07/AC-08/AC-20/AC-21, UC-16, feature tạo đúng outcome: Kích hoạt quyền hoặc từ chối payment có lý do/audit..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] PAYMENT_MEMBERSHIP-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| PAYMENT_MEMBERSHIP-AC02-01 | Với source BD sections 8.4, AC-07/AC-08/AC-20/AC-21, UC-16, feature tạo đúng outcome: Kích hoạt quyền hoặc từ chối payment có lý do/audit.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-AC02-04 | PAYMENT_MEMBERSHIP-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

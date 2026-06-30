@@ -7,15 +7,15 @@
 | Module | MEMBERSHIP_QUOTA |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M06, 13, 16.1 AC-04..AC-08, Appendix A UC-06 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| MEMBERSHIP_QUOTA-F01 | Dựng quyền hiệu lực | Tạo access state dùng chung cho UI/route/use-case/API. | System, Member | Login, app resume, package change | P0 | BD M06 luồng dựng quyền, AC-07/AC-08, UC-06 | MEMBERSHIP_QUOTA-FN01 | MEMBERSHIP_QUOTA-V01 | Draft |
-| MEMBERSHIP_QUOTA-F02 | Kiểm soát quota Free | Chặn vượt quota và không trừ sai khi dependency lỗi. | Free | AI Chat hoặc tạo lịch trình | P0 | BD M06 quota, AC-04/AC-05 | MEMBERSHIP_QUOTA-FN02 | MEMBERSHIP_QUOTA-V02 | Draft |
+| MEMBERSHIP_QUOTA-F01 | Dựng quyền hiệu lực | Tạo access state dùng chung cho UI/route/use-case/API. | System, Member | Login, app resume, package change | P0 | BD M06 luồng dựng quyền, AC-07/AC-08, UC-06 | MEMBERSHIP_QUOTA-FN01 | MEMBERSHIP_QUOTA-V01 | Approved - DD docs complete |
+| MEMBERSHIP_QUOTA-F02 | Kiểm soát quota Free | Chặn vượt quota và không trừ sai khi dependency lỗi. | Free | AI Chat hoặc tạo lịch trình | P0 | BD M06 quota, AC-04/AC-05 | MEMBERSHIP_QUOTA-FN02 | MEMBERSHIP_QUOTA-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | MEMBERSHIP_QUOTA-E-main | Dữ liệu nghiệp vụ chính của Gói thành viên & quota | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | MEMBERSHIP_QUOTA-API01 | Contract dự kiến cho MEMBERSHIP_QUOTA-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M06 luồng dựng quyền, AC-07/AC-08, UC-06, feature tạo đúng outcome: Tạo access state dùng chung cho UI/route/use-case/API..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] MEMBERSHIP_QUOTA-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| MEMBERSHIP_QUOTA-AC01-01 | Với source BD M06 luồng dựng quyền, AC-07/AC-08, UC-06, feature tạo đúng outcome: Tạo access state dùng chung cho UI/route/use-case/API.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-AC01-04 | MEMBERSHIP_QUOTA-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="membership_quota-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | MEMBERSHIP_QUOTA-E-main | Dữ liệu nghiệp vụ chính của Gói thành viên & quota | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | MEMBERSHIP_QUOTA-API02 | Contract dự kiến cho MEMBERSHIP_QUOTA-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M06 quota, AC-04/AC-05, feature tạo đúng outcome: Chặn vượt quota và không trừ sai khi dependency lỗi..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] MEMBERSHIP_QUOTA-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| MEMBERSHIP_QUOTA-AC02-01 | Với source BD M06 quota, AC-04/AC-05, feature tạo đúng outcome: Chặn vượt quota và không trừ sai khi dependency lỗi.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-AC02-04 | MEMBERSHIP_QUOTA-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

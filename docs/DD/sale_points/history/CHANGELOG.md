@@ -1,5 +1,14 @@
 # CHANGELOG — SALE_POINTS / Điểm Sale & quy đổi
 
+## [v1.2] - 2026-06-30
+### Changed
+- Marked SALE_POINTS DD docs as `Approved - DD docs complete`.
+- Separated runtime/test/sandbox evidence into the Implementation Evidence Backlog.
+- Converted unchecked DD requirement lists into documented acceptance/evidence requirement tables without claiming tests were executed.
+
+### Validation
+- Docs-only change; runtime code, SQL, Supabase config, and tests were not changed.
+
 ## [v1.1] - 2026-06-30
 ### Changed
 - Recorded accepted product decisions Q-02, Q-03, Q-05, Q-06, Q-07, Q-10, Q-11, Q-13 in README, Overall, Import_File, and checklist traceability.

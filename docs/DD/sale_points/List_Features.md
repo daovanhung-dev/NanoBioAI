@@ -7,15 +7,15 @@
 | Module | SALE_POINTS |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 7.5..7.10, 9, 12.1, 14.4, 16.2 AC-11..AC-18, Appendix A UC-17..UC-19 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| SALE_POINTS-F01 | Cộng Điểm Sale sau payment approved | Sale nhận 10% từ payment hợp lệ của khách trực tiếp. | System | payment_approved event | P0 | BD sections 7.5/7.6/12.1, AC-11..AC-16, UC-17 | SALE_POINTS-FN01 | SALE_POINTS-V01 | Draft |
-| SALE_POINTS-F02 | Quy đổi Điểm Sale | Sale yêu cầu đổi điểm và Admin xử lý có giữ/trừ điểm đúng một lần. | Sale, Admin | Sale submits conversion request | P0 | BD section 7.10, AC-17/AC-18, UC-18/UC-19 | SALE_POINTS-FN02 | SALE_POINTS-V02 | Draft |
+| SALE_POINTS-F01 | Cộng Điểm Sale sau payment approved | Sale nhận 10% từ payment hợp lệ của khách trực tiếp. | System | payment_approved event | P0 | BD sections 7.5/7.6/12.1, AC-11..AC-16, UC-17 | SALE_POINTS-FN01 | SALE_POINTS-V01 | Approved - DD docs complete |
+| SALE_POINTS-F02 | Quy đổi Điểm Sale | Sale yêu cầu đổi điểm và Admin xử lý có giữ/trừ điểm đúng một lần. | Sale, Admin | Sale submits conversion request | P0 | BD section 7.10, AC-17/AC-18, UC-18/UC-19 | SALE_POINTS-FN02 | SALE_POINTS-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | SALE_POINTS-E-main | Dữ liệu nghiệp vụ chính của Điểm Sale & quy đổi | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | SALE_POINTS-API01 | Contract dự kiến cho SALE_POINTS-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD sections 7.5/7.6/12.1, AC-11..AC-16, UC-17, feature tạo đúng outcome: Sale nhận 10% từ payment hợp lệ của khách trực tiếp..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] SALE_POINTS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| SALE_POINTS-AC01-01 | Với source BD sections 7.5/7.6/12.1, AC-11..AC-16, UC-17, feature tạo đúng outcome: Sale nhận 10% từ payment hợp lệ của khách trực tiếp.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SALE_POINTS-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SALE_POINTS-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SALE_POINTS-AC01-04 | SALE_POINTS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="sale_points-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | SALE_POINTS-E-main | Dữ liệu nghiệp vụ chính của Điểm Sale & quy đổi | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | SALE_POINTS-API02 | Contract dự kiến cho SALE_POINTS-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD section 7.10, AC-17/AC-18, UC-18/UC-19, feature tạo đúng outcome: Sale yêu cầu đổi điểm và Admin xử lý có giữ/trừ điểm đúng một lần..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] SALE_POINTS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| SALE_POINTS-AC02-01 | Với source BD section 7.10, AC-17/AC-18, UC-18/UC-19, feature tạo đúng outcome: Sale yêu cầu đổi điểm và Admin xử lý có giữ/trừ điểm đúng một lần.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SALE_POINTS-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SALE_POINTS-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SALE_POINTS-AC02-04 | SALE_POINTS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

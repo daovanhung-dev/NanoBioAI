@@ -7,15 +7,15 @@
 | Module | AI_CHAT |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| AI_CHAT-F01 | Mở AI Chat theo quyền | Chỉ actor có entitlement hợp lệ được vào chat. | Free, Plus, FamilyPlus | Mở AI Chat | P0 | BD M07 luồng, AC-03/AC-06 | AI_CHAT-FN01 | AI_CHAT-V01 | Draft |
-| AI_CHAT-F02 | Gửi câu hỏi AI theo quota | Gửi câu hỏi khi quota/rate policy cho phép. | Free, Plus, FamilyPlus | Submit chat question | P0 | BD M07 rules, AC-04 | AI_CHAT-FN02 | AI_CHAT-V02 | Draft |
+| AI_CHAT-F01 | Mở AI Chat theo quyền | Chỉ actor có entitlement hợp lệ được vào chat. | Free, Plus, FamilyPlus | Mở AI Chat | P0 | BD M07 luồng, AC-03/AC-06 | AI_CHAT-FN01 | AI_CHAT-V01 | Approved - DD docs complete |
+| AI_CHAT-F02 | Gửi câu hỏi AI theo quota | Gửi câu hỏi khi quota/rate policy cho phép. | Free, Plus, FamilyPlus | Submit chat question | P0 | BD M07 rules, AC-04 | AI_CHAT-FN02 | AI_CHAT-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | AI_CHAT-E-main | Dữ liệu nghiệp vụ chính của AI Chat | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | AI_CHAT-API01 | Contract dự kiến cho AI_CHAT-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M07 luồng, AC-03/AC-06, feature tạo đúng outcome: Chỉ actor có entitlement hợp lệ được vào chat..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] AI_CHAT-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AI_CHAT-AC01-01 | Với source BD M07 luồng, AC-03/AC-06, feature tạo đúng outcome: Chỉ actor có entitlement hợp lệ được vào chat.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AI_CHAT-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AI_CHAT-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AI_CHAT-AC01-04 | AI_CHAT-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="ai_chat-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | AI_CHAT-E-main | Dữ liệu nghiệp vụ chính của AI Chat | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | AI_CHAT-API02 | Contract dự kiến cho AI_CHAT-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M07 rules, AC-04, feature tạo đúng outcome: Gửi câu hỏi khi quota/rate policy cho phép..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] AI_CHAT-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AI_CHAT-AC02-01 | Với source BD M07 rules, AC-04, feature tạo đúng outcome: Gửi câu hỏi khi quota/rate policy cho phép.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AI_CHAT-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AI_CHAT-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AI_CHAT-AC02-04 | AI_CHAT-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

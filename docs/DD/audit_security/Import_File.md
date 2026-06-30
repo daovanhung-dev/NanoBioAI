@@ -45,13 +45,15 @@
 
 | ID | Name | Source | Default | Who Can Change | Used By |
 |---|---|---|---|---|---|
-| AUDIT_SECURITY-CFG01 | Module enablement / rollout flag | Planned remote config or backend config | Draft / disabled until approved | Product Owner / Tech Lead | All features |
+| AUDIT_SECURITY-CFG01 | Module enablement / rollout flag | Planned remote config or backend config | Disabled until release enabled; DD docs approved | Product Owner / Tech Lead | All features |
 | AUDIT_SECURITY-CFG02 | Module-specific thresholds or policy | System Configuration entity or Admin managed policy version | Versioned default from accepted DD decisions; disabled only when feature flag is off | Super Admin/Admin role allowed by M16 with audit | Business rules |
 
-## 6. Merge Checklist
+## 6. Documented Dependency Requirements
 
-- [ ] File map is updated when code is implemented.
-- [ ] No reverse layer imports.
-- [ ] No secrets or production payloads in source/tests/docs.
-- [ ] API/schema/RLS contracts are documented before coding.
-- [ ] Tests cover permission, business rule, duplicate/retry, and dependency failure.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUDIT_SECURITY-IMP-EV01 | File map is updated when code is implemented. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-IMP-EV02 | No reverse layer imports. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-IMP-EV03 | No secrets or production payloads in source/tests/docs. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-IMP-EV04 | API/schema/RLS contracts are documented before coding. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-IMP-EV05 | Tests cover permission, business rule, duplicate/retry, and dependency failure. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

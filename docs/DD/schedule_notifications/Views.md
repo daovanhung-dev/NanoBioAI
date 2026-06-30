@@ -4,8 +4,8 @@
 
 | ID | View Name | Route / Entry Point | Actor | Feature | Type | Data Source | Status | Mockup |
 |---|---|---|---|---|---|---|---|---|
-| SCHEDULE_NOTIFICATIONS-V01 | Notification settings | planned route/action for schedule_notifications | System | SCHEDULE_NOTIFICATIONS-F01 | Page / Flow / Admin view | SCHEDULE_NOTIFICATIONS-API01 | Draft | assets/README.md |
-| SCHEDULE_NOTIFICATIONS-V02 | Notification action result | planned route/action for schedule_notifications | Guest, Member, Family | SCHEDULE_NOTIFICATIONS-F02 | Page / Flow / Admin view | SCHEDULE_NOTIFICATIONS-API02 | Draft | assets/README.md |
+| SCHEDULE_NOTIFICATIONS-V01 | Notification settings | planned route/action for schedule_notifications | System | SCHEDULE_NOTIFICATIONS-F01 | Page / Flow / Admin view | SCHEDULE_NOTIFICATIONS-API01 | Approved - DD docs complete | assets/README.md |
+| SCHEDULE_NOTIFICATIONS-V02 | Notification action result | planned route/action for schedule_notifications | Guest, Member, Family | SCHEDULE_NOTIFICATIONS-F02 | Page / Flow / Admin view | SCHEDULE_NOTIFICATIONS-API02 | Approved - DD docs complete | assets/README.md |
 
 ## 1. Navigation Map
 
@@ -31,7 +31,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | Optional future asset: BD v2.0 has no required mockup; view state/action contract is complete in this DD |
 
 ## B. Layout và thành phần giao diện
 
@@ -62,12 +62,15 @@
 | SCHEDULE_NOTIFICATIONS-V01-I01 | Plan activated or updated | Input và quyền hợp lệ | SCHEDULE_NOTIFICATIONS-FN01 | Refresh trạng thái Thông báo lịch trình | Hiển thị lỗi an toàn | Giữ view hoặc tới bước kế tiếp |
 | SCHEDULE_NOTIFICATIONS-V01-I02 | Tải lại dữ liệu | User có quyền xem | SCHEDULE_NOTIFICATIONS-FN02 hoặc API đọc | Cập nhật view | Empty/error state | Không đổi route |
 
-## E. Acceptance checklist cho QA/UI
+## E. Documented View Acceptance Requirements
 
-- [ ] View chỉ hiển thị đúng role và trạng thái.
-- [ ] Các state bắt buộc đều có thiết kế và test.
-- [ ] Action chính gọi đúng SCHEDULE_NOTIFICATIONS-FN01.
-- [ ] Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| SCHEDULE_NOTIFICATIONS-VIEW-EV01-01 | View chỉ hiển thị đúng role và trạng thái. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-VIEW-EV01-02 | Các state bắt buộc đều có thiết kế và test. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-VIEW-EV01-03 | Action chính gọi đúng SCHEDULE_NOTIFICATIONS-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-VIEW-EV01-04 | Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="schedule_notifications-v02"></a>
@@ -84,7 +87,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | Optional future asset: BD v2.0 has no required mockup; view state/action contract is complete in this DD |
 
 ## B. Layout và thành phần giao diện
 
@@ -115,9 +118,11 @@
 | SCHEDULE_NOTIFICATIONS-V02-I01 | Notification action complete/skip | Input và quyền hợp lệ | SCHEDULE_NOTIFICATIONS-FN02 | Refresh trạng thái Thông báo lịch trình | Hiển thị lỗi an toàn | Giữ view hoặc tới bước kế tiếp |
 | SCHEDULE_NOTIFICATIONS-V02-I02 | Tải lại dữ liệu | User có quyền xem | SCHEDULE_NOTIFICATIONS-FN02 hoặc API đọc | Cập nhật view | Empty/error state | Không đổi route |
 
-## E. Acceptance checklist cho QA/UI
+## E. Documented View Acceptance Requirements
 
-- [ ] View chỉ hiển thị đúng role và trạng thái.
-- [ ] Các state bắt buộc đều có thiết kế và test.
-- [ ] Action chính gọi đúng SCHEDULE_NOTIFICATIONS-FN02.
-- [ ] Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| SCHEDULE_NOTIFICATIONS-VIEW-EV02-01 | View chỉ hiển thị đúng role và trạng thái. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-VIEW-EV02-02 | Các state bắt buộc đều có thiết kế và test. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-VIEW-EV02-03 | Action chính gọi đúng SCHEDULE_NOTIFICATIONS-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| SCHEDULE_NOTIFICATIONS-VIEW-EV02-04 | Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

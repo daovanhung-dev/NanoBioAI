@@ -7,15 +7,15 @@
 | Module | PERSONAL_SCHEDULE_AI |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M02, 13, 16.1 AC-01/AC-02/AC-05/AC-06, Appendix A UC-02/UC-08 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| PERSONAL_SCHEDULE_AI-F01 | Sinh lịch trình đầu tiên cho Guest | Guest hoàn tất onboarding nhận lịch trình đầu tiên. | Guest | Onboarding completed | P0 | BD M02 Guest flow, AC-01, AC-02, UC-02 | PERSONAL_SCHEDULE_AI-FN01 | PERSONAL_SCHEDULE_AI-V01 | Draft |
-| PERSONAL_SCHEDULE_AI-F02 | Tạo lịch trình mới cho Member | Member tạo lịch trình mới theo quota hoặc quyền Plus/FamilyPlus. | Free, Plus, FamilyPlus | Member yêu cầu tạo lịch trình mới | P0 | BD M02 Member flow, AC-05, AC-06, UC-08 | PERSONAL_SCHEDULE_AI-FN02 | PERSONAL_SCHEDULE_AI-V02 | Draft |
+| PERSONAL_SCHEDULE_AI-F01 | Sinh lịch trình đầu tiên cho Guest | Guest hoàn tất onboarding nhận lịch trình đầu tiên. | Guest | Onboarding completed | P0 | BD M02 Guest flow, AC-01, AC-02, UC-02 | PERSONAL_SCHEDULE_AI-FN01 | PERSONAL_SCHEDULE_AI-V01 | Approved - DD docs complete |
+| PERSONAL_SCHEDULE_AI-F02 | Tạo lịch trình mới cho Member | Member tạo lịch trình mới theo quota hoặc quyền Plus/FamilyPlus. | Free, Plus, FamilyPlus | Member yêu cầu tạo lịch trình mới | P0 | BD M02 Member flow, AC-05, AC-06, UC-08 | PERSONAL_SCHEDULE_AI-FN02 | PERSONAL_SCHEDULE_AI-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | PERSONAL_SCHEDULE_AI-E-main | Dữ liệu nghiệp vụ chính của AI Lịch trình cá nhân | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | PERSONAL_SCHEDULE_AI-API01 | Contract dự kiến cho PERSONAL_SCHEDULE_AI-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M02 Guest flow, AC-01, AC-02, UC-02, feature tạo đúng outcome: Guest hoàn tất onboarding nhận lịch trình đầu tiên..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] PERSONAL_SCHEDULE_AI-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| PERSONAL_SCHEDULE_AI-AC01-01 | Với source BD M02 Guest flow, AC-01, AC-02, UC-02, feature tạo đúng outcome: Guest hoàn tất onboarding nhận lịch trình đầu tiên.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-AC01-04 | PERSONAL_SCHEDULE_AI-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="personal_schedule_ai-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | PERSONAL_SCHEDULE_AI-E-main | Dữ liệu nghiệp vụ chính của AI Lịch trình cá nhân | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | PERSONAL_SCHEDULE_AI-API02 | Contract dự kiến cho PERSONAL_SCHEDULE_AI-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M02 Member flow, AC-05, AC-06, UC-08, feature tạo đúng outcome: Member tạo lịch trình mới theo quota hoặc quyền Plus/FamilyPlus..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] PERSONAL_SCHEDULE_AI-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| PERSONAL_SCHEDULE_AI-AC02-01 | Với source BD M02 Member flow, AC-05, AC-06, UC-08, feature tạo đúng outcome: Member tạo lịch trình mới theo quota hoặc quyền Plus/FamilyPlus.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-AC02-04 | PERSONAL_SCHEDULE_AI-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

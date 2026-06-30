@@ -1,5 +1,14 @@
 # CHANGELOG — HEALTH_SCORE_HABITS / Điểm sức khỏe & thói quen
 
+## [v1.2] - 2026-06-30
+### Changed
+- Marked HEALTH_SCORE_HABITS DD docs as `Approved - DD docs complete`.
+- Separated runtime/test/sandbox evidence into the Implementation Evidence Backlog.
+- Converted unchecked DD requirement lists into documented acceptance/evidence requirement tables without claiming tests were executed.
+
+### Validation
+- Docs-only change; runtime code, SQL, Supabase config, and tests were not changed.
+
 ## [v1.1] - 2026-06-30
 ### Changed
 - Recorded accepted product decisions Q-14, Q-15 in README, Overall, Import_File, and checklist traceability.

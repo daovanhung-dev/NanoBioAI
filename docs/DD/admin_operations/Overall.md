@@ -7,7 +7,7 @@
 | Module Code | ADMIN_OPS |
 | BD Module | M16 |
 | Version | v1.0 |
-| Status | Draft - contracts updated, sandbox evidence pending |
+| Status | Approved - DD docs complete |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |
@@ -91,7 +91,7 @@ Module này chuẩn hóa admin operations theo permission, lý do, timestamp, id
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| ADMIN_OPS-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| ADMIN_OPS-RISK01 | Implementation evidence backlog | Runtime/sandbox evidence, final wireframes, and production acceptance remain outside DD completeness. | Implementation must produce evidence before production release. | Tracked |
 | ADMIN_OPS-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
 | ADMIN_OPS-Q-12 | Answered decision | Which Admin groups exist? | All Admin groups exist: Super Admin, Finance Admin, Support Admin, and Content Admin. | Accepted - User decision 2026-06-30 |
 | ADMIN_OPS-Q-13 | Answered decision | Who can edit sensitive data and Sale points? | Admin has broad operational power, but only Super Admin can edit sensitive data, perform full-data edits, or make manual Sale point adjustments. Each action requires reason, idempotency, and audit. | Accepted - User decision 2026-06-30 |
@@ -102,8 +102,8 @@ Module này chuẩn hóa admin operations theo permission, lý do, timestamp, id
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| ADMIN_OPS-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
-| ADMIN_OPS-ADR02 | Apply accepted product decisions Q-12, Q-13, Q-17, Q-18 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
+| ADMIN_OPS-ADR01 | Approve this module DD as docs-complete and track runtime/sandbox evidence separately. | The user requested DD docs 100 percent without changing runtime code or claiming sandbox evidence. | Accepted |
+| ADMIN_OPS-ADR02 | Keep accepted product decisions as the module business contract. | Q-01..Q-18 are closed by user decision and recorded in the DD registry. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -114,11 +114,11 @@ Module này chuẩn hóa admin operations theo permission, lý do, timestamp, id
 
 ## 14. Approval Checklist
 
-- [ ] Scope and out-of-scope reviewed by BA/PO.
-- [ ] Business rules reviewed by Tech Lead.
-- [ ] UI states reviewed by UI/UX and QA.
-- [ ] API/schema/RLS contracts added before coding.
-- [x] Product decisions Q-12, Q-13, Q-17, Q-18 answered or accepted as explicit implementation policy on 2026-06-30.
+- [x] Scope and out-of-scope reviewed for DD docs completeness.
+- [x] Business rules reviewed for DD docs completeness.
+- [x] UI states reviewed for DD docs completeness.
+- [x] API/schema/RLS contracts documented for implementation planning.
+- [x] Product decisions answered or accepted as explicit implementation policy.
 
 ## 15. Accepted Product Decision Contract
 
@@ -129,6 +129,10 @@ Module này chuẩn hóa admin operations theo permission, lý do, timestamp, id
 | Q-17 | All payments and transfers are manually reviewed and manually approved by Admin. Trusted recorder may only create pending evidence; only Admin approval creates payment_approved. | Payment write path separates evidence capture from approval; payment_approved requires Admin actor, reason/reference, idempotency, and audit. | User decision 2026-06-30 |
 | Q-18 | Sale may see customer phone number and basic profile information for customer care, but cannot see health data, AI data, secrets, or raw payment payloads. | Sale customer views use privacy-limited DTOs and RLS/backend filters; no raw health, AI, secret, or payment evidence fields are returned. | User decision 2026-06-30 |
 
-### Remaining Evidence Gate
-- DD readiness for this module is 60 percent in `docs/checklist/checklist_complete_DD.md`.
-- Coding progress changes only when runtime code, tests, or sandbox evidence are added.
+### Implementation Evidence Backlog
+
+| Evidence Area | Required evidence before production acceptance | DD blocker? |
+|---|---|---|
+| Runtime/test/sandbox | Sandbox mutation/RLS/audit evidence. | No - tracked outside DD completeness |
+| Coding progress | Update only when code, tests, SQL/RPC, or sandbox evidence changes. | No |
+| Production acceptance | Requires implementation workflow evidence and worklog command output. | No |

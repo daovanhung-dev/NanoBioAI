@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| PAYMENT_MEMBERSHIP-FN01 | createMembershipPayment | PAYMENT_MEMBERSHIP-F01 | Use case / Service | planned:lib/app_versions/v2/features/payments/application/payment_membership_fn01.dart | Chọn mua/gia hạn gói | Command + actor context | Result/Error | Audit/event when required | Draft |
-| PAYMENT_MEMBERSHIP-FN02 | reviewMembershipPayment | PAYMENT_MEMBERSHIP-F02 | Use case / Service | planned:lib/app_versions/v2/features/payments/application/payment_membership_fn02.dart | Admin review payment queue | Command + actor context | Result/Error | Audit/event when required | Draft |
+| PAYMENT_MEMBERSHIP-FN01 | createMembershipPayment | PAYMENT_MEMBERSHIP-F01 | Use case / Service | planned:lib/app_versions/v2/features/payments/application/payment_membership_fn01.dart | Chọn mua/gia hạn gói | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| PAYMENT_MEMBERSHIP-FN02 | reviewMembershipPayment | PAYMENT_MEMBERSHIP-F02 | Use case / Service | planned:lib/app_versions/v2/features/payments/application/payment_membership_fn02.dart | Admin review payment queue | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho PAYMENT_MEMBERSHIP-FN01.
-- [ ] Business rule violation cho PAYMENT_MEMBERSHIP-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| PAYMENT_MEMBERSHIP-FN-EV01-01 | Happy path cho PAYMENT_MEMBERSHIP-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-FN-EV01-02 | Business rule violation cho PAYMENT_MEMBERSHIP-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="payment_membership-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho PAYMENT_MEMBERSHIP-FN02.
-- [ ] Business rule violation cho PAYMENT_MEMBERSHIP-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| PAYMENT_MEMBERSHIP-FN-EV02-01 | Happy path cho PAYMENT_MEMBERSHIP-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-FN-EV02-02 | Business rule violation cho PAYMENT_MEMBERSHIP-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PAYMENT_MEMBERSHIP-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

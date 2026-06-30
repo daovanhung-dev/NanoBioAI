@@ -1,5 +1,14 @@
 # CHANGELOG — FAMILYPLUS / FamilyPlus
 
+## [v1.2] - 2026-06-30
+### Changed
+- Marked FAMILYPLUS DD docs as `Approved - DD docs complete`.
+- Separated runtime/test/sandbox evidence into the Implementation Evidence Backlog.
+- Converted unchecked DD requirement lists into documented acceptance/evidence requirement tables without claiming tests were executed.
+
+### Validation
+- Docs-only change; runtime code, SQL, Supabase config, and tests were not changed.
+
 ## [v1.1] - 2026-06-30
 ### Changed
 - Recorded accepted product decisions Q-15, Q-11 in README, Overall, Import_File, and checklist traceability.

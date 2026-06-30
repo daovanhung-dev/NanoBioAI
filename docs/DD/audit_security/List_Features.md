@@ -7,15 +7,15 @@
 | Module | AUDIT_SECURITY |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| AUDIT_SECURITY-F01 | Ghi audit bắt buộc | Mọi thao tác nhạy cảm có audit đủ actor/action/entity/reason/time. | System | Sensitive write/read/export/action | P0 | BD sections 14.3, 11.8, UC-23 | AUDIT_SECURITY-FN01 | AUDIT_SECURITY-V01 | Draft |
-| AUDIT_SECURITY-F02 | Kiểm soát quyền và hỗ trợ rủi ro | Chặn truy cập sai scope và hỗ trợ xử lý bất thường. | Admin, Super Admin, System | Permission check, suspicious event, support action | P0 | BD sections 14.1/14.2/15, AC-20/AC-24 | AUDIT_SECURITY-FN02 | AUDIT_SECURITY-V02 | Draft |
+| AUDIT_SECURITY-F01 | Ghi audit bắt buộc | Mọi thao tác nhạy cảm có audit đủ actor/action/entity/reason/time. | System | Sensitive write/read/export/action | P0 | BD sections 14.3, 11.8, UC-23 | AUDIT_SECURITY-FN01 | AUDIT_SECURITY-V01 | Approved - DD docs complete |
+| AUDIT_SECURITY-F02 | Kiểm soát quyền và hỗ trợ rủi ro | Chặn truy cập sai scope và hỗ trợ xử lý bất thường. | Admin, Super Admin, System | Permission check, suspicious event, support action | P0 | BD sections 14.1/14.2/15, AC-20/AC-24 | AUDIT_SECURITY-FN02 | AUDIT_SECURITY-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | AUDIT_SECURITY-E-main | Dữ liệu nghiệp vụ chính của Audit, bảo mật & hỗ trợ | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | AUDIT_SECURITY-API01 | Contract dự kiến cho AUDIT_SECURITY-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD sections 14.3, 11.8, UC-23, feature tạo đúng outcome: Mọi thao tác nhạy cảm có audit đủ actor/action/entity/reason/time..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] AUDIT_SECURITY-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUDIT_SECURITY-AC01-01 | Với source BD sections 14.3, 11.8, UC-23, feature tạo đúng outcome: Mọi thao tác nhạy cảm có audit đủ actor/action/entity/reason/time.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-AC01-04 | AUDIT_SECURITY-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="audit_security-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | AUDIT_SECURITY-E-main | Dữ liệu nghiệp vụ chính của Audit, bảo mật & hỗ trợ | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | AUDIT_SECURITY-API02 | Contract dự kiến cho AUDIT_SECURITY-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD sections 14.1/14.2/15, AC-20/AC-24, feature tạo đúng outcome: Chặn truy cập sai scope và hỗ trợ xử lý bất thường..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] AUDIT_SECURITY-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUDIT_SECURITY-AC02-01 | Với source BD sections 14.1/14.2/15, AC-20/AC-24, feature tạo đúng outcome: Chặn truy cập sai scope và hỗ trợ xử lý bất thường.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-AC02-04 | AUDIT_SECURITY-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

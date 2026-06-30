@@ -2,18 +2,18 @@
 
 - Canonical key: docs-dd
 - Workflow: .codex/workflows/docs-dd.md
-- Generated from 4 worklog(s).
+- Generated from 5 worklog(s).
 
 ## When To Read
 
-- Historical task type: docs-dd (3)
+- Historical task type: docs-dd (4)
 - Historical task type: Sua docs/thiet ke lai tai lieu (1)
 
 ## Common Modules
 
-- docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
-- docs/DD M01-M19: 1
+- docs/DD M01-M19: 2
 - docs/DD: 1
+- docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
 - docs/DD/product_flow, docs/checklist: 1
 
 ## Work Pattern
@@ -36,3 +36,4 @@
 - [Worklog - DD incomplete functions checklist](../../docs/worklog/2026-06-22/004-worklog-dd-incomplete-functions-checklist.md) - docs/DD/product_flow, docs/checklist
 - [Worklog - DD develop checklist](../../docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md) - docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.
 - [Worklog - Create project DD from BD v2](../../docs/worklog/2026-06-28/002-worklog-create-project-dd.md) - docs/DD M01-M19
+- [Worklog - DD docs M01-M19 100 percent](../../docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md) - docs/DD M01-M19

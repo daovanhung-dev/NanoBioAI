@@ -7,15 +7,15 @@
 | Module | FAMILYPLUS |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 10/M11, 13, 14.2, 16.1 AC-06, Appendix A UC-11 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| FAMILYPLUS-F01 | Quản lý nhóm gia đình | Chủ FamilyPlus tạo/quản lý nhóm và thành viên. | FamilyPlus owner | Open family management | P1 | BD M11 chức năng, UC-11 | FAMILYPLUS-FN01 | FAMILYPLUS-V01 | Draft |
-| FAMILYPLUS-F02 | Theo dõi dữ liệu từng thành viên | Tạo/xem lịch trình và dashboard đúng subject. | FamilyPlus owner, Family member | Select family member context | P1 | BD M11 luồng thêm thành viên | FAMILYPLUS-FN02 | FAMILYPLUS-V02 | Draft |
+| FAMILYPLUS-F01 | Quản lý nhóm gia đình | Chủ FamilyPlus tạo/quản lý nhóm và thành viên. | FamilyPlus owner | Open family management | P1 | BD M11 chức năng, UC-11 | FAMILYPLUS-FN01 | FAMILYPLUS-V01 | Approved - DD docs complete |
+| FAMILYPLUS-F02 | Theo dõi dữ liệu từng thành viên | Tạo/xem lịch trình và dashboard đúng subject. | FamilyPlus owner, Family member | Select family member context | P1 | BD M11 luồng thêm thành viên | FAMILYPLUS-FN02 | FAMILYPLUS-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | FAMILYPLUS-E-main | Dữ liệu nghiệp vụ chính của FamilyPlus | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | FAMILYPLUS-API01 | Contract dự kiến cho FAMILYPLUS-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M11 chức năng, UC-11, feature tạo đúng outcome: Chủ FamilyPlus tạo/quản lý nhóm và thành viên..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] FAMILYPLUS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| FAMILYPLUS-AC01-01 | Với source BD M11 chức năng, UC-11, feature tạo đúng outcome: Chủ FamilyPlus tạo/quản lý nhóm và thành viên.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| FAMILYPLUS-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| FAMILYPLUS-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| FAMILYPLUS-AC01-04 | FAMILYPLUS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="familyplus-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | FAMILYPLUS-E-main | Dữ liệu nghiệp vụ chính của FamilyPlus | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | FAMILYPLUS-API02 | Contract dự kiến cho FAMILYPLUS-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M11 luồng thêm thành viên, feature tạo đúng outcome: Tạo/xem lịch trình và dashboard đúng subject..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] FAMILYPLUS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| FAMILYPLUS-AC02-01 | Với source BD M11 luồng thêm thành viên, feature tạo đúng outcome: Tạo/xem lịch trình và dashboard đúng subject.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| FAMILYPLUS-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| FAMILYPLUS-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| FAMILYPLUS-AC02-04 | FAMILYPLUS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

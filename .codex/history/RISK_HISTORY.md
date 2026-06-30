@@ -327,3 +327,9 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md :: - Point conversion rate/minimum, manual payout flow, Super Admin-only sensitive edits/point adjustment.
 - docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md :: - Run targeted `rg` checks for unresolved Q-01..Q-18 Open rows, old TBD API placeholders, and old Sale tree/tier-2/5% wording.
 - docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md :: - `rg -n "\| Q-&#91;0-9&#93;{2} \|.*\| Open \|" docs/DD -g "*.md" -g "!DD_Module_Template/**"` - PASS, no matches.
+- docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md :: - Changed the main DD checklist rubric from readiness to `DD completeness %` and set M01-M19 to 100% with Open Q = 0.
+- docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md :: - `rg -n "\| Q-&#91;0-9&#93;{2} \|.*\| Open \|" docs/DD -g "*.md" -g "!DD_Module_Template/**" -g "!DD_Module_Creation_Guide_EN.md"` - PASS, no findings.
+- docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md :: - Chua fix: Runtime/sandbox evidence is intentionally not claimed in this docs-only pass.
+- docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md :: - Can kiem tra tiep: Implementation evidence backlog before production acceptance.
+- docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md :: - Diem ton token/chua toi uu: bulk DD docs rewrite touches many files; script-based checks reduce manual risk.

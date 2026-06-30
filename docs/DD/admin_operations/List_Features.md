@@ -7,15 +7,15 @@
 | Module | ADMIN_OPS |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| ADMIN_OPS-F01 | Quản lý người dùng/gói/Sale/config | Admin thao tác dữ liệu vận hành trong phạm vi quyền. | Admin, Super Admin | Admin opens management module | P0 | BD sections 11.3..11.5, UC-21 | ADMIN_OPS-FN01 | ADMIN_OPS-V01 | Draft |
-| ADMIN_OPS-F02 | Quản lý tài chính hỗ trợ | Admin xử lý payment/conversion/adjustment đúng quyền. | Finance Admin, Super Admin | Review payment/conversion/adjustment | P0 | BD section 11.6, AC-20..AC-23 | ADMIN_OPS-FN02 | ADMIN_OPS-V02 | Draft |
+| ADMIN_OPS-F01 | Quản lý người dùng/gói/Sale/config | Admin thao tác dữ liệu vận hành trong phạm vi quyền. | Admin, Super Admin | Admin opens management module | P0 | BD sections 11.3..11.5, UC-21 | ADMIN_OPS-FN01 | ADMIN_OPS-V01 | Approved - DD docs complete |
+| ADMIN_OPS-F02 | Quản lý tài chính hỗ trợ | Admin xử lý payment/conversion/adjustment đúng quyền. | Finance Admin, Super Admin | Review payment/conversion/adjustment | P0 | BD section 11.6, AC-20..AC-23 | ADMIN_OPS-FN02 | ADMIN_OPS-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | ADMIN_OPS-E-main | Dữ liệu nghiệp vụ chính của Admin quản lý hệ thống | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | ADMIN_OPS-API01 | Contract dự kiến cho ADMIN_OPS-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD sections 11.3..11.5, UC-21, feature tạo đúng outcome: Admin thao tác dữ liệu vận hành trong phạm vi quyền..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] ADMIN_OPS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADMIN_OPS-AC01-01 | Với source BD sections 11.3..11.5, UC-21, feature tạo đúng outcome: Admin thao tác dữ liệu vận hành trong phạm vi quyền.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_OPS-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_OPS-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_OPS-AC01-04 | ADMIN_OPS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="admin_ops-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | ADMIN_OPS-E-main | Dữ liệu nghiệp vụ chính của Admin quản lý hệ thống | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | ADMIN_OPS-API02 | Contract dự kiến cho ADMIN_OPS-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD section 11.6, AC-20..AC-23, feature tạo đúng outcome: Admin xử lý payment/conversion/adjustment đúng quyền..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] ADMIN_OPS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADMIN_OPS-AC02-01 | Với source BD section 11.6, AC-20..AC-23, feature tạo đúng outcome: Admin xử lý payment/conversion/adjustment đúng quyền.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_OPS-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_OPS-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_OPS-AC02-04 | ADMIN_OPS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| ADMIN_DASHBOARD-FN01 | loadAdminDashboard | ADMIN_DASHBOARD-F01 | Use case / Service | planned:lib/app_versions/v3/features/admin_dashboard/application/admin_dashboard_fn01.dart | Admin opens dashboard | Command + actor context | Result/Error | Audit/event when required | Draft |
-| ADMIN_DASHBOARD-FN02 | openAdminDrilldown | ADMIN_DASHBOARD-F02 | Use case / Service | planned:lib/app_versions/v3/features/admin_dashboard/application/admin_dashboard_fn02.dart | Click metric/filter | Command + actor context | Result/Error | Audit/event when required | Draft |
+| ADMIN_DASHBOARD-FN01 | loadAdminDashboard | ADMIN_DASHBOARD-F01 | Use case / Service | planned:lib/app_versions/v3/features/admin_dashboard/application/admin_dashboard_fn01.dart | Admin opens dashboard | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| ADMIN_DASHBOARD-FN02 | openAdminDrilldown | ADMIN_DASHBOARD-F02 | Use case / Service | planned:lib/app_versions/v3/features/admin_dashboard/application/admin_dashboard_fn02.dart | Click metric/filter | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho ADMIN_DASHBOARD-FN01.
-- [ ] Business rule violation cho ADMIN_DASHBOARD-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADMIN_DASHBOARD-FN-EV01-01 | Happy path cho ADMIN_DASHBOARD-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-FN-EV01-02 | Business rule violation cho ADMIN_DASHBOARD-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="admin_dashboard-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho ADMIN_DASHBOARD-FN02.
-- [ ] Business rule violation cho ADMIN_DASHBOARD-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADMIN_DASHBOARD-FN-EV02-01 | Happy path cho ADMIN_DASHBOARD-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-FN-EV02-02 | Business rule violation cho ADMIN_DASHBOARD-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADMIN_DASHBOARD-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

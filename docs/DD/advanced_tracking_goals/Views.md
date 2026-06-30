@@ -4,8 +4,8 @@
 
 | ID | View Name | Route / Entry Point | Actor | Feature | Type | Data Source | Status | Mockup |
 |---|---|---|---|---|---|---|---|---|
-| ADVANCED_TRACKING_GOALS-V01 | Advanced goal setup | planned route/action for advanced_tracking_goals | Plus, FamilyPlus | ADVANCED_TRACKING_GOALS-F01 | Page / Flow / Admin view | ADVANCED_TRACKING_GOALS-API01 | Draft | assets/README.md |
-| ADVANCED_TRACKING_GOALS-V02 | Goal roadmap | planned route/action for advanced_tracking_goals | Plus, FamilyPlus | ADVANCED_TRACKING_GOALS-F02 | Page / Flow / Admin view | ADVANCED_TRACKING_GOALS-API02 | Draft | assets/README.md |
+| ADVANCED_TRACKING_GOALS-V01 | Advanced goal setup | planned route/action for advanced_tracking_goals | Plus, FamilyPlus | ADVANCED_TRACKING_GOALS-F01 | Page / Flow / Admin view | ADVANCED_TRACKING_GOALS-API01 | Approved - DD docs complete | assets/README.md |
+| ADVANCED_TRACKING_GOALS-V02 | Goal roadmap | planned route/action for advanced_tracking_goals | Plus, FamilyPlus | ADVANCED_TRACKING_GOALS-F02 | Page / Flow / Admin view | ADVANCED_TRACKING_GOALS-API02 | Approved - DD docs complete | assets/README.md |
 
 ## 1. Navigation Map
 
@@ -31,7 +31,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | Optional future asset: BD v2.0 has no required mockup; view state/action contract is complete in this DD |
 
 ## B. Layout và thành phần giao diện
 
@@ -62,12 +62,15 @@
 | ADVANCED_TRACKING_GOALS-V01-I01 | Select advanced goal | Input và quyền hợp lệ | ADVANCED_TRACKING_GOALS-FN01 | Refresh trạng thái Theo dõi nâng cao & mục tiêu | Hiển thị lỗi an toàn | Giữ view hoặc tới bước kế tiếp |
 | ADVANCED_TRACKING_GOALS-V01-I02 | Tải lại dữ liệu | User có quyền xem | ADVANCED_TRACKING_GOALS-FN02 hoặc API đọc | Cập nhật view | Empty/error state | Không đổi route |
 
-## E. Acceptance checklist cho QA/UI
+## E. Documented View Acceptance Requirements
 
-- [ ] View chỉ hiển thị đúng role và trạng thái.
-- [ ] Các state bắt buộc đều có thiết kế và test.
-- [ ] Action chính gọi đúng ADVANCED_TRACKING_GOALS-FN01.
-- [ ] Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADVANCED_TRACKING_GOALS-VIEW-EV01-01 | View chỉ hiển thị đúng role và trạng thái. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-VIEW-EV01-02 | Các state bắt buộc đều có thiết kế và test. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-VIEW-EV01-03 | Action chính gọi đúng ADVANCED_TRACKING_GOALS-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-VIEW-EV01-04 | Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="advanced_tracking_goals-v02"></a>
@@ -84,7 +87,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | Optional future asset: BD v2.0 has no required mockup; view state/action contract is complete in this DD |
 
 ## B. Layout và thành phần giao diện
 
@@ -115,9 +118,11 @@
 | ADVANCED_TRACKING_GOALS-V02-I01 | Open goal tracking | Input và quyền hợp lệ | ADVANCED_TRACKING_GOALS-FN02 | Refresh trạng thái Theo dõi nâng cao & mục tiêu | Hiển thị lỗi an toàn | Giữ view hoặc tới bước kế tiếp |
 | ADVANCED_TRACKING_GOALS-V02-I02 | Tải lại dữ liệu | User có quyền xem | ADVANCED_TRACKING_GOALS-FN02 hoặc API đọc | Cập nhật view | Empty/error state | Không đổi route |
 
-## E. Acceptance checklist cho QA/UI
+## E. Documented View Acceptance Requirements
 
-- [ ] View chỉ hiển thị đúng role và trạng thái.
-- [ ] Các state bắt buộc đều có thiết kế và test.
-- [ ] Action chính gọi đúng ADVANCED_TRACKING_GOALS-FN02.
-- [ ] Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADVANCED_TRACKING_GOALS-VIEW-EV02-01 | View chỉ hiển thị đúng role và trạng thái. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-VIEW-EV02-02 | Các state bắt buộc đều có thiết kế và test. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-VIEW-EV02-03 | Action chính gọi đúng ADVANCED_TRACKING_GOALS-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-VIEW-EV02-04 | Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

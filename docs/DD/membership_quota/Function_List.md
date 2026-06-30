@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| MEMBERSHIP_QUOTA-FN01 | buildEffectiveEntitlement | MEMBERSHIP_QUOTA-F01 | Use case / Service | planned:lib/app_versions/v2/features/membership_entitlement/application/membership_quota_fn01.dart | Login, app resume, package change | Command + actor context | Result/Error | Audit/event when required | Draft |
-| MEMBERSHIP_QUOTA-FN02 | checkAndConsumeQuota | MEMBERSHIP_QUOTA-F02 | Use case / Service | planned:lib/app_versions/v2/features/membership_entitlement/application/membership_quota_fn02.dart | AI Chat hoặc tạo lịch trình | Command + actor context | Result/Error | Audit/event when required | Draft |
+| MEMBERSHIP_QUOTA-FN01 | buildEffectiveEntitlement | MEMBERSHIP_QUOTA-F01 | Use case / Service | planned:lib/app_versions/v2/features/membership_entitlement/application/membership_quota_fn01.dart | Login, app resume, package change | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| MEMBERSHIP_QUOTA-FN02 | checkAndConsumeQuota | MEMBERSHIP_QUOTA-F02 | Use case / Service | planned:lib/app_versions/v2/features/membership_entitlement/application/membership_quota_fn02.dart | AI Chat hoặc tạo lịch trình | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho MEMBERSHIP_QUOTA-FN01.
-- [ ] Business rule violation cho MEMBERSHIP_QUOTA-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| MEMBERSHIP_QUOTA-FN-EV01-01 | Happy path cho MEMBERSHIP_QUOTA-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-FN-EV01-02 | Business rule violation cho MEMBERSHIP_QUOTA-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="membership_quota-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho MEMBERSHIP_QUOTA-FN02.
-- [ ] Business rule violation cho MEMBERSHIP_QUOTA-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| MEMBERSHIP_QUOTA-FN-EV02-01 | Happy path cho MEMBERSHIP_QUOTA-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-FN-EV02-02 | Business rule violation cho MEMBERSHIP_QUOTA-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| MEMBERSHIP_QUOTA-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

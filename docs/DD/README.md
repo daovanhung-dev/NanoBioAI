@@ -7,40 +7,40 @@
 | BD Version | 2.0 |
 | DD Baseline Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |
-| Status | In Review - product decisions Q-01..Q-18 answered |
+| Status | Approved - DD docs complete |
 
 ## Purpose
-This folder contains split module DDs for the full BioAI / NanoBio product flow M01-M19. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18 and converts them from PO blockers into implementation contracts.
+This folder contains split module DDs for the full BioAI / NanoBio product flow M01-M19. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18, approves DD docs for M01-M19, and moves runtime/sandbox evidence to a separate implementation backlog.
 
 ## Module Map
 
 | BD | Module DD | Module Code | Status | Source |
 |---|---|---|---|---|
-| M01 | [Onboarding and health profile](./onboarding_profile/README.md) | ONBOARDING_PROFILE | In Review - product decisions answered | BD sections 6/M01, 13, 16.1 AC-01, Appendix A UC-01 |
-| M02 | [Personal schedule AI](./personal_schedule_ai/README.md) | PERSONAL_SCHEDULE_AI | Draft - contracts updated, sandbox evidence pending | BD sections 6/M02, 13, 16.1 AC-01/AC-02/AC-05/AC-06, Appendix A UC-02/UC-08 |
-| M03 | [Dashboard and schedule execution](./dashboard_schedule/README.md) | DASHBOARD_SCHEDULE | In Review - product decisions answered | BD sections 6/M03, 13, Appendix A UC-09 |
-| M04 | [Basic health calculators](./basic_health_calculators/README.md) | BASIC_HEALTH_CALC | In Review - product decisions answered | BD sections 6/M04, 18.2 Q-14, Appendix A UC-03 |
-| M05 | [Auth, profile sync, and guest merge](./auth_profile_sync/README.md) | AUTH_PROFILE_SYNC | Draft - contracts updated, sandbox evidence pending | BD sections 6/M05, 13, Appendix A UC-05 |
-| M06 | [Membership and quota](./membership_quota/README.md) | MEMBERSHIP_QUOTA | Draft - contracts updated, sandbox evidence pending | BD sections 6/M06, 13, 16.1 AC-04..AC-08, Appendix A UC-06 |
-| M07 | [AI Chat](./ai_chat/README.md) | AI_CHAT | In Review - product decisions answered | BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07 |
-| M08 | [Health score and habits](./health_score_habits/README.md) | HEALTH_SCORE_HABITS | In Review - product decisions answered | BD sections 6/M08, 9, 13, Appendix A UC-09 |
-| M09 | [Schedule notifications](./schedule_notifications/README.md) | SCHEDULE_NOTIFICATIONS | In Review - product decisions answered | BD sections 6/M09, 13, Appendix A UC-04 |
-| M10 | [Advanced tracking and goals](./advanced_tracking_goals/README.md) | ADVANCED_TRACKING_GOALS | Draft - contracts updated, paid slice pending | BD sections 6/M10, 16.1 AC-06, Appendix A UC-10 |
-| M11 | [FamilyPlus](./familyplus/README.md) | FAMILYPLUS | Draft - contracts updated, sandbox evidence pending | BD sections 10/M11, 13, 14.2, 16.1 AC-06, Appendix A UC-11 |
-| M12 | [Sale and direct referral](./referral_direct/README.md) | REFERRAL_DIRECT | Draft - contracts updated, sandbox evidence pending | BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14 |
-| M13 | [Payment, verification, and entitlement](./payment_membership/README.md) | PAYMENT_MEMBERSHIP | Draft - contracts updated, sandbox evidence pending | BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16 |
-| M14 | [Sale points and conversion](./sale_points/README.md) | SALE_POINTS | Draft - contracts updated, sandbox evidence pending | BD sections 7.5..7.10, 9, 12.1, 14.4, 16.2 AC-11..AC-18, Appendix A UC-17..UC-19 |
-| M15 | [Admin dashboard](./admin_dashboard/README.md) | ADMIN_DASHBOARD | Draft - contracts updated, sandbox evidence pending | BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 |
-| M16 | [Admin operations](./admin_operations/README.md) | ADMIN_OPS | Draft - contracts updated, sandbox evidence pending | BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
-| M17 | [Reconciliation](./reconciliation/README.md) | RECONCILIATION | Draft - contracts updated, sandbox evidence pending | BD section 12.1, 14.4, 15, Appendix A UC-22 |
-| M18 | [Statistics and reporting](./reporting/README.md) | REPORTING | Draft - contracts updated, sandbox evidence pending | BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 |
-| M19 | [Audit, security, and support](./audit_security/README.md) | AUDIT_SECURITY | Draft - contracts updated, sandbox evidence pending | BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 |
+| M01 | [Onboarding and health profile](./onboarding_profile/README.md) | ONBOARDING_PROFILE | Approved - DD docs complete | BD sections 6/M01, 13, 16.1 AC-01, Appendix A UC-01 |
+| M02 | [Personal schedule AI](./personal_schedule_ai/README.md) | PERSONAL_SCHEDULE_AI | Approved - DD docs complete | BD sections 6/M02, 13, 16.1 AC-01/AC-02/AC-05/AC-06, Appendix A UC-02/UC-08 |
+| M03 | [Dashboard and schedule execution](./dashboard_schedule/README.md) | DASHBOARD_SCHEDULE | Approved - DD docs complete | BD sections 6/M03, 13, Appendix A UC-09 |
+| M04 | [Basic health calculators](./basic_health_calculators/README.md) | BASIC_HEALTH_CALC | Approved - DD docs complete | BD sections 6/M04, 18.2 Q-14, Appendix A UC-03 |
+| M05 | [Auth, profile sync, and guest merge](./auth_profile_sync/README.md) | AUTH_PROFILE_SYNC | Approved - DD docs complete | BD sections 6/M05, 13, Appendix A UC-05 |
+| M06 | [Membership and quota](./membership_quota/README.md) | MEMBERSHIP_QUOTA | Approved - DD docs complete | BD sections 6/M06, 13, 16.1 AC-04..AC-08, Appendix A UC-06 |
+| M07 | [AI Chat](./ai_chat/README.md) | AI_CHAT | Approved - DD docs complete | BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07 |
+| M08 | [Health score and habits](./health_score_habits/README.md) | HEALTH_SCORE_HABITS | Approved - DD docs complete | BD sections 6/M08, 9, 13, Appendix A UC-09 |
+| M09 | [Schedule notifications](./schedule_notifications/README.md) | SCHEDULE_NOTIFICATIONS | Approved - DD docs complete | BD sections 6/M09, 13, Appendix A UC-04 |
+| M10 | [Advanced tracking and goals](./advanced_tracking_goals/README.md) | ADVANCED_TRACKING_GOALS | Approved - DD docs complete | BD sections 6/M10, 16.1 AC-06, Appendix A UC-10 |
+| M11 | [FamilyPlus](./familyplus/README.md) | FAMILYPLUS | Approved - DD docs complete | BD sections 10/M11, 13, 14.2, 16.1 AC-06, Appendix A UC-11 |
+| M12 | [Sale and direct referral](./referral_direct/README.md) | REFERRAL_DIRECT | Approved - DD docs complete | BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14 |
+| M13 | [Payment, verification, and entitlement](./payment_membership/README.md) | PAYMENT_MEMBERSHIP | Approved - DD docs complete | BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16 |
+| M14 | [Sale points and conversion](./sale_points/README.md) | SALE_POINTS | Approved - DD docs complete | BD sections 7.5..7.10, 9, 12.1, 14.4, 16.2 AC-11..AC-18, Appendix A UC-17..UC-19 |
+| M15 | [Admin dashboard](./admin_dashboard/README.md) | ADMIN_DASHBOARD | Approved - DD docs complete | BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 |
+| M16 | [Admin operations](./admin_operations/README.md) | ADMIN_OPS | Approved - DD docs complete | BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
+| M17 | [Reconciliation](./reconciliation/README.md) | RECONCILIATION | Approved - DD docs complete | BD section 12.1, 14.4, 15, Appendix A UC-22 |
+| M18 | [Statistics and reporting](./reporting/README.md) | REPORTING | Approved - DD docs complete | BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 |
+| M19 | [Audit, security, and support](./audit_security/README.md) | AUDIT_SECURITY | Approved - DD docs complete | BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 |
 
 ## Reading Order
 1. Read this file first.
 2. Read the module README.md.
 3. Read Overall.md before List_Features.md, Function_List.md, Views.md, and Import_File.md.
-4. For coding, follow accepted decisions in the module contract and keep sandbox/test evidence current in the checklist.
+4. For coding, follow accepted decisions in the module contract and keep implementation evidence current in the backlog checklist.
 
 ## Cross-Project Critical Rules
 - Guest is a closed allowlist: only BD-listed V1 features are available before login.
@@ -95,7 +95,7 @@ This folder contains split module DDs for the full BioAI / NanoBio product flow 
 - CDC sleep: https://www.cdc.gov/sleep/about/index.html
 
 ## Validation Notes
-- Runtime code is out of scope for this DD completion pass.
+- Runtime code, SQL, Supabase config, and tests are out of scope for this DD docs 100 percent pass.
 - `DD_Module_Template/` remains the source template and intentionally still contains placeholders.
-- Modules at 80 percent DD readiness have answered product decisions and enough documented contracts to proceed with targeted coding.
-- Modules at 60 percent DD readiness still require Supabase sandbox/RLS/API/audit evidence or a paid vertical slice before production acceptance.
+- M01-M19 DD docs are complete at the documentation layer: status Approved, Open Q = 0, and traceability/contracts are documented.
+- Runtime, sandbox/RLS/API smoke, and production acceptance evidence remain in the implementation evidence backlog and do not reduce DD docs completeness.

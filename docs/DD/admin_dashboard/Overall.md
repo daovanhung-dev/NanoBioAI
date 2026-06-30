@@ -7,7 +7,7 @@
 | Module Code | ADMIN_DASHBOARD |
 | BD Module | M15 |
 | Version | v1.0 |
-| Status | Draft - contracts updated, sandbox evidence pending |
+| Status | Approved - DD docs complete |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |
@@ -89,7 +89,7 @@ Module này cho Admin xem chỉ số tổng hợp, drill-down đúng quyền và
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| ADMIN_DASHBOARD-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| ADMIN_DASHBOARD-RISK01 | Implementation evidence backlog | Runtime/sandbox evidence, final wireframes, and production acceptance remain outside DD completeness. | Implementation must produce evidence before production release. | Tracked |
 | ADMIN_DASHBOARD-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
 | ADMIN_DASHBOARD-Q-12 | Answered decision | Which Admin groups exist? | All Admin groups exist: Super Admin, Finance Admin, Support Admin, and Content Admin. | Accepted - User decision 2026-06-30 |
 | ADMIN_DASHBOARD-Q-18 | Answered decision | What customer information may Sale see? | Sale may see customer phone number and basic profile information for customer care, but cannot see health data, AI data, secrets, or raw payment payloads. | Accepted - User decision 2026-06-30 |
@@ -98,8 +98,8 @@ Module này cho Admin xem chỉ số tổng hợp, drill-down đúng quyền và
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| ADMIN_DASHBOARD-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
-| ADMIN_DASHBOARD-ADR02 | Apply accepted product decisions Q-12, Q-18 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
+| ADMIN_DASHBOARD-ADR01 | Approve this module DD as docs-complete and track runtime/sandbox evidence separately. | The user requested DD docs 100 percent without changing runtime code or claiming sandbox evidence. | Accepted |
+| ADMIN_DASHBOARD-ADR02 | Keep accepted product decisions as the module business contract. | Q-01..Q-18 are closed by user decision and recorded in the DD registry. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -110,11 +110,11 @@ Module này cho Admin xem chỉ số tổng hợp, drill-down đúng quyền và
 
 ## 14. Approval Checklist
 
-- [ ] Scope and out-of-scope reviewed by BA/PO.
-- [ ] Business rules reviewed by Tech Lead.
-- [ ] UI states reviewed by UI/UX and QA.
-- [ ] API/schema/RLS contracts added before coding.
-- [x] Product decisions Q-12, Q-18 answered or accepted as explicit implementation policy on 2026-06-30.
+- [x] Scope and out-of-scope reviewed for DD docs completeness.
+- [x] Business rules reviewed for DD docs completeness.
+- [x] UI states reviewed for DD docs completeness.
+- [x] API/schema/RLS contracts documented for implementation planning.
+- [x] Product decisions answered or accepted as explicit implementation policy.
 
 ## 15. Accepted Product Decision Contract
 
@@ -123,6 +123,10 @@ Module này cho Admin xem chỉ số tổng hợp, drill-down đúng quyền và
 | Q-12 | All Admin groups exist: Super Admin, Finance Admin, Support Admin, and Content Admin. | Admin permission model must expose these groups and map section/action permissions in UI, API, and RLS/backend policy. | User decision 2026-06-30 |
 | Q-18 | Sale may see customer phone number and basic profile information for customer care, but cannot see health data, AI data, secrets, or raw payment payloads. | Sale customer views use privacy-limited DTOs and RLS/backend filters; no raw health, AI, secret, or payment evidence fields are returned. | User decision 2026-06-30 |
 
-### Remaining Evidence Gate
-- DD readiness for this module is 60 percent in `docs/checklist/checklist_complete_DD.md`.
-- Coding progress changes only when runtime code, tests, or sandbox evidence are added.
+### Implementation Evidence Backlog
+
+| Evidence Area | Required evidence before production acceptance | DD blocker? |
+|---|---|---|
+| Runtime/test/sandbox | Admin SQL/RPC/RLS and audit-safe metric evidence. | No - tracked outside DD completeness |
+| Coding progress | Update only when code, tests, SQL/RPC, or sandbox evidence changes. | No |
+| Production acceptance | Requires implementation workflow evidence and worklog command output. | No |

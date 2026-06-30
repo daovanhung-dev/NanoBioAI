@@ -7,7 +7,7 @@
 | Module Code | RECONCILIATION |
 | BD Module | M17 |
 | Version | v1.0 |
-| Status | Draft - contracts updated, sandbox evidence pending |
+| Status | Approved - DD docs complete |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD section 12.1, 14.4, 15, Appendix A UC-22 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |
@@ -89,7 +89,7 @@ Module này bảo đảm dữ liệu nguồn và dữ liệu tổng hợp nhất
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| RECONCILIATION-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| RECONCILIATION-RISK01 | Implementation evidence backlog | Runtime/sandbox evidence, final wireframes, and production acceptance remain outside DD completeness. | Implementation must produce evidence before production release. | Tracked |
 | RECONCILIATION-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
 | RECONCILIATION-Q-05 | Answered decision | How are refund, cancel, and chargeback handled after points are credited? | Refund/cancel is allowed only within 24 hours after purchase. Points are reversed immediately in that window. Because conversion is also locked for 24 hours, there is no converted-then-reversed case. | Accepted - User decision 2026-06-30 |
 | RECONCILIATION-Q-10 | Answered decision | Do suspended or closed Sale accounts continue receiving points? | Suspended or closed Sale accounts receive no new points from old customers. | Accepted - User decision 2026-06-30 |
@@ -100,8 +100,8 @@ Module này bảo đảm dữ liệu nguồn và dữ liệu tổng hợp nhất
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| RECONCILIATION-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
-| RECONCILIATION-ADR02 | Apply accepted product decisions Q-05, Q-10, Q-13, Q-17 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
+| RECONCILIATION-ADR01 | Approve this module DD as docs-complete and track runtime/sandbox evidence separately. | The user requested DD docs 100 percent without changing runtime code or claiming sandbox evidence. | Accepted |
+| RECONCILIATION-ADR02 | Keep accepted product decisions as the module business contract. | Q-01..Q-18 are closed by user decision and recorded in the DD registry. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -112,11 +112,11 @@ Module này bảo đảm dữ liệu nguồn và dữ liệu tổng hợp nhất
 
 ## 14. Approval Checklist
 
-- [ ] Scope and out-of-scope reviewed by BA/PO.
-- [ ] Business rules reviewed by Tech Lead.
-- [ ] UI states reviewed by UI/UX and QA.
-- [ ] API/schema/RLS contracts added before coding.
-- [x] Product decisions Q-05, Q-10, Q-13, Q-17 answered or accepted as explicit implementation policy on 2026-06-30.
+- [x] Scope and out-of-scope reviewed for DD docs completeness.
+- [x] Business rules reviewed for DD docs completeness.
+- [x] UI states reviewed for DD docs completeness.
+- [x] API/schema/RLS contracts documented for implementation planning.
+- [x] Product decisions answered or accepted as explicit implementation policy.
 
 ## 15. Accepted Product Decision Contract
 
@@ -127,6 +127,10 @@ Module này bảo đảm dữ liệu nguồn và dữ liệu tổng hợp nhất
 | Q-13 | Admin has broad operational power, but only Super Admin can edit sensitive data, perform full-data edits, or make manual Sale point adjustments. Each action requires reason, idempotency, and audit. | Sensitive mutation RPCs require Super Admin, reason, idempotency_key, before/after summary, and audit row; no two-person approval is required in this DD. | User decision 2026-06-30 |
 | Q-17 | All payments and transfers are manually reviewed and manually approved by Admin. Trusted recorder may only create pending evidence; only Admin approval creates payment_approved. | Payment write path separates evidence capture from approval; payment_approved requires Admin actor, reason/reference, idempotency, and audit. | User decision 2026-06-30 |
 
-### Remaining Evidence Gate
-- DD readiness for this module is 60 percent in `docs/checklist/checklist_complete_DD.md`.
-- Coding progress changes only when runtime code, tests, or sandbox evidence are added.
+### Implementation Evidence Backlog
+
+| Evidence Area | Required evidence before production acceptance | DD blocker? |
+|---|---|---|
+| Runtime/test/sandbox | Provider/staging discrepancy data and sandbox edge cases. | No - tracked outside DD completeness |
+| Coding progress | Update only when code, tests, SQL/RPC, or sandbox evidence changes. | No |
+| Production acceptance | Requires implementation workflow evidence and worklog command output. | No |

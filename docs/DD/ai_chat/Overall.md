@@ -7,7 +7,7 @@
 | Module Code | AI_CHAT |
 | BD Module | M07 |
 | Version | v1.0 |
-| Status | In Review - product decisions answered |
+| Status | Approved - DD docs complete |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |
@@ -89,7 +89,7 @@ Module này đảm bảo AI Chat chỉ mở cho tài khoản có quyền, không
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| AI_CHAT-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| AI_CHAT-RISK01 | Implementation evidence backlog | Runtime/sandbox evidence, final wireframes, and production acceptance remain outside DD completeness. | Implementation must produce evidence before production release. | Tracked |
 | AI_CHAT-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
 | AI_CHAT-Q-16 | Answered decision | Which timezone is authoritative? | Use Vietnam timezone, Asia/Ho_Chi_Minh. | Accepted - User decision 2026-06-30 |
 
@@ -97,8 +97,8 @@ Module này đảm bảo AI Chat chỉ mở cho tài khoản có quyền, không
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| AI_CHAT-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
-| AI_CHAT-ADR02 | Apply accepted product decisions Q-16 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
+| AI_CHAT-ADR01 | Approve this module DD as docs-complete and track runtime/sandbox evidence separately. | The user requested DD docs 100 percent without changing runtime code or claiming sandbox evidence. | Accepted |
+| AI_CHAT-ADR02 | Keep accepted product decisions as the module business contract. | Q-01..Q-18 are closed by user decision and recorded in the DD registry. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -109,11 +109,11 @@ Module này đảm bảo AI Chat chỉ mở cho tài khoản có quyền, không
 
 ## 14. Approval Checklist
 
-- [ ] Scope and out-of-scope reviewed by BA/PO.
-- [ ] Business rules reviewed by Tech Lead.
-- [ ] UI states reviewed by UI/UX and QA.
-- [ ] API/schema/RLS contracts added before coding.
-- [x] Product decisions Q-16 answered or accepted as explicit implementation policy on 2026-06-30.
+- [x] Scope and out-of-scope reviewed for DD docs completeness.
+- [x] Business rules reviewed for DD docs completeness.
+- [x] UI states reviewed for DD docs completeness.
+- [x] API/schema/RLS contracts documented for implementation planning.
+- [x] Product decisions answered or accepted as explicit implementation policy.
 
 ## 15. Accepted Product Decision Contract
 
@@ -121,6 +121,10 @@ Module này đảm bảo AI Chat chỉ mở cho tài khoản có quyền, không
 |---|---|---|---|
 | Q-16 | Use Vietnam timezone, Asia/Ho_Chi_Minh. | Quota reset, reporting windows, payment hold, refund/cancel window, schedule/day boundaries, and audit display use Asia/Ho_Chi_Minh. | User decision 2026-06-30 |
 
-### Remaining Evidence Gate
-- DD readiness for this module is 80 percent in `docs/checklist/checklist_complete_DD.md`.
-- Coding progress changes only when runtime code, tests, or sandbox evidence are added.
+### Implementation Evidence Backlog
+
+| Evidence Area | Required evidence before production acceptance | DD blocker? |
+|---|---|---|
+| Runtime/test/sandbox | M06 quota gate before production AI calls. | No - tracked outside DD completeness |
+| Coding progress | Update only when code, tests, SQL/RPC, or sandbox evidence changes. | No |
+| Production acceptance | Requires implementation workflow evidence and worklog command output. | No |

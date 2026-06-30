@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| PERSONAL_SCHEDULE_AI-FN01 | generateInitialGuestPlan | PERSONAL_SCHEDULE_AI-F01 | Use case / Service | planned:lib/app_versions/v1/services/ai/application/personal_schedule_ai_fn01.dart | Onboarding completed | Command + actor context | Result/Error | Audit/event when required | Draft |
-| PERSONAL_SCHEDULE_AI-FN02 | generateMemberPlanWithQuota | PERSONAL_SCHEDULE_AI-F02 | Use case / Service | planned:lib/app_versions/v1/services/ai/application/personal_schedule_ai_fn02.dart | Member yêu cầu tạo lịch trình mới | Command + actor context | Result/Error | Audit/event when required | Draft |
+| PERSONAL_SCHEDULE_AI-FN01 | generateInitialGuestPlan | PERSONAL_SCHEDULE_AI-F01 | Use case / Service | planned:lib/app_versions/v1/services/ai/application/personal_schedule_ai_fn01.dart | Onboarding completed | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| PERSONAL_SCHEDULE_AI-FN02 | generateMemberPlanWithQuota | PERSONAL_SCHEDULE_AI-F02 | Use case / Service | planned:lib/app_versions/v1/services/ai/application/personal_schedule_ai_fn02.dart | Member yêu cầu tạo lịch trình mới | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho PERSONAL_SCHEDULE_AI-FN01.
-- [ ] Business rule violation cho PERSONAL_SCHEDULE_AI-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| PERSONAL_SCHEDULE_AI-FN-EV01-01 | Happy path cho PERSONAL_SCHEDULE_AI-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-FN-EV01-02 | Business rule violation cho PERSONAL_SCHEDULE_AI-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="personal_schedule_ai-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho PERSONAL_SCHEDULE_AI-FN02.
-- [ ] Business rule violation cho PERSONAL_SCHEDULE_AI-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| PERSONAL_SCHEDULE_AI-FN-EV02-01 | Happy path cho PERSONAL_SCHEDULE_AI-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-FN-EV02-02 | Business rule violation cho PERSONAL_SCHEDULE_AI-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| PERSONAL_SCHEDULE_AI-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

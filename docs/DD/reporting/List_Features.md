@@ -7,15 +7,15 @@
 | Module | REPORTING |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| REPORTING-F01 | Tạo báo cáo theo scope | Admin xem báo cáo theo thời gian/bộ lọc/quyền. | Admin | Select report and filters | P1 | BD section 12.2 | REPORTING-FN01 | REPORTING-V01 | Draft |
-| REPORTING-F02 | Xuất báo cáo | Xuất file khi có quyền và log export. | Admin with export permission | Click export | P1 | BD section 12.2 rules, AC-23, UC-24 | REPORTING-FN02 | REPORTING-V02 | Draft |
+| REPORTING-F01 | Tạo báo cáo theo scope | Admin xem báo cáo theo thời gian/bộ lọc/quyền. | Admin | Select report and filters | P1 | BD section 12.2 | REPORTING-FN01 | REPORTING-V01 | Approved - DD docs complete |
+| REPORTING-F02 | Xuất báo cáo | Xuất file khi có quyền và log export. | Admin with export permission | Click export | P1 | BD section 12.2 rules, AC-23, UC-24 | REPORTING-FN02 | REPORTING-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | REPORTING-E-main | Dữ liệu nghiệp vụ chính của Thống kê & báo cáo | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | REPORTING-API01 | Contract dự kiến cho REPORTING-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD section 12.2, feature tạo đúng outcome: Admin xem báo cáo theo thời gian/bộ lọc/quyền..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] REPORTING-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| REPORTING-AC01-01 | Với source BD section 12.2, feature tạo đúng outcome: Admin xem báo cáo theo thời gian/bộ lọc/quyền.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-AC01-04 | REPORTING-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="reporting-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | REPORTING-E-main | Dữ liệu nghiệp vụ chính của Thống kê & báo cáo | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | REPORTING-API02 | Contract dự kiến cho REPORTING-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD section 12.2 rules, AC-23, UC-24, feature tạo đúng outcome: Xuất file khi có quyền và log export..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] REPORTING-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| REPORTING-AC02-01 | Với source BD section 12.2 rules, AC-23, UC-24, feature tạo đúng outcome: Xuất file khi có quyền và log export.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REPORTING-AC02-04 | REPORTING-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

@@ -7,15 +7,15 @@
 | Module | AUTH_PROFILE_SYNC |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M05, 13, Appendix A UC-05 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| AUTH_PROFILE_SYNC-F01 | Đăng ký/đăng nhập và dựng quyền | Member có session và quyền hiệu lực đúng. | Guest, Member | Submit login/sign-up | P0 | BD M05 luồng đăng ký/đăng nhập | AUTH_PROFILE_SYNC-FN01 | AUTH_PROFILE_SYNC-V01 | Draft |
-| AUTH_PROFILE_SYNC-F02 | Đồng bộ dữ liệu Guest | Liên kết dữ liệu local với tài khoản mà không mất lịch trình/hồ sơ. | Guest, Member | Login after guest usage | P0 | BD M05 Guest -> Member | AUTH_PROFILE_SYNC-FN02 | AUTH_PROFILE_SYNC-V02 | Draft |
+| AUTH_PROFILE_SYNC-F01 | Đăng ký/đăng nhập và dựng quyền | Member có session và quyền hiệu lực đúng. | Guest, Member | Submit login/sign-up | P0 | BD M05 luồng đăng ký/đăng nhập | AUTH_PROFILE_SYNC-FN01 | AUTH_PROFILE_SYNC-V01 | Approved - DD docs complete |
+| AUTH_PROFILE_SYNC-F02 | Đồng bộ dữ liệu Guest | Liên kết dữ liệu local với tài khoản mà không mất lịch trình/hồ sơ. | Guest, Member | Login after guest usage | P0 | BD M05 Guest -> Member | AUTH_PROFILE_SYNC-FN02 | AUTH_PROFILE_SYNC-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | AUTH_PROFILE_SYNC-E-main | Dữ liệu nghiệp vụ chính của Xác thực, hồ sơ và đồng bộ Guest | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | AUTH_PROFILE_SYNC-API01 | Contract dự kiến cho AUTH_PROFILE_SYNC-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M05 luồng đăng ký/đăng nhập, feature tạo đúng outcome: Member có session và quyền hiệu lực đúng..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] AUTH_PROFILE_SYNC-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUTH_PROFILE_SYNC-AC01-01 | Với source BD M05 luồng đăng ký/đăng nhập, feature tạo đúng outcome: Member có session và quyền hiệu lực đúng.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-AC01-04 | AUTH_PROFILE_SYNC-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="auth_profile_sync-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | AUTH_PROFILE_SYNC-E-main | Dữ liệu nghiệp vụ chính của Xác thực, hồ sơ và đồng bộ Guest | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | AUTH_PROFILE_SYNC-API02 | Contract dự kiến cho AUTH_PROFILE_SYNC-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M05 Guest -> Member, feature tạo đúng outcome: Liên kết dữ liệu local với tài khoản mà không mất lịch trình/hồ sơ..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] AUTH_PROFILE_SYNC-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUTH_PROFILE_SYNC-AC02-01 | Với source BD M05 Guest -> Member, feature tạo đúng outcome: Liên kết dữ liệu local với tài khoản mà không mất lịch trình/hồ sơ.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-AC02-04 | AUTH_PROFILE_SYNC-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

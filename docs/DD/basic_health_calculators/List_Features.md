@@ -7,15 +7,15 @@
 | Module | BASIC_HEALTH_CALC |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M04, 18.2 Q-14, Appendix A UC-03 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| BASIC_HEALTH_CALC-F01 | Chạy công cụ tính toán cơ bản | Trả kết quả từ dữ liệu hợp lệ. | Guest, Member | Người dùng nhập dữ liệu và bấm tính | P1 | BD M04 luồng, UC-03 | BASIC_HEALTH_CALC-FN01 | BASIC_HEALTH_CALC-V01 | Draft |
-| BASIC_HEALTH_CALC-F02 | Quản lý version công thức | Đảm bảo thay đổi công thức có version và audit. | Admin | Admin/PO phê duyệt công thức mới | P1 | BD M04 lưu ý, Q-14 | BASIC_HEALTH_CALC-FN02 | BASIC_HEALTH_CALC-V02 | Draft |
+| BASIC_HEALTH_CALC-F01 | Chạy công cụ tính toán cơ bản | Trả kết quả từ dữ liệu hợp lệ. | Guest, Member | Người dùng nhập dữ liệu và bấm tính | P1 | BD M04 luồng, UC-03 | BASIC_HEALTH_CALC-FN01 | BASIC_HEALTH_CALC-V01 | Approved - DD docs complete |
+| BASIC_HEALTH_CALC-F02 | Quản lý version công thức | Đảm bảo thay đổi công thức có version và audit. | Admin | Admin/PO phê duyệt công thức mới | P1 | BD M04 lưu ý, Q-14 | BASIC_HEALTH_CALC-FN02 | BASIC_HEALTH_CALC-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | BASIC_HEALTH_CALC-E-main | Dữ liệu nghiệp vụ chính của Tính toán sức khỏe cơ bản | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | BASIC_HEALTH_CALC-API01 | Contract dự kiến cho BASIC_HEALTH_CALC-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M04 luồng, UC-03, feature tạo đúng outcome: Trả kết quả từ dữ liệu hợp lệ..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] BASIC_HEALTH_CALC-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| BASIC_HEALTH_CALC-AC01-01 | Với source BD M04 luồng, UC-03, feature tạo đúng outcome: Trả kết quả từ dữ liệu hợp lệ.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-AC01-04 | BASIC_HEALTH_CALC-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="basic_health_calc-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | BASIC_HEALTH_CALC-E-main | Dữ liệu nghiệp vụ chính của Tính toán sức khỏe cơ bản | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | BASIC_HEALTH_CALC-API02 | Contract dự kiến cho BASIC_HEALTH_CALC-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M04 lưu ý, Q-14, feature tạo đúng outcome: Đảm bảo thay đổi công thức có version và audit..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] BASIC_HEALTH_CALC-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| BASIC_HEALTH_CALC-AC02-01 | Với source BD M04 lưu ý, Q-14, feature tạo đúng outcome: Đảm bảo thay đổi công thức có version và audit.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-AC02-04 | BASIC_HEALTH_CALC-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

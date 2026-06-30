@@ -8,7 +8,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - coding - Coding: 12 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
 - bugfix - Direct bugfix: 6 worklog(s)
-- docs-dd - Design docs: 4 worklog(s)
+- docs-dd - Design docs: 5 worklog(s)
 - test - Test and verification: 2 worklog(s)
 - find-issues - Review and find issues: 1 worklog(s)
 - create-todo - Create todo docs: 1 worklog(s)
@@ -18,17 +18,17 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Frequent Modules
 
 - unknown: 6
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - docs/issues, docs/todo: 2
 - authentication: 2
+- docs/DD M01-M19: 2
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - .codex: 2
 - .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
 - Admin app, Supabase Admin, Sale direct-only: 1
-- docs/DD M01-M19: 1
+- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
 - v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
 - docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
 - docs/DD/product_flow, docs/checklist: 1
-- v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.: 1
 
 ## Reusable Project Skills
 

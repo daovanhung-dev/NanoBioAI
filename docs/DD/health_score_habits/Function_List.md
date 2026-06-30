@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| HEALTH_SCORE_HABITS-FN01 | calculateHealthScore | HEALTH_SCORE_HABITS-F01 | Use case / Service | planned:lib/app_versions/v2/features/health_scoring/application/health_score_habits_fn01.dart | Completion event or scheduled recalculation | Command + actor context | Result/Error | Audit/event when required | Draft |
-| HEALTH_SCORE_HABITS-FN02 | loadHabitProgress | HEALTH_SCORE_HABITS-F02 | Use case / Service | planned:lib/app_versions/v2/features/health_scoring/application/health_score_habits_fn02.dart | Open progress view | Command + actor context | Result/Error | Audit/event when required | Draft |
+| HEALTH_SCORE_HABITS-FN01 | calculateHealthScore | HEALTH_SCORE_HABITS-F01 | Use case / Service | planned:lib/app_versions/v2/features/health_scoring/application/health_score_habits_fn01.dart | Completion event or scheduled recalculation | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| HEALTH_SCORE_HABITS-FN02 | loadHabitProgress | HEALTH_SCORE_HABITS-F02 | Use case / Service | planned:lib/app_versions/v2/features/health_scoring/application/health_score_habits_fn02.dart | Open progress view | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho HEALTH_SCORE_HABITS-FN01.
-- [ ] Business rule violation cho HEALTH_SCORE_HABITS-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| HEALTH_SCORE_HABITS-FN-EV01-01 | Happy path cho HEALTH_SCORE_HABITS-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-FN-EV01-02 | Business rule violation cho HEALTH_SCORE_HABITS-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="health_score_habits-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho HEALTH_SCORE_HABITS-FN02.
-- [ ] Business rule violation cho HEALTH_SCORE_HABITS-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| HEALTH_SCORE_HABITS-FN-EV02-01 | Happy path cho HEALTH_SCORE_HABITS-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-FN-EV02-02 | Business rule violation cho HEALTH_SCORE_HABITS-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| HEALTH_SCORE_HABITS-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

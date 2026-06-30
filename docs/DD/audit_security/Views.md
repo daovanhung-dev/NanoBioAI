@@ -4,8 +4,8 @@
 
 | ID | View Name | Route / Entry Point | Actor | Feature | Type | Data Source | Status | Mockup |
 |---|---|---|---|---|---|---|---|---|
-| AUDIT_SECURITY-V01 | Audit log view | planned route/action for audit_security | System | AUDIT_SECURITY-F01 | Page / Flow / Admin view | AUDIT_SECURITY-API01 | Draft | assets/README.md |
-| AUDIT_SECURITY-V02 | Security and support console | planned route/action for audit_security | Admin, Super Admin, System | AUDIT_SECURITY-F02 | Page / Flow / Admin view | AUDIT_SECURITY-API02 | Draft | assets/README.md |
+| AUDIT_SECURITY-V01 | Audit log view | planned route/action for audit_security | System | AUDIT_SECURITY-F01 | Page / Flow / Admin view | AUDIT_SECURITY-API01 | Approved - DD docs complete | assets/README.md |
+| AUDIT_SECURITY-V02 | Security and support console | planned route/action for audit_security | Admin, Super Admin, System | AUDIT_SECURITY-F02 | Page / Flow / Admin view | AUDIT_SECURITY-API02 | Approved - DD docs complete | assets/README.md |
 
 ## 1. Navigation Map
 
@@ -31,7 +31,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | Optional future asset: BD v2.0 has no required mockup; view state/action contract is complete in this DD |
 
 ## B. Layout và thành phần giao diện
 
@@ -62,12 +62,15 @@
 | AUDIT_SECURITY-V01-I01 | Sensitive write/read/export/action | Input và quyền hợp lệ | AUDIT_SECURITY-FN01 | Refresh trạng thái Audit, bảo mật & hỗ trợ | Hiển thị lỗi an toàn | Giữ view hoặc tới bước kế tiếp |
 | AUDIT_SECURITY-V01-I02 | Tải lại dữ liệu | User có quyền xem | AUDIT_SECURITY-FN02 hoặc API đọc | Cập nhật view | Empty/error state | Không đổi route |
 
-## E. Acceptance checklist cho QA/UI
+## E. Documented View Acceptance Requirements
 
-- [ ] View chỉ hiển thị đúng role và trạng thái.
-- [ ] Các state bắt buộc đều có thiết kế và test.
-- [ ] Action chính gọi đúng AUDIT_SECURITY-FN01.
-- [ ] Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUDIT_SECURITY-VIEW-EV01-01 | View chỉ hiển thị đúng role và trạng thái. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-VIEW-EV01-02 | Các state bắt buộc đều có thiết kế và test. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-VIEW-EV01-03 | Action chính gọi đúng AUDIT_SECURITY-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-VIEW-EV01-04 | Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="audit_security-v02"></a>
@@ -84,7 +87,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | Optional future asset: BD v2.0 has no required mockup; view state/action contract is complete in this DD |
 
 ## B. Layout và thành phần giao diện
 
@@ -115,9 +118,11 @@
 | AUDIT_SECURITY-V02-I01 | Permission check, suspicious event, support action | Input và quyền hợp lệ | AUDIT_SECURITY-FN02 | Refresh trạng thái Audit, bảo mật & hỗ trợ | Hiển thị lỗi an toàn | Giữ view hoặc tới bước kế tiếp |
 | AUDIT_SECURITY-V02-I02 | Tải lại dữ liệu | User có quyền xem | AUDIT_SECURITY-FN02 hoặc API đọc | Cập nhật view | Empty/error state | Không đổi route |
 
-## E. Acceptance checklist cho QA/UI
+## E. Documented View Acceptance Requirements
 
-- [ ] View chỉ hiển thị đúng role và trạng thái.
-- [ ] Các state bắt buộc đều có thiết kế và test.
-- [ ] Action chính gọi đúng AUDIT_SECURITY-FN02.
-- [ ] Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUDIT_SECURITY-VIEW-EV02-01 | View chỉ hiển thị đúng role và trạng thái. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-VIEW-EV02-02 | Các state bắt buộc đều có thiết kế và test. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-VIEW-EV02-03 | Action chính gọi đúng AUDIT_SECURITY-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUDIT_SECURITY-VIEW-EV02-04 | Error message không lộ thông tin kỹ thuật hoặc dữ liệu nhạy cảm. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

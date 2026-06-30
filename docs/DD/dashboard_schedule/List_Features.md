@@ -7,15 +7,15 @@
 | Module | DASHBOARD_SCHEDULE |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M03, 13, Appendix A UC-09 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| DASHBOARD_SCHEDULE-F01 | Xem lịch trình hôm nay | Actor thấy việc cần làm và tiến độ hiện tại. | Guest, Member, Family | Mở dashboard | P0 | BD M03 chức năng | DASHBOARD_SCHEDULE-FN01 | DASHBOARD_SCHEDULE-V01 | Draft |
-| DASHBOARD_SCHEDULE-F02 | Đánh dấu thực hiện lịch trình | Lưu completion event đúng subject. | Guest, Member, Family | Bấm hoàn thành hoặc bỏ qua | P0 | BD M03 luồng đánh dấu | DASHBOARD_SCHEDULE-FN02 | DASHBOARD_SCHEDULE-V02 | Draft |
+| DASHBOARD_SCHEDULE-F01 | Xem lịch trình hôm nay | Actor thấy việc cần làm và tiến độ hiện tại. | Guest, Member, Family | Mở dashboard | P0 | BD M03 chức năng | DASHBOARD_SCHEDULE-FN01 | DASHBOARD_SCHEDULE-V01 | Approved - DD docs complete |
+| DASHBOARD_SCHEDULE-F02 | Đánh dấu thực hiện lịch trình | Lưu completion event đúng subject. | Guest, Member, Family | Bấm hoàn thành hoặc bỏ qua | P0 | BD M03 luồng đánh dấu | DASHBOARD_SCHEDULE-FN02 | DASHBOARD_SCHEDULE-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | DASHBOARD_SCHEDULE-E-main | Dữ liệu nghiệp vụ chính của Dashboard & Thực hiện lịch trình | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | DASHBOARD_SCHEDULE-API01 | Contract dự kiến cho DASHBOARD_SCHEDULE-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M03 chức năng, feature tạo đúng outcome: Actor thấy việc cần làm và tiến độ hiện tại..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] DASHBOARD_SCHEDULE-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| DASHBOARD_SCHEDULE-AC01-01 | Với source BD M03 chức năng, feature tạo đúng outcome: Actor thấy việc cần làm và tiến độ hiện tại.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-AC01-04 | DASHBOARD_SCHEDULE-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="dashboard_schedule-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | DASHBOARD_SCHEDULE-E-main | Dữ liệu nghiệp vụ chính của Dashboard & Thực hiện lịch trình | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | DASHBOARD_SCHEDULE-API02 | Contract dự kiến cho DASHBOARD_SCHEDULE-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M03 luồng đánh dấu, feature tạo đúng outcome: Lưu completion event đúng subject..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] DASHBOARD_SCHEDULE-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| DASHBOARD_SCHEDULE-AC02-01 | Với source BD M03 luồng đánh dấu, feature tạo đúng outcome: Lưu completion event đúng subject.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-AC02-04 | DASHBOARD_SCHEDULE-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

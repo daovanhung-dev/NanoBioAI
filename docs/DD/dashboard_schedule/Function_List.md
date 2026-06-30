@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| DASHBOARD_SCHEDULE-FN01 | loadDashboardSchedule | DASHBOARD_SCHEDULE-F01 | Use case / Service | planned:lib/app_versions/v1/features/dashboard/application/dashboard_schedule_fn01.dart | Mở dashboard | Command + actor context | Result/Error | Audit/event when required | Draft |
-| DASHBOARD_SCHEDULE-FN02 | markPlanItemProgress | DASHBOARD_SCHEDULE-F02 | Use case / Service | planned:lib/app_versions/v1/features/dashboard/application/dashboard_schedule_fn02.dart | Bấm hoàn thành hoặc bỏ qua | Command + actor context | Result/Error | Audit/event when required | Draft |
+| DASHBOARD_SCHEDULE-FN01 | loadDashboardSchedule | DASHBOARD_SCHEDULE-F01 | Use case / Service | planned:lib/app_versions/v1/features/dashboard/application/dashboard_schedule_fn01.dart | Mở dashboard | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| DASHBOARD_SCHEDULE-FN02 | markPlanItemProgress | DASHBOARD_SCHEDULE-F02 | Use case / Service | planned:lib/app_versions/v1/features/dashboard/application/dashboard_schedule_fn02.dart | Bấm hoàn thành hoặc bỏ qua | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho DASHBOARD_SCHEDULE-FN01.
-- [ ] Business rule violation cho DASHBOARD_SCHEDULE-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| DASHBOARD_SCHEDULE-FN-EV01-01 | Happy path cho DASHBOARD_SCHEDULE-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-FN-EV01-02 | Business rule violation cho DASHBOARD_SCHEDULE-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="dashboard_schedule-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho DASHBOARD_SCHEDULE-FN02.
-- [ ] Business rule violation cho DASHBOARD_SCHEDULE-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| DASHBOARD_SCHEDULE-FN-EV02-01 | Happy path cho DASHBOARD_SCHEDULE-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-FN-EV02-02 | Business rule violation cho DASHBOARD_SCHEDULE-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| DASHBOARD_SCHEDULE-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

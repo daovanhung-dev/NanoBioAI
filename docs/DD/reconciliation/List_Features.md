@@ -7,15 +7,15 @@
 | Module | RECONCILIATION |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD section 12.1, 14.4, 15, Appendix A UC-22 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| RECONCILIATION-F01 | Chạy đối soát định kỳ | Tạo danh sách sai lệch theo kỳ/scope. | Admin, System | Admin chọn kỳ hoặc scheduled job | P1 | BD section 12.1, UC-22 | RECONCILIATION-FN01 | RECONCILIATION-V01 | Draft |
-| RECONCILIATION-F02 | Xử lý sai lệch | Admin phân loại và tạo adjustment có audit. | Admin | Admin reviews discrepancy | P1 | BD section 12.1 luồng đối soát | RECONCILIATION-FN02 | RECONCILIATION-V02 | Draft |
+| RECONCILIATION-F01 | Chạy đối soát định kỳ | Tạo danh sách sai lệch theo kỳ/scope. | Admin, System | Admin chọn kỳ hoặc scheduled job | P1 | BD section 12.1, UC-22 | RECONCILIATION-FN01 | RECONCILIATION-V01 | Approved - DD docs complete |
+| RECONCILIATION-F02 | Xử lý sai lệch | Admin phân loại và tạo adjustment có audit. | Admin | Admin reviews discrepancy | P1 | BD section 12.1 luồng đối soát | RECONCILIATION-FN02 | RECONCILIATION-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | RECONCILIATION-E-main | Dữ liệu nghiệp vụ chính của Tính toán & đối soát | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | RECONCILIATION-API01 | Contract dự kiến cho RECONCILIATION-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD section 12.1, UC-22, feature tạo đúng outcome: Tạo danh sách sai lệch theo kỳ/scope..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] RECONCILIATION-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| RECONCILIATION-AC01-01 | Với source BD section 12.1, UC-22, feature tạo đúng outcome: Tạo danh sách sai lệch theo kỳ/scope.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| RECONCILIATION-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| RECONCILIATION-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| RECONCILIATION-AC01-04 | RECONCILIATION-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="reconciliation-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | RECONCILIATION-E-main | Dữ liệu nghiệp vụ chính của Tính toán & đối soát | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | RECONCILIATION-API02 | Contract dự kiến cho RECONCILIATION-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD section 12.1 luồng đối soát, feature tạo đúng outcome: Admin phân loại và tạo adjustment có audit..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] RECONCILIATION-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| RECONCILIATION-AC02-01 | Với source BD section 12.1 luồng đối soát, feature tạo đúng outcome: Admin phân loại và tạo adjustment có audit.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| RECONCILIATION-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| RECONCILIATION-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| RECONCILIATION-AC02-04 | RECONCILIATION-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

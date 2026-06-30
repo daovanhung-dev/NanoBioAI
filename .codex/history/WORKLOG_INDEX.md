@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 51
+- Total worklogs: 52
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -60,3 +60,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-29 | coding + Supabase schema draft + Admin UI + tests + docs | supabase-schema | M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue | [Worklog - Sale Module Production Policy](../../docs/worklog/2026-06-29/008-worklog-sale-module-production-policy.md) |
 | 2026-06-30 | coding | coding | unknown | [Worklog — immediate user-data sync](../../docs/worklog/2026-06-30/001-worklog-immediate-user-data-sync.md) |
 | 2026-06-30 | unknown | docs-context | unknown | [Worklog - DD Decision Completion Pass](../../docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md) |
+| 2026-06-30 | docs-dd | docs-dd | docs/DD M01-M19 | [Worklog - DD docs M01-M19 100 percent](../../docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md) |

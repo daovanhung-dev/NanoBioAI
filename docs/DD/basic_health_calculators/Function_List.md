@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| BASIC_HEALTH_CALC-FN01 | runBasicHealthCalculator | BASIC_HEALTH_CALC-F01 | Use case / Service | planned:lib/app_versions/v1/features/health_calculators/application/basic_health_calculators_fn01.dart | Người dùng nhập dữ liệu và bấm tính | Command + actor context | Result/Error | Audit/event when required | Draft |
-| BASIC_HEALTH_CALC-FN02 | versionCalculatorFormula | BASIC_HEALTH_CALC-F02 | Use case / Service | planned:lib/app_versions/v1/features/health_calculators/application/basic_health_calculators_fn02.dart | Admin/PO phê duyệt công thức mới | Command + actor context | Result/Error | Audit/event when required | Draft |
+| BASIC_HEALTH_CALC-FN01 | runBasicHealthCalculator | BASIC_HEALTH_CALC-F01 | Use case / Service | planned:lib/app_versions/v1/features/health_calculators/application/basic_health_calculators_fn01.dart | Người dùng nhập dữ liệu và bấm tính | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| BASIC_HEALTH_CALC-FN02 | versionCalculatorFormula | BASIC_HEALTH_CALC-F02 | Use case / Service | planned:lib/app_versions/v1/features/health_calculators/application/basic_health_calculators_fn02.dart | Admin/PO phê duyệt công thức mới | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho BASIC_HEALTH_CALC-FN01.
-- [ ] Business rule violation cho BASIC_HEALTH_CALC-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| BASIC_HEALTH_CALC-FN-EV01-01 | Happy path cho BASIC_HEALTH_CALC-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-FN-EV01-02 | Business rule violation cho BASIC_HEALTH_CALC-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="basic_health_calc-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho BASIC_HEALTH_CALC-FN02.
-- [ ] Business rule violation cho BASIC_HEALTH_CALC-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| BASIC_HEALTH_CALC-FN-EV02-01 | Happy path cho BASIC_HEALTH_CALC-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-FN-EV02-02 | Business rule violation cho BASIC_HEALTH_CALC-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| BASIC_HEALTH_CALC-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

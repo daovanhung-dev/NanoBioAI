@@ -7,15 +7,15 @@
 | Module | ADVANCED_TRACKING_GOALS |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M10, 16.1 AC-06, Appendix A UC-10 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| ADVANCED_TRACKING_GOALS-F01 | Chọn mục tiêu nâng cao | Plus/FamilyPlus tạo mục tiêu hợp lệ. | Plus, FamilyPlus | Select advanced goal | P2 | BD M10 chức năng, UC-10 | ADVANCED_TRACKING_GOALS-FN01 | ADVANCED_TRACKING_GOALS-V01 | Draft |
-| ADVANCED_TRACKING_GOALS-F02 | Theo dõi lộ trình mục tiêu | Hiển thị tiến độ theo goal roadmap. | Plus, FamilyPlus | Open goal tracking | P2 | BD M10 luồng | ADVANCED_TRACKING_GOALS-FN02 | ADVANCED_TRACKING_GOALS-V02 | Draft |
+| ADVANCED_TRACKING_GOALS-F01 | Chọn mục tiêu nâng cao | Plus/FamilyPlus tạo mục tiêu hợp lệ. | Plus, FamilyPlus | Select advanced goal | P2 | BD M10 chức năng, UC-10 | ADVANCED_TRACKING_GOALS-FN01 | ADVANCED_TRACKING_GOALS-V01 | Approved - DD docs complete |
+| ADVANCED_TRACKING_GOALS-F02 | Theo dõi lộ trình mục tiêu | Hiển thị tiến độ theo goal roadmap. | Plus, FamilyPlus | Open goal tracking | P2 | BD M10 luồng | ADVANCED_TRACKING_GOALS-FN02 | ADVANCED_TRACKING_GOALS-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | ADVANCED_TRACKING_GOALS-E-main | Dữ liệu nghiệp vụ chính của Theo dõi nâng cao & mục tiêu | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | ADVANCED_TRACKING_GOALS-API01 | Contract dự kiến cho ADVANCED_TRACKING_GOALS-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M10 chức năng, UC-10, feature tạo đúng outcome: Plus/FamilyPlus tạo mục tiêu hợp lệ..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] ADVANCED_TRACKING_GOALS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADVANCED_TRACKING_GOALS-AC01-01 | Với source BD M10 chức năng, UC-10, feature tạo đúng outcome: Plus/FamilyPlus tạo mục tiêu hợp lệ.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-AC01-04 | ADVANCED_TRACKING_GOALS-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="advanced_tracking_goals-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | ADVANCED_TRACKING_GOALS-E-main | Dữ liệu nghiệp vụ chính của Theo dõi nâng cao & mục tiêu | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | ADVANCED_TRACKING_GOALS-API02 | Contract dự kiến cho ADVANCED_TRACKING_GOALS-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M10 luồng, feature tạo đúng outcome: Hiển thị tiến độ theo goal roadmap..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] ADVANCED_TRACKING_GOALS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ADVANCED_TRACKING_GOALS-AC02-01 | Với source BD M10 luồng, feature tạo đúng outcome: Hiển thị tiến độ theo goal roadmap.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ADVANCED_TRACKING_GOALS-AC02-04 | ADVANCED_TRACKING_GOALS-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

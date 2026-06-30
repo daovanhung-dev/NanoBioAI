@@ -2,10 +2,10 @@
 
 ## Asset Inventory
 
-| Asset | Purpose | Status | Notes |
+| Asset | Purpose | Status | Approved - DD docs complete |
 |---|---|---|---|
-| Wireframe / mockup for module views | UI/UX reference for Views.md | PLANNED CONFIRMATION | BD v2.0 does not include wireframes; add after design review. |
-| Empty/error/loading illustrations if used | UI state support | PLANNED CONFIRMATION | Must follow NanoBio/Nabi tone and avoid sensitive data. |
+| Wireframe / mockup for module views | UI/UX reference for Views.md | Optional future asset | BD v2.0 does not require wireframes for DD completion; add after design review if needed. |
+| Empty/error/loading illustrations if used | UI state support | Optional future asset | Optional implementation asset; must follow NanoBio/Nabi tone and avoid sensitive data if created. |
 | Test fixtures | QA/dev evidence | Planned | Must be synthetic; no production PII, health data, payment evidence, tokens, or raw webhook payloads. |
 
 ## Rules

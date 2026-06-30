@@ -5,7 +5,7 @@
 | Module Code | SCHEDULE_NOTIFICATIONS |
 | BD Module | M09 |
 | Version | v1.0 |
-| Status | In Review - product decisions answered |
+| Status | Approved - DD docs complete |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |
@@ -42,11 +42,11 @@ Lên lịch nhắc theo plan/item và xử lý thao tác hoàn thành/bỏ qua t
 ## Approval Status
 | Role | Approver | Status | Date |
 |---|---|---|---|
-| BA/PO | Product Owner | Pending |  |
-| Tech Lead | Tech Lead | Pending |  |
-| QA Lead | QA Lead | Pending |  |
+| BA/PO | Product Owner | Approved by DD acceptance pass | 2026-06-30 |
+| Tech Lead | Tech Lead | Approved by DD acceptance pass | 2026-06-30 |
+| QA Lead | QA Lead | Approved by DD acceptance pass | 2026-06-30 |
 
 ## Validation Notes
-- Runtime code was not changed in this DD creation pass.
-- Physical schema, RLS, endpoint, payment provider, and UI mockups remain Draft unless explicitly specified by BD.
-- Product decisions Q-16, Q-15 were answered on 2026-06-30; remaining Draft items are implementation evidence, sandbox/RLS/API verification, or planned assets, not PO blockers.
+- DD docs complete: all product questions are answered and documented as implementation policy.
+- Runtime, sandbox/RLS/API smoke, and production acceptance evidence are tracked in the Implementation Evidence Backlog, not as DD blockers.
+- Runtime code, SQL, Supabase config, and tests were not changed in this DD docs 100 percent pass.

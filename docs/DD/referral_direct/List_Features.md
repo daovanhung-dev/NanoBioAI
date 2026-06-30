@@ -7,15 +7,15 @@
 | Module | REFERRAL_DIRECT |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| REFERRAL_DIRECT-F01 | Đăng ký và duyệt Sale | Member đủ điều kiện trở thành Sale active sau Admin duyệt. | Member, Admin | Member gửi yêu cầu Sale | P0 | BD sections 7.2, AC-09, UC-12/UC-13 | REFERRAL_DIRECT-FN01 | REFERRAL_DIRECT-V01 | Draft |
-| REFERRAL_DIRECT-F02 | Gắn mã giới thiệu trực tiếp | Tạo đúng một quan hệ Sale -> khách hợp lệ. | Guest, Member | Nhập mã giới thiệu | P0 | BD sections 7.3/7.4, AC-10/AC-14, UC-14 | REFERRAL_DIRECT-FN02 | REFERRAL_DIRECT-V02 | Draft |
+| REFERRAL_DIRECT-F01 | Đăng ký và duyệt Sale | Member đủ điều kiện trở thành Sale active sau Admin duyệt. | Member, Admin | Member gửi yêu cầu Sale | P0 | BD sections 7.2, AC-09, UC-12/UC-13 | REFERRAL_DIRECT-FN01 | REFERRAL_DIRECT-V01 | Approved - DD docs complete |
+| REFERRAL_DIRECT-F02 | Gắn mã giới thiệu trực tiếp | Tạo đúng một quan hệ Sale -> khách hợp lệ. | Guest, Member | Nhập mã giới thiệu | P0 | BD sections 7.3/7.4, AC-10/AC-14, UC-14 | REFERRAL_DIRECT-FN02 | REFERRAL_DIRECT-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | REFERRAL_DIRECT-E-main | Dữ liệu nghiệp vụ chính của Sale & mã giới thiệu trực tiếp | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | REFERRAL_DIRECT-API01 | Contract dự kiến cho REFERRAL_DIRECT-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD sections 7.2, AC-09, UC-12/UC-13, feature tạo đúng outcome: Member đủ điều kiện trở thành Sale active sau Admin duyệt..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] REFERRAL_DIRECT-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| REFERRAL_DIRECT-AC01-01 | Với source BD sections 7.2, AC-09, UC-12/UC-13, feature tạo đúng outcome: Member đủ điều kiện trở thành Sale active sau Admin duyệt.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-AC01-04 | REFERRAL_DIRECT-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="referral_direct-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | REFERRAL_DIRECT-E-main | Dữ liệu nghiệp vụ chính của Sale & mã giới thiệu trực tiếp | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | REFERRAL_DIRECT-API02 | Contract dự kiến cho REFERRAL_DIRECT-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD sections 7.3/7.4, AC-10/AC-14, UC-14, feature tạo đúng outcome: Tạo đúng một quan hệ Sale -> khách hợp lệ..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] REFERRAL_DIRECT-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| REFERRAL_DIRECT-AC02-01 | Với source BD sections 7.3/7.4, AC-10/AC-14, UC-14, feature tạo đúng outcome: Tạo đúng một quan hệ Sale -> khách hợp lệ.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| REFERRAL_DIRECT-AC02-04 | REFERRAL_DIRECT-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

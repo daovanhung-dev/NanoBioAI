@@ -7,15 +7,15 @@
 | Module | ONBOARDING_PROFILE |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.0 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M01, 13, 16.1 AC-01, Appendix A UC-01 |
 
 ## 1. Feature Inventory
 
 | ID | Feature | Goal | Actor | Trigger | Priority | Source | Functions | Views | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| ONBOARDING_PROFILE-F01 | Thu thập dữ liệu onboarding | Người dùng hoàn tất dữ liệu đầu vào tối thiểu. | Guest, Member | Mở app lần đầu hoặc hồ sơ chưa hoàn tất | P0 | BD M01, AC-01, UC-01 | ONBOARDING_PROFILE-FN01 | ONBOARDING_PROFILE-V01 | Draft |
-| ONBOARDING_PROFILE-F02 | Xác nhận hoàn tất onboarding | Đánh dấu hồ sơ đủ điều kiện để sinh lịch trình. | Guest, Member | Người dùng xác nhận màn tổng rà soát | P0 | BD M01 luồng chính, AC-01 | ONBOARDING_PROFILE-FN02 | ONBOARDING_PROFILE-V02 | Draft |
+| ONBOARDING_PROFILE-F01 | Thu thập dữ liệu onboarding | Người dùng hoàn tất dữ liệu đầu vào tối thiểu. | Guest, Member | Mở app lần đầu hoặc hồ sơ chưa hoàn tất | P0 | BD M01, AC-01, UC-01 | ONBOARDING_PROFILE-FN01 | ONBOARDING_PROFILE-V01 | Approved - DD docs complete |
+| ONBOARDING_PROFILE-F02 | Xác nhận hoàn tất onboarding | Đánh dấu hồ sơ đủ điều kiện để sinh lịch trình. | Guest, Member | Người dùng xác nhận màn tổng rà soát | P0 | BD M01 luồng chính, AC-01 | ONBOARDING_PROFILE-FN02 | ONBOARDING_PROFILE-V02 | Approved - DD docs complete |
 
 ## 2. Dependencies Between Features
 
@@ -84,12 +84,15 @@
 | Entity | ONBOARDING_PROFILE-E-main | Dữ liệu nghiệp vụ chính của Onboarding & Hồ sơ sức khỏe | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | ONBOARDING_PROFILE-API01 | Contract dự kiến cho ONBOARDING_PROFILE-FN01 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M01, AC-01, UC-01, feature tạo đúng outcome: Người dùng hoàn tất dữ liệu đầu vào tối thiểu..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] ONBOARDING_PROFILE-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ONBOARDING_PROFILE-AC01-01 | Với source BD M01, AC-01, UC-01, feature tạo đúng outcome: Người dùng hoàn tất dữ liệu đầu vào tối thiểu.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ONBOARDING_PROFILE-AC01-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ONBOARDING_PROFILE-AC01-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ONBOARDING_PROFILE-AC01-04 | ONBOARDING_PROFILE-V01 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="onboarding_profile-f02"></a>
@@ -150,9 +153,11 @@
 | Entity | ONBOARDING_PROFILE-E-main | Dữ liệu nghiệp vụ chính của Onboarding & Hồ sơ sức khỏe | Read/Write theo feature | Planned logical entity, schema vật lý cần DD/Supabase riêng khi có coding. |
 | API/Event | ONBOARDING_PROFILE-API02 | Contract dự kiến cho ONBOARDING_PROFILE-FN02 | Expose/Consume | Request/response phải được chốt trước implementation. |
 
-## G. Tiêu chí chấp nhận
+## G. Documented Acceptance Requirements
 
-- [ ] Với source BD M01 luồng chính, AC-01, feature tạo đúng outcome: Đánh dấu hồ sơ đủ điều kiện để sinh lịch trình..
-- [ ] Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút.
-- [ ] Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng.
-- [ ] ONBOARDING_PROFILE-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| ONBOARDING_PROFILE-AC02-01 | Với source BD M01 luồng chính, AC-01, feature tạo đúng outcome: Đánh dấu hồ sơ đủ điều kiện để sinh lịch trình.. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ONBOARDING_PROFILE-AC02-02 | Khi quyền không hợp lệ, hệ thống chặn ở UI/route/use-case/API, không chỉ ẩn nút. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ONBOARDING_PROFILE-AC02-03 | Khi retry hoặc double click, không tạo dữ liệu/điểm/quyền trùng. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| ONBOARDING_PROFILE-AC02-04 | ONBOARDING_PROFILE-V02 có đủ Loading, Empty, Success, Business Error, System Error và Permission Denied. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

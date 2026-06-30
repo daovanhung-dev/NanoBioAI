@@ -19,8 +19,8 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| AUTH_PROFILE_SYNC-FN01 | authenticateAndBuildAccess | AUTH_PROFILE_SYNC-F01 | Use case / Service | planned:lib/app_versions/v2/features/auth/application/auth_profile_sync_fn01.dart | Submit login/sign-up | Command + actor context | Result/Error | Audit/event when required | Draft |
-| AUTH_PROFILE_SYNC-FN02 | syncGuestProfileToMember | AUTH_PROFILE_SYNC-F02 | Use case / Service | planned:lib/app_versions/v2/features/auth/application/auth_profile_sync_fn02.dart | Login after guest usage | Command + actor context | Result/Error | Audit/event when required | Draft |
+| AUTH_PROFILE_SYNC-FN01 | authenticateAndBuildAccess | AUTH_PROFILE_SYNC-F01 | Use case / Service | planned:lib/app_versions/v2/features/auth/application/auth_profile_sync_fn01.dart | Submit login/sign-up | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| AUTH_PROFILE_SYNC-FN02 | syncGuestProfileToMember | AUTH_PROFILE_SYNC-F02 | Use case / Service | planned:lib/app_versions/v2/features/auth/application/auth_profile_sync_fn02.dart | Login after guest usage | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 
 ---
 
@@ -78,13 +78,16 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho AUTH_PROFILE_SYNC-FN01.
-- [ ] Business rule violation cho AUTH_PROFILE_SYNC-BR01.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUTH_PROFILE_SYNC-FN-EV01-01 | Happy path cho AUTH_PROFILE_SYNC-FN01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-FN-EV01-02 | Business rule violation cho AUTH_PROFILE_SYNC-BR01. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-FN-EV01-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-FN-EV01-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-FN-EV01-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
 ---
 
 <a id="auth_profile_sync-fn02"></a>
@@ -141,10 +144,12 @@ View / Presentation
 | Fallback / compensation | Khi dependency lỗi, giữ trạng thái hiện tại hoặc tạo adjustment/reversal theo BD nếu tài chính đã chốt. |
 | Observability | Log an toàn gồm module, function ID, actor type, status, correlation id; không log secret/PII/raw payment. |
 
-## E. Test checklist
+## E. Documented Function Test Requirements
 
-- [ ] Happy path cho AUTH_PROFILE_SYNC-FN02.
-- [ ] Business rule violation cho AUTH_PROFILE_SYNC-BR02.
-- [ ] Permission denied theo role/scope.
-- [ ] Idempotency/retry nếu có ghi dữ liệu.
-- [ ] Audit hoặc event được tạo khi BD yêu cầu.
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| AUTH_PROFILE_SYNC-FN-EV02-01 | Happy path cho AUTH_PROFILE_SYNC-FN02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-FN-EV02-02 | Business rule violation cho AUTH_PROFILE_SYNC-BR02. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+| AUTH_PROFILE_SYNC-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |

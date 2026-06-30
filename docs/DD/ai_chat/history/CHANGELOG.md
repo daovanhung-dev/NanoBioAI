@@ -1,5 +1,14 @@
 # CHANGELOG — AI_CHAT / AI Chat
 
+## [v1.2] - 2026-06-30
+### Changed
+- Marked AI_CHAT DD docs as `Approved - DD docs complete`.
+- Separated runtime/test/sandbox evidence into the Implementation Evidence Backlog.
+- Converted unchecked DD requirement lists into documented acceptance/evidence requirement tables without claiming tests were executed.
+
+### Validation
+- Docs-only change; runtime code, SQL, Supabase config, and tests were not changed.
+
 ## [v1.1] - 2026-06-30
 ### Changed
 - Recorded accepted product decisions Q-16 in README, Overall, Import_File, and checklist traceability.
