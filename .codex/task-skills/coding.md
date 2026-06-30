@@ -2,11 +2,11 @@
 
 - Canonical key: coding
 - Workflow: .codex/workflows/coding.md
-- Generated from 13 worklog(s).
+- Generated from 15 worklog(s).
 
 ## When To Read
 
-- Historical task type: coding (8)
+- Historical task type: coding (10)
 - Historical task type: coding/test/docs (3)
 - Historical task type: feature (1)
 - Historical task type: feature Dashboard/UI + data write path (1)
@@ -15,12 +15,12 @@
 
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - M01 ONBOARDING_PROFILE: 1
-- v1 onboarding/splash/dashboard, v2 auth/membership/cloud sync, Supabase docs.: 1
 - M02 PERSONAL_SCHEDULE_AI: 1
 - unknown: 1
+- M09 SCHEDULE_NOTIFICATIONS, M10 ADVANCED_TRACKING_GOALS: 1
+- M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M02 PERSONAL_SCHEDULE_AI: 1
 - M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox: 1
 - onboarding, dashboard: 1
-- dashboard, daily_health_tracking, lifestyle_schedule, meal_plan, shared/widgets: 1
 
 ## Work Pattern
 

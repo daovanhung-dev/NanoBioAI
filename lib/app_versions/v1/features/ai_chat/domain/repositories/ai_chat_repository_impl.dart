@@ -1,18 +1,31 @@
+import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
+
+import '../../../../services/ai/ai_chat_service.dart';
 import '../../data/models/chat_message_model.dart';
 import '../entities/chat_message_entity.dart';
 import 'ai_chat_repository.dart';
-import '../../../../services/ai/ai_chat_service.dart';
 
 class AIChatRepositoryImpl implements AIChatRepository {
   final AIChatService _aiChatService;
+  final UsageQuotaGateway? _quotaGateway;
   final List<ChatMessageEntity> _history = [];
 
-  AIChatRepositoryImpl({required AIChatService aiChatService})
-    : _aiChatService = aiChatService;
+  AIChatRepositoryImpl({
+    required AIChatService aiChatService,
+    UsageQuotaGateway? quotaGateway,
+  }) : _aiChatService = aiChatService,
+       _quotaGateway = quotaGateway;
 
   @override
   Future<ChatMessageEntity> sendMessage(String message) async {
     final timestamp = DateTime.now();
+    final requestId = 'ai-chat-${timestamp.microsecondsSinceEpoch}';
+
+    await _quotaGateway?.checkCurrentUserQuota(
+      featureKey: UsageQuotaFeatureKey.aiChatMessage,
+      requestId: requestId,
+      at: timestamp,
+    );
 
     // Create user message
     final userMessage = ChatMessageModel(
@@ -26,6 +39,12 @@ class AIChatRepositoryImpl implements AIChatRepository {
 
     // Get AI response
     final responseText = await _aiChatService.sendMessage(message);
+
+    await _quotaGateway?.commitCurrentUserQuota(
+      featureKey: UsageQuotaFeatureKey.aiChatMessage,
+      requestId: requestId,
+      at: DateTime.now(),
+    );
 
     // Create AI message
     final aiMessage = ChatMessageModel(

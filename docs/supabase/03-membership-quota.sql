@@ -59,7 +59,7 @@ create table if not exists public.usage_quota_rules (
   feature_key text not null,
   period_unit text not null check (period_unit in ('day', 'month', 'lifetime', 'none')),
   max_count integer,
-  reset_timezone text not null default 'Asia/Saigon',
+  reset_timezone text not null default 'Asia/Ho_Chi_Minh',
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -231,6 +231,333 @@ as $$
   end
 $$;
 
+create or replace function public.usage_quota_period_key(
+  p_period_unit text,
+  p_at timestamptz,
+  p_reset_timezone text
+)
+returns text
+language sql
+stable
+as $$
+  select case p_period_unit
+    when 'day' then to_char(p_at at time zone p_reset_timezone, 'YYYY-MM-DD')
+    when 'month' then to_char(p_at at time zone p_reset_timezone, 'YYYY-MM')
+    when 'lifetime' then 'lifetime'
+    else 'none'
+  end
+$$;
+
+create or replace function public.usage_quota_reset_at(
+  p_period_unit text,
+  p_at timestamptz,
+  p_reset_timezone text
+)
+returns timestamptz
+language sql
+stable
+as $$
+  select case p_period_unit
+    when 'day' then (
+      date_trunc('day', p_at at time zone p_reset_timezone) + interval '1 day'
+    ) at time zone p_reset_timezone
+    when 'month' then (
+      date_trunc('month', p_at at time zone p_reset_timezone) + interval '1 month'
+    ) at time zone p_reset_timezone
+    else null::timestamptz
+  end
+$$;
+
+create or replace function public.check_usage_quota(
+  p_user_id uuid,
+  p_request_id text,
+  p_feature_key text,
+  p_reset_timezone text default 'Asia/Ho_Chi_Minh',
+  p_requested_at timestamptz default now()
+)
+returns table (
+  allowed boolean,
+  used_count integer,
+  limit_count integer,
+  reset_at timestamptz,
+  reason_code text
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_actor uuid := auth.uid();
+  v_plan public.nb_membership_plan;
+  v_period_unit text;
+  v_rule_timezone text;
+  v_period_key text;
+  v_used_count integer := 0;
+begin
+  if p_user_id is null or nullif(btrim(p_feature_key), '') is null then
+    raise exception 'QUOTA_REQUEST_INVALID';
+  end if;
+
+  if v_actor is not null and v_actor <> p_user_id then
+    raise exception 'QUOTA_USER_MISMATCH';
+  end if;
+
+  v_plan := public.current_plan_for_user(p_user_id);
+
+  select r.period_unit, r.max_count, coalesce(nullif(r.reset_timezone, ''), p_reset_timezone)
+    into v_period_unit, limit_count, v_rule_timezone
+  from public.usage_quota_rules r
+  where r.plan_code = v_plan
+    and r.feature_key = p_feature_key
+    and r.is_active = true
+  order by
+    case r.period_unit
+      when 'none' then 0
+      when 'day' then 1
+      when 'month' then 2
+      when 'lifetime' then 3
+      else 4
+    end
+  limit 1;
+
+  if not found or v_period_unit = 'none' or limit_count is null then
+    return query select true, 0, null::integer, null::timestamptz, null::text;
+    return;
+  end if;
+
+  v_period_key := public.usage_quota_period_key(
+    v_period_unit,
+    p_requested_at,
+    v_rule_timezone
+  );
+  reset_at := public.usage_quota_reset_at(
+    v_period_unit,
+    p_requested_at,
+    v_rule_timezone
+  );
+
+  select coalesce(uqc.used_count, 0)
+    into v_used_count
+  from public.usage_quota_counters uqc
+  where uqc.user_id = p_user_id
+    and uqc.feature_key = p_feature_key
+    and uqc.period_key = v_period_key;
+
+  v_used_count := coalesce(v_used_count, 0);
+  used_count := v_used_count;
+  allowed := v_used_count + 1 <= limit_count;
+  reason_code := case when allowed then null else 'quota_exceeded' end;
+
+  return next;
+end;
+$$;
+
+create or replace function public.commit_usage_quota(
+  p_user_id uuid,
+  p_request_id text,
+  p_feature_key text,
+  p_reset_timezone text default 'Asia/Ho_Chi_Minh',
+  p_requested_at timestamptz default now(),
+  p_count integer default 1
+)
+returns table (
+  committed boolean,
+  used_count integer,
+  limit_count integer,
+  reset_at timestamptz,
+  reason_code text
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_decision record;
+  v_plan public.nb_membership_plan;
+  v_period_unit text := 'none';
+  v_rule_timezone text := p_reset_timezone;
+  v_period_key text := 'none';
+  v_rows integer := 0;
+begin
+  if nullif(btrim(p_request_id), '') is null or p_count <= 0 then
+    raise exception 'QUOTA_COMMIT_INVALID';
+  end if;
+
+  select *
+    into v_decision
+  from public.check_usage_quota(
+    p_user_id,
+    p_request_id,
+    p_feature_key,
+    p_reset_timezone,
+    p_requested_at
+  );
+
+  if not coalesce(v_decision.allowed, false) then
+    return query select
+      false,
+      v_decision.used_count,
+      v_decision.limit_count,
+      v_decision.reset_at,
+      coalesce(v_decision.reason_code, 'quota_exceeded');
+    return;
+  end if;
+
+  v_plan := public.current_plan_for_user(p_user_id);
+
+  select r.period_unit, r.max_count, coalesce(nullif(r.reset_timezone, ''), p_reset_timezone)
+    into v_period_unit, limit_count, v_rule_timezone
+  from public.usage_quota_rules r
+  where r.plan_code = v_plan
+    and r.feature_key = p_feature_key
+    and r.is_active = true
+  order by
+    case r.period_unit
+      when 'none' then 0
+      when 'day' then 1
+      when 'month' then 2
+      when 'lifetime' then 3
+      else 4
+    end
+  limit 1;
+
+  v_period_unit := coalesce(v_period_unit, 'none');
+  v_period_key := public.usage_quota_period_key(
+    v_period_unit,
+    p_requested_at,
+    v_rule_timezone
+  );
+  reset_at := public.usage_quota_reset_at(
+    v_period_unit,
+    p_requested_at,
+    v_rule_timezone
+  );
+
+  insert into public.usage_events (
+    user_id,
+    feature_key,
+    period_key,
+    count_delta,
+    idempotency_key,
+    event_source,
+    metadata
+  )
+  values (
+    p_user_id,
+    p_feature_key,
+    v_period_key,
+    p_count,
+    p_request_id,
+    'trusted_backend',
+    jsonb_build_object('plan_code', v_plan)
+  )
+  on conflict (user_id, feature_key, idempotency_key) do nothing;
+
+  get diagnostics v_rows = row_count;
+
+  if v_rows > 0 and v_period_unit <> 'none' and limit_count is not null then
+    insert into public.usage_quota_counters (
+      user_id,
+      feature_key,
+      period_key,
+      plan_code,
+      used_count,
+      limit_count,
+      reset_at
+    )
+    values (
+      p_user_id,
+      p_feature_key,
+      v_period_key,
+      v_plan,
+      p_count,
+      limit_count,
+      reset_at
+    )
+    on conflict (user_id, feature_key, period_key) do update
+    set
+      used_count = public.usage_quota_counters.used_count + excluded.used_count,
+      plan_code = excluded.plan_code,
+      limit_count = excluded.limit_count,
+      reset_at = excluded.reset_at,
+      updated_at = now();
+  end if;
+
+  if v_period_unit <> 'none' and limit_count is not null then
+    select coalesce(uqc.used_count, 0)
+      into used_count
+    from public.usage_quota_counters uqc
+    where uqc.user_id = p_user_id
+      and uqc.feature_key = p_feature_key
+      and uqc.period_key = v_period_key;
+  else
+    used_count := 0;
+    limit_count := null;
+    reset_at := null;
+  end if;
+
+  committed := true;
+  reason_code := null;
+  return next;
+end;
+$$;
+
+create or replace function public.check_personal_schedule_generation_quota(
+  p_user_id uuid,
+  p_request_id text,
+  p_feature_key text default 'personal_schedule_generation',
+  p_reset_timezone text default 'Asia/Ho_Chi_Minh',
+  p_requested_at timestamptz default now()
+)
+returns table (
+  allowed boolean,
+  used_count integer,
+  limit_count integer,
+  reset_at timestamptz,
+  reason_code text
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select *
+  from public.check_usage_quota(
+    p_user_id,
+    p_request_id,
+    coalesce(nullif(p_feature_key, ''), 'personal_schedule_generation'),
+    p_reset_timezone,
+    p_requested_at
+  )
+$$;
+
+create or replace function public.commit_personal_schedule_generation_quota(
+  p_user_id uuid,
+  p_request_id text,
+  p_feature_key text default 'personal_schedule_generation',
+  p_reset_timezone text default 'Asia/Ho_Chi_Minh',
+  p_committed_at timestamptz default now()
+)
+returns table (
+  committed boolean,
+  used_count integer,
+  limit_count integer,
+  reset_at timestamptz,
+  reason_code text
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select *
+  from public.commit_usage_quota(
+    p_user_id,
+    p_request_id,
+    coalesce(nullif(p_feature_key, ''), 'personal_schedule_generation'),
+    p_reset_timezone,
+    p_committed_at
+  )
+$$;
+
 do $$
 declare
   table_name text;
@@ -309,5 +636,14 @@ revoke insert, update, delete on
   public.usage_quota_counters,
   public.usage_events
 from anon, authenticated;
+
+grant execute on function public.check_usage_quota(uuid, text, text, text, timestamptz)
+  to authenticated;
+grant execute on function public.commit_usage_quota(uuid, text, text, text, timestamptz, integer)
+  to authenticated;
+grant execute on function public.check_personal_schedule_generation_quota(uuid, text, text, text, timestamptz)
+  to authenticated;
+grant execute on function public.commit_personal_schedule_generation_quota(uuid, text, text, text, timestamptz)
+  to authenticated;
 
 commit;

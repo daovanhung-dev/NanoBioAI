@@ -114,16 +114,20 @@ void main() {
 
     final scheduled = scheduler.scheduled.single;
     final expectedRowId =
-        'reminder_lifestyle_schedule_item_schedule-stable_2026-06-17T12:00:00.000';
+        'reminder_user-1_lifestyle_schedule_item_schedule-stable_2026-06-17T12:00:00.000';
     final expectedNotificationId = deterministicNotificationId(expectedRowId);
     final payload = NotificationPayload.fromJsonString(scheduled.payload);
     final rows = await notificationsDao.getAll();
 
     expect(scheduled.id, expectedNotificationId);
+    expect(payload.payloadVersion, NotificationPayload.currentPayloadVersion);
     expect(payload.notificationId, expectedNotificationId);
     expect(payload.sourceType, ReminderSourceTypes.lifestyleScheduleItem);
     expect(payload.sourceId, 'schedule-stable');
     expect(payload.scheduledAt, '2026-06-17T12:00:00.000');
+    expect(payload.subjectUserId, 'user-1');
+    expect(payload.actorUserId, 'user-1');
+    expect(payload.correlationId, expectedRowId);
     expect(rows.single.id, expectedRowId);
     expect(rows.single.notificationId, expectedNotificationId);
   });
@@ -140,6 +144,8 @@ void main() {
 
       expect(scheduler.scheduled, isEmpty);
       expect(rows, hasLength(1));
+      final payload = NotificationPayload.fromJsonString(rows.single.payload!);
+      expect(payload.subjectUserId, 'user-1');
       expect(
         rows.single.actionStatus,
         NotificationActionStatuses.permissionDenied,
@@ -163,13 +169,36 @@ void main() {
     expect(rows.single.sourceId, 'reschedule');
   });
 
+  test('reschedule keeps pending rows for a different subject', () async {
+    await scheduleItemsDao.upsertMany([_item(id: 'reschedule')]);
+    await notificationsDao.insert(
+      _notification(id: 'same-subject-pending', notificationId: 998),
+    );
+    await notificationsDao.insert(
+      _notification(
+        id: 'other-subject-pending',
+        notificationId: 997,
+        userId: 'user-2',
+      ),
+    );
+
+    await service.scheduleGeneratedReminders();
+
+    final rows = await notificationsDao.getAll();
+
+    expect(scheduler.cancelled, [998]);
+    expect(rows.any((row) => row.id == 'same-subject-pending'), isFalse);
+    expect(rows.any((row) => row.id == 'other-subject-pending'), isTrue);
+    expect(rows.where((row) => row.userId == 'user-1'), hasLength(1));
+  });
+
   test('schedule failure records failed row and continues', () async {
     await scheduleItemsDao.upsertMany([
       _item(id: 'fails', startTime: '12:00'),
       _item(id: 'succeeds', scheduleDate: '2026-06-18', startTime: '07:00'),
     ]);
     final failedRowId =
-        'reminder_lifestyle_schedule_item_fails_2026-06-17T12:00:00.000';
+        'reminder_user-1_lifestyle_schedule_item_fails_2026-06-17T12:00:00.000';
     scheduler.failScheduleIds.add(deterministicNotificationId(failedRowId));
 
     await service.scheduleGeneratedReminders();
@@ -188,10 +217,11 @@ void main() {
 NotificationModel _notification({
   required String id,
   required int notificationId,
+  String userId = 'user-1',
 }) {
   return NotificationModel(
     id: id,
-    userId: 'user-1',
+    userId: userId,
     title: 'Old reminder',
     body: 'Old reminder body',
     type: NotificationTypes.reminder,

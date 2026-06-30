@@ -342,16 +342,6 @@ $risks.Add("- Evidence: `docs/worklog/2026-06-21/002-worklog-supabase-database-d
 $risks.Add("- Impact: Membership, quota, FamilyPlus, sale/referral, payment, and RLS behavior cannot be treated as production-ready until SQL/RLS is verified outside docs.") | Out-Null
 $risks.Add("- Proposed handling: Run Supabase local or sandbox verification, record RLS smoke results for at least two users and family scopes, then update this risk with evidence.") | Out-Null
 $risks.Add("- Owner/scope: Backend/Supabase implementation.") | Out-Null
-$risks.Add("") | Out-Null
-$risks.Add("## NB-RISK-002 Product flow DD open decisions Q-01..Q-10") | Out-Null
-$risks.Add("") | Out-Null
-$risks.Add("- Severity: P1") | Out-Null
-$risks.Add("- Status: Blocked") | Out-Null
-$risks.Add("- Updated: $updated") | Out-Null
-$risks.Add("- Evidence: `docs/worklog/2026-06-21/007-worklog-product-flow-dd-design.md`; `docs/DD/product_flow/00_READ_FIRST.md`.") | Out-Null
-$risks.Add("- Impact: Dependent implementation details for membership/payment/family/referral flows may be wrong if coded before product decisions are closed.") | Out-Null
-$risks.Add("- Proposed handling: Product Owner/Tech Lead closes Q-01..Q-10, then update affected DD files from Draft to implementation-ready where appropriate.") | Out-Null
-$risks.Add("- Owner/scope: Product/Tech Lead decision.") | Out-Null
 Write-Utf8Text -Path (Join-Path $historyRoot "OPEN_RISKS.md") -Lines $risks
 
 $riskHistory = New-Object System.Collections.Generic.List[string]

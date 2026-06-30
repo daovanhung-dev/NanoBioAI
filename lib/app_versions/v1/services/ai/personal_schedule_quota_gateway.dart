@@ -58,7 +58,7 @@ abstract class PersonalScheduleQuotaGateway {
 class TrustedBackendPersonalScheduleQuotaGateway
     implements PersonalScheduleQuotaGateway {
   static const featureKey = 'personal_schedule_generation';
-  static const resetTimezone = 'Asia/Saigon';
+  static const resetTimezone = 'Asia/Ho_Chi_Minh';
 
   final SupabaseClient? clientOverride;
 

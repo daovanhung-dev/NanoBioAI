@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
+
 import '../../domain/entities/chat_message_entity.dart';
 import '../../domain/repositories/ai_chat_repository.dart';
 import '../../providers/ai_chat_providers.dart';
@@ -50,7 +52,6 @@ class AIChatController extends Notifier<AIChatState> {
 
     final trimmed = message.trim();
 
-    // Add user message immediately
     final userMessage = ChatMessageEntity(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       content: trimmed,
@@ -65,7 +66,6 @@ class AIChatController extends Notifier<AIChatState> {
     );
 
     try {
-      // Get AI response
       final aiMessage = await _repository.sendMessage(trimmed);
 
       state = state.copyWith(
@@ -73,10 +73,7 @@ class AIChatController extends Notifier<AIChatState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Không thể gửi tin nhắn. Vui lòng thử lại.',
-      );
+      state = state.copyWith(isLoading: false, error: _messageForSendError(e));
     }
   }
 
@@ -92,6 +89,11 @@ class AIChatController extends Notifier<AIChatState> {
   void dismissError() {
     state = state.copyWith(error: null);
   }
+}
+
+String _messageForSendError(Object error) {
+  if (error is UsageQuotaException) return error.userMessage;
+  return 'Không thể gửi tin nhắn. Bạn thử lại sau một chút nhé.';
 }
 
 final aiChatControllerProvider =

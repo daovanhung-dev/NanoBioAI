@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/daos/health_tracking_logs_dao.dart';
 import 'package:nano_app/core/storage/localdb/daos/notifications_dao.dart';
 import 'package:nano_app/core/storage/localdb/models/notification_model.dart';
+import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:nano_app/core/storage/localdb/tables/daily_health_tasks_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/health_tracking_logs_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
@@ -25,6 +26,7 @@ void main() {
   late MealPlansDao mealPlansDao;
   late LifestyleScheduleItemsDao scheduleItemsDao;
   late NotificationActionHandler handler;
+  late int syncRequests;
 
   final fixedNow = DateTime.parse('2026-06-17T07:15:00.000');
 
@@ -44,6 +46,10 @@ void main() {
     notificationsDao = NotificationsDao(db);
     mealPlansDao = MealPlansDao(db);
     scheduleItemsDao = LifestyleScheduleItemsDao(db);
+    syncRequests = 0;
+    LocalUserDataSyncDispatcher.register(({Database? database}) {
+      syncRequests++;
+    });
     handler = NotificationActionHandler(
       notificationsDao: notificationsDao,
       mealPlansDao: mealPlansDao,
@@ -53,6 +59,7 @@ void main() {
         databaseOverride: db,
         now: () => fixedNow,
       ),
+      database: db,
       now: () => fixedNow,
     );
   });
@@ -93,6 +100,7 @@ void main() {
     expect(schedule!.isCompleted, isTrue);
     expect(meal!.isCompleted, isTrue);
     expect(log!.dailyScore, 100);
+    expect(syncRequests, greaterThanOrEqualTo(1));
   });
 
   test('skipped records response without completing schedule source', () async {
@@ -104,7 +112,11 @@ void main() {
       ),
     ]);
     await notificationsDao.insert(
-      _notification(id: 'n-schedule-2', notificationId: 201),
+      _notification(
+        id: 'n-schedule-2',
+        notificationId: 201,
+        sourceId: 'schedule-2',
+      ),
     );
 
     await handler.handleAction(
@@ -120,7 +132,123 @@ void main() {
     expect(notification!.actionStatus, NotificationActionStatuses.skipped);
     expect(notification.isRead, isTrue);
     expect(schedule!.isCompleted, isFalse);
+    expect(syncRequests, 1);
   });
+
+  test('handled action is idempotent on retry', () async {
+    await mealPlansDao.insert(_meal(id: 'meal-idempotent'));
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-idempotent',
+        sourceType: LifestyleScheduleSourceTypes.mealPlan,
+        sourceId: 'meal-idempotent',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-idempotent',
+        notificationId: 211,
+        sourceId: 'schedule-idempotent',
+      ),
+    );
+
+    await handler.handleAction(
+      actionId: NotificationActionIds.done,
+      notificationId: 211,
+      payload: _payload(notificationId: 211, sourceId: 'schedule-idempotent'),
+    );
+    final syncAfterFirstAction = syncRequests;
+
+    await handler.handleAction(
+      actionId: NotificationActionIds.done,
+      notificationId: 211,
+      payload: _payload(notificationId: 211, sourceId: 'schedule-idempotent'),
+    );
+
+    final notification = await notificationsDao.getByNotificationId(211);
+    final meal = await mealPlansDao.getById('meal-idempotent');
+
+    expect(notification!.actionStatus, NotificationActionStatuses.done);
+    expect(meal!.isCompleted, isTrue);
+    expect(syncRequests, syncAfterFirstAction);
+  });
+
+  test('subject mismatch records failure without completing source', () async {
+    await mealPlansDao.insert(_meal(id: 'meal-subject'));
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-subject',
+        sourceType: LifestyleScheduleSourceTypes.mealPlan,
+        sourceId: 'meal-subject',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-subject',
+        notificationId: 212,
+        sourceId: 'schedule-subject',
+      ),
+    );
+
+    await handler.handleAction(
+      actionId: NotificationActionIds.done,
+      notificationId: 212,
+      payload: _payload(
+        notificationId: 212,
+        sourceId: 'schedule-subject',
+        subjectUserId: 'user-2',
+      ),
+    );
+
+    final notification = await notificationsDao.getByNotificationId(212);
+    final schedule = await scheduleItemsDao.getById('schedule-subject');
+    final meal = await mealPlansDao.getById('meal-subject');
+
+    expect(notification!.actionStatus, NotificationActionStatuses.actionFailed);
+    expect(notification.isRead, isTrue);
+    expect(schedule!.isCompleted, isFalse);
+    expect(meal!.isCompleted, isFalse);
+    expect(syncRequests, 1);
+  });
+
+  test(
+    'source owner mismatch records failure without completing source',
+    () async {
+      await mealPlansDao.insert(_meal(id: 'meal-owner', userId: 'user-2'));
+      await scheduleItemsDao.upsertMany([
+        _schedule(
+          id: 'schedule-owner',
+          userId: 'user-2',
+          sourceType: LifestyleScheduleSourceTypes.mealPlan,
+          sourceId: 'meal-owner',
+        ),
+      ]);
+      await notificationsDao.insert(
+        _notification(
+          id: 'n-owner',
+          notificationId: 213,
+          sourceId: 'schedule-owner',
+        ),
+      );
+
+      await handler.handleAction(
+        actionId: NotificationActionIds.done,
+        notificationId: 213,
+        payload: _payload(notificationId: 213, sourceId: 'schedule-owner'),
+      );
+
+      final notification = await notificationsDao.getByNotificationId(213);
+      final schedule = await scheduleItemsDao.getById('schedule-owner');
+      final meal = await mealPlansDao.getById('meal-owner');
+
+      expect(
+        notification!.actionStatus,
+        NotificationActionStatuses.actionFailed,
+      );
+      expect(schedule!.isCompleted, isFalse);
+      expect(meal!.isCompleted, isFalse);
+    },
+  );
 
   test('done with missing schedule source records action failure', () async {
     await notificationsDao.insert(
@@ -224,19 +352,21 @@ String _payload({
   required int notificationId,
   String sourceType = ReminderSourceTypes.lifestyleScheduleItem,
   required String sourceId,
+  String? subjectUserId,
 }) {
   return NotificationPayload(
     notificationId: notificationId,
     sourceType: sourceType,
     sourceId: sourceId,
     scheduledAt: '2026-06-17T07:00:00.000',
+    subjectUserId: subjectUserId,
   ).toJsonString();
 }
 
-MealPlanModel _meal({required String id}) {
+MealPlanModel _meal({required String id, String userId = 'user-1'}) {
   return MealPlanModel(
     id: id,
-    userId: 'user-1',
+    userId: userId,
     planDate: '2026-06-17',
     mealType: 'breakfast',
     mealName: 'Oatmeal',
@@ -260,12 +390,13 @@ MealPlanModel _meal({required String id}) {
 
 LifestyleScheduleItemModel _schedule({
   required String id,
+  String userId = 'user-1',
   required String sourceType,
   required String sourceId,
 }) {
   return LifestyleScheduleItemModel(
     id: id,
-    userId: 'user-1',
+    userId: userId,
     scheduleDate: '2026-06-17',
     startTime: '07:00',
     endTime: '07:30',

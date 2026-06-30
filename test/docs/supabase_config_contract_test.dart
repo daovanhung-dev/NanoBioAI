@@ -35,6 +35,10 @@ void main() {
         'create table if not exists public.sale_point_adjustments',
         'create table if not exists public.admin_reconciliation_discrepancies',
         'sync_my_mobile_snapshot',
+        'check_usage_quota',
+        'commit_usage_quota',
+        'check_personal_schedule_generation_quota',
+        'commit_personal_schedule_generation_quota',
         'get_my_sale_state',
         'request_sale_participation',
         'attach_my_referral_code',
@@ -158,6 +162,18 @@ void main() {
         "'manual_approval_required'",
         'manual_adjustment',
         "'pending',",
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
+    });
+
+    test('uses Vietnam timezone for quota rules and RPC boundaries', () {
+      expect(sql, isNot(contains('Asia/Saigon')));
+      for (final token in [
+        "reset_timezone text not null default 'Asia/Ho_Chi_Minh'",
+        "p_reset_timezone text default 'Asia/Ho_Chi_Minh'",
+        "('free', 'ai_chat_message', 'day', 3, 'Asia/Ho_Chi_Minh', true)",
+        "('free', 'personal_schedule_generation', 'month', 3, 'Asia/Ho_Chi_Minh', true)",
       ]) {
         expect(sql, contains(token), reason: token);
       }

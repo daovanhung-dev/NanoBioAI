@@ -46,12 +46,12 @@ insert into public.usage_quota_rules (
   is_active
 )
 values
-  ('free', 'ai_chat_message', 'day', 3, 'Asia/Saigon', true),
-  ('free', 'personal_schedule_generation', 'month', 3, 'Asia/Saigon', true),
-  ('plus', 'ai_chat_message', 'none', null, 'Asia/Saigon', true),
-  ('plus', 'personal_schedule_generation', 'none', null, 'Asia/Saigon', true),
-  ('family_plus', 'ai_chat_message', 'none', null, 'Asia/Saigon', true),
-  ('family_plus', 'personal_schedule_generation', 'none', null, 'Asia/Saigon', true)
+  ('free', 'ai_chat_message', 'day', 3, 'Asia/Ho_Chi_Minh', true),
+  ('free', 'personal_schedule_generation', 'month', 3, 'Asia/Ho_Chi_Minh', true),
+  ('plus', 'ai_chat_message', 'none', null, 'Asia/Ho_Chi_Minh', true),
+  ('plus', 'personal_schedule_generation', 'none', null, 'Asia/Ho_Chi_Minh', true),
+  ('family_plus', 'ai_chat_message', 'none', null, 'Asia/Ho_Chi_Minh', true),
+  ('family_plus', 'personal_schedule_generation', 'none', null, 'Asia/Ho_Chi_Minh', true)
 on conflict (plan_code, feature_key, period_unit) do update
 set
   max_count = excluded.max_count,

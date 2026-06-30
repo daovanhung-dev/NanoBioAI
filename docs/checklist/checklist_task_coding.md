@@ -20,7 +20,7 @@ Commit de xuat: docs(checklist): khoi tao task coding theo DD progress
 ## DD Decision Update 2026-06-30
 
 - Q-01..Q-18 da chot va DD docs M01-M19 da 100%; implementation evidence moi la backlog coding/test.
-- Uu tien tiep theo la implementation evidence backlog: sandbox/RLS/API/audit evidence va vertical slice cho M10.
+- M09/M10 da co code+test evidence theo acceptance coding; tiep theo uu tien sandbox/RLS/API/audit evidence va production smoke cho cac module con lai.
 - Coding progress chi tang khi co code/test/SQL/sandbox evidence moi.
 
 ## Uu tien tiep theo
@@ -29,12 +29,14 @@ Commit de xuat: docs(checklist): khoi tao task coding theo DD progress
 |---:|---|---|---|
 | 1 | M15-M19 Admin | Verify Admin SQL/RPC sandbox, RLS, audit rows, 24h hold, reconciliation, point adjustment, and privacy filters; record acceptance evidence. | Q-05/Q-10/Q-12/Q-13/Q-16/Q-17/Q-18 da chot va runtime/SQL/tests da update; can sandbox/staging evidence de dat acceptance. |
 | 2 | M12/M14 Sale | Repo-ready da co; tiep theo verify Sale RPC/RLS sandbox va ghi acceptance evidence cho request Sale/referral/conversion queue. | Sale direct-only co app/Admin/SQL contract/tests, nhung chua production-ready khi sandbox va financial policies da chot; sandbox evidence can lam. |
-| 3 | M06/M07 Quota + AI Chat | Chot quota reset/trusted write va wire trusted quota backend cho AI chat; M02 runtime guard da co interface truoc AI nhung production adapter van waiting for implementation evidence. | Quota la dependency production cho AI Chat va Personal Schedule. |
+| 3 | M06/M07 Quota + AI Chat | Run Supabase sandbox quota acceptance: Free 3/day AI chat, Free 3/month schedule, Plus/FamilyPlus bypass, idempotent commit, RLS/client write rejection. | Code/SQL gateway da wire; sandbox evidence la blocker de dat production acceptance. |
 | 4 | M01/M02/M03 Guest flow | M01 local-first user-data sync da harden; tiep theo doi chieu M03 dashboard state, Supabase sandbox sync, va FamilyPlus contract. | V1 runtime local da tien len; cloud sync sandbox/RLS, subject/consent va dashboard state can implementation/sandbox evidence. |
 | 5 | M13/M17 Payment/Reconciliation | Verify selected payment/reconciliation policy in sandbox, then finish provider/chargeback-specific contracts not covered by current local draft. | Q-05/Q-10/Q-13/Q-17 da chot cho selected policy; provider/staging evidence van thieu. |
 
 ## Notes tu phien coding gan nhat
 
+- 2026-06-30: M09/M10 coding 100% theo code+test acceptance: M09 them payload v2 co subject/actor/correlation metadata, reminder ID co subject, action idempotent va chan subject/source-owner mismatch; M10 them v3 route `/v3/advanced-tracking`, hydration goal `advanced_hydration`, repository/datasource/use case/provider/page, Plus/FamilyPlus access gate va tests. Targeted analyze pass. Targeted tests pass 44 case cho notification, M10, cloud-sync contract va architecture boundary. Flutter van in warning pubspec asset folder missing do nhieu asset `.gitkeep` dang bi xoa san trong worktree, nhung targeted test command exit 0. Implementation evidence backlog production: real-device notification, Supabase sandbox cross-device sync, paid access va FamilyPlus subject/RLS smoke.
+- 2026-06-30: M06/M07/M02 quota foundation da code/test: them shared `TrustedBackendUsageQuotaGateway`, v2 `EffectiveAccess` read model, SQL `check_usage_quota`/`commit_usage_quota` + schedule wrappers trong `03-membership-quota.sql` va `config.sql`, normalize quota timezone sang `Asia/Ho_Chi_Minh`, AI Chat check quota truoc AI va commit sau response. Targeted tests pass: usage quota gateway, AI Chat quota, Supabase config contract, generated-plan quota, architecture boundary. Implementation evidence backlog: chay Supabase sandbox/RLS cho quota counters/events, Free limit, paid bypass, idempotency, client write rejection.
 - 2026-06-30: M01/M05 immediate user-data sync hardening da code/test: SQLite v11 backfill missing sync ids, onboarding current-user reader/local-first completion, `AuthProfileService` read-only, profile/onboarding contract tests updated, outbox retry va active snapshot tests pass. Quick check global format fail do 7 legacy files ngoai scope; targeted sync/onboarding/profile/daily/meal/lifestyle/notification tests pass. Implementation evidence backlog: Supabase sandbox/RLS/cross-device evidence va FamilyPlus subject-aware sync.
 - 2026-06-28: M12/M14 Sale repo-ready: go local commission estimator khoi Sale UI, conversion request dung trusted RPC config/idempotency retry, them Admin `saleConversions` queue route/action mapping, SQL 12 dung `sales.write`, va targeted Sale/Admin/docs tests pass.
 - 2026-06-28: M01 safe hardening da code/test local: sanitize onboarding logs, DB injection cho local datasource test, persistence/markCompleted/outbox tests, completion handoff va double-submit tests. Quick check fail o `flutter analyze` do analyzer issues toan cuc san co/ngoai pham vi; xem worklog 006.

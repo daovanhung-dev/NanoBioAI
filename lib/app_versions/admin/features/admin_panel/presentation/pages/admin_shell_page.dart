@@ -14,6 +14,15 @@ const _desktopBreakpoint = 920.0;
 const _wideBreakpoint = 1180.0;
 const _contentMaxWidth = 1280.0;
 
+const _sidebarCompactWidth = 96.0;
+const _sidebarWideWidth = 288.0;
+const _contentBottomPadding = 72.0;
+const _cardHoverOffset = -4.0;
+const _ambientOrbLarge = 360.0;
+const _ambientOrbMedium = 260.0;
+const _ambientOrbSmall = 180.0;
+const _ambientMotionDuration = Duration(seconds: 12);
+
 class AdminShellPage extends ConsumerStatefulWidget {
   final AdminPanelSection initialSection;
 
@@ -50,9 +59,28 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
     ) {
       final message = next.asData?.value.lastMessage;
       if (message == null || message.isEmpty) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(behavior: SnackBarBehavior.floating, content: Text(message)),
-      );
+
+      final messenger = ScaffoldMessenger.of(context);
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(AppSpacing.md),
+            backgroundColor: AppColors.textPrimary,
+            content: Row(
+              children: [
+                const Icon(
+                  Icons.verified_rounded,
+                  color: AppColors.textInverse,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(child: Text(message)),
+              ],
+            ),
+          ),
+        );
     });
 
     final state = ref.watch(adminControllerProvider);
@@ -102,56 +130,63 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
                       onSignOut: _signOut,
                     )
                   : null,
-              body: Builder(
-                builder: (scaffoldContext) {
-                  return Row(
-                    children: [
-                      if (!isCompact)
-                        _AdminSideBar(
-                          selected: data.section,
-                          sections: sections,
-                          extended: isWide,
-                          onSelected: _goToSection,
-                          onShowGuide: _showGuide,
-                          onSignOut: _signOut,
-                        ),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            _TopBar(
-                              state: data,
-                              search: _search,
-                              isCompact: isCompact,
-                              onMenuPressed: isCompact
-                                  ? () => Scaffold.of(
-                                      scaffoldContext,
-                                    ).openDrawer()
-                                  : null,
-                              onSearch: (value) {
-                                ref
-                                    .read(adminControllerProvider.notifier)
-                                    .search(value);
-                              },
-                              onRefresh: () {
-                                ref
-                                    .read(adminControllerProvider.notifier)
-                                    .refresh();
-                              },
+              body: Stack(
+                children: [
+                  const Positioned.fill(
+                    child: RepaintBoundary(child: _AdminAmbientBackdrop()),
+                  ),
+                  Builder(
+                    builder: (scaffoldContext) {
+                      return Row(
+                        children: [
+                          if (!isCompact)
+                            _AdminSideBar(
+                              selected: data.section,
+                              sections: sections,
+                              extended: isWide,
+                              onSelected: _goToSection,
                               onShowGuide: _showGuide,
                               onSignOut: _signOut,
                             ),
-                            Expanded(
-                              child: _AdminContent(
-                                state: data,
-                                onAction: _runAction,
-                              ),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                _TopBar(
+                                  state: data,
+                                  search: _search,
+                                  isCompact: isCompact,
+                                  onMenuPressed: isCompact
+                                      ? () => Scaffold.of(
+                                          scaffoldContext,
+                                        ).openDrawer()
+                                      : null,
+                                  onSearch: (value) {
+                                    ref
+                                        .read(adminControllerProvider.notifier)
+                                        .search(value);
+                                  },
+                                  onRefresh: () {
+                                    ref
+                                        .read(adminControllerProvider.notifier)
+                                        .refresh();
+                                  },
+                                  onShowGuide: _showGuide,
+                                  onSignOut: _signOut,
+                                ),
+                                Expanded(
+                                  child: _AdminContent(
+                                    state: data,
+                                    onAction: _runAction,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
               ),
             );
           },
@@ -232,8 +267,9 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
+            behavior: SnackBarBehavior.floating,
             content: Text(
-              'Chua upload duoc anh minh chung. Admin co the confirm khong anh.',
+              'Chưa tải được ảnh minh chứng. Bạn vẫn có thể xác nhận nếu quy trình vận hành cho phép.',
             ),
           ),
         );
@@ -243,17 +279,174 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
   }
 }
 
+class _AdminAmbientBackdrop extends StatefulWidget {
+  const _AdminAmbientBackdrop();
+
+  @override
+  State<_AdminAmbientBackdrop> createState() => _AdminAmbientBackdropState();
+}
+
+class _AdminAmbientBackdropState extends State<_AdminAmbientBackdrop>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: _ambientMotionDuration,
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final shift = Curves.easeInOutCubic.transform(_controller.value);
+
+          return DecoratedBox(
+            decoration: const BoxDecoration(gradient: AppGradients.surfaceAlt),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned(
+                  top: -_ambientOrbLarge * .38 + shift * 28,
+                  right: -_ambientOrbLarge * .28,
+                  child: _AmbientOrb(
+                    size: _ambientOrbLarge,
+                    color: AppColors.primary,
+                    opacity: .10,
+                  ),
+                ),
+                Positioned(
+                  top: 148 - shift * 34,
+                  left: -_ambientOrbMedium * .45,
+                  child: _AmbientOrb(
+                    size: _ambientOrbMedium,
+                    color: AppColors.secondary,
+                    opacity: .08,
+                  ),
+                ),
+                Positioned(
+                  right: 64 + shift * 20,
+                  bottom: -_ambientOrbSmall * .48,
+                  child: _AmbientOrb(
+                    size: _ambientOrbSmall,
+                    color: AppColors.tertiary,
+                    opacity: .07,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AmbientOrb extends StatelessWidget {
+  final double size;
+  final Color color;
+  final double opacity;
+
+  const _AmbientOrb({
+    required this.size,
+    required this.color,
+    required this.opacity,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withValues(alpha: opacity),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: opacity * .52),
+            blurRadius: size * .30,
+            spreadRadius: size * .04,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LoadingScaffold extends StatelessWidget {
   const _LoadingScaffold();
 
   @override
   Widget build(BuildContext context) {
-    return const _AdminStateScaffold(
-      child: Center(
-        child: SizedBox.square(
-          dimension: 36,
-          child: CircularProgressIndicator(strokeWidth: 3),
-        ),
+    return const _AdminStateScaffold(child: Center(child: _LoadingPanel()));
+  }
+}
+
+class _LoadingPanel extends StatelessWidget {
+  const _LoadingPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 284,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: _panelDecoration(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 82,
+                height: 82,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primarySoft,
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: .20),
+                  ),
+                ),
+              ),
+              const SizedBox.square(
+                dimension: 52,
+                child: CircularProgressIndicator(strokeWidth: 3),
+              ),
+              const Icon(
+                Icons.admin_panel_settings_rounded,
+                color: AppColors.primary,
+                size: 22,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Đang chuẩn bị khu quản trị',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.labelLarge,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Nabi đang kiểm tra quyền truy cập và tải dữ liệu vận hành.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.45,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -268,14 +461,18 @@ class _AdminStateScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.scaffold,
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppGradients.surfaceAlt),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: child,
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: RepaintBoundary(child: _AdminAmbientBackdrop()),
           ),
-        ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: child,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -300,29 +497,46 @@ class _AdminSideBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = extended ? 276.0 : 96.0;
+    final width = extended ? _sidebarWideWidth : _sidebarCompactWidth;
 
     return AnimatedContainer(
       duration: AppDuration.navigation,
       curve: Curves.easeOutCubic,
       width: width,
-      padding: EdgeInsets.symmetric(
-        horizontal: extended ? AppSpacing.md : AppSpacing.sm,
-        vertical: AppSpacing.lg,
+      margin: const EdgeInsets.only(right: AppSpacing.xs),
+      padding: EdgeInsets.fromLTRB(
+        extended ? AppSpacing.md : AppSpacing.sm,
+        AppSpacing.lg,
+        extended ? AppSpacing.md : AppSpacing.sm,
+        AppSpacing.lg,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: AppGradients.dashboard,
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(AppRadius.xl),
+          bottomRight: Radius.circular(AppRadius.xl),
+        ),
+        border: Border(
+          right: BorderSide(
+            color: AppColors.textInverse.withValues(alpha: .11),
+          ),
+        ),
         boxShadow: AppShadows.lg,
       ),
       child: Column(
         children: [
           _AdminBrand(extended: extended),
           const SizedBox(height: AppSpacing.lg),
+          if (extended) ...[
+            const _SideRailLabel('BẢNG ĐIỀU KHIỂN'),
+            const SizedBox(height: AppSpacing.sm),
+          ],
           Expanded(
             child: ListView.separated(
+              padding: EdgeInsets.zero,
               itemCount: sections.length,
               separatorBuilder: (_, __) =>
-                  const SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: AppSpacing.xs),
               itemBuilder: (context, index) {
                 final section = sections[index];
                 return _AdminNavButton(
@@ -334,7 +548,11 @@ class _AdminSideBar extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
+          if (extended) ...[
+            const SizedBox(height: AppSpacing.md),
+            const _SideRailProtectionNotice(),
+            const SizedBox(height: AppSpacing.md),
+          ],
           _SideActionButton(
             icon: Icons.menu_book_rounded,
             label: 'Hướng dẫn',
@@ -347,6 +565,66 @@ class _AdminSideBar extends StatelessWidget {
             label: 'Đăng xuất',
             extended: extended,
             onPressed: onSignOut,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SideRailLabel extends StatelessWidget {
+  final String text;
+
+  const _SideRailLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        text,
+        style: AppTextStyles.bodySmall.copyWith(
+          color: AppColors.darkTextSecondary,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.1,
+        ),
+      ),
+    );
+  }
+}
+
+class _SideRailProtectionNotice extends StatelessWidget {
+  const _SideRailProtectionNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.textInverse.withValues(alpha: .07),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.textInverse.withValues(alpha: .12)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.success,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Khu vực có kiểm soát quyền và audit',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textInverse,
+                height: 1.3,
+              ),
+            ),
           ),
         ],
       ),
@@ -373,67 +651,101 @@ class _AdminDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: AppColors.surface,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            children: [
-              const _DrawerBrand(),
-              const SizedBox(height: AppSpacing.md),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: sections.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: AppSpacing.xs),
-                  itemBuilder: (context, index) {
-                    final section = sections[index];
-                    final isSelected = section == selected;
-                    return ListTile(
-                      selected: isSelected,
-                      selectedTileColor: AppColors.primarySoft,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                      ),
-                      leading: Icon(
-                        isSelected ? section.selectedIcon : section.icon,
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                      ),
-                      title: Text(
-                        section.label,
-                        style: AppTextStyles.labelLarge,
-                      ),
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        onSelected(section);
-                      },
-                    );
-                  },
+      child: DecoratedBox(
+        decoration: const BoxDecoration(gradient: AppGradients.surfaceAlt),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              children: [
+                const _DrawerBrand(),
+                const SizedBox(height: AppSpacing.lg),
+                Expanded(
+                  child: ListView.separated(
+                    padding: EdgeInsets.zero,
+                    itemCount: sections.length,
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(height: AppSpacing.xs),
+                    itemBuilder: (context, index) {
+                      final section = sections[index];
+                      final isSelected = section == selected;
+
+                      return Material(
+                        color: Colors.transparent,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primarySoft
+                                : AppColors.surface.withValues(alpha: .76),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primary.withValues(alpha: .26)
+                                  : AppColors.borderLight,
+                            ),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                            ),
+                            minVerticalPadding: AppSpacing.sm,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                            ),
+                            leading: Icon(
+                              isSelected ? section.selectedIcon : section.icon,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                            ),
+                            title: Text(
+                              section.label,
+                              style: AppTextStyles.labelLarge.copyWith(
+                                color: isSelected
+                                    ? AppColors.primaryDark
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
+                            trailing: isSelected
+                                ? const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 18,
+                                    color: AppColors.primary,
+                                  )
+                                : null,
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              onSelected(section);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    onShowGuide();
-                  },
-                  icon: const Icon(Icons.menu_book_rounded),
-                  label: const Text('Hướng dẫn'),
+                const SizedBox(height: AppSpacing.md),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      onShowGuide();
+                    },
+                    icon: const Icon(Icons.menu_book_rounded),
+                    label: const Text('Hướng dẫn vận hành'),
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: onSignOut,
-                  icon: const Icon(Icons.logout_rounded),
-                  label: const Text('Đăng xuất'),
+                const SizedBox(height: AppSpacing.sm),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton.icon(
+                    onPressed: onSignOut,
+                    icon: const Icon(Icons.logout_rounded),
+                    label: const Text('Đăng xuất'),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -449,16 +761,18 @@ class _AdminBrand extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mark = Container(
-      width: 48,
-      height: 48,
+      width: 50,
+      height: 50,
       decoration: BoxDecoration(
         gradient: AppGradients.futuristic,
         borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.textInverse.withValues(alpha: .18)),
         boxShadow: AppShadows.primary,
       ),
       child: const Icon(
         Icons.admin_panel_settings_rounded,
         color: AppColors.textInverse,
+        size: 27,
       ),
     );
 
@@ -480,11 +794,35 @@ class _AdminBrand extends StatelessWidget {
                   color: AppColors.textInverse,
                 ),
               ),
+              const SizedBox(height: AppSpacing.xxs),
               Text(
-                'Admin Console',
+                'Admin Operations',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.darkTextSecondary,
                 ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    'PHIÊN ĐƯỢC KIỂM SOÁT',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textInverse.withValues(alpha: .82),
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: .75,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -506,15 +844,17 @@ class _DrawerBrand extends StatelessWidget {
         gradient: AppGradients.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.card,
       ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
               gradient: AppGradients.futuristic,
               borderRadius: BorderRadius.circular(AppRadius.md),
+              boxShadow: AppShadows.primary,
             ),
             child: const Icon(
               Icons.admin_panel_settings_rounded,
@@ -527,8 +867,9 @@ class _DrawerBrand extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('NanoBio Admin', style: AppTextStyles.heading4),
+                const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  'Vận hành an toàn',
+                  'Vận hành theo quyền và audit',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -561,77 +902,112 @@ class _AdminNavButton extends StatefulWidget {
 
 class _AdminNavButtonState extends State<_AdminNavButton> {
   var _hovered = false;
+  var _pressed = false;
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.selected || _hovered
+    final isActive = widget.selected;
+    final foreground = isActive || _hovered
         ? AppColors.textInverse
         : AppColors.darkTextSecondary;
-    final background = widget.selected
+    final background = isActive
         ? AppColors.primary.withValues(alpha: .96)
         : _hovered
         ? AppColors.textInverse.withValues(alpha: .08)
         : Colors.transparent;
 
-    final child = AnimatedContainer(
+    final button = AnimatedScale(
       duration: AppDuration.hover,
-      curve: Curves.easeOut,
-      padding: EdgeInsets.symmetric(
-        horizontal: widget.extended ? AppSpacing.md : AppSpacing.sm,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: AppSpacing.touchTargetMin),
-        child: widget.extended
-            ? Row(
-                children: [
-                  Icon(
-                    widget.selected
-                        ? widget.section.selectedIcon
-                        : widget.section.icon,
-                    color: color,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      widget.section.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.labelLarge.copyWith(color: color),
-                    ),
-                  ),
-                ],
-              )
-            : Center(
-                child: Icon(
-                  widget.selected
-                      ? widget.section.selectedIcon
-                      : widget.section.icon,
-                  color: color,
-                ),
+      curve: Curves.easeOutCubic,
+      scale: _pressed ? .985 : 1,
+      child: AnimatedContainer(
+        duration: AppDuration.hover,
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(
+          widget.extended && _hovered && !isActive ? 2 : 0,
+          0,
+          0,
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: widget.extended ? AppSpacing.md : AppSpacing.sm,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isActive ? null : background,
+          gradient: isActive ? AppGradients.futuristic : null,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(
+            color: isActive
+                ? AppColors.textInverse.withValues(alpha: .18)
+                : _hovered
+                ? AppColors.textInverse.withValues(alpha: .14)
+                : Colors.transparent,
+          ),
+          boxShadow: isActive ? AppShadows.primary : const [],
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.touchTargetMin,
+          ),
+          child: Row(
+            mainAxisAlignment: widget.extended
+                ? MainAxisAlignment.start
+                : MainAxisAlignment.center,
+            children: [
+              Icon(
+                isActive ? widget.section.selectedIcon : widget.section.icon,
+                color: foreground,
               ),
-      ),
-    );
-
-    return Tooltip(
-      message: widget.extended ? '' : widget.section.label,
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            onTap: widget.onTap,
-            child: child,
+              if (widget.extended) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    widget.section.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.labelLarge.copyWith(color: foreground),
+                  ),
+                ),
+                AnimatedOpacity(
+                  duration: AppDuration.hover,
+                  opacity: isActive ? 1 : 0,
+                  child: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textInverse,
+                    size: 19,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
     );
+
+    final interactive = MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) {
+        if (mounted) {
+          setState(() {
+            _hovered = false;
+            _pressed = false;
+          });
+        }
+      },
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          onHighlightChanged: (pressed) => setState(() => _pressed = pressed),
+          onTap: widget.onTap,
+          child: button,
+        ),
+      ),
+    );
+
+    if (widget.extended) return interactive;
+    return Tooltip(message: widget.section.label, child: interactive);
   }
 }
 
@@ -651,11 +1027,18 @@ class _SideActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = AppColors.darkTextSecondary;
+
     if (!extended) {
       return Tooltip(
         message: label,
         child: IconButton(
           color: foreground,
+          style: IconButton.styleFrom(
+            backgroundColor: AppColors.textInverse.withValues(alpha: .06),
+            side: BorderSide(
+              color: AppColors.textInverse.withValues(alpha: .10),
+            ),
+          ),
           onPressed: onPressed,
           icon: Icon(icon),
         ),
@@ -667,7 +1050,7 @@ class _SideActionButton extends StatelessWidget {
       child: OutlinedButton.icon(
         style: OutlinedButton.styleFrom(
           foregroundColor: foreground,
-          side: BorderSide(color: AppColors.textInverse.withValues(alpha: .18)),
+          side: BorderSide(color: AppColors.textInverse.withValues(alpha: .16)),
           alignment: Alignment.centerLeft,
         ),
         onPressed: onPressed,
@@ -711,14 +1094,15 @@ class _TopBar extends StatelessWidget {
         horizontal: isCompact ? AppSpacing.md : AppSpacing.xl,
         vertical: AppSpacing.md,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: .94),
+        border: const Border(bottom: BorderSide(color: AppColors.borderLight)),
         boxShadow: AppShadows.appBar,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final narrow = constraints.maxWidth < 720;
+          final spacious = constraints.maxWidth >= 1040;
           final title = _TopBarTitle(
             state: state,
             onMenuPressed: onMenuPressed,
@@ -737,6 +1121,7 @@ class _TopBar extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(child: title),
+                    const SizedBox(width: AppSpacing.xs),
                     actions,
                   ],
                 ),
@@ -755,6 +1140,10 @@ class _TopBar extends StatelessWidget {
           return Row(
             children: [
               Expanded(child: title),
+              if (spacious) ...[
+                const SizedBox(width: AppSpacing.md),
+                const _SecurityPill(),
+              ],
               if (showSearch) ...[
                 const SizedBox(width: AppSpacing.md),
                 ConstrainedBox(
@@ -779,6 +1168,56 @@ class _TopBar extends StatelessWidget {
   }
 }
 
+class _SecurityPill extends StatelessWidget {
+  final bool inverse;
+
+  const _SecurityPill({this.inverse = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = inverse
+        ? AppColors.textInverse
+        : AppColors.textSecondary;
+    final dot = inverse ? AppColors.secondaryLight : AppColors.success;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: inverse
+            ? AppColors.textInverse.withValues(alpha: .10)
+            : AppColors.successSoft,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(
+          color: inverse
+              ? AppColors.textInverse.withValues(alpha: .16)
+              : AppColors.success.withValues(alpha: .22),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            'Audit đang hoạt động',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _TopBarTitle extends StatelessWidget {
   final AdminPanelState state;
   final VoidCallback? onMenuPressed;
@@ -792,17 +1231,22 @@ class _TopBarTitle extends StatelessWidget {
         if (onMenuPressed != null) ...[
           IconButton(
             tooltip: 'Mở điều hướng',
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.primarySoft,
+              foregroundColor: AppColors.primary,
+            ),
             onPressed: onMenuPressed,
             icon: const Icon(Icons.menu_rounded),
           ),
           const SizedBox(width: AppSpacing.sm),
         ],
         Container(
-          width: 44,
-          height: 44,
+          width: 46,
+          height: 46,
           decoration: BoxDecoration(
-            color: AppColors.primarySoft,
+            gradient: AppGradients.primarySoft,
             borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(color: AppColors.primary.withValues(alpha: .18)),
           ),
           child: Icon(state.section.selectedIcon, color: AppColors.primary),
         ),
@@ -820,7 +1264,7 @@ class _TopBarTitle extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xxs),
               Text(
-                'Quản trị theo quyền, mọi thao tác nhạy cảm đều cần lý do.',
+                'Thao tác theo quyền, mọi thay đổi quan trọng đều cần lý do.',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodySmall.copyWith(
@@ -848,19 +1292,40 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      textInputAction: TextInputAction.search,
-      onSubmitted: onSearch,
-      decoration: InputDecoration(
-        labelText: 'Tìm trong $sectionLabel',
-        prefixIcon: const Icon(Icons.search_rounded),
-        suffixIcon: IconButton(
-          tooltip: 'Tìm kiếm',
-          onPressed: () => onSearch(controller.text),
-          icon: const Icon(Icons.arrow_forward_rounded),
-        ),
-      ),
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, child) {
+        final hasQuery = value.text.trim().isNotEmpty;
+
+        return TextField(
+          controller: controller,
+          textInputAction: TextInputAction.search,
+          onSubmitted: onSearch,
+          decoration: InputDecoration(
+            hintText: 'Tìm trong $sectionLabel',
+            prefixIcon: const Icon(Icons.search_rounded),
+            suffixIcon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasQuery)
+                  IconButton(
+                    tooltip: 'Xóa tìm kiếm',
+                    onPressed: () {
+                      controller.clear();
+                      onSearch('');
+                    },
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                IconButton(
+                  tooltip: 'Tìm kiếm',
+                  onPressed: () => onSearch(controller.text),
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -881,48 +1346,85 @@ class _TopBarActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (compact) {
-      return Wrap(
-        spacing: AppSpacing.xs,
+      return Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
+          _TopBarIconAction(
             tooltip: 'Hướng dẫn',
+            icon: Icons.menu_book_rounded,
             onPressed: onShowGuide,
-            icon: const Icon(Icons.menu_book_rounded),
           ),
-          IconButton(
+          const SizedBox(width: AppSpacing.xs),
+          _TopBarIconAction(
             tooltip: 'Làm mới',
+            icon: Icons.refresh_rounded,
             onPressed: onRefresh,
-            icon: const Icon(Icons.refresh_rounded),
           ),
-          IconButton(
+          const SizedBox(width: AppSpacing.xs),
+          _TopBarIconAction(
             tooltip: 'Đăng xuất',
+            icon: Icons.logout_rounded,
+            foreground: AppColors.error,
             onPressed: onSignOut,
-            icon: const Icon(Icons.logout_rounded),
           ),
         ],
       );
     }
 
-    return Wrap(
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         OutlinedButton.icon(
           onPressed: onShowGuide,
           icon: const Icon(Icons.menu_book_rounded),
           label: const Text('Hướng dẫn'),
         ),
-        IconButton(
+        const SizedBox(width: AppSpacing.sm),
+        _TopBarIconAction(
           tooltip: 'Làm mới',
+          icon: Icons.refresh_rounded,
           onPressed: onRefresh,
-          icon: const Icon(Icons.refresh_rounded),
         ),
-        IconButton(
+        const SizedBox(width: AppSpacing.sm),
+        _TopBarIconAction(
           tooltip: 'Đăng xuất',
+          icon: Icons.logout_rounded,
+          foreground: AppColors.error,
           onPressed: onSignOut,
-          icon: const Icon(Icons.logout_rounded),
         ),
       ],
+    );
+  }
+}
+
+class _TopBarIconAction extends StatelessWidget {
+  final String tooltip;
+  final IconData icon;
+  final Color? foreground;
+  final VoidCallback onPressed;
+
+  const _TopBarIconAction({
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+    this.foreground,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = foreground ?? AppColors.textSecondary;
+
+    return Tooltip(
+      message: tooltip,
+      child: IconButton(
+        onPressed: onPressed,
+        color: color,
+        style: IconButton.styleFrom(
+          backgroundColor: color.withValues(alpha: .08),
+          side: BorderSide(color: color.withValues(alpha: .14)),
+        ),
+        icon: Icon(icon),
+      ),
     );
   }
 }
@@ -952,11 +1454,17 @@ class _AdminContent extends StatelessWidget {
             _ => _WorkQueueView(state: state, onAction: onAction),
           };
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(
+    final horizontalPadding =
         MediaQuery.sizeOf(context).width < _desktopBreakpoint
-            ? AppSpacing.md
-            : AppSpacing.xl,
+        ? AppSpacing.md
+        : AppSpacing.xl;
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
+        AppSpacing.lg,
+        horizontalPadding,
+        _contentBottomPadding,
       ),
       child: Center(
         child: ConstrainedBox(
@@ -965,6 +1473,17 @@ class _AdminContent extends StatelessWidget {
             duration: AppDuration.switcher,
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) {
+              final offset = Tween<Offset>(
+                begin: const Offset(0, .025),
+                end: Offset.zero,
+              ).animate(animation);
+
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(position: offset, child: child),
+              );
+            },
             child: KeyedSubtree(
               key: ValueKey(
                 '${state.section.value}-${state.query}-${state.isPermissionDenied}',
@@ -1004,18 +1523,18 @@ class _DashboardView extends StatelessWidget {
         else
           _ResponsiveGrid(
             minItemWidth: 220,
-            itemHeight: 156,
+            itemHeight: 176,
             children: state.metrics.map(_MetricCard.new).toList(),
           ),
         const SizedBox(height: AppSpacing.xl),
-        _SectionTitle(
+        const _SectionTitle(
           title: 'Lối tắt vận hành',
-          subtitle: 'Đi nhanh đến các khu vực bạn có quyền xử lý.',
+          subtitle: 'Mở nhanh các khu vực bạn được phân quyền xử lý.',
         ),
         const SizedBox(height: AppSpacing.md),
         _ResponsiveGrid(
-          minItemWidth: 220,
-          itemHeight: 104,
+          minItemWidth: 236,
+          itemHeight: 116,
           children: shortcuts
               .map((section) => _ShortcutCard(section: section))
               .toList(),
@@ -1032,44 +1551,126 @@ class _AdminOverviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: AppGradients.dashboard,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: AppShadows.md,
-      ),
-      child: Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: AppSpacing.lg,
-        runSpacing: AppSpacing.md,
-        children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Trung tâm vận hành Admin',
-                  style: AppTextStyles.heading2.copyWith(
-                    color: AppColors.textInverse,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Theo dõi số liệu, xử lý yêu cầu và kiểm tra audit trong một giao diện gọn hơn.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.darkTextSecondary,
-                    height: 1.45,
-                  ),
-                ),
-              ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.xl),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: AppGradients.dashboard,
+          boxShadow: AppShadows.md,
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              top: -92,
+              right: -48,
+              child: _HeroGlow(
+                size: 246,
+                color: AppColors.secondaryLight,
+                opacity: .14,
+              ),
             ),
-          ),
-          _OverviewBadge(metricCount: metricCount),
-        ],
+            Positioned(
+              bottom: -94,
+              right: 182,
+              child: _HeroGlow(
+                size: 184,
+                color: AppColors.primaryLight,
+                opacity: .12,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.end,
+                spacing: AppSpacing.lg,
+                runSpacing: AppSpacing.lg,
+                children: [
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 680),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.textInverse.withValues(alpha: .10),
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                            border: Border.all(
+                              color: AppColors.textInverse.withValues(
+                                alpha: .16,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'NANOBIO • ADMIN OPERATIONS',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textInverse,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: .8,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'Trung tâm vận hành',
+                          style: AppTextStyles.heading1.copyWith(
+                            color: AppColors.textInverse,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'Theo dõi chỉ số, xử lý yêu cầu và kiểm tra lịch sử thao tác trong một giao diện tập trung.',
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            color: AppColors.darkTextSecondary,
+                            height: 1.52,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _SecurityPill(inverse: true),
+                      const SizedBox(height: AppSpacing.sm),
+                      _OverviewBadge(metricCount: metricCount),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroGlow extends StatelessWidget {
+  final double size;
+  final Color color;
+  final double opacity;
+
+  const _HeroGlow({
+    required this.size,
+    required this.color,
+    required this.opacity,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withValues(alpha: opacity),
       ),
     );
   }
@@ -1095,12 +1696,20 @@ class _OverviewBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.insights_rounded,
-            size: 18,
-            color: AppColors.textInverse,
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: AppColors.textInverse.withValues(alpha: .12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.insights_rounded,
+              size: 16,
+              color: AppColors.textInverse,
+            ),
           ),
-          const SizedBox(width: AppSpacing.xs),
+          const SizedBox(width: AppSpacing.sm),
           Text(
             '$metricCount chỉ số đang theo dõi',
             style: AppTextStyles.labelMedium.copyWith(
@@ -1131,12 +1740,11 @@ class _ResponsiveGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final columns = width >= 1120
-            ? 4
-            : width >= 760
-            ? 2
-            : 1;
         final spacing = AppSpacing.md;
+        final columns = ((width + spacing) / (minItemWidth + spacing))
+            .floor()
+            .clamp(1, 4)
+            .toInt();
         final itemWidth = columns == 1
             ? width
             : (width - spacing * (columns - 1)) / columns;
@@ -1146,11 +1754,7 @@ class _ResponsiveGrid extends StatelessWidget {
           runSpacing: spacing,
           children: [
             for (final child in children)
-              SizedBox(
-                width: itemWidth < minItemWidth ? width : itemWidth,
-                height: itemHeight,
-                child: child,
-              ),
+              SizedBox(width: itemWidth, height: itemHeight, child: child),
           ],
         );
       },
@@ -1166,42 +1770,72 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final target = AdminPanelSection.fromValue(metric.targetSection);
+    final color = _statusColor(metric.status);
 
     return _InteractivePanel(
+      accent: color,
       onTap: target == null ? null : () => context.go(target.routePath),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _IconBadge(
-                  icon: _statusIcon(metric.status),
-                  color: _statusColor(metric.status),
-                ),
-                const Spacer(),
-                _StatusChip(status: metric.status),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              metric.value.toString(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.heading1,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              _metricLabel(metric),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            top: -28,
+            right: -18,
+            child: Container(
+              width: 98,
+              height: 98,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: .08),
+                shape: BoxShape.circle,
               ),
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _IconBadge(icon: _statusIcon(metric.status), color: color),
+                    const Spacer(),
+                    _StatusChip(status: metric.status),
+                  ],
+                ),
+                const Spacer(),
+                AnimatedSwitcher(
+                  duration: AppDuration.switcher,
+                  child: Text(
+                    metric.value.toString(),
+                    key: ValueKey('${metric.key}-${metric.value}'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.heading1,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _metricLabel(metric),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    if (target != null) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      Icon(Icons.arrow_forward_rounded, size: 18, color: color),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1215,6 +1849,7 @@ class _ShortcutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InteractivePanel(
+      accent: AppColors.primary,
       onTap: () => context.go(section.routePath),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -1236,19 +1871,28 @@ class _ShortcutCard extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     section.guideSummary,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
+                      height: 1.3,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: AppColors.textHint,
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: AppColors.primarySoft,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                size: 17,
+                color: AppColors.primary,
+              ),
             ),
           ],
         ),
@@ -1287,6 +1931,11 @@ class _WorkQueueView extends StatelessWidget {
           subtitle: '${state.items.length} mục trong ${state.section.label}.',
         ),
         const SizedBox(height: AppSpacing.md),
+        _QueueSummaryBanner(
+          sectionLabel: state.section.label,
+          itemCount: state.items.length,
+        ),
+        const SizedBox(height: AppSpacing.md),
         for (final item in state.items)
           _WorkItemRow(
             section: state.section,
@@ -1295,6 +1944,62 @@ class _WorkQueueView extends StatelessWidget {
             onAction: onAction,
           ),
       ],
+    );
+  }
+}
+
+class _QueueSummaryBanner extends StatelessWidget {
+  final String sectionLabel;
+  final int itemCount;
+
+  const _QueueSummaryBanner({
+    required this.sectionLabel,
+    required this.itemCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.infoSoft,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.info.withValues(alpha: .18)),
+      ),
+      child: Wrap(
+        spacing: AppSpacing.md,
+        runSpacing: AppSpacing.sm,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          const _IconBadge(
+            icon: Icons.auto_awesome_rounded,
+            color: AppColors.info,
+          ),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$itemCount mục đang chờ trong $sectionLabel',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  'Kiểm tra thông tin trước khi xác nhận. Mọi quyết định sẽ cần lý do để ghi audit.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1334,19 +2039,21 @@ class _WorkItemRow extends StatelessWidget {
           );
         })
         .toList(growable: false);
+    final statusColor = _statusColor(item.status);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: _InteractivePanel(
+        accent: statusColor,
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final narrow = constraints.maxWidth < 720;
               final header = Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _IconBadge(icon: section.icon, color: AppColors.primary),
+                  _IconBadge(icon: section.icon, color: statusColor),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(child: _WorkItemText(item: item)),
                   const SizedBox(width: AppSpacing.sm),
@@ -1373,7 +2080,7 @@ class _WorkItemRow extends StatelessWidget {
                       payoutDetail,
                     ],
                     if (actions.isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.lg),
                       actionWrap,
                     ],
                   ],
@@ -1388,7 +2095,7 @@ class _WorkItemRow extends StatelessWidget {
                     children: [
                       Expanded(child: header),
                       if (actions.isNotEmpty) ...[
-                        const SizedBox(width: AppSpacing.md),
+                        const SizedBox(width: AppSpacing.lg),
                         Flexible(child: actionWrap),
                       ],
                     ],
@@ -1454,50 +2161,90 @@ class _SaleConversionPayoutDetail extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: Wrap(
-        spacing: AppSpacing.md,
-        runSpacing: AppSpacing.md,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          if (qrPayload != null)
-            Container(
-              width: 132,
-              height: 132,
-              padding: const EdgeInsets.all(AppSpacing.xs),
-              color: Colors.white,
-              child: QrImageView(data: qrPayload, version: QrVersions.auto),
-            ),
-          SizedBox(
-            width: 420,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Thong tin chi tra', style: AppTextStyles.labelLarge),
-                const SizedBox(height: AppSpacing.xs),
-                _PayoutLine(label: 'Ngan hang', value: bankName ?? bankBin),
-                _PayoutLine(label: 'BIN', value: bankBin),
-                _PayoutLine(label: 'So tai khoan', value: accountNumber),
-                _PayoutLine(label: 'Chu tai khoan', value: accountName),
-                _PayoutLine(
-                  label: 'So tien',
-                  value: _formatMoney(amount, currency),
-                ),
-                _PayoutLine(label: 'Noi dung', value: content),
-                if (proofPath != null)
-                  _PayoutLine(label: 'Minh chung', value: proofPath),
-              ],
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final detailWidth = constraints.maxWidth >= 480
+            ? 420.0
+            : constraints.maxWidth;
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.cardAlt,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(color: AppColors.borderLight),
           ),
-        ],
-      ),
+          child: Wrap(
+            spacing: AppSpacing.lg,
+            runSpacing: AppSpacing.md,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (qrPayload != null)
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 132,
+                      height: 132,
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: QrImageView(
+                        data: qrPayload,
+                        version: QrVersions.auto,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Mã thanh toán',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              SizedBox(
+                width: detailWidth,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.account_balance_rounded,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          'Thông tin chi trả',
+                          style: AppTextStyles.labelLarge,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    _PayoutLine(label: 'Ngân hàng', value: bankName ?? bankBin),
+                    _PayoutLine(label: 'BIN', value: bankBin),
+                    _PayoutLine(label: 'Số tài khoản', value: accountNumber),
+                    _PayoutLine(label: 'Chủ tài khoản', value: accountName),
+                    _PayoutLine(
+                      label: 'Số tiền',
+                      value: _formatMoney(amount, currency),
+                    ),
+                    _PayoutLine(label: 'Nội dung', value: content),
+                    if (proofPath != null)
+                      _PayoutLine(label: 'Minh chứng', value: proofPath),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -1515,10 +2262,25 @@ class _PayoutLine extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Text(
-        '$label: $value',
-        style: AppTextStyles.bodySmall.copyWith(height: 1.35),
+      padding: const EdgeInsets.only(top: AppSpacing.xs),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            TextSpan(
+              text: value,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1548,14 +2310,15 @@ class _WorkItemText extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
+              height: 1.35,
             ),
           ),
         ],
         if (item.createdAt != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Tạo lúc ${_formatDateTime(item.createdAt)}',
-            style: AppTextStyles.bodySmall,
+          const SizedBox(height: AppSpacing.sm),
+          _MetaPill(
+            icon: Icons.schedule_rounded,
+            text: 'Tạo lúc ${_formatDateTime(item.createdAt)}',
           ),
         ],
       ],
@@ -1589,23 +2352,62 @@ class _ActionWrap extends StatelessWidget {
       spacing: AppSpacing.sm,
       runSpacing: AppSpacing.sm,
       children: [
-        for (final action in actions)
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: action.isDanger
-                  ? AppColors.error
-                  : AppColors.primary,
-              side: BorderSide(
-                color: action.isDanger
-                    ? AppColors.error.withValues(alpha: .45)
-                    : AppColors.border,
-              ),
+        for (var index = 0; index < actions.length; index++)
+          _AdminActionButton(
+            action: actions[index],
+            primary: index == 0 && !actions[index].isDanger,
+            onPressed: () => onAction(
+              section,
+              actions[index].key,
+              item,
+              actions[index].label,
             ),
-            onPressed: () => onAction(section, action.key, item, action.label),
-            icon: Icon(action.icon, size: 18),
-            label: Text(action.label),
           ),
       ],
+    );
+  }
+}
+
+class _AdminActionButton extends StatelessWidget {
+  final _AdminAction action;
+  final bool primary;
+  final VoidCallback onPressed;
+
+  const _AdminActionButton({
+    required this.action,
+    required this.primary,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = action.isDanger ? AppColors.error : AppColors.primary;
+
+    final button = primary
+        ? FilledButton.icon(
+            onPressed: onPressed,
+            icon: Icon(action.icon, size: 18),
+            label: Text(action.label),
+          )
+        : OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: foreground,
+              side: BorderSide(
+                color: action.isDanger
+                    ? AppColors.error.withValues(alpha: .42)
+                    : AppColors.primary.withValues(alpha: .28),
+              ),
+            ),
+            onPressed: onPressed,
+            icon: Icon(action.icon, size: 18),
+            label: Text(action.label),
+          );
+
+    return Tooltip(
+      message: action.isDanger
+          ? 'Thao tác này sẽ được ghi audit'
+          : 'Xác nhận thao tác và ghi audit',
+      child: button,
     );
   }
 }
@@ -1632,8 +2434,45 @@ class _AuditView extends StatelessWidget {
           subtitle: '${events.length} thao tác gần nhất theo bộ lọc hiện tại.',
         ),
         const SizedBox(height: AppSpacing.md),
+        const _AuditNoticeBanner(),
+        const SizedBox(height: AppSpacing.md),
         for (final event in events) _AuditRow(event: event),
       ],
+    );
+  }
+}
+
+class _AuditNoticeBanner extends StatelessWidget {
+  const _AuditNoticeBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.infoSoft,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.info.withValues(alpha: .18)),
+      ),
+      child: Row(
+        children: [
+          const _IconBadge(
+            icon: Icons.verified_user_rounded,
+            color: AppColors.info,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              'Nhật ký giúp truy vết quyết định vận hành. Chỉ dùng dữ liệu này trong phạm vi được phân quyền.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1648,14 +2487,18 @@ class _AuditRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: _InteractivePanel(
+        accent: AppColors.info,
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Wrap(
             spacing: AppSpacing.md,
             runSpacing: AppSpacing.sm,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              _IconBadge(icon: Icons.history_rounded, color: AppColors.info),
+              const _IconBadge(
+                icon: Icons.history_rounded,
+                color: AppColors.info,
+              ),
               ConstrainedBox(
                 constraints: const BoxConstraints(minWidth: 220, maxWidth: 720),
                 child: Column(
@@ -1674,6 +2517,7 @@ class _AuditRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
+                        height: 1.35,
                       ),
                     ),
                   ],
@@ -1711,25 +2555,36 @@ class _ReasonDialogState extends State<_ReasonDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final canConfirm = _reason.text.trim().isNotEmpty;
+
     return AlertDialog(
+      icon: const _IconBadge(
+        icon: Icons.shield_rounded,
+        color: AppColors.primary,
+      ),
       title: Text('Xác nhận ${widget.actionLabel}'),
       content: SizedBox(
-        width: 440,
+        width: 460,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Vui lòng nhập lý do rõ ràng để hệ thống ghi audit cho thao tác này.',
-              style: AppTextStyles.bodyMedium,
+              'Hãy nhập lý do ngắn gọn, rõ ràng để người có quyền xem audit hiểu được quyết định này.',
+              style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
             ),
             const SizedBox(height: AppSpacing.md),
             TextField(
               controller: _reason,
+              autofocus: true,
               minLines: 3,
               maxLines: 5,
+              maxLength: 300,
+              onChanged: (_) => setState(() {}),
               decoration: const InputDecoration(
                 labelText: 'Lý do bắt buộc',
+                hintText:
+                    'Ví dụ: Đã đối chiếu thông tin theo quy trình vận hành.',
                 alignLabelWithHint: true,
               ),
             ),
@@ -1742,8 +2597,10 @@ class _ReasonDialogState extends State<_ReasonDialog> {
           child: const Text('Hủy'),
         ),
         FilledButton.icon(
-          onPressed: () => Navigator.of(context).pop(_reason.text),
-          icon: const Icon(Icons.check_rounded),
+          onPressed: canConfirm
+              ? () => Navigator.of(context).pop(_reason.text.trim())
+              : null,
+          icon: const Icon(Icons.verified_rounded),
           label: const Text('Xác nhận'),
         ),
       ],
@@ -1760,123 +2617,130 @@ class _AdminGuideDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.all(AppSpacing.md),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 760, maxHeight: 720),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            children: [
-              Row(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          child: DecoratedBox(
+            decoration: const BoxDecoration(gradient: AppGradients.surfaceAlt),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
                 children: [
-                  _IconBadge(
-                    icon: Icons.menu_book_rounded,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hướng dẫn sử dụng Admin',
-                          style: AppTextStyles.heading3,
-                        ),
-                        Text(
-                          'Các bước thao tác nhanh, an toàn và có audit.',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'Đóng',
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              const Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
+                  Row(
                     children: [
-                      _GuideSection(
-                        icon: Icons.space_dashboard_rounded,
-                        title: 'Tổng quan',
-                        items: [
-                          'Xem các chỉ số vận hành chính trong Dashboard.',
-                          'Bấm vào thẻ chỉ số để đi đến khu vực liên quan.',
-                          'Dùng nút Làm mới khi cần tải lại dữ liệu mới nhất.',
-                        ],
+                      const _IconBadge(
+                        icon: Icons.menu_book_rounded,
+                        color: AppColors.primary,
                       ),
-                      _GuideSection(
-                        icon: Icons.people_rounded,
-                        title: 'Người dùng',
-                        items: [
-                          'Tìm theo email, tên hoặc số điện thoại.',
-                          'Tạm khóa hoặc mở lại tài khoản khi có lý do vận hành rõ ràng.',
-                          'Không nhập dữ liệu nhạy cảm vào ô lý do.',
-                        ],
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hướng dẫn vận hành',
+                              style: AppTextStyles.heading3,
+                            ),
+                            const SizedBox(height: AppSpacing.xxs),
+                            Text(
+                              'Các bước thao tác an toàn, rõ ràng và có audit.',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      _GuideSection(
-                        icon: Icons.payments_rounded,
-                        title: 'Thanh toán',
-                        items: [
-                          'Kiểm tra thông tin người thanh toán trước khi duyệt.',
-                          'Chọn Duyệt hoặc Từ chối và luôn nhập lý do đầy đủ.',
-                          'Các thay đổi quan trọng sẽ được ghi lại trong Audit.',
-                        ],
-                      ),
-                      _GuideSection(
-                        icon: Icons.badge_rounded,
-                        title: 'Sale và quy đổi điểm',
-                        items: [
-                          'Duyệt, tạm dừng hoặc đóng hồ sơ Sale theo trạng thái hiện tại.',
-                          'Với quy đổi điểm, kiểm tra số điểm và trạng thái trước khi đánh dấu đã chi trả.',
-                          'Nếu cần điều chỉnh điểm, ghi lý do ngắn gọn và có thể kiểm chứng.',
-                        ],
-                      ),
-                      _GuideSection(
-                        icon: Icons.fact_check_rounded,
-                        title: 'Đối soát',
-                        items: [
-                          'Dùng trạng thái Cần theo dõi khi dữ liệu chưa đủ chắc chắn.',
-                          'Chỉ chọn Đã đối soát khi payment, subscription và điểm đã khớp.',
-                          'Các quyết định đối soát nên có lý do đủ để người khác đọc lại.',
-                        ],
-                      ),
-                      _GuideSection(
-                        icon: Icons.summarize_rounded,
-                        title: 'Báo cáo và cấu hình',
-                        items: [
-                          'Tạo yêu cầu xuất báo cáo theo phạm vi được phân quyền.',
-                          'Khi lưu cấu hình, mô tả rõ mục tiêu thay đổi.',
-                          'Không dùng giao diện Admin để lưu bí mật hoặc khóa truy cập.',
-                        ],
-                      ),
-                      _GuideSection(
-                        icon: Icons.history_rounded,
-                        title: 'Audit',
-                        items: [
-                          'Dùng Audit để kiểm tra ai đã thao tác, thao tác gì và lý do là gì.',
-                          'Khi có sai lệch, đối chiếu Audit trước khi xử lý tiếp.',
-                          'Không chia sẻ dữ liệu audit ra ngoài nhóm vận hành được phép.',
-                        ],
+                      IconButton(
+                        tooltip: 'Đóng',
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close_rounded),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _GuideSection(
+                            icon: Icons.space_dashboard_rounded,
+                            title: 'Tổng quan',
+                            items: [
+                              'Xem các chỉ số vận hành chính trong Dashboard.',
+                              'Bấm vào thẻ chỉ số để đi đến khu vực liên quan.',
+                              'Dùng nút Làm mới khi cần tải lại dữ liệu mới nhất.',
+                            ],
+                          ),
+                          _GuideSection(
+                            icon: Icons.people_rounded,
+                            title: 'Người dùng',
+                            items: [
+                              'Tìm theo email, tên hoặc số điện thoại.',
+                              'Tạm khóa hoặc mở lại tài khoản khi có lý do vận hành rõ ràng.',
+                              'Không nhập dữ liệu nhạy cảm vào ô lý do.',
+                            ],
+                          ),
+                          _GuideSection(
+                            icon: Icons.payments_rounded,
+                            title: 'Thanh toán',
+                            items: [
+                              'Kiểm tra thông tin người thanh toán trước khi duyệt.',
+                              'Chọn Duyệt hoặc Từ chối và luôn nhập lý do đầy đủ.',
+                              'Các thay đổi quan trọng sẽ được ghi lại trong Audit.',
+                            ],
+                          ),
+                          _GuideSection(
+                            icon: Icons.badge_rounded,
+                            title: 'Sale và quy đổi điểm',
+                            items: [
+                              'Duyệt, tạm dừng hoặc đóng hồ sơ Sale theo trạng thái hiện tại.',
+                              'Với quy đổi điểm, kiểm tra số điểm và trạng thái trước khi đánh dấu đã chi trả.',
+                              'Nếu cần điều chỉnh điểm, ghi lý do ngắn gọn và có thể kiểm chứng.',
+                            ],
+                          ),
+                          _GuideSection(
+                            icon: Icons.fact_check_rounded,
+                            title: 'Đối soát',
+                            items: [
+                              'Dùng trạng thái Cần theo dõi khi dữ liệu chưa đủ chắc chắn.',
+                              'Chỉ chọn Đã đối soát khi payment, subscription và điểm đã khớp.',
+                              'Các quyết định đối soát nên có lý do đủ để người khác đọc lại.',
+                            ],
+                          ),
+                          _GuideSection(
+                            icon: Icons.summarize_rounded,
+                            title: 'Báo cáo và cấu hình',
+                            items: [
+                              'Tạo yêu cầu xuất báo cáo theo phạm vi được phân quyền.',
+                              'Khi lưu cấu hình, mô tả rõ mục tiêu thay đổi.',
+                              'Không dùng giao diện Admin để lưu bí mật hoặc khóa truy cập.',
+                            ],
+                          ),
+                          _GuideSection(
+                            icon: Icons.history_rounded,
+                            title: 'Audit',
+                            items: [
+                              'Dùng Audit để kiểm tra ai đã thao tác, thao tác gì và lý do là gì.',
+                              'Khi có sai lệch, đối chiếu Audit trước khi xử lý tiếp.',
+                              'Không chia sẻ dữ liệu audit ra ngoài nhóm vận hành được phép.',
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: FilledButton.icon(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.check_rounded),
+                      label: const Text('Đã hiểu'),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.md),
-              Align(
-                alignment: Alignment.centerRight,
-                child: FilledButton.icon(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.check_rounded),
-                  label: const Text('Đã hiểu'),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1900,7 +2764,11 @@ class _GuideSection extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: _panelDecoration(elevated: false),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: .82),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.borderLight),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1923,7 +2791,7 @@ class _GuideSection extends StatelessWidget {
                           child: Icon(
                             Icons.circle,
                             size: 5,
-                            color: AppColors.textHint,
+                            color: AppColors.primary,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
@@ -1950,8 +2818,9 @@ class _GuideSection extends StatelessWidget {
 class _InteractivePanel extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
+  final Color? accent;
 
-  const _InteractivePanel({required this.child, this.onTap});
+  const _InteractivePanel({required this.child, this.onTap, this.accent});
 
   @override
   State<_InteractivePanel> createState() => _InteractivePanelState();
@@ -1959,25 +2828,73 @@ class _InteractivePanel extends StatefulWidget {
 
 class _InteractivePanelState extends State<_InteractivePanel> {
   var _hovered = false;
+  var _pressed = false;
 
   @override
   Widget build(BuildContext context) {
+    final canInteract = widget.onTap != null;
+    final accent = widget.accent ?? AppColors.primary;
+    final active = canInteract && (_hovered || _pressed);
+
     return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
+      cursor: canInteract ? SystemMouseCursors.click : MouseCursor.defer,
+      onEnter: canInteract ? (_) => setState(() => _hovered = true) : null,
+      onExit: canInteract
+          ? (_) => setState(() {
+              _hovered = false;
+              _pressed = false;
+            })
+          : null,
+      child: AnimatedScale(
         duration: AppDuration.card,
         curve: Curves.easeOutCubic,
-        transform: Matrix4.translationValues(0, _hovered ? -2 : 0, 0),
-        decoration: _panelDecoration(
-          elevated: _hovered || widget.onTap != null,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
+        scale: _pressed ? .992 : 1,
+        child: AnimatedContainer(
+          duration: AppDuration.card,
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(
+            0,
+            active ? _cardHoverOffset : 0,
+            0,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            onTap: widget.onTap,
-            child: widget.child,
+            border: Border.all(
+              color: active
+                  ? accent.withValues(alpha: .38)
+                  : AppColors.borderLight,
+            ),
+            boxShadow: active ? AppShadows.floating : AppShadows.card,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: Stack(
+              fit: StackFit.passthrough,
+              children: [
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  left: 0,
+                  child: AnimatedContainer(
+                    duration: AppDuration.card,
+                    width: active ? 4 : 3,
+                    color: accent.withValues(alpha: active ? .88 : .42),
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    onHighlightChanged: canInteract
+                        ? (pressed) => setState(() => _pressed = pressed)
+                        : null,
+                    onTap: widget.onTap,
+                    child: widget.child,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1994,11 +2911,12 @@ class _IconBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 42,
-      height: 42,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .12),
+        color: color.withValues(alpha: .11),
         borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: color.withValues(alpha: .18)),
       ),
       child: Icon(icon, color: color, size: 22),
     );
@@ -2013,25 +2931,37 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _statusColor(status);
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .12),
+        color: color.withValues(alpha: .11),
         borderRadius: BorderRadius.circular(AppRadius.badge),
-        border: Border.all(color: color.withValues(alpha: .18)),
+        border: Border.all(color: color.withValues(alpha: .20)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
           vertical: 6,
         ),
-        child: Text(
-          _statusLabel(status),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: color,
-            fontWeight: FontWeight.w600,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              _statusLabel(status),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -2056,14 +2986,19 @@ class _MetaPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cardAlt,
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 15, color: AppColors.textSecondary),
           const SizedBox(width: AppSpacing.xs),
-          Text(text, style: AppTextStyles.bodySmall),
+          Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.bodySmall,
+          ),
         ],
       ),
     );
@@ -2078,15 +3013,32 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: AppTextStyles.heading3),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          subtitle,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+        Container(
+          width: 4,
+          height: 42,
+          decoration: BoxDecoration(
+            gradient: AppGradients.futuristic,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppTextStyles.heading3),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                subtitle,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.35,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -2105,30 +3057,31 @@ class _EmptyPanel extends StatelessWidget {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          decoration: _panelDecoration(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const _IconBadge(
-                icon: Icons.inbox_rounded,
-                color: AppColors.textHint,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.heading3,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
-              ),
-            ],
+        child: _InteractivePanel(
+          accent: AppColors.info,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const _IconBadge(
+                  icon: Icons.inbox_rounded,
+                  color: AppColors.info,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.heading3,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2150,30 +3103,31 @@ class _PermissionDeniedPanel extends StatelessWidget {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          decoration: _panelDecoration(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const _IconBadge(
-                icon: Icons.lock_person_rounded,
-                color: AppColors.warning,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Không đủ quyền ${section.label}',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.heading3,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Tài khoản Admin hiện tại cần quyền $permission để mở mục này.',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
-              ),
-            ],
+        child: _InteractivePanel(
+          accent: AppColors.warning,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const _IconBadge(
+                  icon: Icons.lock_person_rounded,
+                  color: AppColors.warning,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Không đủ quyền ${section.label}',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.heading3,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Tài khoản Admin hiện tại cần quyền $permission để mở mục này.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2201,33 +3155,34 @@ class _BlockingState extends StatelessWidget {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          decoration: _panelDecoration(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _IconBadge(icon: icon, color: AppColors.primary),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.heading3,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              FilledButton.icon(
-                onPressed: onAction,
-                icon: const Icon(Icons.arrow_forward_rounded),
-                label: Text(actionLabel),
-              ),
-            ],
+        child: _InteractivePanel(
+          accent: AppColors.primary,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _IconBadge(icon: icon, color: AppColors.primary),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.heading3,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                FilledButton.icon(
+                  onPressed: onAction,
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: Text(actionLabel),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2425,7 +3380,7 @@ BoxDecoration _panelDecoration({bool elevated = true}) {
   return BoxDecoration(
     color: AppColors.surface,
     borderRadius: BorderRadius.circular(AppRadius.lg),
-    border: Border.all(color: AppColors.border),
+    border: Border.all(color: AppColors.borderLight),
     boxShadow: elevated ? AppShadows.card : const [],
   );
 }

@@ -29,6 +29,13 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 - [ ] Seed co du plan `free`, `plus`, `family_plus`.
 - [ ] User Free co quota `ai_chat_message` 3 luot/ngay.
 - [ ] User Free co quota `personal_schedule_generation` 3 luot/thang.
+- [ ] `check_usage_quota` tra `allowed = false` sau lan thu 3 cua
+  `ai_chat_message` trong ngay theo `Asia/Ho_Chi_Minh`.
+- [ ] `commit_usage_quota` idempotent theo `p_request_id`: goi lai cung
+  request khong tang `usage_quota_counters` lan hai.
+- [ ] `check_personal_schedule_generation_quota` va
+  `commit_personal_schedule_generation_quota` khop voi Flutter schedule
+  gateway, reset theo thang trong `Asia/Ho_Chi_Minh`.
 - [ ] Client khong insert/update/delete duoc subscription, quota counter hay
   usage event.
 

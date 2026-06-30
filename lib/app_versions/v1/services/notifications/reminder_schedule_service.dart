@@ -57,6 +57,7 @@ class ReminderScheduleService {
     await _deletePendingForSources(
       sourceType: ReminderSourceTypes.lifestyleScheduleItem,
       sourceIds: items.map((item) => item.id).toList(),
+      subjectUserIds: items.map((item) => item.userId).toSet(),
     );
 
     final candidates = items
@@ -88,6 +89,7 @@ class ReminderScheduleService {
   Future<void> _deletePendingForSources({
     required String sourceType,
     required List<String> sourceIds,
+    required Set<String?> subjectUserIds,
   }) async {
     if (sourceIds.isEmpty) return;
 
@@ -97,25 +99,24 @@ class ReminderScheduleService {
     );
 
     for (final notification in pending) {
-      final notificationId = notification.notificationId;
-      if (notificationId == null) continue;
-
-      try {
-        await scheduler.cancel(notificationId);
-      } catch (error, stackTrace) {
-        AppLogger.error(
-          _tag,
-          'Failed to cancel notification $notificationId',
-          error,
-          stackTrace,
-        );
+      if (!_matchesAnySubject(notification.userId, subjectUserIds)) {
+        continue;
       }
+      final notificationId = notification.notificationId;
+      if (notificationId != null) {
+        try {
+          await scheduler.cancel(notificationId);
+        } catch (error, stackTrace) {
+          AppLogger.error(
+            _tag,
+            'Failed to cancel notification $notificationId',
+            error,
+            stackTrace,
+          );
+        }
+      }
+      await notificationsDao.delete(notification.id);
     }
-
-    await notificationsDao.deletePendingBySources(
-      sourceType: sourceType,
-      sourceIds: sourceIds,
-    );
   }
 
   Future<bool> _requestPermission() async {
@@ -208,6 +209,7 @@ class ReminderScheduleService {
 
     return _ReminderCandidate(
       userId: item.userId,
+      subjectUserId: item.userId,
       sourceType: ReminderSourceTypes.lifestyleScheduleItem,
       sourceId: item.id,
       title: title,
@@ -227,10 +229,21 @@ class ReminderScheduleService {
 
     return DateTime(date.year, date.month, date.day, hour, minute);
   }
+
+  bool _matchesAnySubject(String? userId, Set<String?> subjectUserIds) {
+    final normalizedUserId = _normalizeSubject(userId);
+    return subjectUserIds.map(_normalizeSubject).contains(normalizedUserId);
+  }
+
+  String _normalizeSubject(String? userId) {
+    final text = userId?.trim();
+    return text == null || text.isEmpty ? 'local_subject' : text;
+  }
 }
 
 class _ReminderCandidate {
   final String? userId;
+  final String? subjectUserId;
   final String sourceType;
   final String sourceId;
   final String title;
@@ -239,6 +252,7 @@ class _ReminderCandidate {
 
   _ReminderCandidate({
     required this.userId,
+    required this.subjectUserId,
     required this.sourceType,
     required this.sourceId,
     required this.title,
@@ -248,7 +262,13 @@ class _ReminderCandidate {
 
   String get scheduledAtText => scheduledAt.toIso8601String();
 
-  String get rowId => 'reminder_${sourceType}_${sourceId}_$scheduledAtText';
+  String get subjectKey {
+    final text = subjectUserId?.trim();
+    return text == null || text.isEmpty ? 'local_subject' : text;
+  }
+
+  String get rowId =>
+      'reminder_${subjectKey}_${sourceType}_${sourceId}_$scheduledAtText';
 
   int get notificationId => deterministicNotificationId(rowId);
 
@@ -258,6 +278,9 @@ class _ReminderCandidate {
       sourceType: sourceType,
       sourceId: sourceId,
       scheduledAt: scheduledAtText,
+      subjectUserId: subjectUserId,
+      actorUserId: userId,
+      correlationId: rowId,
     ).toJsonString();
   }
 }

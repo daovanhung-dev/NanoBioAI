@@ -96,6 +96,43 @@ class NotificationActionHandler {
       }
 
       final respondedAt = _now().toIso8601String();
+      if (notification.actionStatus != NotificationActionStatuses.pending) {
+        AppLogger.info(
+          _tag,
+          'Ignore already handled notification id=${notification.id}',
+        );
+        return;
+      }
+
+      final sourceType = parsedPayload.sourceType.isNotEmpty
+          ? parsedPayload.sourceType
+          : notification.sourceType ?? '';
+      final sourceId = parsedPayload.sourceId.isNotEmpty
+          ? parsedPayload.sourceId
+          : notification.sourceId ?? '';
+      final subjectUserId = parsedPayload.subjectUserId ?? notification.userId;
+
+      if (!_payloadMatchesNotification(parsedPayload, notification)) {
+        await _recordActionFailure(
+          notification: notification,
+          respondedAt: respondedAt,
+        );
+        return;
+      }
+
+      final sourceMatchesSubject = await _sourceMatchesSubject(
+        sourceType: sourceType,
+        sourceId: sourceId,
+        subjectUserId: subjectUserId,
+      );
+      if (!sourceMatchesSubject) {
+        await _recordActionFailure(
+          notification: notification,
+          respondedAt: respondedAt,
+        );
+        return;
+      }
+
       if (normalizedActionId == NotificationActionIds.skipped) {
         await notificationsDao.updateActionStatus(
           id: notification.id,
@@ -108,12 +145,8 @@ class NotificationActionHandler {
       }
 
       final sourceUpdated = await _tryMarkSourceDone(
-        sourceType: parsedPayload.sourceType.isNotEmpty
-            ? parsedPayload.sourceType
-            : notification.sourceType ?? '',
-        sourceId: parsedPayload.sourceId.isNotEmpty
-            ? parsedPayload.sourceId
-            : notification.sourceId ?? '',
+        sourceType: sourceType,
+        sourceId: sourceId,
         updatedAt: respondedAt,
       );
 
@@ -136,6 +169,84 @@ class NotificationActionHandler {
         stackTrace,
       );
     }
+  }
+
+  bool _payloadMatchesNotification(
+    NotificationPayload payload,
+    NotificationModel notification,
+  ) {
+    final rowSourceType = notification.sourceType;
+    final rowSourceId = notification.sourceId;
+    if (payload.sourceType.isNotEmpty &&
+        rowSourceType != null &&
+        rowSourceType.isNotEmpty &&
+        payload.sourceType != rowSourceType) {
+      AppLogger.warning(_tag, 'Notification source type mismatch');
+      return false;
+    }
+    if (payload.sourceId.isNotEmpty &&
+        rowSourceId != null &&
+        rowSourceId.isNotEmpty &&
+        payload.sourceId != rowSourceId) {
+      AppLogger.warning(_tag, 'Notification source id mismatch');
+      return false;
+    }
+    if (!_sameSubject(payload.subjectUserId, notification.userId)) {
+      AppLogger.warning(_tag, 'Notification subject mismatch');
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> _sourceMatchesSubject({
+    required String sourceType,
+    required String sourceId,
+    required String? subjectUserId,
+  }) async {
+    final subject = _normalizeSubject(subjectUserId);
+    if (subject == null || sourceId.trim().isEmpty) return true;
+
+    if (sourceType == ReminderSourceTypes.meal) {
+      final meal = await mealPlansDao.getById(sourceId);
+      return meal != null && _sameSubject(subject, meal.userId);
+    }
+
+    if (sourceType == ReminderSourceTypes.dailyTask) {
+      final task = await dailyHealthTasksDao.getById(sourceId);
+      return task != null && _sameSubject(subject, task.userId);
+    }
+
+    if (sourceType == ReminderSourceTypes.lifestyleScheduleItem) {
+      final item = await lifestyleScheduleItemsDao.getById(sourceId);
+      return item != null && _sameSubject(subject, item.userId);
+    }
+
+    return true;
+  }
+
+  Future<void> _recordActionFailure({
+    required NotificationModel notification,
+    required String respondedAt,
+  }) async {
+    await notificationsDao.updateActionStatus(
+      id: notification.id,
+      actionStatus: NotificationActionStatuses.actionFailed,
+      respondedAt: respondedAt,
+      updatedAt: respondedAt,
+    );
+    LocalUserDataSyncDispatcher.requestImmediateSync(database: database);
+  }
+
+  bool _sameSubject(String? left, String? right) {
+    final normalizedLeft = _normalizeSubject(left);
+    final normalizedRight = _normalizeSubject(right);
+    if (normalizedLeft == null || normalizedRight == null) return true;
+    return normalizedLeft == normalizedRight;
+  }
+
+  String? _normalizeSubject(String? value) {
+    final text = value?.trim();
+    return text == null || text.isEmpty ? null : text;
   }
 
   Future<bool> _tryMarkSourceDone({

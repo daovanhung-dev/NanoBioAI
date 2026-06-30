@@ -22,8 +22,9 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
+
   var _loading = false;
-  var _obscure = true;
+  var _obscurePassword = true;
 
   @override
   void dispose() {
@@ -35,53 +36,85 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
   @override
   Widget build(BuildContext context) {
     return _AuthScaffold(
+      eyebrow: 'NANOBIO ACCOUNT',
+      heroIcon: Icons.waving_hand_rounded,
       title: 'Mừng bạn quay lại',
       subtitle:
-          'Nabisẽ kiểm tra tài khoản rồi đưa bạn về đúng nơi cần tiếp tục.',
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            _AuthTextField(
-              controller: _email,
-              label: 'Email',
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) => AuthValidators.email(value ?? ''),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _AuthTextField(
-              controller: _password,
-              label: 'Mật khẩu',
-              obscureText: _obscure,
-              validator: (value) => AuthValidators.password(value ?? ''),
-              suffixIcon: IconButton(
-                onPressed: () => setState(() => _obscure = !_obscure),
-                icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+          'Nabi sẽ kiểm tra tài khoản rồi đưa bạn về đúng hành trình đang tiếp tục.',
+      child: AutofillGroup(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _AuthSectionLabel(
+                title: 'Đăng nhập an toàn',
+                subtitle:
+                    'Dùng email đã liên kết với tài khoản NanoBio của bạn.',
               ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
+              const SizedBox(height: AppSpacing.lg),
+              _AuthTextField(
+                controller: _email,
+                label: 'Email',
+                hintText: 'ban@example.com',
+                prefixIcon: Icons.alternate_email_rounded,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [
+                  AutofillHints.username,
+                  AutofillHints.email,
+                ],
+                validator: (value) => AuthValidators.email(value ?? ''),
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _AuthTextField(
+                controller: _password,
+                label: 'Mật khẩu',
+                hintText: 'Nhập mật khẩu của bạn',
+                prefixIcon: Icons.lock_outline_rounded,
+                obscureText: _obscurePassword,
+                textInputAction: TextInputAction.done,
+                autofillHints: const [AutofillHints.password],
+                validator: (value) => AuthValidators.password(value ?? ''),
+                suffixIcon: _PasswordVisibilityButton(
+                  obscure: _obscurePassword,
+                  onPressed: () {
+                    setState(() => _obscurePassword = !_obscurePassword);
+                  },
+                ),
+                onFieldSubmitted: (_) => _submit(),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Align(
+                alignment: Alignment.centerRight,
+                child: _AuthTextButton(
+                  label: 'Quên mật khẩu?',
+                  icon: Icons.help_outline_rounded,
+                  onPressed: _loading
+                      ? null
+                      : () => context.go(V2RoutePaths.forgotPassword),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _PrimaryAuthButton(
+                label: 'Tiếp tục',
+                icon: Icons.arrow_forward_rounded,
+                loading: _loading,
+                onPressed: _submit,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _AuthDivider(label: 'hoặc'),
+              const SizedBox(height: AppSpacing.sm),
+              _RoutePrompt(
+                prompt: 'Bạn mới đến với NanoBio?',
+                actionLabel: 'Tạo tài khoản',
                 onPressed: _loading
                     ? null
-                    : () => context.go(V2RoutePaths.forgotPassword),
-                child: const Text('Bạn quên mật khẩu à?'),
+                    : () => context.go(V2RoutePaths.register),
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _PrimaryAuthButton(
-              label: 'Mình tiếp tục nhé',
-              loading: _loading,
-              onPressed: _submit,
-            ),
-            TextButton(
-              onPressed: _loading
-                  ? null
-                  : () => context.go(V2RoutePaths.register),
-              child: const Text('Tạo tài khoản mới'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -89,13 +122,17 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _loading = true);
+
     try {
       await ref
           .read(v2AuthControllerProvider.notifier)
           .signInWithEmail(
-            LoginCommand(email: _email.text, password: _password.text),
+            LoginCommand(email: _email.text.trim(), password: _password.text),
           );
+
       if (mounted) context.go(V2RoutePaths.authGate);
     } catch (error) {
       if (mounted) _showError(context, error);
@@ -121,9 +158,11 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   final _confirmPassword = TextEditingController();
   final _referralCode = TextEditingController();
   final _referralCodeValidator = const SaleReferralCodeValidator();
+
   var _acceptedTerms = false;
   var _loading = false;
-  var _obscure = true;
+  var _obscurePassword = true;
+  var _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -139,79 +178,136 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return _AuthScaffold(
+      eyebrow: 'BẮT ĐẦU CÙNG NABI',
+      heroIcon: Icons.auto_awesome_rounded,
       title: 'Tạo tài khoản NanoBio',
       subtitle:
-          'Nabisẽ dùng email để bảo vệ hồ sơ sức khỏe và đồng bộ hành trình của bạn.',
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            _AuthTextField(
-              controller: _fullName,
-              label: 'Họ và tên',
-              validator: (value) => AuthValidators.fullName(value ?? ''),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _AuthTextField(
-              controller: _phone,
-              label: 'Số điện thoại',
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _AuthTextField(
-              controller: _email,
-              label: 'Email',
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) => AuthValidators.email(value ?? ''),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _AuthTextField(
-              controller: _password,
-              label: 'Mật khẩu',
-              obscureText: _obscure,
-              validator: (value) => AuthValidators.password(value ?? ''),
-              suffixIcon: IconButton(
-                onPressed: () => setState(() => _obscure = !_obscure),
-                icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+          'Hồ sơ của bạn sẽ được bảo vệ để Nabi có thể đồng hành xuyên suốt hành trình khỏe mạnh.',
+      child: AutofillGroup(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _AuthSectionLabel(
+                title: 'Thông tin tài khoản',
+                subtitle:
+                    'Bạn có thể cập nhật thêm thông tin cá nhân bất cứ lúc nào.',
               ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _AuthTextField(
-              controller: _confirmPassword,
-              label: 'Nhập lại mật khẩu',
-              obscureText: true,
-              validator: (value) =>
-                  AuthValidators.confirmPassword(_password.text, value ?? ''),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _AuthTextField(
-              controller: _referralCode,
-              label: 'Ma gioi thieu (khong bat buoc)',
-              validator: (value) =>
-                  _referralCodeValidator.validate(value ?? ''),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            CheckboxListTile(
-              value: _acceptedTerms,
-              onChanged: _loading
-                  ? null
-                  : (value) => setState(() => _acceptedTerms = value ?? false),
-              contentPadding: EdgeInsets.zero,
-              title: const Text(
-                'Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật.',
+              const SizedBox(height: AppSpacing.lg),
+              _AuthTextField(
+                controller: _fullName,
+                label: 'Họ và tên',
+                hintText: 'Ví dụ: Nguyễn Minh Anh',
+                prefixIcon: Icons.person_outline_rounded,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.name],
+                validator: (value) => AuthValidators.fullName(value ?? ''),
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _PrimaryAuthButton(
-              label: 'Tạo tài khoản',
-              loading: _loading,
-              onPressed: _submit,
-            ),
-            TextButton(
-              onPressed: _loading ? null : () => context.go(V2RoutePaths.login),
-              child: const Text('Mình đã có tài khoản'),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.md),
+              _AuthTextField(
+                controller: _phone,
+                label: 'Số điện thoại',
+                hintText: 'Không bắt buộc',
+                prefixIcon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.telephoneNumber],
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _AuthTextField(
+                controller: _email,
+                label: 'Email',
+                hintText: 'ban@example.com',
+                prefixIcon: Icons.alternate_email_rounded,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [
+                  AutofillHints.username,
+                  AutofillHints.email,
+                ],
+                validator: (value) => AuthValidators.email(value ?? ''),
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _AuthTextField(
+                controller: _password,
+                label: 'Mật khẩu',
+                hintText: 'Tạo mật khẩu đủ mạnh',
+                prefixIcon: Icons.lock_outline_rounded,
+                obscureText: _obscurePassword,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.newPassword],
+                validator: (value) => AuthValidators.password(value ?? ''),
+                suffixIcon: _PasswordVisibilityButton(
+                  obscure: _obscurePassword,
+                  onPressed: () {
+                    setState(() => _obscurePassword = !_obscurePassword);
+                  },
+                ),
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _AuthTextField(
+                controller: _confirmPassword,
+                label: 'Nhập lại mật khẩu',
+                hintText: 'Nhập lại để xác nhận',
+                prefixIcon: Icons.verified_user_outlined,
+                obscureText: _obscureConfirmPassword,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.newPassword],
+                validator: (value) =>
+                    AuthValidators.confirmPassword(_password.text, value ?? ''),
+                suffixIcon: _PasswordVisibilityButton(
+                  obscure: _obscureConfirmPassword,
+                  onPressed: () {
+                    setState(
+                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                    );
+                  },
+                ),
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _AuthTextField(
+                controller: _referralCode,
+                label: 'Mã giới thiệu',
+                hintText: 'Không bắt buộc',
+                prefixIcon: Icons.card_giftcard_rounded,
+                textCapitalization: TextCapitalization.characters,
+                textInputAction: TextInputAction.done,
+                validator: (value) =>
+                    _referralCodeValidator.validate(value ?? ''),
+                onFieldSubmitted: (_) => _submit(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _AuthLegalConsent(
+                value: _acceptedTerms,
+                enabled: !_loading,
+                onChanged: (value) {
+                  setState(() => _acceptedTerms = value ?? false);
+                },
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _PrimaryAuthButton(
+                label: 'Tạo tài khoản',
+                icon: Icons.person_add_alt_1_rounded,
+                loading: _loading,
+                onPressed: _submit,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _RoutePrompt(
+                prompt: 'Bạn đã có tài khoản?',
+                actionLabel: 'Đăng nhập',
+                onPressed: _loading
+                    ? null
+                    : () => context.go(V2RoutePaths.login),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -219,6 +315,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+
     final termsError = AuthValidators.acceptedTerms(_acceptedTerms);
     if (termsError != null) {
       _showError(
@@ -228,26 +325,31 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
       return;
     }
 
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _loading = true);
+
     try {
       final result = await ref
           .read(v2AuthControllerProvider.notifier)
           .signUpWithEmail(
             RegisterCommand(
-              email: _email.text,
+              email: _email.text.trim(),
               password: _password.text,
               confirmPassword: _confirmPassword.text,
-              fullName: _fullName.text,
-              phone: _phone.text,
+              fullName: _fullName.text.trim(),
+              phone: _phone.text.trim(),
               acceptedTerms: _acceptedTerms,
             ),
           );
+
       if (!mounted) return;
       await _attachReferralCodeIfPossible(result);
       if (!mounted) return;
+
       if (result == RegistrationResult.verificationRequired) {
         context.go(
-          '${V2RoutePaths.verifyEmail}?email=${Uri.encodeComponent(_email.text.trim())}',
+          '${V2RoutePaths.verifyEmail}'
+          '?email=${Uri.encodeComponent(_email.text.trim())}',
         );
       } else {
         context.go(V2RoutePaths.authGate);
@@ -269,10 +371,16 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
       ref.invalidate(saleDashboardProvider);
     } catch (_) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Tai khoan da tao. Ma gioi thieu chua gan duoc, ban co the nhap lai trong Cai dat.',
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(AppSpacing.md),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          content: const Text(
+            'Tài khoản đã được tạo. Bạn có thể nhập lại mã giới thiệu trong phần Cài đặt.',
           ),
         ),
       );
@@ -302,32 +410,45 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final email = widget.email.isEmpty ? 'email của bạn' : widget.email;
+
     return _AuthScaffold(
+      eyebrow: 'XÁC THỰC TÀI KHOẢN',
+      heroIcon: Icons.mark_email_read_rounded,
       title: 'Kiểm tra email nhé',
       subtitle:
-          'Nabiđã gửi liên kết xác thực tới ${widget.email.isEmpty ? 'email của bạn' : widget.email}. Sau khi mở liên kết, mình sẽ đưa bạn đến bước tiếp theo.',
+          'Nabi đã gửi một liên kết xác thực tới $email. Mở liên kết đó rồi quay lại đây để tiếp tục.',
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const _InfoBox(
+            icon: Icons.mail_lock_outlined,
+            title: 'Bước nhỏ để bảo vệ hồ sơ của bạn',
+            message:
+                'Hãy kiểm tra cả mục Thư rác hoặc Quảng cáo nếu bạn chưa thấy email sau vài phút.',
+          ),
+          const SizedBox(height: AppSpacing.lg),
           _PrimaryAuthButton(
             label: 'Tôi đã xác thực email',
+            icon: Icons.check_circle_outline_rounded,
             loading: _loading,
             onPressed: () => context.go(V2RoutePaths.authGate),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OutlinedButton.icon(
+          _SecondaryAuthButton(
+            label: _cooldown > 0
+                ? 'Gửi lại sau $_cooldown giây'
+                : 'Gửi lại email xác thực',
+            icon: Icons.refresh_rounded,
             onPressed: _cooldown > 0 || _loading || widget.email.isEmpty
                 ? null
                 : _resend,
-            icon: const Icon(Icons.mark_email_read_rounded),
-            label: Text(
-              _cooldown > 0
-                  ? 'Gửi lại sau $_cooldown giây'
-                  : 'Gửi lại email xác thực',
-            ),
           ),
-          TextButton(
+          const SizedBox(height: AppSpacing.sm),
+          _RoutePrompt(
+            prompt: 'Muốn dùng email khác?',
+            actionLabel: 'Quay lại đăng nhập',
             onPressed: _loading ? null : () => context.go(V2RoutePaths.login),
-            child: const Text('Quay lại đăng nhập'),
           ),
         ],
       ),
@@ -336,14 +457,24 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
 
   Future<void> _resend() async {
     setState(() => _loading = true);
+
     try {
       await ref
           .read(v2AuthControllerProvider.notifier)
           .resendEmailConfirmation(widget.email);
+
       _startCooldown();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Nabiđã gửi lại email xác thực.')),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(AppSpacing.md),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            content: const Text('Nabi đã gửi lại email xác thực.'),
+          ),
         );
       }
     } catch (error) {
@@ -356,8 +487,10 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
   void _startCooldown() {
     _timer?.cancel();
     setState(() => _cooldown = 60);
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
+
       if (_cooldown <= 1) {
         timer.cancel();
         setState(() => _cooldown = 0);
@@ -379,6 +512,7 @@ class V2ForgotPasswordPage extends ConsumerStatefulWidget {
 class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
+
   var _loading = false;
   var _sent = false;
 
@@ -391,34 +525,51 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return _AuthScaffold(
+      eyebrow: 'KHÔI PHỤC TÀI KHOẢN',
+      heroIcon: Icons.key_rounded,
       title: 'Lấy lại mật khẩu',
       subtitle:
-          'Bạn nhập email, Nabisẽ gửi một liên kết an toàn để đặt mật khẩu mới.',
+          'Nhập email đã đăng ký, Nabi sẽ gửi một liên kết an toàn để bạn đặt mật khẩu mới.',
       child: Form(
         key: _formKey,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_sent)
+            if (_sent) ...[
               const _InfoBox(
+                icon: Icons.mark_email_read_outlined,
+                title: 'Kiểm tra hộp thư của bạn',
                 message:
                     'Nếu email phù hợp với tài khoản, bạn sẽ nhận được liên kết đặt lại mật khẩu.',
               ),
-            if (_sent) const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.lg),
+            ],
             _AuthTextField(
               controller: _email,
               label: 'Email',
+              hintText: 'ban@example.com',
+              prefixIcon: Icons.alternate_email_rounded,
               keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.done,
+              autofillHints: const [
+                AutofillHints.username,
+                AutofillHints.email,
+              ],
               validator: (value) => AuthValidators.email(value ?? ''),
+              onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: AppSpacing.lg),
             _PrimaryAuthButton(
-              label: 'Gửi liên kết',
+              label: _sent ? 'Gửi lại liên kết' : 'Gửi liên kết',
+              icon: Icons.send_rounded,
               loading: _loading,
               onPressed: _submit,
             ),
-            TextButton(
+            const SizedBox(height: AppSpacing.sm),
+            _RoutePrompt(
+              prompt: 'Bạn đã nhớ mật khẩu?',
+              actionLabel: 'Quay lại đăng nhập',
               onPressed: _loading ? null : () => context.go(V2RoutePaths.login),
-              child: const Text('Quay lại đăng nhập'),
             ),
           ],
         ),
@@ -428,11 +579,15 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _loading = true);
+
     try {
       await ref
           .read(v2AuthControllerProvider.notifier)
-          .sendPasswordRecovery(_email.text);
+          .sendPasswordRecovery(_email.text.trim());
+
       if (mounted) setState(() => _sent = true);
     } catch (error) {
       if (mounted) _showError(context, error);
@@ -454,7 +609,10 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+
   var _loading = false;
+  var _obscurePassword = true;
+  var _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -466,29 +624,65 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return _AuthScaffold(
+      eyebrow: 'CẬP NHẬT BẢO MẬT',
+      heroIcon: Icons.lock_reset_rounded,
       title: 'Đặt mật khẩu mới',
-      subtitle: 'Chọn một mật khẩu đủ an toàn để Nabibảo vệ hồ sơ của bạn.',
+      subtitle:
+          'Chọn một mật khẩu đủ an toàn để Nabi tiếp tục bảo vệ hồ sơ của bạn.',
       child: Form(
         key: _formKey,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const _InfoBox(
+              icon: Icons.shield_outlined,
+              title: 'Mẹo bảo mật',
+              message:
+                  'Nên dùng mật khẩu riêng, đủ dài và không chia sẻ với bất kỳ ai.',
+            ),
+            const SizedBox(height: AppSpacing.lg),
             _AuthTextField(
               controller: _password,
               label: 'Mật khẩu mới',
-              obscureText: true,
+              hintText: 'Tạo mật khẩu mới',
+              prefixIcon: Icons.lock_outline_rounded,
+              obscureText: _obscurePassword,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.newPassword],
               validator: (value) => AuthValidators.password(value ?? ''),
+              suffixIcon: _PasswordVisibilityButton(
+                obscure: _obscurePassword,
+                onPressed: () {
+                  setState(() => _obscurePassword = !_obscurePassword);
+                },
+              ),
+              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
             ),
             const SizedBox(height: AppSpacing.md),
             _AuthTextField(
               controller: _confirm,
               label: 'Nhập lại mật khẩu mới',
-              obscureText: true,
+              hintText: 'Xác nhận mật khẩu mới',
+              prefixIcon: Icons.verified_user_outlined,
+              obscureText: _obscureConfirmPassword,
+              textInputAction: TextInputAction.done,
+              autofillHints: const [AutofillHints.newPassword],
               validator: (value) =>
                   AuthValidators.confirmPassword(_password.text, value ?? ''),
+              suffixIcon: _PasswordVisibilityButton(
+                obscure: _obscureConfirmPassword,
+                onPressed: () {
+                  setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                  );
+                },
+              ),
+              onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: AppSpacing.lg),
             _PrimaryAuthButton(
               label: 'Cập nhật mật khẩu',
+              icon: Icons.check_circle_outline_rounded,
               loading: _loading,
               onPressed: _submit,
             ),
@@ -500,7 +694,10 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _loading = true);
+
     try {
       await ref
           .read(v2AuthControllerProvider.notifier)
@@ -510,6 +707,7 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
               confirmPassword: _confirm.text,
             ),
           );
+
       if (mounted) context.go(V2RoutePaths.authGate);
     } catch (error) {
       if (mounted) _showError(context, error);
@@ -537,9 +735,13 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(child: CircularProgressIndicator()),
+    return const _AuthScaffold(
+      eyebrow: 'ĐANG XÁC THỰC',
+      heroIcon: Icons.verified_user_rounded,
+      title: 'Nabi đang kiểm tra liên kết',
+      subtitle:
+          'Chỉ mất một chút thời gian để hoàn tất bước bảo mật này cho bạn.',
+      child: _AuthCallbackLoading(),
     );
   }
 
@@ -557,11 +759,15 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
 }
 
 class _AuthScaffold extends StatelessWidget {
+  final String eyebrow;
+  final IconData heroIcon;
   final String title;
   final String subtitle;
   final Widget child;
 
   const _AuthScaffold({
+    required this.eyebrow,
+    required this.heroIcon,
     required this.title,
     required this.subtitle,
     required this.child,
@@ -569,51 +775,492 @@ class _AuthScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardBottomInset = MediaQuery.of(context).viewInsets.bottom;
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 460),
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: AppDecoration.card(
-                  radius: AppRadius.xxl,
-                  shadows: AppShadows.soft,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      alignment: Alignment.center,
-                      decoration: AppDecoration.circle(
-                        gradient: AppGradients.primary,
+      resizeToAvoidBottomInset: true,
+      body: Stack(
+        children: [
+          const _AuthAmbientBackground(),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 720;
+                final pagePadding = isWide ? AppSpacing.xl : AppSpacing.lg;
+
+                return Center(
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: EdgeInsets.fromLTRB(
+                      pagePadding,
+                      AppSpacing.xl,
+                      pagePadding,
+                      AppSpacing.xl + keyboardBottomInset,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 520),
+                      child: Container(
+                        padding: EdgeInsets.all(
+                          isWide ? AppSpacing.xl : AppSpacing.lg,
+                        ),
+                        decoration: AppDecoration.card(
+                          radius: AppRadius.xxl,
+                          shadows: AppShadows.soft,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _AuthHero(
+                              eyebrow: eyebrow,
+                              icon: heroIcon,
+                              title: title,
+                              subtitle: subtitle,
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            child,
+                            const SizedBox(height: AppSpacing.lg),
+                            const _AuthTrustNote(),
+                          ],
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.favorite_rounded,
-                        color: Colors.white,
-                        size: 34,
-                      ),
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.heading2,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthAmbientBackground extends StatelessWidget {
+  const _AuthAmbientBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.primarySoft,
+                  AppColors.background,
+                  AppColors.secondarySoft,
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: -96,
+            right: -72,
+            child: _AmbientOrb(
+              size: 230,
+              color: AppColors.primary.withOpacity(0.12),
+            ),
+          ),
+          Positioned(
+            bottom: -116,
+            left: -92,
+            child: _AmbientOrb(
+              size: 280,
+              color: AppColors.secondary.withOpacity(0.10),
+            ),
+          ),
+          Positioned(
+            top: 224,
+            left: -54,
+            child: _AmbientOrb(
+              size: 124,
+              color: AppColors.tertiary.withOpacity(0.08),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AmbientOrb extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _AmbientOrb({required this.size, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color,
+            blurRadius: size / 2,
+            spreadRadius: size / 12,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthHero extends StatelessWidget {
+  final String eyebrow;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _AuthHero({
+    required this.eyebrow,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.primarySoft,
+            borderRadius: BorderRadius.circular(AppRadius.circular),
+            border: Border.all(color: AppColors.primary.withOpacity(0.16)),
+          ),
+          child: Text(
+            eyebrow,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.primaryDark,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+              letterSpacing: 0.7,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Container(
+          width: 76,
+          height: 76,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: AppGradients.primary,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.28),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Icon(icon, color: AppColors.textInverse, size: 34),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.heading2.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          subtitle,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+            height: 1.55,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AuthSectionLabel extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  const _AuthSectionLabel({required this.title, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          subtitle,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AuthTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String? hintText;
+  final String? Function(String?)? validator;
+  final TextInputType? keyboardType;
+  final IconData? prefixIcon;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final Iterable<String>? autofillHints;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onFieldSubmitted;
+  final TextCapitalization textCapitalization;
+
+  const _AuthTextField({
+    required this.controller,
+    required this.label,
+    this.hintText,
+    this.validator,
+    this.keyboardType,
+    this.prefixIcon,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.autofillHints,
+    this.textInputAction,
+    this.onFieldSubmitted,
+    this.textCapitalization = TextCapitalization.none,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      autofillHints: autofillHints,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onFieldSubmitted,
+      textCapitalization: textCapitalization,
+      autocorrect: !obscureText,
+      enableSuggestions: !obscureText,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      cursorColor: AppColors.primary,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hintText,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        isDense: true,
+        filled: true,
+        fillColor: AppColors.inputBackground,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md,
+        ),
+        prefixIcon: prefixIcon == null
+            ? null
+            : Icon(prefixIcon, color: AppColors.primary, size: 21),
+        prefixIconConstraints: const BoxConstraints(minWidth: 52),
+        suffixIcon: suffixIcon,
+        suffixIconConstraints: const BoxConstraints(minWidth: 52),
+        labelStyle: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w600,
+        ),
+        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
+        helperStyle: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.textMuted,
+        ),
+        errorStyle: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.error,
+          fontSize: 12,
+          height: 1.3,
+        ),
+        errorMaxLines: 2,
+        border: _inputBorder(AppColors.borderLight),
+        enabledBorder: _inputBorder(AppColors.borderLight),
+        focusedBorder: _inputBorder(AppColors.primary, width: 1.5),
+        errorBorder: _inputBorder(AppColors.error),
+        focusedErrorBorder: _inputBorder(AppColors.error, width: 1.5),
+      ),
+    );
+  }
+
+  OutlineInputBorder _inputBorder(Color color, {double width = 1}) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      borderSide: BorderSide(color: color, width: width),
+    );
+  }
+}
+
+class _PasswordVisibilityButton extends StatelessWidget {
+  final bool obscure;
+  final VoidCallback onPressed;
+
+  const _PasswordVisibilityButton({
+    required this.obscure,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: obscure ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+      onPressed: onPressed,
+      icon: Icon(
+        obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+        color: AppColors.textSecondary,
+      ),
+    );
+  }
+}
+
+class _AuthLegalConsent extends StatelessWidget {
+  final bool value;
+  final bool enabled;
+  final ValueChanged<bool?> onChanged;
+
+  const _AuthLegalConsent({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Đồng ý với điều khoản sử dụng và chính sách bảo mật',
+      child: Container(
+        decoration: BoxDecoration(
+          color: value ? AppColors.primarySoft : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: value
+                ? AppColors.primary.withOpacity(0.35)
+                : AppColors.borderLight,
+          ),
+        ),
+        child: CheckboxListTile(
+          value: value,
+          onChanged: enabled ? onChanged : null,
+          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          controlAffinity: ListTileControlAffinity.leading,
+          dense: true,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          activeColor: AppColors.primary,
+          checkboxShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xs),
+          ),
+          title: Text(
+            'Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật.',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PrimaryAuthButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool loading;
+  final VoidCallback onPressed;
+
+  const _PrimaryAuthButton({
+    required this.label,
+    required this.icon,
+    required this.loading,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(AppRadius.lg);
+
+    return Semantics(
+      button: true,
+      enabled: !loading,
+      label: label,
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: loading ? AppGradients.primarySoft : AppGradients.primary,
+            borderRadius: borderRadius,
+            boxShadow: loading
+                ? const []
+                : [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.25),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      subtitle,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    child,
                   ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: borderRadius,
+            child: InkWell(
+              borderRadius: borderRadius,
+              onTap: loading ? null : onPressed,
+              child: Center(
+                child: AnimatedSwitcher(
+                  duration: AppDuration.fast,
+                  child: loading
+                      ? const SizedBox.square(
+                          key: ValueKey('auth_loading'),
+                          dimension: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            color: AppColors.textInverse,
+                          ),
+                        )
+                      : Row(
+                          key: const ValueKey('auth_label'),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              label,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.textInverse,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Icon(icon, color: AppColors.textInverse, size: 20),
+                          ],
+                        ),
                 ),
               ),
             ),
@@ -624,76 +1271,146 @@ class _AuthScaffold extends StatelessWidget {
   }
 }
 
-class _AuthTextField extends StatelessWidget {
-  final TextEditingController controller;
+class _SecondaryAuthButton extends StatelessWidget {
   final String label;
-  final String? Function(String?)? validator;
-  final TextInputType? keyboardType;
-  final bool obscureText;
-  final Widget? suffixIcon;
+  final IconData icon;
+  final VoidCallback? onPressed;
 
-  const _AuthTextField({
-    required this.controller,
+  const _SecondaryAuthButton({
     required this.label,
-    this.validator,
-    this.keyboardType,
-    this.obscureText = false,
-    this.suffixIcon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      validator: validator,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        labelText: label,
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-      ),
-    );
-  }
-}
-
-class _PrimaryAuthButton extends StatelessWidget {
-  final String label;
-  final bool loading;
-  final VoidCallback onPressed;
-
-  const _PrimaryAuthButton({
-    required this.label,
-    required this.loading,
+    required this.icon,
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.infinity,
       height: 52,
-      child: FilledButton(
-        onPressed: loading ? null : onPressed,
-        child: loading
-            ? const SizedBox.square(
-                dimension: 22,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Text(label),
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 19),
+        label: Text(label),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: BorderSide(color: AppColors.primary.withOpacity(0.36)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          textStyle: AppTextStyles.bodyMedium.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
 }
 
+class _AuthTextButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  const _AuthTextButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 17),
+      label: Text(label),
+      style: TextButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        minimumSize: const Size(48, 44),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        textStyle: AppTextStyles.bodyMedium.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _RoutePrompt extends StatelessWidget {
+  final String prompt;
+  final String actionLabel;
+  final VoidCallback? onPressed;
+
+  const _RoutePrompt({
+    required this.prompt,
+    required this.actionLabel,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: AppSpacing.xs,
+      children: [
+        Text(
+          prompt,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+        TextButton(
+          onPressed: onPressed,
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            minimumSize: const Size(48, 40),
+            textStyle: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          child: Text(actionLabel),
+        ),
+      ],
+    );
+  }
+}
+
+class _AuthDivider extends StatelessWidget {
+  final String label;
+
+  const _AuthDivider({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(child: Divider(color: AppColors.divider)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          child: Text(
+            label,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textMuted,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const Expanded(child: Divider(color: AppColors.divider)),
+      ],
+    );
+  }
+}
+
 class _InfoBox extends StatelessWidget {
+  final IconData icon;
+  final String title;
   final String message;
 
-  const _InfoBox({required this.message});
+  const _InfoBox({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -702,8 +1419,101 @@ class _InfoBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.primary.withOpacity(0.15)),
       ),
-      child: Text(message, style: AppTextStyles.bodyMedium),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Icon(icon, color: AppColors.primary, size: 20),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  message,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthTrustNote extends StatelessWidget {
+  const _AuthTrustNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.verified_user_outlined,
+          color: AppColors.textMuted,
+          size: 16,
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Flexible(
+          child: Text(
+            'NanoBio luôn ưu tiên sự riêng tư của bạn.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textMuted,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AuthCallbackLoading extends StatelessWidget {
+  const _AuthCallbackLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.primary.withOpacity(0.16)),
+      ),
+      child: const Row(
+        children: [
+          SizedBox.square(
+            dimension: 24,
+            child: CircularProgressIndicator(strokeWidth: 2.3),
+          ),
+          SizedBox(width: AppSpacing.md),
+          Expanded(child: Text('Nabi đang hoàn tất xác thực an toàn cho bạn.')),
+        ],
+      ),
     );
   }
 }
@@ -711,6 +1521,36 @@ class _InfoBox extends StatelessWidget {
 void _showError(BuildContext context, Object error) {
   final message = error is AuthFailure
       ? error.userMessage
-      : 'Nabichưa thể xử lý yêu cầu lúc này. Mình thử lại sau một chút nhé.';
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      : 'Nabi chưa thể xử lý yêu cầu lúc này. Mình thử lại sau một chút nhé.';
+
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.error,
+        margin: const EdgeInsets.all(AppSpacing.md),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        content: Row(
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              color: AppColors.textInverse,
+              size: 20,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                message,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textInverse,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
 }
