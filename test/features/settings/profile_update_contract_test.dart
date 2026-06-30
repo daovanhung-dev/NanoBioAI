@@ -13,26 +13,31 @@ void main() {
 
         expect(source, contains('currentSupabaseUserIdOrNull'));
         expect(source, isNot(contains('CloudProfileUpdatePayload')));
-        expect(source, contains('UserDataSyncOutbox.drainForCurrentUser'));
         expect(source, contains('SettingsLocalDatasource().updateUserProfile'));
         expect(source, contains('invalidateUserScopedProviders'));
         expect(source, contains("label: 'Email', enabled: false"));
-      },
-    );
 
-    test(
-      'cloud profile service updates scoped users and health profile rows',
-      () {
-        final source = File(
-          'lib/services/supabase/auth/auth_profile_service.dart',
+        final datasourceSource = File(
+          'lib/app_versions/v1/features/settings/data/datasources/'
+          'settings_local_datasource.dart',
         ).readAsStringSync();
-
-        expect(source, contains('CloudProfileUpdatePayload'));
-        expect(source, contains(".from('users')"));
-        expect(source, contains(".from('health_profiles')"));
-        expect(source, contains(".eq('id', userId)"));
-        expect(source, contains(".eq('user_id', userId)"));
+        expect(
+          datasourceSource,
+          contains('LocalUserDataSyncDispatcher.requestImmediateSync'),
+        );
       },
     );
+
+    test('auth profile service is read-only for profile/onboarding sync', () {
+      final source = File(
+        'lib/services/supabase/auth/auth_profile_service.dart',
+      ).readAsStringSync();
+
+      expect(source, contains('String? get currentUserId'));
+      expect(source, isNot(contains('CloudProfileUpdatePayload')));
+      expect(source, isNot(contains('CloudOnboardingPayload')));
+      expect(source, isNot(contains(".from('users')")));
+      expect(source, isNot(contains(".from('health_profiles')")));
+    });
   });
 }

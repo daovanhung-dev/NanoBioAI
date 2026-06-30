@@ -356,4 +356,55 @@ void main() {
       );
     },
   );
+
+  test(
+    'migration v11 backfills missing sync ids and recreates triggers',
+    () async {
+      await db.execute('CREATE TABLE users (id TEXT PRIMARY KEY)');
+      for (final table in SyncOutboxSchema.userOwnedTables) {
+        await db.execute(
+          'CREATE TABLE $table (id TEXT PRIMARY KEY, user_id TEXT)',
+        );
+      }
+      await db.insert('users', {'id': 'auth-1'});
+      await db.insert('meal_plans', {'id': null, 'user_id': 'auth-1'});
+      await db.insert('daily_health_tasks', {'id': '', 'user_id': 'auth-1'});
+
+      await MigrationManager.runMigrations(db, 10, 11);
+      await MigrationManager.runMigrations(db, 10, 11);
+
+      final mealRows = await db.query(
+        'meal_plans',
+        where: 'user_id = ?',
+        whereArgs: ['auth-1'],
+      );
+      final taskRows = await db.query(
+        'daily_health_tasks',
+        where: 'user_id = ?',
+        whereArgs: ['auth-1'],
+      );
+
+      expect(mealRows.single['id'], isNot(isEmpty));
+      expect(taskRows.single['id'], isNot(isEmpty));
+
+      final tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type = 'table'",
+      );
+      final tableNames = tables.map((table) => table['name']).toList();
+      expect(tableNames, contains('sync_outbox'));
+      expect(tableNames, contains('sync_runtime_state'));
+
+      await db.insert('lifestyle_schedule_items', {
+        'id': 'schedule-1',
+        'user_id': 'auth-1',
+      });
+      final markers = await db.query(
+        SyncOutboxSchema.outboxTable,
+        where: 'user_id = ? AND table_name = ? AND record_id = ?',
+        whereArgs: ['auth-1', 'lifestyle_schedule_items', 'schedule-1'],
+      );
+      expect(markers, hasLength(1));
+      expect(markers.single['operation'], 'upsert');
+    },
+  );
 }

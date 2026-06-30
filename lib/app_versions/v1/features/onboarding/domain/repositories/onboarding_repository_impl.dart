@@ -1,26 +1,28 @@
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/services/supabase/auth/auth_profile_service.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 import '../../data/datasource/onboarding_local_datasource.dart';
 import '../entities/onboarding_entity.dart';
 import 'onboarding_repository.dart';
 
+typedef CurrentUserIdReader = String? Function();
+
 class OnboardingRepositoryImpl implements OnboardingRepository {
   static const _tag = 'ONBOARDING_REPO';
 
   final OnboardingLocalDatasource localDatasource;
-  final AuthProfileService authProfileService;
+  final CurrentUserIdReader currentUserId;
 
   OnboardingRepositoryImpl({
     required this.localDatasource,
-    this.authProfileService = const AuthProfileService(),
-  });
+    CurrentUserIdReader? currentUserId,
+  }) : currentUserId = currentUserId ?? currentSupabaseUserIdOrNull;
 
   @override
   Future<void> save(OnboardingEntity entity) async {
     try {
-      final authUserId = authProfileService.currentUserId;
+      final authUserId = currentUserId();
 
       // SQLite is always written first. Version 9 database triggers create an
       // outbox marker in this same local transaction; authenticated sessions
@@ -46,8 +48,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
   @override
   Future<void> markCompleted() async {
-    final userId =
-        authProfileService.currentUserId ?? await AppPrefs.pendingGuestUserId();
+    final userId = currentUserId() ?? await AppPrefs.pendingGuestUserId();
     if (userId == null || userId.trim().isEmpty) {
       AppLogger.warning(
         _tag,

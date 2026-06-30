@@ -5,7 +5,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Canonical Work Types Seen
 
 - docs-context - Context and docs update: 15 worklog(s)
-- coding - Coding: 12 worklog(s)
+- coding - Coding: 13 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
 - bugfix - Direct bugfix: 6 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
@@ -19,16 +19,16 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 - unknown: 6
 - docs/issues, docs/todo: 2
-- authentication: 2
-- docs/DD M01-M19: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
+- docs/DD M01-M19: 2
+- authentication: 2
 - .codex: 2
-- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
+- lib/sale_referral, lib/services/supabase/sale,: 1
+- M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox: 1
 - Admin app, Supabase Admin, Sale direct-only: 1
-- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
-- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
+- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
+- DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
 - docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
-- docs/DD/product_flow, docs/checklist: 1
 
 ## Reusable Project Skills
 

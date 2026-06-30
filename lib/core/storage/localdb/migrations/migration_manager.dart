@@ -42,6 +42,9 @@ class MigrationManager {
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 10)) {
       await _migrateToV10(db);
     }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 11)) {
+      await _migrateToV11(db);
+    }
   }
 
   static bool _shouldRunMigration(
@@ -238,6 +241,13 @@ class MigrationManager {
     await db.execute(PersonalScheduleAiRequestsTable.createUserModeIndex);
   }
 
+  static Future<void> _migrateToV11(Database db) async {
+    for (final table in SyncOutboxSchema.userOwnedTables) {
+      await _backfillMissingSyncId(db, table);
+    }
+    await SyncOutboxSchema.create(db);
+  }
+
   static Future<void> _addColumnIfMissing(
     Database db, {
     required String tableName,
@@ -251,5 +261,41 @@ class MigrationManager {
         'ALTER TABLE $tableName ADD COLUMN $columnName $definition',
       );
     }
+  }
+
+  static Future<void> _backfillMissingSyncId(
+    Database db,
+    String tableName,
+  ) async {
+    if (!await _tableExists(db, tableName)) return;
+    if (!await _columnExists(db, tableName, 'id')) return;
+    if (!await _columnExists(db, tableName, 'user_id')) return;
+
+    await db.execute('''
+      UPDATE $tableName
+      SET id = printf(
+        '${tableName}_%s_%s',
+        COALESCE(NULLIF(TRIM(CAST(user_id AS TEXT)), ''), 'unknown_user'),
+        rowid
+      )
+      WHERE id IS NULL OR TRIM(CAST(id AS TEXT)) = ''
+    ''');
+  }
+
+  static Future<bool> _tableExists(Database db, String tableName) async {
+    final rows = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+      [tableName],
+    );
+    return rows.isNotEmpty;
+  }
+
+  static Future<bool> _columnExists(
+    Database db,
+    String tableName,
+    String columnName,
+  ) async {
+    final columns = await db.rawQuery('PRAGMA table_info($tableName)');
+    return columns.any((column) => column['name'] == columnName);
   }
 }

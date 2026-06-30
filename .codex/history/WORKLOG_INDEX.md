@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 52
+- Total worklogs: 53
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -61,3 +61,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-30 | coding | coding | unknown | [Worklog — immediate user-data sync](../../docs/worklog/2026-06-30/001-worklog-immediate-user-data-sync.md) |
 | 2026-06-30 | unknown | docs-context | unknown | [Worklog - DD Decision Completion Pass](../../docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md) |
 | 2026-06-30 | docs-dd | docs-dd | docs/DD M01-M19 | [Worklog - DD docs M01-M19 100 percent](../../docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md) |
+| 2026-06-30 | coding | coding | M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox | [Worklog - Immediate user-data sync hardening](../../docs/worklog/2026-06-30/004-worklog-immediate-user-data-sync-hardening.md) |

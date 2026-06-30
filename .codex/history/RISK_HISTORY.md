@@ -333,3 +333,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md :: - Chua fix: Runtime/sandbox evidence is intentionally not claimed in this docs-only pass.
 - docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md :: - Can kiem tra tiep: Implementation evidence backlog before production acceptance.
 - docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md :: - Diem ton token/chua toi uu: bulk DD docs rewrite touches many files; script-based checks reduce manual risk.
+- docs/worklog/2026-06-30/004-worklog-immediate-user-data-sync-hardening.md :: - `.codex/tool/codex_quick_check.ps1` - FAIL at global `dart format --set-exit-if-changed .`; it formatted 7 pre-existing V1 legacy files outside this scope, and those files were restored.
+- docs/worklog/2026-06-30/004-worklog-immediate-user-data-sync-hardening.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-30/004-worklog-immediate-user-data-sync-hardening.md :: - Chua fix: Supabase sandbox/RLS/cross-device acceptance evidence is still pending.
+- docs/worklog/2026-06-30/004-worklog-immediate-user-data-sync-hardening.md :: - Chua fix: FamilyPlus subject-aware sync/evidence remains backlog.
+- docs/worklog/2026-06-30/004-worklog-immediate-user-data-sync-hardening.md :: - Can kiem tra tiep: Run sandbox smoke for authenticated onboarding/profile sync, retry behavior, and distinct-user isolation.

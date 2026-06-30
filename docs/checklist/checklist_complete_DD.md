@@ -31,11 +31,11 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 
 | Module | DD docs status | Open Q | DD completeness % | Coding progress % | DD docs evidence | Implementation evidence backlog | Next implementation evidence |
 |---|---|---:|---:|---:|---|---|---|
-| M01 `ONBOARDING_PROFILE` | Approved - DD docs complete | 0 | 100 | 60 | V1 onboarding local hardening and tests exist; DD docs have accepted health and FamilyPlus visibility policy. | Supabase/profile sync, subject-aware FamilyPlus reads, consent/audit smoke evidence. | Verify profile sync and FamilyPlus subject read/write evidence in implementation phase. |
+| M01 `ONBOARDING_PROFILE` | Approved - DD docs complete | 0 | 100 | 70 | V1 onboarding local hardening, authenticated local-first completion, outbox marker, and snapshot tests exist; DD docs have accepted health and FamilyPlus visibility policy. | Supabase sandbox/RLS profile sync evidence, subject-aware FamilyPlus reads, consent/audit smoke evidence. | Smoke authenticated onboarding/profile sync in Supabase sandbox and verify FamilyPlus subject read/write evidence. |
 | M02 `PERSONAL_SCHEDULE_AI` | Approved - DD docs complete | 0 | 100 | 80 | Local request ledger, guest guard, idempotency, quota gateway, and targeted tests exist; DD docs have timezone policy. | M06 trusted quota backend/RPC, FamilyPlus subject ownership, Asia/Ho_Chi_Minh quota boundary evidence. | Wire production quota commit and verify day-boundary behavior with M06/M11. |
 | M03 `DASHBOARD_SCHEDULE` | Approved - DD docs complete | 0 | 100 | 40 | Dashboard, timeline, lifestyle completion, and tests exist; DD docs have FamilyPlus visibility policy. | Subject-aware dashboard mapping, cross-member traceability, and acceptance evidence. | Map current widgets to DD views and add subject-aware dashboard tests. |
 | M04 `BASIC_HEALTH_CALC` | Approved - DD docs complete | 0 | 100 | 40 | BMI/nutrition constants and local calculator pieces exist; DD docs have formula source policy. | Formula version config, disclaimer copy, and production tests. | Promote formulas into tested services with source/version/disclaimer traceability. |
-| M05 `AUTH_PROFILE_SYNC` | Approved - DD docs complete | 0 | 100 | 60 | V2 auth, Supabase auth datasource, account security, and cloud sync tests exist; DD docs have referral attach timing and timezone. | Guest merge/profile sync edge cases and Supabase evidence. | Verify registration-only referral attach, guest merge, and profile sync across devices. |
+| M05 `AUTH_PROFILE_SYNC` | Approved - DD docs complete | 0 | 100 | 70 | V2 auth, Supabase auth datasource, account security, cloud sync tests, local-first profile write path, and outbox retry tests exist; DD docs have referral attach timing and timezone. | Guest merge/profile sync cross-device/sandbox evidence and registration-only referral attach edge cases. | Verify guest merge, profile sync across devices, and referral attach policy in Supabase sandbox. |
 | M06 `MEMBERSHIP_QUOTA` | Approved - DD docs complete | 0 | 100 | 60 | SQL drafts and quota placeholders exist; DD docs have package lifecycle and timezone. | Trusted quota write, effective access service, reset policy, and sandbox/RLS evidence. | Implement/verify entitlement and quota RPC guards for AI chat and schedule. |
 | M07 `AI_CHAT` | Approved - DD docs complete | 0 | 100 | 40 | V1 AI chat UI/service/repository exist; DD docs have timezone and quota dependency contract. | M06 quota gate before production AI calls. | Add quota check, safe blocked state, and tests for Free limit and paid bypass. |
 | M08 `HEALTH_SCORE_HABITS` | Approved - DD docs complete | 0 | 100 | 40 | Local v2 health scoring draft, providers, route, and tests exist; DD docs have formula and FamilyPlus visibility policy. | Official score formula version, ledger/backend contract, and sandbox evidence. | Replace local draft with versioned wellness formula and add subject-aware ledger/RLS tests. |
@@ -64,11 +64,11 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 
 | Module | Required implementation evidence before production acceptance |
 |---|---|
-| M01 `ONBOARDING_PROFILE` | Supabase/profile sync, subject-aware FamilyPlus reads, consent/audit smoke evidence. |
+| M01 `ONBOARDING_PROFILE` | Supabase sandbox/RLS profile sync evidence, subject-aware FamilyPlus reads, consent/audit smoke evidence. |
 | M02 `PERSONAL_SCHEDULE_AI` | M06 trusted quota backend/RPC, FamilyPlus subject ownership, Asia/Ho_Chi_Minh quota boundary evidence. |
 | M03 `DASHBOARD_SCHEDULE` | Subject-aware dashboard mapping, cross-member traceability, and acceptance evidence. |
 | M04 `BASIC_HEALTH_CALC` | Formula version config, disclaimer copy, and production tests. |
-| M05 `AUTH_PROFILE_SYNC` | Guest merge/profile sync edge cases and Supabase evidence. |
+| M05 `AUTH_PROFILE_SYNC` | Guest merge/profile sync cross-device/sandbox evidence and registration-only referral attach edge cases. |
 | M06 `MEMBERSHIP_QUOTA` | Trusted quota write, effective access service, reset policy, and sandbox/RLS evidence. |
 | M07 `AI_CHAT` | M06 quota gate before production AI calls. |
 | M08 `HEALTH_SCORE_HABITS` | Official score formula version, ledger/backend contract, and sandbox evidence. |

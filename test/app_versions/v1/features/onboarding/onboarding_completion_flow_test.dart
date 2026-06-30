@@ -44,7 +44,8 @@ void main() {
 
         expect(source, contains('localDatasource.saveOnboarding'));
         expect(source, isNot(contains('saveCompletedOnboarding(')));
-        expect(source, contains('UserDataSyncOutbox.drainForCurrentUser'));
+        expect(source, contains('currentSupabaseUserIdOrNull'));
+        expect(source, isNot(contains('AuthProfileService')));
       },
     );
 

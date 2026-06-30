@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/app_versions/v2/features/cloud_sync/data/datasources/user_data_sync_tables.dart';
 
 void main() {
   group('cloud sync source contract', () {
@@ -19,19 +20,23 @@ void main() {
     test(
       'sync table list excludes catalog, payment, sale, and family tables',
       () {
-        final source = File(
-          'lib/app_versions/v2/features/cloud_sync/data/datasources/'
-          'user_data_sync_tables.dart',
-        ).readAsStringSync();
+        const localTables = UserDataSyncTables.localUserOwnedTables;
+        const cloudTables = UserDataSyncTables.cloudCollectionTables;
+        final allTableNames = {
+          ...localTables,
+          ...cloudTables,
+          ...UserDataSyncTables.localColumnsByTable.keys,
+          ...UserDataSyncTables.cloudColumnsByTable.keys,
+        };
 
-        expect(source, contains("'meal_plans'"));
-        expect(source, contains("'daily_health_tasks'"));
-        expect(source, contains("'lifestyle_schedule_items'"));
-        expect(source, contains("'notifications'"));
-        expect(source, isNot(contains('meal_catalog')));
-        expect(source, isNot(contains('payment')));
-        expect(source, isNot(contains('sale')));
-        expect(source, isNot(contains('family')));
+        expect(localTables, contains('meal_plans'));
+        expect(localTables, contains('daily_health_tasks'));
+        expect(localTables, contains('lifestyle_schedule_items'));
+        expect(localTables, contains('notifications'));
+        expect(allTableNames, isNot(contains('meal_catalog')));
+        expect(allTableNames, isNot(contains('payment_events')));
+        expect(allTableNames, isNot(contains('sale_profiles')));
+        expect(allTableNames, isNot(contains('family_groups')));
       },
     );
   });

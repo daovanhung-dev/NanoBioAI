@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/app_versions/v2/features/cloud_sync/data/datasources/sqlite_user_data_sync_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/domain/entities/onboarding_entity.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
@@ -139,6 +140,36 @@ void main() {
       expect(user['onboarding_status'], 'completed');
       expect(user['onboarding_completed_at'], isNotNull);
     });
+
+    test(
+      'authenticated onboarding creates sync marker and completed snapshot',
+      () async {
+        const authUserId = 'auth-1';
+        await datasource.saveOnboarding(
+          _entity(email: 'auth@example.com'),
+          userIdOverride: authUserId,
+        );
+        await datasource.markOnboardingCompleted(authUserId);
+
+        final markers = await db.query(
+          SyncOutboxSchema.outboxTable,
+          where: 'user_id = ? AND table_name = ?',
+          whereArgs: [authUserId, 'users'],
+        );
+        expect(markers, hasLength(1));
+        expect(markers.single['operation'], 'upsert');
+
+        final snapshot = await SqliteUserDataSyncLocalDatasource(
+          databaseOverride: db,
+        ).readSnapshot(authUserId);
+
+        expect(snapshot, isNotNull);
+        expect(snapshot!.user?['id'], authUserId);
+        expect(snapshot.user?['onboarding_status'], 'completed');
+        expect(snapshot.user?['onboarding_completed_at'], isNotNull);
+        expect(snapshot.tables['health_profiles'], hasLength(1));
+      },
+    );
   });
 }
 
@@ -199,6 +230,7 @@ Future<List<Map<String, Object?>>> _rowsForUser(
 }
 
 OnboardingEntity _entity({
+  String email = 'guest@example.com',
   List<String> goals = const ['lose_weight'],
   String otherGoal = 'build stamina',
   List<String> conditions = const ['stress'],
@@ -210,7 +242,7 @@ OnboardingEntity _entity({
   String treatmentNote = 'weekly',
 }) {
   return OnboardingEntity(
-    email: 'guest@example.com',
+    email: email,
     phone: '0900000000',
     fullName: 'Nguyen Van Bao',
     gender: 'male',

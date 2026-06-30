@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
 import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -79,5 +78,35 @@ void main() {
     expect(pushCalls, 2);
     final remaining = await db.query(SyncOutboxSchema.outboxTable);
     expect(remaining, isEmpty);
+  });
+
+  test('failed profile snapshot keeps marker queued for retry', () async {
+    await db.update(
+      'users',
+      {'id': 'auth-1'},
+      where: 'id = ?',
+      whereArgs: ['auth-1'],
+    );
+
+    final outbox = UserDataSyncOutbox(
+      databaseOverride: db,
+      currentUserId: () => 'auth-1',
+      snapshotPusher: (_, __) async {
+        throw StateError('offline');
+      },
+    );
+
+    final drained = await outbox.drainPending();
+
+    expect(drained, 0);
+    final remaining = await db.query(
+      SyncOutboxSchema.outboxTable,
+      where: 'user_id = ? AND table_name = ?',
+      whereArgs: ['auth-1', 'users'],
+    );
+    expect(remaining, hasLength(1));
+    expect(remaining.single['status'], 'failed');
+    expect(remaining.single['attempt_count'], 1);
+    expect(remaining.single['next_retry_at'], isNotNull);
   });
 }
