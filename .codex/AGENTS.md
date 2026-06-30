@@ -11,6 +11,25 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 - SQLite version: `DatabaseVersion.currentVersion = 8`.
 - Source version: `v1` guest/basic, `v2` authenticated free, `v3` Plus/FamilyPlus planned, `admin` app surface, `sale_referral` independent.
 
+## Commands
+
+| Task | Command | Notes |
+| --- | --- | --- |
+| Install dependencies | `flutter pub get` | May update generated package state; do not run for docs-only work unless needed. |
+| Run v1/v2 app | `flutter run -t lib/main.dart` | Default mobile app entrypoint. |
+| Run v2 entrypoint | `flutter run -t lib/main_v2.dart` | Explicit v2/authenticated surface entrypoint. |
+| Run admin app | `flutter run -t lib/main_admin.dart` | Admin surface entrypoint. |
+| Build debug APK | `flutter build apk --debug` | Used by full check when `-BuildApk` is passed. |
+| Format touched Dart | `dart format <paths>` | Scope to touched Dart files; avoid repo-wide formatting unless requested. |
+| Format check | `dart format --set-exit-if-changed <paths>` | Use targeted paths for runtime changes. |
+| Analyze targeted | `flutter analyze <paths>` | Prefer touched source/test paths over repo-wide analyze. |
+| Test targeted | `flutter test <paths>` | Use the matching feature/domain tests first. |
+| Docs/context validation | `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1` | Primary check for `.codex`, `.agents`, and worklog context changes. |
+| Diff whitespace check | `git diff --check` | Run for docs/context changes. |
+| Quick runtime check | `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1` | Runtime-only broad check; can fail on unrelated repo-wide format/analyze drift. |
+| Full/native check | `powershell -ExecutionPolicy Bypass -File .codex/tool/codex_check.ps1 -BuildApk` | Use when runtime scope warrants native build evidence. |
+| Refresh worklog learning | `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1` | Run after creating/updating any worklog. |
+
 ## Required Read Pack
 
 Always start with:
@@ -132,19 +151,26 @@ Access rules:
 
 ## Validation
 
-Quick check:
+Docs/context-only recipe:
+
+1. Run targeted `rg` checks for the changed rule, path, or link.
+2. Run `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`.
+3. Run `git diff --check`.
+4. Do not run Flutter analyze/test/build unless runtime code changed.
+
+Runtime quick check:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1
 ```
 
-Full/native check:
+Runtime full/native check:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .codex/tool/codex_check.ps1 -BuildApk
 ```
 
-Docs/context-only changes use `rg` checks and `git diff --check`; do not run Flutter checks unless runtime code changed.
+Repo-wide quick/full checks can stop on unrelated format or analyzer drift. For focused runtime work, run `dart format`, `flutter analyze`, and `flutter test` on touched paths first, then use broad checks only when the scope requires them.
 
 ## Worklog And History
 

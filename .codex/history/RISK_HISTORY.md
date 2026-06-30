@@ -351,3 +351,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-30/006-worklog-m09-m10-coding-100.md :: - Chua fix: Flutter test still prints pubspec asset-folder warnings because many asset `.gitkeep` files/directories are already deleted in the dirty worktree outside this task.
 - docs/worklog/2026-06-30/006-worklog-m09-m10-coding-100.md :: - Chua fix: repo-wide quick check is not clean because legacy files outside this task need separate formatting/ownership decision before a global format gate can pass.
 - docs/worklog/2026-06-30/006-worklog-m09-m10-coding-100.md :: - Can kiem tra tiep: real-device local notification delivery/action smoke, Supabase sandbox cross-device sync, Plus/FamilyPlus access and subject/RLS smoke for M10.
+- docs/worklog/2026-06-30/007-worklog-agent-context-bootstrap.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-30/007-worklog-agent-context-bootstrap.md :: - Da fix: `.codex/tools/validate_codex_integrity.ps1` failed before this session because `.codex/Design.md` referenced removed asset directories/files.
+- docs/worklog/2026-06-30/007-worklog-agent-context-bootstrap.md :: - Chua fix: none in this scope.
+- docs/worklog/2026-06-30/007-worklog-agent-context-bootstrap.md :: - Can kiem tra tiep: none in this docs-context scope.
+- docs/worklog/2026-06-30/007-worklog-agent-context-bootstrap.md :: - Cach toi uu cho phien sau: for docs-context work, read `.codex/workflows/docs-context.md`, `.codex/task-skills/docs-context.md`, then inspect only the failing context file and validation script output.

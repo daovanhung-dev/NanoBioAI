@@ -1344,54 +1344,29 @@ These are the repository context files that govern workflows. Read only the sele
 | `.codex/workflows/test.md` | Workflow - Test · Required Context · Rules · Commands · Completion |
 
 
-## Appendix F — asset map
+## Appendix F - asset map
 
-Use declared assets only after checking `pubspec.yaml` and the feature’s asset/documentation contract. Nabi assets are organized by interaction context; do not relocate/rename them without updating asset config and consumers.
+Snapshot 2026-06-30. Use declared assets only after checking `pubspec.yaml` and the feature asset/documentation contract. Nabi assets are organized by interaction context; do not relocate/rename them without updating asset config and consumers.
 
 | Asset group | Files | Examples |
 |---|---:|---|
 
-| `assets/animations/flare` | 1 | `.gitkeep` |
-| `assets/animations/lottie` | 1 | `.gitkeep` |
-| `assets/animations/rive` | 1 | `.gitkeep` |
-| `assets/audio/meditation` | 1 | `.gitkeep` |
-| `assets/audio/notification` | 1 | `.gitkeep` |
-| `assets/audio/sleep` | 1 | `.gitkeep` |
 | `assets/config/nabi` | 5 | `nabi_asset_manifest.json`, `nabi_character_config.json`, `nabi_expression_map.json`, `nabi_motion_library.json`, `nabi_state_matrix.yaml` |
-| `assets/fonts/inter` | 1 | `.gitkeep` |
-| `assets/fonts/nunito` | 1 | `.gitkeep` |
-| `assets/fonts/poppins` | 1 | `.gitkeep` |
-| `assets/icons/Logo.jpg` | 1 | `Logo.jpg` |
+| `assets/icons` | 2 | `Logo.jpg`, `logo.png` |
 | `assets/icons/custom` | 1 | `.gitkeep` |
 | `assets/icons/filled` | 1 | `.gitkeep` |
 | `assets/icons/health` | 1 | `.gitkeep` |
-| `assets/icons/logo.png` | 1 | `logo.png` |
 | `assets/icons/nutrition` | 1 | `.gitkeep` |
 | `assets/icons/outlined` | 1 | `.gitkeep` |
-| `assets/illustrations/ai` | 1 | `.gitkeep` |
-| `assets/illustrations/auth` | 1 | `.gitkeep` |
-| `assets/illustrations/dashboard` | 1 | `.gitkeep` |
-| `assets/illustrations/health` | 1 | `.gitkeep` |
-| `assets/illustrations/onboarding` | 1 | `.gitkeep` |
-| `assets/images/avatars` | 1 | `.gitkeep` |
-| `assets/images/backgrounds` | 1 | `.gitkeep` |
-| `assets/images/banners` | 1 | `.gitkeep` |
-| `assets/images/foods` | 1 | `.gitkeep` |
-| `assets/images/logos` | 1 | `.gitkeep` |
-| `assets/images/nabi` | 85 | `README.md`, `nabi_chat_answer_ready.png`, `nabi_chat_clarify.png`, `nabi_chat_exercise_tip.png`, `nabi_chat_greet.png`, `nabi_chat_listen.png` |
-| `assets/images/symptoms` | 1 | `.gitkeep` |
-| `assets/json/config` | 1 | `.gitkeep` |
-| `assets/json/mock` | 1 | `.gitkeep` |
-| `assets/json/seed` | 1 | `.gitkeep` |
-| `assets/svg/icons` | 1 | `.gitkeep` |
-| `assets/svg/illustrations` | 1 | `.gitkeep` |
-| `assets/svg/logos` | 1 | `.gitkeep` |
-| `assets/translations/.gitkeep` | 1 | `.gitkeep` |
-| `assets/translations/en.json` | 1 | `en.json` |
-| `assets/translations/vi.json` | 1 | `vi.json` |
-| `assets/videos/exercise` | 1 | `.gitkeep` |
-| `assets/videos/onboarding` | 1 | `.gitkeep` |
-| `assets/videos/tutorial` | 1 | `.gitkeep` |
+| `assets/images/nabi` | 1 | `README.md` |
+| `assets/images/nabi/chat` | 10 | `nabi_chat_answer_ready.png`, `nabi_chat_clarify.png`, `nabi_chat_greet.png`, `nabi_chat_typing.png` |
+| `assets/images/nabi/core` | 8 | `nabi_analyze.png`, `nabi_idle_happy.png`, `nabi_listen.png`, `nabi_wave.png` |
+| `assets/images/nabi/daily` | 14 | `nabi_breakfast.png`, `nabi_drink_water.png`, `nabi_exercise.png`, `nabi_sleep.png` |
+| `assets/images/nabi/engagement` | 10 | `nabi_away_1day.png`, `nabi_daily_user.png`, `nabi_new_user.png`, `nabi_welcome_back.png` |
+| `assets/images/nabi/future` | 10 | `nabi_family_plan.png`, `nabi_premium_unlocked.png`, `nabi_referral_success.png`, `nabi_sales_reward.png` |
+| `assets/images/nabi/onboarding` | 9 | `nabi_ai_generating_plan.png`, `nabi_onboarding_intro.png`, `nabi_onboarding_review.png`, `nabi_plan_ready.png` |
+| `assets/images/nabi/progress` | 12 | `nabi_day_complete.png`, `nabi_milestone_badge.png`, `nabi_task_complete.png`, `nabi_thank_you.png` |
+| `assets/images/nabi/system` | 11 | `nabi_access_locked.png`, `nabi_loading.png`, `nabi_offline.png`, `nabi_sync_success.png` |
 
 
 ---
