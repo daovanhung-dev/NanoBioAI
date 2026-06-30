@@ -5,10 +5,10 @@
 | Module Code | FAMILYPLUS |
 | BD Module | M11 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - contracts updated, sandbox evidence pending |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 10/M11, 13, 14.2, 16.1 AC-06, Appendix A UC-11 |
 
 ## Purpose
@@ -33,11 +33,11 @@ Quản lý nhóm gia đình, thành viên, hồ sơ riêng, lịch trình riêng
 - ONBOARDING_PROFILE and PERSONAL_SCHEDULE_AI: subject-specific flows.
 - AUDIT_SECURITY: privacy/audit.
 
-## Open Questions
-| ID | Question | Impact | Status |
+## Answered Questions
+| ID | Question | Decision | Status |
 |---|---|---|---|
-| Q-15 | Số thành viên FamilyPlus tối đa, quyền xem/sửa và consent theo tuổi/quan hệ? | Family data model and privacy. | Open |
-| Q-11 | FamilyPlus payment tính 10% trên toàn gói hay chỉ phần chủ gói? | Commission base for FamilyPlus. | Open |
+| Q-15 | How does FamilyPlus member visibility work? | FamilyPlus has up to 5 members. Every joined member in the package can view all information of every other member in the package. | Answered - User decision 2026-06-30 |
+| Q-11 | How is FamilyPlus commission calculated? | FamilyPlus commission is calculated only on the package owner portion. | Answered - User decision 2026-06-30 |
 
 ## Approval Status
 | Role | Approver | Status | Date |
@@ -49,3 +49,4 @@ Quản lý nhóm gia đình, thành viên, hồ sơ riêng, lịch trình riêng
 ## Validation Notes
 - Runtime code was not changed in this DD creation pass.
 - Physical schema, RLS, endpoint, payment provider, and UI mockups remain Draft unless explicitly specified by BD.
+- Product decisions Q-15, Q-11 were answered on 2026-06-30; remaining Draft items are implementation evidence, sandbox/RLS/API verification, or planned assets, not PO blockers.

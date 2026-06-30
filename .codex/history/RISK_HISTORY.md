@@ -320,3 +320,10 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-29/008-worklog-sale-module-production-policy.md :: - Chua fix: `.codex/PROJECT_MAP.md` co stale path BD authentication ngoai pham vi task lam integrity check fail.
 - docs/worklog/2026-06-29/008-worklog-sale-module-production-policy.md :: - Can kiem tra tiep: sandbox rebuild, RLS smoke, storage policy, manual payment approval, 24h hold, conversion before/after hold, proof upload, refund/chargeback reversal, suspended/closed no-new-points.
 - docs/worklog/2026-06-29/008-worklog-sale-module-production-policy.md :: - Bang chung kiem chung: targeted analyze, targeted Flutter tests va `git diff --check` PASS; Codex integrity FAIL do stale path context ngoai pham vi task.
+- docs/worklog/2026-06-30/001-worklog-immediate-user-data-sync.md :: - Flutter format, analyze and tests: SKIPPED; `dart` and `flutter` are not installed in this environment.
+- docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md :: - Recorded user answers for Q-01..Q-18 as accepted product decisions.
+- docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md :: - Updated DD and checklist indexes to show Open Q = 0 across M01-M19 while keeping coding progress tied to actual evidence.
+- docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md :: - Manual payment approval, listed-price commission, package lifecycle, 24h refund/cancel and 24h conversion hold.
+- docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md :: - Point conversion rate/minimum, manual payout flow, Super Admin-only sensitive edits/point adjustment.
+- docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md :: - Run targeted `rg` checks for unresolved Q-01..Q-18 Open rows, old TBD API placeholders, and old Sale tree/tier-2/5% wording.
+- docs/worklog/2026-06-30/002-worklog-dd-decision-completion.md :: - `rg -n "\| Q-&#91;0-9&#93;{2} \|.*\| Open \|" docs/DD -g "*.md" -g "!DD_Module_Template/**"` - PASS, no matches.

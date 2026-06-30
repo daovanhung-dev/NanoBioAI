@@ -7,10 +7,10 @@
 | Module Code | AUTH_PROFILE_SYNC |
 | BD Module | M05 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - contracts updated, sandbox evidence pending |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M05, 13, Appendix A UC-05 |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Release Scope | Project DD baseline for M01-M19 |
 
 ## 2. Business Goal
@@ -34,7 +34,7 @@ Module này đảm bảo auth qua Supabase hoặc phương án phê duyệt, đ�
 | Role | Permissions in This Module | Limitations |
 |---|---|---|
 | Guest, Member | Use module features according to BD sections 3, 5, and BD sections 6/M05, 13, Appendix A UC-05. | Must not bypass entitlement, ownership, family consent, Sale/Admin scope, or audit rules. |
-| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must not invent product decisions. |
+| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must follow accepted product decisions. |
 | Admin/Super Admin | Operate only where BD grants admin responsibility. | Backend/API must reject missing permission; UI hiding is not sufficient. |
 
 ## 5. Primary Entities/Data
@@ -73,7 +73,7 @@ Module này đảm bảo auth qua Supabase hoặc phương án phê duyệt, đ�
 | Auth/Profile | Internal/Supabase planned | Identify actor and ownership. | Block action or request login. |
 | Membership/Entitlement | Internal/trusted backend planned | Apply Free/Plus/FamilyPlus access and quotas. | Keep previous state; do not grant paid access. |
 | Audit/Security | Cross-cutting | Trace sensitive changes. | Sensitive writes must fail or be queued safely if audit cannot be recorded. |
-| Module-specific dependencies | Internal | ONBOARDING_PROFILE: dữ liệu Guest., MEMBERSHIP_QUOTA: entitlement., REFERRAL_DIRECT: mã giới thiệu., AUDIT_SECURITY: auth/security logs. | Follow dependency owner DD and record conflict as OPEN QUESTION. |
+| Module-specific dependencies | Internal | ONBOARDING_PROFILE: dữ liệu Guest., MEMBERSHIP_QUOTA: entitlement., REFERRAL_DIRECT: mã giới thiệu., AUDIT_SECURITY: auth/security logs. | Follow dependency owner DD and record conflict as an implementation issue or accepted exception. |
 
 ## 10. Non-Functional Requirements
 
@@ -85,20 +85,21 @@ Module này đảm bảo auth qua Supabase hoặc phương án phê duyệt, đ�
 | Observability | Log safe module status, correlation id, actor type, and audit-relevant changes only. |
 | Resilience | Dependency failures must not create duplicate rights, duplicate points, incorrect quota, or partial financial state. |
 
-## 11. Risks, Assumptions, and Open Questions
+## 11. Risks, Assumptions, and Decisions
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| AUTH_PROFILE_SYNC-RISK01 | Risk | Physical schema/API/RLS and final UI wireframes are not provided in BD. | Implementation may diverge if coding starts before detailed contracts. | Open |
-| AUTH_PROFILE_SYNC-ASSUMPTION01 | Assumption | This DD uses BD v2.0 as source of truth and treats conflicting legacy Sale logic as blocked. | Legacy behavior must be reviewed before coding. | Active |
-| AUTH_PROFILE_SYNC-Q-08 | Open question | Mã giới thiệu nhập ở bước nào và Admin có được sửa hậu kiểm không? | Referral locking and anti-fraud. | Open |
-| AUTH_PROFILE_SYNC-Q-16 | Open question | Múi giờ chuẩn cho reset quota, thời hạn gói, báo cáo và duyệt payment là gì? | Quota, entitlement, reporting and approval windows. | Open |
+| AUTH_PROFILE_SYNC-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| AUTH_PROFILE_SYNC-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
+| AUTH_PROFILE_SYNC-Q-08 | Answered decision | When can referral code be entered? | Referral code is accepted only during registration. Any post-registration correction requires audited Super Admin override. | Accepted - User decision 2026-06-30 |
+| AUTH_PROFILE_SYNC-Q-16 | Answered decision | Which timezone is authoritative? | Use Vietnam timezone, Asia/Ho_Chi_Minh. | Accepted - User decision 2026-06-30 |
 
 ## 12. ADR Summary
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| AUTH_PROFILE_SYNC-ADR01 | Keep this module DD in Draft until PO/Tech Lead closes related open questions and implementation contracts. | BD v2.0 contains Q-01..Q-18 and explicit DD-before-coding gates. | Accepted |
+| AUTH_PROFILE_SYNC-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
+| AUTH_PROFILE_SYNC-ADR02 | Apply accepted product decisions Q-08, Q-16 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -113,4 +114,15 @@ Module này đảm bảo auth qua Supabase hoặc phương án phê duyệt, đ�
 - [ ] Business rules reviewed by Tech Lead.
 - [ ] UI states reviewed by UI/UX and QA.
 - [ ] API/schema/RLS contracts added before coding.
-- [ ] Open questions resolved or accepted as explicit implementation assumptions.
+- [x] Product decisions Q-08, Q-16 answered or accepted as explicit implementation policy on 2026-06-30.
+
+## 15. Accepted Product Decision Contract
+
+| ID | Accepted Policy | Implementation Contract | Source |
+|---|---|---|---|
+| Q-08 | Referral code is accepted only during registration. Any post-registration correction requires audited Super Admin override. | Registration attach RPC is single-use and locked after account creation; override stores actor, reason, old/new referral, and audit id. | User decision 2026-06-30 |
+| Q-16 | Use Vietnam timezone, Asia/Ho_Chi_Minh. | Quota reset, reporting windows, payment hold, refund/cancel window, schedule/day boundaries, and audit display use Asia/Ho_Chi_Minh. | User decision 2026-06-30 |
+
+### Remaining Evidence Gate
+- DD readiness for this module is 60 percent in `docs/checklist/checklist_complete_DD.md`.
+- Coding progress changes only when runtime code, tests, or sandbox evidence are added.

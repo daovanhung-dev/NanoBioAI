@@ -22,7 +22,7 @@
 | Source Feature | Relationship | Target Feature | Data / State Passed | Condition |
 |---|---|---|---|---|
 | PERSONAL_SCHEDULE_AI-F01 | prerequisite / trigger | Next feature in this module | Module state and actor context | Previous feature succeeds and business rules pass |
-| Cross-module | dependency | Related module DD | Entitlement, ownership, audit, or event state | Dependency module is available and not blocked by open questions |
+| Cross-module | dependency | Related module DD | Entitlement, ownership, audit, or event state | Dependency module is available and accepted decision/evidence gates are satisfied |
 
 ---
 

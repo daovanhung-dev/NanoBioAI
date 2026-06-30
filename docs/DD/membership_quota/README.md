@@ -5,10 +5,10 @@
 | Module Code | MEMBERSHIP_QUOTA |
 | BD Module | M06 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - contracts updated, sandbox evidence pending |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M06, 13, 16.1 AC-04..AC-08, Appendix A UC-06 |
 
 ## Purpose
@@ -33,11 +33,11 @@ Quản lý Free/Plus/FamilyPlus, entitlement và giới hạn dùng AI Chat/tạ
 - PAYMENT_MEMBERSHIP: source payment approved.
 - AI_CHAT and PERSONAL_SCHEDULE_AI: quota consumers.
 
-## Open Questions
-| ID | Question | Impact | Status |
+## Answered Questions
+| ID | Question | Decision | Status |
 |---|---|---|---|
-| Q-04 | Các gói thanh toán theo tháng, năm hay một lần; gia hạn sớm/trễ xử lý ra sao? | Entitlement and recurring commission. | Open |
-| Q-16 | Múi giờ chuẩn cho reset quota, thời hạn gói, báo cáo và duyệt payment là gì? | Quota, entitlement, reporting and approval windows. | Open |
+| Q-04 | How do package periods and renewals work? | Plus and FamilyPlus support monthly and yearly plans. Early renewal extends from current expiry; late renewal starts from Admin approval time; pending payment never grants rights. | Answered - User decision 2026-06-30 |
+| Q-16 | Which timezone is authoritative? | Use Vietnam timezone, Asia/Ho_Chi_Minh. | Answered - User decision 2026-06-30 |
 
 ## Approval Status
 | Role | Approver | Status | Date |
@@ -49,3 +49,4 @@ Quản lý Free/Plus/FamilyPlus, entitlement và giới hạn dùng AI Chat/tạ
 ## Validation Notes
 - Runtime code was not changed in this DD creation pass.
 - Physical schema, RLS, endpoint, payment provider, and UI mockups remain Draft unless explicitly specified by BD.
+- Product decisions Q-04, Q-16 were answered on 2026-06-30; remaining Draft items are implementation evidence, sandbox/RLS/API verification, or planned assets, not PO blockers.

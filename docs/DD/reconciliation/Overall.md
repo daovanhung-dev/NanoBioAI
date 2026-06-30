@@ -7,10 +7,10 @@
 | Module Code | RECONCILIATION |
 | BD Module | M17 |
 | Version | v1.0 |
-| Status | Draft - selected policy implementation-ready |
+| Status | Draft - contracts updated, sandbox evidence pending |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD section 12.1, 14.4, 15, Appendix A UC-22 |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Release Scope | Project DD baseline for M01-M19 |
 
 ## 2. Business Goal
@@ -34,7 +34,7 @@ Module này bảo đảm dữ liệu nguồn và dữ liệu tổng hợp nhất
 | Role | Permissions in This Module | Limitations |
 |---|---|---|
 | Admin, System | Use module features according to BD sections 3, 5, and BD section 12.1, 14.4, 15, Appendix A UC-22. | Must not bypass entitlement, ownership, family consent, Sale/Admin scope, or audit rules. |
-| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must not invent product decisions. |
+| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must follow accepted product decisions. |
 | Admin/Super Admin | Operate only where BD grants admin responsibility. | Backend/API must reject missing permission; UI hiding is not sufficient. |
 
 ## 5. Primary Entities/Data
@@ -73,7 +73,7 @@ Module này bảo đảm dữ liệu nguồn và dữ liệu tổng hợp nhất
 | Auth/Profile | Internal/Supabase planned | Identify actor and ownership. | Block action or request login. |
 | Membership/Entitlement | Internal/trusted backend planned | Apply Free/Plus/FamilyPlus access and quotas. | Keep previous state; do not grant paid access. |
 | Audit/Security | Cross-cutting | Trace sensitive changes. | Sensitive writes must fail or be queued safely if audit cannot be recorded. |
-| Module-specific dependencies | Internal | PAYMENT_MEMBERSHIP, SALE_POINTS, MEMBERSHIP_QUOTA, HEALTH_SCORE_HABITS., AUDIT_SECURITY: audit corrections., REPORTING: reporting consumers. | Follow dependency owner DD and record conflict as OPEN QUESTION. |
+| Module-specific dependencies | Internal | PAYMENT_MEMBERSHIP, SALE_POINTS, MEMBERSHIP_QUOTA, HEALTH_SCORE_HABITS., AUDIT_SECURITY: audit corrections., REPORTING: reporting consumers. | Follow dependency owner DD and record conflict as an implementation issue or accepted exception. |
 
 ## 10. Non-Functional Requirements
 
@@ -85,23 +85,23 @@ Module này bảo đảm dữ liệu nguồn và dữ liệu tổng hợp nhất
 | Observability | Log safe module status, correlation id, actor type, and audit-relevant changes only. |
 | Resilience | Dependency failures must not create duplicate rights, duplicate points, incorrect quota, or partial financial state. |
 
-## 11. Risks, Assumptions, and Open Questions
+## 11. Risks, Assumptions, and Decisions
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| RECONCILIATION-RISK01 | Risk | Physical schema/API/RLS and final UI wireframes are not provided in BD. | Implementation may diverge if coding starts before detailed contracts. | Open |
-| RECONCILIATION-ASSUMPTION01 | Assumption | This DD uses BD v2.0 as source of truth and treats conflicting legacy Sale logic as blocked. | Legacy behavior must be reviewed before coding. | Active |
-| RECONCILIATION-Q-05 | Open question | Hoàn/hủy/chargeback sau khi cộng điểm xử lý thế nào nếu Sale đã đổi điểm? | Ledger reversal and negative balance policy. | Open |
-| RECONCILIATION-Q-10 | Open question | Sale suspended/closed thì khách cũ có còn phát sinh điểm không? | Sale state machine and disputes. | Open |
-| RECONCILIATION-Q-13 | Open question | Admin có được điều chỉnh thủ công Điểm Sale và cần hai người duyệt không? | Audit and separation of duties. | Open |
-| RECONCILIATION-Q-17 | Open question | Payment phải duyệt thủ công toàn bộ hay webhook tự động có thể tạo payment_approved? | Payment architecture and operations. | Open |
+| RECONCILIATION-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| RECONCILIATION-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
+| RECONCILIATION-Q-05 | Answered decision | How are refund, cancel, and chargeback handled after points are credited? | Refund/cancel is allowed only within 24 hours after purchase. Points are reversed immediately in that window. Because conversion is also locked for 24 hours, there is no converted-then-reversed case. | Accepted - User decision 2026-06-30 |
+| RECONCILIATION-Q-10 | Answered decision | Do suspended or closed Sale accounts continue receiving points? | Suspended or closed Sale accounts receive no new points from old customers. | Accepted - User decision 2026-06-30 |
+| RECONCILIATION-Q-13 | Answered decision | Who can edit sensitive data and Sale points? | Admin has broad operational power, but only Super Admin can edit sensitive data, perform full-data edits, or make manual Sale point adjustments. Each action requires reason, idempotency, and audit. | Accepted - User decision 2026-06-30 |
+| RECONCILIATION-Q-17 | Answered decision | Can webhook/trusted recorder approve payments automatically? | All payments and transfers are manually reviewed and manually approved by Admin. Trusted recorder may only create pending evidence; only Admin approval creates payment_approved. | Accepted - User decision 2026-06-30 |
 
 ## 12. ADR Summary
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| RECONCILIATION-ADR02 | Q-05/Q-10/Q-13/Q-17 selected policy: no refund/cancel after 24h, Sale points become usable after 24h hold, suspended/closed Sale receives no later new points, manual point adjustment needs one Admin approval, payment approval is manual. | User decision 2026-06-29; implemented in Supabase draft contract. | Accepted |
-| RECONCILIATION-ADR01 | Keep this module DD in Draft until PO/Tech Lead closes related open questions and implementation contracts. | BD v2.0 contains Q-01..Q-18 and explicit DD-before-coding gates. | Accepted |
+| RECONCILIATION-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
+| RECONCILIATION-ADR02 | Apply accepted product decisions Q-05, Q-10, Q-13, Q-17 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -116,4 +116,17 @@ Module này bảo đảm dữ liệu nguồn và dữ liệu tổng hợp nhất
 - [ ] Business rules reviewed by Tech Lead.
 - [ ] UI states reviewed by UI/UX and QA.
 - [ ] API/schema/RLS contracts added before coding.
-- [ ] Open questions resolved or accepted as explicit implementation assumptions.
+- [x] Product decisions Q-05, Q-10, Q-13, Q-17 answered or accepted as explicit implementation policy on 2026-06-30.
+
+## 15. Accepted Product Decision Contract
+
+| ID | Accepted Policy | Implementation Contract | Source |
+|---|---|---|---|
+| Q-05 | Refund/cancel is allowed only within 24 hours after purchase. Points are reversed immediately in that window. Because conversion is also locked for 24 hours, there is no converted-then-reversed case. | Refund/cancel RPC requires approved payment age <= 24 hours, creates reversal ledger, and blocks conversion while payment is inside the hold window. | User decision 2026-06-30 |
+| Q-10 | Suspended or closed Sale accounts receive no new points from old customers. | Commission creation checks Sale status at payment approval time and rejects inactive/suspended/closed Sale with audit-safe reason. | User decision 2026-06-30 |
+| Q-13 | Admin has broad operational power, but only Super Admin can edit sensitive data, perform full-data edits, or make manual Sale point adjustments. Each action requires reason, idempotency, and audit. | Sensitive mutation RPCs require Super Admin, reason, idempotency_key, before/after summary, and audit row; no two-person approval is required in this DD. | User decision 2026-06-30 |
+| Q-17 | All payments and transfers are manually reviewed and manually approved by Admin. Trusted recorder may only create pending evidence; only Admin approval creates payment_approved. | Payment write path separates evidence capture from approval; payment_approved requires Admin actor, reason/reference, idempotency, and audit. | User decision 2026-06-30 |
+
+### Remaining Evidence Gate
+- DD readiness for this module is 60 percent in `docs/checklist/checklist_complete_DD.md`.
+- Coding progress changes only when runtime code, tests, or sandbox evidence are added.

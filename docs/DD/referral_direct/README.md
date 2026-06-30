@@ -5,10 +5,10 @@
 | Module Code | REFERRAL_DIRECT |
 | BD Module | M12 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - contracts updated, sandbox evidence pending |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14 |
 
 ## Purpose
@@ -34,14 +34,14 @@
 - SALE_POINTS: point credit after approval.
 - AUDIT_SECURITY: fraud/audit.
 
-## Open Questions
-| ID | Question | Impact | Status |
+## Answered Questions
+| ID | Question | Decision | Status |
 |---|---|---|---|
-| Q-01 | Ai được trở thành Sale: tất cả Member, chỉ Member mua gói, hay cần hồ sơ/duyệt? | Sale registration and Admin approval flow. | Open |
-| Q-08 | Mã giới thiệu nhập ở bước nào và Admin có được sửa hậu kiểm không? | Referral locking and anti-fraud. | Open |
-| Q-09 | Tiêu chí phát hiện tự giới thiệu/tài khoản trùng là gì? | Fraud checks and rejection rules. | Open |
-| Q-10 | Sale suspended/closed thì khách cũ có còn phát sinh điểm không? | Sale state machine and disputes. | Open |
-| Q-18 | Sale xem được định danh nào của khách hay chỉ số liệu tổng hợp? | Privacy and Sale dashboard. | Open |
+| Q-01 | Who can become Sale? | Only members with Plus or higher active package can become Sale. | Answered - User decision 2026-06-30 |
+| Q-08 | When can referral code be entered? | Referral code is accepted only during registration. Any post-registration correction requires audited Super Admin override. | Answered - User decision 2026-06-30 |
+| Q-09 | What anti-fraud rules apply to referrals? | Use the strictest policy: hard-block same account, phone, email, payment, bank, device, or identity; hold suspicious IP/device/family/payment patterns for Admin review; only audited Super Admin override may release. | Answered - User decision 2026-06-30 |
+| Q-10 | Do suspended or closed Sale accounts continue receiving points? | Suspended or closed Sale accounts receive no new points from old customers. | Answered - User decision 2026-06-30 |
+| Q-18 | What customer information may Sale see? | Sale may see customer phone number and basic profile information for customer care, but cannot see health data, AI data, secrets, or raw payment payloads. | Answered - User decision 2026-06-30 |
 
 ## Approval Status
 | Role | Approver | Status | Date |
@@ -53,3 +53,4 @@
 ## Validation Notes
 - Runtime code was not changed in this DD creation pass.
 - Physical schema, RLS, endpoint, payment provider, and UI mockups remain Draft unless explicitly specified by BD.
+- Product decisions Q-01, Q-08, Q-09, Q-10, Q-18 were answered on 2026-06-30; remaining Draft items are implementation evidence, sandbox/RLS/API verification, or planned assets, not PO blockers.

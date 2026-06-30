@@ -3,6 +3,7 @@ import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/models/health_tracking_log_model.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/daily_health_profile_entity.dart';
@@ -42,6 +43,7 @@ class DailyHealthTrackingLocalDatasource {
 
     final db = await _db();
     await DailyHealthTasksDao(db).upsertMany(tasks);
+    LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
   }
 
   Future<DailyHealthSummaryEntity> getTodaySummary({
@@ -67,6 +69,7 @@ class DailyHealthTrackingLocalDatasource {
             .map(DailyHealthTaskModel.fromEntity)
             .toList();
         await dao.upsertMany(generated);
+        LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
         tasks = await dao.getByUserAndDate(
           userId: profile.userId,
           taskDate: date,
@@ -111,6 +114,7 @@ class DailyHealthTrackingLocalDatasource {
       final model = DailyHealthTaskModel.fromEntity(updated);
       await DailyHealthTasksDao(db).updateTask(model);
       await _syncHealthLog(db, updated);
+      LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
       AppLogger.success(_tag, 'Task updated: ${updated.taskCode}');
       return updated;
     } catch (e, st) {
@@ -342,6 +346,7 @@ class DailyHealthTrackingLocalDatasource {
     final next = update(current, now);
     await dao.upsertByUserAndDate(next);
     await afterSave?.call(db, next);
+    LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
   }
 
   List<String> _readHabits(Map<String, Object?> row) {

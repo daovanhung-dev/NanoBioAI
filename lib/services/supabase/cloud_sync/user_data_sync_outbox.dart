@@ -111,6 +111,14 @@ class UserDataSyncOutbox {
     return shared.drainPending(database: database);
   }
 
+  /// Requests an immediate, non-blocking snapshot drain after a committed
+  /// user-owned SQLite write. The SQLite outbox remains the source of
+  /// durability: when the user is signed out or the network is unavailable,
+  /// the dirty marker stays queued for the refresher/retry path.
+  static void requestImmediateDrain({Database? database}) {
+    unawaited(shared.drainPending(database: database));
+  }
+
   /// Backward-compatible API for code paths that explicitly enqueue a write.
   /// Most application writes are now enqueued by SQLite triggers automatically.
   Future<void> enqueueUpsert({

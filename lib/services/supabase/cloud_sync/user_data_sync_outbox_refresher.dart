@@ -9,6 +9,8 @@ import 'user_data_sync_outbox.dart';
 class UserDataSyncOutboxRefresher with WidgetsBindingObserver {
   static const _tag = 'SYNC_OUTBOX_REFRESHER';
 
+  static final shared = UserDataSyncOutboxRefresher();
+
   final UserDataSyncOutbox outbox;
   final Connectivity connectivity;
   final Duration minRefreshInterval;

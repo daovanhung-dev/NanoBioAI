@@ -7,10 +7,10 @@
 | Module Code | BASIC_HEALTH_CALC |
 | BD Module | M04 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | In Review - product decisions answered |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M04, 18.2 Q-14, Appendix A UC-03 |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Release Scope | Project DD baseline for M01-M19 |
 
 ## 2. Business Goal
@@ -32,7 +32,7 @@ Module này tách công cụ tính toán cơ bản khỏi chẩn đoán y tế v
 | Role | Permissions in This Module | Limitations |
 |---|---|---|
 | Guest, Member | Use module features according to BD sections 3, 5, and BD sections 6/M04, 18.2 Q-14, Appendix A UC-03. | Must not bypass entitlement, ownership, family consent, Sale/Admin scope, or audit rules. |
-| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must not invent product decisions. |
+| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must follow accepted product decisions. |
 | Admin/Super Admin | Operate only where BD grants admin responsibility. | Backend/API must reject missing permission; UI hiding is not sufficient. |
 
 ## 5. Primary Entities/Data
@@ -71,7 +71,7 @@ Module này tách công cụ tính toán cơ bản khỏi chẩn đoán y tế v
 | Auth/Profile | Internal/Supabase planned | Identify actor and ownership. | Block action or request login. |
 | Membership/Entitlement | Internal/trusted backend planned | Apply Free/Plus/FamilyPlus access and quotas. | Keep previous state; do not grant paid access. |
 | Audit/Security | Cross-cutting | Trace sensitive changes. | Sensitive writes must fail or be queued safely if audit cannot be recorded. |
-| Module-specific dependencies | Internal | ONBOARDING_PROFILE: input cơ bản., ADMIN_OPS: quản lý version công thức nếu PO cho phép., AUDIT_SECURITY: audit thay đổi công thức. | Follow dependency owner DD and record conflict as OPEN QUESTION. |
+| Module-specific dependencies | Internal | ONBOARDING_PROFILE: input cơ bản., ADMIN_OPS: quản lý version công thức nếu PO cho phép., AUDIT_SECURITY: audit thay đổi công thức. | Follow dependency owner DD and record conflict as an implementation issue or accepted exception. |
 
 ## 10. Non-Functional Requirements
 
@@ -83,19 +83,20 @@ Module này tách công cụ tính toán cơ bản khỏi chẩn đoán y tế v
 | Observability | Log safe module status, correlation id, actor type, and audit-relevant changes only. |
 | Resilience | Dependency failures must not create duplicate rights, duplicate points, incorrect quota, or partial financial state. |
 
-## 11. Risks, Assumptions, and Open Questions
+## 11. Risks, Assumptions, and Decisions
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| BASIC_HEALTH_CALC-RISK01 | Risk | Physical schema/API/RLS and final UI wireframes are not provided in BD. | Implementation may diverge if coding starts before detailed contracts. | Open |
-| BASIC_HEALTH_CALC-ASSUMPTION01 | Assumption | This DD uses BD v2.0 as source of truth and treats conflicting legacy Sale logic as blocked. | Legacy behavior must be reviewed before coding. | Active |
-| BASIC_HEALTH_CALC-Q-14 | Open question | Danh sách module tính toán sức khỏe và công thức nào đã được phê duyệt? | Health calculator and health score responsibility. | Open |
+| BASIC_HEALTH_CALC-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| BASIC_HEALTH_CALC-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
+| BASIC_HEALTH_CALC-Q-14 | Answered decision | Which health formulas are used? | Use reference wellness formulas only, not diagnosis: BMI by CDC, BMR/RMR by Mifflin-St Jeor, TDEE by activity factor, hydration by National Academies DRI, sleep/activity by CDC. M08 health score is versioned and separate from daily local score. | Accepted - User decision 2026-06-30 |
 
 ## 12. ADR Summary
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| BASIC_HEALTH_CALC-ADR01 | Keep this module DD in Draft until PO/Tech Lead closes related open questions and implementation contracts. | BD v2.0 contains Q-01..Q-18 and explicit DD-before-coding gates. | Accepted |
+| BASIC_HEALTH_CALC-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
+| BASIC_HEALTH_CALC-ADR02 | Apply accepted product decisions Q-14 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -110,4 +111,15 @@ Module này tách công cụ tính toán cơ bản khỏi chẩn đoán y tế v
 - [ ] Business rules reviewed by Tech Lead.
 - [ ] UI states reviewed by UI/UX and QA.
 - [ ] API/schema/RLS contracts added before coding.
-- [ ] Open questions resolved or accepted as explicit implementation assumptions.
+- [x] Product decisions Q-14 answered or accepted as explicit implementation policy on 2026-06-30.
+
+## 15. Accepted Product Decision Contract
+
+| ID | Accepted Policy | Implementation Contract | Source |
+|---|---|---|---|
+| Q-14 | Use reference wellness formulas only, not diagnosis: BMI by CDC, BMR/RMR by Mifflin-St Jeor, TDEE by activity factor, hydration by National Academies DRI, sleep/activity by CDC. M08 health score is versioned and separate from daily local score. | Health formula versions, inputs, outputs, source links, disclaimer copy, and skip/missing-data policy are stored as versioned config before production use. | User decision 2026-06-30 |
+| Q-14 sources | Health formulas are wellness references only and are not diagnosis or medical advice. | CDC BMI: https://www.cdc.gov/bmi/about/index.html<br>CDC BMI categories: https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html<br>Mifflin-St Jeor PubMed: https://pubmed.ncbi.nlm.nih.gov/2305711/<br>National Academies water DRI: https://www.nationalacademies.org/read/10925/chapter/6<br>CDC physical activity: https://www.cdc.gov/physical-activity-basics/guidelines/adults.html<br>CDC sleep: https://www.cdc.gov/sleep/about/index.html | User decision 2026-06-30 plus cited public references |
+
+### Remaining Evidence Gate
+- DD readiness for this module is 80 percent in `docs/checklist/checklist_complete_DD.md`.
+- Coding progress changes only when runtime code, tests, or sandbox evidence are added.

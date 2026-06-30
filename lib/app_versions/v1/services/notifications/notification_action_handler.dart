@@ -3,6 +3,7 @@ import 'package:nano_app/core/storage/localdb/daos/notifications_dao.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/models/notification_model.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
@@ -20,6 +21,7 @@ class NotificationActionHandler {
   final DailyHealthTasksDao dailyHealthTasksDao;
   final LifestyleScheduleItemsDao lifestyleScheduleItemsDao;
   final LifestyleScheduleLocalDatasource lifestyleScheduleDatasource;
+  final Database? database;
   final DateTime Function() _now;
 
   NotificationActionHandler({
@@ -28,6 +30,7 @@ class NotificationActionHandler {
     required this.dailyHealthTasksDao,
     required this.lifestyleScheduleItemsDao,
     required this.lifestyleScheduleDatasource,
+    this.database,
     DateTime Function()? now,
   }) : _now = now ?? DateTime.now;
 
@@ -42,6 +45,7 @@ class NotificationActionHandler {
         databaseOverride: db,
         now: now,
       ),
+      database: db,
       now: now,
     );
   }
@@ -99,6 +103,7 @@ class NotificationActionHandler {
           respondedAt: respondedAt,
           updatedAt: respondedAt,
         );
+        LocalUserDataSyncDispatcher.requestImmediateSync(database: database);
         return;
       }
 
@@ -120,6 +125,7 @@ class NotificationActionHandler {
         respondedAt: respondedAt,
         updatedAt: respondedAt,
       );
+      LocalUserDataSyncDispatcher.requestImmediateSync(database: database);
     } on FormatException catch (error, stackTrace) {
       AppLogger.error(_tag, 'Invalid notification payload', error, stackTrace);
     } catch (error, stackTrace) {

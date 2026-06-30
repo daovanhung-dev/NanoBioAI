@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -184,6 +185,7 @@ class SettingsLocalDatasource {
         }
       });
 
+      LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
       AppLogger.success(_tag, 'User profile updated successfully');
     } catch (e, st) {
       AppLogger.error(_tag, 'Failed to update user profile', e, st);
@@ -209,6 +211,7 @@ class SettingsLocalDatasource {
         whereArgs: [userId],
       );
 
+      LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
       AppLogger.success(_tag, 'Avatar updated successfully ($count row(s))');
     } catch (e, st) {
       AppLogger.error(_tag, 'Failed to update avatar', e, st);

@@ -1,6 +1,7 @@
 import 'package:nano_app/core/storage/localdb/daos/health_tracking_logs_dao.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/models/health_tracking_log_model.dart';
+import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/daos/meal_plan_dao.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
@@ -48,6 +49,7 @@ class LifestyleScheduleLocalDatasource {
     }
 
     await dao.upsertMany(items);
+    LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
   }
 
   void validateGeneratedSchedule(
@@ -155,6 +157,7 @@ class LifestyleScheduleLocalDatasource {
     }
 
     await _syncDailyScheduleScore(db, updated);
+    LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
 
     return updated;
   }

@@ -2,11 +2,11 @@
 
 - Canonical key: coding
 - Workflow: .codex/workflows/coding.md
-- Generated from 11 worklog(s).
+- Generated from 12 worklog(s).
 
 ## When To Read
 
-- Historical task type: coding (6)
+- Historical task type: coding (7)
 - Historical task type: coding/test/docs (3)
 - Historical task type: feature (1)
 - Historical task type: feature Dashboard/UI + data write path (1)
@@ -16,11 +16,11 @@
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - M01 ONBOARDING_PROFILE: 1
 - v1 onboarding/splash/dashboard, v2 auth/membership/cloud sync, Supabase docs.: 1
-- Dashboard, AI service, lifestyle schedule: 1
+- unknown: 1
 - M02 PERSONAL_SCHEDULE_AI: 1
 - Authentication v2, Settings account security: 1
-- onboarding, dashboard: 1
 - dashboard, daily_health_tracking, lifestyle_schedule, meal_plan, shared/widgets: 1
+- Dashboard, AI service, lifestyle schedule: 1
 
 ## Work Pattern
 
@@ -52,3 +52,4 @@
 - [Worklog - M02 Runtime Guard](../../docs/worklog/2026-06-29/001-worklog-m02-runtime-guard.md) - M02 PERSONAL_SCHEDULE_AI
 - [Worklog - M15/M16 Admin Contract Sync](../../docs/worklog/2026-06-29/004-worklog-m15-m16-admin-contract-sync.md) - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS
 - [Worklog - Admin UI Polish](../../docs/worklog/2026-06-29/007-worklog-admin-ui-polish.md) - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS
+- [Worklog — immediate user-data sync](../../docs/worklog/2026-06-30/001-worklog-immediate-user-data-sync.md) - unknown

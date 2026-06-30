@@ -29,8 +29,9 @@
 
 | ID | API / Datasource | Method / Event | Request | Response | Used By |
 |---|---|---|---|---|---|
-| ADMIN_OPS-API01 | Planned module API/service | TBD by implementation DD/API contract | Actor context + command DTO | Result/Error DTO | ADMIN_OPS-FN01 |
-| ADMIN_OPS-API02 | Audit/event integration | Event after successful sensitive write | correlation_id + entity/action summary | Recorded event/audit result | Functions with side effects |
+| ADMIN_OPS-API01 | `performScopedAdminOperation` command / `rpc_admin_operations_perform_scoped_admin_operation` trusted RPC when server-owned state is written | Use-case command handler; RPC only for financial, entitlement, quota, family, Sale, Admin, audit, or sensitive writes | actor_context, command DTO, correlation_id, idempotency_key for writes | Result/Error DTO, safe_user_message, domain_error_code, audit_ref for sensitive writes | ADMIN_OPS-FN01 |
+| ADMIN_OPS-API02 | `performFinanceAdminOperation` command / `rpc_admin_operations_perform_finance_admin_operation` trusted RPC when server-owned state is written | Use-case command handler; RPC only for financial, entitlement, quota, family, Sale, Admin, audit, or sensitive writes | actor_context, command DTO, correlation_id, idempotency_key for writes | Result/Error DTO, safe_user_message, domain_error_code, audit_ref for sensitive writes | ADMIN_OPS-FN02 |
+| ADMIN_OPS-API-AUDIT | Audit/event integration | Event after successful sensitive write | correlation_id, actor_id, action, entity_ref, reason, idempotency_key | audit_id, recorded_at, immutable action summary | Functions with side effects |
 
 ## 4. Entity / Model Dependencies
 
@@ -45,7 +46,7 @@
 | ID | Name | Source | Default | Who Can Change | Used By |
 |---|---|---|---|---|---|
 | ADMIN_OPS-CFG01 | Module enablement / rollout flag | Planned remote config or backend config | Draft / disabled until approved | Product Owner / Tech Lead | All features |
-| ADMIN_OPS-CFG02 | Module-specific thresholds or policy | System Configuration entity when applicable | OPEN QUESTION if BD does not define | Admin/Super Admin with audit | Business rules |
+| ADMIN_OPS-CFG02 | Module-specific thresholds or policy | System Configuration entity or Admin managed policy version | Versioned default from accepted DD decisions; disabled only when feature flag is off | Super Admin/Admin role allowed by M16 with audit | Business rules |
 
 ## 6. Merge Checklist
 

@@ -7,10 +7,10 @@
 | Module Code | ADMIN_DASHBOARD |
 | BD Module | M15 |
 | Version | v1.0 |
-| Status | Draft - selected policy implementation-ready |
+| Status | Draft - contracts updated, sandbox evidence pending |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Release Scope | Project DD baseline for M01-M19 |
 
 ## 2. Business Goal
@@ -34,7 +34,7 @@ Module này cho Admin xem chỉ số tổng hợp, drill-down đúng quyền và
 | Role | Permissions in This Module | Limitations |
 |---|---|---|
 | Admin | Use module features according to BD sections 3, 5, and BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20. | Must not bypass entitlement, ownership, family consent, Sale/Admin scope, or audit rules. |
-| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must not invent product decisions. |
+| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must follow accepted product decisions. |
 | Admin/Super Admin | Operate only where BD grants admin responsibility. | Backend/API must reject missing permission; UI hiding is not sufficient. |
 
 ## 5. Primary Entities/Data
@@ -73,7 +73,7 @@ Module này cho Admin xem chỉ số tổng hợp, drill-down đúng quyền và
 | Auth/Profile | Internal/Supabase planned | Identify actor and ownership. | Block action or request login. |
 | Membership/Entitlement | Internal/trusted backend planned | Apply Free/Plus/FamilyPlus access and quotas. | Keep previous state; do not grant paid access. |
 | Audit/Security | Cross-cutting | Trace sensitive changes. | Sensitive writes must fail or be queued safely if audit cannot be recorded. |
-| Module-specific dependencies | Internal | ADMIN_OPS: quản lý module detail., REPORTING: aggregates., AUDIT_SECURITY: permission and audit. | Follow dependency owner DD and record conflict as OPEN QUESTION. |
+| Module-specific dependencies | Internal | ADMIN_OPS: quản lý module detail., REPORTING: aggregates., AUDIT_SECURITY: permission and audit. | Follow dependency owner DD and record conflict as an implementation issue or accepted exception. |
 
 ## 10. Non-Functional Requirements
 
@@ -85,21 +85,21 @@ Module này cho Admin xem chỉ số tổng hợp, drill-down đúng quyền và
 | Observability | Log safe module status, correlation id, actor type, and audit-relevant changes only. |
 | Resilience | Dependency failures must not create duplicate rights, duplicate points, incorrect quota, or partial financial state. |
 
-## 11. Risks, Assumptions, and Open Questions
+## 11. Risks, Assumptions, and Decisions
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| ADMIN_DASHBOARD-RISK01 | Risk | Physical schema/API/RLS and final UI wireframes are not provided in BD. | Implementation may diverge if coding starts before detailed contracts. | Open |
-| ADMIN_DASHBOARD-ASSUMPTION01 | Assumption | This DD uses BD v2.0 as source of truth and treats conflicting legacy Sale logic as blocked. | Legacy behavior must be reviewed before coding. | Active |
-| ADMIN_DASHBOARD-Q-12 | Open question | Admin có bao nhiêu nhóm quyền? | Permission matrix and UI. | Open |
-| ADMIN_DASHBOARD-Q-18 | Open question | Sale xem được định danh nào của khách hay chỉ số liệu tổng hợp? | Privacy and Sale dashboard. | Open |
+| ADMIN_DASHBOARD-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| ADMIN_DASHBOARD-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
+| ADMIN_DASHBOARD-Q-12 | Answered decision | Which Admin groups exist? | All Admin groups exist: Super Admin, Finance Admin, Support Admin, and Content Admin. | Accepted - User decision 2026-06-30 |
+| ADMIN_DASHBOARD-Q-18 | Answered decision | What customer information may Sale see? | Sale may see customer phone number and basic profile information for customer care, but cannot see health data, AI data, secrets, or raw payment payloads. | Accepted - User decision 2026-06-30 |
 
 ## 12. ADR Summary
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| ADMIN_DASHBOARD-ADR02 | Q-12/Q-18 selected policy: active Admin has full audited RPC capability; customer visibility is limited to basic profile/contact/status summaries. | User decision 2026-06-29; implemented in Admin runtime and Supabase draft contract. | Accepted |
-| ADMIN_DASHBOARD-ADR01 | Keep this module DD in Draft until PO/Tech Lead closes related open questions and implementation contracts. | BD v2.0 contains Q-01..Q-18 and explicit DD-before-coding gates. | Accepted |
+| ADMIN_DASHBOARD-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
+| ADMIN_DASHBOARD-ADR02 | Apply accepted product decisions Q-12, Q-18 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -114,4 +114,15 @@ Module này cho Admin xem chỉ số tổng hợp, drill-down đúng quyền và
 - [ ] Business rules reviewed by Tech Lead.
 - [ ] UI states reviewed by UI/UX and QA.
 - [ ] API/schema/RLS contracts added before coding.
-- [ ] Open questions resolved or accepted as explicit implementation assumptions.
+- [x] Product decisions Q-12, Q-18 answered or accepted as explicit implementation policy on 2026-06-30.
+
+## 15. Accepted Product Decision Contract
+
+| ID | Accepted Policy | Implementation Contract | Source |
+|---|---|---|---|
+| Q-12 | All Admin groups exist: Super Admin, Finance Admin, Support Admin, and Content Admin. | Admin permission model must expose these groups and map section/action permissions in UI, API, and RLS/backend policy. | User decision 2026-06-30 |
+| Q-18 | Sale may see customer phone number and basic profile information for customer care, but cannot see health data, AI data, secrets, or raw payment payloads. | Sale customer views use privacy-limited DTOs and RLS/backend filters; no raw health, AI, secret, or payment evidence fields are returned. | User decision 2026-06-30 |
+
+### Remaining Evidence Gate
+- DD readiness for this module is 60 percent in `docs/checklist/checklist_complete_DD.md`.
+- Coding progress changes only when runtime code, tests, or sandbox evidence are added.

@@ -2,6 +2,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
+import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:sqflite/sqflite.dart';
 
 class GeneratedPlanActorModes {
@@ -267,6 +268,7 @@ class LocalPersonalScheduleAiRequestStore
         );
       }
     });
+    LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
   }
 
   Future<void> _upsertRequest(

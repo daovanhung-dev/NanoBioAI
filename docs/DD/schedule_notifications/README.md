@@ -5,10 +5,10 @@
 | Module Code | SCHEDULE_NOTIFICATIONS |
 | BD Module | M09 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | In Review - product decisions answered |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M09, 13, Appendix A UC-04 |
 
 ## Purpose
@@ -33,11 +33,11 @@ Lên lịch nhắc theo plan/item và xử lý thao tác hoàn thành/bỏ qua t
 - DASHBOARD_SCHEDULE: update completion events.
 - FAMILYPLUS: subject and privacy boundary.
 
-## Open Questions
-| ID | Question | Impact | Status |
+## Answered Questions
+| ID | Question | Decision | Status |
 |---|---|---|---|
-| Q-16 | Múi giờ chuẩn cho reset quota, thời hạn gói, báo cáo và duyệt payment là gì? | Quota, entitlement, reporting and approval windows. | Open |
-| Q-15 | Số thành viên FamilyPlus tối đa, quyền xem/sửa và consent theo tuổi/quan hệ? | Family data model and privacy. | Open |
+| Q-16 | Which timezone is authoritative? | Use Vietnam timezone, Asia/Ho_Chi_Minh. | Answered - User decision 2026-06-30 |
+| Q-15 | How does FamilyPlus member visibility work? | FamilyPlus has up to 5 members. Every joined member in the package can view all information of every other member in the package. | Answered - User decision 2026-06-30 |
 
 ## Approval Status
 | Role | Approver | Status | Date |
@@ -49,3 +49,4 @@ Lên lịch nhắc theo plan/item và xử lý thao tác hoàn thành/bỏ qua t
 ## Validation Notes
 - Runtime code was not changed in this DD creation pass.
 - Physical schema, RLS, endpoint, payment provider, and UI mockups remain Draft unless explicitly specified by BD.
+- Product decisions Q-16, Q-15 were answered on 2026-06-30; remaining Draft items are implementation evidence, sandbox/RLS/API verification, or planned assets, not PO blockers.

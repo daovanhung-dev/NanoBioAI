@@ -5,10 +5,10 @@
 | Module Code | PAYMENT_MEMBERSHIP |
 | BD Module | M13 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - contracts updated, sandbox evidence pending |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16 |
 
 ## Purpose
@@ -34,14 +34,14 @@ Ghi nhận giao dịch mua/gia hạn, xác minh qua Admin và chỉ kích hoạt
 - SALE_POINTS: points after approval.
 - ADMIN_OPS/AUDIT_SECURITY: approval/audit.
 
-## Open Questions
-| ID | Question | Impact | Status |
+## Answered Questions
+| ID | Question | Decision | Status |
 |---|---|---|---|
-| Q-03 | 10% tính trên giá niêm yết hay số tiền thực thu sau giảm giá/voucher/thuế/phí? | Commission formula and reporting. | Open |
-| Q-04 | Các gói thanh toán theo tháng, năm hay một lần; gia hạn sớm/trễ xử lý ra sao? | Entitlement and recurring commission. | Open |
-| Q-05 | Hoàn/hủy/chargeback sau khi cộng điểm xử lý thế nào nếu Sale đã đổi điểm? | Ledger reversal and negative balance policy. | Open |
-| Q-11 | FamilyPlus payment tính 10% trên toàn gói hay chỉ phần chủ gói? | Commission base for FamilyPlus. | Open |
-| Q-17 | Payment phải duyệt thủ công toàn bộ hay webhook tự động có thể tạo payment_approved? | Payment architecture and operations. | Open |
+| Q-03 | What is the 10 percent commission base? | Commission is calculated from the listed package price. | Answered - User decision 2026-06-30 |
+| Q-04 | How do package periods and renewals work? | Plus and FamilyPlus support monthly and yearly plans. Early renewal extends from current expiry; late renewal starts from Admin approval time; pending payment never grants rights. | Answered - User decision 2026-06-30 |
+| Q-05 | How are refund, cancel, and chargeback handled after points are credited? | Refund/cancel is allowed only within 24 hours after purchase. Points are reversed immediately in that window. Because conversion is also locked for 24 hours, there is no converted-then-reversed case. | Answered - User decision 2026-06-30 |
+| Q-11 | How is FamilyPlus commission calculated? | FamilyPlus commission is calculated only on the package owner portion. | Answered - User decision 2026-06-30 |
+| Q-17 | Can webhook/trusted recorder approve payments automatically? | All payments and transfers are manually reviewed and manually approved by Admin. Trusted recorder may only create pending evidence; only Admin approval creates payment_approved. | Answered - User decision 2026-06-30 |
 
 ## Approval Status
 | Role | Approver | Status | Date |
@@ -53,3 +53,4 @@ Ghi nhận giao dịch mua/gia hạn, xác minh qua Admin và chỉ kích hoạt
 ## Validation Notes
 - Runtime code was not changed in this DD creation pass.
 - Physical schema, RLS, endpoint, payment provider, and UI mockups remain Draft unless explicitly specified by BD.
+- Product decisions Q-03, Q-04, Q-05, Q-11, Q-17 were answered on 2026-06-30; remaining Draft items are implementation evidence, sandbox/RLS/API verification, or planned assets, not PO blockers.

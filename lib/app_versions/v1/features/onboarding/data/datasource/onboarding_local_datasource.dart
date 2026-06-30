@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:nano_app/core/storage/localdb/database_service.dart';
@@ -297,6 +298,7 @@ class OnboardingLocalDatasource {
       where: 'id = ?',
       whereArgs: [normalizedUserId],
     );
+    LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
   }
 
   Map<String, Object?> _healthProfileRow(

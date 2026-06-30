@@ -29,8 +29,9 @@
 
 | ID | API / Datasource | Method / Event | Request | Response | Used By |
 |---|---|---|---|---|---|
-| BASIC_HEALTH_CALC-API01 | Planned module API/service | TBD by implementation DD/API contract | Actor context + command DTO | Result/Error DTO | BASIC_HEALTH_CALC-FN01 |
-| BASIC_HEALTH_CALC-API02 | Audit/event integration | Event after successful sensitive write | correlation_id + entity/action summary | Recorded event/audit result | Functions with side effects |
+| BASIC_HEALTH_CALC-API01 | `runBasicHealthCalculator` command / `rpc_basic_health_calculators_run_basic_health_calculator` trusted RPC when server-owned state is written | Use-case command handler; RPC only for financial, entitlement, quota, family, Sale, Admin, audit, or sensitive writes | actor_context, command DTO, correlation_id, idempotency_key for writes | Result/Error DTO, safe_user_message, domain_error_code, audit_ref for sensitive writes | BASIC_HEALTH_CALC-FN01 |
+| BASIC_HEALTH_CALC-API02 | `versionCalculatorFormula` command / `rpc_basic_health_calculators_version_calculator_formula` trusted RPC when server-owned state is written | Use-case command handler; RPC only for financial, entitlement, quota, family, Sale, Admin, audit, or sensitive writes | actor_context, command DTO, correlation_id, idempotency_key for writes | Result/Error DTO, safe_user_message, domain_error_code, audit_ref for sensitive writes | BASIC_HEALTH_CALC-FN02 |
+| BASIC_HEALTH_CALC-API-AUDIT | Audit/event integration | Event after successful sensitive write | correlation_id, actor_id, action, entity_ref, reason, idempotency_key | audit_id, recorded_at, immutable action summary | Functions with side effects |
 
 ## 4. Entity / Model Dependencies
 
@@ -44,7 +45,7 @@
 | ID | Name | Source | Default | Who Can Change | Used By |
 |---|---|---|---|---|---|
 | BASIC_HEALTH_CALC-CFG01 | Module enablement / rollout flag | Planned remote config or backend config | Draft / disabled until approved | Product Owner / Tech Lead | All features |
-| BASIC_HEALTH_CALC-CFG02 | Module-specific thresholds or policy | System Configuration entity when applicable | OPEN QUESTION if BD does not define | Admin/Super Admin with audit | Business rules |
+| BASIC_HEALTH_CALC-CFG02 | Module-specific thresholds or policy | System Configuration entity or Admin managed policy version | Versioned default from accepted DD decisions; disabled only when feature flag is off | Super Admin/Admin role allowed by M16 with audit | Business rules |
 
 ## 6. Merge Checklist
 

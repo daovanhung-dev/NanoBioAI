@@ -5,10 +5,10 @@
 | Module Code | DASHBOARD_SCHEDULE |
 | BD Module | M03 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | In Review - product decisions answered |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M03, 13, Appendix A UC-09 |
 
 ## Purpose
@@ -33,10 +33,10 @@ Hiển thị lịch trình hiện hành, cho phép đánh dấu hoàn thành/b�
 - HEALTH_SCORE_HABITS: dùng completion events.
 - FAMILYPLUS: phân quyền subject.
 
-## Open Questions
-| ID | Question | Impact | Status |
+## Answered Questions
+| ID | Question | Decision | Status |
 |---|---|---|---|
-| Q-15 | Số thành viên FamilyPlus tối đa, quyền xem/sửa và consent theo tuổi/quan hệ? | Family data model and privacy. | Open |
+| Q-15 | How does FamilyPlus member visibility work? | FamilyPlus has up to 5 members. Every joined member in the package can view all information of every other member in the package. | Answered - User decision 2026-06-30 |
 
 ## Approval Status
 | Role | Approver | Status | Date |
@@ -48,3 +48,4 @@ Hiển thị lịch trình hiện hành, cho phép đánh dấu hoàn thành/b�
 ## Validation Notes
 - Runtime code was not changed in this DD creation pass.
 - Physical schema, RLS, endpoint, payment provider, and UI mockups remain Draft unless explicitly specified by BD.
+- Product decisions Q-15 were answered on 2026-06-30; remaining Draft items are implementation evidence, sandbox/RLS/API verification, or planned assets, not PO blockers.

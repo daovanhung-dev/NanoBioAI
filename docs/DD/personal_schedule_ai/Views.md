@@ -31,7 +31,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | OPEN QUESTION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
 
 ## B. Layout và thành phần giao diện
 
@@ -84,7 +84,7 @@
 | Điều kiện truy cập | Theo quyền hiệu lực trong BD sections 3 và 5. |
 | Hành vi khi không đủ quyền | Chặn ở route/use-case/API; UI chỉ hiển thị hướng dẫn an toàn. |
 | Responsive | Mobile first for app surfaces; desktop/tablet for Admin surfaces. |
-| Mockup / prototype | OPEN QUESTION: mockup chưa có trong BD, lưu sau vào assets/. |
+| Mockup / prototype | PLANNED CONFIRMATION: mockup chưa có trong BD, lưu sau vào assets/. |
 
 ## B. Layout và thành phần giao diện
 

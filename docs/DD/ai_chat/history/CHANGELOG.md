@@ -1,5 +1,16 @@
 # CHANGELOG — AI_CHAT / AI Chat
 
+## [v1.1] - 2026-06-30
+### Changed
+- Recorded accepted product decisions Q-16 in README, Overall, Import_File, and checklist traceability.
+- Reclassified prior question rows as answered decisions; remaining gaps are implementation evidence, sandbox/RLS/API verification, or planned assets.
+
+### Decisions
+- Q-16: Use Vietnam timezone, Asia/Ho_Chi_Minh.
+
+### Validation
+- Docs-only change; runtime code was not changed.
+
 ## [v1.0] - 2026-06-28
 ### Added
 - Initial DD created from docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), scope BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07.
@@ -10,5 +21,5 @@
 - Migration required: No runtime migration in this docs-only pass.
 - Regression test required: Yes when implementation starts; see module test checklist and BD section 17.2.
 
-### Open Decisions
+### Historical Decisions - answered 2026-06-30
 - Q-16: Múi giờ chuẩn cho reset quota, thời hạn gói, báo cáo và duyệt payment là gì?

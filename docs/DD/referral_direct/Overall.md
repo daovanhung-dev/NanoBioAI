@@ -7,10 +7,10 @@
 | Module Code | REFERRAL_DIRECT |
 | BD Module | M12 |
 | Version | v1.0 |
-| Status | Draft |
+| Status | Draft - contracts updated, sandbox evidence pending |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14 |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-28 |
+| Last Updated | 2026-06-30 |
 | Release Scope | Project DD baseline for M01-M19 |
 
 ## 2. Business Goal
@@ -34,7 +34,7 @@ Module này thay toàn bộ mô hình hoa hồng cây nhiều tầng bằng dire
 | Role | Permissions in This Module | Limitations |
 |---|---|---|
 | Member, Sale, Admin | Use module features according to BD sections 3, 5, and BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14. | Must not bypass entitlement, ownership, family consent, Sale/Admin scope, or audit rules. |
-| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must not invent product decisions. |
+| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must follow accepted product decisions. |
 | Admin/Super Admin | Operate only where BD grants admin responsibility. | Backend/API must reject missing permission; UI hiding is not sufficient. |
 
 ## 5. Primary Entities/Data
@@ -73,7 +73,7 @@ Module này thay toàn bộ mô hình hoa hồng cây nhiều tầng bằng dire
 | Auth/Profile | Internal/Supabase planned | Identify actor and ownership. | Block action or request login. |
 | Membership/Entitlement | Internal/trusted backend planned | Apply Free/Plus/FamilyPlus access and quotas. | Keep previous state; do not grant paid access. |
 | Audit/Security | Cross-cutting | Trace sensitive changes. | Sensitive writes must fail or be queued safely if audit cannot be recorded. |
-| Module-specific dependencies | Internal | AUTH_PROFILE_SYNC: Member and customer identity., PAYMENT_MEMBERSHIP: later payment source., SALE_POINTS: point credit after approval., AUDIT_SECURITY: fraud/audit. | Follow dependency owner DD and record conflict as OPEN QUESTION. |
+| Module-specific dependencies | Internal | AUTH_PROFILE_SYNC: Member and customer identity., PAYMENT_MEMBERSHIP: later payment source., SALE_POINTS: point credit after approval., AUDIT_SECURITY: fraud/audit. | Follow dependency owner DD and record conflict as an implementation issue or accepted exception. |
 
 ## 10. Non-Functional Requirements
 
@@ -85,23 +85,24 @@ Module này thay toàn bộ mô hình hoa hồng cây nhiều tầng bằng dire
 | Observability | Log safe module status, correlation id, actor type, and audit-relevant changes only. |
 | Resilience | Dependency failures must not create duplicate rights, duplicate points, incorrect quota, or partial financial state. |
 
-## 11. Risks, Assumptions, and Open Questions
+## 11. Risks, Assumptions, and Decisions
 
 | ID | Type | Content | Impact | Status |
 |---|---|---|---|---|
-| REFERRAL_DIRECT-RISK01 | Risk | Physical schema/API/RLS and final UI wireframes are not provided in BD. | Implementation may diverge if coding starts before detailed contracts. | Open |
-| REFERRAL_DIRECT-ASSUMPTION01 | Assumption | This DD uses BD v2.0 as source of truth and treats conflicting legacy Sale logic as blocked. | Legacy behavior must be reviewed before coding. | Active |
-| REFERRAL_DIRECT-Q-01 | Open question | Ai được trở thành Sale: tất cả Member, chỉ Member mua gói, hay cần hồ sơ/duyệt? | Sale registration and Admin approval flow. | Open |
-| REFERRAL_DIRECT-Q-08 | Open question | Mã giới thiệu nhập ở bước nào và Admin có được sửa hậu kiểm không? | Referral locking and anti-fraud. | Open |
-| REFERRAL_DIRECT-Q-09 | Open question | Tiêu chí phát hiện tự giới thiệu/tài khoản trùng là gì? | Fraud checks and rejection rules. | Open |
-| REFERRAL_DIRECT-Q-10 | Open question | Sale suspended/closed thì khách cũ có còn phát sinh điểm không? | Sale state machine and disputes. | Open |
-| REFERRAL_DIRECT-Q-18 | Open question | Sale xem được định danh nào của khách hay chỉ số liệu tổng hợp? | Privacy and Sale dashboard. | Open |
+| REFERRAL_DIRECT-RISK01 | Risk | API/schema/RLS sandbox evidence and final UI assets may still lag the DD contract. | Coding must keep acceptance evidence and sandbox proof before production release. | Open |
+| REFERRAL_DIRECT-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
+| REFERRAL_DIRECT-Q-01 | Answered decision | Who can become Sale? | Only members with Plus or higher active package can become Sale. | Accepted - User decision 2026-06-30 |
+| REFERRAL_DIRECT-Q-08 | Answered decision | When can referral code be entered? | Referral code is accepted only during registration. Any post-registration correction requires audited Super Admin override. | Accepted - User decision 2026-06-30 |
+| REFERRAL_DIRECT-Q-09 | Answered decision | What anti-fraud rules apply to referrals? | Use the strictest policy: hard-block same account, phone, email, payment, bank, device, or identity; hold suspicious IP/device/family/payment patterns for Admin review; only audited Super Admin override may release. | Accepted - User decision 2026-06-30 |
+| REFERRAL_DIRECT-Q-10 | Answered decision | Do suspended or closed Sale accounts continue receiving points? | Suspended or closed Sale accounts receive no new points from old customers. | Accepted - User decision 2026-06-30 |
+| REFERRAL_DIRECT-Q-18 | Answered decision | What customer information may Sale see? | Sale may see customer phone number and basic profile information for customer care, but cannot see health data, AI data, secrets, or raw payment payloads. | Accepted - User decision 2026-06-30 |
 
 ## 12. ADR Summary
 
 | ID | Decision | Context | Status |
 |---|---|---|---|
-| REFERRAL_DIRECT-ADR01 | Keep this module DD in Draft until PO/Tech Lead closes related open questions and implementation contracts. | BD v2.0 contains Q-01..Q-18 and explicit DD-before-coding gates. | Accepted |
+| REFERRAL_DIRECT-ADR01 | Keep implementation gated by documented API/schema/RLS/audit evidence where the checklist still marks sandbox pending. | Product decisions are answered, but several modules still require Supabase or runtime verification before production acceptance. | Accepted |
+| REFERRAL_DIRECT-ADR02 | Apply accepted product decisions Q-01, Q-08, Q-09, Q-10, Q-18 as the module business contract. | User decisions from 2026-06-30 close the BD Q-01..Q-18 blocker set for this module. | Accepted |
 
 ## 13. Traceability Matrix
 
@@ -116,4 +117,18 @@ Module này thay toàn bộ mô hình hoa hồng cây nhiều tầng bằng dire
 - [ ] Business rules reviewed by Tech Lead.
 - [ ] UI states reviewed by UI/UX and QA.
 - [ ] API/schema/RLS contracts added before coding.
-- [ ] Open questions resolved or accepted as explicit implementation assumptions.
+- [x] Product decisions Q-01, Q-08, Q-09, Q-10, Q-18 answered or accepted as explicit implementation policy on 2026-06-30.
+
+## 15. Accepted Product Decision Contract
+
+| ID | Accepted Policy | Implementation Contract | Source |
+|---|---|---|---|
+| Q-01 | Only members with Plus or higher active package can become Sale. | Sale registration and Admin approval must verify active Plus/FamilyPlus entitlement before status can become active. | User decision 2026-06-30 |
+| Q-08 | Referral code is accepted only during registration. Any post-registration correction requires audited Super Admin override. | Registration attach RPC is single-use and locked after account creation; override stores actor, reason, old/new referral, and audit id. | User decision 2026-06-30 |
+| Q-09 | Use the strictest policy: hard-block same account, phone, email, payment, bank, device, or identity; hold suspicious IP/device/family/payment patterns for Admin review; only audited Super Admin override may release. | Referral attach and payment commission checks run fraud rules before ledger writes and expose safe fraud review states, not raw signals. | User decision 2026-06-30 |
+| Q-10 | Suspended or closed Sale accounts receive no new points from old customers. | Commission creation checks Sale status at payment approval time and rejects inactive/suspended/closed Sale with audit-safe reason. | User decision 2026-06-30 |
+| Q-18 | Sale may see customer phone number and basic profile information for customer care, but cannot see health data, AI data, secrets, or raw payment payloads. | Sale customer views use privacy-limited DTOs and RLS/backend filters; no raw health, AI, secret, or payment evidence fields are returned. | User decision 2026-06-30 |
+
+### Remaining Evidence Gate
+- DD readiness for this module is 60 percent in `docs/checklist/checklist_complete_DD.md`.
+- Coding progress changes only when runtime code, tests, or sandbox evidence are added.

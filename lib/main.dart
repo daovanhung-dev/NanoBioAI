@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app_versions/v2/app/bio_ai_v2_app.dart';
 import 'core/storage/localdb/app_prefs.dart';
+import 'core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
+import 'services/supabase/cloud_sync/user_data_sync_outbox.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox_refresher.dart';
 import 'app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
@@ -24,7 +26,10 @@ Future<void> main() async {
   );
 
   // START WRITE-THROUGH CLOUD SYNC AFTER SUPABASE IS READY
-  UserDataSyncOutboxRefresher().start();
+  LocalUserDataSyncDispatcher.register(
+    UserDataSyncOutbox.requestImmediateDrain,
+  );
+  UserDataSyncOutboxRefresher.shared.start();
 
   // INIT LOCAL NOTIFICATIONS
   await NotificationBootstrap.initialize();

@@ -84,7 +84,7 @@ rg --files -g '!build/**' -g '!.dart_tool/**' -g '!.git/**'
 - Product flow BD: `docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md`
 - DD creation guide: `docs/DD/DD_Module_Creation_Guide_EN.md`
 - DD module template: `docs/DD/DD_Module_Template/README.md`
-- Auth BD: `docs/BD/authentication/BD_Authentication_Registration_Login_NanoBio.md`
+- Auth BD: not present in the current working tree; use M05 `docs/DD/auth_profile_sync/README.md` and the live product-flow BD unless a specific auth BD path is provided.
 - DD checklist: `docs/checklist/checklist_create_DD.md`
 - Supabase rebuild config: `docs/supabase/config.sql`
 - Supabase context: `docs/supabase/README.md`

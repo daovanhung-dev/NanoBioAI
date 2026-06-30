@@ -1,9 +1,6 @@
-import 'dart:async';
-
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/services/supabase/auth/auth_profile_service.dart';
-import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
 
 import '../../data/datasource/onboarding_local_datasource.dart';
 import '../entities/onboarding_entity.dart';
@@ -62,11 +59,8 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     await localDatasource.markOnboardingCompleted(userId);
     AppLogger.success(_tag, 'Local onboarding status marked completed');
 
-    // Do not block navigation on a network request. The outbox is durable and
-    // retries failures, while this best-effort drain makes the completion
-    // snapshot reach Supabase immediately for an authenticated account.
-    if (authProfileService.currentUserId != null) {
-      unawaited(UserDataSyncOutbox.drainForCurrentUser());
-    }
+    // The local datasource emits a post-commit sync signal. At app startup,
+    // the root composition maps that signal to the authenticated Supabase
+    // outbox without making V1 depend on the cloud-sync implementation.
   }
 }

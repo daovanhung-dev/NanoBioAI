@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,7 +8,6 @@ import 'package:nano_app/app_versions/v1/features/settings/data/datasources/sett
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/utils/profile_validator.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
-import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -304,7 +301,6 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
         authUserId,
         localProfile,
       );
-      unawaited(UserDataSyncOutbox.drainForCurrentUser());
       invalidateUserScopedProviders(ref);
 
       if (!mounted) return;
