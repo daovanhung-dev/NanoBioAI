@@ -137,7 +137,6 @@ class SaleDirectCustomer {
   final String displayName;
   final int? age;
   final String? phone;
-  final String? healthConditionSummary;
   final DateTime? acceptedAt;
   final int successfulPayments;
   final int approvedPointCents;
@@ -147,7 +146,6 @@ class SaleDirectCustomer {
     required this.displayName,
     this.age,
     this.phone,
-    this.healthConditionSummary,
     this.acceptedAt,
     required this.successfulPayments,
     required this.approvedPointCents,
@@ -159,7 +157,6 @@ class SaleDirectCustomer {
       displayName: readString(map['display_name']) ?? 'Nguoi dung NanoBio',
       age: readNullableInt(map['age']),
       phone: readString(map['phone']),
-      healthConditionSummary: readString(map['health_condition_summary']),
       acceptedAt: readDate(map['accepted_at']),
       successfulPayments: readInt(map['successful_payments']),
       approvedPointCents: readInt(map['approved_point_cents']),

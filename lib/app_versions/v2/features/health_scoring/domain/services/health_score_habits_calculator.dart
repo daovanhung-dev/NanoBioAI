@@ -29,7 +29,7 @@ class HealthScoreHabitsCalculator {
 
     return HealthScoreHabitsResult(
       score: periodScore.clamp(0, 100).toInt(),
-      formulaVersion: healthScoreHabitsLocalDraftFormulaVersion,
+      formulaVersion: healthScoreHabitsFormulaVersion,
       period: input.period,
       hasInputs: true,
       breakdown: breakdown.where((item) => item.hasInput).toList(),
@@ -126,19 +126,19 @@ class HealthScoreHabitsCalculator {
     return [
       _completionBreakdown(
         code: 'tasks_habits',
-        label: 'Tasks and habits',
+        label: 'Nhiem vu va thoi quen',
         weight: 45,
         entries: tasks,
       ),
       _completionBreakdown(
         code: 'meals',
-        label: 'Meals',
+        label: 'Bua an',
         weight: 25,
         entries: meals,
       ),
       _logBreakdown(
         code: 'water',
-        label: 'Water',
+        label: 'Nuoc',
         weight: 15,
         logs: waterLogs,
         scoreForLog: (log) => (log.waterMl / 2000).clamp(0, 1).toDouble(),
@@ -146,7 +146,7 @@ class HealthScoreHabitsCalculator {
       ),
       _logBreakdown(
         code: 'sleep',
-        label: 'Sleep',
+        label: 'Giac ngu',
         weight: 15,
         logs: sleepLogs,
         scoreForLog: (log) => (log.sleepHours / 8).clamp(0, 1).toDouble(),
@@ -220,15 +220,15 @@ class HealthScoreHabitsCalculator {
 
   static String _labelForCategory(String code) {
     const labels = <String, String>{
-      'meal': 'Meals',
-      'water': 'Water',
-      'body': 'Movement',
-      'mind': 'Mind',
-      'brain': 'Focus',
-      'sleep': 'Sleep',
-      'routine': 'Routine',
-      'health': 'Health',
-      'habit': 'Habits',
+      'meal': 'Bua an',
+      'water': 'Nuoc',
+      'body': 'Van dong',
+      'mind': 'Tinh than',
+      'brain': 'Tap trung',
+      'sleep': 'Giac ngu',
+      'routine': 'Nhip sinh hoat',
+      'health': 'Suc khoe',
+      'habit': 'Thoi quen',
     };
     return labels[code] ?? _titleCase(code.replaceAll('_', ' '));
   }

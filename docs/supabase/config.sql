@@ -599,6 +599,23 @@ create table if not exists public.health_tracking_logs (
   unique (subject_id, log_date)
 );
 
+create table if not exists public.health_score_ledgers (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references public.users(id) on delete cascade,
+  subject_id uuid not null default public.default_self_subject_id() references public.health_subjects(id) on delete cascade,
+  period_start date not null,
+  period_end date not null,
+  score integer not null check (score >= 0 and score <= 100),
+  formula_version text not null,
+  breakdown jsonb not null default '{}'::jsonb,
+  idempotency_key text,
+  calculated_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint health_score_ledgers_period_valid check (period_end >= period_start),
+  unique (subject_id, period_start, period_end, formula_version)
+);
+
 create table if not exists public.nutrition_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.users(id) on delete cascade,
@@ -696,6 +713,8 @@ create index if not exists idx_daily_tasks_subject_date_order on public.daily_he
 create index if not exists idx_lifestyle_schedule_subject_date_order on public.lifestyle_schedule_items (subject_id, schedule_date, sort_order);
 create index if not exists idx_notifications_user_scheduled on public.notifications (user_id, scheduled_at desc);
 create index if not exists idx_health_tracking_subject_date on public.health_tracking_logs (subject_id, log_date desc);
+create index if not exists idx_health_score_ledgers_subject_period
+  on public.health_score_ledgers (subject_id, period_end desc, formula_version);
 create index if not exists idx_nutrition_logs_subject_eaten on public.nutrition_logs (subject_id, eaten_at desc);
 create index if not exists idx_ai_insights_subject_created on public.ai_insights (subject_id, created_at desc);
 create index if not exists idx_ai_recommendations_subject_unread on public.ai_recommendations (subject_id, is_read, created_at desc);
@@ -715,6 +734,7 @@ begin
     'lifestyle_schedule_items',
     'notifications',
     'health_tracking_logs',
+    'health_score_ledgers',
     'meal_catalog',
     'exercise_catalog',
     'schedule_task_catalog'
@@ -759,6 +779,7 @@ begin
     'lifestyle_schedule_items',
     'notifications',
     'health_tracking_logs',
+    'health_score_ledgers',
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations'
@@ -829,6 +850,7 @@ grant select, insert, update, delete
      public.lifestyle_schedule_items,
      public.notifications,
      public.health_tracking_logs,
+     public.health_score_ledgers,
      public.nutrition_logs,
      public.ai_insights,
      public.ai_recommendations
@@ -2213,7 +2235,13 @@ alter table public.users
 
 create table if not exists public.admin_roles (
   code text primary key
-    check (code in ('super_admin', 'finance_admin', 'operations_admin')),
+    check (code in (
+      'super_admin',
+      'finance_admin',
+      'support_admin',
+      'content_admin',
+      'operations_admin'
+    )),
   display_name text not null,
   description text,
   is_active boolean not null default true,
@@ -2270,6 +2298,121 @@ create table if not exists public.system_config_versions (
   created_at timestamptz not null default now(),
   unique (config_key, created_at)
 );
+
+create or replace function public.create_membership_payment_request(
+  p_plan_code public.nb_membership_plan,
+  p_billing_cycle text,
+  p_idempotency_key text
+)
+returns table (
+  payment_event_id uuid,
+  plan_code text,
+  billing_cycle text,
+  status text,
+  amount_cents integer,
+  currency text,
+  created_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_config jsonb;
+  v_amount_cents integer;
+  v_currency text;
+  v_provider text := 'manual_membership_request';
+  v_provider_event_id text;
+  v_payment public.payment_events%rowtype;
+begin
+  if v_user_id is null then
+    raise exception 'AUTH_REQUIRED' using errcode = '28000';
+  end if;
+
+  if p_plan_code not in ('plus', 'family_plus') then
+    raise exception 'INVALID_MEMBERSHIP_PLAN' using errcode = '22023';
+  end if;
+
+  if btrim(coalesce(p_billing_cycle, '')) not in ('monthly', 'yearly') then
+    raise exception 'INVALID_BILLING_CYCLE' using errcode = '22023';
+  end if;
+
+  if nullif(btrim(coalesce(p_idempotency_key, '')), '') is null then
+    raise exception 'IDEMPOTENCY_KEY_REQUIRED' using errcode = '22023';
+  end if;
+
+  select scv.config_value
+  into v_config
+  from public.system_config_versions scv
+  where scv.config_key = 'membership_payment_prices'
+    and scv.status = 'active'
+  order by scv.created_at desc
+  limit 1;
+
+  v_amount_cents := nullif(
+    v_config #>> array['prices', p_plan_code::text, btrim(p_billing_cycle)],
+    ''
+  )::integer;
+  v_currency := coalesce(nullif(v_config ->> 'currency', ''), 'VND');
+
+  if v_amount_cents is null or v_amount_cents <= 0 then
+    raise exception 'MEMBERSHIP_PAYMENT_PRICE_NOT_CONFIGURED'
+      using errcode = '22023';
+  end if;
+
+  v_provider_event_id := concat(v_user_id::text, ':', btrim(p_idempotency_key));
+
+  insert into public.payment_events (
+    payer_user_id,
+    plan_code,
+    provider,
+    provider_event_id,
+    amount_cents,
+    list_price_cents,
+    commission_base_cents,
+    currency,
+    status,
+    idempotency_key,
+    metadata
+  )
+  values (
+    v_user_id,
+    p_plan_code,
+    v_provider,
+    v_provider_event_id,
+    v_amount_cents,
+    v_amount_cents,
+    v_amount_cents,
+    v_currency,
+    'pending',
+    btrim(p_idempotency_key),
+    jsonb_build_object(
+      'billing_cycle',
+      btrim(p_billing_cycle),
+      'manual_approval_required',
+      true,
+      'grants_access_before_approval',
+      false
+    )
+  )
+  on conflict (provider, provider_event_id) do update
+  set metadata = public.payment_events.metadata || jsonb_build_object(
+    'idempotent_replay',
+    true
+  )
+  returning * into v_payment;
+
+  return query select
+    v_payment.id,
+    v_payment.plan_code::text,
+    coalesce(v_payment.metadata ->> 'billing_cycle', btrim(p_billing_cycle)),
+    v_payment.status,
+    v_payment.amount_cents,
+    v_payment.currency,
+    v_payment.created_at;
+end;
+$$;
 
 create table if not exists public.report_exports (
   id uuid primary key default gen_random_uuid(),
@@ -2338,6 +2481,8 @@ insert into public.admin_roles (code, display_name, description)
 values
   ('super_admin', 'Super Admin', 'Full Admin control including roles and config.'),
   ('finance_admin', 'Finance Admin', 'Payment, Sale point and finance reports.'),
+  ('support_admin', 'Support Admin', 'Customer support and user operations.'),
+  ('content_admin', 'Content Admin', 'Content and plan configuration operations.'),
   ('operations_admin', 'Operations Admin', 'User, Sale and support operations.')
 on conflict (code) do update
 set
@@ -2366,6 +2511,8 @@ insert into public.admin_role_permissions (role_code, permission_code)
 values
   ('super_admin', '*'),
   ('finance_admin', '*'),
+  ('support_admin', '*'),
+  ('content_admin', '*'),
   ('operations_admin', '*')
 on conflict (role_code, permission_code) do nothing;
 
@@ -2521,14 +2668,41 @@ begin
   select 'users_total', 'Nguoi dung', count(*)::integer, 'ready', 'users'
   from public.users
   union all
+  select 'onboarding_completed', 'Da hoan thanh onboarding', count(*)::integer, 'ready', 'users'
+  from public.users u
+  where u.onboarding_status = 'completed'
+  union all
+  select 'packages_active', 'Goi thanh vien active', count(*)::integer, 'active', 'plans'
+  from public.membership_subscriptions ms
+  where ms.status in ('trialing', 'active')
+  union all
   select 'payments_pending', 'Payment cho duyet', count(*)::integer, 'pending', 'payments'
   from public.payment_events pe
   where pe.status = 'pending'
     and pe.created_at between p_from and p_to
   union all
+  select 'payments_succeeded', 'Payment hop le', count(*)::integer, 'ready', 'payments'
+  from public.payment_events pe
+  where pe.status = 'succeeded'
+    and coalesce(pe.paid_at, pe.created_at) between p_from and p_to
+  union all
+  select
+    'revenue_succeeded',
+    'Doanh thu da duyet',
+    coalesce(sum(pe.amount_cents), 0)::integer,
+    'ready',
+    'reports'
+  from public.payment_events pe
+  where pe.status = 'succeeded'
+    and coalesce(pe.paid_at, pe.created_at) between p_from and p_to
+  union all
   select 'sales_active', 'Sale active', count(*)::integer, 'active', 'sales'
   from public.sale_profiles sp
   where sp.status = 'active'
+  union all
+  select 'familyplus_active', 'FamilyPlus active', count(*)::integer, 'active', 'users'
+  from public.family_groups fg
+  where fg.status = 'active'
   union all
   select
     'commission_available',
@@ -2539,7 +2713,19 @@ begin
   from public.commission_records cr
   where cr.status in ('pending', 'approved')
     and cr.available_at <= now()
-    and cr.created_at between p_from and p_to;
+    and cr.created_at between p_from and p_to
+  union all
+  select
+    'admin_alerts',
+    'Can Admin xu ly',
+    (
+      (select count(*) from public.admin_reconciliation_discrepancies ard
+       where ard.status in ('open', 'needs_follow_up'))
+      + (select count(*) from public.payment_events pe
+         where pe.status = 'pending' and pe.created_at between p_from and p_to)
+    )::integer,
+    'pending',
+    'reconciliation';
 end;
 $$;
 
@@ -2914,6 +3100,11 @@ begin
 
   if not found then
     raise exception 'PAYMENT_NOT_FOUND' using errcode = '22023';
+  end if;
+
+  if coalesce(v_payment.paid_at, v_payment.reviewed_at, v_payment.created_at)
+      < now() - interval '24 hours' then
+    raise exception 'PAYMENT_REVERSAL_WINDOW_EXPIRED' using errcode = '22023';
   end if;
 
   v_status := case
@@ -3648,6 +3839,11 @@ from anon, authenticated;
 
 grant execute on function public.get_my_admin_session() to authenticated;
 grant execute on function public.get_admin_dashboard_summary(timestamptz, timestamptz, text, text) to authenticated;
+grant execute on function public.create_membership_payment_request(
+  public.nb_membership_plan,
+  text,
+  text
+) to authenticated;
 grant execute on function public.admin_search_users(text, integer) to authenticated;
 grant execute on function public.admin_update_user_status(uuid, text, text, text) to authenticated;
 grant execute on function public.admin_list_payments(text, integer) to authenticated;
@@ -3769,7 +3965,7 @@ insert into public.system_config_versions (
 )
 select
   'sale_point_conversion',
-  '{"enabled": false, "point_to_money_rate": 1, "minimum_point_cents": 100000, "currency": "VND"}'::jsonb,
+  '{"enabled": false, "point_to_money_rate": 1, "minimum_point_cents": 500000, "currency": "VND"}'::jsonb,
   'active',
   'Default disabled Sale point conversion policy.',
   null
@@ -3777,6 +3973,32 @@ where not exists (
   select 1
   from public.system_config_versions
   where config_key = 'sale_point_conversion'
+    and status = 'active'
+);
+
+insert into public.system_config_versions (
+  config_key,
+  config_value,
+  status,
+  reason,
+  created_by
+)
+select
+  'membership_payment_prices',
+  '{
+    "currency": "VND",
+    "prices": {
+      "plus": {"monthly": 199000, "yearly": 1990000},
+      "family_plus": {"monthly": 399000, "yearly": 3990000}
+    }
+  }'::jsonb,
+  'active',
+  'Default membership payment price table used by create_membership_payment_request.',
+  null
+where not exists (
+  select 1
+  from public.system_config_versions
+  where config_key = 'membership_payment_prices'
     and status = 'active'
 );
 
@@ -4354,7 +4576,6 @@ returns table (
   full_name text,
   age integer,
   phone text,
-  health_condition_summary text,
   accepted_at timestamptz,
   successful_payments integer,
   approved_point_cents integer,
@@ -4389,19 +4610,6 @@ begin
     from public.commission_records
     where receiver_user_id = v_user_id
     group by payer_user_id
-  ), health_summary as (
-    select
-      hs.owner_user_id,
-      string_agg(
-        coalesce(nullif(hc.condition_name, ''), hc.condition_code),
-        ', '
-        order by coalesce(nullif(hc.condition_name, ''), hc.condition_code)
-      ) as condition_summary
-    from public.health_subjects hs
-    join public.health_conditions hc on hc.subject_id = hs.id
-    where hs.subject_type = 'self'
-      and hs.is_active = true
-    group by hs.owner_user_id
   )
   select
     coalesce(nullif(u.full_name, ''), 'Nguoi dung NanoBio'),
@@ -4411,7 +4619,6 @@ begin
       else extract(year from age(make_date(coalesce(u.birth_year, hs_self.birth_year), 1, 1)))::integer
     end,
     u.phone,
-    coalesce(hs.condition_summary, 'Chua co tinh trang suc khoe'),
     dn.accepted_at,
     coalesce(p.success_count, 0),
     coalesce(pt.approved_cents, 0),
@@ -4422,7 +4629,6 @@ begin
     on hs_self.owner_user_id = dn.referred_user_id
    and hs_self.subject_type = 'self'
    and hs_self.is_active = true
-  left join health_summary hs on hs.owner_user_id = dn.referred_user_id
   left join payments p on p.payer_user_id = dn.referred_user_id
   left join points pt on pt.payer_user_id = dn.referred_user_id
   order by dn.accepted_at desc;

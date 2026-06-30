@@ -26,6 +26,7 @@ void main() {
         'admin_list_payments',
         'admin_review_payment',
         'admin_refund_or_cancel_payment',
+        'create_membership_payment_request',
         'admin_list_sales',
         'admin_review_sale_profile',
         'admin_upsert_config_version',
@@ -52,6 +53,12 @@ void main() {
         'and pe.created_at between p_from and p_to',
         'from public.sale_profiles sp',
         "where sp.status = 'active'",
+        "'onboarding_completed'",
+        "'packages_active'",
+        "'payments_succeeded'",
+        "'revenue_succeeded'",
+        "'familyplus_active'",
+        "'admin_alerts'",
         'coalesce(sum(cr.amount_cents), 0)::integer',
         'from public.commission_records cr',
         "where cr.status in ('pending', 'approved')",
@@ -99,6 +106,8 @@ void main() {
       for (final token in [
         "('super_admin', '*')",
         "('finance_admin', '*')",
+        "('support_admin', '*')",
+        "('content_admin', '*')",
         "('operations_admin', '*')",
         "'reconciliation.write'",
         "'points.write'",
@@ -116,6 +125,7 @@ void main() {
 
       for (final token in [
         'PAYMENT_ALREADY_REVIEWED',
+        'PAYMENT_REVERSAL_WINDOW_EXPIRED',
         'create_sale_point_reversal_for_payment',
         'negative_adjustment_without_overwriting_commission',
         "'chargeback'",
@@ -149,7 +159,7 @@ void main() {
         'admin_review_sale_point_conversion',
         'sale_point_adjustments',
         'payout_profile_complete',
-        'health_condition_summary',
+        'minimum_point_cents": 500000',
         'p_device_hash',
         'p_payment_proof_path',
         'manual_adjustment',
@@ -159,6 +169,7 @@ void main() {
       ]) {
         expect(sql, contains(token), reason: token);
       }
+      expect(sql, isNot(contains('health_condition_summary')));
     });
 
     test('keeps Sale conversion review under sales.write permission', () {

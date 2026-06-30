@@ -62,7 +62,6 @@ void main() {
       expect(customers.single.displayName, 'Nguyen Van A');
       expect(customers.single.age, 34);
       expect(customers.single.phone, '0900000000');
-      expect(customers.single.healthConditionSummary, 'Tang huyet ap');
       expect(ledger.single.pointAmountCents, 9900);
       expect(ledger.single.status, 'approved');
     });

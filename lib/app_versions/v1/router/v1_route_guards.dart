@@ -15,6 +15,7 @@ class V1RouteGuards {
     V1RoutePaths.menu,
     V1RoutePaths.mealPlan,
     V1RoutePaths.healthTracking,
+    V1RoutePaths.bodyMetrics,
     V1RoutePaths.lifestyleSchedule,
     V1RoutePaths.sleepTracking,
     V1RoutePaths.stressTracking,

@@ -78,7 +78,7 @@ insert into public.system_config_versions (
 )
 select
   'sale_point_conversion',
-  '{"enabled": false, "point_to_money_rate": 1, "minimum_point_cents": 100000, "currency": "VND"}'::jsonb,
+  '{"enabled": false, "point_to_money_rate": 1, "minimum_point_cents": 500000, "currency": "VND"}'::jsonb,
   'active',
   'Default disabled Sale point conversion policy.',
   null
@@ -663,7 +663,6 @@ returns table (
   full_name text,
   age integer,
   phone text,
-  health_condition_summary text,
   accepted_at timestamptz,
   successful_payments integer,
   approved_point_cents integer,
@@ -698,19 +697,6 @@ begin
     from public.commission_records
     where receiver_user_id = v_user_id
     group by payer_user_id
-  ), health_summary as (
-    select
-      hs.owner_user_id,
-      string_agg(
-        coalesce(nullif(hc.condition_name, ''), hc.condition_code),
-        ', '
-        order by coalesce(nullif(hc.condition_name, ''), hc.condition_code)
-      ) as condition_summary
-    from public.health_subjects hs
-    join public.health_conditions hc on hc.subject_id = hs.id
-    where hs.subject_type = 'self'
-      and hs.is_active = true
-    group by hs.owner_user_id
   )
   select
     coalesce(nullif(u.full_name, ''), 'Nguoi dung NanoBio'),
@@ -720,7 +706,6 @@ begin
       else extract(year from age(make_date(coalesce(u.birth_year, hs_self.birth_year), 1, 1)))::integer
     end,
     u.phone,
-    coalesce(hs.condition_summary, 'Chua co tinh trang suc khoe'),
     dn.accepted_at,
     coalesce(p.success_count, 0),
     coalesce(pt.approved_cents, 0),
@@ -731,7 +716,6 @@ begin
     on hs_self.owner_user_id = dn.referred_user_id
    and hs_self.subject_type = 'self'
    and hs_self.is_active = true
-  left join health_summary hs on hs.owner_user_id = dn.referred_user_id
   left join payments p on p.payer_user_id = dn.referred_user_id
   left join points pt on pt.payer_user_id = dn.referred_user_id
   order by dn.accepted_at desc;

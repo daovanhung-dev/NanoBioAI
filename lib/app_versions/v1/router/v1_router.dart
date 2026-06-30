@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/auth/presentation/pages/v1_auth_entry_page.dart';
+import 'package:nano_app/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/dashboard.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/menu_page.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart';
@@ -83,6 +84,12 @@ final v1Routes = <RouteBase>[
     path: V1RoutePaths.healthTracking,
     name: V1RoutePaths.healthTracking,
     builder: (context, state) => const DailyHealthTrackingPage(),
+  ),
+
+  GoRoute(
+    path: V1RoutePaths.bodyMetrics,
+    name: V1RoutePaths.bodyMetrics,
+    builder: (context, state) => const BodyMetricsPage(),
   ),
 
   /// Lifestyle Schedule

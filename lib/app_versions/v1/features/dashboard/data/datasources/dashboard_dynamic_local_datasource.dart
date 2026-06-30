@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
+import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 class DashboardDynamicLocalDatasource {
@@ -8,8 +9,10 @@ class DashboardDynamicLocalDatasource {
 
   DashboardDynamicLocalDatasource(this.db);
 
-  Future<DashboardDynamicEntity> fetch() async {
-    final user = await _latestUser();
+  Future<DashboardDynamicEntity> fetch({
+    SubjectAccessContext? subjectAccess,
+  }) async {
+    final user = await _latestUser(subjectAccess: subjectAccess);
     if (user == null) return DashboardDynamicEntity.empty();
 
     final userId = _readString(user['id']);
@@ -74,18 +77,25 @@ class DashboardDynamicLocalDatasource {
     );
   }
 
-  Future<Map<String, Object?>?> _latestUser() async {
-    final authUserId = currentSupabaseUserIdOrNull();
-    final rows = authUserId == null
+  Future<Map<String, Object?>?> _latestUser({
+    SubjectAccessContext? subjectAccess,
+  }) async {
+    final subjectUserId = _subjectUserIdOrNull(subjectAccess);
+    final rows = subjectUserId == null
         ? await db.query('users', orderBy: 'created_at DESC', limit: 1)
         : await db.query(
             'users',
             where: 'id = ?',
-            whereArgs: [authUserId],
+            whereArgs: [subjectUserId],
             limit: 1,
           );
     if (rows.isEmpty) return null;
     return rows.first;
+  }
+
+  String? _subjectUserIdOrNull(SubjectAccessContext? subjectAccess) {
+    if (subjectAccess != null) return subjectAccess.resolveSubjectId();
+    return currentSupabaseUserIdOrNull();
   }
 
   Future<Map<String, Object?>?> _todayHealthLog({

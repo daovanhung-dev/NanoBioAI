@@ -19,15 +19,15 @@ class HealthScoreHabitsPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text('Health score'),
+        title: const Text('Diem suc khoe'),
       ),
       body: state.when(
         loading: () => const _HealthScoreLoading(),
         error: (_, __) => _HealthScoreSupportState(
           icon: Icons.error_outline_rounded,
-          title: 'Health score is unavailable',
-          message: 'Please try again in a moment.',
-          actionLabel: 'Retry',
+          title: 'Chua tai duoc diem suc khoe',
+          message: 'Ban thu lai sau it phut.',
+          actionLabel: 'Thu lai',
           onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
         ),
         data: (viewModel) {
@@ -35,25 +35,25 @@ class HealthScoreHabitsPage extends ConsumerWidget {
             HealthScoreHabitsViewStatus.authRequired =>
               _HealthScoreSupportState(
                 icon: Icons.lock_outline_rounded,
-                title: 'Sign in required',
-                message: viewModel.message ?? 'Please sign in to continue.',
-                actionLabel: 'Sign in',
+                title: 'Can dang nhap',
+                message: viewModel.message ?? 'Dang nhap de tiep tuc.',
+                actionLabel: 'Dang nhap',
                 onAction: () => context.go(V2RoutePaths.login),
               ),
             HealthScoreHabitsViewStatus.empty => _HealthScoreSupportState(
               icon: Icons.history_toggle_off_rounded,
-              title: 'No local history yet',
+              title: 'Chua co lich su cham soc',
               message:
                   viewModel.message ??
-                  'Complete schedule items to build your health score.',
-              actionLabel: 'Refresh',
+                  'Hoan thanh lich cham soc hang ngay de Nami tinh diem.',
+              actionLabel: 'Lam moi',
               onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
             ),
             HealthScoreHabitsViewStatus.failure => _HealthScoreSupportState(
               icon: Icons.error_outline_rounded,
-              title: 'Health score is unavailable',
-              message: viewModel.message ?? 'Please try again in a moment.',
-              actionLabel: 'Retry',
+              title: 'Chua tai duoc diem suc khoe',
+              message: viewModel.message ?? 'Ban thu lai sau it phut.',
+              actionLabel: 'Thu lai',
               onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
             ),
             HealthScoreHabitsViewStatus.ready => _HealthScoreReady(
@@ -95,16 +95,20 @@ class _HealthScoreReady extends StatelessWidget {
           _ScoreHeader(result: result),
           const SizedBox(height: AppSpacing.md),
           _SectionCard(
-            title: 'Breakdown',
+            title: 'Thanh phan diem',
             children: result.breakdown
                 .map((item) => _BreakdownRow(item: item))
                 .toList(growable: false),
           ),
           const SizedBox(height: AppSpacing.md),
           _SectionCard(
-            title: 'Habit progress',
+            title: 'Tien do thoi quen',
             children: result.habitProgress.isEmpty
-                ? const [_EmptyInline(message: 'No due habits in this period.')]
+                ? const [
+                    _EmptyInline(
+                      message: 'Chua co thoi quen den han trong giai doan nay.',
+                    ),
+                  ]
                 : result.habitProgress
                       .map((item) => _HabitProgressRow(item: item))
                       .toList(growable: false),
@@ -148,7 +152,7 @@ class _ScoreHeader extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            '${result.period.startDate} to ${result.period.endDate}',
+            '${result.period.startDate} den ${result.period.endDate}',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -157,6 +161,14 @@ class _ScoreHeader extends StatelessWidget {
           Text(
             result.formulaVersion,
             style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            _healthScoreDisclaimer,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.35,
+            ),
           ),
         ],
       ),
@@ -199,7 +211,7 @@ class _BreakdownRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return _ProgressRow(
       title: item.label,
-      subtitle: '${item.completedCount}/${item.totalCount} signals',
+      subtitle: '${item.completedCount}/${item.totalCount} tin hieu',
       value: item.score / 100,
       trailing: '${item.score}',
     );
@@ -215,7 +227,7 @@ class _HabitProgressRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return _ProgressRow(
       title: item.label,
-      subtitle: '${item.completedCount}/${item.dueCount} done',
+      subtitle: '${item.completedCount}/${item.dueCount} da xong',
       value: item.progress.clamp(0, 1).toDouble(),
       trailing: '${(item.progress * 100).round()}%',
     );
@@ -343,3 +355,6 @@ BoxDecoration _cardDecoration() {
     border: Border.all(color: AppColors.border),
   );
 }
+
+const _healthScoreDisclaimer =
+    'Diem suc khoe chi de theo doi xu huong cham soc hang ngay, khong thay the chan doan y khoa.';

@@ -64,13 +64,15 @@ doi:
    va RPC quan tri.
 9. `12-sale-module-update.sql` - Sale dang ky cho Admin duyet, attach ma gioi
    thieu, ledger diem va queue quy doi noi bo.
-10. `13-sale-payout-storage.md` - runbook bucket private cho anh minh chung
+10. `13-membership-payment-request.sql` - RPC tao pending membership payment
+   request tu client, idempotent va khong cap quyen truoc khi payment duyet.
+11. `13-sale-payout-storage.md` - runbook bucket private cho anh minh chung
    chi tra Sale.
-11. `07-seed-reference-data.sql` - seed du lieu tham chieu ban dau.
-12. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tao account
+12. `07-seed-reference-data.sql` - seed du lieu tham chieu ban dau.
+13. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tao account
    test Free/Plus/FamilyPlus co dinh; `config.sql` co dev seed rieng va them
    `dev.admin@nanobio.local`.
-13. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
+14. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
    va nghiem thu.
 
 Moi thay doi Supabase schema/RLS/RPC/seed/docs phai cap nhat `config.sql` cung

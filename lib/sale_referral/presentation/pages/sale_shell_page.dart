@@ -438,11 +438,8 @@ class _DirectCustomersTab extends ConsumerWidget {
 String _customerSubtitle(SaleDirectCustomer item) {
   final age = item.age == null ? 'Tuoi: chua co' : 'Tuoi: ${item.age}';
   final phone = item.phone == null ? 'SDT: chua co' : 'SDT: ${item.phone}';
-  final health = item.healthConditionSummary == null
-      ? 'Suc khoe: chua co tom tat'
-      : 'Suc khoe: ${item.healthConditionSummary}';
   final points = _money(item.approvedPointCents, item.currency);
-  return '$age - $phone - $health - ${item.successfulPayments} payment hop le - $points diem da duyet';
+  return '$age - $phone - ${item.successfulPayments} payment hop le - $points diem da duyet';
 }
 
 class _PointLedgerTab extends ConsumerWidget {

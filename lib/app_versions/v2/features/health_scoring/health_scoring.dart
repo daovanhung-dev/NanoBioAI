@@ -8,21 +8,22 @@ export 'domain/services/health_score_habits_calculator.dart';
 export 'presentation/pages/health_score_habits_page.dart';
 export 'providers/health_score_habits_providers.dart';
 
+import 'domain/entities/health_score_habits_models.dart';
+
 class V2HealthScoringFeature {
   const V2HealthScoringFeature._();
 
-  static const status = 'local_draft';
-  static const accessLayer = 'v2/free-authenticated';
-  static const formulaVersion = 'm08_local_draft_2026_06';
+  static const status = 'official_v1';
+  static const accessLayer = 'v2/authenticated-familyplus-aware';
+  static const formulaVersion = healthScoreHabitsFormulaVersion;
 
   static const responsibilities = <String>[
-    'Calculate local draft health score from real schedule completion history.',
-    'Read meal, daily task, and lifestyle schedule progress through data layer.',
-    'Avoid mock, fake, or sample dashboard data in production.',
-    'Keep the v1 local daily care score separate from the official v2 health scoring formula.',
-    'Prepare a clear contract for Plus and FamilyPlus scoring extensions.',
+    'Tinh diem suc khoe v1 tu lich su hoan thanh lich cham soc that.',
+    'Doc bua an, nhiem vu hang ngay va nhip sinh hoat qua data layer.',
+    'Khong dung mock, fake hoac sample dashboard data trong production.',
+    'Giu diem cham soc v1 local tach khoi cong thuc health scoring v2.',
+    'Cho phep FamilyPlus xem subject khac qua policy dung chung.',
   ];
-
-  static const blockedUntil =
-      'Q-14 closes the official health formula and Q-15 closes FamilyPlus subject/consent policy.';
+  static const disclaimer =
+      'Diem suc khoe chi de theo doi xu huong cham soc hang ngay, khong thay the chan doan y khoa.';
 }

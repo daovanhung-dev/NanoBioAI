@@ -81,7 +81,8 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 
 ## Admin
 
-- [ ] `super_admin`, `finance_admin`, `operations_admin` deu la Admin active
+- [ ] `super_admin`, `finance_admin`, `support_admin`, `content_admin`,
+  `operations_admin` deu la Admin active
   full capability qua RPC/backend co audit; Flutter khong ghi truc tiep bang
   server-only.
 - [ ] Admin dashboard dung filter thoi gian `Asia/Ho_Chi_Minh` va metric co

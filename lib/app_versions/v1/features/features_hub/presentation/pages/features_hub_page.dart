@@ -38,6 +38,13 @@ class FeaturesHubPage extends StatelessWidget {
         onTap: () => context.push(V1RoutePaths.nutrition),
       ),
       _FeatureAction(
+        title: 'Chi so co the',
+        subtitle: 'Tinh nhanh BMI, BMR/RMR, TDEE va goi y nuoc, ngu, van dong.',
+        icon: Icons.monitor_weight_rounded,
+        color: AppColors.info,
+        onTap: () => context.push(V1RoutePaths.bodyMetrics),
+      ),
+      _FeatureAction(
         title: 'Giấc ngủ',
         subtitle: 'Ghi nhận giấc ngủ để cơ thể được nghỉ ngơi tốt hơn.',
         icon: Icons.bedtime_rounded,

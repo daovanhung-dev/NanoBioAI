@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/core/storage/localdb/tables/food_allergies_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/health_conditions_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/health_goals_table.dart';
@@ -58,5 +59,42 @@ void main() {
     expect(dashboard.fullName, 'User One');
     expect(dashboard.subscriptionTier, 'premium');
     expect(dashboard.bmi, 22.5);
+  });
+
+  test('fetchDashboard resolves FamilyPlus subject override', () async {
+    await db.insert('users', {
+      'id': 'actor-1',
+      'full_name': 'Actor',
+      'subscription_tier': 'family_plus',
+      'created_at': '2026-06-18T08:00:00',
+    });
+    await db.insert('users', {
+      'id': 'member-1',
+      'full_name': 'Member One',
+      'subscription_tier': 'free',
+      'created_at': '2026-06-18T09:00:00',
+    });
+    await db.insert('health_profiles', {
+      'id': 'profile-member',
+      'user_id': 'member-1',
+      'height_cm': 160,
+      'weight_kg': 55,
+      'bmi': 21.5,
+      'created_at': '2026-06-18T08:00:00',
+      'updated_at': '2026-06-18T08:00:00',
+    });
+
+    final dashboard = await DashboardLocalDatasource(database: db)
+        .fetchDashboard(
+          subjectAccess: const SubjectAccessContext(
+            actorId: 'actor-1',
+            requestedSubjectId: 'member-1',
+            isFamilyPlus: true,
+          ),
+        );
+
+    expect(dashboard.userId, 'member-1');
+    expect(dashboard.fullName, 'Member One');
+    expect(dashboard.bmi, 21.5);
   });
 }

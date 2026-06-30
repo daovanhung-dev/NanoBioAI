@@ -24,7 +24,7 @@ void main() {
     test('requires active role for admin access', () {
       final session = AdminSession.fromMap({
         'user_id': 'admin-user',
-        'roles': ['operations_admin'],
+        'roles': ['support_admin', 'content_admin', 'operations_admin'],
         'permissions': [AdminPermissions.dashboardRead],
         'is_active': false,
       });
@@ -50,7 +50,7 @@ void main() {
 
     test('maps operations admin wildcard to all Admin mutations', () {
       final session = _session(
-        roles: const [AdminRoleCode.operationsAdmin],
+        roles: const [AdminRoleCode.supportAdmin],
         permissions: const {AdminPermissions.wildcard},
       );
 
@@ -128,6 +128,23 @@ void main() {
         AdminPermissions.salesWrite,
       );
     });
+
+    test(
+      'keeps operations admin as legacy alias while adding support and content',
+      () {
+        final session = AdminSession.fromMap({
+          'user_id': 'admin-user',
+          'roles': ['support_admin', 'content_admin', 'operations_admin'],
+          'permissions': ['*'],
+          'is_active': true,
+        });
+
+        expect(session.roles, contains(AdminRoleCode.supportAdmin));
+        expect(session.roles, contains(AdminRoleCode.contentAdmin));
+        expect(session.roles, contains(AdminRoleCode.operationsAdmin));
+        expect(session.hasWildcardPermission, isTrue);
+      },
+    );
 
     test('does not treat read-only sections as mutation surfaces', () {
       final dashboardAdmin = _session(

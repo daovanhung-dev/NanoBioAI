@@ -1,6 +1,7 @@
 // lib/app_versions/v1/features/dashboard/data/repositories/dashboard_repository_impl.dart
 import 'package:nano_app/app_versions/v1/features/dashboard/data/datasources/dashboard_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/core/access/subject_access_context.dart';
 import '../../domain/entities/dashboard_entity.dart';
 import '../../domain/repositories/dashboard_repository.dart';
 
@@ -10,8 +11,10 @@ class DashboardRepositoryImpl implements DashboardRepository {
   DashboardRepositoryImpl({required this.datasource});
 
   @override
-  Future<DashboardEntity> fetchDashboard() {
-    return datasource.fetchDashboard();
+  Future<DashboardEntity> fetchDashboard({
+    SubjectAccessContext? subjectAccess,
+  }) {
+    return datasource.fetchDashboard(subjectAccess: subjectAccess);
   }
 
   @override

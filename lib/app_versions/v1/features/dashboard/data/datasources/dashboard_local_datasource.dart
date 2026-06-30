@@ -1,5 +1,6 @@
 // lib/app_versions/v1/features/dashboard/data/datasource/dashboard_local_datasource.dart
 import 'package:sqflite/sqflite.dart';
+import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/daos/meal_plan_dao.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
@@ -38,16 +39,19 @@ class DashboardLocalDatasource {
     await daoMealPlans.insertMany(mealPlans);
   }
 
-  Future<DashboardEntity> fetchDashboard() async {
+  Future<DashboardEntity> fetchDashboard({
+    SubjectAccessContext? subjectAccess,
+  }) async {
     final db = await _db();
 
-    final authUserId = currentSupabaseUserIdOrNull();
-    final users = authUserId == null
+    final subjectUserId =
+        subjectAccess?.resolveSubjectId() ?? currentSupabaseUserIdOrNull();
+    final users = subjectUserId == null
         ? await db.query('users', orderBy: 'created_at DESC', limit: 1)
         : await db.query(
             'users',
             where: 'id = ?',
-            whereArgs: [authUserId],
+            whereArgs: [subjectUserId],
             limit: 1,
           );
 

@@ -31,7 +31,7 @@ class HealthScoreHabitsViewModel {
     : this._(
         status: HealthScoreHabitsViewStatus.empty,
         result: result,
-        message: 'No local completion history is available for this period.',
+        message: 'Chua co lich su cham soc trong giai doan nay.',
       );
 
   const HealthScoreHabitsViewModel.ready(HealthScoreHabitsResult result)
@@ -108,7 +108,7 @@ final healthScoreHabitsSummaryProvider =
         return HealthScoreHabitsViewModel.failure(error.safeMessage);
       } catch (_) {
         return const HealthScoreHabitsViewModel.failure(
-          'Health score is temporarily unavailable. Please try again later.',
+          'Tam thoi chua tai duoc diem suc khoe. Ban thu lai sau.',
         );
       }
     });

@@ -54,5 +54,18 @@ void main() {
         isNotNull,
       );
     });
+
+    test('keeps 1 point equal 1 VND when conversion is enabled', () {
+      const policy = SaleConversionPolicy(
+        enabled: true,
+        pointToMoneyRate: 1,
+        minimumPointCents: 500000,
+        currency: 'VND',
+      );
+
+      expect(policy.estimateMoneyCents(500000), 500000);
+      expect(policy.canRequest(499999), isFalse);
+      expect(policy.canRequest(500000), isTrue);
+    });
   });
 }

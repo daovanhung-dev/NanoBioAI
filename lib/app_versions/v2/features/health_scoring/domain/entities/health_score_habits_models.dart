@@ -1,4 +1,6 @@
-const healthScoreHabitsLocalDraftFormulaVersion = 'm08_local_draft_2026_06';
+const healthScoreHabitsFormulaVersion = 'm08_wellness_v1_2026_06';
+const healthScoreHabitsLocalDraftFormulaVersion =
+    healthScoreHabitsFormulaVersion;
 
 class HealthScorePeriod {
   final String startDate;
@@ -54,12 +56,14 @@ class HealthScoreDateKey {
 class CalculateHealthScoreCommand {
   final String actorId;
   final String? subjectId;
+  final bool isFamilyPlus;
   final HealthScorePeriod? period;
   final DateTime? now;
 
   const CalculateHealthScoreCommand({
     required this.actorId,
     this.subjectId,
+    this.isFamilyPlus = false,
     this.period,
     this.now,
   });
@@ -68,12 +72,14 @@ class CalculateHealthScoreCommand {
 class LoadHabitProgressCommand {
   final String actorId;
   final String? subjectId;
+  final bool isFamilyPlus;
   final HealthScorePeriod? period;
   final DateTime? now;
 
   const LoadHabitProgressCommand({
     required this.actorId,
     this.subjectId,
+    this.isFamilyPlus = false,
     this.period,
     this.now,
   });
@@ -185,7 +191,7 @@ class HealthScoreHabitsResult {
 
   const HealthScoreHabitsResult.empty({
     required this.period,
-    this.formulaVersion = healthScoreHabitsLocalDraftFormulaVersion,
+    this.formulaVersion = healthScoreHabitsFormulaVersion,
   }) : score = 0,
        hasInputs = false,
        breakdown = const [],
@@ -204,7 +210,7 @@ class HealthScoreHabitsException implements Exception {
   const HealthScoreHabitsException.forbidden()
     : this(
         'FORBIDDEN',
-        'This local draft only supports the current member profile.',
+        'Chi goi FamilyPlus moi duoc xem ho so suc khoe cua thanh vien khac.',
       );
 
   const HealthScoreHabitsException.invalidCommand()

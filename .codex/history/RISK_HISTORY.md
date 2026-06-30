@@ -356,3 +356,6 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-30/007-worklog-agent-context-bootstrap.md :: - Chua fix: none in this scope.
 - docs/worklog/2026-06-30/007-worklog-agent-context-bootstrap.md :: - Can kiem tra tiep: none in this docs-context scope.
 - docs/worklog/2026-06-30/007-worklog-agent-context-bootstrap.md :: - Cach toi uu cho phien sau: for docs-context work, read `.codex/workflows/docs-context.md`, `.codex/task-skills/docs-context.md`, then inspect only the failing context file and validation script output.
+- docs/worklog/2026-06-30/008-worklog-m01-m03-m04-m08-m13-m14-m15-coding-100.md :: ## Loi/Rui ro
+- docs/worklog/2026-06-30/008-worklog-m01-m03-m04-m08-m13-m14-m15-coding-100.md :: - Chua fix: Flutter test van in warning asset folder thieu tu `pubspec.yaml`; day la warning baseline va command exit 0.
+- docs/worklog/2026-06-30/008-worklog-m01-m03-m04-m08-m13-m14-m15-coding-100.md :: - Can kiem tra tiep: Supabase sandbox/RLS smoke cho subject visibility, health score ledger, payment approval/entitlement, Sale conversion, Admin roles/audit, va provider/staging payment evidence.

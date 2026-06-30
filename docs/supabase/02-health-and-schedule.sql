@@ -201,6 +201,23 @@ create table if not exists public.health_tracking_logs (
   unique (subject_id, log_date)
 );
 
+create table if not exists public.health_score_ledgers (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references public.users(id) on delete cascade,
+  subject_id uuid not null default public.default_self_subject_id() references public.health_subjects(id) on delete cascade,
+  period_start date not null,
+  period_end date not null,
+  score integer not null check (score >= 0 and score <= 100),
+  formula_version text not null,
+  breakdown jsonb not null default '{}'::jsonb,
+  idempotency_key text,
+  calculated_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint health_score_ledgers_period_valid check (period_end >= period_start),
+  unique (subject_id, period_start, period_end, formula_version)
+);
+
 create table if not exists public.nutrition_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.users(id) on delete cascade,
@@ -298,6 +315,8 @@ create index if not exists idx_daily_tasks_subject_date_order on public.daily_he
 create index if not exists idx_lifestyle_schedule_subject_date_order on public.lifestyle_schedule_items (subject_id, schedule_date, sort_order);
 create index if not exists idx_notifications_user_scheduled on public.notifications (user_id, scheduled_at desc);
 create index if not exists idx_health_tracking_subject_date on public.health_tracking_logs (subject_id, log_date desc);
+create index if not exists idx_health_score_ledgers_subject_period
+  on public.health_score_ledgers (subject_id, period_end desc, formula_version);
 create index if not exists idx_nutrition_logs_subject_eaten on public.nutrition_logs (subject_id, eaten_at desc);
 create index if not exists idx_ai_insights_subject_created on public.ai_insights (subject_id, created_at desc);
 create index if not exists idx_ai_recommendations_subject_unread on public.ai_recommendations (subject_id, is_read, created_at desc);
@@ -317,6 +336,7 @@ begin
     'lifestyle_schedule_items',
     'notifications',
     'health_tracking_logs',
+    'health_score_ledgers',
     'meal_catalog',
     'exercise_catalog',
     'schedule_task_catalog'
@@ -361,6 +381,7 @@ begin
     'lifestyle_schedule_items',
     'notifications',
     'health_tracking_logs',
+    'health_score_ledgers',
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations'
@@ -431,6 +452,7 @@ grant select, insert, update, delete
      public.lifestyle_schedule_items,
      public.notifications,
      public.health_tracking_logs,
+     public.health_score_ledgers,
      public.nutrition_logs,
      public.ai_insights,
      public.ai_recommendations

@@ -14,7 +14,7 @@ void main() {
       expect(result.habitProgress, isEmpty);
     });
 
-    test('calculates local draft weighted score and formula version', () {
+    test('calculates official v1 weighted score and formula version', () {
       final result = HealthScoreHabitsCalculator.calculate(
         _snapshot(
           entries: const [
@@ -57,7 +57,7 @@ void main() {
       );
 
       expect(result.hasInputs, isTrue);
-      expect(result.formulaVersion, healthScoreHabitsLocalDraftFormulaVersion);
+      expect(result.formulaVersion, healthScoreHabitsFormulaVersion);
       expect(result.score, 63);
       expect(result.breakdown.map((item) => item.code), [
         'tasks_habits',

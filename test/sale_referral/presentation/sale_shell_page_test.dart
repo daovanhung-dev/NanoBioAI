@@ -79,6 +79,27 @@ void main() {
     expect(find.text('Tong quan Sale'), findsNothing);
   });
 
+  testWidgets('does not show health condition summary for direct customers', (
+    tester,
+  ) async {
+    await _pumpSaleShell(
+      tester,
+      _FakeSaleRepository(
+        state: const SaleState(
+          status: SaleStatus.active,
+          referralCode: 'NANO-1234',
+          payoutProfileComplete: true,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Khach'));
+    await tester.pump();
+
+    expect(find.textContaining('Suc khoe'), findsNothing);
+    expect(find.textContaining('SDT:'), findsOneWidget);
+  });
+
   testWidgets('submits enabled conversion with trusted RPC values', (
     tester,
   ) async {

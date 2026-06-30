@@ -1,6 +1,8 @@
 enum AdminRoleCode {
   superAdmin('super_admin'),
   financeAdmin('finance_admin'),
+  supportAdmin('support_admin'),
+  contentAdmin('content_admin'),
   operationsAdmin('operations_admin');
 
   final String value;

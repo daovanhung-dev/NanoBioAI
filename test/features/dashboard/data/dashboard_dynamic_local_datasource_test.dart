@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/core/storage/localdb/tables/ai_insights_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/ai_recommendations_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/daily_health_tasks_table.dart';
@@ -71,6 +72,58 @@ void main() {
     expect(result.metrics.stepsCount, 4200);
     expect(result.todayMood, 'tired');
     expect(result.todayWeightKg, 64.5);
+  });
+
+  test(
+    'fetch can read another subject when FamilyPlus context allows it',
+    () async {
+      final today = _dateKey(DateTime.now());
+      await db.insert('users', {
+        'id': 'actor-1',
+        'full_name': 'Actor',
+        'subscription_tier': 'family_plus',
+        'created_at': '2026-06-18T08:00:00',
+      });
+      await db.insert('users', {
+        'id': 'member-1',
+        'full_name': 'Member',
+        'subscription_tier': 'free',
+        'created_at': '2026-06-18T09:00:00',
+      });
+      await db.insert('health_tracking_logs', {
+        'id': 'member-log',
+        'user_id': 'member-1',
+        'log_date': today,
+        'water_ml': 1800,
+        'daily_score': 76,
+        'created_at': '2026-06-18T08:00:00',
+        'updated_at': '2026-06-18T09:00:00',
+      });
+
+      final result = await DashboardDynamicLocalDatasource(db).fetch(
+        subjectAccess: const SubjectAccessContext(
+          actorId: 'actor-1',
+          requestedSubjectId: 'member-1',
+          isFamilyPlus: true,
+        ),
+      );
+
+      expect(result.userId, 'member-1');
+      expect(result.metrics.waterMl, 1800);
+      expect(result.metrics.dailyScore, 76);
+    },
+  );
+
+  test('fetch blocks another subject without FamilyPlus context', () {
+    expect(
+      DashboardDynamicLocalDatasource(db).fetch(
+        subjectAccess: const SubjectAccessContext(
+          actorId: 'actor-1',
+          requestedSubjectId: 'member-1',
+        ),
+      ),
+      throwsA(isA<SubjectAccessException>()),
+    );
   });
 
   test('fetch keeps missing score inputs separate from zero score', () async {

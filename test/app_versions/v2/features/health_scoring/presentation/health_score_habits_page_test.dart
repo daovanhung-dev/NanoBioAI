@@ -15,7 +15,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Sign in required'), findsOneWidget);
+    expect(find.text('Can dang nhap'), findsOneWidget);
   });
 
   testWidgets('renders empty state safely', (tester) async {
@@ -35,7 +35,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('No local history yet'), findsOneWidget);
+    expect(find.text('Chua co lich su cham soc'), findsOneWidget);
   });
 
   testWidgets('renders success state safely', (tester) async {
@@ -68,8 +68,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('100'), findsWidgets);
-    expect(find.text('Breakdown'), findsOneWidget);
-    expect(find.text('Habit progress'), findsOneWidget);
+    expect(find.text('Thanh phan diem'), findsOneWidget);
+    expect(find.text('Tien do thoi quen'), findsOneWidget);
   });
 }
 

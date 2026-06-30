@@ -6,10 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/domain/entities/onboarding_entity.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/domain/repositories/onboarding_repository.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/domain/repositories/onboarding_repository_impl.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/data/datasource/onboarding_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/repository_providers.dart';
+import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,6 +49,28 @@ void main() {
         expect(source, isNot(contains('saveCompletedOnboarding(')));
         expect(source, contains('currentSupabaseUserIdOrNull'));
         expect(source, isNot(contains('AuthProfileService')));
+      },
+    );
+
+    test(
+      'authenticated save and completion use resolved FamilyPlus subject',
+      () async {
+        final localDatasource = _CapturingOnboardingLocalDatasource();
+        final repository = OnboardingRepositoryImpl(
+          localDatasource: localDatasource,
+          currentUserId: () => 'actor-1',
+          subjectAccessContext: () => const SubjectAccessContext(
+            actorId: 'actor-1',
+            requestedSubjectId: 'member-1',
+            isFamilyPlus: true,
+          ),
+        );
+
+        await repository.save(_validEntity());
+        await repository.markCompleted();
+
+        expect(localDatasource.savedUserIdOverride, 'member-1');
+        expect(localDatasource.completedUserId, 'member-1');
       },
     );
 
@@ -184,6 +209,34 @@ void main() {
   });
 }
 
+OnboardingEntity _validEntity() {
+  return const OnboardingEntity(
+    email: 'member@example.com',
+    phone: '0900000000',
+    fullName: 'Member One',
+    gender: 'female',
+    birthYear: 1995,
+    occupation: 'office_worker',
+    heightCm: 160,
+    weightKg: 55,
+    goals: ['lose_weight'],
+    otherGoal: '',
+    conditions: [],
+    otherCondition: '',
+    habits: [],
+    sleepQuality: 'sleep_ok',
+    activityLevel: 'light',
+    waterPerDay: 'under_1l',
+    allergyName: '',
+    allergyNote: '',
+    treatmentName: '',
+    medicationName: '',
+    treatmentNote: '',
+    concernText: '',
+    agreed: true,
+  );
+}
+
 void _seedValidState(OnboardingController controller) {
   controller.updateFullName('Nguyen Van A');
   controller.updateGender('Nam');
@@ -243,5 +296,24 @@ class _FakeOnboardingRepository implements OnboardingRepository {
   @override
   Future<void> markCompleted() async {
     markCompletedCalls++;
+  }
+}
+
+class _CapturingOnboardingLocalDatasource extends OnboardingLocalDatasource {
+  String? savedUserIdOverride;
+  String? completedUserId;
+
+  @override
+  Future<String> saveOnboarding(
+    OnboardingEntity entity, {
+    String? userIdOverride,
+  }) async {
+    savedUserIdOverride = userIdOverride;
+    return userIdOverride ?? 'guest-1';
+  }
+
+  @override
+  Future<void> markOnboardingCompleted(String userId) async {
+    completedUserId = userId;
   }
 }
