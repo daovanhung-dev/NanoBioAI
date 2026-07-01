@@ -131,6 +131,10 @@ class SupabaseUserDataSyncRemoteDatasource
       throw StateError('Unsupported cloud sync table: $table');
     }
 
+    if (table == UserDataSyncTables.personalScheduleAiRequestsTable) {
+      return _cloudInsertRequestIdRow(table, source, authUserId);
+    }
+
     final oldId = _readNonEmptyString(source['id']);
     final row = <String, Object?>{
       'id': oldId == null ? _newUuidV4() : idMap[oldId] ?? _newUuidV4(),
@@ -150,6 +154,36 @@ class SupabaseUserDataSyncRemoteDatasource
         continue;
       }
 
+      row[column] = _cloudValue(column, entry.value);
+    }
+
+    return row;
+  }
+
+  Map<String, Object?> _cloudInsertRequestIdRow(
+    String table,
+    Map<String, Object?> source,
+    String authUserId,
+  ) {
+    final requestId = _readNonEmptyString(source['request_id']);
+    if (requestId == null) {
+      throw StateError('Missing request_id for cloud sync table: $table');
+    }
+
+    final allowedColumns = UserDataSyncTables.cloudColumnsByTable[table];
+    if (allowedColumns == null) {
+      throw StateError('Unsupported cloud sync table: $table');
+    }
+
+    final row = <String, Object?>{
+      'request_id': requestId,
+      'user_id': authUserId,
+    };
+
+    for (final entry in source.entries) {
+      final column = entry.key;
+      if (!allowedColumns.contains(column)) continue;
+      if (column == 'request_id' || column == 'user_id') continue;
       row[column] = _cloudValue(column, entry.value);
     }
 

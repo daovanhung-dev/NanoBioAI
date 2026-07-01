@@ -165,6 +165,22 @@ begin
     end loop;
   end loop;
 
+  delete from public.personal_schedule_ai_requests where user_id = v_user_id;
+
+  for v_row in
+    select value from jsonb_array_elements(
+      coalesce(v_tables -> 'personal_schedule_ai_requests', '[]'::jsonb)
+    )
+  loop
+    insert into public.personal_schedule_ai_requests
+    select (jsonb_populate_record(
+      null::public.personal_schedule_ai_requests,
+      (v_row - 'user_id' - 'subject_id') ||
+      jsonb_build_object('user_id', v_user_id)
+    )).*;
+    v_rows := v_rows + 1;
+  end loop;
+
   return jsonb_build_object(
     'user_id', v_user_id,
     'subject_id', v_subject_id,

@@ -12,7 +12,7 @@
 
 ## Rules
 
-- Current version: `DatabaseVersion.currentVersion = 8`.
+- Current version: `DatabaseVersion.currentVersion = 12`.
 - Schema changes require version bump, migration, table/model/DAO updates, onCreate update, datasource/repository updates, and tests.
 - Do not edit released migrations unless explicitly required and safe.
 - UI never calls DAO or SQLite directly.

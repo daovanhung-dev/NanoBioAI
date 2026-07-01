@@ -30,6 +30,7 @@ void main() {
         'admin_list_sales',
         'admin_review_sale_profile',
         'admin_upsert_config_version',
+        'admin_list_report_catalog',
         'admin_request_report_export',
         'admin_adjust_sale_points',
         'admin_create_reconciliation_run',
@@ -132,9 +133,42 @@ void main() {
         "'approval_count_required'",
         "'admin_adjust_sale_points'",
         "'admin_update_reconciliation_discrepancy_status'",
+        "'admin_create_reconciliation_run'",
       ]) {
         expect(sql, contains(token), reason: token);
       }
+    });
+
+    test('keeps report catalog fixed and privacy-limited', () {
+      final sql = File(
+        'docs/supabase/11-admin-access-dashboard.sql',
+      ).readAsStringSync();
+
+      for (final token in [
+        'admin_list_report_catalog',
+        'membership_summary',
+        'sale_points_summary',
+        'admin_audit_summary',
+        'INVALID_REPORT_TYPE',
+        "'privacy', 'no_raw_payloads'",
+        "coalesce(p_filters ->> 'time_zone', 'Asia/Ho_Chi_Minh')",
+        'grant execute on function public.admin_list_report_catalog',
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
+    });
+
+    test('keeps audit list free of raw metadata payload columns', () {
+      final sql = File(
+        'docs/supabase/11-admin-access-dashboard.sql',
+      ).readAsStringSync();
+      final block = _functionBlock(sql, 'admin_list_audit_events');
+
+      expect(block, contains('returns table'));
+      expect(block, isNot(contains('metadata jsonb')));
+      expect(block, isNot(contains('raw_event')));
+      expect(block, isNot(contains('payment_proof')));
+      expect(block, isNot(contains('health_payload')));
     });
   });
 
@@ -183,6 +217,44 @@ void main() {
         sql,
         isNot(contains("public.admin_has_permission('payments.write')")),
       );
+    });
+
+    test('keeps referral attach registration-only anti-fraud blockers', () {
+      final sql = File(
+        'docs/supabase/12-sale-module-update.sql',
+      ).readAsStringSync();
+      final block = _functionBlock(sql, 'attach_my_referral_code');
+
+      for (final token in [
+        "and sp.status = 'active'",
+        'if v_referrer_id = v_user_id then',
+        'where referred_user_id = v_user_id',
+        'rr.device_hash = v_device_hash',
+        'participation_device_hash = v_device_hash',
+        'lower(v_user_email) = lower(coalesce(v_referrer_email',
+        'v_user_phone = coalesce(v_referrer_phone',
+        'from public.payment_events',
+        "status in ('pending', 'succeeded', 'refunded', 'chargeback')",
+        "'signup'",
+        "'account_registration'",
+        "jsonb_build_array('self', 'existing_referral', 'payment_history', 'email', 'phone', 'device')",
+      ]) {
+        expect(block, contains(token), reason: token);
+      }
+    });
+
+    test('mirrors referral attach blockers in rebuild config', () {
+      final sql = File('docs/supabase/config.sql').readAsStringSync();
+      final block = _functionBlock(sql, 'attach_my_referral_code');
+
+      for (final token in [
+        "and sp.status = 'active'",
+        'if v_referrer_id = v_user_id then',
+        'from public.payment_events',
+        "'account_registration'",
+      ]) {
+        expect(block, contains(token), reason: token);
+      }
     });
 
     test('revokes direct client writes to Sale financial tables', () {
@@ -304,4 +376,16 @@ bool _hasUnqualifiedDashboardStatusFilter(String block) {
     r'(\bwhere|\band|\bfilter\s*\(\s*where)\s+status\b',
     caseSensitive: false,
   ).hasMatch(withoutLineComments);
+}
+
+String _functionBlock(String sql, String functionName) {
+  final start = sql.indexOf('create or replace function public.$functionName');
+  if (start < 0) {
+    throw StateError('Cannot locate SQL function: $functionName');
+  }
+  final end = sql.indexOf('\n\$\$;', start);
+  if (end < 0) {
+    throw StateError('Cannot locate SQL function end: $functionName');
+  }
+  return sql.substring(start, end);
 }

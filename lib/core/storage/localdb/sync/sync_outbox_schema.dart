@@ -12,6 +12,8 @@ class SyncOutboxSchema {
   static const runtimeStateTable = 'sync_runtime_state';
   static const outboxTable = 'sync_outbox';
   static const applyingCloudKey = 'is_applying_cloud';
+  static const personalScheduleAiRequestsTable =
+      'personal_schedule_ai_requests';
 
   static const userOwnedTables = <String>[
     'health_profiles',
@@ -94,6 +96,31 @@ ON sync_outbox(user_id, table_name, record_id)
       await db.execute(_updateTriggerForUserOwnedTable(table));
       await db.execute(_deleteTriggerForUserOwnedTable(table));
     }
+    await _createPersonalScheduleAiRequestTriggersIfPresent(db);
+  }
+
+  static Future<void> _createPersonalScheduleAiRequestTriggersIfPresent(
+    Database db,
+  ) async {
+    if (!await _tableExists(db, personalScheduleAiRequestsTable)) return;
+
+    await db.execute(
+      _upsertTriggerForRequestIdTable(
+        personalScheduleAiRequestsTable,
+        'insert',
+        'INSERT',
+      ),
+    );
+    await db.execute(
+      _upsertTriggerForRequestIdTable(
+        personalScheduleAiRequestsTable,
+        'update',
+        'UPDATE',
+      ),
+    );
+    await db.execute(
+      _deleteTriggerForRequestIdTable(personalScheduleAiRequestsTable),
+    );
   }
 
   static String _insertTriggerForUsers() =>
@@ -221,4 +248,72 @@ BEGIN
     updated_at = excluded.updated_at;
 END
 ''';
+
+  static String _upsertTriggerForRequestIdTable(
+    String table,
+    String suffix,
+    String event,
+  ) =>
+      '''
+CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_${table}_$suffix
+AFTER $event ON $table
+WHEN NEW.user_id IS NOT NULL
+  AND NEW.request_id IS NOT NULL
+  AND COALESCE((SELECT value FROM $runtimeStateTable WHERE key = '$applyingCloudKey'), '0') <> '1'
+BEGIN
+  INSERT INTO $outboxTable (
+    id, user_id, table_name, record_id, operation, payload, status,
+    attempt_count, last_error, next_retry_at, created_at, updated_at
+  ) VALUES (
+    NEW.user_id || ':$table:' || NEW.request_id || ':upsert',
+    NEW.user_id, '$table', NEW.request_id, 'upsert', '{}', 'pending',
+    0, NULL, NULL,
+    strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+  )
+  ON CONFLICT(id) DO UPDATE SET
+    operation = 'upsert',
+    payload = '{}',
+    status = 'pending',
+    last_error = NULL,
+    next_retry_at = NULL,
+    updated_at = excluded.updated_at;
+END
+''';
+
+  static String _deleteTriggerForRequestIdTable(String table) =>
+      '''
+CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_${table}_delete
+AFTER DELETE ON $table
+WHEN OLD.user_id IS NOT NULL
+  AND OLD.request_id IS NOT NULL
+  AND COALESCE((SELECT value FROM $runtimeStateTable WHERE key = '$applyingCloudKey'), '0') <> '1'
+BEGIN
+  INSERT INTO $outboxTable (
+    id, user_id, table_name, record_id, operation, payload, status,
+    attempt_count, last_error, next_retry_at, created_at, updated_at
+  ) VALUES (
+    OLD.user_id || ':$table:' || OLD.request_id || ':delete',
+    OLD.user_id, '$table', OLD.request_id, 'delete', '{}', 'pending',
+    0, NULL, NULL,
+    strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+  )
+  ON CONFLICT(id) DO UPDATE SET
+    operation = 'delete',
+    payload = '{}',
+    status = 'pending',
+    last_error = NULL,
+    next_retry_at = NULL,
+    updated_at = excluded.updated_at;
+END
+''';
+
+  static Future<bool> _tableExists(Database db, String tableName) async {
+    final rows = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+      [tableName],
+    );
+    return rows.isNotEmpty;
+  }
 }

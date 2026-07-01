@@ -323,7 +323,7 @@ class UserDataSyncOutbox {
 
     final rows = await db.query(
       tableName,
-      where: 'id = ? AND user_id = ?',
+      where: '${_primaryKeyColumn(tableName)} = ? AND user_id = ?',
       whereArgs: [recordId, userId],
       limit: 1,
     );
@@ -433,9 +433,19 @@ class UserDataSyncOutbox {
         row[column] = recordId;
         continue;
       }
+      if (column == 'request_id') {
+        row[column] = recordId;
+        continue;
+      }
       row[column] = _cloudValue(column, entry.value);
     }
     return row;
+  }
+
+  String _primaryKeyColumn(String tableName) {
+    return tableName == UserDataSyncTables.personalScheduleAiRequestsTable
+        ? 'request_id'
+        : 'id';
   }
 
   Object? _cloudValue(String column, Object? value) {

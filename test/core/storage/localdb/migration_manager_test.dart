@@ -407,4 +407,69 @@ void main() {
       expect(markers.single['operation'], 'upsert');
     },
   );
+
+  test(
+    'migration v12 syncs personal schedule AI requests by request id',
+    () async {
+      await db.execute('CREATE TABLE users (id TEXT PRIMARY KEY)');
+      for (final table in SyncOutboxSchema.userOwnedTables) {
+        await db.execute(
+          'CREATE TABLE $table (id TEXT PRIMARY KEY, user_id TEXT)',
+        );
+      }
+      await db.execute('''
+        CREATE TABLE personal_schedule_ai_requests (
+          request_id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          actor_mode TEXT NOT NULL,
+          status TEXT NOT NULL,
+          created_at TEXT,
+          updated_at TEXT
+        )
+      ''');
+      await db.insert('users', {'id': 'auth-1'});
+      await db.insert('personal_schedule_ai_requests', {
+        'request_id': 'request-old',
+        'user_id': 'auth-1',
+        'actor_mode': 'member_new',
+        'status': 'succeeded',
+        'created_at': '2026-07-01T00:00:00Z',
+        'updated_at': '2026-07-01T00:00:00Z',
+      });
+
+      await MigrationManager.runMigrations(db, 11, 12);
+      await MigrationManager.runMigrations(db, 11, 12);
+
+      final backfilledMarkers = await db.query(
+        SyncOutboxSchema.outboxTable,
+        where: 'user_id = ? AND table_name = ? AND record_id = ?',
+        whereArgs: [
+          'auth-1',
+          SyncOutboxSchema.personalScheduleAiRequestsTable,
+          'request-old',
+        ],
+      );
+      expect(backfilledMarkers, hasLength(1));
+      expect(backfilledMarkers.single['operation'], 'upsert');
+
+      await db.insert('personal_schedule_ai_requests', {
+        'request_id': 'request-new',
+        'user_id': 'auth-1',
+        'actor_mode': 'member_new',
+        'status': 'generating',
+      });
+
+      final triggerMarkers = await db.query(
+        SyncOutboxSchema.outboxTable,
+        where: 'user_id = ? AND table_name = ? AND record_id = ?',
+        whereArgs: [
+          'auth-1',
+          SyncOutboxSchema.personalScheduleAiRequestsTable,
+          'request-new',
+        ],
+      );
+      expect(triggerMarkers, hasLength(1));
+      expect(triggerMarkers.single['operation'], 'upsert');
+    },
+  );
 }

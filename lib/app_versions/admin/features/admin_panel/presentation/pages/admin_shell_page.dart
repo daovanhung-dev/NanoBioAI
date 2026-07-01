@@ -3290,6 +3290,9 @@ extension _AdminPanelSectionUi on AdminPanelSection {
         _AdminAction('suspended', 'Tạm khóa', Icons.lock_rounded),
       ],
       AdminPanelSection.payments => const [
+        _AdminAction('refund', 'Hoan tien', Icons.replay_rounded),
+        _AdminAction('cancel', 'Huy', Icons.cancel_schedule_send_rounded),
+        _AdminAction('chargeback', 'Chargeback', Icons.report_rounded),
         _AdminAction('approve', 'Duyệt', Icons.verified_rounded),
         _AdminAction('reject', 'Từ chối', Icons.block_rounded),
       ],
@@ -3305,6 +3308,11 @@ extension _AdminPanelSectionUi on AdminPanelSection {
         _AdminAction('mark_paid', 'Đã chi trả', Icons.payments_rounded),
       ],
       AdminPanelSection.reconciliation => const [
+        _AdminAction(
+          'create_run',
+          'Tao phien',
+          Icons.playlist_add_check_rounded,
+        ),
         _AdminAction('resolved', 'Đã đối soát', Icons.task_alt_rounded),
         _AdminAction(
           'needs_follow_up',
@@ -3341,9 +3349,25 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.users when normalized.contains('suspended') =>
         all.where((action) => action.key == 'active').toList(growable: false),
       AdminPanelSection.payments
-          when !normalized.contains('pending') &&
-              !normalized.contains('review') =>
-        const [],
+          when normalized.contains('pending') ||
+              normalized.contains('review') =>
+        all
+            .where(
+              (action) => action.key == 'approve' || action.key == 'reject',
+            )
+            .toList(growable: false),
+      AdminPanelSection.payments
+          when normalized.contains('succeeded') ||
+              normalized.contains('approved') =>
+        all
+            .where(
+              (action) =>
+                  action.key == 'refund' ||
+                  action.key == 'cancel' ||
+                  action.key == 'chargeback',
+            )
+            .toList(growable: false),
+      AdminPanelSection.payments => const [],
       AdminPanelSection.sales when normalized.contains('closed') => const [],
       AdminPanelSection.sales when normalized.contains('pending') =>
         all

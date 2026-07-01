@@ -359,3 +359,5 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-30/008-worklog-m01-m03-m04-m08-m13-m14-m15-coding-100.md :: ## Loi/Rui ro
 - docs/worklog/2026-06-30/008-worklog-m01-m03-m04-m08-m13-m14-m15-coding-100.md :: - Chua fix: Flutter test van in warning asset folder thieu tu `pubspec.yaml`; day la warning baseline va command exit 0.
 - docs/worklog/2026-06-30/008-worklog-m01-m03-m04-m08-m13-m14-m15-coding-100.md :: - Can kiem tra tiep: Supabase sandbox/RLS smoke cho subject visibility, health score ledger, payment approval/entitlement, Sale conversion, Admin roles/audit, va provider/staging payment evidence.
+- docs/worklog/2026-07-01/001-worklog-remaining-modules-coding-100.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-01/001-worklog-remaining-modules-coding-100.md :: - Chua fix: Flutter commands van in warning asset folder thieu tu `pubspec.yaml`; day la baseline warning va command exit 0.

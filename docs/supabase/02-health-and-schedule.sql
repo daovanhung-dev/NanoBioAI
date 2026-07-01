@@ -254,6 +254,22 @@ create table if not exists public.ai_recommendations (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.personal_schedule_ai_requests (
+  request_id text primary key,
+  user_id uuid not null references public.users(id) on delete cascade,
+  actor_mode text not null check (actor_mode in ('initial_guest', 'member_new')),
+  status text not null check (status in ('generating', 'succeeded', 'failed')),
+  start_date date,
+  days integer not null default 7,
+  meal_count integer not null default 0,
+  exercise_count integer not null default 0,
+  schedule_item_count integer not null default 0,
+  error_code text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+
 create table if not exists public.meal_catalog (
   code text primary key,
   meal_type text not null,
@@ -320,6 +336,8 @@ create index if not exists idx_health_score_ledgers_subject_period
 create index if not exists idx_nutrition_logs_subject_eaten on public.nutrition_logs (subject_id, eaten_at desc);
 create index if not exists idx_ai_insights_subject_created on public.ai_insights (subject_id, created_at desc);
 create index if not exists idx_ai_recommendations_subject_unread on public.ai_recommendations (subject_id, is_read, created_at desc);
+create index if not exists idx_personal_schedule_ai_requests_user_mode
+  on public.personal_schedule_ai_requests (user_id, actor_mode, status, updated_at desc);
 create index if not exists idx_meal_catalog_type_active on public.meal_catalog (meal_type, is_active);
 create index if not exists idx_exercise_catalog_category_active on public.exercise_catalog (category, is_active);
 create index if not exists idx_schedule_task_catalog_category_active on public.schedule_task_catalog (category, is_active);
@@ -337,6 +355,7 @@ begin
     'notifications',
     'health_tracking_logs',
     'health_score_ledgers',
+    'personal_schedule_ai_requests',
     'meal_catalog',
     'exercise_catalog',
     'schedule_task_catalog'
@@ -418,6 +437,13 @@ begin
 end;
 $$;
 
+alter table public.personal_schedule_ai_requests enable row level security;
+drop policy if exists personal_schedule_ai_requests_select_own
+  on public.personal_schedule_ai_requests;
+create policy personal_schedule_ai_requests_select_own
+  on public.personal_schedule_ai_requests for select to authenticated
+  using (user_id = (select auth.uid()));
+
 do $$
 declare
   table_name text;
@@ -459,6 +485,9 @@ grant select, insert, update, delete
   to authenticated;
 
 grant select on public.meal_catalog, public.exercise_catalog, public.schedule_task_catalog to authenticated;
+grant select on public.personal_schedule_ai_requests to authenticated;
+revoke insert, update, delete on public.personal_schedule_ai_requests
+  from anon, authenticated;
 revoke insert, update, delete on public.meal_catalog, public.exercise_catalog, public.schedule_task_catalog from anon, authenticated;
 
 commit;

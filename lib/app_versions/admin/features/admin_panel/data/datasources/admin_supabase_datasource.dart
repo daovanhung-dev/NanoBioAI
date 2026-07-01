@@ -75,14 +75,19 @@ class AdminSupabaseDatasource {
 String adminRpcFunctionFor(AdminMutationCommand command) {
   return switch (command.section) {
     AdminPanelSection.users => 'admin_update_user_status',
-    AdminPanelSection.payments => 'admin_review_payment',
+    AdminPanelSection.payments =>
+      _isPaymentReversal(command.action)
+          ? 'admin_refund_or_cancel_payment'
+          : 'admin_review_payment',
     AdminPanelSection.sales => 'admin_review_sale_profile',
     AdminPanelSection.saleConversions =>
       command.action == 'adjust_points'
           ? 'admin_adjust_sale_points'
           : 'admin_review_sale_point_conversion',
     AdminPanelSection.reconciliation =>
-      'admin_update_reconciliation_discrepancy_status',
+      command.action == 'create_run'
+          ? 'admin_create_reconciliation_run'
+          : 'admin_update_reconciliation_discrepancy_status',
     AdminPanelSection.plans => 'admin_upsert_config_version',
     AdminPanelSection.reports => 'admin_request_report_export',
     AdminPanelSection.config => 'admin_upsert_config_version',
@@ -100,7 +105,7 @@ String adminListRpcForSection(AdminPanelSection section) {
     AdminPanelSection.reconciliation =>
       'admin_list_reconciliation_discrepancies',
     AdminPanelSection.plans => 'admin_list_plan_config_versions',
-    AdminPanelSection.reports => 'admin_list_report_exports',
+    AdminPanelSection.reports => 'admin_list_report_catalog',
     AdminPanelSection.config => 'admin_list_config_versions',
     AdminPanelSection.audit => 'admin_list_audit_events',
     AdminPanelSection.dashboard => 'admin_search_users',
@@ -152,6 +157,9 @@ Map<String, Object?> adminRpcParamsFor(AdminMutationCommand command) {
           ),
       };
     case AdminPanelSection.reconciliation:
+      if (command.action == 'create_run') {
+        return {...base, 'p_scope': command.targetId};
+      }
       return {
         ...base,
         'p_discrepancy_id': command.targetId,
@@ -167,8 +175,11 @@ Map<String, Object?> adminRpcParamsFor(AdminMutationCommand command) {
     case AdminPanelSection.reports:
       return {
         ...base,
-        'p_report_type': command.action,
-        'p_filters': {'target_id': command.targetId},
+        'p_report_type': command.targetId,
+        'p_filters': {
+          'report_type': command.targetId,
+          'time_zone': AdminTimeDefaults.vietnamTimeZone,
+        },
       };
     case AdminPanelSection.audit:
     case AdminPanelSection.dashboard:
@@ -203,4 +214,8 @@ int _readPayloadInt(Object? value) {
 String? _readPayloadString(Object? value) {
   final text = value?.toString().trim();
   return text == null || text.isEmpty ? null : text;
+}
+
+bool _isPaymentReversal(String action) {
+  return action == 'refund' || action == 'cancel' || action == 'chargeback';
 }

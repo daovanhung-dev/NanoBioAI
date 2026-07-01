@@ -30,6 +30,7 @@ void main() {
       expect(decision.limitCount, 3);
       expect(client.calls.single.functionName, 'check_usage_quota');
       expect(client.calls.single.params['p_user_id'], 'user-1');
+      expect(client.calls.single.params['p_request_id'], 'chat-1');
       expect(
         client.calls.single.params['p_feature_key'],
         UsageQuotaFeatureKey.aiChatMessage,
@@ -55,6 +56,31 @@ void main() {
 
       expect(client.calls.single.functionName, 'commit_usage_quota');
       expect(client.calls.single.params['p_request_id'], 'chat-2');
+    });
+
+    test('commit maps denied RPC response to quota exception', () async {
+      final client = _RecordingQuotaRpcClient(
+        currentUserIdValue: 'user-1',
+        response: {
+          'committed': false,
+          'used_count': 3,
+          'limit_count': 3,
+          'reason_code': 'quota_exceeded',
+        },
+      );
+      final gateway = TrustedBackendUsageQuotaGateway(rpcClient: client);
+
+      await expectLater(
+        gateway.commitCurrentUserQuota(
+          featureKey: UsageQuotaFeatureKey.aiChatMessage,
+          requestId: 'chat-commit-denied',
+          at: DateTime.utc(2026, 6, 30, 12),
+        ),
+        throwsA(isA<UsageQuotaExceededException>()),
+      );
+
+      expect(client.calls.single.functionName, 'commit_usage_quota');
+      expect(client.calls.single.params['p_request_id'], 'chat-commit-denied');
     });
 
     test('throws before RPC when there is no authenticated user', () async {

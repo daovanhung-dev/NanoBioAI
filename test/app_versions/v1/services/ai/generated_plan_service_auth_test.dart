@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/datasources/ai_catalog_local_datasource.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
+import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/datasources/daily_health_tracking_local_datasource.dart';
@@ -309,7 +310,9 @@ class _RecordingDashboardRepository implements DashboardRepository {
   _RecordingDashboardRepository({this.userId = 'guest-1'});
 
   @override
-  Future<DashboardEntity> fetchDashboard() async {
+  Future<DashboardEntity> fetchDashboard({
+    SubjectAccessContext? subjectAccess,
+  }) async {
     fetchCalls++;
     return DashboardEntity(
       userId: userId,
@@ -705,7 +708,9 @@ class _GuardedDashboardRepository implements DashboardRepository {
   int saveCalls = 0;
 
   @override
-  Future<DashboardEntity> fetchDashboard() async {
+  Future<DashboardEntity> fetchDashboard({
+    SubjectAccessContext? subjectAccess,
+  }) async {
     fetchCalls++;
     throw StateError('fetchDashboard should not be called without auth');
   }

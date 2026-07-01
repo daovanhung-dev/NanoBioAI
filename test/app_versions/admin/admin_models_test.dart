@@ -244,6 +244,59 @@ void main() {
       expect(AdminRoutePaths.reconciliation, '/admin/reconciliation');
     });
 
+    test('maps reconciliation run creation to section-level RPC', () {
+      const command = AdminMutationCommand(
+        section: AdminPanelSection.reconciliation,
+        action: 'create_run',
+        targetId: 'payments_monthly',
+        reason: 'Create month-end reconciliation.',
+        idempotencyKey: 'reconciliation-create-run-1',
+      );
+
+      expect(adminRpcFunctionFor(command), 'admin_create_reconciliation_run');
+      expect(adminRpcParamsFor(command), {
+        'p_reason': 'Create month-end reconciliation.',
+        'p_idempotency_key': 'reconciliation-create-run-1',
+        'p_scope': 'payments_monthly',
+      });
+    });
+
+    test('maps payment reversal actions to refund/cancel RPC', () {
+      for (final action in ['refund', 'cancel', 'chargeback']) {
+        final command = AdminMutationCommand(
+          section: AdminPanelSection.payments,
+          action: action,
+          targetId: 'payment-id',
+          reason: 'Finance reversal.',
+          idempotencyKey: 'payments-$action-1',
+        );
+
+        expect(
+          adminRpcFunctionFor(command),
+          'admin_refund_or_cancel_payment',
+          reason: action,
+        );
+        expect(adminRpcParamsFor(command), {
+          'p_reason': 'Finance reversal.',
+          'p_idempotency_key': 'payments-$action-1',
+          'p_payment_event_id': 'payment-id',
+          'p_decision': action,
+        });
+      }
+    });
+
+    test('keeps payment approval on review RPC', () {
+      const command = AdminMutationCommand(
+        section: AdminPanelSection.payments,
+        action: 'approve',
+        targetId: 'payment-id',
+        reason: 'Provider payment verified.',
+        idempotencyKey: 'payments-approve-1',
+      );
+
+      expect(adminRpcFunctionFor(command), 'admin_review_payment');
+    });
+
     test('maps manual Sale point adjustment to audited RPC', () {
       const command = AdminMutationCommand(
         section: AdminPanelSection.saleConversions,
@@ -283,6 +336,31 @@ void main() {
         'p_idempotency_key': 'plans-plan-plus-1',
         'p_config_key': 'plan_plus',
         'p_config_value': {'action': 'upsert'},
+      });
+    });
+
+    test('maps report catalog list and export payload safely', () {
+      const command = AdminMutationCommand(
+        section: AdminPanelSection.reports,
+        action: 'export',
+        targetId: 'membership_summary',
+        reason: 'Monthly management report.',
+        idempotencyKey: 'reports-membership-summary-1',
+      );
+
+      expect(
+        adminListRpcForSection(AdminPanelSection.reports),
+        'admin_list_report_catalog',
+      );
+      expect(adminRpcFunctionFor(command), 'admin_request_report_export');
+      expect(adminRpcParamsFor(command), {
+        'p_reason': 'Monthly management report.',
+        'p_idempotency_key': 'reports-membership-summary-1',
+        'p_report_type': 'membership_summary',
+        'p_filters': {
+          'report_type': 'membership_summary',
+          'time_zone': 'Asia/Ho_Chi_Minh',
+        },
       });
     });
 

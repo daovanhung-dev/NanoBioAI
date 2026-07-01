@@ -3,7 +3,13 @@ import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
 class UserDataSyncTables {
   UserDataSyncTables._();
 
-  static const localUserOwnedTables = SyncOutboxSchema.userOwnedTables;
+  static const personalScheduleAiRequestsTable =
+      SyncOutboxSchema.personalScheduleAiRequestsTable;
+
+  static const localUserOwnedTables = <String>[
+    ...SyncOutboxSchema.userOwnedTables,
+    personalScheduleAiRequestsTable,
+  ];
 
   static const cloudCollectionTables = <String>[
     'health_goals',
@@ -19,6 +25,7 @@ class UserDataSyncTables {
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations',
+    personalScheduleAiRequestsTable,
   ];
 
   static const localColumnsByTable = <String, Set<String>>{
@@ -224,6 +231,21 @@ class UserDataSyncTables {
       'is_read',
       'created_at',
     },
+    personalScheduleAiRequestsTable: {
+      'request_id',
+      'user_id',
+      'actor_mode',
+      'status',
+      'start_date',
+      'days',
+      'meal_count',
+      'exercise_count',
+      'schedule_item_count',
+      'error_code',
+      'created_at',
+      'updated_at',
+      'completed_at',
+    },
   };
 
   static const cloudColumnsByTable = <String, Set<String>>{
@@ -414,6 +436,21 @@ class UserDataSyncTables {
       'action_text',
       'is_read',
       'created_at',
+    },
+    personalScheduleAiRequestsTable: {
+      'request_id',
+      'user_id',
+      'actor_mode',
+      'status',
+      'start_date',
+      'days',
+      'meal_count',
+      'exercise_count',
+      'schedule_item_count',
+      'error_code',
+      'created_at',
+      'updated_at',
+      'completed_at',
     },
   };
 

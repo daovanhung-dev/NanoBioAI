@@ -4,7 +4,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- coding - Coding: 16 worklog(s)
+- coding - Coding: 17 worklog(s)
 - docs-context - Context and docs update: 16 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
 - bugfix - Direct bugfix: 6 worklog(s)
@@ -18,17 +18,17 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Frequent Modules
 
 - unknown: 6
-- docs/DD M01-M19: 2
+- authentication: 2
 - docs/issues, docs/todo: 2
+- docs/DD M01-M19: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - .codex: 2
-- authentication: 2
-- M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
-- M01 ONBOARDING_PROFILE: 1
-- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
-- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
-- v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.: 1
 - docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
+- M01 ONBOARDING_PROFILE: 1
+- M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M11 FAMILYPLUS, M12 REFERRAL_DIRECT, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
+- M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
+- lib/sale_referral, lib/services/supabase/sale,: 1
+- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
 
 ## Reusable Project Skills
 

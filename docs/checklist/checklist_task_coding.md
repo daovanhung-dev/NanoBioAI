@@ -1,14 +1,14 @@
 # Checklist Task Coding
 
-Commit de xuat: docs(checklist): khoi tao task coding theo DD progress
+Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tram
 
 ## Metadata
 
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md` |
-| Ngay cap nhat | 2026-06-30 |
-| Muc dich | Ghi lai cong viec coding tiep theo tu tien do DD module cua phien truoc. |
+| Ngay cap nhat | 2026-07-01 |
+| Muc dich | Ghi lai trang thai coding 100% va production evidence backlog con lai. |
 
 ## DD Progress Next Tasks
 
@@ -17,24 +17,25 @@ Commit de xuat: docs(checklist): khoi tao task coding theo DD progress
 - [ ] DD docs M01-M19 da Approved/100%; khi coding, chi claim production acceptance sau khi co implementation evidence backlog pass.
 - [ ] Sau moi phien coding, cap nhat `docs/checklist/checklist_complete_DD.md` va ghi task tiep theo vao file nay.
 
-## DD Decision Update 2026-06-30
+## DD Decision Update 2026-07-01
 
-- Q-01..Q-18 da chot va DD docs M01-M19 da 100%; implementation evidence moi la backlog coding/test.
-- M01, M03, M04, M08, M09, M10, M13, M14, M15 da co code+test evidence theo acceptance coding; tiep theo uu tien sandbox/RLS/API/audit evidence va production smoke.
-- Coding progress chi tang khi co code/test/SQL/sandbox evidence moi.
+- Q-01..Q-18 da chot, DD docs M01-M19 da 100%, va Coding progress M01-M19 da 100% theo code + SQL/static contract + targeted tests.
+- Khong claim production-ready trong checklist nay khi chua co Supabase sandbox/service-role/RLS/provider smoke evidence.
+- Production evidence backlog con lai la sandbox/RLS/API/audit/provider/real-device smoke, khong phai blocker coding cua luot nay.
 
 ## Uu tien tiep theo
 
 | Priority | Module | Viec can lam tiep | Ly do |
 |---:|---|---|---|
-| 1 | M15-M19 Admin | Verify Admin SQL/RPC sandbox, RLS, audit rows, 24h hold, reconciliation, point adjustment, and privacy filters; record acceptance evidence. | Q-05/Q-10/Q-12/Q-13/Q-16/Q-17/Q-18 da chot va runtime/SQL/tests da update; can sandbox/staging evidence de dat acceptance. |
-| 2 | M12/M14 Sale | Repo-ready da co; tiep theo verify Sale RPC/RLS sandbox va ghi acceptance evidence cho request Sale/referral/conversion queue. | Sale direct-only co app/Admin/SQL contract/tests, nhung chua production-ready khi sandbox va financial policies da chot; sandbox evidence can lam. |
-| 3 | M06/M07 Quota + AI Chat | Run Supabase sandbox quota acceptance: Free 3/day AI chat, Free 3/month schedule, Plus/FamilyPlus bypass, idempotent commit, RLS/client write rejection. | Code/SQL gateway da wire; sandbox evidence la blocker de dat production acceptance. |
-| 4 | M01/M02/M03 Guest flow | M01 local-first user-data sync da harden; tiep theo doi chieu M03 dashboard state, Supabase sandbox sync, va FamilyPlus contract. | V1 runtime local da tien len; cloud sync sandbox/RLS, subject/consent va dashboard state can implementation/sandbox evidence. |
-| 5 | M13/M17 Payment/Reconciliation | Verify selected payment/reconciliation policy in sandbox, then finish provider/chargeback-specific contracts not covered by current local draft. | Q-05/Q-10/Q-13/Q-17 da chot cho selected policy; provider/staging evidence van thieu. |
+| 1 | M15-M19 Admin/Reconciliation/Reporting/Audit | Verify Admin SQL/RPC sandbox, RLS, audit rows, payment reversal, reconciliation run/status actions, report export, retention, and privacy filters; record acceptance evidence. | Code/SQL/static contracts/tests da 100%; can sandbox/staging evidence de dat production acceptance. |
+| 2 | M06/M07/M02 Quota + AI | Run Supabase sandbox quota acceptance: Free 3/day AI chat, Free 3/month schedule, Plus/FamilyPlus bypass, idempotent commit, RLS/client write rejection. | Code/SQL gateway/tests da 100%; sandbox evidence la production acceptance backlog. |
+| 3 | M05/M12 Auth sync + Referral | Verify cross-device profile/schedule AI request sync and registration-only referral attach anti-fraud cases in Supabase sandbox. | SQLite/cloud-sync/static referral contracts da 100%; live RLS/RPC smoke con lai. |
+| 4 | M11 FamilyPlus | Verify FamilyPlus member lifecycle, selected subject context, owner-only writes, max-5 guard, and two-family RLS isolation in Supabase sandbox. | Runtime slice/SQL/contracts/tests da 100%; sandbox isolation evidence con lai. |
+| 5 | M13/M14 Payment/Sale | Verify selected payment/Sale policy in sandbox/provider flow: manual approval, entitlement activation, 24h hold, conversion payout, suspended Sale, and audit rows. | Runtime/SQL/tests da 100%; provider/staging evidence van thieu. |
 
 ## Notes tu phien coding gan nhat
 
+- 2026-07-01: M02/M05/M06/M07/M11/M12/M16/M17/M18/M19 coding 100% theo code+SQL/static contract+targeted tests: them v3 FamilyPlus runtime slice va route `/v3/familyplus`, SQL/RPC FamilyPlus owner-managed writes/max-5/idempotency/subject context; harden quota contract Free 3/day AI chat, Free 3/month schedule, Plus/FamilyPlus bypass, Asia/Ho_Chi_Minh period keys, idempotent commit va no client writes; hoan tat cloud-sync `personal_schedule_ai_requests` voi SQLite v12, snapshot/outbox/migration tests; them referral attach registration-only anti-fraud contract tests; cap nhat Admin payment reversal, reconciliation create_run, safe report catalog/export, audit DTO privacy contracts. Targeted format/analyze/tests pass trong phien; Flutter van in warning pubspec asset folder missing nhu baseline, command exit 0. Production backlog: Supabase sandbox/service-role/RLS/provider/audit/retention/real smoke.
 - 2026-06-30: M01/M03/M04/M08/M13/M14/M15 coding 100% theo code+test acceptance: them shared `SubjectAccessContext`, M01 onboarding va M03 dashboard subject-aware local paths/tests; M04 versioned BMI/BMR/RMR/TDEE/hydration calculator, route `/body-metrics`, hub tile, disclaimer va tests; M08 promoted `m08_wellness_v1_2026_06`, FamilyPlus subject tests, Vietnamese UI/disclaimer va `health_score_ledgers` SQL contract/RLS; M13 v2 payments feature + `create_membership_payment_request` pending/idempotent RPC, price config, no pending-rights grant, 24h reversal guard; M14 Sale direct customer privacy xoa `health_condition_summary`, conversion minimum 500000 VND; M15 support/content Admin roles, operations legacy alias, expanded safe dashboard metrics. Targeted analyze pass, focused tests pass 103 cases, M04/M08/M13 rerun pass 19 cases, architecture tests pass 24 cases. Flutter van in warning pubspec asset folder missing nhu baseline, command exit 0. Production backlog: Supabase sandbox/RLS/provider/payment/audit smoke.
 - 2026-06-30: M09/M10 coding 100% theo code+test acceptance: M09 them payload v2 co subject/actor/correlation metadata, reminder ID co subject, action idempotent va chan subject/source-owner mismatch; M10 them v3 route `/v3/advanced-tracking`, hydration goal `advanced_hydration`, repository/datasource/use case/provider/page, Plus/FamilyPlus access gate va tests. Targeted analyze pass. Targeted tests pass 44 case cho notification, M10, cloud-sync contract va architecture boundary. Flutter van in warning pubspec asset folder missing do nhieu asset `.gitkeep` dang bi xoa san trong worktree, nhung targeted test command exit 0. Implementation evidence backlog production: real-device notification, Supabase sandbox cross-device sync, paid access va FamilyPlus subject/RLS smoke.
 - 2026-06-30: M06/M07/M02 quota foundation da code/test: them shared `TrustedBackendUsageQuotaGateway`, v2 `EffectiveAccess` read model, SQL `check_usage_quota`/`commit_usage_quota` + schedule wrappers trong `03-membership-quota.sql` va `config.sql`, normalize quota timezone sang `Asia/Ho_Chi_Minh`, AI Chat check quota truoc AI va commit sau response. Targeted tests pass: usage quota gateway, AI Chat quota, Supabase config contract, generated-plan quota, architecture boundary. Implementation evidence backlog: chay Supabase sandbox/RLS cho quota counters/events, Free limit, paid bypass, idempotency, client write rejection.

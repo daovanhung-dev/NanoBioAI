@@ -24,7 +24,10 @@ void main() {
         'create table if not exists public.health_subjects',
         'create table if not exists public.health_profiles',
         'create table if not exists public.meal_plans',
+        'create table if not exists public.personal_schedule_ai_requests',
         'create table if not exists public.membership_plans',
+        'create table if not exists public.family_groups',
+        'create table if not exists public.family_members',
         'create table if not exists public.sale_profiles',
         'create table if not exists public.payment_events',
         'create table if not exists public.commission_records',
@@ -40,6 +43,10 @@ void main() {
         'commit_usage_quota',
         'check_personal_schedule_generation_quota',
         'commit_personal_schedule_generation_quota',
+        'get_my_familyplus_context',
+        'upsert_my_familyplus_group',
+        'upsert_my_familyplus_member',
+        'remove_my_familyplus_member',
         'get_my_sale_state',
         'request_sale_participation',
         'attach_my_referral_code',
@@ -58,6 +65,7 @@ void main() {
         'admin_refund_or_cancel_payment',
         'admin_review_sale_profile',
         'admin_adjust_sale_points',
+        'admin_list_report_catalog',
         'admin_list_reconciliation_discrepancies',
         'admin_update_reconciliation_discrepancy_status',
         'admin_list_audit_events',
@@ -187,8 +195,62 @@ void main() {
         "p_reset_timezone text default 'Asia/Ho_Chi_Minh'",
         "('free', 'ai_chat_message', 'day', 3, 'Asia/Ho_Chi_Minh', true)",
         "('free', 'personal_schedule_generation', 'month', 3, 'Asia/Ho_Chi_Minh', true)",
+        "('plus', 'ai_chat_message', 'none', null, 'Asia/Ho_Chi_Minh', true)",
+        "('plus', 'personal_schedule_generation', 'none', null, 'Asia/Ho_Chi_Minh', true)",
+        "('family_plus', 'ai_chat_message', 'none', null, 'Asia/Ho_Chi_Minh', true)",
+        "('family_plus', 'personal_schedule_generation', 'none', null, 'Asia/Ho_Chi_Minh', true)",
+        'unique (user_id, feature_key, idempotency_key)',
+        'on conflict (user_id, feature_key, idempotency_key) do nothing',
+        'revoke insert, update, delete on',
+        'public.usage_events',
       ]) {
         expect(sql, contains(token), reason: token);
+      }
+    });
+
+    test('keeps FamilyPlus runtime RPC contract in rebuild file', () {
+      for (final token in [
+        'idx_family_groups_owner_active_unique',
+        'assert_current_user_familyplus',
+        'familyplus_context_for_user',
+        "'self_subject_id'",
+        "'has_family_plus'",
+        'FAMILYPLUS_MEMBER_LIMIT',
+        'last_idempotency_key',
+        "ms.plan_code = 'family_plus'",
+        'revoke insert, update, delete on public.family_groups, public.family_members',
+        'grant execute on function public.get_my_familyplus_context()',
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
+    });
+
+    test('keeps personal schedule request ledger in cloud sync contract', () {
+      for (final token in [
+        'create table if not exists public.personal_schedule_ai_requests',
+        'idx_personal_schedule_ai_requests_user_mode',
+        'personal_schedule_ai_requests_select_own',
+        'revoke insert, update, delete on public.personal_schedule_ai_requests',
+        "coalesce(v_tables -> 'personal_schedule_ai_requests', '[]'::jsonb)",
+        'jsonb_populate_record(',
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
+    });
+
+    test('keeps personal schedule quota wrapper strict and idempotent', () {
+      final source = File(
+        'lib/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart',
+      ).readAsStringSync();
+
+      for (final token in [
+        "'p_request_id': requestId",
+        "'p_reset_timezone': resetTimezone",
+        "'p_committed_at': at.toUtc().toIso8601String()",
+        "row['allowed'] ?? row['committed']",
+        'PersonalScheduleQuotaExceededException(resetAt: decision.resetAt)',
+      ]) {
+        expect(source, contains(token), reason: token);
       }
     });
 

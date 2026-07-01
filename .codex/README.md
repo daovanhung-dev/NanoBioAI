@@ -36,8 +36,8 @@ Doc `.codex/history/OPEN_RISKS.md` chi khi task cham release readiness, auth, Su
 - Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`.
 - Supabase `2.12.4`, Gemini SDK `0.4.7`.
 - Local notifications `19.5.0`, timezone `0.10.1`, flutter_timezone `5.1.0`.
-- SQLite database version: `DatabaseVersion.currentVersion = 8`.
-- Product access map: `v1` guest/basic, `v2` authenticated free, `v3` Plus/FamilyPlus planned, `sale_referral` independent.
+- SQLite database version: `DatabaseVersion.currentVersion = 12`.
+- Product access map: `v1` guest/basic, `v2` authenticated free, `v3` Plus/FamilyPlus modules, `sale_referral` independent.
 
 Nguon dung nhat van la `pubspec.yaml` va `lib/core/storage/localdb/database_version.dart`.
 

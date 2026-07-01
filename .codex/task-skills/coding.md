@@ -2,11 +2,11 @@
 
 - Canonical key: coding
 - Workflow: .codex/workflows/coding.md
-- Generated from 16 worklog(s).
+- Generated from 17 worklog(s).
 
 ## When To Read
 
-- Historical task type: coding (11)
+- Historical task type: coding (12)
 - Historical task type: coding/test/docs (3)
 - Historical task type: feature (1)
 - Historical task type: feature Dashboard/UI + data write path (1)
@@ -14,13 +14,13 @@
 ## Common Modules
 
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
+- M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox: 1
 - unknown: 1
 - M02 PERSONAL_SCHEDULE_AI: 1
-- M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox: 1
 - M01 ONBOARDING_PROFILE, M03 DASHBOARD_SCHEDULE, M04 BASIC_HEALTH_CALC, M08 HEALTH_SCORE_HABITS, M13 PAYMENT_MEMBERSHIP, M14 SALE_POINTS, M15 ADMIN_DASHBOARD: 1
-- M09 SCHEDULE_NOTIFICATIONS, M10 ADVANCED_TRACKING_GOALS: 1
+- M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M11 FAMILYPLUS, M12 REFERRAL_DIRECT, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
 - M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M02 PERSONAL_SCHEDULE_AI: 1
-- M01 ONBOARDING_PROFILE: 1
+- M09 SCHEDULE_NOTIFICATIONS, M10 ADVANCED_TRACKING_GOALS: 1
 
 ## Work Pattern
 

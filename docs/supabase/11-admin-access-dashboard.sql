@@ -1159,6 +1159,62 @@ begin
 end;
 $$;
 
+create or replace function public.admin_list_report_catalog(
+  p_query text default '',
+  p_limit integer default 50
+)
+returns table (
+  id text,
+  title text,
+  subtitle text,
+  status text,
+  section text,
+  created_at timestamptz
+)
+language plpgsql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  perform public.admin_assert_permission('reports.write');
+
+  return query
+  select *
+  from (
+    values
+      (
+        'membership_summary',
+        'Tong hop goi thanh vien',
+        'So lieu goi, thanh toan va trang thai theo Asia/Ho_Chi_Minh',
+        'available',
+        'reports',
+        now()
+      ),
+      (
+        'sale_points_summary',
+        'Tong hop diem Sale',
+        'Doi soat diem, quy doi va dieu chinh noi bo',
+        'available',
+        'reports',
+        now()
+      ),
+      (
+        'admin_audit_summary',
+        'Tong hop audit Admin',
+        'Chi xuat tom tat hanh dong, khong xuat raw metadata',
+        'available',
+        'reports',
+        now()
+      )
+  ) as catalog(id, title, subtitle, status, section, created_at)
+  where coalesce(p_query, '') = ''
+    or catalog.id ilike '%' || p_query || '%'
+    or catalog.title ilike '%' || p_query || '%'
+  limit greatest(1, least(coalesce(p_limit, 50), 100));
+end;
+$$;
+
 create or replace function public.admin_request_report_export(
   p_report_type text,
   p_filters jsonb,
@@ -1175,6 +1231,14 @@ declare
 begin
   perform public.admin_assert_permission('reports.write');
 
+  if btrim(coalesce(p_report_type, '')) not in (
+    'membership_summary',
+    'sale_points_summary',
+    'admin_audit_summary'
+  ) then
+    raise exception 'INVALID_REPORT_TYPE' using errcode = '22023';
+  end if;
+
   insert into public.report_exports (
     report_type,
     filters,
@@ -1183,7 +1247,11 @@ begin
   )
   values (
     btrim(p_report_type),
-    coalesce(p_filters, '{}'::jsonb),
+    jsonb_build_object(
+      'report_type', btrim(p_report_type),
+      'time_zone', coalesce(p_filters ->> 'time_zone', 'Asia/Ho_Chi_Minh'),
+      'privacy', 'no_raw_payloads'
+    ),
     btrim(p_reason),
     auth.uid()
   )
@@ -1195,7 +1263,11 @@ begin
     v_export_id::text,
     p_reason,
     p_idempotency_key,
-    coalesce(p_filters, '{}'::jsonb)
+    jsonb_build_object(
+      'report_type', btrim(p_report_type),
+      'time_zone', coalesce(p_filters ->> 'time_zone', 'Asia/Ho_Chi_Minh'),
+      'privacy', 'no_raw_payloads'
+    )
   );
 
   return query select true, 'Da tao yeu cau xuat bao cao.';
@@ -1631,6 +1703,7 @@ grant execute on function public.admin_review_sale_profile(uuid, text, text, tex
 grant execute on function public.admin_upsert_config_version(text, jsonb, text, text) to authenticated;
 grant execute on function public.admin_list_config_versions(text, integer) to authenticated;
 grant execute on function public.admin_list_plan_config_versions(text, integer) to authenticated;
+grant execute on function public.admin_list_report_catalog(text, integer) to authenticated;
 grant execute on function public.admin_request_report_export(text, jsonb, text, text) to authenticated;
 grant execute on function public.admin_list_report_exports(text, integer) to authenticated;
 grant execute on function public.admin_adjust_sale_points(uuid, integer, text, text) to authenticated;
