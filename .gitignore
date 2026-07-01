@@ -311,3 +311,8 @@ sentry.properties
 TODO.local.md
 NOTES.local.md
 .scratch/
+
+*.zip
+*.rar
+*.7z
+
