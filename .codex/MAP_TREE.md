@@ -54,7 +54,7 @@ project inventory. Use `rg --files` for the current truth.
 - `.codex/domains/access-membership-referral.md`
 - `.codex/domains/notification.md`
 - `.codex/domains/sqlite.md`
-- `.codex/domains/ui-nami.md`
+- `.codex/domains/ui-Nabi.md`
 - `.codex/domains/health-tracking.md`
 - `.codex/domains/lifestyle-schedule.md`
 
@@ -114,6 +114,7 @@ If a context layout changes, update this compact map and run:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1
 ```
+
 ## Project DD Modules
 
 Generated DD folders for docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md:

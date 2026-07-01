@@ -20,7 +20,7 @@ class NutritionPage extends ConsumerWidget {
           loading: () => const _NutritionLoadingState(),
           error: (error, _) => _StateCard(
             icon: Icons.spa_rounded,
-            title: 'Nabichưa mở được góc dinh dưỡng của bạn',
+            title: 'Nabi chưa mở được góc dinh dưỡng của bạn',
             message:
                 'Có vẻ dữ liệu bữa ăn đang cần thêm một chút thời gian để sẵn sàng. Bạn thử làm mới lại nhé, Nabivẫn ở đây cùng bạn.',
             onRetry: () => ref.invalidate(nutritionSummaryProvider),
@@ -55,7 +55,7 @@ class NutritionPage extends ConsumerWidget {
                       _NutritionLogSection(logs: summary.todayLogs),
                       const SizedBox(height: AppSpacing.lg),
                       _NutritionLogSection(
-                        title: 'Những bữa Nabiđã ghi nhớ',
+                        title: 'Những bữa Nabi đã ghi nhớ',
                         subtitle:
                             'Từng ghi nhận nhỏ đều giúp Nabihiểu bạn hơn một chút.',
                         logs: summary.logs,
@@ -246,11 +246,11 @@ class _Header extends StatelessWidget {
     final logged = summary.loggedCalories;
 
     if (planned <= 0 && logged <= 0) {
-      return 'Hôm nay vẫn còn rất nhẹ nhàng. Khi bạn ăn hoặc ghi nhận bữa đầu tiên, Nabisẽ theo dõi cùng bạn.';
+      return 'Hôm nay vẫn còn rất nhẹ nhàng. Khi bạn ăn hoặc ghi nhận bữa đầu tiên, Nabi sẽ theo dõi cùng bạn.';
     }
 
     if (planned <= 0) {
-      return 'Bạn đã bắt đầu ghi nhận bữa ăn rồi. Nabisẽ tiếp tục giữ lại những nhịp nhỏ này cho bạn.';
+      return 'Bạn đã bắt đầu ghi nhận bữa ăn rồi. Nabi sẽ tiếp tục giữ lại những nhịp nhỏ này cho bạn.';
     }
 
     final ratio = logged / planned;
@@ -296,7 +296,7 @@ class _NamiNoteCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Lời nhắn nhỏ từ Nami',
+                  'Lời nhắn nhỏ từ Nabi',
                   style: AppTextStyles.heading4.copyWith(
                     fontWeight: AppTypography.bold,
                   ),
@@ -323,7 +323,7 @@ class _NamiNoteCard extends StatelessWidget {
     final protein = summary.protein;
 
     if (!hasMeals && !hasLogs) {
-      return 'Hôm nay Nabichưa thấy bữa ăn nào được ghi nhận. Bạn có thể bắt đầu từ một bữa thật đơn giản, miễn là cơ thể thấy dễ chịu.';
+      return 'Hôm nay Nabi chưa thấy bữa ăn nào được ghi nhận. Bạn có thể bắt đầu từ một bữa thật đơn giản, miễn là cơ thể thấy dễ chịu.';
     }
 
     if (protein > 0 && protein < 30) {
@@ -334,7 +334,7 @@ class _NamiNoteCard extends StatelessWidget {
       return 'Thực đơn hôm nay đã sẵn sàng. Khi bạn dùng bữa xong, chỉ cần ghi nhận lại một chút để Nabiđồng hành sát hơn.';
     }
 
-    return 'Bạn đang chăm mình bằng những ghi nhận rất nhỏ nhưng rất đáng quý. Nabisẽ giữ nhịp này cùng bạn.';
+    return 'Bạn đang chăm mình bằng những ghi nhận rất nhỏ nhưng rất đáng quý. Nabi sẽ giữ nhịp này cùng bạn.';
   }
 }
 
@@ -486,9 +486,9 @@ class _MealPlanSection extends StatelessWidget {
       title: 'Bữa ăn Nabigợi ý hôm nay',
       subtitle:
           'Một vài lựa chọn nhỏ để ngày của bạn nhẹ bụng và đủ năng lượng hơn.',
-      emptyTitle: 'Hôm nay Nabichưa có thực đơn cho bạn',
+      emptyTitle: 'Hôm nay Nabi chưa có thực đơn cho bạn',
       emptyMessage:
-          'Không sao đâu. Khi thực đơn sẵn sàng, Nabisẽ đặt ở đây để bạn dễ chọn bữa phù hợp với mình.',
+          'Không sao đâu. Khi thực đơn sẵn sàng, Nabi sẽ đặt ở đây để bạn dễ chọn bữa phù hợp với mình.',
       emptyIcon: Icons.restaurant_menu_rounded,
       children: meals.map((meal) {
         return _SurfaceCard(
@@ -559,7 +559,7 @@ class _NutritionLogSection extends StatelessWidget {
   const _NutritionLogSection({
     this.title = 'Bữa ăn bạn đã ghi nhận',
     this.subtitle =
-        'Nabisẽ gom lại từng bữa để bạn nhìn thấy hành trình chăm mình rõ hơn.',
+        'Nabi sẽ gom lại từng bữa để bạn nhìn thấy hành trình chăm mình rõ hơn.',
     required this.logs,
   });
 
@@ -570,7 +570,7 @@ class _NutritionLogSection extends StatelessWidget {
       subtitle: subtitle,
       emptyTitle: 'Chưa có bữa ăn nào được ghi nhận',
       emptyMessage:
-          'Bạn chưa cần làm mọi thứ thật hoàn hảo. Chỉ cần ghi lại bữa đầu tiên, Nabisẽ cùng bạn theo dõi từng chút một.',
+          'Bạn chưa cần làm mọi thứ thật hoàn hảo. Chỉ cần ghi lại bữa đầu tiên, Nabi sẽ cùng bạn theo dõi từng chút một.',
       emptyIcon: Icons.receipt_long_rounded,
       children: logs.map((log) {
         return _SurfaceCard(

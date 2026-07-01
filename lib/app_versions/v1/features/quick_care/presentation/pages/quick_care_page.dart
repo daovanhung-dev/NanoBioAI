@@ -61,7 +61,7 @@ class QuickCarePage extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.lg),
         const NamiCareSectionTitle(
-          title: 'Gợi ý nhanh từ Nami',
+          title: 'Gợi ý nhanh từ Nabi',
           subtitle: 'Những việc rất nhỏ, nhẹ nhàng và dễ bắt đầu ngay lúc này.',
         ),
         const SizedBox(height: AppSpacing.md),

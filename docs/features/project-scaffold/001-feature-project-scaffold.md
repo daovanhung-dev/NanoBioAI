@@ -36,7 +36,7 @@ Commit de xuat: refactor(project): tao scaffold version va sale referral
 
 ## UI/UX
 
-- V3 home page la shell planned, dung copy tieng Viet va giong Nami.
+- V3 home page la shell planned, dung copy tieng Viet va giong Nabi.
 - Cac feature planned khong hien thi trong production flow hien tai.
 
 ## Files

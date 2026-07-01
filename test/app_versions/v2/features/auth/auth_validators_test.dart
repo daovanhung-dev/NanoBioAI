@@ -5,8 +5,8 @@ void main() {
   group('AuthValidators', () {
     test('validates email format', () {
       expect(AuthValidators.email(''), isNotNull);
-      expect(AuthValidators.email('nami'), isNotNull);
-      expect(AuthValidators.email('nami@example.com'), isNull);
+      expect(AuthValidators.email('Nabi'), isNotNull);
+      expect(AuthValidators.email('Nabi@example.com'), isNull);
     });
 
     test('requires at least 8 password characters', () {

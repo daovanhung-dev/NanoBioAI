@@ -193,7 +193,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
                                 showAura: !_isDragging,
                                 onTap: _handleTap,
                                 semanticLabel:
-                                    'Nabi – chạm để mở chat với Nami',
+                                    'Nabi – chạm để mở chat với Nabi',
                               ),
                             ),
 
@@ -250,7 +250,7 @@ class _NabiLabel extends ConsumerWidget {
       NabiVisualState.offline => 'Ngoại tuyến',
       NabiVisualState.taskComplete ||
       NabiVisualState.dayComplete => 'Tuyệt vời',
-      _ => 'Hỏi Nami',
+      _ => 'Hỏi Nabi',
     };
 
     return AnimatedOpacity(

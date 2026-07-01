@@ -31,7 +31,7 @@ class ProfilePage extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => _EmptyProfile(
             message:
-                'Nabichưa thể mở hồ sơ của bạn lúc này. Mình thử lại sau một chút nhé.',
+                'Nabi chưa thể mở hồ sơ của bạn lúc này. Mình thử lại sau một chút nhé.',
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
           data: (dashboard) => RefreshIndicator(
@@ -75,14 +75,15 @@ class ProfilePage extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.lg),
                       _ChipSection(
                         title: 'Mục tiêu',
-                        emptyMessage: 'Nabichưa thấy mục tiêu nào được chọn.',
+                        emptyMessage: 'Nabi chưa thấy mục tiêu nào được chọn.',
                         items: dashboard.goals,
                         icon: Icons.flag_rounded,
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       _ChipSection(
                         title: 'Tình trạng cần lưu ý',
-                        emptyMessage: 'Nabichưa thấy tình trạng nào cần lưu ý.',
+                        emptyMessage:
+                            'Nabi chưa thấy tình trạng nào cần lưu ý.',
                         items: dashboard.conditions,
                         icon: Icons.health_and_safety_rounded,
                       ),
@@ -90,7 +91,7 @@ class ProfilePage extends ConsumerWidget {
                       _ChipSection(
                         title: 'Thói quen',
                         emptyMessage:
-                            'Nabichưa thấy thói quen nào được ghi nhớ.',
+                            'Nabi chưa thấy thói quen nào được ghi nhớ.',
                         items: dashboard.habits,
                         icon: Icons.restaurant_rounded,
                       ),
@@ -306,11 +307,11 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nabiđã cập nhật hồ sơ của bạn.')),
+        const SnackBar(content: Text('Nabi đã cập nhật hồ sơ của bạn.')),
       );
     } catch (_) {
       _showMessage(
-        'Nabichưa thể cập nhật hồ sơ lúc này. Bạn thử lại sau một chút nhé.',
+        'Nabi chưa thể cập nhật hồ sơ lúc này. Bạn thử lại sau một chút nhé.',
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -414,7 +415,7 @@ class _ProfileHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Nabisẽ dùng những thông tin này để chăm sóc bạn gần gũi hơn mỗi ngày.',
+                  'Nabi sẽ dùng những thông tin này để chăm sóc bạn gần gũi hơn mỗi ngày.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Colors.white.withValues(alpha: .78),
                     height: 1.35,

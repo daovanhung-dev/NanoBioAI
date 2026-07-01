@@ -3,11 +3,13 @@ Commit đề xuất: feat(features-hub): expand personal care modules
 # Mở rộng Góc chăm sóc
 
 ## Mục tiêu
+
 - Mở rộng `FeaturesHubPage` thành góc chăm sóc toàn diện hơn.
-- Thêm các module chăm sóc nhỏ theo phong cách Nami.
+- Thêm các module chăm sóc nhỏ theo phong cách Nabi.
 - Đảm bảo các card mới có route/page để người dùng bấm vào không bị gián đoạn.
 
 ## Phạm vi
+
 - Bao gồm:
   - Thêm 6 card mới vào `FeaturesHubPage`.
   - Thêm route cho các page mới.
@@ -18,13 +20,15 @@ Commit đề xuất: feat(features-hub): expand personal care modules
   - Chưa tạo notification thật cho uống nước hoặc mục tiêu cá nhân.
 
 ## Luồng hoạt động
+
 1. Người dùng mở `FeaturesHubPage`.
 2. Trang hiển thị đủ 14 góc chăm sóc.
 3. Người dùng chọn một card mới.
 4. App điều hướng tới page tương ứng.
-5. Page hiển thị UI/empty state theo phong cách Nami, không dùng dữ liệu giả như dữ liệu thật.
+5. Page hiển thị UI/empty state theo phong cách Nabi, không dùng dữ liệu giả như dữ liệu thật.
 
 ## Dữ liệu và lưu trữ
+
 - Nguồn đọc: chưa thêm nguồn đọc mới.
 - Nơi ghi: chưa thêm nơi ghi mới.
 - Table/model/entity: chưa phát sinh.
@@ -32,12 +36,14 @@ Commit đề xuất: feat(features-hub): expand personal care modules
 - Ghi chú: `WaterTrackingPage`, `PersonalGoalsPage`, `GentleCareModePage` chỉ dùng local UI state trong phiên hiện tại để tạo tương tác nhẹ.
 
 ## UI/UX
+
 - Loading: chưa phát sinh state async.
-- Empty: dùng thông điệp dịu nhẹ theo persona Nami.
+- Empty: dùng thông điệp dịu nhẹ theo persona Nabi.
 - Error: chưa phát sinh state async.
 - Success: các lựa chọn local có phản hồi visual nhẹ.
 
 ## Chức năng thêm mới
+
 - Uống nước hôm nay.
 - Cơ thể của bạn.
 - Tổng kết tuần.
@@ -46,6 +52,7 @@ Commit đề xuất: feat(features-hub): expand personal care modules
 - Chăm mình 5 phút.
 
 ## Route
+
 - `/water-tracking`
 - `/body-metrics`
 - `/weekly-summary`
@@ -54,6 +61,7 @@ Commit đề xuất: feat(features-hub): expand personal care modules
 - `/quick-care`
 
 ## Files
+
 - `lib/features/features_hub/presentation/pages/features_hub_page.dart` - thêm 6 card mới và tăng nhẹ chiều cao card.
 - `lib/core/constants/routes/route_names.dart` - thêm route path mới.
 - `lib/core/router/app_router.dart` - khai báo route/page mới.
@@ -66,6 +74,7 @@ Commit đề xuất: feat(features-hub): expand personal care modules
 - `lib/features/quick_care/presentation/pages/quick_care_page.dart` - tạo UI chăm mình 5 phút.
 
 ## Kiểm chứng
+
 - Command: `dart format .`
 - Kết quả: SKIPPED - môi trường hiện tại không có `dart`.
 - Command: `flutter analyze`
@@ -76,8 +85,10 @@ Commit đề xuất: feat(features-hub): expand personal care modules
   - `RoutePaths.goals` được dùng lại cho `Mục tiêu của mình`.
 
 ## Liên kết
+
 - Worklog: [001-worklog-features-hub-expansion.md](../../worklog/2026-06-19/001-worklog-features-hub-expansion.md)
 
 ## Rủi ro
+
 - Các page mới hiện ưu tiên UI/empty state, chưa lưu dữ liệu lâu dài.
 - Cần chạy `flutter analyze` trong project đầy đủ có `pubspec.yaml` để xác nhận toàn bộ app.

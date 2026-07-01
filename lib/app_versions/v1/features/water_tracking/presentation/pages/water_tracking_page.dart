@@ -75,7 +75,7 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
         const NamiCareSectionTitle(
           title: 'Thêm một ly nhỏ',
           subtitle:
-              'Chọn nhanh lượng nước vừa uống, Nabisẽ ghi lại giúp bạn trong phiên này.',
+              'Chọn nhanh lượng nước vừa uống, Nabi sẽ ghi lại giúp bạn trong phiên này.',
         ),
         const SizedBox(height: AppSpacing.md),
         Wrap(
@@ -108,8 +108,8 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
           color: AppColors.info,
           title: 'Nabinhắc mình uống nước',
           message: _currentMl == 0
-              ? 'Nabichưa ghi nhận ly nước nào hôm nay. Mình bắt đầu bằng một ngụm nhỏ nhé.'
-              : 'Từng ngụm nhỏ đang giúp cơ thể dễ chịu hơn rồi. Nabisẽ tiếp tục nhắc bạn thật nhẹ nhàng.',
+              ? 'Nabi chưa ghi nhận ly nước nào hôm nay. Mình bắt đầu bằng một ngụm nhỏ nhé.'
+              : 'Từng ngụm nhỏ đang giúp cơ thể dễ chịu hơn rồi. Nabi sẽ tiếp tục nhắc bạn thật nhẹ nhàng.',
         ),
       ],
     );

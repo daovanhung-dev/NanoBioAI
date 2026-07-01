@@ -8,6 +8,6 @@ void main() {
 
     expect(find.text('Góc chăm sóc'), findsOneWidget);
     expect(find.text('Lịch trình cá nhân'), findsOneWidget);
-    expect(find.text('Trò chuyện với Nami'), findsOneWidget);
+    expect(find.text('Trò chuyện với Nabi'), findsOneWidget);
   });
 }

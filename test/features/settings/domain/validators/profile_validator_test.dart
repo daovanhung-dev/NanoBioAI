@@ -6,7 +6,7 @@ void main() {
     test('accepts valid profile fields', () {
       final errors = ProfileValidator.validateAll(
         fullName: 'Nguyen Van A',
-        email: 'nami@example.com',
+        email: 'Nabi@example.com',
         phone: '0912345678',
         heightCm: 170,
         weightKg: 65,

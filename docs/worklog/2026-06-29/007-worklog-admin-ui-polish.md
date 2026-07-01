@@ -37,7 +37,7 @@ Commit de xuat: docs(worklog): ghi nhan phien admin ui polish
 
 - `.codex/workflows/coding.md`
 - `.codex/task-skills/coding.md`
-- `.codex/domains/ui-nami.md`
+- `.codex/domains/ui-Nabi.md`
 - `docs/checklist/checklist_complete_DD.md`
 - `docs/checklist/checklist_task_coding.md`
 

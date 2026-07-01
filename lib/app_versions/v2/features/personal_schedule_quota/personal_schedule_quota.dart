@@ -7,7 +7,7 @@ class V2PersonalScheduleQuotaFeature {
   static const responsibilities = <String>[
     'Guard personal schedule regeneration for authenticated Free users.',
     'Allow at most 3 schedule generations per month for Free accounts.',
-    'Route blocked generation attempts to a Nami-style upgrade or wait message.',
+    'Route blocked generation attempts to a Nabi-style upgrade or wait message.',
     'Reuse v1 schedule storage and notification contracts through repositories.',
   ];
 

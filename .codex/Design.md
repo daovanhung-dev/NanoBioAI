@@ -16,22 +16,22 @@
 
 1. Read `AGENTS.md`, then `.codex/AGENTS.md` and `.codex/PROJECT_MAP.md`.
 2. Choose exactly one workflow (normally `.codex/workflows/coding.md`, `bugfix.md`, or `docs-context.md`) and read the matching file in `.codex/task-skills/`.
-3. Read `.codex/domains/ui-nami.md` **and** the feature domain when UI touches behaviour: `onboarding.md`, `dashboard.md`, `ai-service.md`, `health-tracking.md`, `lifestyle-schedule.md`, or `access-membership-referral.md`.
+3. Read `.codex/domains/ui-Nabi.md` **and** the feature domain when UI touches behaviour: `onboarding.md`, `dashboard.md`, `ai-service.md`, `health-tracking.md`, `lifestyle-schedule.md`, or `access-membership-referral.md`.
 4. Read the target module DD: `docs/DD/<module>/Overall.md`, `Views.md`, `Function_List.md`, and `Import_File.md` before changing user-visible behavior.
 5. Read the nearest page, its controller/provider, domain entity, repository/datasource and targeted widget tests. Do not copy a UI pattern from another version unless version-boundary rules allow it.
 6. Implement only in the selected surface. Validate formatting/analyze/tests for the changed area, then update project docs/worklog only when the user requests the project workflow artifacts.
 
 **UI task routing:**
 
-| UI scope | Primary source root | Primary domain/context |
-|---|---|---|
-| V1 guest/basic wellness UI | `lib/app_versions/v1/` | `ui-nami.md` + feature domain |
-| V2 authenticated/free UI | `lib/app_versions/v2/` | `access-membership-referral.md` |
-| V3 Plus / FamilyPlus | `lib/app_versions/v3/` | `access-membership-referral.md` + related DD |
-| Admin operations | `lib/app_versions/admin/` | `docs/DD/admin_dashboard`, `admin_operations` |
-| Sale/referral | `lib/sale_referral/` | `docs/DD/referral_direct`, `sale_points` |
-| Global Nabi | `lib/features/nabi/` and `lib/app_versions/v1/features/nabi/` | `docs/features/11_NABI_GLOBAL_ASSISTANT.md` |
-| Shared theme/primitives | `lib/core/theme/` | `.codex/domains/ui-nami.md` |
+| UI scope                   | Primary source root                                           | Primary domain/context                        |
+| -------------------------- | ------------------------------------------------------------- | --------------------------------------------- |
+| V1 guest/basic wellness UI | `lib/app_versions/v1/`                                        | `ui-Nabi.md` + feature domain                 |
+| V2 authenticated/free UI   | `lib/app_versions/v2/`                                        | `access-membership-referral.md`               |
+| V3 Plus / FamilyPlus       | `lib/app_versions/v3/`                                        | `access-membership-referral.md` + related DD  |
+| Admin operations           | `lib/app_versions/admin/`                                     | `docs/DD/admin_dashboard`, `admin_operations` |
+| Sale/referral              | `lib/sale_referral/`                                          | `docs/DD/referral_direct`, `sale_points`      |
+| Global Nabi                | `lib/features/nabi/` and `lib/app_versions/v1/features/nabi/` | `docs/features/11_NABI_GLOBAL_ASSISTANT.md`   |
+| Shared theme/primitives    | `lib/core/theme/`                                             | `.codex/domains/ui-Nabi.md`                   |
 
 ## 2. Product model and app surfaces
 
@@ -39,14 +39,14 @@ NanoBio / NamiAI is a Vietnamese health and lifestyle assistant. It is offline-f
 
 ### 2.1 Product surfaces
 
-| Surface | Intended access | UI responsibility | Primary entry / root |
-|---|---|---|---|
-| **V1** | Guest/basic baseline | onboarding, initial personal plan, local health widgets, schedules, dashboard | `lib/app_versions/v1/` |
-| **V2** | Authenticated free | login/register/recovery, user sync, account-gated functions, health score | `lib/app_versions/v2/` |
-| **V3** | Planned Plus / FamilyPlus | premium/family feature scaffolds | `lib/app_versions/v3/` |
-| **Admin** | Internal authorized operations | dashboard, users, payments, sales, reconciliation, plans, reports, audit/config | `lib/app_versions/admin/` |
-| **Sale/Referral** | Independent product axis | enrollment, customer visibility, point ledger, conversion/payout-related UX | `lib/sale_referral/` |
-| **Global Nabi** | Cross-screen companion | visual state, assistant bubble/overlay, route-aware expression | `lib/features/nabi/` |
+| Surface           | Intended access                | UI responsibility                                                               | Primary entry / root      |
+| ----------------- | ------------------------------ | ------------------------------------------------------------------------------- | ------------------------- |
+| **V1**            | Guest/basic baseline           | onboarding, initial personal plan, local health widgets, schedules, dashboard   | `lib/app_versions/v1/`    |
+| **V2**            | Authenticated free             | login/register/recovery, user sync, account-gated functions, health score       | `lib/app_versions/v2/`    |
+| **V3**            | Planned Plus / FamilyPlus      | premium/family feature scaffolds                                                | `lib/app_versions/v3/`    |
+| **Admin**         | Internal authorized operations | dashboard, users, payments, sales, reconciliation, plans, reports, audit/config | `lib/app_versions/admin/` |
+| **Sale/Referral** | Independent product axis       | enrollment, customer visibility, point ledger, conversion/payout-related UX     | `lib/sale_referral/`      |
+| **Global Nabi**   | Cross-screen companion         | visual state, assistant bubble/overlay, route-aware expression                  | `lib/features/nabi/`      |
 
 ### 2.2 Entrypoints and shell behavior
 
@@ -57,55 +57,53 @@ NanoBio / NamiAI is a Vietnamese health and lifestyle assistant. It is offline-f
 
 ### 2.3 Navigation map
 
-
-| Surface | Constant | Route |
-|---|---|---|
-| V1 | `V1RoutePaths.splash` | `'/'` |
-| V1 | `V1RoutePaths.login` | `'/login'` |
-| V1 | `V1RoutePaths.register` | `'/register'` |
-| V1 | `V1RoutePaths.forgotPassword` | `'/forgot-password'` |
-| V1 | `V1RoutePaths.onboarding` | `'/onboarding'` |
-| V1 | `V1RoutePaths.onboardingEntry` | `'/start'` |
-| V1 | `V1RoutePaths.dashboard` | `'/dashboard'` |
-| V1 | `V1RoutePaths.healthTracking` | `'/health-tracking'` |
-| V1 | `V1RoutePaths.lifestyleSchedule` | `'/lifestyle-schedule'` |
-| V1 | `V1RoutePaths.nutrition` | `'/nutrition'` |
-| V1 | `V1RoutePaths.sleepTracking` | `'/sleep-tracking'` |
-| V1 | `V1RoutePaths.stressTracking` | `'/stress-tracking'` |
-| V1 | `V1RoutePaths.menu` | `'/menu'` |
-| V1 | `V1RoutePaths.mealPlan` | `'/meal-plan'` |
-| V1 | `V1RoutePaths.aiChat` | `'/ai-chat'` |
-| V1 | `V1RoutePaths.aiAnalysis` | `'/ai-analysis'` |
-| V1 | `V1RoutePaths.foodScanner` | `'/food-scanner'` |
-| V1 | `V1RoutePaths.goals` | `'/goals'` |
-| V1 | `V1RoutePaths.profile` | `'/profile'` |
-| V1 | `V1RoutePaths.settings` | `'/settings'` |
-| V1 | `V1RoutePaths.community` | `'/community'` |
-| V1 | `V1RoutePaths.admin` | `'/admin'` |
-| V2 | `V2RoutePaths.home` | `'/v2'` |
-| V2 | `V2RoutePaths.healthScore` | `'/v2/health-score'` |
-| V2 | `V2RoutePaths.sale` | `'/v2/sale'` |
-| V2 | `V2RoutePaths.authGate` | `AuthRoutePaths.authGate` |
-| V2 | `V2RoutePaths.login` | `AuthRoutePaths.login` |
-| V2 | `V2RoutePaths.register` | `AuthRoutePaths.register` |
-| V2 | `V2RoutePaths.verifyEmail` | `AuthRoutePaths.verifyEmail` |
-| V2 | `V2RoutePaths.forgotPassword` | `AuthRoutePaths.forgotPassword` |
-| V2 | `V2RoutePaths.resetPassword` | `AuthRoutePaths.resetPassword` |
-| V2 | `V2RoutePaths.authCallback` | `AuthRoutePaths.authCallback` |
-| V3 | `V3RoutePaths.home` | `'/v3'` |
-| Admin | `AdminRoutePaths.root` | `'/admin'` |
-| Admin | `AdminRoutePaths.login` | `'/admin/login'` |
-| Admin | `AdminRoutePaths.dashboard` | `'/admin/dashboard'` |
-| Admin | `AdminRoutePaths.users` | `'/admin/users'` |
-| Admin | `AdminRoutePaths.payments` | `'/admin/payments'` |
-| Admin | `AdminRoutePaths.sales` | `'/admin/sales'` |
-| Admin | `AdminRoutePaths.saleConversions` | `'/admin/sale-conversions'` |
-| Admin | `AdminRoutePaths.reconciliation` | `'/admin/reconciliation'` |
-| Admin | `AdminRoutePaths.plans` | `'/admin/plans'` |
-| Admin | `AdminRoutePaths.reports` | `'/admin/reports'` |
-| Admin | `AdminRoutePaths.audit` | `'/admin/audit'` |
-| Admin | `AdminRoutePaths.config` | `'/admin/config'` |
-
+| Surface | Constant                          | Route                           |
+| ------- | --------------------------------- | ------------------------------- |
+| V1      | `V1RoutePaths.splash`             | `'/'`                           |
+| V1      | `V1RoutePaths.login`              | `'/login'`                      |
+| V1      | `V1RoutePaths.register`           | `'/register'`                   |
+| V1      | `V1RoutePaths.forgotPassword`     | `'/forgot-password'`            |
+| V1      | `V1RoutePaths.onboarding`         | `'/onboarding'`                 |
+| V1      | `V1RoutePaths.onboardingEntry`    | `'/start'`                      |
+| V1      | `V1RoutePaths.dashboard`          | `'/dashboard'`                  |
+| V1      | `V1RoutePaths.healthTracking`     | `'/health-tracking'`            |
+| V1      | `V1RoutePaths.lifestyleSchedule`  | `'/lifestyle-schedule'`         |
+| V1      | `V1RoutePaths.nutrition`          | `'/nutrition'`                  |
+| V1      | `V1RoutePaths.sleepTracking`      | `'/sleep-tracking'`             |
+| V1      | `V1RoutePaths.stressTracking`     | `'/stress-tracking'`            |
+| V1      | `V1RoutePaths.menu`               | `'/menu'`                       |
+| V1      | `V1RoutePaths.mealPlan`           | `'/meal-plan'`                  |
+| V1      | `V1RoutePaths.aiChat`             | `'/ai-chat'`                    |
+| V1      | `V1RoutePaths.aiAnalysis`         | `'/ai-analysis'`                |
+| V1      | `V1RoutePaths.foodScanner`        | `'/food-scanner'`               |
+| V1      | `V1RoutePaths.goals`              | `'/goals'`                      |
+| V1      | `V1RoutePaths.profile`            | `'/profile'`                    |
+| V1      | `V1RoutePaths.settings`           | `'/settings'`                   |
+| V1      | `V1RoutePaths.community`          | `'/community'`                  |
+| V1      | `V1RoutePaths.admin`              | `'/admin'`                      |
+| V2      | `V2RoutePaths.home`               | `'/v2'`                         |
+| V2      | `V2RoutePaths.healthScore`        | `'/v2/health-score'`            |
+| V2      | `V2RoutePaths.sale`               | `'/v2/sale'`                    |
+| V2      | `V2RoutePaths.authGate`           | `AuthRoutePaths.authGate`       |
+| V2      | `V2RoutePaths.login`              | `AuthRoutePaths.login`          |
+| V2      | `V2RoutePaths.register`           | `AuthRoutePaths.register`       |
+| V2      | `V2RoutePaths.verifyEmail`        | `AuthRoutePaths.verifyEmail`    |
+| V2      | `V2RoutePaths.forgotPassword`     | `AuthRoutePaths.forgotPassword` |
+| V2      | `V2RoutePaths.resetPassword`      | `AuthRoutePaths.resetPassword`  |
+| V2      | `V2RoutePaths.authCallback`       | `AuthRoutePaths.authCallback`   |
+| V3      | `V3RoutePaths.home`               | `'/v3'`                         |
+| Admin   | `AdminRoutePaths.root`            | `'/admin'`                      |
+| Admin   | `AdminRoutePaths.login`           | `'/admin/login'`                |
+| Admin   | `AdminRoutePaths.dashboard`       | `'/admin/dashboard'`            |
+| Admin   | `AdminRoutePaths.users`           | `'/admin/users'`                |
+| Admin   | `AdminRoutePaths.payments`        | `'/admin/payments'`             |
+| Admin   | `AdminRoutePaths.sales`           | `'/admin/sales'`                |
+| Admin   | `AdminRoutePaths.saleConversions` | `'/admin/sale-conversions'`     |
+| Admin   | `AdminRoutePaths.reconciliation`  | `'/admin/reconciliation'`       |
+| Admin   | `AdminRoutePaths.plans`           | `'/admin/plans'`                |
+| Admin   | `AdminRoutePaths.reports`         | `'/admin/reports'`              |
+| Admin   | `AdminRoutePaths.audit`           | `'/admin/audit'`                |
+| Admin   | `AdminRoutePaths.config`          | `'/admin/config'`               |
 
 ## 3. Architecture, ownership and hard boundaries
 
@@ -137,15 +135,15 @@ Presentation (page/widget)
 
 ### 3.3 Placement rules for new UI
 
-| Change type | Put it here | Do not put it here |
-|---|---|---|
-| Feature-specific page | `lib/app_versions/<surface>/features/<feature>/presentation/pages/` | `core/`, arbitrary `shared/` |
-| Feature-specific reusable widget | same feature’s `presentation/widgets/` | global shared until ≥2 unrelated consumers exist |
-| Presentation state/action | feature `presentation/controllers/` + `providers/` | page `setState` for persistent/domain data |
-| Cross-surface generic visual primitive | `lib/core/theme/primitives/` | a single feature’s page |
-| Global Nabi rendering | `lib/features/nabi/` or V1 Nabi bridge only | duplicated custom FAB/character in every page |
-| Design tokens/theme extension | `lib/core/theme/` | hard-coded style in a page |
-| Data/behavior change | domain/data layers and DD-guided APIs | a widget callback that bypasses layer flow |
+| Change type                            | Put it here                                                         | Do not put it here                               |
+| -------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
+| Feature-specific page                  | `lib/app_versions/<surface>/features/<feature>/presentation/pages/` | `core/`, arbitrary `shared/`                     |
+| Feature-specific reusable widget       | same feature’s `presentation/widgets/`                              | global shared until ≥2 unrelated consumers exist |
+| Presentation state/action              | feature `presentation/controllers/` + `providers/`                  | page `setState` for persistent/domain data       |
+| Cross-surface generic visual primitive | `lib/core/theme/primitives/`                                        | a single feature’s page                          |
+| Global Nabi rendering                  | `lib/features/nabi/` or V1 Nabi bridge only                         | duplicated custom FAB/character in every page    |
+| Design tokens/theme extension          | `lib/core/theme/`                                                   | hard-coded style in a page                       |
+| Data/behavior change                   | domain/data layers and DD-guided APIs                               | a widget callback that bypasses layer flow       |
 
 ### 3.4 Riverpod and UI state style
 
@@ -162,20 +160,20 @@ Presentation (page/widget)
 - User-facing language is Vietnamese, warm, calm, concrete and non-judgmental.
 - Nabi is a companion, not a clinician. Use gentle invitations such as “Mình cùng xem nhé”, “Bạn có thể thử lại sau một chút nhé”; do not shame, diagnose, overpromise or claim certainty.
 - Health data UI must distinguish a wellness suggestion from medical diagnosis. Preserve consent/disclaimer flow, especially onboarding and health calculations.
-- Use the current product label consistently **within the touched screen**. The repository contains both `Nabi` and `Nami` legacy text/identifiers; do not do broad branding renames as part of a UI task.
+- Use the current product label consistently **within the touched screen**. The repository contains both `Nabi` and `Nabi` legacy text/identifiers; do not do broad branding renames as part of a UI task.
 
 ### 4.2 Core visual grammar
 
-| Element | Existing direction |
-|---|---|
-| Brand | blue `#3B82F6`, cyan `#06B6D4`, purple `#8B5CF6`; healthcare/wellness rather than clinical sterile UI |
-| Surface | pale slate/blue background, white cards, thin soft borders, restrained elevation |
-| Emphasis | blue/cyan/purple gradients on hero, AI and premium/supporting surfaces; colored soft panels for success/warning/error/info |
-| Shape | medium inputs/buttons (`12`), cards (`16`), larger hero containers (`24`), full pill badges/chips |
-| Type | Roboto-based system; strong hierarchy through `AppTextStyles`/`AppTypography` rather than arbitrary sizes |
-| Icons | rounded Material icons, `AppIcons` for common semantics; avoid emoji as an icon substitute outside data/options that already use emoji |
-| Motion | short and purposeful: entrance fade/slide/scale, selected control transitions, progress pulses, loading/typing; never block use or overload a health screen |
-| Nabi | use image/expression/overlay components; do not construct a second visual mascot ad hoc |
+| Element  | Existing direction                                                                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Brand    | blue `#3B82F6`, cyan `#06B6D4`, purple `#8B5CF6`; healthcare/wellness rather than clinical sterile UI                                                       |
+| Surface  | pale slate/blue background, white cards, thin soft borders, restrained elevation                                                                            |
+| Emphasis | blue/cyan/purple gradients on hero, AI and premium/supporting surfaces; colored soft panels for success/warning/error/info                                  |
+| Shape    | medium inputs/buttons (`12`), cards (`16`), larger hero containers (`24`), full pill badges/chips                                                           |
+| Type     | Roboto-based system; strong hierarchy through `AppTextStyles`/`AppTypography` rather than arbitrary sizes                                                   |
+| Icons    | rounded Material icons, `AppIcons` for common semantics; avoid emoji as an icon substitute outside data/options that already use emoji                      |
+| Motion   | short and purposeful: entrance fade/slide/scale, selected control transitions, progress pulses, loading/typing; never block use or overload a health screen |
+| Nabi     | use image/expression/overlay components; do not construct a second visual mascot ad hoc                                                                     |
 
 ### 4.3 Layout and responsive rules observed in source
 
@@ -207,97 +205,97 @@ There are **two coexisting layers**:
 
 ### 5.2 Compatibility theme file map
 
-| File | Ownership / use |
-|---|---|
+| File                        | Ownership / use                                                         |
+| --------------------------- | ----------------------------------------------------------------------- |
 | `lib/core/theme/theme.dart` | public compatibility barrel; preferred import for current feature pages |
-| `app_theme.dart` | `AppTheme.lightTheme` Material theme configuration |
-| `app_colors.dart` | brand, semantic, surface, text, border, overlay, icon colors |
-| `app_spacing.dart` | 4/8-based spacing scale, semantic spacing, responsive helpers |
-| `app_radius.dart` | visual radii and safe clamp helper |
-| `app_text_styles.dart` | display/heading/body/label/button/input semantic styles + color helpers |
-| `app_typography.dart` | font weights, fixed text-size helpers and readability helpers |
-| `app_gradients.dart` | branded/semantic/health/AI/hero/glass gradients + helpers |
-| `app_shadows.dart` | elevation, colored and dark-mode shadow recipes + helpers |
-| `app_decoration.dart` | complete `BoxDecoration` factories (card/input/button/glass/sheet/etc.) |
-| `app_duration.dart` | motion-duration constants |
-| `app_animations.dart` | transition/widget/animation helper factories |
-| `app_icons.dart` | semantic rounded Material icon catalog and state mappers |
+| `app_theme.dart`            | `AppTheme.lightTheme` Material theme configuration                      |
+| `app_colors.dart`           | brand, semantic, surface, text, border, overlay, icon colors            |
+| `app_spacing.dart`          | 4/8-based spacing scale, semantic spacing, responsive helpers           |
+| `app_radius.dart`           | visual radii and safe clamp helper                                      |
+| `app_text_styles.dart`      | display/heading/body/label/button/input semantic styles + color helpers |
+| `app_typography.dart`       | font weights, fixed text-size helpers and readability helpers           |
+| `app_gradients.dart`        | branded/semantic/health/AI/hero/glass gradients + helpers               |
+| `app_shadows.dart`          | elevation, colored and dark-mode shadow recipes + helpers               |
+| `app_decoration.dart`       | complete `BoxDecoration` factories (card/input/button/glass/sheet/etc.) |
+| `app_duration.dart`         | motion-duration constants                                               |
+| `app_animations.dart`       | transition/widget/animation helper factories                            |
+| `app_icons.dart`            | semantic rounded Material icon catalog and state mappers                |
 
 ### 5.3 Color tokens — use semantic intention, not raw literals
 
 `AppColors` defines the following stable groups:
 
-| Need | Use |
-|---|---|
-| Main CTA / active state | `primary`, `primaryDark`, `primaryLight`, `primarySoft` |
-| AI / supporting accent | `secondary`, `secondaryDark`, `secondaryLight`, `secondarySoft`, `tertiary` |
-| Outcome/status | `success`/`successSoft`, `warning`/`warningSoft`, `error`/`errorSoft`, `info`/`infoSoft` |
-| Page/surface | `background`, `scaffold`, `surface`, `surfaceElevated`, `card`, `cardAlt`, `inputBackground`, `modalBackground` |
-| Text hierarchy | `textPrimary`, `textSecondary`, `textMuted`, `textHint`, `textDisabled`, `textInverse` |
-| Border / separator | `border`, `borderLight`, `divider`, `outline` |
-| Interaction overlays | `hover`, `pressed`, `focused`, `selected`, `disabled`, `overlay`, `scrim` |
-| Dark equivalents | `dark*` variants only inside a verified dark-aware component |
-| Legacy aliases | `backgroundColor`, `surfaceColor`, `cardColor`, `scaffoldBackground`, etc.; use only to preserve old code, not for new public API |
+| Need                    | Use                                                                                                                               |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Main CTA / active state | `primary`, `primaryDark`, `primaryLight`, `primarySoft`                                                                           |
+| AI / supporting accent  | `secondary`, `secondaryDark`, `secondaryLight`, `secondarySoft`, `tertiary`                                                       |
+| Outcome/status          | `success`/`successSoft`, `warning`/`warningSoft`, `error`/`errorSoft`, `info`/`infoSoft`                                          |
+| Page/surface            | `background`, `scaffold`, `surface`, `surfaceElevated`, `card`, `cardAlt`, `inputBackground`, `modalBackground`                   |
+| Text hierarchy          | `textPrimary`, `textSecondary`, `textMuted`, `textHint`, `textDisabled`, `textInverse`                                            |
+| Border / separator      | `border`, `borderLight`, `divider`, `outline`                                                                                     |
+| Interaction overlays    | `hover`, `pressed`, `focused`, `selected`, `disabled`, `overlay`, `scrim`                                                         |
+| Dark equivalents        | `dark*` variants only inside a verified dark-aware component                                                                      |
+| Legacy aliases          | `backgroundColor`, `surfaceColor`, `cardColor`, `scaffoldBackground`, etc.; use only to preserve old code, not for new public API |
 
 `AppColors.primaryGradient`, `blueGradient`, `premiumGradient`, and `successGradient` exist for short legacy use. For named visual roles prefer `AppGradients`.
 
 ### 5.4 Spacing, radius and type
 
-| API | Values / functions | How to use |
-|---|---|---|
-| `AppSpacing` | base `xxs=2`, `xs=4`, `sm=8`, `md=16`, `lg=24`, `xl=32`, `xxl=48`, `xxxl=64`, `xxxxl=96` | `const SizedBox(height: AppSpacing.lg)`, `EdgeInsets.all(AppSpacing.md)` |
-| `AppSpacing` semantic | `pagePadding`, `sectionSpacing`, `cardPadding`, `itemSpacing`, `iconTextSpacing`, button/input/list/dialog/sheet values, minimum targets | choose semantic name when layout intent is clear |
-| `AppSpacing.scale(value)` | currently returns value | compatibility hook; do not rely on it for adaptive layout |
-| `AppSpacing.adaptive(...)` | picks a value based on device/context parameters | use only where a nearby page already uses it |
-| `AppSpacing.responsive(...)` | responsive spacing helper | use for a single adjustable dimension, not as replacement for `LayoutBuilder` |
-| `AppSpacing.spaceBetween(count, itemSize)` | calculates inter-item spacing | only for deliberate evenly distributed items |
-| `AppRadius` | `xs=4`, `sm=8`, `md=12`, `lg=16`, `xl=24`, `xxl=32`, `circular=9999`; semantic `button`, `card`, `input`, `dialog`, `bottomSheet`, `avatar`, `pill`, `fab` | `BorderRadius.circular(AppRadius.card)` |
-| `AppRadius.clamp(value, min, max)` | prevents invalid radius | use for input-derived or dynamic radius only |
-| `AppTextStyles` | display/heading/body/label/button/caption/helper/chip/input/appBar/section styles | start from a semantic style then `copyWith(color:, fontWeight:, height:)` |
-| `AppTextStyles.custom(...)` | builds an explicit style from named inputs | use only when no semantic role fits |
-| `AppTextStyles.primary/secondary/muted/inverse/success/warning/error/brand(style)` | applies canonical text color to an existing style | preserve visual type then change only semantic color |
-| `AppTypography` | weights `regular`, `medium`, `semiBold`, `bold`; scale helpers | favor `AppTextStyles` first; use `AppTypography` for controlled weight/response/readability |
-| `AppTypography.style/responsive/adaptive` | custom/responsive type builders | use for reusable custom component, not every page text |
-| `AppTypography.display/heading/body/label/button/input/captionStyle/overline` | named style factories requiring color | use inside a local reusable widget where `AppTextStyles` is not enough |
-| `AppTypography.elderlyFriendly/readable/italic/underline/strike` | transforms a `TextStyle` | apply intentionally for accessibility or text semantics |
+| API                                                                                | Values / functions                                                                                                                                         | How to use                                                                                  |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `AppSpacing`                                                                       | base `xxs=2`, `xs=4`, `sm=8`, `md=16`, `lg=24`, `xl=32`, `xxl=48`, `xxxl=64`, `xxxxl=96`                                                                   | `const SizedBox(height: AppSpacing.lg)`, `EdgeInsets.all(AppSpacing.md)`                    |
+| `AppSpacing` semantic                                                              | `pagePadding`, `sectionSpacing`, `cardPadding`, `itemSpacing`, `iconTextSpacing`, button/input/list/dialog/sheet values, minimum targets                   | choose semantic name when layout intent is clear                                            |
+| `AppSpacing.scale(value)`                                                          | currently returns value                                                                                                                                    | compatibility hook; do not rely on it for adaptive layout                                   |
+| `AppSpacing.adaptive(...)`                                                         | picks a value based on device/context parameters                                                                                                           | use only where a nearby page already uses it                                                |
+| `AppSpacing.responsive(...)`                                                       | responsive spacing helper                                                                                                                                  | use for a single adjustable dimension, not as replacement for `LayoutBuilder`               |
+| `AppSpacing.spaceBetween(count, itemSize)`                                         | calculates inter-item spacing                                                                                                                              | only for deliberate evenly distributed items                                                |
+| `AppRadius`                                                                        | `xs=4`, `sm=8`, `md=12`, `lg=16`, `xl=24`, `xxl=32`, `circular=9999`; semantic `button`, `card`, `input`, `dialog`, `bottomSheet`, `avatar`, `pill`, `fab` | `BorderRadius.circular(AppRadius.card)`                                                     |
+| `AppRadius.clamp(value, min, max)`                                                 | prevents invalid radius                                                                                                                                    | use for input-derived or dynamic radius only                                                |
+| `AppTextStyles`                                                                    | display/heading/body/label/button/caption/helper/chip/input/appBar/section styles                                                                          | start from a semantic style then `copyWith(color:, fontWeight:, height:)`                   |
+| `AppTextStyles.custom(...)`                                                        | builds an explicit style from named inputs                                                                                                                 | use only when no semantic role fits                                                         |
+| `AppTextStyles.primary/secondary/muted/inverse/success/warning/error/brand(style)` | applies canonical text color to an existing style                                                                                                          | preserve visual type then change only semantic color                                        |
+| `AppTypography`                                                                    | weights `regular`, `medium`, `semiBold`, `bold`; scale helpers                                                                                             | favor `AppTextStyles` first; use `AppTypography` for controlled weight/response/readability |
+| `AppTypography.style/responsive/adaptive`                                          | custom/responsive type builders                                                                                                                            | use for reusable custom component, not every page text                                      |
+| `AppTypography.display/heading/body/label/button/input/captionStyle/overline`      | named style factories requiring color                                                                                                                      | use inside a local reusable widget where `AppTextStyles` is not enough                      |
+| `AppTypography.elderlyFriendly/readable/italic/underline/strike`                   | transforms a `TextStyle`                                                                                                                                   | apply intentionally for accessibility or text semantics                                     |
 
 ### 5.5 Gradient, shadow and decoration factory reference
 
-| API | Available functions / presets | Recommended use |
-|---|---|---|
-| `AppGradients` | `primary`, `primaryReverse`, `primarySoft`, `premium`, `premiumDark`, `surface`, `surfaceAlt`, `darkSurface`, `darkSurfaceElevated`, `success`, `warning`, `danger`, `info`, `health`, `energy`, `sleep`, `meditation`, `ai`, `futuristic`, `hero`, `dashboard`, `onboarding`, `glass`, `glassDark` | use a named semantic gradient for hero/AI/status panels; avoid gradients on every card |
-| `AppGradients.custom(colors, begin, end, stops, tileMode)` | creates a named one-off `LinearGradient` | use only after checking no existing preset fits |
-| `AppGradients.opacity(color, opacityStart, opacityEnd, begin, end)` | makes a softened same-color gradient | useful for a low-noise background wash |
-| `AppGradients.adaptive(darkMode, light, dark)` | chooses light/dark gradient | only when the screen is actually dark-aware |
-| `AppShadows` | base `xs`→`xl`; semantic `card`, `cardRaised`, `dialog`, `bottomSheet`, `button`, `fab`, `floating`, `focus`; colored status shadows; `glass`, `soft`, dark presets | cards normally use `card`/`cardRaised`; keep elevation subtle |
-| `AppShadows.custom(color, blurRadius, spreadRadius, offset)` | one `BoxShadow` list | reserve for a reusable visual special case |
-| `AppShadows.opacity(color, opacity, blurRadius, spreadRadius, offset)` | color-alpha shadow | preferred for colored glow or custom accent |
-| `AppShadows.elevation(level, darkMode, color)` | maps level to shadow recipe | use when component exposes elevation as a param |
-| `AppShadows.surface(elevated, darkMode)` | returns surface shadow or none | suitable for reusable surface components |
-| `AppDecoration.base(...)` | raw composition factory | use only inside a decoration helper |
-| `AppDecoration.card/elevatedCard/premiumCard` | card surfaces | primary choice for reusable card implementations |
-| `AppDecoration.container/input/focusedInput/errorInput` | generic and form-field surfaces | maintain input state hierarchy |
-| `AppDecoration.button/outlinedButton` | decoration-only button surfaces | use only when Material `ButtonStyle` / `AppButton` cannot satisfy UI |
-| `AppDecoration.gradient/primaryGradient/premiumGradient` | gradient container recipes | hero/CTA/featured section, not routine data cards |
-| `AppDecoration.glass/glassDark` | glassmorphism factory | onboarding/hero overlays only; ensure text contrast |
-| `AppDecoration.dialog/bottomSheet/circle/outlined` | special container shapes | use for their named purpose |
-| `AppDecoration.radius(value)`, `border(color,width)`, `adaptive(...)` | low-level helpers | use in reusable widgets to avoid duplicates |
+| API                                                                    | Available functions / presets                                                                                                                                                                                                                                                                       | Recommended use                                                                        |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `AppGradients`                                                         | `primary`, `primaryReverse`, `primarySoft`, `premium`, `premiumDark`, `surface`, `surfaceAlt`, `darkSurface`, `darkSurfaceElevated`, `success`, `warning`, `danger`, `info`, `health`, `energy`, `sleep`, `meditation`, `ai`, `futuristic`, `hero`, `dashboard`, `onboarding`, `glass`, `glassDark` | use a named semantic gradient for hero/AI/status panels; avoid gradients on every card |
+| `AppGradients.custom(colors, begin, end, stops, tileMode)`             | creates a named one-off `LinearGradient`                                                                                                                                                                                                                                                            | use only after checking no existing preset fits                                        |
+| `AppGradients.opacity(color, opacityStart, opacityEnd, begin, end)`    | makes a softened same-color gradient                                                                                                                                                                                                                                                                | useful for a low-noise background wash                                                 |
+| `AppGradients.adaptive(darkMode, light, dark)`                         | chooses light/dark gradient                                                                                                                                                                                                                                                                         | only when the screen is actually dark-aware                                            |
+| `AppShadows`                                                           | base `xs`→`xl`; semantic `card`, `cardRaised`, `dialog`, `bottomSheet`, `button`, `fab`, `floating`, `focus`; colored status shadows; `glass`, `soft`, dark presets                                                                                                                                 | cards normally use `card`/`cardRaised`; keep elevation subtle                          |
+| `AppShadows.custom(color, blurRadius, spreadRadius, offset)`           | one `BoxShadow` list                                                                                                                                                                                                                                                                                | reserve for a reusable visual special case                                             |
+| `AppShadows.opacity(color, opacity, blurRadius, spreadRadius, offset)` | color-alpha shadow                                                                                                                                                                                                                                                                                  | preferred for colored glow or custom accent                                            |
+| `AppShadows.elevation(level, darkMode, color)`                         | maps level to shadow recipe                                                                                                                                                                                                                                                                         | use when component exposes elevation as a param                                        |
+| `AppShadows.surface(elevated, darkMode)`                               | returns surface shadow or none                                                                                                                                                                                                                                                                      | suitable for reusable surface components                                               |
+| `AppDecoration.base(...)`                                              | raw composition factory                                                                                                                                                                                                                                                                             | use only inside a decoration helper                                                    |
+| `AppDecoration.card/elevatedCard/premiumCard`                          | card surfaces                                                                                                                                                                                                                                                                                       | primary choice for reusable card implementations                                       |
+| `AppDecoration.container/input/focusedInput/errorInput`                | generic and form-field surfaces                                                                                                                                                                                                                                                                     | maintain input state hierarchy                                                         |
+| `AppDecoration.button/outlinedButton`                                  | decoration-only button surfaces                                                                                                                                                                                                                                                                     | use only when Material `ButtonStyle` / `AppButton` cannot satisfy UI                   |
+| `AppDecoration.gradient/primaryGradient/premiumGradient`               | gradient container recipes                                                                                                                                                                                                                                                                          | hero/CTA/featured section, not routine data cards                                      |
+| `AppDecoration.glass/glassDark`                                        | glassmorphism factory                                                                                                                                                                                                                                                                               | onboarding/hero overlays only; ensure text contrast                                    |
+| `AppDecoration.dialog/bottomSheet/circle/outlined`                     | special container shapes                                                                                                                                                                                                                                                                            | use for their named purpose                                                            |
+| `AppDecoration.radius(value)`, `border(color,width)`, `adaptive(...)`  | low-level helpers                                                                                                                                                                                                                                                                                   | use in reusable widgets to avoid duplicates                                            |
 
 ### 5.6 Motion and animation API reference
 
-| API | Function / value | Use |
-|---|---|---|
-| `AppDuration` | `instant`, `xFast`, `fast`, `normal`, `slow`, `xSlow` | base duration selection |
-| `AppDuration` components | `tap`, `hover`, `press`, `focus`, `button`, `card`, `input`, `switcher`, `checkbox`, `progress`, `pageTransition`, `modalTransition`, `bottomSheet`, `dialog`, `navigation`, `shimmer`, `loading`, `skeleton`, `pulse`, `stagger` | select the named behavioral duration rather than a raw millisecond literal |
-| `AppAnimations` curves | `standardCurve`, `emphasizedCurve`, `decelerateCurve`, `accelerateCurve`, `bounceCurve`, `smoothCurve` | use for a predictable animation feel |
-| `fade`, `slide`, `scale`, `rotate`, `size` | wraps matching Flutter transition | for an existing `Animation<T>` and a lightweight single effect |
-| `fadeScale`, `fadeSlide` | combined entrance transitions | default entrance for cards/page sections |
-| `animatedOpacity`, `animatedScale`, `animatedContainer` | implicit animation wrappers | selected/pressed/visible visual state |
-| `switcher` | `AnimatedSwitcher` with project fade-scale transition | swap loading/content or small state panels |
-| `stagger(index, base)` | derives stagger delay | repeating list entrance only; keep count modest |
-| `pageTransition`, `modalTransition`, `bottomSheetTransition`, `floating` | project-specific composite transitions | full page/modal/sheet/hero entry |
-| `transition` | generic wrapper | use only if it clarifies a reusable API |
-| `curved`, `slideOffset`, `scaleTween` | builds derived animations | use inside stateful animation owners |
+| API                                                                      | Function / value                                                                                                                                                                                                                  | Use                                                                        |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `AppDuration`                                                            | `instant`, `xFast`, `fast`, `normal`, `slow`, `xSlow`                                                                                                                                                                             | base duration selection                                                    |
+| `AppDuration` components                                                 | `tap`, `hover`, `press`, `focus`, `button`, `card`, `input`, `switcher`, `checkbox`, `progress`, `pageTransition`, `modalTransition`, `bottomSheet`, `dialog`, `navigation`, `shimmer`, `loading`, `skeleton`, `pulse`, `stagger` | select the named behavioral duration rather than a raw millisecond literal |
+| `AppAnimations` curves                                                   | `standardCurve`, `emphasizedCurve`, `decelerateCurve`, `accelerateCurve`, `bounceCurve`, `smoothCurve`                                                                                                                            | use for a predictable animation feel                                       |
+| `fade`, `slide`, `scale`, `rotate`, `size`                               | wraps matching Flutter transition                                                                                                                                                                                                 | for an existing `Animation<T>` and a lightweight single effect             |
+| `fadeScale`, `fadeSlide`                                                 | combined entrance transitions                                                                                                                                                                                                     | default entrance for cards/page sections                                   |
+| `animatedOpacity`, `animatedScale`, `animatedContainer`                  | implicit animation wrappers                                                                                                                                                                                                       | selected/pressed/visible visual state                                      |
+| `switcher`                                                               | `AnimatedSwitcher` with project fade-scale transition                                                                                                                                                                             | swap loading/content or small state panels                                 |
+| `stagger(index, base)`                                                   | derives stagger delay                                                                                                                                                                                                             | repeating list entrance only; keep count modest                            |
+| `pageTransition`, `modalTransition`, `bottomSheetTransition`, `floating` | project-specific composite transitions                                                                                                                                                                                            | full page/modal/sheet/hero entry                                           |
+| `transition`                                                             | generic wrapper                                                                                                                                                                                                                   | use only if it clarifies a reusable API                                    |
+| `curved`, `slideOffset`, `scaleTween`                                    | builds derived animations                                                                                                                                                                                                         | use inside stateful animation owners                                       |
 
 ### 5.7 Icons
 
@@ -305,17 +303,17 @@ There are **two coexisting layers**:
 
 ### 5.8 New 3-layer design-system primitives
 
-| Component | Variants | Contract |
-|---|---|---|
-| `AppButton` | `primary`, `secondary`, `text`, `icon`, `outlined` | `variant`, `onPressed`, optional `child`, `icon`, `loading`; `onPressed: null` is disabled |
-| `AppCard` | `defaultCard`, `elevated`, `outlined` | `variant`, required `child`, optional `onTap`, `padding` |
-| `AppChip` | `selectable`, `filter`, `action` | `label`, `selected`, `onTap`, optional `onDeleted`, `icon` |
-| `AppInput` | `textField`, `dropdown`, `search` | `controller`, label/hint/error, onChanged/onSubmitted, enabled, obscure, keyboard, maxLines, prefix/suffix |
-| `AppBadge` | `status`, `count`, `dot`; status `success`, `warning`, `error`, `info`, `neutral` | choose the variant, then pass correct label/count/status |
-| `SectionHeader` | — | title, optional subtitle and action label/callback |
-| `EmptyState` | — | required icon/title/description, optional action |
-| `LoadingState` | `spinner`, `skeleton`, `shimmer` | current non-spinner variants are placeholder visual modes; validate desired behavior |
-| `ErrorState` | — | message + optional retry with `retryLabel` |
+| Component       | Variants                                                                          | Contract                                                                                                   |
+| --------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `AppButton`     | `primary`, `secondary`, `text`, `icon`, `outlined`                                | `variant`, `onPressed`, optional `child`, `icon`, `loading`; `onPressed: null` is disabled                 |
+| `AppCard`       | `defaultCard`, `elevated`, `outlined`                                             | `variant`, required `child`, optional `onTap`, `padding`                                                   |
+| `AppChip`       | `selectable`, `filter`, `action`                                                  | `label`, `selected`, `onTap`, optional `onDeleted`, `icon`                                                 |
+| `AppInput`      | `textField`, `dropdown`, `search`                                                 | `controller`, label/hint/error, onChanged/onSubmitted, enabled, obscure, keyboard, maxLines, prefix/suffix |
+| `AppBadge`      | `status`, `count`, `dot`; status `success`, `warning`, `error`, `info`, `neutral` | choose the variant, then pass correct label/count/status                                                   |
+| `SectionHeader` | —                                                                                 | title, optional subtitle and action label/callback                                                         |
+| `EmptyState`    | —                                                                                 | required icon/title/description, optional action                                                           |
+| `LoadingState`  | `spinner`, `skeleton`, `shimmer`                                                  | current non-spinner variants are placeholder visual modes; validate desired behavior                       |
+| `ErrorState`    | —                                                                                 | message + optional retry with `retryLabel`                                                                 |
 
 New primitive code should normally import `design_system.dart` and use `AppColorTokens`, `AppSpacingTokens`, `AppRadiusTokens`, `AppShadowTokens`, `AppMotionTokens`, and its `AppTextStyles`. This `AppTextStyles` has the same symbol name as the compatibility file; never import both barrels unqualified in one file.
 
@@ -584,7 +582,7 @@ nano_app/
 This is the exact UI-facing Dart inventory captured in the audit. A “widget” marker means the file declares a widget/stateful widget or is under a presentation/shared component path; use the path rather than names alone as the source of truth.
 
 | Path | LOC | Main declarations | Role / notes |
-|---|---:|---|---|
+| ---- | --: | ----------------- | ------------ |
 
 | `lib/app_versions/admin/features/admin_panel/presentation/controllers/admin_controller.dart` | 244 | `AdminPanelState`, `AdminController` | Presentation/shared/theme UI component. Read this file together with its nearest page/controller/provider before reuse. |
 | `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_login_page.dart` | 375 | `AdminLoginPage`, `_AdminLoginPageState`, `_LoginIntroPanel`, `_LoginFeatureChip`, `_LoginFormCard` | Responsive admin sign-in screen. |
@@ -702,13 +700,12 @@ This is the exact UI-facing Dart inventory captured in the audit. A “widget”
 | `lib/sale_referral/presentation/pages/sale_shell_page.dart` | 1066 | `SaleShellPage`, `_SaleShellPageState`, `_SalePayoutProfileGate`, `_SalePayoutProfileGateState`, `_OverviewTab`, `_DirectCustomersTab`, `_PointLedgerTab`, `_ConversionToolsTab`, `_ConversionToolsTabState` | Sale dashboard with customer, point, conversion and history tabs. |
 | `lib/shared/widgets/loading_gen_ai.dart` | 519 | `AIGeneratingPage`, `_AIGeneratingPageState`, `_ThoughtEntry` | Full-page AI generation loading experience / thought steps. |
 
-
 ## Appendix B — full library source index
 
 All Dart source files under `lib/` are listed below so an Agent can locate the exact owner before searching. Declarations are intentionally abbreviated; inspect the file before changing a public contract.
 
 | File | LOC | First declarations |
-|---|---:|---|
+| ---- | --: | ------------------ |
 
 | `lib/app_versions/admin/app/bio_ai_admin_app.dart` | 18 | `BioAIAdminApp` |
 | `lib/app_versions/admin/core/admin_logger.dart` | 227 | `AdminLogger` |
@@ -1130,13 +1127,12 @@ All Dart source files under `lib/` are listed below so an Agent can locate the e
 | `lib/services/supabase/supabase_service.dart` | 6 | `SupabaseService` |
 | `lib/shared/widgets/loading_gen_ai.dart` | 519 | `AIGeneratingPage`, `_AIGeneratingPageState`, `_ThoughtEntry` |
 
-
 ## Appendix C — test source index
 
 Use the narrowest test that owns the page/contract. Architecture tests are especially important when moving code across app surfaces.
 
 | Test | LOC | First declarations |
-|---|---:|---|
+| ---- | --: | ------------------ |
 
 | `test/app_versions/admin/admin_controller_test.dart` | 193 | `_FakeAdminRepository` |
 | `test/app_versions/admin/admin_models_test.dart` | 298 | — |
@@ -1212,13 +1208,12 @@ Use the narrowest test that owns the page/contract. Architecture tests are espec
 | `test/services/supabase/cloud_sync/user_data_sync_outbox_test.dart` | 113 | — |
 | `test/widget_test.dart` | 242 | — |
 
-
 ## Appendix D — DD documented view inventory
 
 DD modules document future/current required views. A documented view is not proof that an equivalent Flutter page has already been wired; inspect implementation and checklist progress before claiming it exists.
 
 | DD module | View ID / title | Source |
-|---|---|---|
+| --------- | --------------- | ------ |
 
 | `admin_dashboard` | ADMIN_DASHBOARD-V01 — Admin dashboard | `docs/DD/admin_dashboard/Views.md` |
 | `admin_dashboard` | ADMIN_DASHBOARD-V02 — Admin dashboard drilldown | `docs/DD/admin_dashboard/Views.md` |
@@ -1259,13 +1254,12 @@ DD modules document future/current required views. A documented view is not proo
 | `schedule_notifications` | SCHEDULE_NOTIFICATIONS-V01 — Notification settings | `docs/DD/schedule_notifications/Views.md` |
 | `schedule_notifications` | SCHEDULE_NOTIFICATIONS-V02 — Notification action result | `docs/DD/schedule_notifications/Views.md` |
 
-
 ## Appendix E — Agent context files indexed
 
 These are the repository context files that govern workflows. Read only the selected files in the mandated order during normal work; this appendix makes them discoverable.
 
 | Context file | Headings / purpose |
-|---|---|
+| ------------ | ------------------ |
 
 | `.agents/skills/create-dd-from-bd/SKILL.md` | Create DD From BD Bridge |
 | `.agents/skills/create-dd-from-bd/agents/openai.yaml` | Bridge/configuration |
@@ -1287,7 +1281,7 @@ These are the repository context files that govern workflows. Read only the sele
 | `.codex/domains/notification.md` | Domain - Notification / Reminder · Source · Rules · Search |
 | `.codex/domains/onboarding.md` | Domain - Onboarding · Source · Rules · Search |
 | `.codex/domains/sqlite.md` | Domain - SQLite / DAO / Migration · Source · Rules · Search |
-| `.codex/domains/ui-nami.md` | Domain - UI / Theme / NabiCopy · Source · Rules · Search |
+| `.codex/domains/ui-Nabi.md` | Domain - UI / Theme / NabiCopy · Source · Rules · Search |
 | `.codex/history/HISTORY_REFRESH.md` | History Refresh |
 | `.codex/history/LEARNED_SKILLS.md` | Learned Skills · Canonical Work Types Seen · Frequent Modules · Reusable Project Skills · Command And Test Patterns · Post-Session Self Optimization |
 | `.codex/history/OPEN_RISKS.md` | Open Risks · NB-RISK-001 Supabase sandbox/staging verification pending · NB-RISK-002 Product flow DD open decisions Q-01..Q-10 |
@@ -1303,7 +1297,7 @@ These are the repository context files that govern workflows. Read only the sele
 | `.codex/playbooks/notification.md` | Alias - Notification |
 | `.codex/playbooks/onboarding.md` | Alias - Onboarding |
 | `.codex/playbooks/sqlite.md` | Alias - SQLite |
-| `.codex/playbooks/ui_nami.md` | Alias - UI Nami |
+| `.codex/playbooks/ui_nami.md` | Alias - UI Nabi |
 | `.codex/skills/create-dd-from-bd/SKILL.md` | Create DD From BD · When To Use · Required Context · Output Contract · DD Rules · Completion |
 | `.codex/skills/create-dd-from-bd/agents/openai.yaml` | Bridge/configuration |
 | `.codex/skills/create-dd-from-bd/references/dd-module-from-bd.md` | DD Module From BD Reference · Input Extraction · Folder And File Responsibilities · Traceability Pattern · Quality Gate |
@@ -1343,13 +1337,12 @@ These are the repository context files that govern workflows. Read only the sele
 | `.codex/workflows/supabase-schema.md` | Workflow - Supabase Schema · Required Context · Rules · Completion |
 | `.codex/workflows/test.md` | Workflow - Test · Required Context · Rules · Commands · Completion |
 
-
 ## Appendix F - asset map
 
 Snapshot 2026-06-30. Use declared assets only after checking `pubspec.yaml` and the feature asset/documentation contract. Nabi assets are organized by interaction context; do not relocate/rename them without updating asset config and consumers.
 
 | Asset group | Files | Examples |
-|---|---:|---|
+| ----------- | ----: | -------- |
 
 | `assets/config/nabi` | 5 | `nabi_asset_manifest.json`, `nabi_character_config.json`, `nabi_expression_map.json`, `nabi_motion_library.json`, `nabi_state_matrix.yaml` |
 | `assets/icons` | 2 | `Logo.jpg`, `logo.png` |
@@ -1368,10 +1361,8 @@ Snapshot 2026-06-30. Use declared assets only after checking `pubspec.yaml` and 
 | `assets/images/nabi/progress` | 12 | `nabi_day_complete.png`, `nabi_milestone_badge.png`, `nabi_task_complete.png`, `nabi_thank_you.png` |
 | `assets/images/nabi/system` | 11 | `nabi_access_locked.png`, `nabi_loading.png`, `nabi_offline.png`, `nabi_sync_success.png` |
 
-
 ---
 
 ### Final instruction to an implementation Agent
 
 For a UI request: identify **surface → feature → page → provider/controller → DD → nearest theme family**; then make the smallest coherent change that preserves data direction, route behavior, accessibility, Vietnamese Nabi tone and version boundaries. When uncertain, search the source contract rather than introducing a new UI convention.
-

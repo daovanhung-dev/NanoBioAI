@@ -11,14 +11,14 @@ class FeaturesHubPage extends StatelessWidget {
     final features = [
       _FeatureAction(
         title: 'Lịch trình cá nhân',
-        subtitle: 'Nabigiúp bạn nhìn lại nhịp sống trong tuần.',
+        subtitle: 'Nabi giúp bạn nhìn lại nhịp sống trong tuần.',
         icon: Icons.event_note_rounded,
         color: AppColors.primary,
         onTap: () => context.push(V1RoutePaths.lifestyleSchedule),
       ),
       _FeatureAction(
         title: 'Nhiệm vụ hôm nay',
-        subtitle: 'Từng việc nhỏ, Nabisẽ cùng bạn hoàn thành nhẹ nhàng.',
+        subtitle: 'Từng việc nhỏ, Nabi sẽ cùng bạn hoàn thành nhẹ nhàng.',
         icon: Icons.favorite_rounded,
         color: AppColors.success,
         onTap: () => context.push(V1RoutePaths.healthTracking),
@@ -66,8 +66,8 @@ class FeaturesHubPage extends StatelessWidget {
         onTap: () => context.push(V1RoutePaths.community),
       ),
       _FeatureAction(
-        title: 'Trò chuyện với Nami',
-        subtitle: 'Hỏi Nabibất cứ điều gì bạn đang băn khoăn hôm nay.',
+        title: 'Trò chuyện với Nabi',
+        subtitle: 'Hỏi Nabi bất cứ điều gì bạn đang băn khoăn hôm nay.',
         icon: Icons.auto_awesome_rounded,
         color: AppColors.secondary,
         onTap: () => context.push(V1RoutePaths.aiChat),
@@ -130,7 +130,7 @@ class FeaturesHubPage extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        'Chọn một mục, Nabisẽ đưa bạn đến đúng nơi cần thiết.',
+                        'Chọn một mục, Nabi sẽ đưa bạn đến đúng nơi cần thiết.',
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.textSecondary,
                           height: 1.45,
@@ -210,7 +210,7 @@ class _HeaderSection extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Nabiđã sắp sẵn những công cụ nhỏ cho bạn.',
+                'Nabi đã sắp sẵn những công cụ nhỏ cho bạn.',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.35,
@@ -277,7 +277,7 @@ class _NamiCareCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Bạn không cần làm mọi thứ cùng lúc. Chỉ cần chọn một mục phù hợp với mình lúc này, Nabisẽ đồng hành từng bước.',
+            'Bạn không cần làm mọi thứ cùng lúc. Chỉ cần chọn một mục phù hợp với mình lúc này, Nabi sẽ đồng hành từng bước.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
               height: 1.55,

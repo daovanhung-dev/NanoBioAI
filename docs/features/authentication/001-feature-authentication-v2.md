@@ -35,7 +35,7 @@ Commit de xuat: feat(auth): hoan thanh authentication v2 theo BD/DD
 ## UI/UX
 
 - Them page v2 cho login, register, verify email, forgot password, reset password va auth callback.
-- Copy tieng Viet co dau, giong Nami, khong hien thuat ngu database/trigger/RLS cho user.
+- Copy tieng Viet co dau, giong Nabi, khong hien thuat ngu database/trigger/RLS cho user.
 - Verify email co cooldown gui lai 60 giay.
 
 ## Files

@@ -83,7 +83,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Nabiđã thêm kế hoạch 7 ngày tiếp theo rồi nhé.'),
+          content: Text('Nabi đã thêm kế hoạch 7 ngày tiếp theo rồi nhé.'),
         ),
       );
     } catch (error) {
@@ -99,7 +99,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           PersonalScheduleQuotaUnavailableException.userMessage,
         AIOverloadedException() => AIOverloadedException.userMessage,
         _ =>
-          'Nabichưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',
+          'Nabi chưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',
       };
       ScaffoldMessenger.of(
         context,
@@ -112,9 +112,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       action: () => ref
           .read(dashboardControllerProvider.notifier)
           .completeTimelineItem(item),
-      successMessage: 'Nabiđã ghi nhận việc nhỏ này rồi nhé.',
+      successMessage: 'Nabi đã ghi nhận việc nhỏ này rồi nhé.',
       errorMessage:
-          'Nabichưa thể cập nhật việc này lúc này. Mình thử lại sau một chút nhé.',
+          'Nabi chưa thể cập nhật việc này lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -122,9 +122,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await _runDashboardAction(
       action: () =>
           ref.read(dashboardControllerProvider.notifier).saveDailyCheckIn(mood),
-      successMessage: 'Nabiđã ghi nhận cảm nhận hôm nay của bạn.',
+      successMessage: 'Nabi đã ghi nhận cảm nhận hôm nay của bạn.',
       errorMessage:
-          'Nabichưa thể ghi nhận cảm nhận lúc này. Mình thử lại sau một chút nhé.',
+          'Nabi chưa thể ghi nhận cảm nhận lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -132,9 +132,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await _runDashboardAction(
       action: () =>
           ref.read(dashboardControllerProvider.notifier).addWater(amountMl),
-      successMessage: 'Nabiđã thêm lượng nước cho hôm nay.',
+      successMessage: 'Nabi đã thêm lượng nước cho hôm nay.',
       errorMessage:
-          'Nabichưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
+          'Nabi chưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -142,9 +142,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await _runDashboardAction(
       action: () =>
           ref.read(dashboardControllerProvider.notifier).setWater(waterMl),
-      successMessage: 'Nabiđã lưu lượng nước hôm nay.',
+      successMessage: 'Nabi đã lưu lượng nước hôm nay.',
       errorMessage:
-          'Nabichưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
+          'Nabi chưa thể cập nhật nước lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -152,9 +152,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await _runDashboardAction(
       action: () =>
           ref.read(dashboardControllerProvider.notifier).saveWeight(weightKg),
-      successMessage: 'Nabiđã lưu cân nặng hôm nay.',
+      successMessage: 'Nabi đã lưu cân nặng hôm nay.',
       errorMessage:
-          'Nabichưa thể cập nhật cân nặng lúc này. Mình thử lại sau một chút nhé.',
+          'Nabi chưa thể cập nhật cân nặng lúc này. Mình thử lại sau một chút nhé.',
     );
   }
 
@@ -187,7 +187,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       loading: () => const _DashboardLoadingView(),
       error: (error, _) => _DashboardErrorView(
         message:
-            'Nabichưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
+            'Nabi chưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
         onRetry: () => ref.invalidate(dashboardProvider),
       ),
       data: (dashboard) {
@@ -208,7 +208,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                 dynamicData: dynamicData,
                 isDynamicLoading: dynamicAsync.isLoading,
                 dynamicError: dynamicAsync.hasError
-                    ? 'Nabichưa thể cập nhật một vài tín hiệu mới nhất. Bạn có thể kéo xuống để thử lại nhé.'
+                    ? 'Nabi chưa thể cập nhật một vài tín hiệu mới nhất. Bạn có thể kéo xuống để thử lại nhé.'
                     : null,
                 isGeneratingPlan: generationState.isLoading,
                 onGeneratePlan: _generateAdditionalPlan,
@@ -564,7 +564,7 @@ class _HeroPanel extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Nabiđã lấy dữ liệu mới nhất từ hệ thống để cùng bạn nhìn lại hôm nay.',
+            'Nabi đã lấy dữ liệu mới nhất từ hệ thống để cùng bạn nhìn lại hôm nay.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.white.withValues(alpha: 0.88),
               height: 1.45,
@@ -850,7 +850,7 @@ class _HealthScorePanel extends StatelessWidget {
                     !hasScoreInputs
                         ? 'Khi bạn ghi nhận sức khỏe, hoàn thành việc nhỏ hoặc dùng bữa, điểm hôm nay sẽ tự cập nhật.'
                         : score == 0
-                        ? 'Nabiđã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.'
+                        ? 'Nabi đã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.'
                         : 'Điểm này được Nabitổng hợp từ sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       height: 1.45,
@@ -887,7 +887,7 @@ class _HealthScorePanel extends StatelessWidget {
     if (score >= 85) return 'Hôm nay của bạn rất ổn';
     if (score >= 65) return 'Bạn đang đi đúng hướng';
     if (score >= 40) return 'Mình cùng cải thiện nhẹ nhé';
-    return 'Nabisẽ theo sát bạn hơn hôm nay';
+    return 'Nabi sẽ theo sát bạn hơn hôm nay';
   }
 }
 
@@ -1104,8 +1104,8 @@ class _InsightSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionTitle(
-          title: 'Nabinhận thấy',
-          subtitle: 'Những điều Nabimuốn bạn để ý một chút hôm nay',
+          title: 'Nabi nhận thấy',
+          subtitle: 'Những điều Nabi muốn bạn để ý một chút hôm nay',
           icon: Icons.auto_awesome_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1135,9 +1135,9 @@ class _InsightSection extends StatelessWidget {
         if (insights.isEmpty && recommendations.isEmpty)
           const _EmptyDataCard(
             icon: Icons.auto_awesome_outlined,
-            title: 'Nabichưa có nhận xét mới',
+            title: 'Nabi chưa có nhận xét mới',
             message:
-                'Khi có thêm tín hiệu từ ngày của bạn, Nabisẽ đặt những điều đáng chú ý ở đây.',
+                'Khi có thêm tín hiệu từ ngày của bạn, Nabi sẽ đặt những điều đáng chú ý ở đây.',
           )
         else ...[
           ...insights.map(
@@ -1277,7 +1277,7 @@ class _TimelineSection extends StatelessWidget {
             icon: Icons.timeline_outlined,
             title: 'Chưa có timeline hôm nay',
             message:
-                'Khi hôm nay có bữa ăn, việc nhỏ hoặc lời nhắc mới, Nabisẽ sắp chúng thành một nhịp dễ theo dõi.',
+                'Khi hôm nay có bữa ăn, việc nhỏ hoặc lời nhắc mới, Nabi sẽ sắp chúng thành một nhịp dễ theo dõi.',
           )
         else
           _DashboardCard(
@@ -1595,7 +1595,7 @@ class _GoalChipsSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Điều chúng ta đang hướng tới',
-          subtitle: 'Những mục tiêu Nabisẽ cùng bạn chăm từng chút một',
+          subtitle: 'Những mục tiêu Nabi sẽ cùng bạn chăm từng chút một',
           icon: Icons.track_changes_rounded,
         ),
         const SizedBox(height: AppSpacing.md),

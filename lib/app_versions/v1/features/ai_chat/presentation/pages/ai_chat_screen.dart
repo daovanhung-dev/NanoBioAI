@@ -173,7 +173,7 @@ class _ChatHeaderTitle extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Nami',
+                'Nabi',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.labelLarge.copyWith(
@@ -453,7 +453,7 @@ class _ChatGptEmptyState extends StatelessWidget {
               const _NamiHeroMark(),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'Hôm nay bạn muốn Nabigiúp gì?',
+                'Hôm nay bạn muốn Nabi giúp gì?',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.heading1.copyWith(
                   color: AppColors.textPrimary,
@@ -539,7 +539,7 @@ class _PromptGrid extends StatelessWidget {
     _PromptAction(
       icon: Icons.self_improvement_rounded,
       title: 'Giảm căng thẳng',
-      subtitle: 'Mình đang hơi căng thẳng, Nabigiúp mình với.',
+      subtitle: 'Mình đang hơi căng thẳng, Nabi giúp mình với.',
     ),
     _PromptAction(
       icon: Icons.directions_walk_rounded,
@@ -821,7 +821,7 @@ class _ChatComposerState extends State<_ChatComposer> {
                                 height: 1.48,
                               ),
                               decoration: InputDecoration(
-                                hintText: 'Nhắn cho Nami...',
+                                hintText: 'Nhắn cho Nabi...',
                                 hintStyle: AppTextStyles.bodyLarge.copyWith(
                                   color: AppColors.textMuted,
                                   height: 1.48,

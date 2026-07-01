@@ -35,7 +35,7 @@ Commit de xuat: feat(sync): them time gate, sync outbox va giao dien Sale
 ## Luong Sale
 
 1. Settings doc `get_my_sale_state`.
-2. `none`: hien "Tham gia kiem tien cung Nami", mo dialog dieu le va goi `request_sale_participation`.
+2. `none`: hien "Tham gia kiem tien cung Nabi", mo dialog dieu le va goi `request_sale_participation`.
 3. RPC ghi acceptance va tao/cap nhat `sale_profiles.status = pending`.
 4. `pending`: settings chi hien trang thai cho duyet.
 5. `active`: settings hien "Chuyen sang giao dien Sale" va route `/sale`.
@@ -53,7 +53,7 @@ Commit de xuat: feat(sync): them time gate, sync outbox va giao dien Sale
 
 - Time gate: blocking screen, khong co bypass.
 - Settings Sale CTA:
-  - `none`: tham gia kiem tien cung Nami.
+  - `none`: tham gia kiem tien cung Nabi.
   - `pending`: ho so dang cho duyet.
   - `active`: chuyen sang giao dien Sale.
   - `suspended/closed`: lien he ho tro.

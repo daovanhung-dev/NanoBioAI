@@ -47,7 +47,7 @@ Commit de xuat: feat(sync-sale): dong bo snapshot user va khong gian Sale cloud-
 ## Sale UX va phan quyen
 
 - Settings chi hien nut **Chuyen sang khong gian Sale** khi `get_my_sale_state()` tra `sale_status = active` tu Supabase.
-- User da dang nhap co the mo **Tham gia kiem tien cung Nami**, doc dieu le co version, tick dong y va goi `request_sale_participation`.
+- User da dang nhap co the mo **Tham gia kiem tien cung Nabi**, doc dieu le co version, tick dong y va goi `request_sale_participation`.
 - RPC chi cho role `active` doc sale dashboard, referral tree va leaderboard; direct route khi khong co quyen chi hien trang ho tro, khong hien du lieu Sale.
 - UI Sale co 4 tab rieng: tong quan, mang luoi, xep hang, cong cu uoc tinh. Tat ca dashboard/tree/rank la Supabase RPC; uoc tinh chi la tinh toan UI, khong phai quyet dinh chi tra.
 

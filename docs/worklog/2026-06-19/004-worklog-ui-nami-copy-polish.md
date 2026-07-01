@@ -13,14 +13,14 @@ Commit đề xuất: fix(ui): thổi hồn Nabicho copy và trạng thái UI
 
 - Loại task: fix UI/copy
 - Module chính: `lib/features/**/presentation`
-- Yêu cầu gốc: Rà soát toàn bộ UI, loại bỏ việc hiển thị mã nội bộ như SQLite/bảng/query/error thô, và chỉnh các view chưa có tinh thần Nami.
+- Yêu cầu gốc: Rà soát toàn bộ UI, loại bỏ việc hiển thị mã nội bộ như SQLite/bảng/query/error thô, và chỉnh các view chưa có tinh thần Nabi.
 
 ## Đã làm
 
-- Thay copy người dùng đang lộ thuật ngữ nội bộ bằng thông điệp tiếng Việt có dấu, nhẹ nhàng theo persona Nami.
+- Thay copy người dùng đang lộ thuật ngữ nội bộ bằng thông điệp tiếng Việt có dấu, nhẹ nhàng theo persona Nabi.
 - Không còn đưa `error.toString()` hoặc `snapshot.error` trực tiếp ra UI người dùng.
 - Ẩn mục công cụ dữ liệu dev trong Settings bằng `kDebugMode`.
-- Làm mềm các placeholder Community, Sleep Tracking, Stress Tracking bằng card, icon, theme token và copy Nami.
+- Làm mềm các placeholder Community, Sleep Tracking, Stress Tracking bằng card, icon, theme token và copy Nabi.
 - Chỉnh primitive `ErrorState` để mặc định dùng tiếng Việt và giọng Nabihơn.
 
 ## File code/docs đã sửa
@@ -30,15 +30,15 @@ Commit đề xuất: fix(ui): thổi hồn Nabicho copy và trạng thái UI
 - `lib/features/profile/presentation/pages/profile_page.dart` - sửa - loại copy SQLite/bảng và raw error.
 - `lib/features/settings/presentation/pages/settings_page.dart` - sửa - thay copy kỹ thuật và ẩn Dev tool trong release/user UI.
 - `lib/features/settings/presentation/pages/dev_database_viewer_page.dart` - sửa - không hiển thị `snapshot.error` thô trong dev tool.
-- `lib/features/meal_plan/presentation/pages/meal_plan_page.dart` - sửa - thay raw error bằng thông điệp Nami.
-- `lib/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart` - sửa - thay raw error bằng thông điệp Nami.
-- `lib/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart` - sửa - thay raw error bằng thông điệp Nami.
-- `lib/features/auth/presentation/pages/login_pages.dart` - sửa - thay snackbar lỗi đăng nhập thô bằng thông điệp Nami.
+- `lib/features/meal_plan/presentation/pages/meal_plan_page.dart` - sửa - thay raw error bằng thông điệp Nabi.
+- `lib/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart` - sửa - thay raw error bằng thông điệp Nabi.
+- `lib/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart` - sửa - thay raw error bằng thông điệp Nabi.
+- `lib/features/auth/presentation/pages/login_pages.dart` - sửa - thay snackbar lỗi đăng nhập thô bằng thông điệp Nabi.
 - `lib/features/community/presentation/pages/community_page.dart` - sửa - polish placeholder.
 - `lib/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart` - sửa - polish placeholder.
 - `lib/features/stress_tracking/presentation/pages/stress_tracking_page.dart` - sửa - polish placeholder.
 - `lib/core/theme/primitives/states/error_state.dart` - sửa - Việt hóa default title/retry label.
-- `docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md` - tạo - ghi nhận phiên.
+- `docs/worklog/2026-06-19/004-worklog-ui-Nabi-copy-polish.md` - tạo - ghi nhận phiên.
 
 ## Tài liệu liên quan
 

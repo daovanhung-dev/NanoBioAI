@@ -24,7 +24,7 @@ class HealthInsightsView extends ConsumerWidget {
             icon: Icons.error_outline_rounded,
             title: 'Chưa có dữ liệu hồ sơ',
             message:
-                'Nabichưa thể mở góc sức khỏe của bạn lúc này. Mình thử lại sau một chút nhé.',
+                'Nabi chưa thể mở góc sức khỏe của bạn lúc này. Mình thử lại sau một chút nhé.',
             onRetry: () => ref.invalidate(dashboardProvider),
           ),
           data: (dashboard) {
@@ -158,7 +158,7 @@ class _SummaryCard extends StatelessWidget {
         ? insights.first.content
         : recommendations.isNotEmpty
         ? recommendations.first.description
-        : 'Nabichưa có nhận xét mới cho hôm nay. Khi bạn chăm sóc thêm vài nhịp nhỏ, mình sẽ tổng hợp lại dịu dàng hơn.';
+        : 'Nabi chưa có nhận xét mới cho hôm nay. Khi bạn chăm sóc thêm vài nhịp nhỏ, mình sẽ tổng hợp lại dịu dàng hơn.';
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -433,9 +433,9 @@ class _InsightSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Section(
       title: 'Mình nhận thấy',
-      emptyTitle: 'Nabichưa có nhận xét mới',
+      emptyTitle: 'Nabi chưa có nhận xét mới',
       emptyMessage:
-          'Khi có thêm tín hiệu từ ngày của bạn, Nabisẽ đặt những điều đáng chú ý ở đây.',
+          'Khi có thêm tín hiệu từ ngày của bạn, Nabi sẽ đặt những điều đáng chú ý ở đây.',
       children: insights.map((item) {
         return _SurfaceCard(
           child: Row(
@@ -476,9 +476,9 @@ class _RecommendationSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Section(
       title: 'Đề xuất hôm nay',
-      emptyTitle: 'Nabichưa có gợi ý mới',
+      emptyTitle: 'Nabi chưa có gợi ý mới',
       emptyMessage:
-          'Bạn cứ tiếp tục chăm mình theo nhịp hiện tại. Khi có điều phù hợp, Nabisẽ nhẹ nhàng gợi ý.',
+          'Bạn cứ tiếp tục chăm mình theo nhịp hiện tại. Khi có điều phù hợp, Nabi sẽ nhẹ nhàng gợi ý.',
       children: recommendations.map((item) {
         return _SurfaceCard(
           child: Row(
@@ -818,7 +818,7 @@ String _scoreTitle(int score) {
 
 String _scoreMessage(int score) {
   if (score <= 0) {
-    return 'Nabisẽ cập nhật điểm khi có thêm ghi nhận sức khỏe, nhiệm vụ, bữa ăn, nước uống hoặc giấc ngủ.';
+    return 'Nabi sẽ cập nhật điểm khi có thêm ghi nhận sức khỏe, nhiệm vụ, bữa ăn, nước uống hoặc giấc ngủ.';
   }
   return 'Điểm này được Nabitổng hợp từ những ghi nhận sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.';
 }

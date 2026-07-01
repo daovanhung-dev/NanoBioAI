@@ -101,7 +101,7 @@ class DashboardCompanionService {
       case 'meal':
         return 'Mình chăm bữa này gọn gàng trước, không cần vội.';
       default:
-        return 'Chỉ một việc nhỏ thôi, Nabisẽ đi cùng bạn.';
+        return 'Chỉ một việc nhỏ thôi, Nabi sẽ đi cùng bạn.';
     }
   }
 
@@ -111,7 +111,7 @@ class DashboardCompanionService {
     required String activityLevel,
   }) {
     if (!metrics.hasAnyData) {
-      return 'Nabichưa có đủ tín hiệu hôm nay, mình bắt đầu bằng một việc nhỏ thôi nhé.';
+      return 'Nabi chưa có đủ tín hiệu hôm nay, mình bắt đầu bằng một việc nhỏ thôi nhé.';
     }
 
     final taskRate = metrics.taskCompletionRate;
@@ -122,7 +122,7 @@ class DashboardCompanionService {
     final hasGoodMealProgress = metrics.totalMeals > 0 && mealRate >= 0.75;
 
     if (metrics.hasDailyScoreInputs && metrics.dailyScore == 0) {
-      return 'Nabiđã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.';
+      return 'Nabi đã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.';
     }
 
     if (metrics.dailyScore >= 85 &&
@@ -141,7 +141,7 @@ class DashboardCompanionService {
 
     if (_normalize(sleepQuality).contains('mệt') ||
         _normalize(activityLevel).contains('ít vận động')) {
-      return 'Cơ thể có thể cần mình chậm lại một chút, Nabisẽ nhắc thật nhẹ thôi.';
+      return 'Cơ thể có thể cần mình chậm lại một chút, Nabi sẽ nhắc thật nhẹ thôi.';
     }
 
     return 'Hôm nay bạn đang đi đúng hướng, mình cứ giữ nhịp nhẹ nhàng nhé.';

@@ -364,7 +364,7 @@ class DashboardHealthCalculator {
     if (conditions.isEmpty) {
       return 'Chưa ghi nhận vấn đề đặc biệt trong hồ sơ sức khỏe.';
     }
-    return 'Có ${conditions.length} điểm cần theo dõi, Nabisẽ ưu tiên gợi ý nhẹ nhàng hơn.';
+    return 'Có ${conditions.length} điểm cần theo dõi, Nabi sẽ ưu tiên gợi ý nhẹ nhàng hơn.';
   }
 
   static int _goalFocusScore(List<String> goals) {
@@ -502,7 +502,7 @@ class DashboardHealthCalculator {
         DashboardHealthInsight(
           title: 'Có ${conditions.length} vấn đề cần theo dõi',
           message:
-              'Nabisẽ ưu tiên các gợi ý an toàn, dễ áp dụng và tránh thay đổi quá đột ngột.',
+              'Nabi sẽ ưu tiên các gợi ý an toàn, dễ áp dụng và tránh thay đổi quá đột ngột.',
           priority: 1,
         ),
       );

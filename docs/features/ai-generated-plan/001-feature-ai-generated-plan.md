@@ -44,7 +44,7 @@ Commit đề xuất: feat(dashboard): sinh thêm kế hoạch AI sau onboarding
 - Loading: nút CTA chuyển sang trạng thái `Nabiđang chuẩn bị thêm kế hoạch cho bạn...`.
 - Empty: nếu chưa có kế hoạch, bắt đầu từ ngày mai.
 - Error: hiện SnackBar thân thiện, không lộ lỗi kỹ thuật.
-- Success: hiện SnackBar `Nabiđã thêm kế hoạch 7 ngày tiếp theo rồi nhé.`
+- Success: hiện SnackBar `Nabi đã thêm kế hoạch 7 ngày tiếp theo rồi nhé.`
 
 ## Files
 

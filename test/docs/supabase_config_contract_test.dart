@@ -84,7 +84,7 @@ void main() {
       expect(sql, contains("'Da gui yeu cau Sale; dang cho Admin duyet.'"));
       expect(sql, contains("status = 'pending'"));
       expect(sql, contains("'NANO-'"));
-      expect(sql, isNot(contains("'NAMI-'")));
+      expect(sql, isNot(contains("'Nabi-'")));
       expect(sql, contains('public.admin_assert_permission'));
       expect(sql, contains('SALE_REQUIRES_ACTIVE_PAID_PLAN'));
       expect(sql, contains('payout_profile_complete'));

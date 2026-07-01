@@ -4,7 +4,7 @@ Commit đề xuất: feat(dashboard): thêm Nabicompanion cho trang chủ
 
 ## Mục tiêu
 
-- Biến Dashboard thành màn hình đồng hành hằng ngày của Nami.
+- Biến Dashboard thành màn hình đồng hành hằng ngày của Nabi.
 - Ưu tiên việc nhỏ tiếp theo, check-in cảm nhận, cập nhật nước/cân nặng nhanh và hiện trạng thái kế hoạch hiện có.
 - Dùng dữ liệu SQLite sẵn có, không thêm bảng/cột/migration.
 
@@ -45,7 +45,7 @@ Commit đề xuất: feat(dashboard): thêm Nabicompanion cho trang chủ
 
 ## UI/UX
 
-- Companion copy dùng tiếng Việt và persona Nami.
+- Companion copy dùng tiếng Việt và persona Nabi.
 - Summary là local-rule summary, không gọi AI.
 - Score breakdown mở bằng bottom sheet, giải thích các nhóm Nhiệm vụ, Nước, Bữa ăn, Vận động, Giấc ngủ.
 - Nabichat button dùng `DraggableAIChatButton` chung:

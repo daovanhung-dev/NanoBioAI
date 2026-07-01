@@ -32,7 +32,7 @@ class V3HomePage extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Khu vực Plus và FamilyPlus đang được chuẩn bị. '
-                'Nabisẽ chỉ mở các tính năng này khi quyền thành viên '
+                'Nabi sẽ chỉ mở các tính năng này khi quyền thành viên '
                 'được xác nhận an toàn.',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,

@@ -54,8 +54,8 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
       accentColor: AppColors.info,
     ),
     _NavItemData(
-      label: 'Góc Nami',
-      semanticLabel: 'Mở góc đồng hành cùng Nami',
+      label: 'Góc Nabi',
+      semanticLabel: 'Mở góc đồng hành cùng Nabi',
       icon: Icons.auto_awesome_mosaic_rounded,
       activeIcon: Icons.auto_awesome_rounded,
       baseColor: AppColors.warning,

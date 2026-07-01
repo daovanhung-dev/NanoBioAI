@@ -45,7 +45,7 @@ class HealthScoreHabitsPage extends ConsumerWidget {
               title: 'Chua co lich su cham soc',
               message:
                   viewModel.message ??
-                  'Hoan thanh lich cham soc hang ngay de Nami tinh diem.',
+                  'Hoan thanh lich cham soc hang ngay de Nabi tinh diem.',
               actionLabel: 'Lam moi',
               onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
             ),

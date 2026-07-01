@@ -33,7 +33,7 @@ class PersonalScheduleQuotaExceededException implements Exception {
 
 class PersonalScheduleQuotaUnavailableException implements Exception {
   static const userMessage =
-      'Nabichưa kiểm tra được lượt tạo lịch lúc này. Bạn thử lại sau một chút nhé.';
+      'Nabi chưa kiểm tra được lượt tạo lịch lúc này. Bạn thử lại sau một chút nhé.';
 
   const PersonalScheduleQuotaUnavailableException();
 

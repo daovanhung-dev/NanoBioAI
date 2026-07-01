@@ -18,7 +18,7 @@ Commit de xuat: fix(dashboard): chan tao lich trinh AI khi chua dang nhap
 - Them `DashboardGenerationAuthRequiredException` va helper `requireAuthenticatedGeneratedPlanUser`.
 - `GeneratedPlanService.generateNextPlan()` kiem Supabase user truoc khi fetch dashboard/profile, goi AI, save meal plan, seed schedule hoac schedule reminder.
 - `DashboardController.generateAdditionalPlan()` va `genMealByWeeksToDB()` kiem auth truoc khi tao du lieu.
-- Dashboard page bat rieng exception thieu dang nhap va hien copy dang nhap cho Nami.
+- Dashboard page bat rieng exception thieu dang nhap va hien copy dang nhap cho Nabi.
 - `main.dart` va `main_v2.dart` skip onboarding completion generated-plan callback neu chua co session.
 - `OnboardingController` coi auth-required khi tao plan la skip hop le, khong lam fail guest onboarding.
 - Them unit test dam bao unauthenticated generate khong goi AI/repository/datasource/reminder.

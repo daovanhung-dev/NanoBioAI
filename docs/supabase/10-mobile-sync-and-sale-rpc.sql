@@ -312,7 +312,7 @@ begin
     where sale_user_id = v_user_id and status = 'active'
   ) then
     for i in 1..12 loop
-      v_candidate := 'NAMI-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
+      v_candidate := 'Nabi-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
       insert into public.referral_codes (code, sale_user_id, status)
       values (v_candidate, v_user_id, 'active')
       on conflict (code) do nothing
@@ -391,7 +391,7 @@ begin
   select
     d.depth,
     case
-      when nullif(btrim(u.full_name), '') is null then 'Người dùng Nami'
+      when nullif(btrim(u.full_name), '') is null then 'Người dùng Nabi'
       else split_part(btrim(u.full_name), ' ', 1) || ' •••'
     end,
     d.accepted_at,
@@ -444,7 +444,7 @@ begin
   select
     computed_rank,
     case
-      when nullif(btrim(full_name), '') is null then 'Sale Nami'
+      when nullif(btrim(full_name), '') is null then 'Sale Nabi'
       else split_part(btrim(full_name), ' ', 1) || ' •••'
     end,
     direct_count,

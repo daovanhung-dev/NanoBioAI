@@ -25,7 +25,7 @@ class DashboardDailySummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Nabinhìn nhanh hôm nay',
+                  'Nabi nhìn nhanh hôm nay',
                   style: Theme.of(
                     context,
                   ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
@@ -64,7 +64,7 @@ class DashboardSlowDayBanner extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Hôm nay mình đi chậm lại cũng được. Nabisẽ chỉ nhắc những điều thật nhẹ thôi.',
+              'Hôm nay mình đi chậm lại cũng được. Nabi sẽ chỉ nhắc những điều thật nhẹ thôi.',
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(height: 1.45),
@@ -194,7 +194,7 @@ class DashboardDailyCheckInCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  'Nabimuốn hỏi nhẹ một chút...',
+                  'Nabi muốn hỏi nhẹ một chút...',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
@@ -564,7 +564,7 @@ class _DashboardWeightUpdateSheetState
             ),
             const SizedBox(height: 6),
             Text(
-              'Nabisẽ dùng ghi nhận hôm nay để dashboard phản ánh sát hơn.',
+              'Nabi sẽ dùng ghi nhận hôm nay để dashboard phản ánh sát hơn.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.md),

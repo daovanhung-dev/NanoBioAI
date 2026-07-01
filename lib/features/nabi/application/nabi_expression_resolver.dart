@@ -2,7 +2,7 @@ import '../domain/entities/Nabi_expression.dart';
 
 /// Quy tắc tập trung: event/ngữ cảnh nào thì Nabi biểu cảm và nói gì.
 ///
-/// Các câu nói giữ tone Nami/Nabi: ấm áp, ngắn gọn, không phán xét.
+/// Các câu nói giữ tone Nabi/Nabi: ấm áp, ngắn gọn, không phán xét.
 class NabiExpressionResolver {
   const NabiExpressionResolver._();
 

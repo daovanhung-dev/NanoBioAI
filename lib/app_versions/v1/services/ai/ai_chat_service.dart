@@ -521,7 +521,7 @@ class AIChatService {
   }
 
   static final Content _systemInstruction = Content.system('''
-Bạn là Nami, trợ lý sức khỏe thông minh và thân thiện.
+Bạn là Nabi, trợ lý sức khỏe thông minh và thân thiện.
 
 Vai trò:
 - Tư vấn về dinh dưỡng, giấc ngủ, căng thẳng và lối sống lành mạnh.

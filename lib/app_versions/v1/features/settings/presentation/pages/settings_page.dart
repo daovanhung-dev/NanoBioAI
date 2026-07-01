@@ -74,7 +74,7 @@ class SettingsView extends ConsumerWidget {
                             icon: Icons.person_rounded,
                             title: 'Thông tin cá nhân',
                             subtitle: dashboard == null
-                                ? 'Nabichưa thấy hồ sơ nào sẵn sàng'
+                                ? 'Nabi chưa thấy hồ sơ nào sẵn sàng'
                                 : _profileSubtitle(dashboard),
                             onTap: () => context.push(V1RoutePaths.profile),
                           ),
@@ -158,7 +158,7 @@ class SettingsView extends ConsumerWidget {
                               data: _formatBytes,
                               loading: () => 'Nabiđang kiểm tra dung lượng...',
                               error: (_, __) =>
-                                  'Nabichưa kiểm tra được dung lượng',
+                                  'Nabi chưa kiểm tra được dung lượng',
                             ),
                             trailing: IconButton(
                               tooltip: 'Dọn bộ nhớ tạm',
@@ -213,7 +213,7 @@ class SettingsView extends ConsumerWidget {
                             icon: Icons.favorite_rounded,
                             title: 'Mục tiêu sức khỏe',
                             subtitle: dashboard == null
-                                ? 'Nabichưa thấy mục tiêu nào được chọn'
+                                ? 'Nabi chưa thấy mục tiêu nào được chọn'
                                 : _goalsSubtitle(dashboard.goals),
                           ),
                           const _DividerLine(),
@@ -262,7 +262,7 @@ class SettingsView extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Đăng xuất?'),
         content: const Text(
-          'Nabisẽ đưa bạn về màn đăng nhập. Dữ liệu cloud của bạn vẫn được giữ nguyên.',
+          'Nabi sẽ đưa bạn về màn đăng nhập. Dữ liệu cloud của bạn vẫn được giữ nguyên.',
         ),
         actions: [
           TextButton(
@@ -287,7 +287,7 @@ class SettingsView extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Nabichưa thể đăng xuất lúc này. Bạn thử lại nhé.'),
+          content: Text('Nabi chưa thể đăng xuất lúc này. Bạn thử lại nhé.'),
         ),
       );
     }
@@ -331,7 +331,7 @@ class SettingsView extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Nabichưa thể gửi yêu cầu xóa tài khoản lúc này. Bạn thử lại sau nhé.',
+            'Nabi chưa thể gửi yêu cầu xóa tài khoản lúc này. Bạn thử lại sau nhé.',
           ),
         ),
       );
@@ -379,7 +379,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
             Text('Đổi mật khẩu', style: AppTextStyles.heading3),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Mật khẩu mới cần có ít nhất 8 ký tự. Nabisẽ không lưu mật khẩu trong hồ sơ công khai.',
+              'Mật khẩu mới cần có ít nhất 8 ký tự. Nabi sẽ không lưu mật khẩu trong hồ sơ công khai.',
               style: AppTextStyles.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -439,14 +439,14 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nabiđã cập nhật mật khẩu.')),
+        const SnackBar(content: Text('Nabi đã cập nhật mật khẩu.')),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Nabichưa thể cập nhật mật khẩu lúc này. Bạn thử lại sau nhé.',
+            'Nabi chưa thể cập nhật mật khẩu lúc này. Bạn thử lại sau nhé.',
           ),
         ),
       );
@@ -476,7 +476,7 @@ class _SaleSettingsEntry extends StatelessWidget {
       ),
       error: (_, __) => _MenuItem(
         icon: Icons.volunteer_activism_rounded,
-        title: 'Tham gia kiếm tiền cùng Nami',
+        title: 'Tham gia kiếm tiền cùng Nabi',
         subtitle: 'Mở điều lệ tham gia và thử kiểm tra lại quyền Sale.',
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
@@ -498,7 +498,7 @@ class _SaleSettingsEntry extends StatelessWidget {
 
         return _MenuItem(
           icon: Icons.volunteer_activism_rounded,
-          title: 'Tham gia kiếm tiền cùng Nami',
+          title: 'Tham gia kiếm tiền cùng Nabi',
           subtitle: _subtitleFor(state.status),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
@@ -652,7 +652,7 @@ class _Header extends StatelessWidget {
               Text(
                 isLoading
                     ? 'Nabiđang mở lại các lựa chọn của bạn...'
-                    : 'Nabisẽ giữ các tùy chỉnh để ứng dụng hợp với bạn hơn.',
+                    : 'Nabi sẽ giữ các tùy chỉnh để ứng dụng hợp với bạn hơn.',
                 style: AppTextStyles.bodyMedium,
               ),
             ],
@@ -748,7 +748,7 @@ class _ProfileCard extends StatelessWidget {
                   child: Text(
                     dashboard == null
                         ? 'Nabiđang chờ hồ sơ'
-                        : 'Nabiđã ghi nhớ hồ sơ này',
+                        : 'Nabi đã ghi nhớ hồ sơ này',
                     style: AppTextStyles.labelMedium.copyWith(
                       color: Colors.white,
                     ),
@@ -904,7 +904,7 @@ class _DangerCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             email == null
-                ? 'Nabichưa thấy email tài khoản để hiển thị.'
+                ? 'Nabi chưa thấy email tài khoản để hiển thị.'
                 : 'Tài khoản hiện tại: $email',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium,
@@ -956,11 +956,11 @@ String _profileSubtitle(DashboardEntity dashboard) {
     if (dashboard.email.trim().isNotEmpty) dashboard.email.trim(),
     if (dashboard.phone.trim().isNotEmpty) dashboard.phone.trim(),
   ];
-  return items.isEmpty ? 'Nabiđã ghi nhớ hồ sơ của bạn' : items.join(' • ');
+  return items.isEmpty ? 'Nabi đã ghi nhớ hồ sơ của bạn' : items.join(' • ');
 }
 
 String _goalsSubtitle(List<String> goals) {
-  if (goals.isEmpty) return 'Nabichưa thấy mục tiêu nào được chọn';
+  if (goals.isEmpty) return 'Nabi chưa thấy mục tiêu nào được chọn';
   if (goals.length == 1) return goals.single;
   return '${goals.length} mục tiêu đang hoạt động';
 }

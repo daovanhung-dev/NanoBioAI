@@ -13,7 +13,7 @@ Commit đề xuất: feat(dashboard): thêm Nabicompanion cho trang chủ
 
 - Loại task: feature Dashboard/UI + data write path
 - Module chính: `dashboard`, `daily_health_tracking`, `lifestyle_schedule`, `meal_plan`, `shared/widgets`
-- Yêu cầu gốc: thêm Dashboard companion với Nami, dùng dữ liệu SQLite sẵn có, không thêm schema, giữ write path qua controller/repository/datasource/DAO.
+- Yêu cầu gốc: thêm Dashboard companion với Nabi, dùng dữ liệu SQLite sẵn có, không thêm schema, giữ write path qua controller/repository/datasource/DAO.
 
 ## Đã làm
 
@@ -42,9 +42,9 @@ Commit đề xuất: feat(dashboard): thêm Nabicompanion cho trang chủ
 - `test/features/daily_health_tracking/data/daily_health_tracking_local_datasource_write_test.dart` - tạo - write path tests.
 - `test/features/lifestyle_schedule/data/lifestyle_schedule_completion_test.dart` - sửa - complete by id test.
 - `test/features/meal_plan/data/meal_plan_completion_test.dart` - tạo - complete meal test.
-- `docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md` - tạo - ghi nhận phiên.
-- `docs/features/dashboard_nami_companion/001-feature-dashboard-nami-companion.md` - tạo - mô tả feature.
-- `docs/test/dashboard_nami_companion/001-test-dashboard-nami-companion.md` - tạo - ghi nhận test.
+- `docs/worklog/2026-06-19/006-worklog-dashboard-Nabi-companion.md` - tạo - ghi nhận phiên.
+- `docs/features/dashboard_nami_companion/001-feature-dashboard-Nabi-companion.md` - tạo - mô tả feature.
+- `docs/test/dashboard_nami_companion/001-test-dashboard-Nabi-companion.md` - tạo - ghi nhận test.
 
 ## Commands
 

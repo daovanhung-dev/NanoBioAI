@@ -265,7 +265,7 @@ class _DraggableAIChatButtonState extends State<DraggableAIChatButton> {
                                 boxShadow: AppShadows.md,
                               ),
                               child: Text(
-                                'Hỏi Nami',
+                                'Hỏi Nabi',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.labelSmall

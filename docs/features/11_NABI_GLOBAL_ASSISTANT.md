@@ -10,7 +10,7 @@ Nabi thay thế hoàn toàn vai trò của nút AI Chat dạng hình cũ:
 - Nhấn giữ để thu gọn/mở rộng nhân vật.
 - Biểu cảm thay đổi thật bằng Canvas theo `NabiEmotion`; không phải một ảnh tĩnh đổi text.
 - Cảm xúc đổi theo route và event nghiệp vụ của Onboarding, Dashboard, AI Chat, tính toán sức khỏe, lịch trình, nhắc việc, xác thực, đồng bộ và lỗi.
-- Lời thoại theo tone Nami/Nabi: ngắn, ấm áp, không phán xét, không lộ thuật ngữ kỹ thuật.
+- Lời thoại theo tone Nabi/Nabi: ngắn, ấm áp, không phán xét, không lộ thuật ngữ kỹ thuật.
 
 ## Kiến trúc
 
@@ -159,16 +159,16 @@ Nabi.dispatch(NabiEvent.networkUnavailable);
 
 ## Bảng biểu cảm
 
-| Tình huống | `NabiEmotion` | Hành vi hình thể |
-|---|---|---|
-| Mở app / onboarding | `greeting` | Gật đầu nhẹ, mắt sáng |
-| Dashboard / động viên | `encouraging` | Mỉm cười, trái tim nhỏ |
-| Người dùng hỏi AI | `listening` | Mắt mở to, tập trung |
-| AI đang phản hồi / đang tính | `thinking` | Mắt nhìn lên, hạt suy nghĩ |
-| Có kết quả / thực đơn | `happy` | Mắt cười, má hồng |
-| Hoàn thành nhiệm vụ | `celebrating` | Mắt sao, chuyển động vui |
-| Lỗi nhập / mất mạng | `concerned` | Lông mày dịu, dấu chú ý |
-| Ít hoạt động lâu | `sleepy` | Mắt khép, ký hiệu Z |
+| Tình huống                   | `NabiEmotion` | Hành vi hình thể           |
+| ---------------------------- | ------------- | -------------------------- |
+| Mở app / onboarding          | `greeting`    | Gật đầu nhẹ, mắt sáng      |
+| Dashboard / động viên        | `encouraging` | Mỉm cười, trái tim nhỏ     |
+| Người dùng hỏi AI            | `listening`   | Mắt mở to, tập trung       |
+| AI đang phản hồi / đang tính | `thinking`    | Mắt nhìn lên, hạt suy nghĩ |
+| Có kết quả / thực đơn        | `happy`       | Mắt cười, má hồng          |
+| Hoàn thành nhiệm vụ          | `celebrating` | Mắt sao, chuyển động vui   |
+| Lỗi nhập / mất mạng          | `concerned`   | Lông mày dịu, dấu chú ý    |
+| Ít hoạt động lâu             | `sleepy`      | Mắt khép, ký hiệu Z        |
 
 ## Kiểm thử
 

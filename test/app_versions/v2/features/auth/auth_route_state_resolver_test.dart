@@ -7,7 +7,7 @@ void main() {
   const resolver = AuthRouteStateResolver();
   const session = AuthSessionSnapshot(
     userId: 'user-1',
-    email: 'nami@example.com',
+    email: 'Nabi@example.com',
     emailConfirmed: true,
   );
 
@@ -25,7 +25,7 @@ void main() {
     final state = resolver.resolve(
       session: const AuthSessionSnapshot(
         userId: 'user-1',
-        email: 'nami@example.com',
+        email: 'Nabi@example.com',
         emailConfirmed: false,
       ),
       profile: const AuthProfile(
@@ -37,7 +37,7 @@ void main() {
     );
 
     expect(state.status, AuthRouteStatus.emailVerificationRequired);
-    expect(state.email, 'nami@example.com');
+    expect(state.email, 'Nabi@example.com');
     expect(state.subscriptionTier, 'plus');
   });
 
@@ -50,7 +50,7 @@ void main() {
 
     expect(state.status, AuthRouteStatus.profileBootstrapUnavailable);
     expect(state.userId, 'user-1');
-    expect(state.email, 'nami@example.com');
+    expect(state.email, 'Nabi@example.com');
   });
 
   test('maps pending onboarding statuses to onboarding required', () {
@@ -62,7 +62,7 @@ void main() {
       );
 
       expect(state.status, AuthRouteStatus.onboardingRequired);
-      expect(state.email, 'nami@example.com');
+      expect(state.email, 'Nabi@example.com');
     }
   });
 
@@ -79,7 +79,7 @@ void main() {
 
     expect(state.status, AuthRouteStatus.authenticatedReady);
     expect(state.userId, 'user-1');
-    expect(state.email, 'nami@example.com');
+    expect(state.email, 'Nabi@example.com');
     expect(state.subscriptionTier, 'familyplus');
   });
 
