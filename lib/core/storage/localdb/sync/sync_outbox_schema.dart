@@ -12,8 +12,6 @@ class SyncOutboxSchema {
   static const runtimeStateTable = 'sync_runtime_state';
   static const outboxTable = 'sync_outbox';
   static const applyingCloudKey = 'is_applying_cloud';
-  static const personalScheduleAiRequestsTable =
-      'personal_schedule_ai_requests';
 
   static const userOwnedTables = <String>[
     'health_profiles',
@@ -78,6 +76,17 @@ ON sync_outbox(user_id, table_name, record_id)
     await _createTriggers(db);
   }
 
+  /// Reinstalls the SQLite trigger set when its definition changes.
+  ///
+  /// `CREATE TRIGGER IF NOT EXISTS` deliberately keeps existing triggers, so a
+  /// database upgrade must explicitly drop and recreate them. This is used by
+  /// migration v12 to add stable IDs for legacy inserts that previously wrote
+  /// `NULL` to `id` and therefore bypassed the sync outbox.
+  static Future<void> recreateTriggers(Database db) async {
+    await _dropTriggers(db);
+    await _createTriggers(db);
+  }
+
   static Future<void> _ensureRuntimeState(Database db) {
     return db.insert(runtimeStateTable, {
       'key': applyingCloudKey,
@@ -87,6 +96,14 @@ ON sync_outbox(user_id, table_name, record_id)
   }
 
   static Future<void> _createTriggers(Database db) async {
+    // A number of legacy writers omit the TEXT primary-key `id`. SQLite allows
+    // that on rowid tables, but the old outbox trigger intentionally ignored
+    // rows with a null ID. Normalize first so every user-owned change is
+    // observable and can be represented in a cloud snapshot.
+    for (final table in userOwnedTables) {
+      await db.execute(_normalizeIdAfterInsertTrigger(table));
+    }
+
     await db.execute(_insertTriggerForUsers());
     await db.execute(_updateTriggerForUsers());
     await db.execute(_deleteTriggerForUsers());
@@ -96,32 +113,53 @@ ON sync_outbox(user_id, table_name, record_id)
       await db.execute(_updateTriggerForUserOwnedTable(table));
       await db.execute(_deleteTriggerForUserOwnedTable(table));
     }
-    await _createPersonalScheduleAiRequestTriggersIfPresent(db);
   }
 
-  static Future<void> _createPersonalScheduleAiRequestTriggersIfPresent(
-    Database db,
-  ) async {
-    if (!await _tableExists(db, personalScheduleAiRequestsTable)) return;
+  static Future<void> _dropTriggers(Database db) async {
+    await db.execute('DROP TRIGGER IF EXISTS trg_sync_outbox_users_insert');
+    await db.execute('DROP TRIGGER IF EXISTS trg_sync_outbox_users_update');
+    await db.execute('DROP TRIGGER IF EXISTS trg_sync_outbox_users_delete');
 
-    await db.execute(
-      _upsertTriggerForRequestIdTable(
-        personalScheduleAiRequestsTable,
-        'insert',
-        'INSERT',
-      ),
-    );
-    await db.execute(
-      _upsertTriggerForRequestIdTable(
-        personalScheduleAiRequestsTable,
-        'update',
-        'UPDATE',
-      ),
-    );
-    await db.execute(
-      _deleteTriggerForRequestIdTable(personalScheduleAiRequestsTable),
-    );
+    for (final table in userOwnedTables) {
+      await db.execute(
+        'DROP TRIGGER IF EXISTS trg_sync_normalize_id_${table}_insert',
+      );
+      await db.execute(
+        'DROP TRIGGER IF EXISTS trg_sync_outbox_${table}_insert',
+      );
+      await db.execute(
+        'DROP TRIGGER IF EXISTS trg_sync_outbox_${table}_update',
+      );
+      await db.execute(
+        'DROP TRIGGER IF EXISTS trg_sync_outbox_${table}_delete',
+      );
+    }
   }
+
+  static String _normalizeIdAfterInsertTrigger(String table) =>
+      '''
+CREATE TRIGGER IF NOT EXISTS trg_sync_normalize_id_${table}_insert
+AFTER INSERT ON $table
+WHEN NEW.user_id IS NOT NULL
+  AND (NEW.id IS NULL OR TRIM(CAST(NEW.id AS TEXT)) = '')
+BEGIN
+  UPDATE $table
+  SET id = ${sqliteUuidExpression()}
+  WHERE rowid = NEW.rowid
+    AND (id IS NULL OR TRIM(CAST(id AS TEXT)) = '');
+END
+''';
+
+  /// SQLite expression that produces a RFC 4122 version-4 UUID-shaped value.
+  /// The value remains a valid UUID when the snapshot RPC mirrors it to
+  /// Supabase, so reference fields such as `source_id` stay stable locally.
+  static String sqliteUuidExpression() =>
+      "lower(hex(randomblob(4))) || '-' || "
+      "lower(hex(randomblob(2))) || '-' || "
+      "'4' || substr(lower(hex(randomblob(2))), 2) || '-' || "
+      "substr('89ab', abs(random()) % 4 + 1, 1) || "
+      "substr(lower(hex(randomblob(2))), 2) || '-' || "
+      "lower(hex(randomblob(6)))";
 
   static String _insertTriggerForUsers() =>
       _upsertTriggerForUsers('insert', 'INSERT');
@@ -248,72 +286,4 @@ BEGIN
     updated_at = excluded.updated_at;
 END
 ''';
-
-  static String _upsertTriggerForRequestIdTable(
-    String table,
-    String suffix,
-    String event,
-  ) =>
-      '''
-CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_${table}_$suffix
-AFTER $event ON $table
-WHEN NEW.user_id IS NOT NULL
-  AND NEW.request_id IS NOT NULL
-  AND COALESCE((SELECT value FROM $runtimeStateTable WHERE key = '$applyingCloudKey'), '0') <> '1'
-BEGIN
-  INSERT INTO $outboxTable (
-    id, user_id, table_name, record_id, operation, payload, status,
-    attempt_count, last_error, next_retry_at, created_at, updated_at
-  ) VALUES (
-    NEW.user_id || ':$table:' || NEW.request_id || ':upsert',
-    NEW.user_id, '$table', NEW.request_id, 'upsert', '{}', 'pending',
-    0, NULL, NULL,
-    strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
-    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-  )
-  ON CONFLICT(id) DO UPDATE SET
-    operation = 'upsert',
-    payload = '{}',
-    status = 'pending',
-    last_error = NULL,
-    next_retry_at = NULL,
-    updated_at = excluded.updated_at;
-END
-''';
-
-  static String _deleteTriggerForRequestIdTable(String table) =>
-      '''
-CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_${table}_delete
-AFTER DELETE ON $table
-WHEN OLD.user_id IS NOT NULL
-  AND OLD.request_id IS NOT NULL
-  AND COALESCE((SELECT value FROM $runtimeStateTable WHERE key = '$applyingCloudKey'), '0') <> '1'
-BEGIN
-  INSERT INTO $outboxTable (
-    id, user_id, table_name, record_id, operation, payload, status,
-    attempt_count, last_error, next_retry_at, created_at, updated_at
-  ) VALUES (
-    OLD.user_id || ':$table:' || OLD.request_id || ':delete',
-    OLD.user_id, '$table', OLD.request_id, 'delete', '{}', 'pending',
-    0, NULL, NULL,
-    strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
-    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-  )
-  ON CONFLICT(id) DO UPDATE SET
-    operation = 'delete',
-    payload = '{}',
-    status = 'pending',
-    last_error = NULL,
-    next_retry_at = NULL,
-    updated_at = excluded.updated_at;
-END
-''';
-
-  static Future<bool> _tableExists(Database db, String tableName) async {
-    final rows = await db.rawQuery(
-      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
-      [tableName],
-    );
-    return rows.isNotEmpty;
-  }
 }

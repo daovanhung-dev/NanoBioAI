@@ -29,7 +29,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     try {
       final authUserId = _resolvedAuthenticatedSubjectId();
 
-      // SQLite is always written first. Version 9 database triggers create an
+      // SQLite is always written first. Version 12 database triggers create an
       // outbox marker in this same local transaction; authenticated sessions
       // then upload one complete snapshot. This avoids a partially completed
       // cloud onboarding record before the first AI schedule is generated.

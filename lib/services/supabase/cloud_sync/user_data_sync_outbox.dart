@@ -39,7 +39,7 @@ class SyncOutboxMutation {
 
 /// Makes SQLite user-data writes durable first, then mirrors them to Supabase.
 ///
-/// Version 9 installs SQLite triggers for every user-owned table. A trigger
+/// Version 12 installs SQLite triggers for every user-owned table. A trigger
 /// places a dirty marker in [sync_outbox] inside the same transaction as the
 /// original write. The default drain uses one complete snapshot per user so
 /// all related data is uploaded consistently and deleted records are reflected
@@ -201,16 +201,17 @@ class UserDataSyncOutbox {
 
       try {
         await _pushFullSnapshot(userId, db);
+        var drained = 0;
         for (final mutation in mutations) {
           // A write that happened while the RPC was in-flight has a newer
           // updated_at and must remain queued for the next complete snapshot.
-          await db.delete(
+          drained += await db.delete(
             SyncOutboxSchema.outboxTable,
             where: 'id = ? AND updated_at = ?',
             whereArgs: [mutation.id, mutation.updatedAt],
           );
         }
-        return mutations.length;
+        return drained;
       } catch (error, stackTrace) {
         for (final mutation in mutations) {
           await _markFailed(db, mutation, error);
@@ -252,27 +253,44 @@ class UserDataSyncOutbox {
   ) async {
     var drained = 0;
     for (final mutation in mutations) {
-      await db.update(
+      final syncingUpdatedAt = now().toUtc().toIso8601String();
+      final claimed = await db.update(
         SyncOutboxSchema.outboxTable,
-        {'status': 'syncing', 'updated_at': now().toUtc().toIso8601String()},
-        where: 'id = ?',
-        whereArgs: [mutation.id],
+        {'status': 'syncing', 'updated_at': syncingUpdatedAt},
+        // Do not claim a mutation that has been replaced by a newer local
+        // write after this drain read it.
+        where: 'id = ? AND updated_at = ?',
+        whereArgs: [mutation.id, mutation.updatedAt],
+      );
+      if (claimed == 0) continue;
+
+      final syncingMutation = SyncOutboxMutation(
+        id: mutation.id,
+        userId: mutation.userId,
+        tableName: mutation.tableName,
+        recordId: mutation.recordId,
+        operation: mutation.operation,
+        payload: mutation.payload,
+        updatedAt: syncingUpdatedAt,
+        attemptCount: mutation.attemptCount,
       );
 
       try {
-        await mutationPusher!(mutation);
-        await db.delete(
+        await mutationPusher!(syncingMutation);
+        // A local write may have occurred while the remote operation was in
+        // flight. Delete only the exact version acknowledged by the pusher.
+        final deleted = await db.delete(
           SyncOutboxSchema.outboxTable,
-          where: 'id = ?',
-          whereArgs: [mutation.id],
+          where: 'id = ? AND updated_at = ?',
+          whereArgs: [syncingMutation.id, syncingMutation.updatedAt],
         );
-        drained++;
+        if (deleted > 0) drained++;
       } catch (error, stackTrace) {
-        await _markFailed(db, mutation, error);
+        await _markFailed(db, syncingMutation, error);
         AppLogger.warning(_tag, 'Mutation retry queued: $error');
         AppLogger.error(
           _tag,
-          'Failed to drain ${mutation.tableName}/${mutation.recordId}',
+          'Failed to drain ${syncingMutation.tableName}/${syncingMutation.recordId}',
           error,
           stackTrace,
         );
@@ -300,7 +318,12 @@ class UserDataSyncOutbox {
     final snapshot = await SqliteUserDataSyncLocalDatasource(
       databaseOverride: db,
     ).readSnapshot(userId);
-    if (snapshot == null || !snapshot.hasUser) return;
+    if (snapshot == null || !snapshot.hasUser) {
+      // Never acknowledge and delete dirty markers unless the exact local
+      // snapshot that produced them can be reconstructed. Keeping the outbox
+      // row allows a later repair/retry instead of silently losing a change.
+      throw StateError('Local user snapshot is unavailable for cloud sync.');
+    }
 
     await remote.replaceCloudWithLocalSnapshot(snapshot, userId);
   }
@@ -323,7 +346,7 @@ class UserDataSyncOutbox {
 
     final rows = await db.query(
       tableName,
-      where: '${_primaryKeyColumn(tableName)} = ? AND user_id = ?',
+      where: 'id = ? AND user_id = ?',
       whereArgs: [recordId, userId],
       limit: 1,
     );
@@ -378,8 +401,10 @@ class UserDataSyncOutbox {
             .toIso8601String(),
         'updated_at': timestamp.toIso8601String(),
       },
-      where: 'id = ?',
-      whereArgs: [mutation.id],
+      // Do not turn a newer local write into a delayed retry when an older
+      // in-flight attempt fails.
+      where: 'id = ? AND updated_at = ?',
+      whereArgs: [mutation.id, mutation.updatedAt],
     );
   }
 
@@ -433,19 +458,9 @@ class UserDataSyncOutbox {
         row[column] = recordId;
         continue;
       }
-      if (column == 'request_id') {
-        row[column] = recordId;
-        continue;
-      }
       row[column] = _cloudValue(column, entry.value);
     }
     return row;
-  }
-
-  String _primaryKeyColumn(String tableName) {
-    return tableName == UserDataSyncTables.personalScheduleAiRequestsTable
-        ? 'request_id'
-        : 'id';
   }
 
   Object? _cloudValue(String column, Object? value) {

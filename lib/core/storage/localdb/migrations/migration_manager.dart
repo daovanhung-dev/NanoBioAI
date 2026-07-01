@@ -251,11 +251,16 @@ class MigrationManager {
     await SyncOutboxSchema.create(db);
   }
 
+  /// v12 repairs legacy user-owned rows that were created without an `id`.
+  /// Those rows bypassed the old outbox triggers (`NEW.id IS NOT NULL`) and
+  /// could never be included in a Supabase snapshot. Recreate the trigger set
+  /// after backfill so future inserts are normalized before outbox processing.
   static Future<void> _migrateToV12(Database db) async {
-    await db.execute(PersonalScheduleAiRequestsTable.createTable);
-    await db.execute(PersonalScheduleAiRequestsTable.createUserModeIndex);
     await SyncOutboxSchema.create(db);
-    await _backfillPersonalScheduleAiRequestOutboxMarkers(db);
+    for (final table in SyncOutboxSchema.userOwnedTables) {
+      await _backfillMissingSyncId(db, table);
+    }
+    await SyncOutboxSchema.recreateTriggers(db);
   }
 
   static Future<void> _addColumnIfMissing(
@@ -283,53 +288,8 @@ class MigrationManager {
 
     await db.execute('''
       UPDATE $tableName
-      SET id = printf(
-        '${tableName}_%s_%s',
-        COALESCE(NULLIF(TRIM(CAST(user_id AS TEXT)), ''), 'unknown_user'),
-        rowid
-      )
+      SET id = ${SyncOutboxSchema.sqliteUuidExpression()}
       WHERE id IS NULL OR TRIM(CAST(id AS TEXT)) = ''
-    ''');
-  }
-
-  static Future<void> _backfillPersonalScheduleAiRequestOutboxMarkers(
-    Database db,
-  ) async {
-    const table = SyncOutboxSchema.personalScheduleAiRequestsTable;
-    if (!await _tableExists(db, table)) return;
-    if (!await _columnExists(db, table, 'request_id')) return;
-    if (!await _columnExists(db, table, 'user_id')) return;
-
-    await db.execute('''
-      INSERT INTO ${SyncOutboxSchema.outboxTable} (
-        id, user_id, table_name, record_id, operation, payload, status,
-        attempt_count, last_error, next_retry_at, created_at, updated_at
-      )
-      SELECT
-        user_id || ':$table:' || request_id || ':upsert',
-        user_id,
-        '$table',
-        request_id,
-        'upsert',
-        '{}',
-        'pending',
-        0,
-        NULL,
-        NULL,
-        COALESCE(updated_at, created_at, strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-        COALESCE(updated_at, created_at, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-      FROM $table
-      WHERE user_id IS NOT NULL
-        AND TRIM(CAST(user_id AS TEXT)) <> ''
-        AND request_id IS NOT NULL
-        AND TRIM(CAST(request_id AS TEXT)) <> ''
-      ON CONFLICT(id) DO UPDATE SET
-        operation = 'upsert',
-        payload = '{}',
-        status = 'pending',
-        last_error = NULL,
-        next_retry_at = NULL,
-        updated_at = excluded.updated_at
     ''');
   }
 

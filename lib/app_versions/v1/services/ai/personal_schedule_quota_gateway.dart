@@ -113,7 +113,7 @@ class TrustedBackendPersonalScheduleQuotaGateway
     }
 
     try {
-      final response = await client.rpc(
+      await client.rpc(
         'commit_personal_schedule_generation_quota',
         params: {
           'p_user_id': userId,
@@ -123,12 +123,6 @@ class TrustedBackendPersonalScheduleQuotaGateway
           'p_committed_at': at.toUtc().toIso8601String(),
         },
       );
-      final decision = _decisionFromResponse(response);
-      if (!decision.allowed) {
-        throw PersonalScheduleQuotaExceededException(resetAt: decision.resetAt);
-      }
-    } on PersonalScheduleQuotaExceededException {
-      rethrow;
     } catch (_) {
       throw const PersonalScheduleQuotaUnavailableException();
     }
@@ -145,7 +139,7 @@ class TrustedBackendPersonalScheduleQuotaGateway
       throw const PersonalScheduleQuotaUnavailableException();
     }
 
-    final allowed = _readBool(row['allowed'] ?? row['committed']);
+    final allowed = _readBool(row['allowed']);
     if (allowed) return const PersonalScheduleQuotaDecision.allowed();
     return PersonalScheduleQuotaDecision.denied(
       resetAt: DateTime.tryParse(row['reset_at']?.toString() ?? ''),

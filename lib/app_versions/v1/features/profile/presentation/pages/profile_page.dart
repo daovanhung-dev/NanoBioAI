@@ -293,7 +293,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
         'bmi': bmi,
       };
 
-      // Local data is durable first. SQLite v9 triggers enqueue both user and
+      // Local data is durable first. SQLite v12 triggers enqueue both user and
       // health-profile changes in the same transaction; the outbox pushes a
       // complete authenticated snapshot and retries without discarding the
       // user's edit when the device is offline.
