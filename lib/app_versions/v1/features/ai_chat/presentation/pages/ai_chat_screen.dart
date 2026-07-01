@@ -463,7 +463,7 @@ class _ChatGptEmptyState extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Bạn có thể hỏi về bữa ăn, giấc ngủ, vận động, cảm xúc hoặc chỉ đơn giản là kể cho Nabinghe điều bạn đang bận tâm.',
+                'Bạn có thể hỏi về bữa ăn, giấc ngủ, vận động, cảm xúc hoặc chỉ đơn giản là kể cho Nabi nghe điều bạn đang bận tâm.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textSecondary,
@@ -529,7 +529,7 @@ class _PromptGrid extends StatelessWidget {
     _PromptAction(
       icon: Icons.bedtime_rounded,
       title: 'Cải thiện giấc ngủ',
-      subtitle: 'Nabiơi, làm sao để mình ngủ sâu hơn?',
+      subtitle: 'Nabi ơi, làm sao để mình ngủ sâu hơn?',
     ),
     _PromptAction(
       icon: Icons.restaurant_rounded,
@@ -668,7 +668,7 @@ class _CareNote extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Nabicó thể đồng hành và gợi ý nhẹ nhàng. Với vấn đề sức khỏe nghiêm trọng, bạn vẫn nên hỏi bác sĩ nhé.',
+              'Nabi có thể đồng hành và gợi ý nhẹ nhàng. Với vấn đề sức khỏe nghiêm trọng, bạn vẫn nên hỏi bác sĩ nhé.',
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.45,
@@ -846,7 +846,7 @@ class _ChatComposerState extends State<_ChatComposer> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Nabicó thể chưa luôn chính xác. Bạn hãy kiểm tra lại những thông tin quan trọng nhé.',
+                    'Nabi có thể chưa luôn chính xác. Bạn hãy kiểm tra lại những thông tin quan trọng nhé.',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.textMuted,

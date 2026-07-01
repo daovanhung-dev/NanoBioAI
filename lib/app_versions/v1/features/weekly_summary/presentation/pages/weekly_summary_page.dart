@@ -42,7 +42,7 @@ class WeeklySummaryPage extends StatelessWidget {
 
     return NamiCareScaffold(
       title: 'Tổng kết tuần',
-      subtitle: 'Nabicùng bạn nhìn lại những điều nhỏ đã làm được.',
+      subtitle: 'Nabi cùng bạn nhìn lại những điều nhỏ đã làm được.',
       badge: 'Nhìn lại dịu dàng',
       icon: Icons.insights_rounded,
       gradient: AppGradients.premium,

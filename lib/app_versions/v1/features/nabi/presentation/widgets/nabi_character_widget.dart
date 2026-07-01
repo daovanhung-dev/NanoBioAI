@@ -410,7 +410,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
     }
 
     return Semantics(
-      label: widget.semanticLabel ?? 'Nabi – tro ly suc khoe AI',
+      label: widget.semanticLabel ?? 'Nabi – trợ lý sức khỏe AI',
       button: widget.onTap != null,
       child: AnimatedBuilder(
         animation: Listenable.merge([

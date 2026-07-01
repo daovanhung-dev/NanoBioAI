@@ -42,7 +42,7 @@ class AuthGatePage extends ConsumerWidget {
         }
 
         return _AuthSupportState(
-          title: 'Nabicần kiểm tra thêm',
+          title: 'Nabi cần kiểm tra thêm',
           message:
               routeState.message ??
               'Trạng thái tài khoản chưa rõ ràng. Mình thử làm mới lại nhé.',

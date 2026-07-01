@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 
 import '../../domain/entities/familyplus_models.dart';
 import '../../providers/familyplus_providers.dart';
@@ -19,7 +20,7 @@ class FamilyPlusPage extends ConsumerWidget {
         title: const Text('FamilyPlus'),
         actions: [
           IconButton(
-            tooltip: 'Tai lai',
+            tooltip: 'Tải lại',
             onPressed: () => ref.invalidate(familyPlusContextProvider),
             icon: const Icon(Icons.refresh_rounded),
           ),
@@ -30,8 +31,8 @@ class FamilyPlusPage extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, __) => const _SupportState(
             icon: Icons.cloud_off_rounded,
-            title: 'Chua tai duoc FamilyPlus',
-            message: 'Hay thu lai sau it phut.',
+            title: 'Chưa tải được FamilyPlus',
+            message: 'Hãy thử lại sau ít phút.',
           ),
           data: (model) => _FamilyPlusBody(model: model),
         ),
@@ -51,16 +52,16 @@ class _FamilyPlusBody extends ConsumerWidget {
       case FamilyPlusViewStatus.authRequired:
         return _SupportState(
           icon: Icons.lock_outline_rounded,
-          title: 'Can dang nhap',
-          message: model.message,
-          actionLabel: 'Dang nhap',
+          title: 'Cần đăng nhập',
+          message: vietnameseUiText(model.message, fallback: 'Bạn thử lại sau ít phút.'),
+          actionLabel: 'Đăng nhập',
           onAction: () => context.go(V2RoutePaths.login),
         );
       case FamilyPlusViewStatus.locked:
         return _SupportState(
           icon: Icons.workspace_premium_outlined,
-          title: 'Danh cho FamilyPlus',
-          message: model.message,
+          title: 'Dành cho FamilyPlus',
+          message: vietnameseUiText(model.message, fallback: 'Bạn thử lại sau ít phút.'),
         );
       case FamilyPlusViewStatus.empty:
         return _EmptyFamilyState(contextModel: model.context!);
@@ -69,8 +70,8 @@ class _FamilyPlusBody extends ConsumerWidget {
       case FamilyPlusViewStatus.failure:
         return _SupportState(
           icon: Icons.error_outline_rounded,
-          title: 'Chua san sang',
-          message: model.message,
+          title: 'Chưa sẵn sàng',
+          message: vietnameseUiText(model.message, fallback: 'Bạn thử lại sau ít phút.'),
         );
     }
   }
@@ -87,10 +88,10 @@ class _EmptyFamilyState extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Quan ly gia dinh', style: AppTextStyles.heading1),
+          Text('Quản lý gia đình', style: AppTextStyles.heading1),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Tao nhom FamilyPlus dau tien de them thanh vien va chon ho so can xem.',
+            'Tạo nhóm FamilyPlus đầu tiên để thêm thành viên và chọn hồ sơ cần xem.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
               height: 1.45,
@@ -104,7 +105,7 @@ class _EmptyFamilyState extends ConsumerWidget {
                   ? () => ref.read(familyPlusCreateDefaultGroupProvider)()
                   : null,
               icon: const Icon(Icons.group_add_rounded),
-              label: const Text('Tao nhom FamilyPlus'),
+              label: const Text('Tạo nhóm FamilyPlus'),
             ),
           ),
         ],
@@ -125,12 +126,15 @@ class _ReadyFamilyState extends ConsumerWidget {
       child: ListView(
         children: [
           Text(
-            contextModel.group?.displayName ?? 'FamilyPlus',
+            vietnameseUiText(
+              contextModel.group?.displayName,
+              fallback: 'FamilyPlus',
+            ),
             style: AppTextStyles.heading1,
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            '${members.length}/$familyPlusMaxMembers thanh vien dang hoat dong',
+            '${members.length}/$familyPlusMaxMembers thành viên đang hoạt động',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -169,12 +173,15 @@ class _MemberTile extends ConsumerWidget {
           selected ? Icons.check_circle_rounded : Icons.person_outline_rounded,
           color: selected ? AppColors.primary : AppColors.textSecondary,
         ),
-        title: Text(member.displayName, style: AppTextStyles.labelLarge),
+        title: Text(
+          vietnameseUiText(member.displayName, fallback: 'Thành viên'),
+          style: AppTextStyles.labelLarge,
+        ),
         subtitle: Text(
-          '${member.role} - ${member.canEdit ? 'xem/sua' : 'chi xem'}',
+          '${_familyRoleLabel(member.role)} - ${member.canEdit ? 'xem/sửa' : 'chỉ xem'}',
         ),
         trailing: IconButton(
-          tooltip: 'Chon ho so',
+          tooltip: 'Chọn hồ sơ',
           onPressed: member.canView
               ? () => ref.read(familyPlusSwitchSubjectProvider)(
                   contextModel,
@@ -185,6 +192,21 @@ class _MemberTile extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+
+String _familyRoleLabel(String role) {
+  switch (role.trim().toLowerCase()) {
+    case 'owner':
+    case 'admin':
+      return 'Người quản lý';
+    case 'member':
+      return 'Thành viên';
+    case 'dependent':
+      return 'Người được chăm sóc';
+    default:
+      return 'Thành viên gia đình';
   }
 }
 

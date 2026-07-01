@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/services/dashboard_companion_service.dart';
 
@@ -32,7 +33,7 @@ class DashboardDailySummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  summary,
+                  vietnameseUiText(summary),
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.copyWith(height: 1.45),
@@ -116,7 +117,9 @@ class DashboardNextActionSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           if (action == null)
             Text(
-              DashboardCompanionService.nextActionMessage(null),
+              vietnameseUiText(
+                DashboardCompanionService.nextActionMessage(null),
+              ),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 height: 1.45,
                 fontWeight: FontWeight.w600,
@@ -124,7 +127,7 @@ class DashboardNextActionSection extends StatelessWidget {
             )
           else ...[
             Text(
-              action.title,
+              vietnameseUiText(action.title),
               style: Theme.of(
                 context,
               ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
@@ -132,13 +135,15 @@ class DashboardNextActionSection extends StatelessWidget {
             if (action.subtitle.trim().isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                action.subtitle,
+                vietnameseUiText(action.subtitle),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
             const SizedBox(height: 8),
             Text(
-              DashboardCompanionService.nextActionMessage(action),
+              vietnameseUiText(
+                DashboardCompanionService.nextActionMessage(action),
+              ),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 height: 1.45,
                 color: AppColors.textSecondary,
@@ -148,7 +153,7 @@ class DashboardNextActionSection extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               const _InlineHint(
                 icon: Icons.spa_rounded,
-                label: 'Nabiđang ưu tiên những việc nhẹ cho bạn.',
+                label: 'Nabi đang ưu tiên những việc nhẹ cho bạn.',
               ),
             ],
             const SizedBox(height: AppSpacing.md),
@@ -211,7 +216,9 @@ class DashboardDailyCheckInCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             _InlineHint(
               icon: Icons.favorite_rounded,
-              label: DashboardCompanionService.moodResponse(selectedMood!),
+              label: vietnameseUiText(
+                DashboardCompanionService.moodResponse(selectedMood!),
+              ),
             ),
           ],
           const SizedBox(height: AppSpacing.md),
@@ -222,7 +229,9 @@ class DashboardDailyCheckInCard extends StatelessWidget {
               final selected = mood == selectedMood;
               return ChoiceChip(
                 selected: selected,
-                label: Text(DashboardCompanionService.moodLabel(mood)),
+                label: Text(
+                  vietnameseUiText(DashboardCompanionService.moodLabel(mood)),
+                ),
                 onSelected: (_) => onSelectMood(mood),
                 selectedColor: AppColors.primary.withValues(alpha: 0.14),
                 labelStyle: TextStyle(
@@ -248,14 +257,14 @@ class DashboardPlanStatusCard extends StatelessWidget {
     final hasPlan = planStatus.hasPlan;
     final title = hasPlan
         ? 'Kế hoạch hiện có đến ${_formatDate(planStatus.lastPlanDate!)}'
-        : 'Nabicó thể chuẩn bị nhịp 7 ngày đầu tiên cho bạn.';
+        : 'Nabi có thể chuẩn bị nhịp 7 ngày đầu tiên cho bạn.';
     final message = !hasPlan
-        ? 'Khi sẵn sàng, bạn có thể để Nabisắp nhẹ thực đơn, vận động và nhắc nhở.'
+        ? 'Khi sẵn sàng, bạn có thể để Nabi sắp nhẹ thực đơn, vận động và nhắc nhở.'
         : planStatus.remainingDays == 1
-        ? 'Hôm nay là ngày cuối trong lịch trình hiện tại. Bạn có thể tạo nhịp 7 ngày mới để Nabitiếp tục đồng hành liền mạch.'
+        ? 'Hôm nay là ngày cuối trong lịch trình hiện tại. Bạn có thể tạo nhịp 7 ngày mới để Nabi tiếp tục đồng hành liền mạch.'
         : planStatus.remainingDays > 0
         ? 'Còn ${planStatus.remainingDays} ngày trong kế hoạch. Kế hoạch của bạn vẫn còn đủ dùng, mình cứ đi nhẹ từng ngày nhé.'
-        : 'Kế hoạch hiện tại đã đến hạn, Nabicó thể chuẩn bị thêm nhịp mới cho bạn.';
+        : 'Kế hoạch hiện tại đã đến hạn, Nabi có thể chuẩn bị thêm nhịp mới cho bạn.';
 
     return _CompanionCard(
       child: Row(
@@ -304,7 +313,7 @@ class DashboardSelfCareStreakCard extends StatelessWidget {
         ? 'Tuần này bạn đã có những lần quay lại với bản thân'
         : 'Mình bắt đầu chuỗi đầu tiên từ hôm nay nhé.';
     final message = hasCurrentStreak
-        ? 'Nabirất vui vì bạn vẫn quay lại với bản thân mỗi ngày.'
+        ? 'Nabi rất vui vì bạn vẫn quay lại với bản thân mỗi ngày.'
         : hasData
         ? 'Chỉ cần hôm nay thêm một ghi nhận nhỏ là mình nối lại nhịp được rồi.'
         : 'Chỉ cần một ghi nhận nhỏ cũng đủ để bắt đầu.';
@@ -386,7 +395,7 @@ class DashboardHealthScoreBreakdownSheet extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Điểm hôm nay được Nabitổng hợp từ',
+              'Điểm hôm nay được Nabi tổng hợp từ',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
@@ -564,7 +573,7 @@ class _DashboardWeightUpdateSheetState
             ),
             const SizedBox(height: 6),
             Text(
-              'Nabi sẽ dùng ghi nhận hôm nay để dashboard phản ánh sát hơn.',
+              'Nabi sẽ dùng ghi nhận hôm nay để bảng điều khiển phản ánh sát hơn.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.md),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 
 import '../../domain/entities/health_score_habits_models.dart';
 import '../../providers/health_score_habits_providers.dart';
@@ -19,15 +20,15 @@ class HealthScoreHabitsPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text('Diem suc khoe'),
+        title: const Text('Điểm sức khỏe'),
       ),
       body: state.when(
         loading: () => const _HealthScoreLoading(),
         error: (_, __) => _HealthScoreSupportState(
           icon: Icons.error_outline_rounded,
-          title: 'Chua tai duoc diem suc khoe',
-          message: 'Ban thu lai sau it phut.',
-          actionLabel: 'Thu lai',
+          title: 'Chưa tải được điểm sức khỏe',
+          message: 'Bạn thử lại sau ít phút.',
+          actionLabel: 'Thử lại',
           onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
         ),
         data: (viewModel) {
@@ -35,25 +36,33 @@ class HealthScoreHabitsPage extends ConsumerWidget {
             HealthScoreHabitsViewStatus.authRequired =>
               _HealthScoreSupportState(
                 icon: Icons.lock_outline_rounded,
-                title: 'Can dang nhap',
-                message: viewModel.message ?? 'Dang nhap de tiep tuc.',
-                actionLabel: 'Dang nhap',
+                title: 'Cần đăng nhập',
+                message: vietnameseUiText(
+                  viewModel.message,
+                  fallback: 'Đăng nhập để tiếp tục.',
+                ),
+                actionLabel: 'Đăng nhập',
                 onAction: () => context.go(V2RoutePaths.login),
               ),
             HealthScoreHabitsViewStatus.empty => _HealthScoreSupportState(
               icon: Icons.history_toggle_off_rounded,
-              title: 'Chua co lich su cham soc',
+              title: 'Chưa có lịch sử chăm sóc',
               message:
-                  viewModel.message ??
-                  'Hoan thanh lich cham soc hang ngay de Nabi tinh diem.',
-              actionLabel: 'Lam moi',
+                  vietnameseUiText(
+                    viewModel.message,
+                    fallback: 'Hoàn thành lịch chăm sóc hằng ngày để Nabi tính điểm.',
+                  ),
+              actionLabel: 'Làm mới',
               onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
             ),
             HealthScoreHabitsViewStatus.failure => _HealthScoreSupportState(
               icon: Icons.error_outline_rounded,
-              title: 'Chua tai duoc diem suc khoe',
-              message: viewModel.message ?? 'Ban thu lai sau it phut.',
-              actionLabel: 'Thu lai',
+              title: 'Chưa tải được điểm sức khỏe',
+              message: vietnameseUiText(
+                  viewModel.message,
+                  fallback: 'Bạn thử lại sau ít phút.',
+                ),
+              actionLabel: 'Thử lại',
               onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
             ),
             HealthScoreHabitsViewStatus.ready => _HealthScoreReady(
@@ -95,18 +104,18 @@ class _HealthScoreReady extends StatelessWidget {
           _ScoreHeader(result: result),
           const SizedBox(height: AppSpacing.md),
           _SectionCard(
-            title: 'Thanh phan diem',
+            title: 'Thành phần điểm',
             children: result.breakdown
                 .map((item) => _BreakdownRow(item: item))
                 .toList(growable: false),
           ),
           const SizedBox(height: AppSpacing.md),
           _SectionCard(
-            title: 'Tien do thoi quen',
+            title: 'Tiến độ thói quen',
             children: result.habitProgress.isEmpty
                 ? const [
                     _EmptyInline(
-                      message: 'Chua co thoi quen den han trong giai doan nay.',
+                      message: 'Chưa có thói quen đến hạn trong giai đoạn này.',
                     ),
                   ]
                 : result.habitProgress
@@ -152,7 +161,7 @@ class _ScoreHeader extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            '${result.period.startDate} den ${result.period.endDate}',
+            '${result.period.startDate} đến ${result.period.endDate}',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -210,8 +219,8 @@ class _BreakdownRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _ProgressRow(
-      title: item.label,
-      subtitle: '${item.completedCount}/${item.totalCount} tin hieu',
+      title: vietnameseUiText(item.label),
+      subtitle: '${item.completedCount}/${item.totalCount} tín hiệu',
       value: item.score / 100,
       trailing: '${item.score}',
     );
@@ -226,8 +235,8 @@ class _HabitProgressRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _ProgressRow(
-      title: item.label,
-      subtitle: '${item.completedCount}/${item.dueCount} da xong',
+      title: vietnameseUiText(item.label),
+      subtitle: '${item.completedCount}/${item.dueCount} đã xong',
       value: item.progress.clamp(0, 1).toDouble(),
       trailing: '${(item.progress * 100).round()}%',
     );
@@ -357,4 +366,4 @@ BoxDecoration _cardDecoration() {
 }
 
 const _healthScoreDisclaimer =
-    'Diem suc khoe chi de theo doi xu huong cham soc hang ngay, khong thay the chan doan y khoa.';
+    'Điểm sức khỏe chỉ để theo dõi xu hướng chăm sóc hằng ngày, không thay thế chẩn đoán y khoa.';

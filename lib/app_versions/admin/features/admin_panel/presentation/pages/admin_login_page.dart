@@ -237,12 +237,12 @@ class _LoginIntroPanel extends StatelessWidget {
               const _IntroBrandMark(),
               SizedBox(height: compact ? AppSpacing.md : AppSpacing.xl),
               Text(
-                'NanoBio Admin',
+                'NanoBio Quản trị',
                 style: titleStyle.copyWith(color: AppColors.textInverse),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Trung tâm vận hành dành cho đội ngũ được phân quyền: duyệt thanh toán, quản lý Sale, đối soát và theo dõi lịch sử xử lý.',
+                'Trung tâm vận hành dành cho đội ngũ được phân quyền: duyệt thanh toán, quản lý cộng tác viên, đối soát và theo dõi lịch sử xử lý.',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.darkTextSecondary,
                   height: 1.55,

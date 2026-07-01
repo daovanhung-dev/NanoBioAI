@@ -25,23 +25,23 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Thanh toan goi thanh vien'),
+        title: const Text('Thanh toán gói thành viên'),
         backgroundColor: AppColors.background,
         elevation: 0,
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
-          Text('Chon goi can nang cap', style: AppTextStyles.heading2),
+          Text('Chọn gói cần nâng cấp', style: AppTextStyles.heading2),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Yeu cau se o trang thai pending cho den khi he thong/Admin xac nhan thanh toan hop le.',
+            'Yêu cầu sẽ ở trạng thái chờ xác nhận cho đến khi hệ thống quản trị xác nhận thanh toán hợp lệ.',
             style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
           ),
           const SizedBox(height: AppSpacing.lg),
           DropdownButtonFormField<String>(
             initialValue: _planCode,
-            decoration: const InputDecoration(labelText: 'Goi thanh vien'),
+            decoration: const InputDecoration(labelText: 'Gói thành viên'),
             items: const [
               DropdownMenuItem(value: 'plus', child: Text('Plus')),
               DropdownMenuItem(value: 'family_plus', child: Text('FamilyPlus')),
@@ -53,10 +53,10 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
           const SizedBox(height: AppSpacing.md),
           DropdownButtonFormField<String>(
             initialValue: _billingCycle,
-            decoration: const InputDecoration(labelText: 'Chu ky'),
+            decoration: const InputDecoration(labelText: 'Chu kỳ'),
             items: const [
-              DropdownMenuItem(value: 'monthly', child: Text('Hang thang')),
-              DropdownMenuItem(value: 'yearly', child: Text('Hang nam')),
+              DropdownMenuItem(value: 'monthly', child: Text('Hằng tháng')),
+              DropdownMenuItem(value: 'yearly', child: Text('Hằng năm')),
             ],
             onChanged: _submitting
                 ? null
@@ -72,7 +72,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.payment_rounded),
-            label: const Text('Tao yeu cau thanh toan'),
+            label: const Text('Tạo yêu cầu thanh toán'),
           ),
           if (_message != null) ...[
             const SizedBox(height: AppSpacing.lg),
@@ -108,17 +108,65 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
       setState(() {
         _request = request;
         _message =
-            'Da tao yeu cau pending. Goi se khong duoc cap truoc khi duyet.';
+            'Đã tạo yêu cầu chờ xác nhận. Gói sẽ không được cấp trước khi được duyệt.';
       });
     } on MembershipPaymentException catch (error) {
       setState(() => _message = error.safeMessage);
     } catch (_) {
       setState(
-        () => _message = 'Chua tao duoc yeu cau thanh toan. Ban thu lai sau.',
+        () => _message = 'Chưa tạo được yêu cầu thanh toán. Bạn thử lại sau.',
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+}
+
+String _planLabel(String code) {
+  switch (code.trim().toLowerCase()) {
+    case 'plus':
+      return 'Plus';
+    case 'family_plus':
+    case 'familyplus':
+      return 'FamilyPlus';
+    default:
+      return 'Gói thành viên';
+  }
+}
+
+String _billingCycleLabel(String code) {
+  switch (code.trim().toLowerCase()) {
+    case 'monthly':
+      return 'Hằng tháng';
+    case 'yearly':
+      return 'Hằng năm';
+    default:
+      return 'Chu kỳ chưa xác định';
+  }
+}
+
+String _paymentStatusLabel(String status) {
+  switch (status.trim().toLowerCase()) {
+    case 'pending':
+    case 'requested':
+    case 'pending_review':
+      return 'đang chờ xác nhận';
+    case 'approved':
+      return 'đã được duyệt';
+    case 'paid':
+    case 'succeeded':
+      return 'đã thanh toán';
+    case 'rejected':
+      return 'bị từ chối';
+    case 'cancelled':
+    case 'canceled':
+      return 'đã hủy';
+    case 'refunded':
+      return 'đã hoàn tiền';
+    case 'failed':
+      return 'không thành công';
+    default:
+      return 'đang được xử lý';
   }
 }
 
@@ -139,10 +187,10 @@ class _PaymentRequestPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Yeu cau ${request.status}', style: AppTextStyles.labelLarge),
+          Text('Yêu cầu ${_paymentStatusLabel(request.status)}', style: AppTextStyles.labelLarge),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            '${request.planCode} / ${request.billingCycle} - ${request.amountCents} ${request.currency}',
+            '${_planLabel(request.planCode)} / ${_billingCycleLabel(request.billingCycle)} - ${request.amountCents} ${request.currency}',
             style: AppTextStyles.bodyMedium,
           ),
         ],

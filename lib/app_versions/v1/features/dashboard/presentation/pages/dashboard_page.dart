@@ -363,7 +363,7 @@ class _DashboardContent extends StatelessWidget {
                     ..showSnackBar(
                       const SnackBar(
                         content: Text(
-                          'Mình để việc này lại một chút, Nabivẫn nhắc nhẹ thôi nhé.',
+                          'Mình để việc này lại một chút, Nabi vẫn nhắc nhẹ thôi nhé.',
                         ),
                       ),
                     );
@@ -497,6 +497,10 @@ class _HeroPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shortName = name.trim().isEmpty ? 'bạn' : name.trim().split(' ').last;
+    final membershipLabel = _membershipLabel(
+      membershipInfo.code,
+      fallback: membershipInfo.label,
+    );
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -575,7 +579,7 @@ class _HeroPanel extends StatelessWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
-              _HeroPill(icon: membershipInfo.icon, label: membershipInfo.label),
+              _HeroPill(icon: membershipInfo.icon, label: membershipLabel),
               _HeroPill(
                 icon: Icons.monitor_heart_rounded,
                 label: bmi > 0
@@ -654,7 +658,7 @@ class _GeneratePlanCta extends StatelessWidget {
                   children: [
                     Text(
                       isLoading
-                          ? 'Nabiđang tạo dữ liệu 7 ngày...'
+                          ? 'Nabi đang tạo dữ liệu 7 ngày...'
                           : 'Tạo dữ liệu 7 ngày',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: AppColors.textPrimary,
@@ -730,7 +734,7 @@ class _PlanRenewalBanner extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Bạn có thể tạo dữ liệu 7 ngày mới để Nabitiếp tục đồng hành.',
+                      'Bạn có thể tạo dữ liệu 7 ngày mới để Nabi tiếp tục đồng hành.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         height: 1.45,
                         color: AppColors.textSecondary,
@@ -753,7 +757,7 @@ class _PlanRenewalBanner extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.auto_awesome_rounded),
-              label: Text(isLoading ? 'Nabiđang tạo...' : 'Tạo dữ liệu 7 ngày'),
+              label: Text(isLoading ? 'Nabi đang tạo...' : 'Tạo dữ liệu 7 ngày'),
             ),
           ),
         ],
@@ -851,7 +855,7 @@ class _HealthScorePanel extends StatelessWidget {
                         ? 'Khi bạn ghi nhận sức khỏe, hoàn thành việc nhỏ hoặc dùng bữa, điểm hôm nay sẽ tự cập nhật.'
                         : score == 0
                         ? 'Nabi đã thấy lịch hôm nay rồi. Mình bắt đầu bằng một việc nhỏ trước, không cần vội nha.'
-                        : 'Điểm này được Nabitổng hợp từ sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.',
+                        : 'Điểm này được Nabi tổng hợp từ sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       height: 1.45,
                       color: Theme.of(
@@ -967,7 +971,7 @@ class _TodayMetricsGrid extends StatelessWidget {
       ),
       _MetricData(
         icon: Icons.local_fire_department_rounded,
-        title: 'Calories',
+        title: 'Năng lượng',
         value: metrics.caloriesLogged > 0
             ? '${metrics.caloriesLogged} kcal'
             : metrics.caloriesPlanned > 0
@@ -999,7 +1003,7 @@ class _TodayMetricsGrid extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Dữ liệu hôm nay',
-          subtitle: 'Nabigom lại những tín hiệu chính của hôm nay',
+          subtitle: 'Nabi gom lại những tín hiệu chính của hôm nay',
           icon: Icons.query_stats_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1268,7 +1272,7 @@ class _TimelineSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Hôm nay của chúng ta',
-          subtitle: 'Bữa ăn, việc nhỏ và lời nhắc được Nabigom lại cho bạn',
+          subtitle: 'Bữa ăn, việc nhỏ và lời nhắc được Nabi gom lại cho bạn',
           icon: Icons.timeline_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1394,7 +1398,7 @@ class _GoalProgressSection extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Tiến độ mục tiêu',
-          subtitle: 'Nâng cao sức khỏe mỗi ngày cùng Nabinha',
+          subtitle: 'Nâng cao sức khỏe mỗi ngày cùng Nabi nha',
           icon: Icons.flag_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1405,7 +1409,7 @@ class _GoalProgressSection extends StatelessWidget {
                 ? 'Chưa có mục tiêu sức khỏe'
                 : 'Chưa có tiến độ nhiệm vụ hôm nay',
             message: fallbackGoals.isEmpty
-                ? 'Hãy hoàn thành onboarding để lưu mục tiêu vào hệ thống.'
+                ? 'Hãy hoàn thành phần làm quen để lưu mục tiêu vào hệ thống.'
                 : 'Mục tiêu đã có, nhưng hôm nay chưa có tiến độ.',
           )
         else
@@ -1493,7 +1497,7 @@ class _LifestyleSection extends StatelessWidget {
         const _SectionTitle(
           title: 'Nhịp sống của bạn',
           subtitle:
-              'Nabitổng hợp các ghi nhận sức khỏe, việc nhỏ và bữa ăn để hiểu nhịp sống của bạn hơn.',
+              'Nabi tổng hợp các ghi nhận sức khỏe, việc nhỏ và bữa ăn để hiểu nhịp sống của bạn hơn.',
           icon: Icons.spa_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1604,7 +1608,7 @@ class _GoalChipsSection extends StatelessWidget {
             icon: Icons.track_changes_outlined,
             title: 'Chưa có mục tiêu',
             message:
-                'Sau onboarding, mục tiêu sẽ được lưu và tự hiển thị ở đây.',
+                'Sau khi hoàn thành phần làm quen, mục tiêu sẽ được lưu và tự hiển thị ở đây.',
           )
         else
           _DashboardCard(
@@ -1826,7 +1830,7 @@ class _SyncBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Nabiđang cập nhật những tín hiệu mới nhất...',
+                'Nabi đang cập nhật những tín hiệu mới nhất...',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
@@ -2008,4 +2012,20 @@ List<String> _asStringList(Object? value) {
   final text = value.toString().trim();
   if (text.isEmpty) return const [];
   return [text];
+}
+
+String _membershipLabel(String code, {required String fallback}) {
+  switch (code.trim().toLowerCase()) {
+    case 'guest':
+      return 'Khách trải nghiệm';
+    case 'free':
+      return 'Gói Cơ bản';
+    case 'plus':
+      return 'Gói Plus';
+    case 'family_plus':
+    case 'familyplus':
+      return 'Gói FamilyPlus';
+    default:
+      return fallback.trim().isEmpty ? 'Gói thành viên' : fallback;
+  }
 }

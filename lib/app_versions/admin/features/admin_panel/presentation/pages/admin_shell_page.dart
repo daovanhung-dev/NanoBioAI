@@ -91,7 +91,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
         child: _BlockingState(
           icon: Icons.cloud_off_rounded,
           title: 'Chưa tải được khu quản trị',
-          message: 'Nabi chưa lấy được phiên Admin. Hãy thử lại sau ít phút.',
+          message: 'Nabi chưa lấy được phiên quản trị. Hãy thử lại sau ít phút.',
           actionLabel: 'Thử lại',
           onAction: () => ref.read(adminControllerProvider.notifier).refresh(),
         ),
@@ -101,7 +101,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
           return _AdminStateScaffold(
             child: _BlockingState(
               icon: Icons.lock_person_rounded,
-              title: 'Tài khoản chưa có quyền Admin',
+              title: 'Tài khoản chưa có quyền quản trị',
               message:
                   'Nabi đã đăng nhập, nhưng tài khoản này chưa có vai trò quản trị đang hoạt động.',
               actionLabel: 'Đăng xuất',
@@ -619,7 +619,7 @@ class _SideRailProtectionNotice extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Khu vực có kiểm soát quyền và audit',
+              'Khu vực có kiểm soát quyền và nhật ký kiểm tra',
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textInverse,
                 height: 1.3,
@@ -777,7 +777,7 @@ class _AdminBrand extends StatelessWidget {
     );
 
     if (!extended) {
-      return Tooltip(message: 'NanoBio Admin', child: mark);
+      return Tooltip(message: 'NanoBio Quản trị', child: mark);
     }
 
     return Row(
@@ -796,7 +796,7 @@ class _AdminBrand extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xxs),
               Text(
-                'Admin Operations',
+                'Vận hành quản trị',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.darkTextSecondary,
                 ),
@@ -866,10 +866,10 @@ class _DrawerBrand extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('NanoBio Admin', style: AppTextStyles.heading4),
+                Text('NanoBio Quản trị', style: AppTextStyles.heading4),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  'Vận hành theo quyền và audit',
+                  'Vận hành theo quyền và nhật ký kiểm tra',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -1206,7 +1206,7 @@ class _SecurityPill extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            'Audit đang hoạt động',
+            'Nhật ký kiểm tra đang hoạt động',
             style: AppTextStyles.bodySmall.copyWith(
               color: foreground,
               fontWeight: FontWeight.w700,
@@ -1518,7 +1518,7 @@ class _DashboardView extends StatelessWidget {
           const _EmptyPanel(
             title: 'Chưa có số liệu tổng quan',
             message:
-                'Khi dữ liệu Admin sẵn sàng, Nabi sẽ hiển thị các chỉ số vận hành tại đây.',
+                'Khi dữ liệu quản trị sẵn sàng, Nabi sẽ hiển thị các chỉ số vận hành tại đây.',
           )
         else
           _ResponsiveGrid(
@@ -1608,7 +1608,7 @@ class _AdminOverviewPanel extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'NANOBIO • ADMIN OPERATIONS',
+                            'NANOBIO • VẬN HÀNH QUẢN TRỊ',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textInverse,
                               fontWeight: FontWeight.w700,
@@ -1989,7 +1989,7 @@ class _QueueSummaryBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  'Kiểm tra thông tin trước khi xác nhận. Mọi quyết định sẽ cần lý do để ghi audit.',
+                  'Kiểm tra thông tin trước khi xác nhận. Mọi quyết định đều cần lý do để lưu vào nhật ký kiểm tra.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                     height: 1.35,
@@ -2131,7 +2131,7 @@ class _SaleConversionPayoutDetail extends StatelessWidget {
     final proofPath = _metadataString(metadata, 'payment_proof_path');
     final shortId = item.id.length <= 8 ? item.id : item.id.substring(0, 8);
     final content =
-        _metadataString(metadata, 'payment_content') ?? 'SALE $shortId';
+        _metadataString(metadata, 'payment_content') ?? 'CTV $shortId';
     final currency = _metadataString(metadata, 'currency') ?? 'VND';
     final amount = _metadataInt(metadata, 'money_amount_cents');
     final qrPayload =
@@ -2405,8 +2405,8 @@ class _AdminActionButton extends StatelessWidget {
 
     return Tooltip(
       message: action.isDanger
-          ? 'Thao tác này sẽ được ghi audit'
-          : 'Xác nhận thao tác và ghi audit',
+          ? 'Thao tác này sẽ được ghi vào nhật ký kiểm tra'
+          : 'Xác nhận thao tác và ghi vào nhật ký kiểm tra',
       child: button,
     );
   }
@@ -2421,8 +2421,8 @@ class _AuditView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (events.isEmpty) {
       return const _EmptyPanel(
-        title: 'Chưa có audit phù hợp',
-        message: 'Audit sẽ hiển thị khi có thao tác Admin được ghi nhận.',
+        title: 'Chưa có nhật ký kiểm tra phù hợp',
+        message: 'Nhật ký kiểm tra sẽ hiển thị khi có thao tác quản trị được ghi nhận.',
       );
     }
 
@@ -2430,7 +2430,7 @@ class _AuditView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(
-          title: 'Lịch sử audit',
+          title: 'Lịch sử kiểm tra',
           subtitle: '${events.length} thao tác gần nhất theo bộ lọc hiện tại.',
         ),
         const SizedBox(height: AppSpacing.md),
@@ -2570,7 +2570,7 @@ class _ReasonDialogState extends State<_ReasonDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hãy nhập lý do ngắn gọn, rõ ràng để người có quyền xem audit hiểu được quyết định này.',
+              'Hãy nhập lý do ngắn gọn, rõ ràng để người có quyền xem nhật ký kiểm tra hiểu được quyết định này.',
               style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -2642,7 +2642,7 @@ class _AdminGuideDialog extends StatelessWidget {
                             ),
                             const SizedBox(height: AppSpacing.xxs),
                             Text(
-                              'Các bước thao tác an toàn, rõ ràng và có audit.',
+                              'Các bước thao tác an toàn, rõ ràng và có nhật ký kiểm tra.',
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -2666,7 +2666,7 @@ class _AdminGuideDialog extends StatelessWidget {
                             icon: Icons.space_dashboard_rounded,
                             title: 'Tổng quan',
                             items: [
-                              'Xem các chỉ số vận hành chính trong Dashboard.',
+                              'Xem các chỉ số vận hành chính trong bảng điều khiển.',
                               'Bấm vào thẻ chỉ số để đi đến khu vực liên quan.',
                               'Dùng nút Làm mới khi cần tải lại dữ liệu mới nhất.',
                             ],
@@ -2686,14 +2686,14 @@ class _AdminGuideDialog extends StatelessWidget {
                             items: [
                               'Kiểm tra thông tin người thanh toán trước khi duyệt.',
                               'Chọn Duyệt hoặc Từ chối và luôn nhập lý do đầy đủ.',
-                              'Các thay đổi quan trọng sẽ được ghi lại trong Audit.',
+                              'Các thay đổi quan trọng sẽ được ghi lại trong nhật ký kiểm tra.',
                             ],
                           ),
                           _GuideSection(
                             icon: Icons.badge_rounded,
-                            title: 'Sale và quy đổi điểm',
+                            title: 'Cộng tác viên và quy đổi điểm',
                             items: [
-                              'Duyệt, tạm dừng hoặc đóng hồ sơ Sale theo trạng thái hiện tại.',
+                              'Duyệt, tạm dừng hoặc đóng hồ sơ cộng tác viên theo trạng thái hiện tại.',
                               'Với quy đổi điểm, kiểm tra số điểm và trạng thái trước khi đánh dấu đã chi trả.',
                               'Nếu cần điều chỉnh điểm, ghi lý do ngắn gọn và có thể kiểm chứng.',
                             ],
@@ -2703,7 +2703,7 @@ class _AdminGuideDialog extends StatelessWidget {
                             title: 'Đối soát',
                             items: [
                               'Dùng trạng thái Cần theo dõi khi dữ liệu chưa đủ chắc chắn.',
-                              'Chỉ chọn Đã đối soát khi payment, subscription và điểm đã khớp.',
+                              'Chỉ chọn Đã đối soát khi thanh toán, gói dịch vụ và điểm đã khớp.',
                               'Các quyết định đối soát nên có lý do đủ để người khác đọc lại.',
                             ],
                           ),
@@ -2713,16 +2713,16 @@ class _AdminGuideDialog extends StatelessWidget {
                             items: [
                               'Tạo yêu cầu xuất báo cáo theo phạm vi được phân quyền.',
                               'Khi lưu cấu hình, mô tả rõ mục tiêu thay đổi.',
-                              'Không dùng giao diện Admin để lưu bí mật hoặc khóa truy cập.',
+                              'Không dùng giao diện quản trị để lưu bí mật hoặc khóa truy cập.',
                             ],
                           ),
                           _GuideSection(
                             icon: Icons.history_rounded,
-                            title: 'Audit',
+                            title: 'Nhật ký kiểm tra',
                             items: [
-                              'Dùng Audit để kiểm tra ai đã thao tác, thao tác gì và lý do là gì.',
-                              'Khi có sai lệch, đối chiếu Audit trước khi xử lý tiếp.',
-                              'Không chia sẻ dữ liệu audit ra ngoài nhóm vận hành được phép.',
+                              'Dùng nhật ký kiểm tra để xem ai đã thao tác, thao tác gì và lý do là gì.',
+                              'Khi có sai lệch, đối chiếu nhật ký kiểm tra trước khi xử lý tiếp.',
+                              'Không chia sẻ dữ liệu nhật ký kiểm tra ra ngoài nhóm vận hành được phép.',
                             ],
                           ),
                         ],
@@ -3122,7 +3122,7 @@ class _PermissionDeniedPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Tài khoản Admin hiện tại cần quyền $permission để mở mục này.',
+                  'Tài khoản quản trị hiện tại cần quyền ${_permissionLabel(permission)} để mở mục này.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
                 ),
@@ -3132,6 +3132,33 @@ class _PermissionDeniedPanel extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+String _permissionLabel(String permission) {
+  switch (permission.trim().toLowerCase()) {
+    case 'view_dashboard':
+      return 'xem bảng điều khiển';
+    case 'manage_users':
+      return 'quản lý người dùng';
+    case 'manage_payments':
+      return 'quản lý thanh toán';
+    case 'manage_sales':
+      return 'quản lý cộng tác viên';
+    case 'manage_sale_conversions':
+      return 'quản lý quy đổi điểm';
+    case 'manage_reconciliation':
+      return 'quản lý đối soát';
+    case 'manage_plans':
+      return 'quản lý gói dịch vụ';
+    case 'export_reports':
+      return 'xuất báo cáo';
+    case 'view_audit':
+      return 'xem nhật ký kiểm tra';
+    case 'manage_config':
+      return 'quản lý cấu hình';
+    default:
+      return 'phù hợp';
   }
 }
 
@@ -3209,15 +3236,15 @@ class _AdminAction {
 extension _AdminPanelSectionUi on AdminPanelSection {
   String get label {
     return switch (this) {
-      AdminPanelSection.dashboard => 'Dashboard',
+      AdminPanelSection.dashboard => 'Bảng điều khiển',
       AdminPanelSection.users => 'Người dùng',
       AdminPanelSection.payments => 'Thanh toán',
-      AdminPanelSection.sales => 'Sale',
-      AdminPanelSection.saleConversions => 'Quy đổi điểm Sale',
+      AdminPanelSection.sales => 'Cộng tác viên',
+      AdminPanelSection.saleConversions => 'Quy đổi điểm cộng tác viên',
       AdminPanelSection.reconciliation => 'Đối soát',
       AdminPanelSection.plans => 'Gói dịch vụ',
       AdminPanelSection.reports => 'Báo cáo',
-      AdminPanelSection.audit => 'Audit',
+      AdminPanelSection.audit => 'Nhật ký kiểm tra',
       AdminPanelSection.config => 'Cấu hình',
     };
   }
@@ -3227,7 +3254,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.dashboard => 'Theo dõi số liệu chính',
       AdminPanelSection.users => 'Quản lý trạng thái tài khoản',
       AdminPanelSection.payments => 'Duyệt và kiểm tra thanh toán',
-      AdminPanelSection.sales => 'Duyệt hồ sơ Sale',
+      AdminPanelSection.sales => 'Duyệt hồ sơ cộng tác viên',
       AdminPanelSection.saleConversions => 'Xử lý quy đổi điểm',
       AdminPanelSection.reconciliation => 'Kiểm tra sai lệch vận hành',
       AdminPanelSection.plans => 'Cập nhật gói dịch vụ',
@@ -3297,7 +3324,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
         _AdminAction('approve', 'Duyệt', Icons.verified_user_rounded),
         _AdminAction('reject', 'Từ chối', Icons.block_rounded),
         _AdminAction('suspend', 'Tạm dừng', Icons.pause_circle_rounded),
-        _AdminAction('close', 'Đóng Sale', Icons.cancel_rounded),
+        _AdminAction('close', 'Đóng cộng tác viên', Icons.cancel_rounded),
       ],
       AdminPanelSection.saleConversions => const [
         _AdminAction('approve', 'Duyệt', Icons.verified_rounded),
@@ -3389,9 +3416,9 @@ String _metricLabel(AdminDashboardMetric metric) {
   return switch (metric.key) {
     'users_total' => 'Người dùng',
     'payments_pending' => 'Thanh toán chờ duyệt',
-    'sales_active' => 'Sale đang hoạt động',
-    'commission_available' => 'Điểm Sale khả dụng',
-    _ => metric.label,
+    'sales_active' => 'Cộng tác viên đang hoạt động',
+    'commission_available' => 'Điểm cộng tác viên khả dụng',
+    _ => 'Chỉ số vận hành',
   };
 }
 
@@ -3422,7 +3449,7 @@ String _statusLabel(String status) {
   if (normalized.contains('archived')) return 'Lưu trữ';
   if (normalized.contains('open')) return 'Đang mở';
   if (normalized.contains('generating')) return 'Đang tạo';
-  return status.replaceAll('_', ' ');
+  return 'Đang cập nhật';
 }
 
 Color _statusColor(String status) {
@@ -3582,10 +3609,10 @@ String _auditActionLabel(String action) {
     'admin_update_user_status' => 'Cập nhật trạng thái người dùng',
     'admin_review_payment' => 'Duyệt thanh toán',
     'admin_refund_or_cancel_payment' => 'Hoàn hủy thanh toán',
-    'admin_review_sale_profile' => 'Duyệt hồ sơ Sale',
+    'admin_review_sale_profile' => 'Duyệt hồ sơ cộng tác viên',
     'admin_upsert_config_version' => 'Lưu cấu hình',
     'admin_request_report_export' => 'Yêu cầu xuất báo cáo',
-    'admin_adjust_sale_points' => 'Điều chỉnh điểm Sale',
+    'admin_adjust_sale_points' => 'Điều chỉnh điểm cộng tác viên',
     'admin_create_reconciliation_run' => 'Tạo phiên đối soát',
     'admin_update_reconciliation_discrepancy_status' => 'Cập nhật đối soát',
     'admin_review_sale_point_conversion' => 'Duyệt quy đổi điểm',

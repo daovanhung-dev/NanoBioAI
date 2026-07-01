@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 
 import '../../domain/entities/basic_health_calculator_models.dart';
 import '../../domain/services/basic_health_calculator.dart';
@@ -32,17 +33,17 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
   @override
   Widget build(BuildContext context) {
     return NamiCareScaffold(
-      title: 'Co the cua ban',
+      title: 'Cơ thể của bạn',
       subtitle:
-          'Nabi giup ban uoc tinh nhanh cac chi so co ban, nhe nhang va ro rang.',
+          'Nabi giúp bạn ước tính nhanh các chỉ số cơ bản, nhẹ nhàng và rõ ràng.',
       badge: 'M04 v1',
       icon: Icons.monitor_weight_rounded,
       gradient: AppGradients.primary,
       children: [
         const NamiCareSectionTitle(
-          title: 'Tinh BMI, BMR/RMR va TDEE',
+          title: 'Tính BMI, BMR/RMR và TDEE',
           subtitle:
-              'Nhap so do hien tai de xem goi y tham khao cho ngay hom nay.',
+              'Nhập số đo hiện tại để xem gợi ý tham khảo cho ngày hôm nay.',
         ),
         const SizedBox(height: AppSpacing.md),
         NamiCareSurfaceCard(
@@ -50,33 +51,33 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
             children: [
               _NumberField(
                 controller: _heightController,
-                label: 'Chieu cao (cm)',
+                label: 'Chiều cao (cm)',
                 icon: Icons.height_rounded,
               ),
               const SizedBox(height: AppSpacing.sm),
               _NumberField(
                 controller: _weightController,
-                label: 'Can nang (kg)',
+                label: 'Cân nặng (kg)',
                 icon: Icons.monitor_weight_rounded,
               ),
               const SizedBox(height: AppSpacing.sm),
               _NumberField(
                 controller: _ageController,
-                label: 'Tuoi',
+                label: 'Tuổi',
                 icon: Icons.cake_rounded,
               ),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<BasicHealthSex>(
                 initialValue: _sex,
                 decoration: _inputDecoration(
-                  'Gioi tinh sinh hoc',
+                  'Giới tính sinh học',
                   Icons.person_rounded,
                 ),
                 items: BasicHealthSex.values
                     .map(
                       (item) => DropdownMenuItem(
                         value: item,
-                        child: Text(item.label),
+                        child: Text(vietnameseUiText(item.label)),
                       ),
                     )
                     .toList(),
@@ -88,14 +89,14 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
               DropdownButtonFormField<BasicHealthActivityLevel>(
                 initialValue: _activity,
                 decoration: _inputDecoration(
-                  'Muc van dong',
+                  'Mức vận động',
                   Icons.directions_walk_rounded,
                 ),
                 items: BasicHealthActivityLevel.values
                     .map(
                       (item) => DropdownMenuItem(
                         value: item,
-                        child: Text(item.label),
+                        child: Text(vietnameseUiText(item.label)),
                       ),
                     )
                     .toList(),
@@ -109,7 +110,7 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
                 child: FilledButton.icon(
                   onPressed: _calculate,
                   icon: const Icon(Icons.calculate_rounded),
-                  label: const Text('Tinh chi so'),
+                  label: const Text('Tính chỉ số'),
                 ),
               ),
             ],
@@ -120,7 +121,7 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
           NamiCareEmptyState(
             icon: Icons.info_outline_rounded,
             color: AppColors.warning,
-            title: 'Can kiem tra lai so lieu',
+            title: 'Cần kiểm tra lại số liệu',
             message: _error!,
           ),
         ],
@@ -132,9 +133,9 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
         const NamiCareEmptyState(
           icon: Icons.medical_information_rounded,
           color: AppColors.primary,
-          title: 'Thong tin tham khao',
+          title: 'Thông tin tham khảo',
           message:
-              'Cac chi so nay chi ho tro theo doi suc khoe ca nhan va khong thay the chan doan, tu van hay dieu tri y khoa.',
+              'Các chỉ số này chỉ hỗ trợ theo dõi sức khỏe cá nhân và không thay thế chẩn đoán, tư vấn hay điều trị y khoa.',
         ),
       ],
     );
@@ -157,12 +158,12 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
     } on BasicHealthCalculatorException catch (error) {
       setState(() {
         _report = null;
-        _error = error.message;
+        _error = vietnameseUiText(error.message);
       });
     } catch (_) {
       setState(() {
         _report = null;
-        _error = 'Vui long nhap day du chieu cao, can nang va tuoi.';
+        _error = 'Vui lòng nhập đầy đủ chiều cao, cân nặng và tuổi.';
       });
     }
   }
@@ -170,7 +171,7 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
   double _parseDouble(String value) {
     final parsed = double.tryParse(value.replaceAll(',', '.').trim());
     if (parsed == null) {
-      throw const BasicHealthCalculatorException('Vui long nhap so hop le.');
+      throw const BasicHealthCalculatorException('Vui lòng nhập số hợp lệ.');
     }
     return parsed;
   }
@@ -178,7 +179,7 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
   int _parseInt(String value) {
     final parsed = int.tryParse(value.trim());
     if (parsed == null) {
-      throw const BasicHealthCalculatorException('Vui long nhap so hop le.');
+      throw const BasicHealthCalculatorException('Vui lòng nhập số hợp lệ.');
     }
     return parsed;
   }
@@ -235,7 +236,7 @@ class _ReportCard extends StatelessWidget {
             icon: Icons.favorite_rounded,
             color: AppColors.success,
             title: 'BMI',
-            value: '${report.bmi} - ${report.bmiCategory}',
+            value: '${report.bmi} - ${vietnameseUiText(report.bmiCategory)}',
           ),
           const SizedBox(height: AppSpacing.sm),
           _MetricRow(
@@ -249,21 +250,21 @@ class _ReportCard extends StatelessWidget {
             icon: Icons.bolt_rounded,
             color: AppColors.secondary,
             title: 'TDEE',
-            value: '${report.tdeeKcal} kcal/ngay',
+            value: '${report.tdeeKcal} kcal/ngày',
           ),
           const SizedBox(height: AppSpacing.sm),
           _MetricRow(
             icon: Icons.water_drop_rounded,
             color: AppColors.info,
-            title: 'Nuoc goi y',
-            value: '${report.hydrationMl} ml/ngay',
+            title: 'Nước gợi ý',
+            value: '${report.hydrationMl} ml/ngày',
           ),
           const SizedBox(height: AppSpacing.sm),
           NamiCareInfoTile(
             icon: Icons.bedtime_rounded,
             color: AppColors.primary,
-            title: 'Giac ngu va van dong',
-            subtitle: '${report.sleepGuidance} ${report.activityGuidance}',
+            title: 'Giấc ngủ và vận động',
+            subtitle: '${vietnameseUiText(report.sleepGuidance)} ${vietnameseUiText(report.activityGuidance)}',
             trailing: report.formulaVersion,
           ),
         ],
@@ -291,7 +292,7 @@ class _MetricRow extends StatelessWidget {
       icon: icon,
       color: color,
       title: title,
-      subtitle: 'Nabi dung chi so nay de goi y xu huong cham soc phu hop hon.',
+      subtitle: 'Nabi dùng chỉ số này để gợi ý xu hướng chăm sóc phù hợp hơn.',
       trailing: value,
     );
   }

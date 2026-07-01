@@ -9,6 +9,7 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_vali
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
 
 class V2LoginPage extends ConsumerStatefulWidget {
@@ -36,7 +37,7 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
   @override
   Widget build(BuildContext context) {
     return _AuthScaffold(
-      eyebrow: 'NANOBIO ACCOUNT',
+      eyebrow: 'TÀI KHOẢN NANOBIO',
       heroIcon: Icons.waving_hand_rounded,
       title: 'Mừng bạn quay lại',
       subtitle:
@@ -55,7 +56,7 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
               const SizedBox(height: AppSpacing.lg),
               _AuthTextField(
                 controller: _email,
-                label: 'Email',
+                label: 'Địa chỉ email',
                 hintText: 'ban@example.com',
                 prefixIcon: Icons.alternate_email_rounded,
                 keyboardType: TextInputType.emailAddress,
@@ -64,7 +65,9 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
                   AutofillHints.username,
                   AutofillHints.email,
                 ],
-                validator: (value) => AuthValidators.email(value ?? ''),
+                validator: (value) => vietnameseUiText(
+                  AuthValidators.email(value ?? ''),
+                ),
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -76,7 +79,9 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
                 obscureText: _obscurePassword,
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.password],
-                validator: (value) => AuthValidators.password(value ?? ''),
+                validator: (value) => vietnameseUiText(
+                  AuthValidators.password(value ?? ''),
+                ),
                 suffixIcon: _PasswordVisibilityButton(
                   obscure: _obscurePassword,
                   onPressed: () {
@@ -203,7 +208,9 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
                 textCapitalization: TextCapitalization.words,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.name],
-                validator: (value) => AuthValidators.fullName(value ?? ''),
+                validator: (value) => vietnameseUiText(
+                  AuthValidators.fullName(value ?? ''),
+                ),
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -220,7 +227,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
               const SizedBox(height: AppSpacing.md),
               _AuthTextField(
                 controller: _email,
-                label: 'Email',
+                label: 'Địa chỉ email',
                 hintText: 'ban@example.com',
                 prefixIcon: Icons.alternate_email_rounded,
                 keyboardType: TextInputType.emailAddress,
@@ -229,7 +236,9 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
                   AutofillHints.username,
                   AutofillHints.email,
                 ],
-                validator: (value) => AuthValidators.email(value ?? ''),
+                validator: (value) => vietnameseUiText(
+                  AuthValidators.email(value ?? ''),
+                ),
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -241,7 +250,9 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
                 obscureText: _obscurePassword,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.newPassword],
-                validator: (value) => AuthValidators.password(value ?? ''),
+                validator: (value) => vietnameseUiText(
+                  AuthValidators.password(value ?? ''),
+                ),
                 suffixIcon: _PasswordVisibilityButton(
                   obscure: _obscurePassword,
                   onPressed: () {
@@ -546,7 +557,7 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
             ],
             _AuthTextField(
               controller: _email,
-              label: 'Email',
+              label: 'Địa chỉ email',
               hintText: 'ban@example.com',
               prefixIcon: Icons.alternate_email_rounded,
               keyboardType: TextInputType.emailAddress,
@@ -555,7 +566,9 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
                 AutofillHints.username,
                 AutofillHints.email,
               ],
-              validator: (value) => AuthValidators.email(value ?? ''),
+              validator: (value) => vietnameseUiText(
+                  AuthValidators.email(value ?? ''),
+                ),
               onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -649,7 +662,9 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
               obscureText: _obscurePassword,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.newPassword],
-              validator: (value) => AuthValidators.password(value ?? ''),
+              validator: (value) => vietnameseUiText(
+                  AuthValidators.password(value ?? ''),
+                ),
               suffixIcon: _PasswordVisibilityButton(
                 obscure: _obscurePassword,
                 onPressed: () {

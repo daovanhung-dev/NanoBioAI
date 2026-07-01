@@ -169,7 +169,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                           const SizedBox(height: AppSpacing.xl),
 
                           Semantics(
-                            label: 'Nabiđang chuẩn bị câu trả lời cho bạn',
+                            label: 'Nabi đang chuẩn bị câu trả lời cho bạn',
                             liveRegion: true,
                             child: _buildOrb(),
                           ),
@@ -269,7 +269,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
           ),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            'Nabi• Đang ở bên bạn',
+            'Nabi • Đang ở bên bạn',
             style: AppTextStyles.labelSmall.copyWith(
               color: AppColors.primary,
               letterSpacing: 0.2,
@@ -284,7 +284,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
     return Column(
       children: [
         Text(
-          'Đợi Nabimột chút nhé',
+          'Đợi Nabi một chút nhé',
           style: AppTextStyles.heading2.copyWith(color: AppColors.textPrimary),
           textAlign: TextAlign.center,
         ),
@@ -416,7 +416,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Nabiđang nghĩ',
+            'Nabi đang nghĩ',
             style: AppTextStyles.labelLarge.copyWith(
               color: AppColors.textPrimary,
             ),

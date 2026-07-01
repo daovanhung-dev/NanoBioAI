@@ -156,7 +156,7 @@ class SettingsView extends ConsumerWidget {
                             title: 'Dung lượng',
                             subtitle: cacheSizeAsync.when(
                               data: _formatBytes,
-                              loading: () => 'Nabiđang kiểm tra dung lượng...',
+                              loading: () => 'Nabi đang kiểm tra dung lượng...',
                               error: (_, __) =>
                                   'Nabi chưa kiểm tra được dung lượng',
                             ),

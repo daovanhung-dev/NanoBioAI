@@ -38,8 +38,8 @@ class FeaturesHubPage extends StatelessWidget {
         onTap: () => context.push(V1RoutePaths.nutrition),
       ),
       _FeatureAction(
-        title: 'Chi so co the',
-        subtitle: 'Tinh nhanh BMI, BMR/RMR, TDEE va goi y nuoc, ngu, van dong.',
+        title: 'Chỉ số cơ thể',
+        subtitle: 'Tính nhanh BMI, BMR/RMR, TDEE và gợi ý nước, ngủ, vận động.',
         icon: Icons.monitor_weight_rounded,
         color: AppColors.info,
         onTap: () => context.push(V1RoutePaths.bodyMetrics),
@@ -259,7 +259,7 @@ class _NamiCareCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.circular),
             ),
             child: Text(
-              'Nabigợi ý',
+              'Nabi gợi ý',
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.primary,
                 fontWeight: AppTypography.bold,

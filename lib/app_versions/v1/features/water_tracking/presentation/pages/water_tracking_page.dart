@@ -106,7 +106,7 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
         NamiCareEmptyState(
           icon: Icons.notifications_active_rounded,
           color: AppColors.info,
-          title: 'Nabinhắc mình uống nước',
+          title: 'Nabi nhắc mình uống nước',
           message: _currentMl == 0
               ? 'Nabi chưa ghi nhận ly nước nào hôm nay. Mình bắt đầu bằng một ngụm nhỏ nhé.'
               : 'Từng ngụm nhỏ đang giúp cơ thể dễ chịu hơn rồi. Nabi sẽ tiếp tục nhắc bạn thật nhẹ nhàng.',

@@ -36,7 +36,7 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       theme: _isDarkMode ? _buildDarkTheme() : _buildLightTheme(),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('BioAI Design System Demo'),
+          title: const Text('Bản xem trước hệ thống thiết kế BioAI'),
           actions: [
             IconButton(
               icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
@@ -73,10 +73,10 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
           : AppColorTokens.surface,
       child: ListView(
         children: [
-          _buildNavItem('Components', 'components'),
-          _buildNavItem('Tokens', 'tokens'),
-          _buildNavItem('Typography', 'typography'),
-          _buildNavItem('States', 'states'),
+          _buildNavItem('Thành phần', 'components'),
+          _buildNavItem('Mã thiết kế', 'tokens'),
+          _buildNavItem('Kiểu chữ', 'typography'),
+          _buildNavItem('Trạng thái', 'states'),
         ],
       ),
     );
@@ -119,26 +119,26 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Primitive Components'),
+        _buildSectionTitle('Thành phần giao diện cơ bản'),
         SizedBox(height: AppSpacingTokens.sectionSpacing),
 
         // Buttons
-        _buildSubSection('Buttons', _buildButtonExamples()),
+        _buildSubSection('Nút bấm', _buildButtonExamples()),
 
         // Cards
-        _buildSubSection('Cards', _buildCardExamples()),
+        _buildSubSection('Thẻ nội dung', _buildCardExamples()),
 
         // Chips
-        _buildSubSection('Chips', _buildChipExamples()),
+        _buildSubSection('Nhãn chọn', _buildChipExamples()),
 
         // Inputs
-        _buildSubSection('Inputs', _buildInputExamples()),
+        _buildSubSection('Trường nhập liệu', _buildInputExamples()),
 
         // Badges
-        _buildSubSection('Badges', _buildBadgeExamples()),
+        _buildSubSection('Huy hiệu', _buildBadgeExamples()),
 
         // Section Headers
-        _buildSubSection('Section Headers', _buildSectionHeaderExamples()),
+        _buildSubSection('Tiêu đề khu vực', _buildSectionHeaderExamples()),
       ],
     );
   }
@@ -151,22 +151,22 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
         AppButton(
           variant: ButtonVariant.primary,
           onPressed: () {},
-          child: const Text('Primary'),
+          child: const Text('Chính'),
         ),
         AppButton(
           variant: ButtonVariant.secondary,
           onPressed: () {},
-          child: const Text('Secondary'),
+          child: const Text('Phụ'),
         ),
         AppButton(
           variant: ButtonVariant.outlined,
           onPressed: () {},
-          child: const Text('Outlined'),
+          child: const Text('Viền'),
         ),
         AppButton(
           variant: ButtonVariant.text,
           onPressed: () {},
-          child: const Text('Text'),
+          child: const Text('Văn bản'),
         ),
         AppButton(
           variant: ButtonVariant.icon,
@@ -188,12 +188,12 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
             });
           },
           loading: _buttonLoading,
-          child: const Text('Loading'),
+          child: const Text('Đang tải'),
         ),
         AppButton(
           variant: ButtonVariant.primary,
           onPressed: null,
-          child: const Text('Disabled'),
+          child: const Text('Vô hiệu hóa'),
         ),
       ],
     );
@@ -208,21 +208,21 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
           width: 200,
           child: AppCard(
             variant: CardVariant.defaultCard,
-            child: const Text('Default Card'),
+            child: const Text('Thẻ mặc định'),
           ),
         ),
         SizedBox(
           width: 200,
           child: AppCard(
             variant: CardVariant.elevated,
-            child: const Text('Elevated Card'),
+            child: const Text('Thẻ nâng cao'),
           ),
         ),
         SizedBox(
           width: 200,
           child: AppCard(
             variant: CardVariant.outlined,
-            child: const Text('Outlined Card'),
+            child: const Text('Thẻ có viền'),
           ),
         ),
         SizedBox(
@@ -232,9 +232,9 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
             onTap: () {
               ScaffoldMessenger.of(
                 context,
-              ).showSnackBar(const SnackBar(content: Text('Card tapped!')));
+              ).showSnackBar(const SnackBar(content: Text('Đã chạm vào thẻ!')));
             },
-            child: const Text('Interactive Card\n(Tap me)'),
+            child: const Text('Thẻ có tương tác\n(Chạm để thử)'),
           ),
         ),
       ],
@@ -248,7 +248,7 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       children: [
         AppChip(
           variant: ChipVariant.selectable,
-          label: 'Selectable',
+          label: 'Có thể chọn',
           selected: _chipSelected,
           onTap: () {
             setState(() {
@@ -258,24 +258,24 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
         ),
         AppChip(
           variant: ChipVariant.filter,
-          label: 'Filter',
+          label: 'Lọc',
           selected: false,
           onTap: () {},
         ),
         AppChip(
           variant: ChipVariant.action,
-          label: 'Action',
+          label: 'Thao tác',
           icon: Icons.label,
           onTap: () {},
         ),
         AppChip(
           variant: ChipVariant.action,
-          label: 'With Delete',
+          label: 'Có thể xóa',
           onTap: () {},
           onDeleted: () {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(const SnackBar(content: Text('Chip deleted!')));
+            ).showSnackBar(const SnackBar(content: Text('Đã xóa nhãn!')));
           },
         ),
       ],
@@ -287,17 +287,17 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       children: [
         AppInput(
           variant: InputVariant.textField,
-          label: 'Text Field',
-          hint: 'Enter text here',
+          label: 'Ô nhập văn bản',
+          hint: 'Nhập nội dung tại đây',
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
-        AppInput(variant: InputVariant.search, hint: 'Search...'),
+        AppInput(variant: InputVariant.search, hint: 'Tìm kiếm...'),
         SizedBox(height: AppSpacingTokens.itemSpacing),
         AppInput(
           variant: InputVariant.textField,
-          label: 'With Error',
-          hint: 'Enter email',
-          errorText: 'Invalid email format',
+          label: 'Có lỗi',
+          hint: 'Nhập email',
+          errorText: 'Email không đúng định dạng',
         ),
       ],
     );
@@ -311,22 +311,22 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
         AppBadge(
           variant: BadgeVariant.status,
           status: BadgeStatus.success,
-          label: 'Success',
+          label: 'Thành công',
         ),
         AppBadge(
           variant: BadgeVariant.status,
           status: BadgeStatus.warning,
-          label: 'Warning',
+          label: 'Cảnh báo',
         ),
         AppBadge(
           variant: BadgeVariant.status,
           status: BadgeStatus.error,
-          label: 'Error',
+          label: 'Lỗi',
         ),
         AppBadge(
           variant: BadgeVariant.status,
           status: BadgeStatus.info,
-          label: 'Info',
+          label: 'Thông tin',
         ),
         AppBadge(variant: BadgeVariant.count, count: 5),
         AppBadge(variant: BadgeVariant.count, count: 99),
@@ -339,16 +339,16 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
   Widget _buildSectionHeaderExamples() {
     return Column(
       children: [
-        SectionHeader(title: 'Section Title'),
-        SectionHeader(title: 'With Subtitle', subtitle: 'This is a subtitle'),
+        SectionHeader(title: 'Tiêu đề khu vực'),
+        SectionHeader(title: 'Có phụ đề', subtitle: 'Đây là phần mô tả phụ'),
         SectionHeader(
-          title: 'With Action',
-          subtitle: 'Subtitle text here',
-          actionLabel: 'View All',
+          title: 'Có thao tác',
+          subtitle: 'Nội dung mô tả phụ',
+          actionLabel: 'Xem tất cả',
           onAction: () {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(const SnackBar(content: Text('Action pressed!')));
+            ).showSnackBar(const SnackBar(content: Text('Đã thực hiện thao tác!')));
           },
         ),
       ],
@@ -363,12 +363,12 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Design Tokens'),
+        _buildSectionTitle('Mã thiết kế'),
         SizedBox(height: AppSpacingTokens.sectionSpacing),
 
-        _buildSubSection('Colors', _buildColorTokens()),
-        _buildSubSection('Spacing', _buildSpacingTokens()),
-        _buildSubSection('Radius', _buildRadiusTokens()),
+        _buildSubSection('Màu sắc', _buildColorTokens()),
+        _buildSubSection('Khoảng cách', _buildSpacingTokens()),
+        _buildSubSection('Bo góc', _buildRadiusTokens()),
       ],
     );
   }
@@ -380,18 +380,18 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       spacing: AppSpacingTokens.itemSpacing,
       runSpacing: AppSpacingTokens.itemSpacing,
       children: [
-        _buildColorSwatch('Primary', AppColorTokens.primary),
-        _buildColorSwatch('Secondary', AppColorTokens.secondary),
-        _buildColorSwatch('Success', AppColorTokens.success),
-        _buildColorSwatch('Warning', AppColorTokens.warning),
-        _buildColorSwatch('Error', AppColorTokens.error),
-        _buildColorSwatch('Info', AppColorTokens.info),
+        _buildColorSwatch('Chính', AppColorTokens.primary),
+        _buildColorSwatch('Phụ', AppColorTokens.secondary),
+        _buildColorSwatch('Thành công', AppColorTokens.success),
+        _buildColorSwatch('Cảnh báo', AppColorTokens.warning),
+        _buildColorSwatch('Lỗi', AppColorTokens.error),
+        _buildColorSwatch('Thông tin', AppColorTokens.info),
         _buildColorSwatch(
-          'Surface',
+          'Bề mặt',
           isDark ? AppColorTokens.darkSurface : AppColorTokens.surface,
         ),
         _buildColorSwatch(
-          'Background',
+          'Nền',
           isDark ? AppColorTokens.darkBackground : AppColorTokens.background,
         ),
       ],
@@ -420,13 +420,13 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSpacingExample('Page Padding', AppSpacingTokens.pagePadding),
+        _buildSpacingExample('Lề trang', AppSpacingTokens.pagePadding),
         _buildSpacingExample(
-          'Section Spacing',
+          'Khoảng cách khu vực',
           AppSpacingTokens.sectionSpacing,
         ),
-        _buildSpacingExample('Card Padding', AppSpacingTokens.cardPadding),
-        _buildSpacingExample('Item Spacing', AppSpacingTokens.itemSpacing),
+        _buildSpacingExample('Lề trong thẻ', AppSpacingTokens.cardPadding),
+        _buildSpacingExample('Khoảng cách mục', AppSpacingTokens.itemSpacing),
       ],
     );
   }
@@ -453,10 +453,10 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       spacing: AppSpacingTokens.itemSpacing,
       runSpacing: AppSpacingTokens.itemSpacing,
       children: [
-        _buildRadiusExample('Button', AppRadiusTokens.button),
-        _buildRadiusExample('Card', AppRadiusTokens.card),
-        _buildRadiusExample('Input', AppRadiusTokens.input),
-        _buildRadiusExample('Chip', AppRadiusTokens.chip),
+        _buildRadiusExample('Nút bấm', AppRadiusTokens.button),
+        _buildRadiusExample('Thẻ nội dung', AppRadiusTokens.card),
+        _buildRadiusExample('Trường nhập', AppRadiusTokens.input),
+        _buildRadiusExample('Nhãn chọn', AppRadiusTokens.chip),
       ],
     );
   }
@@ -495,47 +495,47 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Typography'),
+        _buildSectionTitle('Kiểu chữ'),
         SizedBox(height: AppSpacingTokens.sectionSpacing),
 
         Text(
-          'Display Large',
+          'Hiển thị lớn',
           style: AppTextStyles.displayLarge.copyWith(color: textColor),
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
 
         Text(
-          'Heading 1',
+          'Tiêu đề 1',
           style: AppTextStyles.heading1.copyWith(color: textColor),
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
 
         Text(
-          'Heading 2',
+          'Tiêu đề 2',
           style: AppTextStyles.heading2.copyWith(color: textColor),
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
 
         Text(
-          'Body Large - Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+          'Nội dung lớn – ví dụ văn bản để xem trước kiểu chữ.',
           style: AppTextStyles.bodyLarge.copyWith(color: textColor),
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
 
         Text(
-          'Body Medium - Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+          'Nội dung vừa – ví dụ văn bản để xem trước kiểu chữ.',
           style: AppTextStyles.bodyMedium.copyWith(color: textColor),
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
 
         Text(
-          'Label Large',
+          'Nhãn lớn',
           style: AppTextStyles.labelLarge.copyWith(color: textColor),
         ),
         SizedBox(height: AppSpacingTokens.itemSpacing),
 
         Text(
-          'Caption - Small supplementary text',
+          'Chú thích – văn bản bổ trợ nhỏ',
           style: AppTextStyles.caption.copyWith(color: textColor),
         ),
       ],
@@ -550,32 +550,32 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('State Widgets'),
+        _buildSectionTitle('Thành phần trạng thái'),
         SizedBox(height: AppSpacingTokens.sectionSpacing),
 
         _buildSubSection(
-          'Loading State',
+          'Trạng thái đang tải',
           SizedBox(
             height: 200,
             child: LoadingState(
               variant: LoadingVariant.spinner,
-              message: 'Loading data...',
+              message: 'Đang tải dữ liệu...',
             ),
           ),
         ),
 
         _buildSubSection(
-          'Empty State',
+          'Trạng thái trống',
           SizedBox(
             height: 300,
             child: EmptyState(
               icon: Icons.inbox,
-              title: 'No Items',
-              description: 'You don\'t have any items yet.',
-              actionLabel: 'Create Item',
+              title: 'Chưa có mục nào',
+              description: 'Bạn chưa có mục nào ở đây.',
+              actionLabel: 'Tạo mục mới',
               onAction: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Create action pressed!')),
+                  const SnackBar(content: Text('Đã chọn tạo mục mới!')),
                 );
               },
             ),
@@ -583,15 +583,15 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
         ),
 
         _buildSubSection(
-          'Error State',
+          'Trạng thái lỗi',
           SizedBox(
             height: 300,
             child: ErrorState(
-              message: 'Failed to load data. Please try again.',
+              message: 'Không tải được dữ liệu. Bạn thử lại nhé.',
               onRetry: () {
                 ScaffoldMessenger.of(
                   context,
-                ).showSnackBar(const SnackBar(content: Text('Retrying...')));
+                ).showSnackBar(const SnackBar(content: Text('Đang thử lại...')));
               },
             ),
           ),

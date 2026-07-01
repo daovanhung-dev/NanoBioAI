@@ -39,7 +39,7 @@ class StressTrackingPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    'Nabiđang chuẩn bị góc cảm xúc',
+                    'Nabi đang chuẩn bị góc cảm xúc',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.heading4.copyWith(
                       fontWeight: AppTypography.bold,

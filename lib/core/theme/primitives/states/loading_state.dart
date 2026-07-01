@@ -124,10 +124,10 @@ class LoadingState extends StatelessWidget {
         );
       case LoadingVariant.skeleton:
         // TODO: Implement skeleton loading UI
-        return _buildPlaceholder(isDark, 'Skeleton Loading (Not Implemented)');
+        return _buildPlaceholder(isDark, 'Đang tải khung nội dung');
       case LoadingVariant.shimmer:
         // TODO: Implement shimmer loading effect
-        return _buildPlaceholder(isDark, 'Shimmer Loading (Not Implemented)');
+        return _buildPlaceholder(isDark, 'Đang tải hiệu ứng chờ');
     }
   }
 

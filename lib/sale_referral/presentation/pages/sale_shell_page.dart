@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 import 'package:nano_app/sale_referral/domain/entities/sale_models.dart';
 import 'package:nano_app/sale_referral/domain/services/sale_conversion_policy_service.dart';
 import 'package:nano_app/sale_referral/providers/sale_providers.dart';
@@ -24,9 +25,9 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
     return state.when(
       loading: () => const _SaleLoading(),
       error: (_, __) => _SaleSupportPage(
-        title: 'Chua mo duoc khong gian Sale',
+        title: 'Chưa mở được không gian cộng tác viên',
         message:
-            'He thong chua kiem tra duoc trang thai Sale. Ban thu lam moi lai.',
+            'Hệ thống chưa kiểm tra được trạng thái cộng tác viên. Bạn thử làm mới lại.',
         onRetry: _refreshAll,
       ),
       data: (saleState) {
@@ -45,13 +46,13 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: const Text('NanoBio Sale'),
+            title: const Text('NanoBio Cộng tác viên'),
             backgroundColor: Colors.white,
             foregroundColor: AppColors.textPrimary,
             elevation: 0,
             actions: [
               IconButton(
-                tooltip: 'Lam moi',
+                tooltip: 'Làm mới',
                 onPressed: _refreshAll,
                 icon: const Icon(Icons.refresh_rounded),
               ),
@@ -72,19 +73,19 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
             destinations: const [
               NavigationDestination(
                 icon: Icon(Icons.space_dashboard_rounded),
-                label: 'Tong quan',
+                label: 'Tổng quan',
               ),
               NavigationDestination(
                 icon: Icon(Icons.group_rounded),
-                label: 'Khach',
+                label: 'Khách hàng',
               ),
               NavigationDestination(
                 icon: Icon(Icons.account_balance_wallet_rounded),
-                label: 'Diem',
+                label: 'Điểm',
               ),
               NavigationDestination(
                 icon: Icon(Icons.handyman_rounded),
-                label: 'Cong cu',
+                label: 'Công cụ',
               ),
             ],
           ),
@@ -104,23 +105,23 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
 
   String _inactiveTitle(SaleStatus status) {
     return switch (status) {
-      SaleStatus.pending => 'Ho so Sale dang cho Admin duyet',
-      SaleStatus.suspended => 'Tai khoan Sale dang tam dung',
-      SaleStatus.closed => 'Tai khoan Sale da dong',
-      SaleStatus.none || SaleStatus.active => 'Ban chua co quyen Sale',
+      SaleStatus.pending => 'Hồ sơ cộng tác viên đang chờ quản trị viên duyệt',
+      SaleStatus.suspended => 'Tài khoản cộng tác viên đang tạm dừng',
+      SaleStatus.closed => 'Tài khoản cộng tác viên đã đóng',
+      SaleStatus.none || SaleStatus.active => 'Bạn chưa có quyền cộng tác viên',
     };
   }
 
   String _inactiveMessage(SaleStatus status) {
     return switch (status) {
       SaleStatus.pending =>
-        'Yeu cau cua ban da duoc ghi nhan. Khi Admin duyet, ma gioi thieu va dashboard se duoc mo.',
+        'Yêu cầu của bạn đã được ghi nhận. Khi quản trị viên duyệt, mã giới thiệu và bảng điều khiển sẽ được mở.',
       SaleStatus.suspended =>
-        'Ban can lien he ho tro de kiem tra ly do tam dung truoc khi tiep tuc.',
+        'Bạn cần liên hệ hỗ trợ để kiểm tra lý do tạm dừng trước khi tiếp tục.',
       SaleStatus.closed =>
-        'Trang thai Sale da dong. Vui long lien he ho tro neu can xem xet lai.',
+        'Trạng thái cộng tác viên đã đóng. Vui lòng liên hệ hỗ trợ nếu cần xem xét lại.',
       SaleStatus.none || SaleStatus.active =>
-        'Vao Cai dat > Cung NanoBio phat trien de doc va chap nhan dieu le Sale.',
+        'Vào Cài đặt > Đồng hành phát triển cùng NanoBio để đọc và chấp nhận điều lệ cộng tác viên.',
     };
   }
 }
@@ -160,13 +161,13 @@ class _SalePayoutProfileGateState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Ho so chi tra Sale'),
+        title: const Text('Hồ sơ chi trả cộng tác viên'),
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         actions: [
           IconButton(
-            tooltip: 'Lam moi',
+            tooltip: 'Làm mới',
             onPressed: widget.onSaved,
             icon: const Icon(Icons.refresh_rounded),
           ),
@@ -185,12 +186,12 @@ class _SalePayoutProfileGateState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cap nhat CCCD va ngan hang',
+                      'Cập nhật CCCD và ngân hàng',
                       style: AppTextStyles.heading3,
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Can hoan tat thong tin nay truoc khi vao dashboard Sale hoac gui yeu cau rut tien.',
+                      'Cần hoàn tất thông tin này trước khi vào bảng điều khiển cộng tác viên hoặc gửi yêu cầu rút tiền.',
                       style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -199,7 +200,7 @@ class _SalePayoutProfileGateState
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: const InputDecoration(
-                        labelText: 'So can cuoc cong dan',
+                        labelText: 'Số căn cước công dân',
                         prefixIcon: Icon(Icons.badge_rounded),
                       ),
                       validator: (value) => _required(value, minimumLength: 9),
@@ -210,7 +211,7 @@ class _SalePayoutProfileGateState
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: const InputDecoration(
-                        labelText: 'Ma ngan hang/BIN',
+                        labelText: 'Mã ngân hàng/BIN',
                         prefixIcon: Icon(Icons.account_balance_rounded),
                       ),
                       validator: (value) => _required(value, minimumLength: 3),
@@ -220,7 +221,7 @@ class _SalePayoutProfileGateState
                       controller: _bankName,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(
-                        labelText: 'Ten ngan hang',
+                        labelText: 'Tên ngân hàng',
                         prefixIcon: Icon(Icons.business_rounded),
                       ),
                       validator: _required,
@@ -231,7 +232,7 @@ class _SalePayoutProfileGateState
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: const InputDecoration(
-                        labelText: 'So tai khoan',
+                        labelText: 'Số tài khoản',
                         prefixIcon: Icon(Icons.numbers_rounded),
                       ),
                       validator: (value) => _required(value, minimumLength: 4),
@@ -241,7 +242,7 @@ class _SalePayoutProfileGateState
                       controller: _bankAccountName,
                       textCapitalization: TextCapitalization.characters,
                       decoration: const InputDecoration(
-                        labelText: 'Ten chu tai khoan',
+                        labelText: 'Tên chủ tài khoản',
                         prefixIcon: Icon(Icons.person_pin_rounded),
                       ),
                       validator: _required,
@@ -259,7 +260,7 @@ class _SalePayoutProfileGateState
                                 ),
                               )
                             : const Icon(Icons.save_rounded),
-                        label: const Text('Luu ho so chi tra'),
+                        label: const Text('Lưu hồ sơ chi trả'),
                       ),
                     ),
                   ],
@@ -291,9 +292,9 @@ class _SalePayoutProfileGateState
       ref.invalidate(saleStateProvider);
       ref.invalidate(salePayoutProfileProvider);
       widget.onSaved();
-      _showSnack('Da luu ho so chi tra Sale.');
+      _showSnack('Đã lưu hồ sơ chi trả cộng tác viên.');
     } catch (_) {
-      _showSnack('Chua luu duoc ho so chi tra. Ban thu lai sau.');
+      _showSnack('Chưa lưu được hồ sơ chi trả. Bạn thử lại sau.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -301,7 +302,7 @@ class _SalePayoutProfileGateState
 
   String? _required(String? value, {int minimumLength = 1}) {
     final text = value?.trim() ?? '';
-    if (text.length < minimumLength) return 'Can nhap day du thong tin.';
+    if (text.length < minimumLength) return 'Cần nhập đầy đủ thông tin.';
     return null;
   }
 
@@ -325,19 +326,19 @@ class _OverviewTab extends ConsumerWidget {
       child: summary.when(
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
-          title: 'Chua tai duoc tong quan',
+          title: 'Chưa tải được tổng quan',
           message:
-              'Du lieu Sale duoc doc tu he thong. Ban thu lam moi lai sau.',
+              'Dữ liệu cộng tác viên được đọc từ hệ thống. Bạn thử làm mới lại sau.',
         ),
         data: (data) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _HeroPanel(
-                title: 'Tong quan Sale',
+                title: 'Tổng quan cộng tác viên',
                 subtitle: state.referralCode == null
-                    ? 'Ma gioi thieu se hien thi sau khi Admin duyet.'
-                    : 'Ma gioi thieu: ${state.referralCode}',
+                    ? 'Mã giới thiệu sẽ hiển thị sau khi quản trị viên duyệt.'
+                    : 'Mã giới thiệu: ${state.referralCode}',
               ),
               const SizedBox(height: AppSpacing.lg),
               GridView.count(
@@ -349,22 +350,22 @@ class _OverviewTab extends ConsumerWidget {
                 childAspectRatio: 1.22,
                 children: [
                   _MetricTile(
-                    label: 'Khach truc tiep',
+                    label: 'Khách hàng trực tiếp',
                     value: data.directCustomers.toString(),
                     icon: Icons.group_rounded,
                   ),
                   _MetricTile(
-                    label: 'Payment hop le',
+                    label: 'Thanh toán hợp lệ',
                     value: data.successfulPayments.toString(),
                     icon: Icons.verified_rounded,
                   ),
                   _MetricTile(
-                    label: 'Diem dang giu',
+                    label: 'Điểm đang giữ',
                     value: _money(data.pendingPointCents, data.currency),
                     icon: Icons.lock_clock_rounded,
                   ),
                   _MetricTile(
-                    label: 'Diem kha dung',
+                    label: 'Điểm khả dụng',
                     value: _money(data.availablePointCents, data.currency),
                     icon: Icons.account_balance_wallet_rounded,
                   ),
@@ -376,11 +377,11 @@ class _OverviewTab extends ConsumerWidget {
                     ? Icons.published_with_changes_rounded
                     : Icons.lock_clock_rounded,
                 title: data.conversionPolicy.enabled
-                    ? 'Quy doi diem dang mo'
-                    : 'Quy doi diem chua mo',
+                    ? 'Quy đổi điểm đang mở'
+                    : 'Quy đổi điểm chưa mở',
                 subtitle: data.conversionPolicy.enabled
-                    ? 'Chi diem giao dich Sale da qua 24h moi duoc quy doi. Toi thieu ${_money(data.conversionPolicy.minimumPointCents, data.conversionPolicy.currency)}.'
-                    : 'He thong se hien thi nut yeu cau khi Admin bat cau hinh sale_point_conversion.',
+                    ? 'Chỉ điểm giao dịch cộng tác viên đã qua 24 giờ mới được quy đổi. Tối thiểu ${_money(data.conversionPolicy.minimumPointCents, data.conversionPolicy.currency)}.'
+                    : 'Hệ thống sẽ hiển thị nút yêu cầu khi quản trị viên bật cấu hình quy đổi điểm.',
               ),
             ],
           );
@@ -400,30 +401,30 @@ class _DirectCustomersTab extends ConsumerWidget {
       child: customers.when(
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
-          title: 'Chua tai duoc khach truc tiep',
-          message: 'He thong chi hien thi khach duoc gan truc tiep voi ban.',
+          title: 'Chưa tải được khách hàng trực tiếp',
+          message: 'Hệ thống chỉ hiển thị khách hàng được gắn trực tiếp với bạn.',
         ),
         data: (items) {
           if (items.isEmpty) {
             return const _EmptySaleState(
-              title: 'Chua co khach truc tiep',
+              title: 'Chưa có khách hàng trực tiếp',
               message:
-                  'Khi khach nhap ma gioi thieu hop le, danh sach se hien thi tai day.',
+                  'Khi khách nhập mã giới thiệu hợp lệ, danh sách sẽ hiển thị tại đây.',
             );
           }
 
           return Column(
             children: [
               const _HeroPanel(
-                title: 'Khach truc tiep',
+                title: 'Khách hàng trực tiếp',
                 subtitle:
-                    'Thong tin hien thi theo moi quan he gioi thieu truc tiep da duoc he thong xac nhan.',
+                    'Thông tin hiển thị theo mối quan hệ giới thiệu trực tiếp đã được hệ thống xác nhận.',
               ),
               const SizedBox(height: AppSpacing.lg),
               ...items.map(
                 (item) => _ListTilePanel(
                   icon: Icons.person_rounded,
-                  title: item.displayName,
+                  title: vietnameseUiText(item.displayName),
                   subtitle: _customerSubtitle(item),
                 ),
               ),
@@ -436,10 +437,10 @@ class _DirectCustomersTab extends ConsumerWidget {
 }
 
 String _customerSubtitle(SaleDirectCustomer item) {
-  final age = item.age == null ? 'Tuoi: chua co' : 'Tuoi: ${item.age}';
-  final phone = item.phone == null ? 'SDT: chua co' : 'SDT: ${item.phone}';
+  final age = item.age == null ? 'Tuổi: chưa có' : 'Tuổi: ${item.age}';
+  final phone = item.phone == null ? 'SĐT: chưa có' : 'SĐT: ${item.phone}';
   final points = _money(item.approvedPointCents, item.currency);
-  return '$age - $phone - ${item.successfulPayments} payment hop le - $points diem da duyet';
+  return '$age - $phone - ${item.successfulPayments} thanh toán hợp lệ - $points điểm đã duyệt';
 }
 
 class _PointLedgerTab extends ConsumerWidget {
@@ -452,32 +453,32 @@ class _PointLedgerTab extends ConsumerWidget {
       child: ledger.when(
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
-          title: 'Chua tai duoc diem Sale',
+          title: 'Chưa tải được điểm cộng tác viên',
           message:
-              'Diem Sale chi duoc tao tu payment hop le da duoc he thong tin cay ghi nhan.',
+              'Điểm cộng tác viên chỉ được tạo từ thanh toán hợp lệ đã được hệ thống tin cậy ghi nhận.',
         ),
         data: (items) {
           if (items.isEmpty) {
             return const _EmptySaleState(
-              title: 'Chua co diem Sale',
+              title: 'Chưa có điểm cộng tác viên',
               message:
-                  'Khi khach truc tiep co payment duoc duyet, diem se hien thi tai day.',
+                  'Khi khách hàng trực tiếp có thanh toán được duyệt, điểm sẽ hiển thị tại đây.',
             );
           }
 
           return Column(
             children: [
               const _HeroPanel(
-                title: 'Ledger diem Sale',
+                title: 'Sổ điểm cộng tác viên',
                 subtitle:
-                    'Moi dong lien ket voi mot payment hop le va khong duoc tao tu client.',
+                    'Mỗi dòng liên kết với một thanh toán hợp lệ và không được tạo từ ứng dụng.',
               ),
               const SizedBox(height: AppSpacing.lg),
               ...items.map(
                 (item) => _ListTilePanel(
                   icon: Icons.receipt_long_rounded,
                   title:
-                      '${item.customerName} - ${_money(item.pointAmountCents, item.currency)}',
+                      '${vietnameseUiText(item.customerName)} - ${_money(item.pointAmountCents, item.currency)}',
                   subtitle:
                       '${item.planCode} - ${_money(item.paymentAmountCents, item.currency)} - ${_statusLabel(item.status)}',
                 ),
@@ -525,8 +526,8 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
           dashboard.when(
             loading: () => const _CenteredProgress(),
             error: (_, __) => const _EmptySaleState(
-              title: 'Chua tai duoc cau hinh quy doi',
-              message: 'Ban thu lam moi lai sau.',
+              title: 'Chưa tải được cấu hình quy đổi',
+              message: 'Bạn thử làm mới lại sau.',
             ),
             data: (data) => _ConversionRequestPanel(
               dashboard: data,
@@ -545,7 +546,7 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
           const SizedBox(height: AppSpacing.lg),
           _ListTilePanel(
             icon: Icons.policy_rounded,
-            title: 'Dieu le phien ban ${SaleTerms.currentVersion}',
+            title: 'Điều lệ phiên bản ${SaleTerms.currentVersion}',
             subtitle: SaleTerms.bullets.first,
           ),
         ],
@@ -585,9 +586,9 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
       ref.invalidate(saleConversionsProvider);
       _pointController.clear();
       _pendingIdempotencyKey = null;
-      _showSnack('Da gui yeu cau quy doi diem Sale.');
+      _showSnack('Đã gửi yêu cầu quy đổi điểm cộng tác viên.');
     } catch (_) {
-      _showSnack('Chua gui duoc yeu cau quy doi. Ban thu lai sau.');
+      _showSnack('Chưa gửi được yêu cầu quy đổi. Bạn thử lại sau.');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -620,10 +621,10 @@ class _ReferralCodePanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Ma gioi thieu', style: AppTextStyles.labelLarge),
+          Text('Mã giới thiệu', style: AppTextStyles.labelLarge),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            referralCode ?? 'Chua co ma dang hoat dong',
+            referralCode ?? 'Chưa có mã đang hoạt động',
             style: AppTextStyles.heading2.copyWith(color: AppColors.primary),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -632,7 +633,7 @@ class _ReferralCodePanel extends StatelessWidget {
                 ? null
                 : () => Clipboard.setData(ClipboardData(text: referralCode!)),
             icon: const Icon(Icons.copy_rounded),
-            label: const Text('Sao chep ma'),
+            label: const Text('Sao chép mã'),
           ),
         ],
       ),
@@ -671,12 +672,12 @@ class _ConversionRequestPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Yeu cau quy doi diem', style: AppTextStyles.labelLarge),
+          Text('Yêu cầu quy đổi điểm', style: AppTextStyles.labelLarge),
           const SizedBox(height: AppSpacing.xs),
           Text(
             dashboard.conversionPolicy.enabled
-                ? 'Diem kha dung: ${_money(dashboard.availablePointCents, dashboard.currency)}'
-                : 'Quy doi diem Sale chua duoc Admin mo cau hinh.',
+                ? 'Điểm khả dụng: ${_money(dashboard.availablePointCents, dashboard.currency)}'
+                : 'Quy đổi điểm cộng tác viên chưa được quản trị viên mở cấu hình.',
             style: AppTextStyles.bodySmall.copyWith(height: 1.45),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -687,13 +688,13 @@ class _ConversionRequestPanel extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: (_) => onChanged(),
             decoration: const InputDecoration(
-              labelText: 'So diem muon quy doi',
+              labelText: 'Số điểm muốn quy đổi',
               prefixIcon: Icon(Icons.stars_rounded),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
           _EstimateLine(
-            label: 'Gia tri uoc tinh',
+            label: 'Giá trị ước tính',
             value: _money(money, dashboard.conversionPolicy.currency),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -707,7 +708,7 @@ class _ConversionRequestPanel extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.send_rounded),
-              label: const Text('Gui yeu cau quy doi'),
+              label: const Text('Gửi yêu cầu quy đổi'),
             ),
           ),
         ],
@@ -726,8 +727,8 @@ class _ConversionHistory extends StatelessWidget {
     if (items.isEmpty) {
       return const _ListTilePanel(
         icon: Icons.history_rounded,
-        title: 'Chua co yeu cau quy doi',
-        subtitle: 'Cac yeu cau quy doi diem Sale se hien thi tai day.',
+        title: 'Chưa có yêu cầu quy đổi',
+        subtitle: 'Các yêu cầu quy đổi điểm cộng tác viên sẽ hiển thị tại đây.',
       );
     }
 
@@ -739,7 +740,7 @@ class _ConversionHistory extends StatelessWidget {
               title:
                   '${_money(item.requestedPointCents, item.currency)} - ${_statusLabel(item.status)}',
               subtitle:
-                  'Gia tri: ${_money(item.moneyAmountCents, item.currency)}',
+                  'Giá trị: ${_money(item.moneyAmountCents, item.currency)}',
             ),
           )
           .toList(),
@@ -1004,7 +1005,7 @@ class _SaleSupportPage extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Kiem tra lai'),
+                    label: const Text('Kiểm tra lại'),
                   ),
                 ],
               ),
@@ -1044,19 +1045,19 @@ String _statusLabel(String value) {
   switch (value.trim().toLowerCase()) {
     case 'approved':
     case 'points_credited':
-      return 'Da duyet';
+      return 'Đã duyệt';
     case 'paid':
-      return 'Da chi tra';
+      return 'Đã chi trả';
     case 'requested':
     case 'pending':
     case 'pending_review':
-      return 'Dang cho';
+      return 'Đang chờ';
     case 'rejected':
-      return 'Tu choi';
+      return 'Từ chối';
     case 'reversed':
     case 'points_reversed':
-      return 'Da dao';
+      return 'Đã đảo';
     default:
-      return value;
+      return 'Đang được xử lý';
   }
 }

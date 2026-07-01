@@ -40,7 +40,7 @@ class V2HomePage extends StatelessWidget {
                   shadows: AppShadows.soft,
                 ),
                 child: Text(
-                  'Các feature v2 sẽ được thêm dần trong thư mục app_versions/v2/features.',
+                  'Các chức năng V2 sẽ được bổ sung dần trong phiên bản này.',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.textPrimary,
                   ),
@@ -50,7 +50,7 @@ class V2HomePage extends StatelessWidget {
               FilledButton.icon(
                 onPressed: () => context.go(V2RoutePaths.healthScore),
                 icon: const Icon(Icons.monitor_heart_rounded),
-                label: const Text('Open health score'),
+                label: const Text('Mở điểm sức khỏe'),
               ),
             ],
           ),

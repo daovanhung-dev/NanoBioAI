@@ -22,7 +22,7 @@ class NutritionPage extends ConsumerWidget {
             icon: Icons.spa_rounded,
             title: 'Nabi chưa mở được góc dinh dưỡng của bạn',
             message:
-                'Có vẻ dữ liệu bữa ăn đang cần thêm một chút thời gian để sẵn sàng. Bạn thử làm mới lại nhé, Nabivẫn ở đây cùng bạn.',
+                'Có vẻ dữ liệu bữa ăn đang cần thêm một chút thời gian để sẵn sàng. Bạn thử làm mới lại nhé, Nabi vẫn ở đây cùng bạn.',
             onRetry: () => ref.invalidate(nutritionSummaryProvider),
           ),
           data: (summary) => RefreshIndicator(
@@ -57,7 +57,7 @@ class NutritionPage extends ConsumerWidget {
                       _NutritionLogSection(
                         title: 'Những bữa Nabi đã ghi nhớ',
                         subtitle:
-                            'Từng ghi nhận nhỏ đều giúp Nabihiểu bạn hơn một chút.',
+                            'Từng ghi nhận nhỏ đều giúp Nabi hiểu bạn hơn một chút.',
                         logs: summary.logs,
                       ),
                     ]),
@@ -95,7 +95,7 @@ class _NutritionLoadingState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Nabiđang chuẩn bị góc dinh dưỡng...',
+              'Nabi đang chuẩn bị góc dinh dưỡng...',
               textAlign: TextAlign.center,
               style: AppTextStyles.heading4.copyWith(
                 fontWeight: AppTypography.bold,
@@ -103,7 +103,7 @@ class _NutritionLoadingState extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Chờ Nabimột nhịp nhỏ để gom lại những bữa ăn hôm nay cho bạn nhé.',
+              'Chờ Nabi một nhịp nhỏ để gom lại những bữa ăn hôm nay cho bạn nhé.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
@@ -170,7 +170,7 @@ class _Header extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Nabiđang cùng $displayName chăm từng bữa ăn nhỏ trong ngày.',
+                      'Nabi đang cùng $displayName chăm từng bữa ăn nhỏ trong ngày.',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: Colors.white.withValues(alpha: .92),
                         height: 1.45,
@@ -260,7 +260,7 @@ class _Header extends StatelessWidget {
     }
 
     if (ratio <= 1.05) {
-      return 'Nhịp ăn hôm nay đang khá cân bằng. Nabithấy bạn đang chăm mình rất ổn đó.';
+      return 'Nhịp ăn hôm nay đang khá cân bằng. Nabi thấy bạn đang chăm mình rất ổn đó.';
     }
 
     return 'Hôm nay năng lượng đã hơi vượt kế hoạch một chút. Không sao cả, bữa sau mình chọn nhẹ nhàng hơn nhé.';
@@ -331,7 +331,7 @@ class _NamiNoteCard extends StatelessWidget {
     }
 
     if (hasMeals && !hasLogs) {
-      return 'Thực đơn hôm nay đã sẵn sàng. Khi bạn dùng bữa xong, chỉ cần ghi nhận lại một chút để Nabiđồng hành sát hơn.';
+      return 'Thực đơn hôm nay đã sẵn sàng. Khi bạn dùng bữa xong, chỉ cần ghi nhận lại một chút để Nabi đồng hành sát hơn.';
     }
 
     return 'Bạn đang chăm mình bằng những ghi nhận rất nhỏ nhưng rất đáng quý. Nabi sẽ giữ nhịp này cùng bạn.';
@@ -360,7 +360,7 @@ class _SummaryGrid extends StatelessWidget {
         value: summary.plannedCalories > 0
             ? '${summary.plannedCalories} kcal'
             : '--',
-        hint: 'Mức năng lượng Nabidự kiến',
+        hint: 'Mức năng lượng Nabi dự kiến',
         icon: Icons.restaurant_menu_rounded,
         color: AppColors.primary,
       ),
@@ -483,7 +483,7 @@ class _MealPlanSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _Section(
-      title: 'Bữa ăn Nabigợi ý hôm nay',
+      title: 'Bữa ăn Nabi gợi ý hôm nay',
       subtitle:
           'Một vài lựa chọn nhỏ để ngày của bạn nhẹ bụng và đủ năng lượng hơn.',
       emptyTitle: 'Hôm nay Nabi chưa có thực đơn cho bạn',
@@ -818,7 +818,7 @@ class _StateCard extends StatelessWidget {
                   TextButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Để Nabithử lại'),
+                    label: const Text('Để Nabi thử lại'),
                   ),
                 ],
               ],

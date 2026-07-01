@@ -107,7 +107,7 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
               title: mood.title,
               subtitle: mood.subtitle,
               selected: selected,
-              trailing: selected ? 'Nabihiểu rồi' : null,
+              trailing: selected ? 'Nabi hiểu rồi' : null,
               onTap: () => setState(() => _selectedIndex = index),
             ),
           );

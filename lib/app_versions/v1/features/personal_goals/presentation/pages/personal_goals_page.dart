@@ -17,7 +17,7 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
       icon: Icons.water_drop_rounded,
       color: AppColors.info,
       title: 'Uống đủ nước',
-      subtitle: 'Nabinhắc bạn chăm cơ thể bằng từng ngụm nhỏ.',
+      subtitle: 'Nabi nhắc bạn chăm cơ thể bằng từng ngụm nhỏ.',
     ),
     _GoalOption(
       icon: Icons.bedtime_rounded,
@@ -41,7 +41,7 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
       icon: Icons.spa_rounded,
       color: AppColors.secondary,
       title: 'Giảm căng thẳng',
-      subtitle: 'Nabicùng bạn tạo vài khoảng thở nhẹ trong ngày.',
+      subtitle: 'Nabi cùng bạn tạo vài khoảng thở nhẹ trong ngày.',
     ),
     _GoalOption(
       icon: Icons.restaurant_menu_rounded,

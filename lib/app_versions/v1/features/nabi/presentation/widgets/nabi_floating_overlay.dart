@@ -245,7 +245,7 @@ class _NabiLabel extends ConsumerWidget {
       NabiVisualState.chatTyping ||
       NabiVisualState.chatReasoning ||
       NabiVisualState.aiGeneratingPlan => 'Đang suy nghĩ…',
-      NabiVisualState.chatAnswerReady => 'Nabitrả lời',
+      NabiVisualState.chatAnswerReady => 'Nabi trả lời',
       NabiVisualState.loading || NabiVisualState.syncing => 'Đang tải…',
       NabiVisualState.offline => 'Ngoại tuyến',
       NabiVisualState.taskComplete ||

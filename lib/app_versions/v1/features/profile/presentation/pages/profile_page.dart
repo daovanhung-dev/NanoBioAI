@@ -195,7 +195,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               Text('Chỉnh sửa hồ sơ', style: AppTextStyles.heading3),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Email được quản lý bởi Supabase Auth nên Nabichỉ cập nhật hồ sơ sức khỏe và thông tin hiển thị ở đây.',
+                'Email được quản lý bởi hệ thống xác thực Supabase nên Nabi chỉ cập nhật hồ sơ sức khỏe và thông tin hiển thị ở đây.',
                 style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -204,7 +204,11 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 label: 'Họ và tên',
                 validator: ProfileValidator.validateFullName,
               ),
-              _ProfileField(controller: _email, label: 'Email', enabled: false),
+              _ProfileField(
+                controller: _email,
+                label: 'Địa chỉ email',
+                enabled: false,
+              ),
               _ProfileField(
                 controller: _phone,
                 label: 'Số điện thoại',
@@ -686,8 +690,10 @@ String _displayText(String? value, {required String fallback}) {
 
 String _subscriptionLabel(String value) {
   final normalized = value.trim().toLowerCase();
-  if (normalized.isEmpty || normalized == 'free') return 'Gói Free';
-  if (normalized == 'premium') return 'Gói Premium';
-  if (normalized == 'pro') return 'Gói Pro';
-  return 'Gói ${value.trim()}';
+  if (normalized.isEmpty || normalized == 'free') return 'Gói Cơ bản';
+  if (normalized == 'plus') return 'Gói Plus';
+  if (normalized == 'family_plus' || normalized == 'familyplus') return 'Gói FamilyPlus';
+  if (normalized == 'premium') return 'Gói Nâng cao';
+  if (normalized == 'pro') return 'Gói Chuyên nghiệp';
+  return 'Gói đang cập nhật';
 }

@@ -47,9 +47,9 @@ class InsightCard extends StatelessWidget {
       case InsightType.recommendation:
         return 'AI';
       case InsightType.warning:
-        return 'Alert';
+        return 'Lưu ý';
       case InsightType.tip:
-        return 'Tip';
+        return 'Gợi ý';
     }
   }
 

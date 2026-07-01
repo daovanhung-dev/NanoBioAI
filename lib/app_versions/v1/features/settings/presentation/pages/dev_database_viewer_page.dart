@@ -110,10 +110,10 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
         elevation: 0,
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
-        title: const Text('Dev / Database'),
+        title: const Text('Nhà phát triển / Dữ liệu'),
         actions: [
           IconButton(
-            tooltip: 'Tải lại database',
+            tooltip: 'Tải lại dữ liệu',
             onPressed: _refresh,
             icon: const Icon(Icons.refresh_rounded),
           ),
@@ -130,7 +130,7 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
             if (snapshot.hasError) {
               return _DatabaseErrorState(
                 message:
-                    'Không thể mở công cụ kiểm tra dữ liệu lúc này. Hãy tải lại hoặc kiểm tra log dev.',
+                    'Không thể mở công cụ kiểm tra dữ liệu lúc này. Hãy tải lại hoặc kiểm tra nhật ký phát triển.',
                 onRetry: _refresh,
               );
             }
@@ -253,7 +253,7 @@ class _DatabaseColumnSnapshot {
   factory _DatabaseColumnSnapshot.fromMap(Map<String, Object?> map) {
     return _DatabaseColumnSnapshot(
       name: map['name']?.toString() ?? '',
-      type: map['type']?.toString() ?? 'UNKNOWN',
+      type: map['type']?.toString() ?? 'Không xác định',
       notNull: _asBool(map['notnull']),
       primaryKey: _asBool(map['pk']),
       defaultValue: map['dflt_value'],
@@ -305,7 +305,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'SQLite Inspector',
+                      'Trình kiểm tra SQLite',
                       style: AppTextStyles.heading3.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -313,7 +313,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      'Theo dõi toàn bộ database local của ứng dụng.',
+                      'Theo dõi toàn bộ dữ liệu cục bộ của ứng dụng.',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.white.withValues(alpha: .82),
                       ),
@@ -338,7 +338,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
               ),
               _SummaryPill(
                 icon: Icons.memory_rounded,
-                label: 'Version ${snapshot.version}',
+                label: 'Phiên bản ${snapshot.version}',
               ),
               _SummaryPill(
                 icon: Icons.schedule_rounded,
@@ -611,8 +611,8 @@ class _ColumnsCard extends StatelessWidget {
                   DataColumn(label: Text('Cột')),
                   DataColumn(label: Text('Kiểu')),
                   DataColumn(label: Text('PK')),
-                  DataColumn(label: Text('NOT NULL')),
-                  DataColumn(label: Text('Default')),
+                  DataColumn(label: Text('Không được để trống')),
+                  DataColumn(label: Text('Mặc định')),
                 ],
                 rows: columns.map((column) {
                   return DataRow(
@@ -735,7 +735,7 @@ class _RowsDataTable extends StatelessWidget {
 
   static String _formatCellValue(Object? value) {
     if (value == null) return 'NULL';
-    if (value is bool) return value ? 'true' : 'false';
+    if (value is bool) return value ? 'đúng' : 'sai';
     return value.toString();
   }
 }
@@ -843,7 +843,7 @@ class _DatabaseErrorState extends StatelessWidget {
                 size: 48,
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('Không đọc được database', style: AppTextStyles.heading4),
+              Text('Không đọc được dữ liệu cục bộ', style: AppTextStyles.heading4),
               const SizedBox(height: AppSpacing.sm),
               SelectableText(
                 message,
@@ -886,7 +886,7 @@ class _DatabaseEmptyState extends StatelessWidget {
             Text('Chưa tìm thấy bảng SQLite', style: AppTextStyles.heading4),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Database có thể chưa được khởi tạo. Hãy thử tải lại sau khi app tạo dữ liệu.',
+              'Dữ liệu cục bộ có thể chưa được khởi tạo. Hãy thử tải lại sau khi ứng dụng tạo dữ liệu.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium,
             ),

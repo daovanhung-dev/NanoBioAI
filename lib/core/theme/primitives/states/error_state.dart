@@ -91,7 +91,7 @@ class ErrorState extends StatelessWidget {
             SizedBox(height: AppSpacingTokens.sectionSpacing),
             // Error title
             Text(
-              'Nabicần thử lại một chút',
+              'Nabi cần thử lại một chút',
               style: AppTextStyles.heading2.copyWith(
                 color: isDark
                     ? AppColorTokens.darkTextPrimary

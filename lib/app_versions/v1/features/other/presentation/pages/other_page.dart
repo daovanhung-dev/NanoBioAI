@@ -171,7 +171,7 @@ class _SummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Báo cáo Nabivừa tổng hợp',
+            'Báo cáo Nabi vừa tổng hợp',
             style: AppTextStyles.labelMedium.copyWith(
               color: Colors.white,
               letterSpacing: 1,
@@ -531,7 +531,7 @@ class _TrackingGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       _TrackingItem(
-        title: 'Stress',
+        title: 'Căng thẳng',
         value: metrics.stressLevel > 0
             ? _stressLabel(metrics.stressLevel)
             : '--',
@@ -732,7 +732,7 @@ class _SyncBanner extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                'Nabiđang cập nhật những tín hiệu mới nhất...',
+                'Nabi đang cập nhật những tín hiệu mới nhất...',
                 style: AppTextStyles.bodySmall,
               ),
             ),
@@ -820,7 +820,7 @@ String _scoreMessage(int score) {
   if (score <= 0) {
     return 'Nabi sẽ cập nhật điểm khi có thêm ghi nhận sức khỏe, nhiệm vụ, bữa ăn, nước uống hoặc giấc ngủ.';
   }
-  return 'Điểm này được Nabitổng hợp từ những ghi nhận sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.';
+  return 'Điểm này được Nabi tổng hợp từ những ghi nhận sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.';
 }
 
 String _scoreLabel(int score) {

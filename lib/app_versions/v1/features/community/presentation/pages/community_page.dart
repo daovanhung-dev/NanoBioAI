@@ -39,7 +39,7 @@ class CommunityPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    'Nabiđang chuẩn bị góc cộng đồng',
+                    'Nabi đang chuẩn bị góc cộng đồng',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.heading4.copyWith(
                       fontWeight: AppTypography.bold,
