@@ -54,7 +54,7 @@ project inventory. Use `rg --files` for the current truth.
 - `.codex/domains/access-membership-referral.md`
 - `.codex/domains/notification.md`
 - `.codex/domains/sqlite.md`
-- `.codex/domains/ui-Nabi.md`
+- `.codex/domains/ui-nami.md`
 - `.codex/domains/health-tracking.md`
 - `.codex/domains/lifestyle-schedule.md`
 

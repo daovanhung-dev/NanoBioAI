@@ -10,7 +10,7 @@ Use one domain context file by default.
 | Access/auth/membership/referral | `.codex/domains/access-membership-referral.md` | `lib/app_versions/v2/`, `lib/app_versions/v3/`, `lib/sale_referral/`, `lib/services/supabase/` |
 | Notification/reminder/action    | `.codex/domains/notification.md`               | `lib/app_versions/v1/services/notifications/`                                                  |
 | SQLite/DAO/migration            | `.codex/domains/sqlite.md`                     | `lib/core/storage/localdb/`                                                                    |
-| UI/theme/Nabicopy               | `.codex/domains/ui-Nabi.md`                    | `lib/core/theme/`, feature presentation files                                                  |
+| UI/theme/Nabicopy               | `.codex/domains/ui-nami.md`                    | `lib/core/theme/`, feature presentation files                                                  |
 | Daily health tracking           | `.codex/domains/health-tracking.md`            | `lib/app_versions/v1/features/daily_health_tracking/`                                          |
 | Lifestyle schedule/timeline     | `.codex/domains/lifestyle-schedule.md`         | `lib/app_versions/v1/features/lifestyle_schedule/`                                             |
 

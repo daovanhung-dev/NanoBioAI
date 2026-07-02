@@ -16,7 +16,7 @@
 
 1. Read `AGENTS.md`, then `.codex/AGENTS.md` and `.codex/PROJECT_MAP.md`.
 2. Choose exactly one workflow (normally `.codex/workflows/coding.md`, `bugfix.md`, or `docs-context.md`) and read the matching file in `.codex/task-skills/`.
-3. Read `.codex/domains/ui-Nabi.md` **and** the feature domain when UI touches behaviour: `onboarding.md`, `dashboard.md`, `ai-service.md`, `health-tracking.md`, `lifestyle-schedule.md`, or `access-membership-referral.md`.
+3. Read `.codex/domains/ui-nami.md` **and** the feature domain when UI touches behaviour: `onboarding.md`, `dashboard.md`, `ai-service.md`, `health-tracking.md`, `lifestyle-schedule.md`, or `access-membership-referral.md`.
 4. Read the target module DD: `docs/DD/<module>/Overall.md`, `Views.md`, `Function_List.md`, and `Import_File.md` before changing user-visible behavior.
 5. Read the nearest page, its controller/provider, domain entity, repository/datasource and targeted widget tests. Do not copy a UI pattern from another version unless version-boundary rules allow it.
 6. Implement only in the selected surface. Validate formatting/analyze/tests for the changed area, then update project docs/worklog only when the user requests the project workflow artifacts.
@@ -25,13 +25,13 @@
 
 | UI scope                   | Primary source root                                           | Primary domain/context                        |
 | -------------------------- | ------------------------------------------------------------- | --------------------------------------------- |
-| V1 guest/basic wellness UI | `lib/app_versions/v1/`                                        | `ui-Nabi.md` + feature domain                 |
+| V1 guest/basic wellness UI | `lib/app_versions/v1/`                                        | `ui-nami.md` + feature domain                 |
 | V2 authenticated/free UI   | `lib/app_versions/v2/`                                        | `access-membership-referral.md`               |
 | V3 Plus / FamilyPlus       | `lib/app_versions/v3/`                                        | `access-membership-referral.md` + related DD  |
 | Admin operations           | `lib/app_versions/admin/`                                     | `docs/DD/admin_dashboard`, `admin_operations` |
 | Sale/referral              | `lib/sale_referral/`                                          | `docs/DD/referral_direct`, `sale_points`      |
 | Global Nabi                | `lib/features/nabi/` and `lib/app_versions/v1/features/nabi/` | `docs/features/11_NABI_GLOBAL_ASSISTANT.md`   |
-| Shared theme/primitives    | `lib/core/theme/`                                             | `.codex/domains/ui-Nabi.md`                   |
+| Shared theme/primitives    | `lib/core/theme/`                                             | `.codex/domains/ui-nami.md`                   |
 
 ## 2. Product model and app surfaces
 
@@ -1281,7 +1281,7 @@ These are the repository context files that govern workflows. Read only the sele
 | `.codex/domains/notification.md` | Domain - Notification / Reminder · Source · Rules · Search |
 | `.codex/domains/onboarding.md` | Domain - Onboarding · Source · Rules · Search |
 | `.codex/domains/sqlite.md` | Domain - SQLite / DAO / Migration · Source · Rules · Search |
-| `.codex/domains/ui-Nabi.md` | Domain - UI / Theme / NabiCopy · Source · Rules · Search |
+| `.codex/domains/ui-nami.md` | Domain - UI / Theme / NabiCopy · Source · Rules · Search |
 | `.codex/history/HISTORY_REFRESH.md` | History Refresh |
 | `.codex/history/LEARNED_SKILLS.md` | Learned Skills · Canonical Work Types Seen · Frequent Modules · Reusable Project Skills · Command And Test Patterns · Post-Session Self Optimization |
 | `.codex/history/OPEN_RISKS.md` | Open Risks · NB-RISK-001 Supabase sandbox/staging verification pending · NB-RISK-002 Product flow DD open decisions Q-01..Q-10 |

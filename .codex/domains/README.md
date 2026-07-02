@@ -10,6 +10,6 @@ Read one domain file after choosing a workflow. Add another domain only when `rg
 | Access/auth/membership/referral | `access-membership-referral.md` |
 | Notification/reminder/action    | `notification.md`               |
 | SQLite/DAO/migration            | `sqlite.md`                     |
-| UI/theme/Nabicopy               | `ui-Nabi.md`                    |
+| UI/theme/Nabicopy               | `ui-nami.md`                    |
 | Daily health tracking           | `health-tracking.md`            |
 | Lifestyle schedule/timeline     | `lifestyle-schedule.md`         |

@@ -11,6 +11,12 @@
 - Write all output in the project's existing documentation language (default English if none is established). Keep this prompt's own English section/table headers in the template as a starting point; translate them to match the project when its docs are in another language.
 - The agent must run **read-only exploration first** and must **not** create or modify any file until Step 3. Before any large rewrite of existing context, it must pause and confirm with the user.
 
+### One-command prompt for Flutter repositories
+
+```text
+Read and execute this prompt. Bootstrap this Flutter repository's AI-agent context using a NanoBio-style workflow system: discover the repo read-only, then create or merge AGENTS.md, .codex workflows, task-skills, domain maps, DD/docs, worklog learning, validation rules, and tool fan-out without duplicating context.
+```
+
 ---
 
 ## STEP 1 — Discover (read-only; write nothing yet)
@@ -19,6 +25,9 @@ Explore the repository to understand structure and tech stack. Use read/list/gre
 
 Checklist:
 
+- [ ] **Flutter / Dart signals** - if this is a Flutter repo, read `pubspec.yaml`, `analysis_options.yaml`, `melos.yaml`, `build.yaml`, `pubspec_overrides.yaml`, `.metadata`, and any `tool/`, `scripts/`, `android/`, `ios/`, `web/`, `macos/`, `windows/`, or `linux/` config that affects commands. Capture Flutter SDK constraints, package manager workflow, codegen/build_runner usage, flavor/target files, env templates such as `.env.example`, and platform-specific setup notes.
+- [ ] **Flutter source map without full inventory** - map only app entrypoints (`lib/main*.dart`), route/navigation registration, state-management roots, feature/module roots, shared design system, storage/network layers, generated-code locations, and directly relevant tests. Do **not** enumerate every `lib/` file; read source on demand after the workflow/domain is selected.
+- [ ] **Flutter validation surface** - find how the project expects `flutter pub get`, `dart format`, `flutter analyze`, `flutter test`, `flutter build`, golden tests, integration tests, codegen, localization, flavors, and platform builds to be run. Prefer targeted commands before repo-wide checks.
 - [ ] **Root listing** — list the repo root (including dotfiles/dotdirs).
 - [ ] **Manifests / package files** — e.g. `package.json`, `pyproject.toml`, `Pipfile`, `requirements.txt`, `go.mod`, `Cargo.toml`, `pom.xml`, `build.gradle`, `composer.json`, `Gemfile`, `*.csproj`. Note languages, frameworks, and versions. **If no recognized manifest exists, infer commands from CI config, `Makefile`/`Taskfile`/`justfile`, and scripts — this is the fallback for unknown stacks.**
 - [ ] **Monorepo layout** — workspaces, `packages/*`, `apps/*`, nx/turbo/lerna/pnpm-workspace configs. Note each package's own tech stack.
@@ -74,6 +83,40 @@ Before authoring, fix the **single canonical file** that all tools will referenc
 
 ---
 
+## Target Flutter context architecture (shared by 3A and 3B)
+
+Use this section only as an architecture pattern. It distills a NanoBio-style agent workflow, but the target project must stay generic to its own product, docs language, and stack. Do **not** copy any source project's business rules, module names, persona, tiers, or release status into another repo.
+
+When a Flutter repo is medium/large, product-heavy, or repeatedly touched by coding agents, create or merge this context system:
+
+| Area | Files / dirs | Purpose |
+|---|---|---|
+| Root bridge | `AGENTS.md` | Canonical guide or thin bridge to the canonical guide. Keep it concise and command-first. |
+| Canonical context | `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/DOCS_WORKFLOW.md`, `.codex/CHECKLIST.md` | Workflow entrypoint, source/docs routing, worklog rules, and session checklist. |
+| Workflows | `.codex/workflows/context-read.md`, `coding.md`, `bugfix.md`, `fix-issues.md`, `test.md`, `find-issues.md`, `create-issues.md`, `create-todo.md`, `docs-dd.md`, `docs-context.md`, `refactor-scaffold.md`, optional `backend-schema.md` or `database-schema.md` | One primary mode per session. Each workflow defines required context, rules, completion, and validation. |
+| Task skills | `.codex/task-skills/README.md`, `.codex/task-skills/<task-key>.md` | Generated or maintained summaries from worklogs by canonical task key. Agents read the matching task-skill before raw history. |
+| Domains | `.codex/domains/README.md`, `.codex/domains/<domain>.md` | Project-specific playbooks such as routing/auth, UI/theme, storage, API/backend, notifications, analytics, payments, or feature areas. Read one domain by default. |
+| DD skill | `.codex/skills/create-dd-from-bd/` or project-equivalent | Optional skill for turning BD/BRD/product-flow requests into implementation-ready DD modules. |
+| Product docs | `docs/BD/`, `docs/DD/`, `docs/checklist/` | Business source, design documents, DD progress, coding progress, and acceptance evidence. |
+| Session docs | `docs/worklog/`, `docs/features/`, `docs/fixbug/`, `docs/test/`, `docs/issues/`, `docs/todo/` | Durable trace of changes, bugs, verification, findings, and follow-up tasks. |
+
+Core workflow rules to write into the generated context:
+
+- Choose exactly one primary workflow per session unless the user explicitly requests a multi-step chain.
+- Read in this order: root/canonical guide -> project map -> learned history -> selected workflow -> matching task-skill -> one matching domain when app code or product behavior is involved.
+- Before broad reads or broad checks, ask: how can this task use fewer tokens while producing equal or better work?
+- Prefer `rg`, router/index files, manifests, and focused file reads over broad source-tree dumps.
+- Do not inventory all of `lib/`; map source roots and boundaries, then read concrete files only when the selected workflow requires them.
+- For Flutter code changes, preserve the app's existing architecture. Common boundaries are presentation/widget -> provider/controller/state -> repository -> datasource/service -> DAO/API, but record the project's actual pattern instead of imposing one.
+- For DD work, every fact must trace to a BD/BRD heading, requirement, acceptance criterion, source path, or explicit user instruction. Mark gaps as `OPEN QUESTION`, `ASSUMPTION`, or `PROPOSAL`; do not invent product behavior.
+- For substantial coding, docs, test, issue/todo, DD, context, or review sessions, create/update a worklog, include a self-review, and refresh learned history/task-skills if the repo has a refresh script.
+- Validation must be workflow-specific: docs/context changes use link/stale-reference checks and whitespace diff checks; Flutter runtime changes use targeted format/analyze/test first, then broader checks only when scope warrants.
+- Keep secrets and health/payment/user data out of tracked docs. Reference gitignored env files or placeholders only.
+
+Do not add this whole architecture to tiny repos by default. For small Flutter apps, keep `AGENTS.md` plus a small docs map; add `.codex/` only when the project benefits from workflow routing, DD traceability, worklogs, or repeated agent sessions.
+
+---
+
 ## STEP 3A — Create (no existing context)
 
 Create a single, concise, always-loaded **root context file** (the canonical file chosen above) as the source of truth. For small/medium projects this one file is enough. For larger projects, add an on-demand detail directory (progressive disclosure).
@@ -106,6 +149,8 @@ One-paragraph: what this project is and its top-level layout.
 | Test (single) | `<cmd>` | non-obvious; fill in |
 | Lint | `<cmd>` | |
 | Format | `<cmd>` | |
+| Analyze | `<cmd>` | Flutter example: `flutter analyze <paths>` |
+| Codegen | `<cmd>` | if the project uses build_runner, localization generation, or other generated code |
 
 ## Architecture (only what code-reading won't reveal)
 - Entry points: <file(s)>
@@ -138,6 +183,8 @@ One-paragraph: what this project is and its top-level layout.
 - Clarify before coding: if multiple interpretations exist, ask — don't pick silently.
 - Verify: after changes run <test/build/lint cmd> and show command + output as evidence.
 - Never commit secrets; never run destructive/DB-write actions without explicit approval.
+- For Flutter, read only the selected feature/domain files after routing the task; avoid dumping all of `lib/`.
+- If `.codex/` workflow files exist, choose one workflow, then read the matching task-skill and one domain before editing.
 ```
 
 ### Optional detail directory (larger projects — progressive disclosure)
@@ -151,6 +198,9 @@ Create a `docs/` tree (the neutral, tool-agnostic default), linked from the root
 | Data | `db/access.md`, `db/schemas.md` | Query templates (placeholders, no secrets), schema inventory |
 | Reference | `reference/*.md` | Stable enumerations (endpoints, permissions) — tables, not prose |
 | Feature rules | `features/*.md` or `screens/*.md` | Volatile per-feature gotchas, isolated from shared docs |
+| Agent workflows | `.codex/workflows/*.md`, `.codex/task-skills/*.md`, `.codex/domains/*.md` | Workflow routing, generated task memory, and on-demand domain playbooks |
+| Product design docs | `docs/BD/`, `docs/DD/`, `docs/checklist/` | BD/BRD sources, implementation-ready DD modules, and progress/evidence checklists |
+| Session history | `docs/worklog/`, `docs/features/`, `docs/fixbug/`, `docs/test/`, `docs/issues/`, `docs/todo/` | Durable record of work, verification, issues, and follow-up tasks |
 | Process | `conventions.md`, `debug-checklist.md` | Cross-cutting rules; symptom → fix lookup |
 
 Conventions for the tree: every doc links to its siblings and **down to the exact source files** it documents; isolate stable tables from volatile prose; quarantine per-feature quirks; date volatile inventories ("Snapshot YYYY-MM-DD") and label WIP/placeholder areas so the agent re-verifies. Keep secrets only in gitignored `*.local.*` files; use `<HOST>`/`<PASSWORD>` placeholders in tracked docs.
@@ -172,6 +222,7 @@ Do **not** wipe and regenerate. Preserve the team's existing workflow and graft 
    - **Progressive disclosure**: if the root file is bloated, move depth into linked on-demand docs and leave links behind — but relocating existing content is a **large rewrite requiring sign-off** (item 7); never move referenced files (item 3).
    - **Quick recipes** for the project's common multi-file tasks.
    - **Source-of-truth + edit-order** callouts and **cross-file coupling** invariants.
+   - A Flutter-aware `.codex` workflow system when repeated agent sessions need routing, generated task memory, domain playbooks, DD traceability, and worklog learning.
    - A **symptom → fix** debug checklist.
 5. **Identify cross-tool duplication** (do not consolidate yet): note where multiple tool files repeat the same body. **Defer actual consolidation to Step 4**, recording the intended canonical target chosen in the "Canonical source" section above.
 6. **Reconcile contradictions**: if two rules/files conflict, surface them to the user and propose one resolution; do not silently pick. Replace duplicated content with a pointer to one canonical copy ("Details → …") rather than maintaining two.
@@ -224,6 +275,9 @@ Quality checklist before finishing:
 - [ ] A verification path exists (test/build/lint the agent can run for pass/fail).
 - [ ] **Branch correctness:** the right branch ran per location (3B preserved prior content; 3A did not overwrite anything). No pre-existing rule was dropped or relocated without user sign-off; all existing imports/references still resolve.
 - [ ] **Fan-out correctness:** tool files exist **only** for tools the team actually uses (Step 2 list); none created for unused tools. Every non-canonical tool file references/symlinks/derives from the canonical source and holds **no duplicated full body**. Tool-native files contain only tool-specific scoping, not restated shared content.
+- [ ] **Flutter correctness:** `pubspec.yaml`, `analysis_options.yaml`, CI, platform setup, env templates, and test/build/analyze commands were inspected when present; generated context maps source roots without enumerating all of `lib/`.
+- [ ] **Workflow correctness:** if `.codex/` was created or merged, it defines one-workflow-per-session routing, workflow -> task-skill -> domain read order, docs/worklog rules, DD traceability rules, and workflow-specific validation.
+- [ ] **History correctness:** substantial changes have a worklog, self-review, and refreshed task-skills/history when the repo provides a refresh script.
 
 **Done-state:** when the checklist passes, report a concise summary of files created/modified/left-unchanged (with the chosen canonical file and the tools fanned out to) and stop.
 
@@ -237,6 +291,8 @@ Quality checklist before finishing:
 - Run read-only discovery before writing anything.
 - Lead with exact build/test/run/lint commands.
 - Keep one canonical source of truth; have other tools import/symlink/generate from it.
+- For Flutter repos, capture `pubspec.yaml`, analyzer config, CI, platform setup, flavors/targets, and targeted `dart format` / `flutter analyze` / `flutter test` commands.
+- Build workflow routing from observed project domains and docs, not from another app's product model.
 - Make surgical edits to existing files; match their style and language.
 - Use placeholders for secrets; keep real values in gitignored `*.local.*`.
 - Ask before any large restructure or destructive rewrite.
@@ -246,6 +302,8 @@ Quality checklist before finishing:
 - Don't bloat: more lines lower adherence to ALL rules, not just new ones.
 - Don't include vague filler ("follow best practices", "be a senior engineer").
 - Don't restate what the agent learns by reading code.
+- Don't dump or document the entire `lib/` tree; map entrypoints and boundaries, then read source on demand.
+- Don't copy source-project business rules, module names, persona, pricing, tiers, roadmap, or release status into the target context.
 - Don't commit secrets or echo secret values.
 - Don't maintain N divergent per-tool copies, or assume a prose pointer creates zero drift for import-less tools (use symlink/CI generation).
 - Don't use the context file as a linter (offload deterministic style to real linters/formatters).

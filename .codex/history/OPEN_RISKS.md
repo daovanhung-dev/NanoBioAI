@@ -6,7 +6,7 @@ Default risk register. This file contains only risks that are still open or need
 
 - Severity: P1
 - Status: Needs Verification
-- Updated: 2026-07-01
+- Updated: 2026-07-02
 - Evidence: docs/worklog/2026-06-21/002-worklog-supabase-database-draft.md; docs/supabase/08-acceptance-checks.md.
 - Impact: Membership, quota, FamilyPlus, sale/referral, payment, and RLS behavior cannot be treated as production-ready until SQL/RLS is verified outside docs.
 - Proposed handling: Run Supabase local or sandbox verification, record RLS smoke results for at least two users and family scopes, then update this risk with evidence.

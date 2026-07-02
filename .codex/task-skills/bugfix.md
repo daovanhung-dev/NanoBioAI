@@ -17,7 +17,7 @@
 - v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
 - Admin dashboard / Supabase RPC: 1
 - AI chat: 1
-- lib/app_versions/v1/features/\*\*/presentation: 1
+- lib/app_versions/v1/features/**/presentation: 1
 - Dashboard, Lifestyle Schedule, Meal Plan, Nutrition: 1
 
 ## Work Pattern
@@ -37,7 +37,7 @@
 ## Source Worklogs
 
 - [Worklog - AI chat retry](../../docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md) - AI chat
-- [Worklog - Nabihóa copy UI](../../docs/worklog/2026-06-19/004-worklog-ui-Nabi-copy-polish.md) - lib/app_versions/v1/features/\*\*/presentation
+- [Worklog - Nabihóa copy UI](../../docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md) - lib/app_versions/v1/features/**/presentation
 - [Worklog - Đồng bộ lịch trình và thực đơn sau khi tạo dữ liệu mới](../../docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md) - Dashboard, Lifestyle Schedule, Meal Plan, Nutrition
 - [Worklog - Fix module flow P0](../../docs/worklog/2026-06-22/007-worklog-fix-module-flow.md) - v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.
 - [Worklog - Fix health scoring zero flow](../../docs/worklog/2026-06-22/008-worklog-fix-health-scoring-flow.md) - v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.

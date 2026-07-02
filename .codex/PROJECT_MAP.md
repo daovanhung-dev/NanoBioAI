@@ -45,7 +45,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 | Access / Auth / Membership / Referral | `.codex/domains/access-membership-referral.md` | `lib/app_versions/v2/`, `lib/app_versions/v3/`, `lib/sale_referral/`, `lib/services/supabase/` |
 | Notification / Reminder               | `.codex/domains/notification.md`               | `lib/app_versions/v1/services/notifications/`, `test/services/notifications/`                  |
 | SQLite / DAO / Migration              | `.codex/domains/sqlite.md`                     | `lib/core/storage/localdb/`, `test/core/storage/localdb/`                                      |
-| UI / Theme / NabiCopy                 | `.codex/domains/ui-Nabi.md`                    | `lib/core/theme/`, feature presentation files                                                  |
+| UI / Theme / NabiCopy                 | `.codex/domains/ui-nami.md`                    | `lib/core/theme/`, feature presentation files                                                  |
 | Daily Health Tracking                 | `.codex/domains/health-tracking.md`            | `lib/app_versions/v1/features/daily_health_tracking/`, `test/features/daily_health_tracking/`  |
 | Lifestyle Schedule                    | `.codex/domains/lifestyle-schedule.md`         | `lib/app_versions/v1/features/lifestyle_schedule/`, `test/features/lifestyle_schedule/`        |
 
