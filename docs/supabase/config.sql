@@ -264,7 +264,7 @@ begin
       nullif(new.raw_user_meta_data ->> 'full_name', ''),
       nullif(new.raw_user_meta_data ->> 'name', ''),
       new.email,
-      'Báº¡n'
+      'Bạn'
     ),
     'self'
   )
@@ -326,7 +326,7 @@ select
   u.id,
   u.id,
   'self',
-  coalesce(u.full_name, u.email, 'Báº¡n'),
+  coalesce(u.full_name, u.email, 'Bạn'),
   'self'
 from public.users u
 on conflict (owner_user_id) where subject_type = 'self' do nothing;
@@ -758,6 +758,22 @@ create index if not exists idx_personal_schedule_ai_requests_user_mode
 create index if not exists idx_meal_catalog_type_active on public.meal_catalog (meal_type, is_active);
 create index if not exists idx_exercise_catalog_category_active on public.exercise_catalog (category, is_active);
 create index if not exists idx_schedule_task_catalog_category_active on public.schedule_task_catalog (category, is_active);
+create index if not exists idx_health_profiles_user on public.health_profiles (user_id);
+create index if not exists idx_lifestyle_habits_user on public.lifestyle_habits (user_id);
+create index if not exists idx_health_goals_user on public.health_goals (user_id);
+create index if not exists idx_health_conditions_user on public.health_conditions (user_id);
+create index if not exists idx_food_allergies_user on public.food_allergies (user_id);
+create index if not exists idx_medical_treatments_user on public.medical_treatments (user_id);
+create index if not exists idx_survey_answers_user on public.survey_answers (user_id);
+create index if not exists idx_meal_plans_user on public.meal_plans (user_id);
+create index if not exists idx_daily_health_tasks_user on public.daily_health_tasks (user_id);
+create index if not exists idx_lifestyle_schedule_items_user on public.lifestyle_schedule_items (user_id);
+create index if not exists idx_health_tracking_logs_user on public.health_tracking_logs (user_id);
+create index if not exists idx_health_score_ledgers_user on public.health_score_ledgers (user_id);
+create index if not exists idx_wellness_point_ledgers_user on public.wellness_point_ledgers (user_id);
+create index if not exists idx_nutrition_logs_user on public.nutrition_logs (user_id);
+create index if not exists idx_ai_insights_user on public.ai_insights (user_id);
+create index if not exists idx_ai_recommendations_user on public.ai_recommendations (user_id);
 
 do $$
 declare
@@ -2139,6 +2155,8 @@ create table if not exists public.referral_relationships (
 
 create index if not exists idx_referral_relationships_referrer
   on public.referral_relationships (referrer_user_id, created_at desc);
+create index if not exists idx_referral_relationships_referred_status
+  on public.referral_relationships (referred_user_id, status);
 
 create index if not exists idx_referral_relationships_device_hash
   on public.referral_relationships (device_hash)
@@ -2170,6 +2188,12 @@ create table if not exists public.payment_events (
 
 create index if not exists idx_payment_events_payer_paid
   on public.payment_events (payer_user_id, paid_at desc);
+create index if not exists idx_payment_events_status_created
+  on public.payment_events (status, created_at desc);
+create index if not exists idx_payment_events_status_paid
+  on public.payment_events (status, paid_at desc);
+create index if not exists idx_sale_profiles_status_created
+  on public.sale_profiles (status, created_at desc);
 
 create table if not exists public.commission_rates (
   code text primary key default 'direct_referral',
@@ -2198,6 +2222,10 @@ create table if not exists public.commission_records (
 
 create index if not exists idx_commission_records_receiver_created
   on public.commission_records (receiver_user_id, created_at desc);
+create index if not exists idx_commission_records_receiver_status_available
+  on public.commission_records (receiver_user_id, status, available_at, created_at desc);
+create index if not exists idx_commission_records_payment
+  on public.commission_records (payment_event_id);
 
 drop trigger if exists trg_sale_profiles_updated_at on public.sale_profiles;
 create trigger trg_sale_profiles_updated_at
@@ -2426,6 +2454,102 @@ from anon, authenticated;
 -- from cloud. This is intentional for a complete user-scoped snapshot, not a
 -- generic multi-device conflict resolver.
 
+create or replace function public.insert_mobile_snapshot_row(
+  p_table_name text,
+  p_user_id uuid,
+  p_subject_id uuid,
+  p_row jsonb,
+  p_allowed_columns text[],
+  p_include_subject boolean default true
+)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_payload jsonb;
+  v_payload_columns text[];
+  v_insert_columns text[];
+  v_column_names text;
+  v_select_names text;
+  v_column_definitions text;
+  v_matched_column_count integer;
+begin
+  if jsonb_typeof(p_row) <> 'object' then
+    raise exception 'INVALID_SNAPSHOT_ROW for table %', p_table_name
+      using errcode = '22023';
+  end if;
+
+  if p_include_subject and p_subject_id is null then
+    raise exception 'SNAPSHOT_SUBJECT_REQUIRED for table %', p_table_name
+      using errcode = '22023';
+  end if;
+
+  select coalesce(array_agg(c.column_name order by c.ordinality), array[]::text[])
+  into v_payload_columns
+  from unnest(p_allowed_columns) with ordinality as c(column_name, ordinality)
+  where c.column_name not in ('user_id', 'subject_id')
+    and p_row ? c.column_name
+    and (p_row -> c.column_name) <> 'null'::jsonb;
+
+  select coalesce(jsonb_object_agg(e.key, e.value), '{}'::jsonb)
+  into v_payload
+  from jsonb_each(p_row) as e(key, value)
+  where e.key = any(p_allowed_columns)
+    and e.key not in ('user_id', 'subject_id')
+    and e.value <> 'null'::jsonb;
+
+  v_payload := v_payload || jsonb_build_object('user_id', p_user_id);
+  v_insert_columns := array['user_id']::text[] || v_payload_columns;
+
+  if p_include_subject then
+    v_payload := v_payload || jsonb_build_object('subject_id', p_subject_id);
+    v_insert_columns := array['user_id', 'subject_id']::text[] || v_payload_columns;
+  end if;
+
+  select
+    string_agg(format('%I', c.column_name), ', ' order by c.ordinality),
+    string_agg(format('x.%I', c.column_name), ', ' order by c.ordinality)
+  into v_column_names, v_select_names
+  from unnest(v_insert_columns) with ordinality as c(column_name, ordinality);
+
+  select
+    string_agg(
+      format('%I %s', c.column_name, pg_catalog.format_type(a.atttypid, a.atttypmod)),
+      ', ' order by c.ordinality
+    ),
+    count(*)
+  into v_column_definitions, v_matched_column_count
+  from unnest(v_insert_columns) with ordinality as c(column_name, ordinality)
+  join pg_catalog.pg_class cls
+    on cls.relname = p_table_name
+  join pg_catalog.pg_namespace ns
+    on ns.oid = cls.relnamespace and ns.nspname = 'public'
+  join pg_catalog.pg_attribute a
+    on a.attrelid = cls.oid
+   and a.attname = c.column_name
+   and a.attnum > 0
+   and not a.attisdropped;
+
+  if v_matched_column_count <> cardinality(v_insert_columns) then
+    raise exception 'SNAPSHOT_SCHEMA_MISMATCH for table %', p_table_name
+      using errcode = '22023';
+  end if;
+
+  execute format(
+    'insert into public.%I (%s) select %s from jsonb_to_record($1) as x(%s)',
+    p_table_name,
+    v_column_names,
+    v_select_names,
+    v_column_definitions
+  ) using v_payload;
+end;
+$$;
+
+revoke all on function public.insert_mobile_snapshot_row(text, uuid, uuid, jsonb, text[], boolean)
+from public, anon, authenticated;
+
 create or replace function public.sync_my_mobile_snapshot(p_snapshot jsonb)
 returns jsonb
 language plpgsql
@@ -2439,6 +2563,7 @@ declare
   v_tables jsonb := coalesce(p_snapshot -> 'tables', '{}'::jsonb);
   v_table text;
   v_row jsonb;
+  v_allowed_columns text[];
   v_rows integer := 0;
   v_collection_tables text[] := array[
     'health_goals',
@@ -2463,7 +2588,8 @@ begin
     raise exception 'AUTH_REQUIRED' using errcode = '42501';
   end if;
 
-  if jsonb_typeof(p_snapshot) <> 'object' then
+  if coalesce(jsonb_typeof(p_snapshot), '') <> 'object'
+     or coalesce(jsonb_typeof(v_tables), '') <> 'object' then
     raise exception 'INVALID_SNAPSHOT' using errcode = '22023';
   end if;
 
@@ -2478,7 +2604,7 @@ begin
     insert into public.health_subjects (
       owner_user_id, linked_user_id, subject_type, display_name, relationship
     )
-    values (v_user_id, v_user_id, 'self', 'Báº¡n', 'self')
+    values (v_user_id, v_user_id, 'self', 'Bạn', 'self')
     on conflict (owner_user_id) where subject_type = 'self'
     do update set linked_user_id = excluded.linked_user_id, is_active = true
     returning id into v_subject_id;
@@ -2521,19 +2647,34 @@ begin
       v_table
     ) using v_user_id, v_subject_id;
 
+    if v_table = 'health_profiles' then
+      v_allowed_columns := array[
+        'id', 'occupation', 'height_cm', 'weight_kg', 'bmi',
+        'blood_pressure', 'blood_sugar'
+      ];
+    elsif v_table = 'lifestyle_habits' then
+      v_allowed_columns := array[
+        'id', 'skip_breakfast', 'eat_late', 'eat_sweet', 'eat_oily',
+        'low_vegetable', 'low_water', 'fast_food', 'alcohol', 'coffee_high',
+        'sleep_quality', 'activity_level', 'water_per_day'
+      ];
+    else
+      raise exception 'UNSUPPORTED_SNAPSHOT_TABLE: %', v_table
+        using errcode = '22023';
+    end if;
+
     for v_row in
       select value from jsonb_array_elements(
         coalesce(v_tables -> v_table, '[]'::jsonb)
       )
     loop
-      execute format(
-        'insert into public.%I '
-        'select (jsonb_populate_record(null::public.%I, $1)).*',
+      perform public.insert_mobile_snapshot_row(
         v_table,
-        v_table
-      ) using (
-        (v_row - 'user_id' - 'subject_id') ||
-        jsonb_build_object('user_id', v_user_id, 'subject_id', v_subject_id)
+        v_user_id,
+        v_subject_id,
+        v_row,
+        v_allowed_columns,
+        true
       );
       v_rows := v_rows + 1;
     end loop;
@@ -2554,37 +2695,112 @@ begin
       ) using v_user_id, v_subject_id;
     end if;
 
+    if v_table = 'health_goals' then
+      v_allowed_columns := array['id', 'goal_code', 'goal_name', 'is_active'];
+    elsif v_table = 'health_conditions' then
+      v_allowed_columns := array[
+        'id', 'condition_code', 'condition_name', 'severity_level'
+      ];
+    elsif v_table = 'food_allergies' then
+      v_allowed_columns := array['id', 'allergy_name', 'note'];
+    elsif v_table = 'medical_treatments' then
+      v_allowed_columns := array[
+        'id', 'treatment_name', 'medication_name', 'note'
+      ];
+    elsif v_table = 'survey_answers' then
+      v_allowed_columns := array['id', 'question_code', 'answer_value'];
+    elsif v_table = 'meal_plans' then
+      v_allowed_columns := array[
+        'id', 'plan_date', 'meal_type', 'meal_name', 'description', 'calories',
+        'protein', 'carbs', 'fat', 'fiber', 'water_ml', 'meal_order',
+        'start_time', 'end_time', 'cooking_instructions', 'is_completed',
+        'ai_generated'
+      ];
+    elsif v_table = 'daily_health_tasks' then
+      v_allowed_columns := array[
+        'id', 'task_date', 'task_code', 'category', 'title', 'description',
+        'target_value', 'current_value', 'unit', 'is_completed', 'sort_order',
+        'source', 'encouragement'
+      ];
+    elsif v_table = 'lifestyle_schedule_items' then
+      v_allowed_columns := array[
+        'id', 'schedule_date', 'start_time', 'end_time', 'title', 'description',
+        'category', 'source_type', 'source_id', 'target_value', 'current_value',
+        'unit', 'is_completed', 'sort_order', 'ai_generated', 'encouragement'
+      ];
+    elsif v_table = 'notifications' then
+      v_allowed_columns := array[
+        'id', 'title', 'body', 'type', 'is_read', 'source_type', 'source_id',
+        'scheduled_at', 'notification_id', 'action_status', 'responded_at', 'payload'
+      ];
+    elsif v_table = 'health_tracking_logs' then
+      v_allowed_columns := array[
+        'id', 'weight_kg', 'calories', 'water_ml', 'sleep_hours', 'stress_level',
+        'steps_count', 'heart_rate_bpm', 'oxygen_saturation', 'daily_score',
+        'mood', 'log_date'
+      ];
+    elsif v_table = 'health_score_ledgers' then
+      v_allowed_columns := array[
+        'id', 'period_start', 'period_end', 'score', 'formula_version',
+        'breakdown', 'idempotency_key', 'calculated_at'
+      ];
+    elsif v_table = 'wellness_point_ledgers' then
+      v_allowed_columns := array[
+        'id', 'source_type', 'source_id', 'schedule_date', 'points_delta',
+        'program_code', 'idempotency_key'
+      ];
+    elsif v_table = 'nutrition_logs' then
+      v_allowed_columns := array[
+        'id', 'food_name', 'calories', 'protein', 'carbs', 'fat', 'meal_type',
+        'eaten_at'
+      ];
+    elsif v_table = 'ai_insights' then
+      v_allowed_columns := array['id', 'insight_type', 'title', 'content', 'risk_level'];
+    elsif v_table = 'ai_recommendations' then
+      v_allowed_columns := array[
+        'id', 'recommendation_type', 'title', 'description', 'action_text', 'is_read'
+      ];
+    else
+      raise exception 'UNSUPPORTED_SNAPSHOT_TABLE: %', v_table
+        using errcode = '22023';
+    end if;
+
     for v_row in
       select value from jsonb_array_elements(
         coalesce(v_tables -> v_table, '[]'::jsonb)
       )
     loop
-      execute format(
-        'insert into public.%I '
-        'select (jsonb_populate_record(null::public.%I, $1)).*',
+      perform public.insert_mobile_snapshot_row(
         v_table,
-        v_table
-      ) using (
-        (v_row - 'user_id' - 'subject_id') ||
-        jsonb_build_object('user_id', v_user_id, 'subject_id', v_subject_id)
+        v_user_id,
+        v_subject_id,
+        v_row,
+        v_allowed_columns,
+        true
       );
       v_rows := v_rows + 1;
     end loop;
   end loop;
 
   delete from public.personal_schedule_ai_requests where user_id = v_user_id;
+  v_allowed_columns := array[
+    'request_id', 'actor_mode', 'status', 'start_date', 'days', 'meal_count',
+    'exercise_count', 'schedule_item_count', 'error_code', 'completed_at'
+  ];
 
   for v_row in
     select value from jsonb_array_elements(
       coalesce(v_tables -> 'personal_schedule_ai_requests', '[]'::jsonb)
     )
   loop
-    insert into public.personal_schedule_ai_requests
-    select (jsonb_populate_record(
-      null::public.personal_schedule_ai_requests,
-      (v_row - 'user_id' - 'subject_id') ||
-      jsonb_build_object('user_id', v_user_id)
-    )).*;
+    perform public.insert_mobile_snapshot_row(
+      'personal_schedule_ai_requests',
+      v_user_id,
+      null,
+      v_row,
+      v_allowed_columns,
+      false
+    );
     v_rows := v_rows + 1;
   end loop;
 
@@ -2880,6 +3096,23 @@ create table if not exists public.admin_reconciliation_discrepancies (
   reviewed_at timestamptz,
   review_reason text
 );
+
+create index if not exists idx_admin_user_roles_user_active
+  on public.admin_user_roles (user_id, is_active, revoked_at);
+create index if not exists idx_system_config_versions_key_status_created
+  on public.system_config_versions (config_key, status, created_at desc);
+create index if not exists idx_report_exports_requested_status_created
+  on public.report_exports (requested_by, status, created_at desc);
+create index if not exists idx_sale_point_adjustments_user_status_created
+  on public.sale_point_adjustments (sale_user_id, status, created_at desc);
+create index if not exists idx_admin_reconciliation_discrepancies_status_created
+  on public.admin_reconciliation_discrepancies (status, created_at desc);
+create index if not exists idx_admin_reconciliation_discrepancies_target
+  on public.admin_reconciliation_discrepancies (target_id);
+create index if not exists idx_admin_audit_events_created
+  on public.admin_audit_events (created_at desc);
+create index if not exists idx_admin_audit_events_target
+  on public.admin_audit_events (target_id, created_at desc);
 
 drop trigger if exists trg_admin_roles_updated_at on public.admin_roles;
 create trigger trg_admin_roles_updated_at
@@ -3618,6 +3851,8 @@ set search_path = public, pg_temp
 as $$
 declare
   v_status public.nb_sale_status;
+  v_candidate text;
+  v_created_code text;
 begin
   perform public.admin_assert_permission('sales.write');
 
@@ -3633,6 +3868,18 @@ begin
     raise exception 'INVALID_SALE_DECISION' using errcode = '22023';
   end if;
 
+  if v_status = 'active' and not exists (
+    select 1
+    from public.membership_subscriptions ms
+    where ms.user_id = p_sale_user_id
+      and ms.plan_code in ('plus', 'family_plus')
+      and ms.status = 'active'
+      and ms.starts_at <= now()
+      and (ms.ends_at is null or ms.ends_at > now())
+  ) then
+    raise exception 'SALE_REQUIRES_ACTIVE_PAID_PLAN' using errcode = '42501';
+  end if;
+
   insert into public.sale_profiles (user_id, status, approved_at, note)
   values (
     p_sale_user_id,
@@ -3643,11 +3890,40 @@ begin
   on conflict (user_id) do update
   set
     status = excluded.status,
-    approved_at = case when excluded.status = 'active' then coalesce(public.sale_profiles.approved_at, now()) else public.sale_profiles.approved_at end,
-    suspended_at = case when excluded.status = 'suspended' then now() else public.sale_profiles.suspended_at end,
-    closed_at = case when excluded.status = 'closed' then now() else public.sale_profiles.closed_at end,
+    approved_at = case
+      when excluded.status = 'active' then coalesce(public.sale_profiles.approved_at, now())
+      else public.sale_profiles.approved_at
+    end,
+    suspended_at = case
+      when excluded.status = 'suspended' then now()
+      else public.sale_profiles.suspended_at
+    end,
+    closed_at = case
+      when excluded.status = 'closed' then now()
+      else public.sale_profiles.closed_at
+    end,
     note = excluded.note,
     updated_at = now();
+
+  if v_status = 'active' and not exists (
+    select 1
+    from public.referral_codes
+    where sale_user_id = p_sale_user_id
+      and status = 'active'
+  ) then
+    for i in 1..12 loop
+      v_candidate := 'NANO-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
+      insert into public.referral_codes (code, sale_user_id, status)
+      values (v_candidate, p_sale_user_id, 'active')
+      on conflict (code) do nothing
+      returning code into v_created_code;
+      exit when v_created_code is not null;
+    end loop;
+
+    if v_created_code is null then
+      raise exception 'REFERRAL_CODE_ALLOCATION_FAILED';
+    end if;
+  end if;
 
   perform public.admin_write_audit(
     'admin_review_sale_profile',
@@ -3655,7 +3931,7 @@ begin
     p_sale_user_id::text,
     p_reason,
     p_idempotency_key,
-    jsonb_build_object('decision', p_decision)
+    jsonb_build_object('decision', p_decision, 'status', v_status::text)
   );
 
   return query select true, 'Da cap nhat Sale.';
@@ -4404,6 +4680,10 @@ create unique index if not exists idx_sale_point_conversions_idempotency
 
 create index if not exists idx_sale_point_conversions_sale_created
   on public.sale_point_conversions (sale_user_id, created_at desc);
+create index if not exists idx_sale_point_conversions_status_created
+  on public.sale_point_conversions (status, created_at desc);
+create index if not exists idx_sale_point_conversions_sale_status_created
+  on public.sale_point_conversions (sale_user_id, status, created_at desc);
 
 create table if not exists public.sale_payout_profiles (
   sale_user_id uuid primary key references public.sale_profiles(user_id) on delete cascade,
@@ -4855,105 +5135,7 @@ begin
 end;
 $$;
 
-create or replace function public.admin_review_sale_profile(
-  p_sale_user_id uuid,
-  p_decision text,
-  p_reason text,
-  p_idempotency_key text
-)
-returns table (success boolean, message text)
-language plpgsql
-security definer
-set search_path = public, pg_temp
-as $$
-declare
-  v_status public.nb_sale_status;
-  v_candidate text;
-  v_created_code text;
-begin
-  perform public.admin_assert_permission('sales.write');
 
-  v_status := case p_decision
-    when 'approve' then 'active'::public.nb_sale_status
-    when 'reject' then 'closed'::public.nb_sale_status
-    when 'suspend' then 'suspended'::public.nb_sale_status
-    when 'close' then 'closed'::public.nb_sale_status
-    else null
-  end;
-
-  if v_status is null then
-    raise exception 'INVALID_SALE_DECISION' using errcode = '22023';
-  end if;
-
-  if v_status = 'active' and not exists (
-    select 1
-    from public.membership_subscriptions ms
-    where ms.user_id = p_sale_user_id
-      and ms.plan_code in ('plus', 'family_plus')
-      and ms.status = 'active'
-      and ms.starts_at <= now()
-      and (ms.ends_at is null or ms.ends_at > now())
-  ) then
-    raise exception 'SALE_REQUIRES_ACTIVE_PAID_PLAN' using errcode = '42501';
-  end if;
-
-  insert into public.sale_profiles (user_id, status, approved_at, note)
-  values (
-    p_sale_user_id,
-    v_status,
-    case when v_status = 'active' then now() else null end,
-    btrim(p_reason)
-  )
-  on conflict (user_id) do update
-  set
-    status = excluded.status,
-    approved_at = case
-      when excluded.status = 'active' then coalesce(public.sale_profiles.approved_at, now())
-      else public.sale_profiles.approved_at
-    end,
-    suspended_at = case
-      when excluded.status = 'suspended' then now()
-      else public.sale_profiles.suspended_at
-    end,
-    closed_at = case
-      when excluded.status = 'closed' then now()
-      else public.sale_profiles.closed_at
-    end,
-    note = excluded.note,
-    updated_at = now();
-
-  if v_status = 'active' and not exists (
-    select 1
-    from public.referral_codes
-    where sale_user_id = p_sale_user_id
-      and status = 'active'
-  ) then
-    for i in 1..12 loop
-      v_candidate := 'NANO-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
-      insert into public.referral_codes (code, sale_user_id, status)
-      values (v_candidate, p_sale_user_id, 'active')
-      on conflict (code) do nothing
-      returning code into v_created_code;
-      exit when v_created_code is not null;
-    end loop;
-
-    if v_created_code is null then
-      raise exception 'REFERRAL_CODE_ALLOCATION_FAILED';
-    end if;
-  end if;
-
-  perform public.admin_write_audit(
-    'admin_review_sale_profile',
-    'sale_profile',
-    p_sale_user_id::text,
-    p_reason,
-    p_idempotency_key,
-    jsonb_build_object('decision', p_decision, 'status', v_status::text)
-  );
-
-  return query select true, 'Da cap nhat Sale.';
-end;
-$$;
 
 create or replace function public.get_my_sale_dashboard()
 returns table (

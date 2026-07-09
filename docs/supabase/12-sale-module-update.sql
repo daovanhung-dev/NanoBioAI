@@ -35,6 +35,10 @@ create unique index if not exists idx_sale_point_conversions_idempotency
 
 create index if not exists idx_sale_point_conversions_sale_created
   on public.sale_point_conversions (sale_user_id, created_at desc);
+create index if not exists idx_sale_point_conversions_status_created
+  on public.sale_point_conversions (status, created_at desc);
+create index if not exists idx_sale_point_conversions_sale_status_created
+  on public.sale_point_conversions (sale_user_id, status, created_at desc);
 
 create table if not exists public.sale_payout_profiles (
   sale_user_id uuid primary key references public.sale_profiles(user_id) on delete cascade,

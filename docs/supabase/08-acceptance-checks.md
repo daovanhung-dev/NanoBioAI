@@ -21,6 +21,8 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 
 - [ ] Guest hoan tat onboarding + tao account cloud moi: snapshot local duoc day
   qua `sync_my_mobile_snapshot`, local dung auth UUID va co du meal/task.
+- [ ] Sparse snapshot thieu `created_at`, `updated_at` hoac cot default van
+  sync thanh cong; Postgres tu cap default, khong gap loi not-null `23502`.
 - [ ] Client thu ghi package/Sale/payment/commission/quota/subject cua user khac
   qua payload: RPC phai bo qua hoac tu choi.
 

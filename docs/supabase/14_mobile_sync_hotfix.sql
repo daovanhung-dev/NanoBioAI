@@ -5,7 +5,7 @@
 -- It is safe to run repeatedly. Do not run docs/supabase/config.sql on production.
 --
 -- Root cause fixed:
---   jsonb_populate_record(null::public.some_table, payload) produces a complete
+--   The previous record-population insert style produced a complete
 --   record. Any omitted JSON key becomes SQL NULL, so INSERT ... SELECT record.*
 --   explicitly inserts NULL into columns such as created_at and bypasses
 --   DEFAULT now(), causing PostgreSQL 23502.
@@ -57,8 +57,8 @@ begin
     raise exception 'AUTH_REQUIRED' using errcode = '42501';
   end if;
 
-  if jsonb_typeof(p_snapshot) <> 'object'
-     or jsonb_typeof(v_tables) <> 'object' then
+  if coalesce(jsonb_typeof(p_snapshot), '') <> 'object'
+     or coalesce(jsonb_typeof(v_tables), '') <> 'object' then
     raise exception 'INVALID_SNAPSHOT' using errcode = '22023';
   end if;
 
@@ -347,6 +347,77 @@ begin
       ) using v_payload;
       v_rows := v_rows + 1;
     end loop;
+  end loop;
+
+  v_table := 'personal_schedule_ai_requests';
+  delete from public.personal_schedule_ai_requests where user_id = v_user_id;
+  v_allowed_columns := array[
+    'request_id', 'actor_mode', 'status', 'start_date', 'days', 'meal_count',
+    'exercise_count', 'schedule_item_count', 'error_code', 'completed_at'
+  ];
+
+  for v_row in
+    select value from jsonb_array_elements(
+      coalesce(v_tables -> 'personal_schedule_ai_requests', '[]'::jsonb)
+    )
+  loop
+    if jsonb_typeof(v_row) <> 'object' then
+      raise exception 'INVALID_SNAPSHOT_ROW for table %', v_table
+        using errcode = '22023';
+    end if;
+
+    select coalesce(array_agg(c.column_name order by c.ordinality), array[]::text[])
+    into v_payload_columns
+    from unnest(v_allowed_columns) with ordinality as c(column_name, ordinality)
+    where v_row ? c.column_name
+      and (v_row -> c.column_name) <> 'null'::jsonb;
+
+    select coalesce(jsonb_object_agg(e.key, e.value), '{}'::jsonb)
+    into v_payload
+    from jsonb_each(v_row) as e(key, value)
+    where e.key = any(v_allowed_columns)
+      and e.value <> 'null'::jsonb;
+
+    v_payload := v_payload || jsonb_build_object('user_id', v_user_id);
+    v_insert_columns := array['user_id']::text[] || v_payload_columns;
+
+    select
+      string_agg(format('%I', c.column_name), ', ' order by c.ordinality),
+      string_agg(format('x.%I', c.column_name), ', ' order by c.ordinality)
+    into v_column_names, v_select_names
+    from unnest(v_insert_columns) with ordinality as c(column_name, ordinality);
+
+    select
+      string_agg(
+        format('%I %s', c.column_name, pg_catalog.format_type(a.atttypid, a.atttypmod)),
+        ', ' order by c.ordinality
+      ),
+      count(*)
+    into v_column_definitions, v_matched_column_count
+    from unnest(v_insert_columns) with ordinality as c(column_name, ordinality)
+    join pg_catalog.pg_class cls
+      on cls.relname = v_table
+    join pg_catalog.pg_namespace ns
+      on ns.oid = cls.relnamespace and ns.nspname = 'public'
+    join pg_catalog.pg_attribute a
+      on a.attrelid = cls.oid
+     and a.attname = c.column_name
+     and a.attnum > 0
+     and not a.attisdropped;
+
+    if v_matched_column_count <> cardinality(v_insert_columns) then
+      raise exception 'SNAPSHOT_SCHEMA_MISMATCH for table %', v_table
+        using errcode = '22023';
+    end if;
+
+    execute format(
+      'insert into public.%I (%s) select %s from jsonb_to_record($1) as x(%s)',
+      v_table,
+      v_column_names,
+      v_select_names,
+      v_column_definitions
+    ) using v_payload;
+    v_rows := v_rows + 1;
   end loop;
 
   return jsonb_build_object(

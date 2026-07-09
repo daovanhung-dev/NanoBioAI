@@ -53,6 +53,8 @@ create table if not exists public.referral_relationships (
 
 create index if not exists idx_referral_relationships_referrer
   on public.referral_relationships (referrer_user_id, created_at desc);
+create index if not exists idx_referral_relationships_referred_status
+  on public.referral_relationships (referred_user_id, status);
 
 create index if not exists idx_referral_relationships_device_hash
   on public.referral_relationships (device_hash)
@@ -84,6 +86,12 @@ create table if not exists public.payment_events (
 
 create index if not exists idx_payment_events_payer_paid
   on public.payment_events (payer_user_id, paid_at desc);
+create index if not exists idx_payment_events_status_created
+  on public.payment_events (status, created_at desc);
+create index if not exists idx_payment_events_status_paid
+  on public.payment_events (status, paid_at desc);
+create index if not exists idx_sale_profiles_status_created
+  on public.sale_profiles (status, created_at desc);
 
 create table if not exists public.commission_rates (
   code text primary key default 'direct_referral',
@@ -112,6 +120,10 @@ create table if not exists public.commission_records (
 
 create index if not exists idx_commission_records_receiver_created
   on public.commission_records (receiver_user_id, created_at desc);
+create index if not exists idx_commission_records_receiver_status_available
+  on public.commission_records (receiver_user_id, status, available_at, created_at desc);
+create index if not exists idx_commission_records_payment
+  on public.commission_records (payment_event_id);
 
 drop trigger if exists trg_sale_profiles_updated_at on public.sale_profiles;
 create trigger trg_sale_profiles_updated_at

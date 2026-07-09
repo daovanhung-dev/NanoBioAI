@@ -360,6 +360,22 @@ create index if not exists idx_personal_schedule_ai_requests_user_mode
 create index if not exists idx_meal_catalog_type_active on public.meal_catalog (meal_type, is_active);
 create index if not exists idx_exercise_catalog_category_active on public.exercise_catalog (category, is_active);
 create index if not exists idx_schedule_task_catalog_category_active on public.schedule_task_catalog (category, is_active);
+create index if not exists idx_health_profiles_user on public.health_profiles (user_id);
+create index if not exists idx_lifestyle_habits_user on public.lifestyle_habits (user_id);
+create index if not exists idx_health_goals_user on public.health_goals (user_id);
+create index if not exists idx_health_conditions_user on public.health_conditions (user_id);
+create index if not exists idx_food_allergies_user on public.food_allergies (user_id);
+create index if not exists idx_medical_treatments_user on public.medical_treatments (user_id);
+create index if not exists idx_survey_answers_user on public.survey_answers (user_id);
+create index if not exists idx_meal_plans_user on public.meal_plans (user_id);
+create index if not exists idx_daily_health_tasks_user on public.daily_health_tasks (user_id);
+create index if not exists idx_lifestyle_schedule_items_user on public.lifestyle_schedule_items (user_id);
+create index if not exists idx_health_tracking_logs_user on public.health_tracking_logs (user_id);
+create index if not exists idx_health_score_ledgers_user on public.health_score_ledgers (user_id);
+create index if not exists idx_wellness_point_ledgers_user on public.wellness_point_ledgers (user_id);
+create index if not exists idx_nutrition_logs_user on public.nutrition_logs (user_id);
+create index if not exists idx_ai_insights_user on public.ai_insights (user_id);
+create index if not exists idx_ai_recommendations_user on public.ai_recommendations (user_id);
 
 do $$
 declare

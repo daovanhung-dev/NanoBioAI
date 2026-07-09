@@ -57,9 +57,10 @@ doi:
 5. `04-family-plus.sql` - nhom gia dinh va quyen xem/sua theo FamilyPlus.
 6. `05-sale-referral-commission.sql` - Sale/referral, payment event va hoa hong
    Sale truc tiep 10%.
-7. `10-mobile-sync-and-sale-rpc.sql` - RPC snapshot dong bo local/cloud. Phan
-   RPC Sale cu trong file nay da duoc `12-sale-module-update.sql` thay the
-   trong `config.sql`.
+7. `10-mobile-sync-and-sale-rpc.sql` - RPC snapshot dong bo local/cloud va
+   shared guard `require_active_sale_user`. File nay khong con la nguon Sale
+   RPC dang ky/dashboard; contract Sale final nam trong
+   `12-sale-module-update.sql` va `config.sql`.
 8. `11-admin-access-dashboard.sql` - Admin roles, permissions, dashboard, audit
    va RPC quan tri.
 9. `12-sale-module-update.sql` - Sale dang ky cho Admin duyet, attach ma gioi
@@ -72,7 +73,9 @@ doi:
 13. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tao account
    test Free/Plus/FamilyPlus co dinh; `config.sql` co dev seed rieng va them
    `dev.admin@nanobio.local`.
-14. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
+14. `14_mobile_sync_hotfix.sql` - hotfix snapshot sync khong insert NULL vao
+   cot co default; logic nay da duoc fold vao `config.sql`.
+15. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
    va nghiem thu.
 
 Moi thay doi Supabase schema/RLS/RPC/seed/docs phai cap nhat `config.sql` cung

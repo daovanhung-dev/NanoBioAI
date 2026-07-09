@@ -249,6 +249,23 @@ create table if not exists public.admin_reconciliation_discrepancies (
   review_reason text
 );
 
+create index if not exists idx_admin_user_roles_user_active
+  on public.admin_user_roles (user_id, is_active, revoked_at);
+create index if not exists idx_system_config_versions_key_status_created
+  on public.system_config_versions (config_key, status, created_at desc);
+create index if not exists idx_report_exports_requested_status_created
+  on public.report_exports (requested_by, status, created_at desc);
+create index if not exists idx_sale_point_adjustments_user_status_created
+  on public.sale_point_adjustments (sale_user_id, status, created_at desc);
+create index if not exists idx_admin_reconciliation_discrepancies_status_created
+  on public.admin_reconciliation_discrepancies (status, created_at desc);
+create index if not exists idx_admin_reconciliation_discrepancies_target
+  on public.admin_reconciliation_discrepancies (target_id);
+create index if not exists idx_admin_audit_events_created
+  on public.admin_audit_events (created_at desc);
+create index if not exists idx_admin_audit_events_target
+  on public.admin_audit_events (target_id, created_at desc);
+
 drop trigger if exists trg_admin_roles_updated_at on public.admin_roles;
 create trigger trg_admin_roles_updated_at
   before update on public.admin_roles
