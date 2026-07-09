@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 60
+- Total worklogs: 61
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -69,3 +69,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-01 | coding | coding | M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M11 FAMILYPLUS, M12 REFERRAL_DIRECT, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY | [Worklog - Remaining modules coding 100 percent](../../docs/worklog/2026-07-01/001-worklog-remaining-modules-coding-100.md) |
 | 2026-07-01 | docs-context | docs-context | docs/prompts/bootstrap-ai-context.md | [Worklog - Flutter agent bootstrap prompt](../../docs/worklog/2026-07-01/002-worklog-flutter-agent-bootstrap-prompt.md) |
 | 2026-07-02 | docs-context | docs-context | docs/checklist, technical debt audit summary | [Worklog - Technical debt checklist](../../docs/worklog/2026-07-02/001-worklog-technical-debt-checklist.md) |
+| 2026-07-09 | bugfix | bugfix | v2 authentication | [Worklog - Auth validation null](../../docs/worklog/2026-07-09/001-worklog-auth-validation-null.md) |

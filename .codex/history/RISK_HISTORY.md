@@ -378,3 +378,6 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-02/001-worklog-technical-debt-checklist.md :: - Can kiem tra tiep: Sau khi refresh history, chay docs integrity, `git diff --check`, va targeted `rg` de xac nhan link/path checklist.
 - docs/worklog/2026-07-02/001-worklog-technical-debt-checklist.md :: - Muc do hoan thanh task: Da tao artifact chinh; chua fix debt vi ngoai scope.
 - docs/worklog/2026-07-02/001-worklog-technical-debt-checklist.md :: - Diem ton token/chua toi uu: `flutter test` log rat dai; lan sau nen dung reporter/summary neu chi can so lieu pass/fail va fail group.
+- docs/worklog/2026-07-09/001-worklog-auth-validation-null.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-09/001-worklog-auth-validation-null.md :: - Chua fix: canh bao asset directories thieu trong `pubspec.yaml` van xuat hien khi chay Flutter command; khong thuoc bug auth nay.
+- docs/worklog/2026-07-09/001-worklog-auth-validation-null.md :: - Can kiem tra tiep: manual smoke tren thiet bi/emulator neu can xac nhan mau border va hanh vi submit voi Supabase staging.

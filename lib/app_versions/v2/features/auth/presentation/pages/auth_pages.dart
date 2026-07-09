@@ -65,9 +65,8 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
                   AutofillHints.username,
                   AutofillHints.email,
                 ],
-                validator: (value) => vietnameseUiText(
-                  AuthValidators.email(value ?? ''),
-                ),
+                validator: (value) =>
+                    _authValidationText(AuthValidators.email(value ?? '')),
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -79,9 +78,8 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
                 obscureText: _obscurePassword,
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.password],
-                validator: (value) => vietnameseUiText(
-                  AuthValidators.password(value ?? ''),
-                ),
+                validator: (value) =>
+                    _authValidationText(AuthValidators.password(value ?? '')),
                 suffixIcon: _PasswordVisibilityButton(
                   obscure: _obscurePassword,
                   onPressed: () {
@@ -208,9 +206,8 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
                 textCapitalization: TextCapitalization.words,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.name],
-                validator: (value) => vietnameseUiText(
-                  AuthValidators.fullName(value ?? ''),
-                ),
+                validator: (value) =>
+                    _authValidationText(AuthValidators.fullName(value ?? '')),
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -236,9 +233,8 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
                   AutofillHints.username,
                   AutofillHints.email,
                 ],
-                validator: (value) => vietnameseUiText(
-                  AuthValidators.email(value ?? ''),
-                ),
+                validator: (value) =>
+                    _authValidationText(AuthValidators.email(value ?? '')),
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -250,9 +246,8 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
                 obscureText: _obscurePassword,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.newPassword],
-                validator: (value) => vietnameseUiText(
-                  AuthValidators.password(value ?? ''),
-                ),
+                validator: (value) =>
+                    _authValidationText(AuthValidators.password(value ?? '')),
                 suffixIcon: _PasswordVisibilityButton(
                   obscure: _obscurePassword,
                   onPressed: () {
@@ -566,9 +561,8 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
                 AutofillHints.username,
                 AutofillHints.email,
               ],
-              validator: (value) => vietnameseUiText(
-                  AuthValidators.email(value ?? ''),
-                ),
+              validator: (value) =>
+                  _authValidationText(AuthValidators.email(value ?? '')),
               onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -662,9 +656,8 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
               obscureText: _obscurePassword,
               textInputAction: TextInputAction.next,
               autofillHints: const [AutofillHints.newPassword],
-              validator: (value) => vietnameseUiText(
-                  AuthValidators.password(value ?? ''),
-                ),
+              validator: (value) =>
+                  _authValidationText(AuthValidators.password(value ?? '')),
               suffixIcon: _PasswordVisibilityButton(
                 obscure: _obscurePassword,
                 onPressed: () {
@@ -879,7 +872,7 @@ class _AuthAmbientBackground extends StatelessWidget {
             right: -72,
             child: _AmbientOrb(
               size: 230,
-              color: AppColors.primary.withOpacity(0.12),
+              color: AppColors.primary.withValues(alpha: 0.12),
             ),
           ),
           Positioned(
@@ -887,7 +880,7 @@ class _AuthAmbientBackground extends StatelessWidget {
             left: -92,
             child: _AmbientOrb(
               size: 280,
-              color: AppColors.secondary.withOpacity(0.10),
+              color: AppColors.secondary.withValues(alpha: 0.10),
             ),
           ),
           Positioned(
@@ -895,7 +888,7 @@ class _AuthAmbientBackground extends StatelessWidget {
             left: -54,
             child: _AmbientOrb(
               size: 124,
-              color: AppColors.tertiary.withOpacity(0.08),
+              color: AppColors.tertiary.withValues(alpha: 0.08),
             ),
           ),
         ],
@@ -955,7 +948,9 @@ class _AuthHero extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.primarySoft,
             borderRadius: BorderRadius.circular(AppRadius.circular),
-            border: Border.all(color: AppColors.primary.withOpacity(0.16)),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.16),
+            ),
           ),
           child: Text(
             eyebrow,
@@ -977,7 +972,7 @@ class _AuthHero extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.28),
+                color: AppColors.primary.withValues(alpha: 0.28),
                 blurRadius: 22,
                 offset: const Offset(0, 10),
               ),
@@ -1175,7 +1170,7 @@ class _AuthLegalConsent extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: value
-                ? AppColors.primary.withOpacity(0.35)
+                ? AppColors.primary.withValues(alpha: 0.35)
                 : AppColors.borderLight,
           ),
         ),
@@ -1237,7 +1232,7 @@ class _PrimaryAuthButton extends StatelessWidget {
                 ? const []
                 : [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.25),
+                      color: AppColors.primary.withValues(alpha: 0.25),
                       blurRadius: 16,
                       offset: const Offset(0, 8),
                     ),
@@ -1307,7 +1302,7 @@ class _SecondaryAuthButton extends StatelessWidget {
         label: Text(label),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          side: BorderSide(color: AppColors.primary.withOpacity(0.36)),
+          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.36)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
@@ -1434,7 +1429,7 @@ class _InfoBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.primary.withOpacity(0.15)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1517,7 +1512,7 @@ class _AuthCallbackLoading extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.primary.withOpacity(0.16)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.16)),
       ),
       child: const Row(
         children: [
@@ -1531,6 +1526,11 @@ class _AuthCallbackLoading extends StatelessWidget {
       ),
     );
   }
+}
+
+String? _authValidationText(String? raw) {
+  if (raw == null) return null;
+  return vietnameseUiText(raw);
 }
 
 void _showError(BuildContext context, Object error) {
