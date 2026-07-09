@@ -8,6 +8,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/control
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/widgets/companion/dashboard_companion_widgets.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
@@ -108,10 +109,34 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   }
 
   Future<void> _completeTimelineItem(DashboardTimelineItem item) async {
+    String? completionProofPath;
+    if (item.sourceType == DashboardTimelineSourceTypes.schedule) {
+      final sourceId = item.sourceId;
+      if (sourceId == null || sourceId.isEmpty) return;
+      try {
+        completionProofPath = await ref
+            .read(scheduleProofImageServiceProvider)
+            .captureProofForItem(sourceId);
+      } catch (_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Nabi chÆ°a thá»ƒ lÆ°u áº£nh minh chá»©ng lÃºc nÃ y. MÃ¬nh thá»­ láº¡i sau má»™t chÃºt nhÃ©.',
+              ),
+            ),
+          );
+        return;
+      }
+      if (completionProofPath == null) return;
+    }
+
     await _runDashboardAction(
       action: () => ref
           .read(dashboardControllerProvider.notifier)
-          .completeTimelineItem(item),
+          .completeTimelineItem(item, completionProofPath: completionProofPath),
       successMessage: 'Nabi đã ghi nhận việc nhỏ này rồi nhé.',
       errorMessage:
           'Nabi chưa thể cập nhật việc này lúc này. Mình thử lại sau một chút nhé.',
@@ -757,7 +782,9 @@ class _PlanRenewalBanner extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.auto_awesome_rounded),
-              label: Text(isLoading ? 'Nabi đang tạo...' : 'Tạo dữ liệu 7 ngày'),
+              label: Text(
+                isLoading ? 'Nabi đang tạo...' : 'Tạo dữ liệu 7 ngày',
+              ),
             ),
           ),
         ],

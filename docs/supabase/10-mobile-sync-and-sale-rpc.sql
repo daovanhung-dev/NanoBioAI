@@ -46,6 +46,8 @@ declare
     'lifestyle_schedule_items',
     'notifications',
     'health_tracking_logs',
+    'health_score_ledgers',
+    'wellness_point_ledgers',
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations'

@@ -867,7 +867,9 @@ class _TimelineRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final canComplete = item.isCompleted || item.canCompleteAt(DateTime.now());
+    final now = DateTime.now();
+    final status = item.completionStatusAt(now);
+    final canToggle = item.isWithinCompletionWindow(now);
 
     return IntrinsicHeight(
       child: Row(
@@ -883,8 +885,9 @@ class _TimelineRow extends ConsumerWidget {
             child: _ScheduleItemCard(
               item: item,
               meta: meta,
-              canComplete: canComplete,
-              onToggle: canComplete
+              status: status,
+              canToggle: canToggle,
+              onToggle: canToggle
                   ? () => ref
                         .read(lifestyleScheduleControllerProvider.notifier)
                         .toggleItem(item)
@@ -969,13 +972,15 @@ class _TimelineRail extends StatelessWidget {
 class _ScheduleItemCard extends StatelessWidget {
   final LifestyleScheduleItemEntity item;
   final _ScheduleMeta meta;
-  final bool canComplete;
+  final CompletionWindowStatus status;
+  final bool canToggle;
   final VoidCallback? onToggle;
 
   const _ScheduleItemCard({
     required this.item,
     required this.meta,
-    required this.canComplete,
+    required this.status,
+    required this.canToggle,
     required this.onToggle,
   });
 
@@ -1035,8 +1040,14 @@ class _ScheduleItemCard extends StatelessWidget {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           _CategoryPill(meta: meta),
-                          if (!canComplete) const _WaitingPill(),
-                          if (item.isCompleted) const _DonePill(),
+                          if (status == CompletionWindowStatus.waiting)
+                            const _WaitingPill(),
+                          if (status == CompletionWindowStatus.open)
+                            const _OpenPill(),
+                          if (status == CompletionWindowStatus.locked)
+                            const _LockedPill(),
+                          if (status == CompletionWindowStatus.completed)
+                            const _DonePill(),
                         ],
                       ),
                       const SizedBox(height: AppSpacingTokens.itemSpacing),
@@ -1058,7 +1069,7 @@ class _ScheduleItemCard extends StatelessWidget {
                 _CompletionButton(
                   color: meta.color,
                   checked: item.isCompleted,
-                  enabled: canComplete,
+                  enabled: canToggle,
                   onTap: onToggle,
                 ),
               ],
@@ -1073,7 +1084,7 @@ class _ScheduleItemCard extends StatelessWidget {
                 ),
               ),
             ],
-            if (!canComplete) ...[
+            if (!canToggle && !item.isCompleted) ...[
               const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
               _NamiHint(
                 icon: Icons.schedule_rounded,
@@ -1177,6 +1188,54 @@ class _WaitingPill extends StatelessWidget {
       ),
       child: Text(
         'Chờ đúng giờ',
+        style: AppTextStyles.labelMedium.copyWith(
+          color: AppColorTokens.warning,
+        ),
+      ),
+    );
+  }
+}
+
+class _OpenPill extends StatelessWidget {
+  const _OpenPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacingTokens.itemSpacing,
+        vertical: AppSpacingTokens.itemSpacing,
+      ),
+      decoration: BoxDecoration(
+        color: AppColorTokens.successLight,
+        borderRadius: BorderRadius.circular(AppRadiusTokens.badge),
+      ),
+      child: Text(
+        'Dang mo',
+        style: AppTextStyles.labelMedium.copyWith(
+          color: AppColorTokens.success,
+        ),
+      ),
+    );
+  }
+}
+
+class _LockedPill extends StatelessWidget {
+  const _LockedPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacingTokens.itemSpacing,
+        vertical: AppSpacingTokens.itemSpacing,
+      ),
+      decoration: BoxDecoration(
+        color: AppColorTokens.warningLight,
+        borderRadius: BorderRadius.circular(AppRadiusTokens.badge),
+      ),
+      child: Text(
+        'Da khoa',
         style: AppTextStyles.labelMedium.copyWith(
           color: AppColorTokens.warning,
         ),

@@ -176,7 +176,7 @@ class SupabaseUserDataSyncRemoteDatasource
     if (UserDataSyncTables.booleanColumns.contains(column)) {
       return _asBool(value);
     }
-    if (column == 'payload') {
+    if (column == 'payload' || column == 'breakdown') {
       return _decodeJsonPayload(value);
     }
     if (value is DateTime) return value.toUtc().toIso8601String();

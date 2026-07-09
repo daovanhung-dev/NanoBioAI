@@ -335,10 +335,10 @@ class NotificationActionHandler {
       return false;
     }
 
-    await lifestyleScheduleDatasource.updateItemCompletion(
-      item: item.toEntity(),
-      isCompleted: true,
+    AppLogger.warning(
+      _tag,
+      'Schedule item requires in-app camera proof before completion: $sourceId',
     );
-    return true;
+    return false;
   }
 }

@@ -45,6 +45,8 @@ declare
     'lifestyle_schedule_items',
     'notifications',
     'health_tracking_logs',
+    'health_score_ledgers',
+    'wellness_point_ledgers',
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations'
@@ -254,6 +256,16 @@ begin
         'id', 'weight_kg', 'calories', 'water_ml', 'sleep_hours', 'stress_level',
         'steps_count', 'heart_rate_bpm', 'oxygen_saturation', 'daily_score',
         'mood', 'log_date'
+      ];
+    elsif v_table = 'health_score_ledgers' then
+      v_allowed_columns := array[
+        'id', 'period_start', 'period_end', 'score', 'formula_version',
+        'breakdown', 'idempotency_key', 'calculated_at'
+      ];
+    elsif v_table = 'wellness_point_ledgers' then
+      v_allowed_columns := array[
+        'id', 'source_type', 'source_id', 'schedule_date', 'points_delta',
+        'program_code', 'idempotency_key'
       ];
     elsif v_table = 'nutrition_logs' then
       v_allowed_columns := array[

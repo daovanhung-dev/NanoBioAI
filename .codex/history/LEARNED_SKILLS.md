@@ -4,8 +4,8 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
+- coding - Coding: 18 worklog(s)
 - docs-context - Context and docs update: 18 worklog(s)
-- coding - Coding: 17 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
 - bugfix - Direct bugfix: 7 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
@@ -18,17 +18,17 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Frequent Modules
 
 - unknown: 6
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - docs/issues, docs/todo: 2
+- .codex: 2
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - authentication: 2
 - docs/DD M01-M19: 2
-- .codex: 2
 - M08 HEALTH_SCORE_HABITS.: 1
-- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
-- M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
+- M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
+- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
+- M01 ONBOARDING_PROFILE: 1
 - docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
-- lib/sale_referral, lib/services/supabase/sale,: 1
 
 ## Reusable Project Skills
 

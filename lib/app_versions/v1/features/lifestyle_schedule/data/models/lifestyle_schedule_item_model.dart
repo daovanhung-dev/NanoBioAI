@@ -15,6 +15,9 @@ class LifestyleScheduleItemModel {
   final double currentValue;
   final String unit;
   final bool isCompleted;
+  final String? completionProofPath;
+  final String? completionProofCapturedAt;
+  final String? completedAt;
   final int sortOrder;
   final bool aiGenerated;
   final String encouragement;
@@ -36,6 +39,9 @@ class LifestyleScheduleItemModel {
     this.currentValue = 0,
     this.unit = 'lần',
     this.isCompleted = false,
+    this.completionProofPath,
+    this.completionProofCapturedAt,
+    this.completedAt,
     this.sortOrder = 0,
     this.aiGenerated = true,
     this.encouragement = '',
@@ -59,6 +65,11 @@ class LifestyleScheduleItemModel {
       currentValue: _readDouble(map['current_value']) ?? 0,
       unit: _readString(map['unit'], fallback: 'lần'),
       isCompleted: _readBool(map['is_completed']),
+      completionProofPath: _readNullableString(map['completion_proof_path']),
+      completionProofCapturedAt: _readNullableString(
+        map['completion_proof_captured_at'],
+      ),
+      completedAt: _readNullableString(map['completed_at']),
       sortOrder: _readInt(map['sort_order']) ?? 0,
       aiGenerated: _readBool(map['ai_generated'], fallback: true),
       encouragement: _readString(map['encouragement']),
@@ -89,6 +100,9 @@ class LifestyleScheduleItemModel {
       currentValue: entity.currentValue,
       unit: entity.unit,
       isCompleted: entity.isCompleted,
+      completionProofPath: entity.completionProofPath,
+      completionProofCapturedAt: entity.completionProofCapturedAt,
+      completedAt: entity.completedAt,
       sortOrder: entity.sortOrder,
       aiGenerated: entity.aiGenerated,
       encouragement: entity.encouragement,
@@ -113,6 +127,9 @@ class LifestyleScheduleItemModel {
       'current_value': currentValue,
       'unit': unit,
       'is_completed': isCompleted ? 1 : 0,
+      'completion_proof_path': completionProofPath,
+      'completion_proof_captured_at': completionProofCapturedAt,
+      'completed_at': completedAt,
       'sort_order': sortOrder,
       'ai_generated': aiGenerated ? 1 : 0,
       'encouragement': encouragement,
@@ -136,6 +153,9 @@ class LifestyleScheduleItemModel {
     'current_value': currentValue,
     'unit': unit,
     'is_completed': isCompleted,
+    'completion_proof_path': completionProofPath,
+    'completion_proof_captured_at': completionProofCapturedAt,
+    'completed_at': completedAt,
     'sort_order': sortOrder,
     'ai_generated': aiGenerated,
     'encouragement': encouragement,
@@ -159,6 +179,9 @@ class LifestyleScheduleItemModel {
       currentValue: currentValue,
       unit: unit,
       isCompleted: isCompleted,
+      completionProofPath: completionProofPath,
+      completionProofCapturedAt: completionProofCapturedAt,
+      completedAt: completedAt,
       sortOrder: sortOrder,
       aiGenerated: aiGenerated,
       encouragement: encouragement,
@@ -182,6 +205,10 @@ class LifestyleScheduleItemModel {
     double? currentValue,
     String? unit,
     bool? isCompleted,
+    String? completionProofPath,
+    String? completionProofCapturedAt,
+    String? completedAt,
+    bool clearCompletionProof = false,
     int? sortOrder,
     bool? aiGenerated,
     String? encouragement,
@@ -203,6 +230,15 @@ class LifestyleScheduleItemModel {
       currentValue: currentValue ?? this.currentValue,
       unit: unit ?? this.unit,
       isCompleted: isCompleted ?? this.isCompleted,
+      completionProofPath: clearCompletionProof
+          ? null
+          : completionProofPath ?? this.completionProofPath,
+      completionProofCapturedAt: clearCompletionProof
+          ? null
+          : completionProofCapturedAt ?? this.completionProofCapturedAt,
+      completedAt: clearCompletionProof
+          ? null
+          : completedAt ?? this.completedAt,
       sortOrder: sortOrder ?? this.sortOrder,
       aiGenerated: aiGenerated ?? this.aiGenerated,
       encouragement: encouragement ?? this.encouragement,
@@ -222,6 +258,11 @@ class LifestyleScheduleItemModel {
     if (value is num) return value != 0;
     final text = value.toString().trim().toLowerCase();
     return text == 'true' || text == '1' || text == 'yes';
+  }
+
+  static String? _readNullableString(Object? value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 
   static int? _readInt(Object? value) {

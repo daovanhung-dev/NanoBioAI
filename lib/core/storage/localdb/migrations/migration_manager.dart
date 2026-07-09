@@ -2,10 +2,12 @@ import 'package:sqflite/sqflite.dart';
 
 import '../tables/daily_health_tasks_table.dart';
 import '../tables/exercise_catalog_table.dart';
+import '../tables/health_score_ledgers_table.dart';
 import '../tables/lifestyle_schedule_items_table.dart';
 import '../tables/meal_catalog_table.dart';
 import '../tables/personal_schedule_ai_requests_table.dart';
 import '../tables/schedule_task_catalog_table.dart';
+import '../tables/wellness_point_ledgers_table.dart';
 import '../seeders/ai_catalog_seeder.dart';
 import '../sync/sync_outbox_schema.dart';
 
@@ -47,6 +49,9 @@ class MigrationManager {
     }
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 12)) {
       await _migrateToV12(db);
+    }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 13)) {
+      await _migrateToV13(db);
     }
   }
 
@@ -260,6 +265,37 @@ class MigrationManager {
     for (final table in SyncOutboxSchema.userOwnedTables) {
       await _backfillMissingSyncId(db, table);
     }
+    await _backfillPersonalScheduleAiRequestSync(db);
+    await SyncOutboxSchema.recreateTriggers(db);
+  }
+
+  static Future<void> _migrateToV13(Database db) async {
+    await _addColumnIfMissing(
+      db,
+      tableName: 'lifestyle_schedule_items',
+      columnName: 'completion_proof_path',
+      definition: 'TEXT',
+    );
+    await _addColumnIfMissing(
+      db,
+      tableName: 'lifestyle_schedule_items',
+      columnName: 'completion_proof_captured_at',
+      definition: 'TEXT',
+    );
+    await _addColumnIfMissing(
+      db,
+      tableName: 'lifestyle_schedule_items',
+      columnName: 'completed_at',
+      definition: 'TEXT',
+    );
+
+    await db.execute(HealthScoreLedgersTable.createTable);
+    await db.execute(HealthScoreLedgersTable.createSubjectPeriodIndex);
+    await db.execute(HealthScoreLedgersTable.createUserPeriodIndex);
+    await db.execute(WellnessPointLedgersTable.createTable);
+    await db.execute(WellnessPointLedgersTable.createUserDateIndex);
+    await db.execute(WellnessPointLedgersTable.createSourceIndex);
+    await SyncOutboxSchema.create(db);
     await SyncOutboxSchema.recreateTriggers(db);
   }
 
@@ -290,6 +326,38 @@ class MigrationManager {
       UPDATE $tableName
       SET id = ${SyncOutboxSchema.sqliteUuidExpression()}
       WHERE id IS NULL OR TRIM(CAST(id AS TEXT)) = ''
+    ''');
+  }
+
+  static Future<void> _backfillPersonalScheduleAiRequestSync(
+    Database db,
+  ) async {
+    const tableName = SyncOutboxSchema.personalScheduleAiRequestsTable;
+    if (!await _tableExists(db, tableName)) return;
+    if (!await _columnExists(db, tableName, 'request_id')) return;
+    if (!await _columnExists(db, tableName, 'user_id')) return;
+
+    await db.execute('''
+      INSERT INTO ${SyncOutboxSchema.outboxTable} (
+        id, user_id, table_name, record_id, operation, payload, status,
+        attempt_count, last_error, next_retry_at, created_at, updated_at
+      )
+      SELECT
+        user_id || ':$tableName:' || request_id || ':upsert',
+        user_id, '$tableName', request_id, 'upsert', '{}', 'pending',
+        0, NULL, NULL,
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      FROM $tableName
+      WHERE user_id IS NOT NULL
+        AND request_id IS NOT NULL
+      ON CONFLICT(id) DO UPDATE SET
+        operation = 'upsert',
+        payload = '{}',
+        status = 'pending',
+        last_error = NULL,
+        next_retry_at = NULL,
+        updated_at = excluded.updated_at
     ''');
   }
 

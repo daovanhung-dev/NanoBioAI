@@ -169,6 +169,9 @@ void main() {
 
   test('fetch includes today lifestyle schedule items in timeline', () async {
     final today = _dateKey(DateTime.now());
+    final startTime = _timeKey(
+      DateTime.now().subtract(const Duration(minutes: 5)),
+    );
     await db.insert('users', {
       'id': 'u1',
       'full_name': 'User One',
@@ -179,7 +182,7 @@ void main() {
       'id': 'schedule-1',
       'user_id': 'u1',
       'schedule_date': today,
-      'start_time': '00:00',
+      'start_time': startTime,
       'end_time': '00:30',
       'title': 'Ăn sáng: Cháo yến mạch',
       'description': 'Bữa sáng nhẹ nhàng cho hôm nay.',
@@ -207,7 +210,7 @@ void main() {
     expect(result.timeline.first.sourceId, 'schedule-1');
     expect(result.timeline.first.status, DashboardTimelineStatus.pending);
     expect(result.timeline.first.canComplete, isTrue);
-    expect(result.timeline.first.timeLabel, '00:00');
+    expect(result.timeline.first.timeLabel, startTime);
     expect(result.timeline.first.title, 'Ăn sáng: Cháo yến mạch');
   });
 
@@ -398,6 +401,11 @@ String _dateKey(DateTime date) {
   return '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
       '${date.day.toString().padLeft(2, '0')}';
+}
+
+String _timeKey(DateTime date) {
+  return '${date.hour.toString().padLeft(2, '0')}:'
+      '${date.minute.toString().padLeft(2, '0')}';
 }
 
 Future<void> _insertUser(Database db) {

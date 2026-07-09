@@ -99,22 +99,27 @@ class ImagePickerService {
   /// Save image to app documents directory
   /// Returns the saved file path
   /// Throws exception if save fails
-  Future<String> saveImageLocally(XFile file) async {
+  Future<String> saveImageLocally(
+    XFile file, {
+    String directoryName = 'avatars',
+    String filenamePrefix = 'avatar',
+  }) async {
     try {
       // Get app documents directory
       final directory = await getApplicationDocumentsDirectory();
 
-      // Create avatars subdirectory if it doesn't exist
-      final avatarsDir = Directory('${directory.path}/avatars');
-      if (!await avatarsDir.exists()) {
-        await avatarsDir.create(recursive: true);
+      // Create target subdirectory if it doesn't exist
+      final targetDir = Directory('${directory.path}/$directoryName');
+      if (!await targetDir.exists()) {
+        await targetDir.create(recursive: true);
       }
 
       // Generate unique filename using timestamp
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final extension = path.extension(file.path);
-      final filename = 'avatar_$timestamp$extension';
-      final filePath = '${avatarsDir.path}/$filename';
+      final filename =
+          '${_safeFilenamePrefix(filenamePrefix)}_$timestamp$extension';
+      final filePath = '${targetDir.path}/$filename';
 
       // Copy file to destination
       final File sourceFile = File(file.path);
@@ -125,6 +130,14 @@ class ImagePickerService {
       // Log error if needed
       rethrow;
     }
+  }
+
+  String _safeFilenamePrefix(String value) {
+    final normalized = value
+        .trim()
+        .replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_');
+    return normalized.isEmpty ? 'image' : normalized;
   }
 
   /// Get validation error message for image

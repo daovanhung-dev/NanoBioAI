@@ -9,7 +9,12 @@ abstract class LifestyleScheduleRepository {
   Future<LifestyleScheduleItemEntity> updateItemCompletion({
     required LifestyleScheduleItemEntity item,
     required bool isCompleted,
+    String? completionProofPath,
+    String? completionProofCapturedAt,
   });
 
-  Future<LifestyleScheduleItemEntity> completeItemById(String id);
+  Future<LifestyleScheduleItemEntity> completeItemById(
+    String id, {
+    String? completionProofPath,
+  });
 }

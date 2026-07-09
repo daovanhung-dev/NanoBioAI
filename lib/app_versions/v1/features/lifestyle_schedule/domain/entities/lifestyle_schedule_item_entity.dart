@@ -15,7 +15,11 @@ class LifestyleScheduleCategories {
   static const sleep = 'sleep';
 }
 
+enum CompletionWindowStatus { waiting, open, locked, completed }
+
 class LifestyleScheduleItemEntity {
+  static const completionWindow = Duration(minutes: 30);
+
   final String id;
   final String? userId;
   final String scheduleDate;
@@ -30,6 +34,9 @@ class LifestyleScheduleItemEntity {
   final double currentValue;
   final String unit;
   final bool isCompleted;
+  final String? completionProofPath;
+  final String? completionProofCapturedAt;
+  final String? completedAt;
   final int sortOrder;
   final bool aiGenerated;
   final String encouragement;
@@ -51,6 +58,9 @@ class LifestyleScheduleItemEntity {
     this.currentValue = 0,
     this.unit = 'lan',
     this.isCompleted = false,
+    this.completionProofPath,
+    this.completionProofCapturedAt,
+    this.completedAt,
     this.sortOrder = 0,
     this.aiGenerated = true,
     this.encouragement = '',
@@ -83,10 +93,33 @@ class LifestyleScheduleItemEntity {
     return DateTime(date.year, date.month, date.day, hour, minute);
   }
 
-  bool canCompleteAt(DateTime now) {
+  DateTime? get completionDeadline {
+    final scheduled = scheduledAt;
+    if (scheduled == null) return null;
+    return scheduled.add(completionWindow);
+  }
+
+  CompletionWindowStatus completionStatusAt(DateTime now) {
+    if (isCompleted) return CompletionWindowStatus.completed;
+
+    final scheduled = scheduledAt;
+    if (scheduled == null) return CompletionWindowStatus.open;
+    if (now.isBefore(scheduled)) return CompletionWindowStatus.waiting;
+    if (now.isAfter(scheduled.add(completionWindow))) {
+      return CompletionWindowStatus.locked;
+    }
+    return CompletionWindowStatus.open;
+  }
+
+  bool isWithinCompletionWindow(DateTime now) {
     final scheduled = scheduledAt;
     if (scheduled == null) return true;
-    return !now.isBefore(scheduled);
+    final deadline = scheduled.add(completionWindow);
+    return !now.isBefore(scheduled) && !now.isAfter(deadline);
+  }
+
+  bool canCompleteAt(DateTime now) {
+    return isWithinCompletionWindow(now);
   }
 
   double get progressRatio {
@@ -109,6 +142,10 @@ class LifestyleScheduleItemEntity {
     double? currentValue,
     String? unit,
     bool? isCompleted,
+    String? completionProofPath,
+    String? completionProofCapturedAt,
+    String? completedAt,
+    bool clearCompletionProof = false,
     int? sortOrder,
     bool? aiGenerated,
     String? encouragement,
@@ -130,6 +167,15 @@ class LifestyleScheduleItemEntity {
       currentValue: currentValue ?? this.currentValue,
       unit: unit ?? this.unit,
       isCompleted: isCompleted ?? this.isCompleted,
+      completionProofPath: clearCompletionProof
+          ? null
+          : completionProofPath ?? this.completionProofPath,
+      completionProofCapturedAt: clearCompletionProof
+          ? null
+          : completionProofCapturedAt ?? this.completionProofCapturedAt,
+      completedAt: clearCompletionProof
+          ? null
+          : completedAt ?? this.completedAt,
       sortOrder: sortOrder ?? this.sortOrder,
       aiGenerated: aiGenerated ?? this.aiGenerated,
       encouragement: encouragement ?? this.encouragement,

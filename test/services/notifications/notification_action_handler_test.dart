@@ -1,13 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/core/storage/localdb/daos/health_tracking_logs_dao.dart';
 import 'package:nano_app/core/storage/localdb/daos/notifications_dao.dart';
 import 'package:nano_app/core/storage/localdb/models/notification_model.dart';
 import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:nano_app/core/storage/localdb/tables/daily_health_tasks_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/health_score_ledgers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/health_tracking_logs_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/notifications_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
@@ -42,6 +43,8 @@ void main() {
     await db.execute(DailyHealthTasksTable.createTable);
     await db.execute(LifestyleScheduleItemsTable.createTable);
     await db.execute(HealthTrackingLogsTable.createTable);
+    await db.execute(HealthScoreLedgersTable.createTable);
+    await db.execute(WellnessPointLedgersTable.createTable);
 
     notificationsDao = NotificationsDao(db);
     mealPlansDao = MealPlansDao(db);
@@ -68,40 +71,42 @@ void main() {
     await db.close();
   });
 
-  test('done schedule item completes timeline item and linked meal', () async {
-    await mealPlansDao.insert(_meal(id: 'meal-1'));
-    await scheduleItemsDao.upsertMany([
-      _schedule(
-        id: 'schedule-1',
-        sourceType: LifestyleScheduleSourceTypes.mealPlan,
-        sourceId: 'meal-1',
-      ),
-    ]);
-    await notificationsDao.insert(
-      _notification(id: 'n-schedule-1', notificationId: 101),
-    );
+  test(
+    'done schedule item is rejected because camera proof is required',
+    () async {
+      await mealPlansDao.insert(_meal(id: 'meal-1'));
+      await scheduleItemsDao.upsertMany([
+        _schedule(
+          id: 'schedule-1',
+          sourceType: LifestyleScheduleSourceTypes.mealPlan,
+          sourceId: 'meal-1',
+        ),
+      ]);
+      await notificationsDao.insert(
+        _notification(id: 'n-schedule-1', notificationId: 101),
+      );
 
-    await handler.handleAction(
-      actionId: NotificationActionIds.done,
-      notificationId: 101,
-      payload: _payload(notificationId: 101, sourceId: 'schedule-1'),
-    );
+      await handler.handleAction(
+        actionId: NotificationActionIds.done,
+        notificationId: 101,
+        payload: _payload(notificationId: 101, sourceId: 'schedule-1'),
+      );
 
-    final notification = await notificationsDao.getByNotificationId(101);
-    final schedule = await scheduleItemsDao.getById('schedule-1');
-    final meal = await mealPlansDao.getById('meal-1');
-    final log = await HealthTrackingLogsDao(
-      db,
-    ).getByUserAndDate(userId: 'user-1', logDate: '2026-06-17');
+      final notification = await notificationsDao.getByNotificationId(101);
+      final schedule = await scheduleItemsDao.getById('schedule-1');
+      final meal = await mealPlansDao.getById('meal-1');
 
-    expect(notification, isNotNull);
-    expect(notification!.actionStatus, NotificationActionStatuses.done);
-    expect(notification.isRead, isTrue);
-    expect(schedule!.isCompleted, isTrue);
-    expect(meal!.isCompleted, isTrue);
-    expect(log!.dailyScore, 100);
-    expect(syncRequests, greaterThanOrEqualTo(1));
-  });
+      expect(notification, isNotNull);
+      expect(
+        notification!.actionStatus,
+        NotificationActionStatuses.actionFailed,
+      );
+      expect(notification.isRead, isTrue);
+      expect(schedule!.isCompleted, isFalse);
+      expect(meal!.isCompleted, isFalse);
+      expect(syncRequests, 1);
+    },
+  );
 
   test('skipped records response without completing schedule source', () async {
     await scheduleItemsDao.upsertMany([
@@ -168,8 +173,8 @@ void main() {
     final notification = await notificationsDao.getByNotificationId(211);
     final meal = await mealPlansDao.getById('meal-idempotent');
 
-    expect(notification!.actionStatus, NotificationActionStatuses.done);
-    expect(meal!.isCompleted, isTrue);
+    expect(notification!.actionStatus, NotificationActionStatuses.actionFailed);
+    expect(meal!.isCompleted, isFalse);
     expect(syncRequests, syncAfterFirstAction);
   });
 

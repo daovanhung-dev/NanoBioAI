@@ -381,3 +381,7 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-09/001-worklog-auth-validation-null.md :: ## Loi/Rui ro
 - docs/worklog/2026-07-09/001-worklog-auth-validation-null.md :: - Chua fix: canh bao asset directories thieu trong `pubspec.yaml` van xuat hien khi chay Flutter command; khong thuoc bug auth nay.
 - docs/worklog/2026-07-09/001-worklog-auth-validation-null.md :: - Can kiem tra tiep: manual smoke tren thiet bi/emulator neu can xac nhan mau border va hanh vi submit voi Supabase staging.
+- docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md :: - Chua fix: app chua co UI voucher/redeem; dung scope earn/sync only theo yeu cau.
+- docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md :: - Chua fix: proof image local path khong sync cloud; neu nguoi dung doi may se chi giu completion/score/point, khong co anh proof tren may moi.
+- docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md :: - Can kiem tra tiep: manual camera permission/cancel flow tren thiet bi that va Supabase sandbox snapshot cho `health_score_ledgers`/`wellness_point_ledgers`.

@@ -3,8 +3,10 @@ import 'package:nano_app/core/storage/localdb/tables/meal_catalog_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/exercise_catalog_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/schedule_task_catalog_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/daily_health_tasks_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/health_score_ledgers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -99,6 +101,14 @@ class DatabaseService {
     await db.execute(MedicalTreatmentsTable.createTable);
 
     await db.execute(HealthTrackingLogsTable.createTable);
+
+    await db.execute(HealthScoreLedgersTable.createTable);
+    await db.execute(HealthScoreLedgersTable.createSubjectPeriodIndex);
+    await db.execute(HealthScoreLedgersTable.createUserPeriodIndex);
+
+    await db.execute(WellnessPointLedgersTable.createTable);
+    await db.execute(WellnessPointLedgersTable.createUserDateIndex);
+    await db.execute(WellnessPointLedgersTable.createSourceIndex);
 
     await db.execute(DailyHealthTasksTable.createTable);
 

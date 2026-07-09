@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/daos/health_tracking_logs_dao.dart';
+import 'package:nano_app/core/storage/localdb/tables/health_score_ledgers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/daily_health_tasks_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/health_tracking_logs_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/models/daily_health_task_model.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
@@ -28,6 +30,8 @@ void main() {
     await db.execute(DailyHealthTasksTable.createTable);
     await db.execute(LifestyleScheduleItemsTable.createTable);
     await db.execute(HealthTrackingLogsTable.createTable);
+    await db.execute(HealthScoreLedgersTable.createTable);
+    await db.execute(WellnessPointLedgersTable.createTable);
     datasource = LifestyleScheduleLocalDatasource(
       databaseOverride: db,
       now: () => DateTime.parse('2026-06-17T07:30:00.000'),
@@ -55,6 +59,7 @@ void main() {
         sourceId: 'meal-1',
       ).toEntity(),
       isCompleted: true,
+      completionProofPath: '/local/proof-meal.jpg',
     );
 
     final meal = await MealPlansDao(db).getById('meal-1');
@@ -73,7 +78,10 @@ void main() {
       ),
     ]);
 
-    final updated = await datasource.completeItemById('schedule-1');
+    final updated = await datasource.completeItemById(
+      'schedule-1',
+      completionProofPath: '/local/proof-schedule.jpg',
+    );
     final restored = await LifestyleScheduleItemsDao(db).getById('schedule-1');
 
     expect(updated.isCompleted, isTrue);
@@ -100,6 +108,7 @@ void main() {
         targetValue: 2000,
       ).toEntity(),
       isCompleted: true,
+      completionProofPath: '/local/proof-task.jpg',
     );
 
     final task = await DailyHealthTasksDao(db).getById('task-1');
@@ -165,6 +174,42 @@ void main() {
     );
   });
 
+  test('cannot complete item after 30 minute window', () async {
+    datasource = LifestyleScheduleLocalDatasource(
+      databaseOverride: db,
+      now: () => DateTime.parse('2026-06-17T07:31:00.000'),
+    );
+    final item = _schedule(
+      id: 'locked-task',
+      sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+      sourceId: '',
+    );
+    await LifestyleScheduleItemsDao(db).upsertMany([item]);
+
+    await expectLater(
+      datasource.updateItemCompletion(
+        item: item.toEntity(),
+        isCompleted: true,
+        completionProofPath: '/local/proof-locked.jpg',
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('complete without proof path is rejected', () async {
+    final item = _schedule(
+      id: 'missing-proof',
+      sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+      sourceId: '',
+    );
+    await LifestyleScheduleItemsDao(db).upsertMany([item]);
+
+    await expectLater(
+      datasource.updateItemCompletion(item: item.toEntity(), isCompleted: true),
+      throwsStateError,
+    );
+  });
+
   test('completion writes daily score aggregate', () async {
     await LifestyleScheduleItemsDao(db).upsertMany([
       _schedule(
@@ -187,6 +232,7 @@ void main() {
         sourceId: '',
       ).toEntity(),
       isCompleted: true,
+      completionProofPath: '/local/proof-score-1.jpg',
     );
 
     var log = await HealthTrackingLogsDao(
@@ -194,6 +240,13 @@ void main() {
     ).getByUserAndDate(userId: 'u1', logDate: '2026-06-17');
     expect(log, isNotNull);
     expect(log!.dailyScore, 50);
+    final scoreLedgers = await db.query('health_score_ledgers');
+    expect(scoreLedgers, hasLength(1));
+    expect(scoreLedgers.single['score'], 50);
+    final pointRows = await db.rawQuery(
+      'SELECT COALESCE(SUM(points_delta), 0) AS balance FROM wellness_point_ledgers',
+    );
+    expect(pointRows.single['balance'], 1);
 
     await datasource.updateItemCompletion(
       item: _schedule(
@@ -203,12 +256,36 @@ void main() {
         startTime: '07:15',
       ).toEntity(),
       isCompleted: true,
+      completionProofPath: '/local/proof-score-2.jpg',
     );
 
     log = await HealthTrackingLogsDao(
       db,
     ).getByUserAndDate(userId: 'u1', logDate: '2026-06-17');
     expect(log!.dailyScore, 100);
+  });
+
+  test('undo in open window creates wellness point reversal', () async {
+    final item = _schedule(
+      id: 'schedule-undo',
+      sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+      sourceId: '',
+    );
+    await LifestyleScheduleItemsDao(db).upsertMany([item]);
+
+    final completed = await datasource.updateItemCompletion(
+      item: item.toEntity(),
+      isCompleted: true,
+      completionProofPath: '/local/proof-undo.jpg',
+    );
+    await datasource.updateItemCompletion(item: completed, isCompleted: false);
+
+    final rows = await db.rawQuery(
+      'SELECT COUNT(*) AS count, COALESCE(SUM(points_delta), 0) AS balance FROM wellness_point_ledgers',
+    );
+
+    expect(rows.single['count'], 2);
+    expect(rows.single['balance'], 0);
   });
 
   test('schedule seed meals are filtered by user and generated week', () async {

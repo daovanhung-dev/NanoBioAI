@@ -46,11 +46,26 @@ class LifestyleScheduleController
     final current = state.whenOrNull(data: (value) => value);
     if (current == null) return;
 
+    final nextCompleted = !item.isCompleted;
+    String? completionProofPath;
+    if (nextCompleted) {
+      try {
+        completionProofPath = await ref
+            .read(scheduleProofImageServiceProvider)
+            .captureProofForItem(item.id);
+      } catch (error, stackTrace) {
+        state = AsyncError(error, stackTrace);
+        return;
+      }
+      if (completionProofPath == null) return;
+    }
+
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final updated = await _repository.updateItemCompletion(
         item: item,
-        isCompleted: !item.isCompleted,
+        isCompleted: nextCompleted,
+        completionProofPath: completionProofPath,
       );
       final items = current.summary.items
           .map((existing) => existing.id == updated.id ? updated : existing)

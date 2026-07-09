@@ -19,15 +19,25 @@ class LifestyleScheduleRepositoryImpl implements LifestyleScheduleRepository {
   Future<LifestyleScheduleItemEntity> updateItemCompletion({
     required LifestyleScheduleItemEntity item,
     required bool isCompleted,
+    String? completionProofPath,
+    String? completionProofCapturedAt,
   }) {
     return datasource.updateItemCompletion(
       item: item,
       isCompleted: isCompleted,
+      completionProofPath: completionProofPath,
+      completionProofCapturedAt: completionProofCapturedAt,
     );
   }
 
   @override
-  Future<LifestyleScheduleItemEntity> completeItemById(String id) {
-    return datasource.completeItemById(id);
+  Future<LifestyleScheduleItemEntity> completeItemById(
+    String id, {
+    String? completionProofPath,
+  }) {
+    return datasource.completeItemById(
+      id,
+      completionProofPath: completionProofPath,
+    );
   }
 }

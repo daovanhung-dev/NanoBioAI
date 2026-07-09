@@ -117,7 +117,10 @@ class DashboardController extends AsyncNotifier<void> {
     return 'member_plan:$userId:$timestamp';
   }
 
-  Future<void> completeTimelineItem(DashboardTimelineItem item) async {
+  Future<void> completeTimelineItem(
+    DashboardTimelineItem item, {
+    String? completionProofPath,
+  }) async {
     if (!item.canComplete || item.isCompleted) return;
     final sourceId = item.sourceId;
     if (sourceId == null || sourceId.isEmpty) {
@@ -128,7 +131,10 @@ class DashboardController extends AsyncNotifier<void> {
       case DashboardTimelineSourceTypes.schedule:
         await ref
             .read(lifestyleScheduleRepositoryProvider)
-            .completeItemById(sourceId);
+            .completeItemById(
+              sourceId,
+              completionProofPath: completionProofPath,
+            );
         break;
       case DashboardTimelineSourceTypes.meal:
         await ref.read(mealPlanRepositoryProvider).completeMealById(sourceId);

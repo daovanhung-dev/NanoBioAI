@@ -40,7 +40,7 @@ class DashboardDynamicLocalDatasource {
     );
     final insights = await _latestInsights(userId);
     final recommendations = await _latestRecommendations(userId);
-    final goals = await _goalProgress(userId, todayTasks);
+    final goals = await _goalProgress(userId, todayScheduleItems);
     final unreadNotificationCount = await _unreadNotificationCount(userId);
     final planStatus = await _planStatus(userId: userId, today: today);
     final selfCareStreak = await _selfCareStreak(userId: userId);
@@ -48,6 +48,7 @@ class DashboardDynamicLocalDatasource {
     final metrics = _buildMetrics(
       todayLog: todayLog,
       tasks: todayTasks,
+      scheduleItems: todayScheduleItems,
       meals: todayMeals,
       nutritionLogs: todayNutritionLogs,
     );
@@ -305,7 +306,7 @@ class DashboardDynamicLocalDatasource {
 
   Future<List<DashboardGoalProgressItem>> _goalProgress(
     String userId,
-    List<DashboardTaskItem> todayTasks,
+    List<_DashboardScheduleItem> todayScheduleItems,
   ) async {
     final rows = await db.query(
       'health_goals',
@@ -314,13 +315,15 @@ class DashboardDynamicLocalDatasource {
       orderBy: 'created_at ASC',
     );
 
-    final completedTasks = todayTasks.where((task) => task.isCompleted).length;
-    final progress = todayTasks.isEmpty
+    final completedTasks = todayScheduleItems
+        .where((item) => item.timeline.isCompleted)
+        .length;
+    final progress = todayScheduleItems.isEmpty
         ? 0.0
-        : completedTasks / todayTasks.length;
-    final subtitle = todayTasks.isEmpty
+        : completedTasks / todayScheduleItems.length;
+    final subtitle = todayScheduleItems.isEmpty
         ? 'Chưa có nhiệm vụ hôm nay để đo tiến độ'
-        : '$completedTasks/${todayTasks.length} nhiệm vụ hôm nay đã hoàn thành';
+        : '$completedTasks/${todayScheduleItems.length} nhiệm vụ hôm nay đã hoàn thành';
 
     return rows.map((row) {
       return DashboardGoalProgressItem(
@@ -463,10 +466,14 @@ class DashboardDynamicLocalDatasource {
   DashboardDailyMetrics _buildMetrics({
     required Map<String, Object?>? todayLog,
     required List<DashboardTaskItem> tasks,
+    required List<_DashboardScheduleItem> scheduleItems,
     required List<DashboardMealItem> meals,
     required List<Map<String, Object?>> nutritionLogs,
   }) {
-    final completedTasks = tasks.where((task) => task.isCompleted).length;
+    final completedTasks = scheduleItems
+        .where((item) => item.timeline.isCompleted)
+        .length;
+    final totalTasks = scheduleItems.length;
     final completedMeals = meals.where((meal) => meal.isCompleted).length;
 
     final caloriesFromNutrition = nutritionLogs.fold<int>(
@@ -487,7 +494,7 @@ class DashboardDynamicLocalDatasource {
         _readInt(todayLog?['daily_score']) ??
         _estimateDailyScore(
           completedTasks: completedTasks,
-          totalTasks: tasks.length,
+          totalTasks: totalTasks,
           completedMeals: completedMeals,
           totalMeals: meals.length,
           waterMl: waterMl,
@@ -496,7 +503,7 @@ class DashboardDynamicLocalDatasource {
 
     return DashboardDailyMetrics(
       completedTasks: completedTasks,
-      totalTasks: tasks.length,
+      totalTasks: totalTasks,
       completedMeals: completedMeals,
       totalMeals: meals.length,
       caloriesLogged: _readInt(todayLog?['calories']) ?? caloriesFromNutrition,
@@ -556,7 +563,6 @@ class DashboardDynamicLocalDatasource {
         .map((item) => item.sourceId)
         .whereType<String>()
         .toSet();
-    final mealTaskIds = <String>{};
 
     for (final meal in _dedupeMeals(meals)) {
       final timeLabel = _mealTimeLabel(meal);
@@ -575,9 +581,6 @@ class DashboardDynamicLocalDatasource {
       }
 
       final matchedTask = _findMatchingMealTask(meal, tasks);
-      if (matchedTask != null && matchedTask.id.isNotEmpty) {
-        mealTaskIds.add(matchedTask.id);
-      }
 
       items.add(
         DashboardTimelineItem(
@@ -601,47 +604,6 @@ class DashboardDynamicLocalDatasource {
             timeLabel,
             meal.mealOrder == 0 ? 20 : meal.mealOrder * 10,
           ),
-        ),
-      );
-    }
-
-    for (final task in _dedupeTasks(tasks)) {
-      if (mealTaskIds.contains(task.id) ||
-          _isMealTaskCoveredByMeal(task, meals)) {
-        continue;
-      }
-
-      final timeLabel = _taskTimeLabel(task);
-      final taskSubtitle = task.unit == null
-          ? (task.description ?? '')
-          : '${_formatNumber(task.currentValue)}/${_formatNumber(task.targetValue)} ${task.unit}';
-      if (_timelineDuplicatesExisting(
-        timeLabel: timeLabel,
-        title: task.title,
-        subtitle: taskSubtitle,
-        category: task.category,
-        existingItems: items,
-      )) {
-        continue;
-      }
-
-      items.add(
-        DashboardTimelineItem(
-          id: 'task_${task.id}',
-          sourceType: DashboardTimelineSourceTypes.task,
-          sourceId: task.id,
-          status: task.isCompleted
-              ? DashboardTimelineStatus.completed
-              : DashboardTimelineStatus.pending,
-          canComplete: !task.isCompleted && task.id.isNotEmpty,
-          timeLabel: timeLabel,
-          title: task.title,
-          subtitle: task.unit == null
-              ? (task.description ?? '')
-              : '${_formatNumber(task.currentValue)}/${_formatNumber(task.targetValue)} ${task.unit}',
-          category: task.category,
-          isCompleted: task.isCompleted,
-          sortOrder: _timelineSortOrder(timeLabel, 100 + task.sortOrder),
         ),
       );
     }
@@ -778,16 +740,6 @@ class DashboardDynamicLocalDatasource {
       if (_taskMatchesMeal(task, meal)) return task;
     }
     return null;
-  }
-
-  bool _isMealTaskCoveredByMeal(
-    DashboardTaskItem task,
-    List<DashboardMealItem> meals,
-  ) {
-    for (final meal in meals) {
-      if (_taskMatchesMeal(task, meal)) return true;
-    }
-    return false;
   }
 
   bool _taskMatchesMeal(DashboardTaskItem task, DashboardMealItem meal) {
@@ -1130,7 +1082,8 @@ class DashboardDynamicLocalDatasource {
 
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, now.day, hour, minute);
-    return !now.isBefore(start);
+    final deadline = start.add(const Duration(minutes: 30));
+    return !now.isBefore(start) && !now.isAfter(deadline);
   }
 
   String _formatNumber(double value) {

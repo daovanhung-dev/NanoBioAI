@@ -113,6 +113,9 @@ void main() {
         'current_value',
         'unit',
         'is_completed',
+        'completion_proof_path',
+        'completion_proof_captured_at',
+        'completed_at',
         'sort_order',
         'ai_generated',
         'encouragement',
@@ -472,4 +475,65 @@ void main() {
       expect(triggerMarkers.single['operation'], 'upsert');
     },
   );
+
+  test('migration v13 adds schedule proofs and score ledgers once', () async {
+    await db.execute('CREATE TABLE users (id TEXT PRIMARY KEY)');
+    await db.execute('''
+      CREATE TABLE lifestyle_schedule_items (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        schedule_date TEXT,
+        start_time TEXT,
+        is_completed INTEGER DEFAULT 0
+      )
+    ''');
+
+    await MigrationManager.runMigrations(db, 12, 13);
+    await MigrationManager.runMigrations(db, 12, 13);
+
+    final scheduleColumns = await db.rawQuery(
+      'PRAGMA table_info(lifestyle_schedule_items)',
+    );
+    final scheduleNames = scheduleColumns
+        .map((column) => column['name'])
+        .toList();
+    expect(scheduleNames, contains('completion_proof_path'));
+    expect(scheduleNames, contains('completion_proof_captured_at'));
+    expect(scheduleNames, contains('completed_at'));
+    expect(
+      scheduleNames.where((name) => name == 'completion_proof_path'),
+      hasLength(1),
+    );
+
+    final tables = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table'",
+    );
+    final tableNames = tables.map((table) => table['name']).toList();
+    expect(tableNames, contains('health_score_ledgers'));
+    expect(tableNames, contains('wellness_point_ledgers'));
+
+    final wellnessColumns = await db.rawQuery(
+      'PRAGMA table_info(wellness_point_ledgers)',
+    );
+    final wellnessNames = wellnessColumns
+        .map((column) => column['name'])
+        .toList();
+    expect(
+      wellnessNames,
+      containsAll(<String>[
+        'source_type',
+        'source_id',
+        'schedule_date',
+        'points_delta',
+        'program_code',
+        'idempotency_key',
+      ]),
+    );
+
+    final scoreIndexes = await db.rawQuery(
+      'PRAGMA index_list(health_score_ledgers)',
+    );
+    final scoreIndexNames = scoreIndexes.map((index) => index['name']).toList();
+    expect(scoreIndexNames, contains('idx_health_score_ledgers_user_period'));
+  });
 }

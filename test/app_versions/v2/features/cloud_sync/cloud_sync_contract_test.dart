@@ -32,7 +32,19 @@ void main() {
         expect(localTables, contains('meal_plans'));
         expect(localTables, contains('daily_health_tasks'));
         expect(localTables, contains('lifestyle_schedule_items'));
+        expect(localTables, contains('health_score_ledgers'));
+        expect(localTables, contains('wellness_point_ledgers'));
+        expect(cloudTables, contains('health_score_ledgers'));
+        expect(cloudTables, contains('wellness_point_ledgers'));
         expect(localTables, contains('notifications'));
+        expect(
+          UserDataSyncTables.localColumnsByTable['lifestyle_schedule_items'],
+          contains('completion_proof_path'),
+        );
+        expect(
+          UserDataSyncTables.cloudColumnsByTable['lifestyle_schedule_items'],
+          isNot(contains('completion_proof_path')),
+        );
         expect(allTableNames, isNot(contains('meal_catalog')));
         expect(allTableNames, isNot(contains('payment_events')));
         expect(allTableNames, isNot(contains('sale_profiles')));

@@ -616,6 +616,21 @@ create table if not exists public.health_score_ledgers (
   unique (subject_id, period_start, period_end, formula_version)
 );
 
+create table if not exists public.wellness_point_ledgers (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references public.users(id) on delete cascade,
+  subject_id uuid not null default public.default_self_subject_id() references public.health_subjects(id) on delete cascade,
+  source_type text not null,
+  source_id uuid,
+  schedule_date date not null,
+  points_delta integer not null,
+  program_code text not null,
+  idempotency_key text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, idempotency_key)
+);
+
 create table if not exists public.nutrition_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references public.users(id) on delete cascade,
@@ -731,6 +746,10 @@ create index if not exists idx_notifications_user_scheduled on public.notificati
 create index if not exists idx_health_tracking_subject_date on public.health_tracking_logs (subject_id, log_date desc);
 create index if not exists idx_health_score_ledgers_subject_period
   on public.health_score_ledgers (subject_id, period_end desc, formula_version);
+create index if not exists idx_wellness_point_ledgers_subject_date
+  on public.wellness_point_ledgers (subject_id, schedule_date desc, program_code);
+create index if not exists idx_wellness_point_ledgers_source
+  on public.wellness_point_ledgers (source_type, source_id);
 create index if not exists idx_nutrition_logs_subject_eaten on public.nutrition_logs (subject_id, eaten_at desc);
 create index if not exists idx_ai_insights_subject_created on public.ai_insights (subject_id, created_at desc);
 create index if not exists idx_ai_recommendations_subject_unread on public.ai_recommendations (subject_id, is_read, created_at desc);
@@ -753,6 +772,7 @@ begin
     'notifications',
     'health_tracking_logs',
     'health_score_ledgers',
+    'wellness_point_ledgers',
     'personal_schedule_ai_requests',
     'meal_catalog',
     'exercise_catalog',
@@ -799,6 +819,7 @@ begin
     'notifications',
     'health_tracking_logs',
     'health_score_ledgers',
+    'wellness_point_ledgers',
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations'
@@ -877,6 +898,7 @@ grant select, insert, update, delete
      public.notifications,
      public.health_tracking_logs,
      public.health_score_ledgers,
+     public.wellness_point_ledgers,
      public.nutrition_logs,
      public.ai_insights,
      public.ai_recommendations
@@ -2429,6 +2451,8 @@ declare
     'lifestyle_schedule_items',
     'notifications',
     'health_tracking_logs',
+    'health_score_ledgers',
+    'wellness_point_ledgers',
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations'

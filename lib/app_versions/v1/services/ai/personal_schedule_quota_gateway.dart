@@ -95,7 +95,13 @@ class TrustedBackendPersonalScheduleQuotaGateway
           'p_requested_at': at.toUtc().toIso8601String(),
         },
       );
-      return _decisionFromResponse(response);
+      final decision = _decisionFromResponse(response);
+      if (!decision.allowed) {
+        throw PersonalScheduleQuotaExceededException(resetAt: decision.resetAt);
+      }
+      return decision;
+    } on PersonalScheduleQuotaExceededException {
+      rethrow;
     } catch (_) {
       throw const PersonalScheduleQuotaUnavailableException();
     }
@@ -139,7 +145,7 @@ class TrustedBackendPersonalScheduleQuotaGateway
       throw const PersonalScheduleQuotaUnavailableException();
     }
 
-    final allowed = _readBool(row['allowed']);
+    final allowed = _readBool(row['allowed'] ?? row['committed']);
     if (allowed) return const PersonalScheduleQuotaDecision.allowed();
     return PersonalScheduleQuotaDecision.denied(
       resetAt: DateTime.tryParse(row['reset_at']?.toString() ?? ''),

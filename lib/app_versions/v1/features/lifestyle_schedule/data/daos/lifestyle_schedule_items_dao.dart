@@ -79,6 +79,9 @@ class LifestyleScheduleItemsDao {
     required String id,
     required bool isCompleted,
     required double currentValue,
+    String? completionProofPath,
+    String? completionProofCapturedAt,
+    String? completedAt,
     required String updatedAt,
   }) async {
     await db.update(
@@ -86,6 +89,9 @@ class LifestyleScheduleItemsDao {
       {
         'is_completed': isCompleted ? 1 : 0,
         'current_value': currentValue,
+        'completion_proof_path': completionProofPath,
+        'completion_proof_captured_at': completionProofCapturedAt,
+        'completed_at': completedAt,
         'updated_at': updatedAt,
       },
       where: 'id = ?',

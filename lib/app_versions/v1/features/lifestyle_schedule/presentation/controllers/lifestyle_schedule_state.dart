@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
 import '../../domain/entities/lifestyle_schedule_summary_entity.dart';
+import '../../domain/services/daily_schedule_score_service.dart';
 
 class LifestyleScheduleState {
   final LifestyleScheduleSummaryEntity summary;
@@ -27,7 +28,11 @@ class LifestyleScheduleState {
 
   int get score {
     if (selectedItems.isEmpty) return 0;
-    return ((completedItems / selectedItems.length) * 100).round();
+    return DailyScheduleScoreService.calculate(
+      items: selectedItems,
+      scheduleDate: _dateKey(selectedDate),
+      now: DateTime.now(),
+    ).score;
   }
 
   bool get isSelectedToday =>
@@ -46,5 +51,11 @@ class LifestyleScheduleState {
           ? null
           : lastEncouragement ?? this.lastEncouragement,
     );
+  }
+
+  String _dateKey(DateTime value) {
+    final month = value.month.toString().padLeft(2, '0');
+    final day = value.day.toString().padLeft(2, '0');
+    return '${value.year}-$month-$day';
   }
 }

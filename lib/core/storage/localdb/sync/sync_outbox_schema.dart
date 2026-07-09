@@ -12,6 +12,8 @@ class SyncOutboxSchema {
   static const runtimeStateTable = 'sync_runtime_state';
   static const outboxTable = 'sync_outbox';
   static const applyingCloudKey = 'is_applying_cloud';
+  static const personalScheduleAiRequestsTable =
+      'personal_schedule_ai_requests';
 
   static const userOwnedTables = <String>[
     'health_profiles',
@@ -26,6 +28,8 @@ class SyncOutboxSchema {
     'lifestyle_schedule_items',
     'notifications',
     'health_tracking_logs',
+    'health_score_ledgers',
+    'wellness_point_ledgers',
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations',
@@ -101,6 +105,7 @@ ON sync_outbox(user_id, table_name, record_id)
     // rows with a null ID. Normalize first so every user-owned change is
     // observable and can be represented in a cloud snapshot.
     for (final table in userOwnedTables) {
+      if (!await _tableExists(db, table)) continue;
       await db.execute(_normalizeIdAfterInsertTrigger(table));
     }
 
@@ -109,10 +114,25 @@ ON sync_outbox(user_id, table_name, record_id)
     await db.execute(_deleteTriggerForUsers());
 
     for (final table in userOwnedTables) {
+      if (!await _tableExists(db, table)) continue;
       await db.execute(_insertTriggerForUserOwnedTable(table));
       await db.execute(_updateTriggerForUserOwnedTable(table));
       await db.execute(_deleteTriggerForUserOwnedTable(table));
     }
+
+    if (await _tableExists(db, personalScheduleAiRequestsTable)) {
+      await db.execute(_insertTriggerForPersonalScheduleAiRequests());
+      await db.execute(_updateTriggerForPersonalScheduleAiRequests());
+      await db.execute(_deleteTriggerForPersonalScheduleAiRequests());
+    }
+  }
+
+  static Future<bool> _tableExists(Database db, String table) async {
+    final rows = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+      [table],
+    );
+    return rows.isNotEmpty;
   }
 
   static Future<void> _dropTriggers(Database db) async {
@@ -134,6 +154,15 @@ ON sync_outbox(user_id, table_name, record_id)
         'DROP TRIGGER IF EXISTS trg_sync_outbox_${table}_delete',
       );
     }
+    await db.execute(
+      'DROP TRIGGER IF EXISTS trg_sync_outbox_personal_schedule_ai_requests_insert',
+    );
+    await db.execute(
+      'DROP TRIGGER IF EXISTS trg_sync_outbox_personal_schedule_ai_requests_update',
+    );
+    await db.execute(
+      'DROP TRIGGER IF EXISTS trg_sync_outbox_personal_schedule_ai_requests_delete',
+    );
   }
 
   static String _normalizeIdAfterInsertTrigger(String table) =>
@@ -273,6 +302,71 @@ BEGIN
   ) VALUES (
     OLD.user_id || ':$table:' || OLD.id || ':delete',
     OLD.user_id, '$table', OLD.id, 'delete', '{}', 'pending',
+    0, NULL, NULL,
+    strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+  )
+  ON CONFLICT(id) DO UPDATE SET
+    operation = 'delete',
+    payload = '{}',
+    status = 'pending',
+    last_error = NULL,
+    next_retry_at = NULL,
+    updated_at = excluded.updated_at;
+END
+''';
+
+  static String _insertTriggerForPersonalScheduleAiRequests() =>
+      _upsertTriggerForPersonalScheduleAiRequests('insert', 'INSERT');
+
+  static String _updateTriggerForPersonalScheduleAiRequests() =>
+      _upsertTriggerForPersonalScheduleAiRequests('update', 'UPDATE');
+
+  static String _upsertTriggerForPersonalScheduleAiRequests(
+    String suffix,
+    String event,
+  ) =>
+      '''
+CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_personal_schedule_ai_requests_$suffix
+AFTER $event ON $personalScheduleAiRequestsTable
+WHEN NEW.user_id IS NOT NULL
+  AND NEW.request_id IS NOT NULL
+  AND COALESCE((SELECT value FROM $runtimeStateTable WHERE key = '$applyingCloudKey'), '0') <> '1'
+BEGIN
+  INSERT INTO $outboxTable (
+    id, user_id, table_name, record_id, operation, payload, status,
+    attempt_count, last_error, next_retry_at, created_at, updated_at
+  ) VALUES (
+    NEW.user_id || ':$personalScheduleAiRequestsTable:' || NEW.request_id || ':upsert',
+    NEW.user_id, '$personalScheduleAiRequestsTable', NEW.request_id, 'upsert', '{}', 'pending',
+    0, NULL, NULL,
+    strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+    strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+  )
+  ON CONFLICT(id) DO UPDATE SET
+    operation = 'upsert',
+    payload = '{}',
+    status = 'pending',
+    last_error = NULL,
+    next_retry_at = NULL,
+    updated_at = excluded.updated_at;
+END
+''';
+
+  static String _deleteTriggerForPersonalScheduleAiRequests() =>
+      '''
+CREATE TRIGGER IF NOT EXISTS trg_sync_outbox_personal_schedule_ai_requests_delete
+AFTER DELETE ON $personalScheduleAiRequestsTable
+WHEN OLD.user_id IS NOT NULL
+  AND OLD.request_id IS NOT NULL
+  AND COALESCE((SELECT value FROM $runtimeStateTable WHERE key = '$applyingCloudKey'), '0') <> '1'
+BEGIN
+  INSERT INTO $outboxTable (
+    id, user_id, table_name, record_id, operation, payload, status,
+    attempt_count, last_error, next_retry_at, created_at, updated_at
+  ) VALUES (
+    OLD.user_id || ':$personalScheduleAiRequestsTable:' || OLD.request_id || ':delete',
+    OLD.user_id, '$personalScheduleAiRequestsTable', OLD.request_id, 'delete', '{}', 'pending',
     0, NULL, NULL,
     strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
     strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
