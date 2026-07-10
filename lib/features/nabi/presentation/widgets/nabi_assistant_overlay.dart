@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../application/Nabi_controller.dart';
-import '../../application/Nabi_state.dart';
-import 'Nabi_character.dart';
+import '../../application/nabi_controller.dart';
+import '../../application/nabi_state.dart';
+import 'nabi_character.dart';
 
 /// Callback để app có thể mở chat theo chính sách điều hướng sẵn có.
 typedef NabiOpenChat = FutureOr<void> Function(BuildContext context);

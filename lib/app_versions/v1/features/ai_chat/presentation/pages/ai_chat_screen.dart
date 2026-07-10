@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:nano_app/app_versions/v1/features/nabi/providers/nabi_provider.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import '../../domain/entities/chat_message_entity.dart';
 import '../controllers/ai_chat_controller.dart';
@@ -24,7 +26,18 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   bool _lastLoadingState = false;
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(NabiContextProvider.notifier).setRoute(V1RoutePaths.aiChat);
+    });
+  }
+
+  @override
   void dispose() {
+    ref.read(NabiContextProvider.notifier).setChatTyping(typing: false);
     _textController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();

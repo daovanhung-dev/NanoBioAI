@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/v1/features/nabi/providers/nabi_provider.dart';
 import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
 
 import '../../domain/entities/chat_message_entity.dart';
@@ -64,6 +65,7 @@ class AIChatController extends Notifier<AIChatState> {
       isLoading: true,
       error: null,
     );
+    ref.read(NabiContextProvider.notifier).setChatTyping(typing: true);
 
     try {
       final aiMessage = await _repository.sendMessage(trimmed);
@@ -72,8 +74,10 @@ class AIChatController extends Notifier<AIChatState> {
         messages: [...state.messages, aiMessage],
         isLoading: false,
       );
+      ref.read(NabiContextProvider.notifier).setChatAnswerReady();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: _messageForSendError(e));
+      ref.read(NabiContextProvider.notifier).setChatFailed();
     }
   }
 
@@ -81,6 +85,7 @@ class AIChatController extends Notifier<AIChatState> {
     try {
       await _repository.clearHistory();
       state = const AIChatState();
+      ref.read(NabiContextProvider.notifier).clearTransientState();
     } catch (e) {
       state = state.copyWith(error: 'Không thể xóa lịch sử chat');
     }

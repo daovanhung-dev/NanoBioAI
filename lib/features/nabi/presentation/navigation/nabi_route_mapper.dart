@@ -1,4 +1,4 @@
-import '../../domain/entities/Nabi_expression.dart';
+import '../../domain/entities/nabi_expression.dart';
 
 /// Quy đổi tên đường dẫn sang ngữ cảnh Nabi.
 ///

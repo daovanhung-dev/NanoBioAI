@@ -114,6 +114,7 @@ class NabiContext {
     bool? isOffline,
     bool? isFeatureLocked,
     NabiVisualState? forceState,
+    bool clearForceState = false,
   }) {
     return NabiContext(
       routePath: routePath ?? this.routePath,
@@ -136,7 +137,7 @@ class NabiContext {
       syncJustSucceeded: syncJustSucceeded ?? this.syncJustSucceeded,
       isOffline: isOffline ?? this.isOffline,
       isFeatureLocked: isFeatureLocked ?? this.isFeatureLocked,
-      forceState: forceState ?? this.forceState,
+      forceState: clearForceState ? null : forceState ?? this.forceState,
     );
   }
 }

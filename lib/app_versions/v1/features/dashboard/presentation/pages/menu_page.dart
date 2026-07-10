@@ -7,7 +7,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/d
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart';
 import 'package:nano_app/app_versions/v1/features/other/presentation/pages/other_page.dart';
 import 'package:nano_app/app_versions/v1/features/settings/presentation/pages/settings_page.dart';
-import 'package:nano_app/app_versions/v1/features/Nabi/Nabi.dart';
+import 'package:nano_app/app_versions/v1/features/nabi/nabi.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 
 import 'package:nano_app/core/theme/theme.dart';

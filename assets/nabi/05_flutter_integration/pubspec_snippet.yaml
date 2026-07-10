@@ -1,0 +1,11 @@
+flutter:
+  assets:
+    - assets/nabi/01_character/01_static_expressions/
+    - assets/nabi/01_character/02_30fps_frames/
+    - assets/nabi/02_spritesheets/
+    - assets/nabi/03_effects/
+    - assets/nabi/04_audio/sfx/
+    - assets/nabi/06_manifest/
+
+dependencies:
+  audioplayers: ^6.1.0

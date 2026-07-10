@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../application/Nabi_controller.dart';
-import 'Nabi_route_mapper.dart';
+import '../../application/nabi_controller.dart';
+import 'nabi_route_mapper.dart';
 
 /// NavigatorObserver để Nabi tự đổi biểu cảm khi người dùng chuyển màn hình.
 ///

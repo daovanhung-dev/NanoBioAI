@@ -1,4 +1,4 @@
-import '../domain/entities/Nabi_expression.dart';
+import '../domain/entities/nabi_expression.dart';
 
 /// State duy nhất điều khiển biểu cảm, lời gợi ý và hiển thị của Nabi.
 class NabiState {

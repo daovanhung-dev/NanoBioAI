@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/Nabi_provider.dart';
+import '../providers/nabi_provider.dart';
 
 /// [NavigatorObserver] tự động cập nhật [NabiContextProvider] khi route thay đổi.
 ///

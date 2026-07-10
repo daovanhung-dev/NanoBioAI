@@ -22,6 +22,8 @@ final NabiVisualStateProvider = Provider<NabiVisualState>((ref) {
 });
 
 class NabiContextNotifier extends Notifier<NabiContext> {
+  int _chatPulseToken = 0;
+
   @override
   NabiContext build() => const NabiContext();
 
@@ -36,7 +38,7 @@ class NabiContextNotifier extends Notifier<NabiContext> {
     // Reset một số trạng thái tạm thời khi chuyển route
     state = state.copyWith(
       routePath: routePath,
-      forceState: null,
+      clearForceState: true,
       justCompletedTask: false,
       justSkippedTask: false,
       isPlanJustReady: false,
@@ -49,15 +51,54 @@ class NabiContextNotifier extends Notifier<NabiContext> {
 
   /// Chat bắt đầu hoặc dừng gõ.
   void setChatTyping({required bool typing}) {
+    if (typing) _chatPulseToken++;
     state = state.copyWith(
       isChatTyping: typing,
       isChatAnswerReady: typing ? false : state.isChatAnswerReady,
+      clearForceState: typing,
     );
   }
 
   /// Chat đã có câu trả lời.
   void setChatAnswerReady() {
+    final token = ++_chatPulseToken;
     state = state.copyWith(isChatTyping: false, isChatAnswerReady: true);
+
+    Future<void>.delayed(const Duration(milliseconds: 1400), () {
+      if (token != _chatPulseToken ||
+          state.isChatTyping ||
+          !state.isChatAnswerReady) {
+        return;
+      }
+
+      state = state.copyWith(
+        isChatAnswerReady: false,
+        forceState: NabiVisualState.taskComplete,
+      );
+
+      Future<void>.delayed(const Duration(milliseconds: 900), () {
+        if (token == _chatPulseToken &&
+            state.forceState == NabiVisualState.taskComplete) {
+          clearTransientState();
+        }
+      });
+    });
+  }
+
+  void setChatFailed() {
+    final token = ++_chatPulseToken;
+    state = state.copyWith(
+      isChatTyping: false,
+      isChatAnswerReady: false,
+      forceState: NabiVisualState.syncRetry,
+    );
+
+    Future<void>.delayed(const Duration(seconds: 2), () {
+      if (token == _chatPulseToken &&
+          state.forceState == NabiVisualState.syncRetry) {
+        clearTransientState();
+      }
+    });
   }
 
   /// Người dùng vừa hoàn thành task.
@@ -82,7 +123,7 @@ class NabiContextNotifier extends Notifier<NabiContext> {
       isPlanJustReady: false,
       syncJustSucceeded: false,
       isChatAnswerReady: false,
-      forceState: null,
+      clearForceState: true,
     );
   }
 

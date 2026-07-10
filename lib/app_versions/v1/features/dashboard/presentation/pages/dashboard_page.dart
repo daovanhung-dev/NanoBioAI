@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/services/dashboard_companion_service.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
@@ -9,11 +8,14 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/widgets
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
+import 'package:nano_app/app_versions/v1/features/nabi/presentation/widgets/nabi_floating_overlay.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/app_versions/v1/shared/widgets/ai_chat_fab.dart';
 import 'package:nano_app/core/membership/membership_display_info.dart';
+import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/features/nabi/nabi.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   final bool showStandaloneChatButton;
@@ -257,7 +259,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         children: [
           Positioned.fill(child: body),
           if (widget.showStandaloneChatButton)
-            const DraggableAIChatButton(bottomReserve: 24),
+            NabiFeatureFlags.spriteMascotEnabled
+                ? const NabiFloatingOverlay(bottomReserve: 24)
+                : const DraggableAIChatButton(bottomReserve: 24),
         ],
       ),
     );

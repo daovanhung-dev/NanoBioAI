@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../domain/entities/Nabi_expression.dart';
-import 'Nabi_expression_resolver.dart';
-import 'Nabi_state.dart';
+import '../domain/entities/nabi_expression.dart';
+import 'nabi_expression_resolver.dart';
+import 'nabi_state.dart';
 
 /// Riverpod controller dùng chung cho toàn ứng dụng.
 ///

@@ -1,0 +1,17 @@
+enum NabiAnimationType {
+  idle,
+  happy,
+  sad,
+  angry,
+  sulk,
+  crying,
+  listening,
+  talking,
+  thinking,
+  greeting,
+  loading,
+  error,
+  cheering,
+  reminder,
+  membership,
+}

@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/features/nabi/nabi.dart' as shared_nabi;
 
-import '../../domain/Nabi_visual_state.dart';
-import '../../providers/Nabi_provider.dart';
-import 'Nabi_character_widget.dart';
+import '../../application/nabi_visual_animation_mapper.dart';
+import '../../domain/nabi_visual_state.dart';
+import '../../providers/nabi_provider.dart';
+import 'nabi_character_widget.dart';
 
 /// Nabi nổi có thể kéo thả, hiển thị ở bất kỳ trang nào.
 ///
@@ -51,7 +53,7 @@ class NabiFloatingOverlay extends ConsumerStatefulWidget {
 
 class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
     with SingleTickerProviderStateMixin {
-  static const double _NabiSize = 80;
+  static const double _nabiSize = 80;
   static const double _containerWidth = 96;
   static const double _containerHeight = 104;
 
@@ -121,6 +123,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
 
   void _handleTap() {
     HapticFeedback.mediumImpact();
+    ref.read(NabiContextProvider.notifier).setRoute(V1RoutePaths.aiChat);
     if (widget.onTap != null) {
       widget.onTap!();
     } else {
@@ -130,6 +133,11 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
 
   @override
   Widget build(BuildContext context) {
+    final visualState = ref.watch(NabiVisualStateProvider);
+    final animationType = NabiVisualAnimationMapper.fromVisualState(
+      visualState,
+    );
+
     return IgnorePointer(
       ignoring: !widget.visible,
       child: AnimatedOpacity(
@@ -188,13 +196,26 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
                               scale: _isDragging ? 0.9 : 1.0,
                               duration: AppDuration.fast,
                               curve: Curves.easeOutCubic,
-                              child: NabiCharacterWidget(
-                                size: _NabiSize,
-                                showAura: !_isDragging,
-                                onTap: _handleTap,
-                                semanticLabel:
-                                    'Nabi – chạm để mở chat với Nabi',
-                              ),
+                              child:
+                                  shared_nabi
+                                      .NabiFeatureFlags
+                                      .spriteMascotEnabled
+                                  ? shared_nabi.NaBiFloatingMascot(
+                                      animationType: animationType,
+                                      size: _nabiSize,
+                                      showLabel: false,
+                                      enabled: !_isDragging,
+                                      semanticLabel:
+                                          'Nabi - cham de mo chat voi Nabi',
+                                      onTap: _handleTap,
+                                    )
+                                  : NabiCharacterWidget(
+                                      size: _nabiSize,
+                                      showAura: !_isDragging,
+                                      onTap: _handleTap,
+                                      semanticLabel:
+                                          'Nabi – chạm để mở chat với Nabi',
+                                    ),
                             ),
 
                             // Label phía dưới

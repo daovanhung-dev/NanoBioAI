@@ -1,8 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../lib/features/Nabi/application/Nabi_controller.dart';
-import '../../../../lib/features/Nabi/domain/entities/Nabi_expression.dart';
+import 'package:nano_app/features/nabi/nabi.dart';
 
 void main() {
   group('NabiController', () {

@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../domain/entities/Nabi_expression.dart';
+import '../../domain/entities/nabi_expression.dart';
 
 /// Nhân vật Nabi dạng vector Canvas, nền trong suốt.
 ///

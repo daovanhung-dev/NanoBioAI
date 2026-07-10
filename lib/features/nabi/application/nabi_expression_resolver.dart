@@ -1,4 +1,4 @@
-import '../domain/entities/Nabi_expression.dart';
+import '../domain/entities/nabi_expression.dart';
 
 /// Quy tắc tập trung: event/ngữ cảnh nào thì Nabi biểu cảm và nói gì.
 ///

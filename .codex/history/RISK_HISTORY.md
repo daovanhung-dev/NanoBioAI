@@ -385,3 +385,11 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md :: - Chua fix: app chua co UI voucher/redeem; dung scope earn/sync only theo yeu cau.
 - docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md :: - Chua fix: proof image local path khong sync cloud; neu nguoi dung doi may se chi giu completion/score/point, khong co anh proof tren may moi.
 - docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md :: - Can kiem tra tiep: manual camera permission/cancel flow tren thiet bi that va Supabase sandbox snapshot cho `health_score_ledgers`/`wellness_point_ledgers`.
+- docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - Cap nhat `pubspec.yaml` de dang ky asset NaBi 30fps va bo cac asset directory khong ton tai gay fail `flutter pub get`.
+- docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - `flutter analyze`: FAIL - con 38 issue nen repo; warning con lai nam o onboarding va info naming/deprecation cu, khong phat sinh tu implementation NaBi 30fps.
+- docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - `flutter run -d windows -t lib\main.dart`: FAIL - thieu Visual Studio toolchain.
+- docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - Chua fix: `flutter analyze` van fail vi warning/info nen repo khong lien quan truc tiep den thay doi nay.
+- docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - Can kiem tra tiep: UI tap/drag tren thiet bi mobile that, vi hien moi smoke run tren Chrome va build web debug.
+- docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - Dang do: 10% - can manual QA tren mobile/emulator va xu ly warning analyzer nen neu muon `flutter analyze` pass tuyet doi.
+- docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - Chat luong dau ra: tot - giu logic AI/chat cu, them adapter hep va test dung diem rui ro.

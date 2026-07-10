@@ -1,0 +1,4 @@
+- FPS: 30
+- Frame size: 384x384
+- Timer interval: 33ms/frame
+- Precache để giảm giật frame đầu.

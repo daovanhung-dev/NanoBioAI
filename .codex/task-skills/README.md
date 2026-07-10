@@ -7,7 +7,7 @@ Generated from canonical task keys. Read the file matching the selected workflow
 | coding | Coding | .codex/workflows/coding.md | 18 | [coding.md](coding.md) |
 | bugfix | Direct bugfix | .codex/workflows/bugfix.md | 7 | [bugfix.md](bugfix.md) |
 | fix-issues | Fix documented issue | .codex/workflows/fix-issues.md | 1 | [fix-issues.md](fix-issues.md) |
-| test | Test and verification | .codex/workflows/test.md | 2 | [test.md](test.md) |
+| test | Test and verification | .codex/workflows/test.md | 3 | [test.md](test.md) |
 | find-issues | Review and find issues | .codex/workflows/find-issues.md | 1 | [find-issues.md](find-issues.md) |
 | create-issues | Create issue docs | .codex/workflows/create-issues.md | 0 | [create-issues.md](create-issues.md) |
 | create-todo | Create todo docs | .codex/workflows/create-todo.md | 1 | [create-todo.md](create-todo.md) |
