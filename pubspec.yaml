@@ -84,6 +84,36 @@ flutter:
     - assets/nabi/
     - assets/nabi/01_character/01_static_expressions/
     - assets/nabi/01_character/02_30fps_frames/
+    - assets/nabi/01_character/02_30fps_frames/01_core/NABI_ANIM_001_happy_idle_breathing/
+    - assets/nabi/01_character/02_30fps_frames/01_core/NABI_ANIM_002_happy_wave_right/
+    - assets/nabi/01_character/02_30fps_frames/01_core/NABI_ANIM_003_happy_jump_pop/
+    - assets/nabi/01_character/02_30fps_frames/01_core/NABI_ANIM_004_happy_heart_send/
+    - assets/nabi/01_character/02_30fps_frames/01_core/NABI_ANIM_005_success_confetti_dance/
+    - assets/nabi/01_character/02_30fps_frames/02_emotion/NABI_ANIM_006_sad_sigh_slow/
+    - assets/nabi/01_character/02_30fps_frames/02_emotion/NABI_ANIM_007_sad_look_down/
+    - assets/nabi/01_character/02_30fps_frames/02_emotion/NABI_ANIM_008_pout_cheek_turn/
+    - assets/nabi/01_character/02_30fps_frames/02_emotion/NABI_ANIM_009_pout_cross_arm/
+    - assets/nabi/01_character/02_30fps_frames/02_emotion/NABI_ANIM_010_angry_small_stomp/
+    - assets/nabi/01_character/02_30fps_frames/02_emotion/NABI_ANIM_011_angry_warning_shake/
+    - assets/nabi/01_character/02_30fps_frames/02_emotion/NABI_ANIM_012_cry_big_tears/
+    - assets/nabi/01_character/02_30fps_frames/02_emotion/NABI_ANIM_013_cry_rub_eye/
+    - assets/nabi/01_character/02_30fps_frames/02_emotion/NABI_ANIM_014_sleepy_yawn/
+    - assets/nabi/01_character/02_30fps_frames/03_daily/NABI_ANIM_015_sleepy_reminder_nod/
+    - assets/nabi/01_character/02_30fps_frames/03_daily/NABI_ANIM_016_thinking_bubble/
+    - assets/nabi/01_character/02_30fps_frames/03_daily/NABI_ANIM_017_talking_soft/
+    - assets/nabi/01_character/02_30fps_frames/03_daily/NABI_ANIM_018_listening_ear_bounce/
+    - assets/nabi/01_character/02_30fps_frames/03_daily/NABI_ANIM_019_nod_yes/
+    - assets/nabi/01_character/02_30fps_frames/03_daily/NABI_ANIM_020_shake_no/
+    - assets/nabi/01_character/02_30fps_frames/04_system/NABI_ANIM_021_loading_leaf_spin/
+    - assets/nabi/01_character/02_30fps_frames/04_system/NABI_ANIM_022_error_dizzy/
+    - assets/nabi/01_character/02_30fps_frames/05_views/NABI_ANIM_023_meal_scan_food/
+    - assets/nabi/01_character/02_30fps_frames/05_views/NABI_ANIM_024_exercise_cheer/
+    - assets/nabi/01_character/02_30fps_frames/05_views/NABI_ANIM_025_profile_greeting/
+    - assets/nabi/01_character/02_30fps_frames/05_views/NABI_ANIM_026_membership_vip_sparkle/
+    - assets/nabi/01_character/02_30fps_frames/05_views/NABI_ANIM_027_critical_alert_guard/
+    - assets/nabi/01_character/02_30fps_frames/05_views/NABI_ANIM_028_empty_state_peek/
+    - assets/nabi/01_character/02_30fps_frames/05_views/NABI_ANIM_029_onboarding_welcome/
+    - assets/nabi/01_character/02_30fps_frames/05_views/NABI_ANIM_030_dashboard_morning/
     - assets/nabi/02_spritesheets/
     - assets/nabi/03_effects/
     - assets/nabi/04_audio/sfx/

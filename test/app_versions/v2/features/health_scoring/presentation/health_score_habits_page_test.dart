@@ -15,7 +15,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Can dang nhap'), findsOneWidget);
+    expect(find.text('Cần đăng nhập'), findsOneWidget);
   });
 
   testWidgets('renders empty state safely', (tester) async {
@@ -35,7 +35,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Chua co lich su cham soc'), findsOneWidget);
+    expect(find.text('Chưa có lịch sử chăm sóc'), findsOneWidget);
   });
 
   testWidgets('renders success state safely', (tester) async {
@@ -68,8 +68,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('100'), findsWidgets);
-    expect(find.text('Thanh phan diem'), findsOneWidget);
-    expect(find.text('Tien do thoi quen'), findsOneWidget);
+    expect(find.text('Thành phần điểm'), findsOneWidget);
+    expect(find.text('Tiến độ thói quen'), findsOneWidget);
   });
 }
 

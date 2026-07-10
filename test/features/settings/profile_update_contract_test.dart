@@ -15,7 +15,8 @@ void main() {
         expect(source, isNot(contains('CloudProfileUpdatePayload')));
         expect(source, contains('SettingsLocalDatasource().updateUserProfile'));
         expect(source, contains('invalidateUserScopedProviders'));
-        expect(source, contains("label: 'Email', enabled: false"));
+        expect(source, contains("label: 'Địa chỉ email'"));
+        expect(source, contains('enabled: false'));
 
         final datasourceSource = File(
           'lib/app_versions/v1/features/settings/data/datasources/'

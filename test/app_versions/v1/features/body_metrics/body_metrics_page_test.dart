@@ -5,14 +5,10 @@ import 'package:nano_app/app_versions/v1/features/body_metrics/presentation/page
 void main() {
   testWidgets('shows medical disclaimer copy', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: BodyMetricsPage()));
-    await tester.scrollUntilVisible(
-      find.text('Thong tin tham khao'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pump();
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -1000));
+    await tester.pumpAndSettle();
 
-    expect(find.text('Thong tin tham khao'), findsOneWidget);
-    expect(find.textContaining('khong thay the chan doan'), findsOneWidget);
+    expect(find.text('Thông tin tham khảo'), findsOneWidget);
+    expect(find.textContaining('không thay thế chẩn đoán'), findsOneWidget);
   });
 }

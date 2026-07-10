@@ -429,3 +429,4 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: - Chua fix: Format hygiene toan repo van can kiem chung/xu ly bang todo rieng.
 - docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: - Hoan thanh: Debt P1 release analyzer fail va debt Nabi import case mismatch.
 - docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: fail hoac format hygiene tuy theo blast radius.
+- docs/worklog/2026-07-10/005-worklog-v2-admin-regression.md :: - Cap nhat test stale expectation theo UI hien tai; targeted analyze/test pass. Full suite van can chay diagnostic va phan loai failure truoc khi ket luan.

@@ -21,7 +21,9 @@ class MainNavigationPage extends ConsumerStatefulWidget {
 
 class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
     with TickerProviderStateMixin {
-  static const double _bottomNavigationReserve = 132;
+  // Scaffold lays the body out above the bottom navigation bar already. Keep
+  // only a small visual gap here so Nabi does not float over feature tiles.
+  static const double _bottomNavigationReserve = 0;
 
   late final PageController _pageController;
   late final AnimationController _ambientController;
@@ -150,7 +152,13 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
                   physics: const NeverScrollableScrollPhysics(),
                   children: _pages,
                 ),
-                NabiFloatingOverlay(bottomReserve: _bottomNavigationReserve),
+                // The feature hub is a dense, scrollable tile grid. Keeping a
+                // fixed mascot on top of it obscures tile copy and tap targets;
+                // the hub already exposes the dedicated Nabi chat tile.
+                NabiFloatingOverlay(
+                  bottomReserve: _bottomNavigationReserve,
+                  visible: _currentIndex != 1,
+                ),
               ],
             );
           },

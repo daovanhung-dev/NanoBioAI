@@ -2,18 +2,18 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 18 worklog(s).
+- Generated from 19 worklog(s).
 
 ## When To Read
 
 - Historical task type: docs-context (8)
+- Historical task type: unknown (5)
 - Historical task type: docs (5)
-- Historical task type: unknown (4)
 - Historical task type: docs/context update (1)
 
 ## Common Modules
 
-- unknown: 4
+- unknown: 5
 - .codex: 2
 - .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
 - docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1

@@ -15,7 +15,10 @@ void main() {
       _FakeSaleRepository(state: const SaleState(status: SaleStatus.pending)),
     );
 
-    expect(find.text('Ho so Sale dang cho Admin duyet'), findsOneWidget);
+    expect(
+      find.text('Hồ sơ cộng tác viên đang chờ quản trị viên duyệt'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('shows suspended and closed Sale support states', (tester) async {
@@ -24,14 +27,14 @@ void main() {
       _FakeSaleRepository(state: const SaleState(status: SaleStatus.suspended)),
     );
 
-    expect(find.text('Tai khoan Sale dang tam dung'), findsOneWidget);
+    expect(find.text('Tài khoản cộng tác viên đang tạm dừng'), findsOneWidget);
 
     await _pumpSaleShell(
       tester,
       _FakeSaleRepository(state: const SaleState(status: SaleStatus.closed)),
     );
 
-    expect(find.text('Tai khoan Sale da dong'), findsOneWidget);
+    expect(find.text('Tài khoản cộng tác viên đã đóng'), findsOneWidget);
   });
 
   testWidgets('shows active dashboard and disabled conversion state', (
@@ -48,16 +51,18 @@ void main() {
       ),
     );
 
-    expect(find.text('Tong quan Sale'), findsOneWidget);
-    expect(find.text('Ma gioi thieu: NANO-1234'), findsOneWidget);
-    expect(find.text('Quy doi diem chua mo'), findsOneWidget);
+    expect(find.text('Tổng quan cộng tác viên'), findsOneWidget);
+    expect(find.text('Mã giới thiệu: NANO-1234'), findsOneWidget);
+    expect(find.text('Quy đổi điểm chưa mở'), findsOneWidget);
 
-    await tester.tap(find.text('Cong cu'));
+    await tester.tap(find.text('Công cụ'));
     await tester.pump();
 
-    expect(find.text('Uoc tinh diem Sale'), findsNothing);
+    expect(find.text('Ước tính điểm Sale'), findsNothing);
     expect(
-      find.text('Quy doi diem Sale chua duoc Admin mo cau hinh.'),
+      find.text(
+        'Quy đổi điểm cộng tác viên chưa được quản trị viên mở cấu hình.',
+      ),
       findsOneWidget,
     );
   });
@@ -75,8 +80,8 @@ void main() {
       ),
     );
 
-    expect(find.text('Cap nhat CCCD va ngan hang'), findsOneWidget);
-    expect(find.text('Tong quan Sale'), findsNothing);
+    expect(find.text('Cập nhật CCCD và ngân hàng'), findsOneWidget);
+    expect(find.text('Tổng quan cộng tác viên'), findsNothing);
   });
 
   testWidgets('does not show health condition summary for direct customers', (
@@ -93,11 +98,11 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Khach'));
+    await tester.tap(find.text('Khách hàng'));
     await tester.pump();
 
-    expect(find.textContaining('Suc khoe'), findsNothing);
-    expect(find.textContaining('SDT:'), findsOneWidget);
+    expect(find.textContaining('Sức khỏe'), findsNothing);
+    expect(find.textContaining('SĐT:'), findsOneWidget);
   });
 
   testWidgets('submits enabled conversion with trusted RPC values', (
@@ -113,11 +118,11 @@ void main() {
     );
     await _pumpSaleShell(tester, repository);
 
-    await tester.tap(find.text('Cong cu'));
+    await tester.tap(find.text('Công cụ'));
     await tester.pump();
     await tester.enterText(find.byType(TextField), '10000');
     await tester.pump();
-    await tester.tap(find.text('Gui yeu cau quy doi'));
+    await tester.tap(find.text('Gửi yêu cầu quy đổi'));
     await tester.pump();
 
     expect(repository.commands, hasLength(1));
@@ -126,7 +131,10 @@ void main() {
       repository.commands.single.idempotencyKey,
       startsWith('sale-conversion-NANO-1234-10000-'),
     );
-    expect(find.text('Da gui yeu cau quy doi diem Sale.'), findsOneWidget);
+    expect(
+      find.text('Đã gửi yêu cầu quy đổi điểm cộng tác viên.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('blocks duplicate conversion submit while request is in flight', (
@@ -144,13 +152,13 @@ void main() {
     );
     await _pumpSaleShell(tester, repository);
 
-    await tester.tap(find.text('Cong cu'));
+    await tester.tap(find.text('Công cụ'));
     await tester.pump();
     await tester.enterText(find.byType(TextField), '10000');
     await tester.pump();
-    await tester.tap(find.text('Gui yeu cau quy doi'));
+    await tester.tap(find.text('Gửi yêu cầu quy đổi'));
     await tester.pump();
-    await tester.tap(find.text('Gui yeu cau quy doi'));
+    await tester.tap(find.text('Gửi yêu cầu quy đổi'));
     await tester.pump();
 
     expect(repository.commands, hasLength(1));
@@ -173,20 +181,20 @@ void main() {
     );
     await _pumpSaleShell(tester, repository);
 
-    await tester.tap(find.text('Cong cu'));
+    await tester.tap(find.text('Công cụ'));
     await tester.pump();
     await tester.enterText(find.byType(TextField), '10000');
     await tester.pump();
-    await tester.tap(find.text('Gui yeu cau quy doi'));
+    await tester.tap(find.text('Gửi yêu cầu quy đổi'));
     await tester.pump();
 
     expect(
-      find.text('Chua gui duoc yeu cau quy doi. Ban thu lai sau.'),
+      find.text('Chưa gửi được yêu cầu quy đổi. Bạn thử lại sau.'),
       findsOneWidget,
     );
     final failedKey = repository.commands.single.idempotencyKey;
 
-    await tester.tap(find.text('Gui yeu cau quy doi'));
+    await tester.tap(find.text('Gửi yêu cầu quy đổi'));
     await tester.pump();
 
     expect(repository.commands, hasLength(2));

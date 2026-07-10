@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 67
+- Total worklogs: 68
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -76,3 +76,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-10 | fix-issues | fix-issues | v1 onboarding, AppLogger | [Worklog - Fix onboarding sensitive snapshot logging](../../docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md) |
 | 2026-07-10 | bugfix | bugfix | config/env, app entrypoints, auth/AI env readers | [Worklog - Fix env tracked and bundled](../../docs/worklog/2026-07-10/003-worklog-env-tracked-and-bundled.md) |
 | 2026-07-10 | bugfix | bugfix | Nabi providers/UI, onboarding UI, shared Nabi widgets, release | [Worklog - Release analyze cleanup](../../docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md) |
+| 2026-07-10 | unknown | docs-context | unknown | [Worklog 005 - Hoi quy v2 + Admin](../../docs/worklog/2026-07-10/005-worklog-v2-admin-regression.md) |
