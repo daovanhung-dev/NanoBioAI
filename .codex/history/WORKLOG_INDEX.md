@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 63
+- Total worklogs: 64
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -72,3 +72,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-09 | bugfix | bugfix | v2 authentication | [Worklog - Auth validation null](../../docs/worklog/2026-07-09/001-worklog-auth-validation-null.md) |
 | 2026-07-09 | coding | coding | v1 lifestyle schedule, dashboard, localdb, cloud sync, Supabase docs | [Worklog - Daily schedule proof and score](../../docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md) |
 | 2026-07-09 | code + asset integration + test | test | lib/app_versions/v1/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1 | [Worklog - Nabi mascot 30fps](../../docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md) |
+| 2026-07-10 | bugfix | bugfix | v2 authentication, admin login, Supabase dev seed | [Worklog - Fix auth login sync failure](../../docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md) |

@@ -14,14 +14,14 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
   @override
   Future<AuthRouteState> build() async {
     ref.watch(v2AuthChangesProvider);
-    await _syncAfterAuth(AuthSyncReason.authGateRefresh);
+    await _trySyncAfterAuth(AuthSyncReason.authGateRefresh);
     return ref.watch(v2AuthRepositoryProvider).resolveAuthRouteState();
   }
 
   Future<AuthRouteState> refresh() async {
     state = const AsyncValue.loading();
     try {
-      await _syncAfterAuth(AuthSyncReason.authGateRefresh);
+      await _trySyncAfterAuth(AuthSyncReason.authGateRefresh);
       final nextState = await _repository.resolveAuthRouteState();
       state = AsyncData(nextState);
       return nextState;
@@ -93,7 +93,7 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
       final resolvedSyncReason =
           syncReasonForResult?.call(result) ?? syncReason;
       if (resolvedSyncReason != null) {
-        await _syncAfterAuth(resolvedSyncReason);
+        await _trySyncAfterAuth(resolvedSyncReason);
       }
       final nextState = await _repository.resolveAuthRouteState();
       state = AsyncData(nextState);
@@ -123,6 +123,23 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
       AppLogger.error(
         'AUTH_CONTROLLER',
         'Notification refresh failed after cloud sync',
+        error,
+        stackTrace,
+      );
+    }
+  }
+
+  Future<void> _trySyncAfterAuth(AuthSyncReason reason) async {
+    try {
+      await _syncAfterAuth(reason);
+    } catch (error, stackTrace) {
+      AppLogger.warning(
+        'AUTH_CONTROLLER',
+        'Cloud sync skipped after ${reason.name}: $error',
+      );
+      AppLogger.error(
+        'AUTH_CONTROLLER',
+        'Cloud sync failed after authenticated session',
         error,
         stackTrace,
       );

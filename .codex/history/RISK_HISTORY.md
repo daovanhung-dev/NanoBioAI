@@ -393,3 +393,16 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - Can kiem tra tiep: UI tap/drag tren thiet bi mobile that, vi hien moi smoke run tren Chrome va build web debug.
 - docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - Dang do: 10% - can manual QA tren mobile/emulator va xu ly warning analyzer nen neu muon `flutter analyze` pass tuyet doi.
 - docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md :: - Chat luong dau ra: tot - giu logic AI/chat cu, them adapter hep va test dung diem rui ro.
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: Commit de xuat: docs(worklog): ghi nhan phien fix auth login sync failure
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: # Worklog - Fix auth login sync failure
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - Them/cap nhat regression tests cho translator, admin login, Auth sync failure
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - Tao tai lieu fixbug `docs/fixbug/auth-login-sync-failure/001-fixbug-auth-login-sync-failure.md`.
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - `lib/app_versions/v2/features/auth/domain/entities/auth_failure.dart` - sua - them failure code can thiet.
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - `test/app_versions/v2/features/auth/auth_controller_sync_failure_test.dart` - tao - regression sync failure khong chan dang nhap.
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - `docs/fixbug/auth-login-sync-failure/001-fixbug-auth-login-sync-failure.md` - tao - tom tat fixbug.
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - `flutter test test/app_versions/v2/features/auth/auth_controller_sync_failure_test.dart`: PASS.
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - `flutter test test/app_versions/v2/features/auth/auth_controller_sync_failure_test.dart test/app_versions/v2/features/auth/auth_pages_smoke_test.dart test/app_versions/v2/features/cloud_sync/authenticated_user_data_sync_repository_test.dart`: PASS.
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - Da fix: Auth success khong con bi bien thanh login failure khi post-auth sync/RPC loi; seed Supabase local khong can update thu cong token null.
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - Chua fix: Khong thay doi ha tang Supabase neu PostgREST bi stop/exclude; app chi xu ly mem phan sync sau Auth.
+- docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - Can kiem tra tiep: Sandbox/staging Supabase theo risk NB-RISK-001 neu muon claim production-ready.

@@ -18,6 +18,10 @@ void main() {
     expect(source, contains("'free'::public.nb_membership_plan"));
     expect(source, contains("'plus'::public.nb_membership_plan"));
     expect(source, contains("'family_plus'::public.nb_membership_plan"));
+    expect(source, contains('confirmation_token'));
+    expect(source, contains('reauthentication_token'));
+    expect(source, contains('update auth.users'));
+    expect(source, contains('DEV_AUTH_SEED_TOKEN_COLUMNS_NULL'));
     expect(source, isNot(contains('service_role')));
   });
 }

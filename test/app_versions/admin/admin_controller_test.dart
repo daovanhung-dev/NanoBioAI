@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/controllers/admin_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 
 void main() {
@@ -57,6 +58,29 @@ void main() {
         AdminTimeDefaults.vietnamTimeZone,
       ]);
     });
+
+    test(
+      'rejects admin login when Auth succeeds but role is missing',
+      () async {
+        final repository = _FakeAdminRepository(
+          session: AdminSession.anonymous,
+        );
+        final container = _container(repository);
+        addTearDown(container.dispose);
+
+        await expectLater(
+          container
+              .read(adminControllerProvider.notifier)
+              .signInWithEmail(
+                email: 'dev.free@nanobio.local',
+                password: 'NanoBio@123456',
+              ),
+          throwsA(isA<AdminLoginFailure>()),
+        );
+
+        expect(repository.signOutCalls, 1);
+      },
+    );
 
     test('blocks mutation without permission before RPC', () async {
       final repository = _FakeAdminRepository(session: _limitedSession());

@@ -5,8 +5,12 @@ enum AuthFailureCode {
   profileMissing,
   sessionMissing,
   emailAlreadyRegistered,
+  weakPassword,
   rateLimited,
+  accountDisabled,
   network,
+  configuration,
+  authServer,
   deepLinkInvalid,
   unknown,
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/controllers/admin_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/services/supabase/auth/supabase_auth_error_translator.dart';
 
 /// Màn hình đăng nhập dành riêng cho khu vực quản trị.
 ///
@@ -145,9 +147,9 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
 
       if (!mounted) return;
       context.go(AdminRoutePaths.dashboard);
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
-      _showLoginError();
+      _showLoginError(error);
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -155,17 +157,17 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
     }
   }
 
-  void _showLoginError() {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger
+  void _showLoginError(Object error) {
+    final message = error is AdminLoginFailure
+        ? error.message
+        : SupabaseAuthErrorTranslator.fromObject(error).fullMessage;
+    ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
+        SnackBar(
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(AppSpacing.md),
-          content: Text(
-            'Không thể đăng nhập. Hãy kiểm tra email, mật khẩu hoặc quyền quản trị.',
-          ),
+          margin: const EdgeInsets.all(AppSpacing.md),
+          content: Text(message),
         ),
       );
   }

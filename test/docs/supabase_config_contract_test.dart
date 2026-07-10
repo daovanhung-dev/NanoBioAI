@@ -109,6 +109,23 @@ void main() {
       }
     });
 
+    test('keeps dev auth seed token columns non-null for Supabase login', () {
+      for (final token in [
+        'confirmation_token',
+        'recovery_token',
+        'email_change',
+        'email_change_token_new',
+        'email_change_token_current',
+        'phone_change',
+        'phone_change_token',
+        'reauthentication_token',
+        'update auth.users',
+        "raise exception 'DEV_AUTH_SEED_TOKEN_COLUMNS_NULL'",
+      ]) {
+        expect(sql, contains(token), reason: token);
+      }
+    });
+
     test('does not grant trusted payment recorder to Flutter roles', () {
       expect(sql, contains('record_trusted_payment_event'));
       expect(sql, contains('p_auto_approve boolean default false'));
@@ -235,8 +252,11 @@ void main() {
         'idx_personal_schedule_ai_requests_user_mode',
         'personal_schedule_ai_requests_select_own',
         'revoke insert, update, delete on public.personal_schedule_ai_requests',
+        'insert_mobile_snapshot_row',
+        'jsonb_to_record(\$1)',
         "coalesce(v_tables -> 'personal_schedule_ai_requests', '[]'::jsonb)",
-        'jsonb_populate_record(',
+        "'personal_schedule_ai_requests',",
+        'false',
       ]) {
         expect(sql, contains(token), reason: token);
       }

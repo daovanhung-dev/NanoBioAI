@@ -59,6 +59,14 @@ insert into auth.users (
   email,
   encrypted_password,
   email_confirmed_at,
+  confirmation_token,
+  recovery_token,
+  email_change,
+  email_change_token_new,
+  email_change_token_current,
+  phone_change,
+  phone_change_token,
+  reauthentication_token,
   raw_app_meta_data,
   raw_user_meta_data,
   created_at,
@@ -74,6 +82,14 @@ select
   email,
   crypt('NanoBio@123456', gen_salt('bf')),
   now(),
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
   jsonb_build_object('provider', 'email', 'providers', array['email']),
   jsonb_build_object('full_name', full_name),
   now(),
@@ -86,10 +102,62 @@ set
   email = excluded.email,
   encrypted_password = excluded.encrypted_password,
   email_confirmed_at = coalesce(auth.users.email_confirmed_at, excluded.email_confirmed_at),
+  confirmation_token = coalesce(excluded.confirmation_token, ''),
+  recovery_token = coalesce(excluded.recovery_token, ''),
+  email_change = coalesce(excluded.email_change, ''),
+  email_change_token_new = coalesce(excluded.email_change_token_new, ''),
+  email_change_token_current = coalesce(excluded.email_change_token_current, ''),
+  phone_change = coalesce(excluded.phone_change, ''),
+  phone_change_token = coalesce(excluded.phone_change_token, ''),
+  reauthentication_token = coalesce(excluded.reauthentication_token, ''),
   raw_app_meta_data = excluded.raw_app_meta_data,
   raw_user_meta_data = excluded.raw_user_meta_data,
   updated_at = now(),
   is_anonymous = false;
+
+update auth.users
+set
+  confirmation_token = coalesce(confirmation_token, ''),
+  recovery_token = coalesce(recovery_token, ''),
+  email_change = coalesce(email_change, ''),
+  email_change_token_new = coalesce(email_change_token_new, ''),
+  email_change_token_current = coalesce(email_change_token_current, ''),
+  phone_change = coalesce(phone_change, ''),
+  phone_change_token = coalesce(phone_change_token, ''),
+  reauthentication_token = coalesce(reauthentication_token, '')
+where confirmation_token is null
+   or recovery_token is null
+   or email_change is null
+   or email_change_token_new is null
+   or email_change_token_current is null
+   or phone_change is null
+   or phone_change_token is null
+   or reauthentication_token is null;
+
+do $$
+begin
+  if exists (
+    select 1
+    from auth.users
+    where email in (
+      'dev.free@nanobio.local',
+      'dev.plus@nanobio.local',
+      'dev.family@nanobio.local'
+    )
+      and (
+        confirmation_token is null
+        or recovery_token is null
+        or email_change is null
+        or email_change_token_new is null
+        or email_change_token_current is null
+        or phone_change is null
+        or phone_change_token is null
+        or reauthentication_token is null
+      )
+  ) then
+    raise exception 'DEV_AUTH_SEED_TOKEN_COLUMNS_NULL';
+  end if;
+end $$;
 
 with seed_users as (
   select *

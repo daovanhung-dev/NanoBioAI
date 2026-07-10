@@ -7,6 +7,7 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_rout
 import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_validators.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/services/supabase/auth/supabase_auth_error_translator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseAuthRepository implements AuthRepository {
@@ -231,40 +232,28 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   AuthFailure _mapAuthException(AuthException error) {
-    final message = error.message.toLowerCase();
-    if (message.contains('rate') || error.statusCode == '429') {
-      return const AuthFailure(
-        code: AuthFailureCode.rateLimited,
-        userMessage:
-            'Nabicần chờ một chút trước khi thử lại. Bạn quay lại sau ít phút nhé.',
-      );
-    }
+    final details = SupabaseAuthErrorTranslator.fromAuthException(error);
+    return AuthFailure(
+      code: _failureCodeFor(details.kind),
+      userMessage: details.fullMessage,
+    );
+  }
 
-    if (message.contains('already') || message.contains('registered')) {
-      return const AuthFailure(
-        code: AuthFailureCode.emailAlreadyRegistered,
-        userMessage:
-            'Email này có thể đã được dùng. Bạn thử đăng nhập hoặc đặt lại mật khẩu nhé.',
-      );
-    }
-
-    if (message.contains('invalid') || message.contains('credentials')) {
-      return const AuthFailure(
-        code: AuthFailureCode.invalidCredentials,
-        userMessage:
-            'Email hoặc mật khẩu chưa đúng. Bạn kiểm tra lại giúp Nabinhé.',
-      );
-    }
-
-    if (message.contains('network') || message.contains('timeout')) {
-      return const AuthFailure(
-        code: AuthFailureCode.network,
-        userMessage:
-            'Nabi chưa kết nối được lúc này. Bạn thử lại sau một chút nhé.',
-      );
-    }
-
-    return _genericFailure();
+  AuthFailureCode _failureCodeFor(SupabaseAuthErrorKind kind) {
+    return switch (kind) {
+      SupabaseAuthErrorKind.invalidCredentials =>
+        AuthFailureCode.invalidCredentials,
+      SupabaseAuthErrorKind.emailUnverified => AuthFailureCode.emailUnverified,
+      SupabaseAuthErrorKind.emailAlreadyRegistered =>
+        AuthFailureCode.emailAlreadyRegistered,
+      SupabaseAuthErrorKind.weakPassword => AuthFailureCode.weakPassword,
+      SupabaseAuthErrorKind.rateLimited => AuthFailureCode.rateLimited,
+      SupabaseAuthErrorKind.accountDisabled => AuthFailureCode.accountDisabled,
+      SupabaseAuthErrorKind.network => AuthFailureCode.network,
+      SupabaseAuthErrorKind.configuration => AuthFailureCode.configuration,
+      SupabaseAuthErrorKind.authServer => AuthFailureCode.authServer,
+      SupabaseAuthErrorKind.unknown => AuthFailureCode.unknown,
+    };
   }
 
   AuthFailure _genericFailure([

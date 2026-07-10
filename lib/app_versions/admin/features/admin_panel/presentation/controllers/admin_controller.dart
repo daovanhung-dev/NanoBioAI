@@ -3,6 +3,25 @@ import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_dependencies.dart';
 
+class AdminLoginFailure implements Exception {
+  final String message;
+
+  const AdminLoginFailure._(this.message);
+
+  const AdminLoginFailure.noActiveAdminRole()
+    : this._(
+        'Không có quyền quản trị: tài khoản đăng nhập thành công nhưng chưa có role Admin đang hoạt động.',
+      );
+
+  const AdminLoginFailure.sessionCheckFailed()
+    : this._(
+        'Không kiểm tra được quyền quản trị: đăng nhập Auth thành công nhưng RPC get_my_admin_session đang lỗi.',
+      );
+
+  @override
+  String toString() => message;
+}
+
 class AdminPanelState {
   final AdminSession session;
   final AdminPanelSection section;
@@ -60,12 +79,33 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
   Future<void> signInWithEmail({
     required String email,
     required String password,
-  }) {
-    return _repository.signInWithEmail(email: email, password: password);
+  }) async {
+    await _repository.signInWithEmail(email: email, password: password);
+
+    AdminSession session;
+    try {
+      session = await _repository.fetchSession();
+    } catch (_) {
+      await _signOutSilently();
+      throw const AdminLoginFailure.sessionCheckFailed();
+    }
+
+    if (!session.isAdmin) {
+      await _signOutSilently();
+      throw const AdminLoginFailure.noActiveAdminRole();
+    }
   }
 
   Future<void> signOut() {
     return _repository.signOut();
+  }
+
+  Future<void> _signOutSilently() async {
+    try {
+      await _repository.signOut();
+    } catch (_) {
+      // Keep the original login failure visible to the user.
+    }
   }
 
   Future<void> selectSection(AdminPanelSection section) async {

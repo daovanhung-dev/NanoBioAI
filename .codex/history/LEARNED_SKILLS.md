@@ -7,7 +7,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - coding - Coding: 18 worklog(s)
 - docs-context - Context and docs update: 18 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
-- bugfix - Direct bugfix: 7 worklog(s)
+- bugfix - Direct bugfix: 8 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - test - Test and verification: 3 worklog(s)
 - find-issues - Review and find issues: 1 worklog(s)
@@ -25,10 +25,10 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - .codex: 2
 - M08 HEALTH_SCORE_HABITS.: 1
 - M02 PERSONAL_SCHEDULE_AI: 1
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
-- M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
-- Admin app, Supabase Admin, Sale direct-only: 1
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
+- Admin dashboard / Supabase RPC: 1
+- lib/sale_referral, lib/services/supabase/sale,: 1
 
 ## Reusable Project Skills
 

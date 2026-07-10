@@ -2,23 +2,24 @@
 
 - Canonical key: bugfix
 - Workflow: .codex/workflows/bugfix.md
-- Generated from 7 worklog(s).
+- Generated from 8 worklog(s).
 
 ## When To Read
 
-- Historical task type: bugfix (4)
+- Historical task type: bugfix (5)
 - Historical task type: fix (1)
 - Historical task type: fix flow dữ liệu (1)
 - Historical task type: fix UI/copy (1)
 
 ## Common Modules
 
-- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
 - Admin dashboard / Supabase RPC: 1
+- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
+- v2 authentication, admin login, Supabase dev seed: 1
 - v2 authentication: 1
-- v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.: 1
-- AI chat: 1
 - lib/app_versions/v1/features/**/presentation: 1
+- AI chat: 1
+- v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.: 1
 - Dashboard, Lifestyle Schedule, Meal Plan, Nutrition: 1
 
 ## Work Pattern
@@ -44,3 +45,4 @@
 - [Worklog - Fix health scoring zero flow](../../docs/worklog/2026-06-22/008-worklog-fix-health-scoring-flow.md) - v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.
 - [Worklog - Admin dashboard login blocker](../../docs/worklog/2026-06-29/006-worklog-admin-dashboard-login.md) - Admin dashboard / Supabase RPC
 - [Worklog - Auth validation null](../../docs/worklog/2026-07-09/001-worklog-auth-validation-null.md) - v2 authentication
+- [Worklog - Fix auth login sync failure](../../docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md) - v2 authentication, admin login, Supabase dev seed
