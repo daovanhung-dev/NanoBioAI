@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/data/datasources/sqlite_user_data_sync_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/data/datasource/onboarding_local_datasource.dart';
@@ -170,6 +171,40 @@ void main() {
         expect(snapshot.tables['health_profiles'], hasLength(1));
       },
     );
+
+    test(
+      'does not emit raw onboarding PII or snapshots in datasource logs',
+      () async {
+        final logs = await _captureDebugPrint(() async {
+          await datasource.saveOnboarding(
+            _entity(
+              email: 'secret@example.com',
+              allergyName: 'private allergy',
+              treatmentName: 'private treatment',
+              medicationName: 'private medication',
+              treatmentNote: 'private note',
+            ),
+          );
+        });
+
+        final output = logs.join('\n');
+        for (final forbidden in const [
+          'secret@example.com',
+          '0900000000',
+          'Nguyen Van Bao',
+          'private allergy',
+          'private treatment',
+          'private medication',
+          'private note',
+          'private concern',
+          'ONBOARDING SAVED TO SQLITE',
+          'snapshot',
+          'User ID',
+        ]) {
+          expect(output, isNot(contains(forbidden)));
+        }
+      },
+    );
   });
 }
 
@@ -227,6 +262,23 @@ Future<List<Map<String, Object?>>> _rowsForUser(
   String userId,
 ) {
   return db.query(table, where: 'user_id = ?', whereArgs: [userId]);
+}
+
+Future<List<String>> _captureDebugPrint(Future<void> Function() action) async {
+  final messages = <String>[];
+  final previousDebugPrint = debugPrint;
+
+  debugPrint = (String? message, {int? wrapWidth}) {
+    if (message != null) messages.add(message);
+  };
+
+  try {
+    await action();
+  } finally {
+    debugPrint = previousDebugPrint;
+  }
+
+  return messages;
 }
 
 OnboardingEntity _entity({

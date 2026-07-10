@@ -65,7 +65,7 @@ class AIChatController extends Notifier<AIChatState> {
       isLoading: true,
       error: null,
     );
-    ref.read(NabiContextProvider.notifier).setChatTyping(typing: true);
+    ref.read(nabiContextProvider.notifier).setChatTyping(typing: true);
 
     try {
       final aiMessage = await _repository.sendMessage(trimmed);
@@ -74,10 +74,10 @@ class AIChatController extends Notifier<AIChatState> {
         messages: [...state.messages, aiMessage],
         isLoading: false,
       );
-      ref.read(NabiContextProvider.notifier).setChatAnswerReady();
+      ref.read(nabiContextProvider.notifier).setChatAnswerReady();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: _messageForSendError(e));
-      ref.read(NabiContextProvider.notifier).setChatFailed();
+      ref.read(nabiContextProvider.notifier).setChatFailed();
     }
   }
 
@@ -85,7 +85,7 @@ class AIChatController extends Notifier<AIChatState> {
     try {
       await _repository.clearHistory();
       state = const AIChatState();
-      ref.read(NabiContextProvider.notifier).clearTransientState();
+      ref.read(nabiContextProvider.notifier).clearTransientState();
     } catch (e) {
       state = state.copyWith(error: 'Không thể xóa lịch sử chat');
     }

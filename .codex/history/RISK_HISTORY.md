@@ -406,3 +406,26 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - Da fix: Auth success khong con bi bien thanh login failure khi post-auth sync/RPC loi; seed Supabase local khong can update thu cong token null.
 - docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - Chua fix: Khong thay doi ha tang Supabase neu PostgREST bi stop/exclude; app chi xu ly mem phan sync sau Auth.
 - docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md :: - Can kiem tra tiep: Sandbox/staging Supabase theo risk NB-RISK-001 neu muon claim production-ready.
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: - Yeu cau goc: Tim va fix no ky thuat/bug an trong toan du an; chon todo da co ve onboarding sensitive logging.
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: - Doc checklist no ky thuat, issue va todo `onboarding-sensitive-snapshot-logging`.
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: - Cap nhat checklist, todo va them fixbug doc.
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: - `docs/todo/onboarding-sensitive-snapshot-logging/001-todo-onboarding-sensitive-snapshot-logging.md` - sua - tick checklist va link ket qua.
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: - `docs/todo/onboarding-sensitive-snapshot-logging/001-todo-onboarding-sensitive-snapshot-logging.md`
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: - Chua fix: Mot so module khac van co the truyen raw error vao `AppLogger.error` trong debug/test build.
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: - Can kiem tra tiep: AI raw payload logging va P0 `.env` tracking/asset packaging trong checklist no ky thuat.
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: - Hoan thanh: Todo onboarding sensitive logging.
+- docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md :: - Chat luong dau ra: tot - fix nho, dung issue/todo, co regression test va evidence.
+- docs/worklog/2026-07-10/003-worklog-env-tracked-and-bundled.md :: - Cap nhat `.env.example`, checklist, issue/todo/fixbug docs.
+- docs/worklog/2026-07-10/003-worklog-env-tracked-and-bundled.md :: - `docs/todo/env-tracked-and-bundled/001-todo-env-tracked-and-bundled.md` - tao.
+- docs/worklog/2026-07-10/003-worklog-env-tracked-and-bundled.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-10/003-worklog-env-tracked-and-bundled.md :: - Chua fix: Chua rotate key; neu `.env` tung co key that trong lich su git, can rotate ngoai repo.
+- docs/worklog/2026-07-10/003-worklog-env-tracked-and-bundled.md :: - Can kiem tra tiep: Full app run can duoc truyen `SUPABASE_URL` va `SUPABASE_ANON_KEY` bang `--dart-define`.
+- docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: `flutter analyze` fail.
+- docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: - Cap nhat issue/todo/checklist/fixbug docs cho analyzer gate.
+- docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: - `docs/todo/release-analyze-red-290-issues/001-todo-release-analyze-red-290-issues.md`
+- docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: - Chua fix: Full `flutter test` suite van la debt rieng trong checklist.
+- docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: - Chua fix: Format hygiene toan repo van can kiem chung/xu ly bang todo rieng.
+- docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: - Hoan thanh: Debt P1 release analyzer fail va debt Nabi import case mismatch.
+- docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: fail hoac format hygiene tuy theo blast radius.

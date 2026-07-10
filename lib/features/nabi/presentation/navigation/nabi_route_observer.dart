@@ -41,7 +41,7 @@ class NabiRouteObserver extends NavigatorObserver {
 NabiRouteObserver createNabiRouteObserver(Ref ref) {
   return NabiRouteObserver((location) {
     ref
-        .read(NabiControllerProvider.notifier)
+        .read(nabiControllerProvider.notifier)
         .setContext(NabiRouteMapper.fromLocation(location));
   });
 }

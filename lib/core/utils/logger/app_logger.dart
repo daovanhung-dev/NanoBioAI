@@ -12,7 +12,7 @@ import 'package:flutter/foundation.dart';
 class AppLogger {
   AppLogger._();
 
-  static const _enableLogging = true;
+  static const _enableLogging = kDebugMode;
 
   /// Log informational messages
   /// Format: [TAG][INFO] message

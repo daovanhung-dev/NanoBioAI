@@ -42,35 +42,35 @@ mixin NabiPageMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
 
   void _apply() {
     if (!mounted) return;
-    ref.read(NabiContextProvider.notifier).update((_) => nabiContext);
+    ref.read(nabiContextProvider.notifier).update((_) => nabiContext);
   }
 }
 
 /// Extension tiện ích trên [WidgetRef] để cập nhật Nabi nhanh.
 extension NabiRefExtension on WidgetRef {
-  NabiContextNotifier get Nabi => read(NabiContextProvider.notifier);
+  NabiContextNotifier get nabi => read(nabiContextProvider.notifier);
 
   /// Đặt route cho Nabi ngay lập tức.
-  void NabiSetRoute(String route) => Nabi.setRoute(route);
+  void setNabiRoute(String route) => nabi.setRoute(route);
 
   /// Nabi bắt đầu hoặc dừng chat typing.
-  void NabiChatTyping({required bool typing}) =>
-      Nabi.setChatTyping(typing: typing);
+  void setNabiChatTyping({required bool typing}) =>
+      nabi.setChatTyping(typing: typing);
 
   /// Nabi có câu trả lời rồi.
-  void NabiChatReady() => Nabi.setChatAnswerReady();
+  void setNabiChatReady() => nabi.setChatAnswerReady();
 
   /// Người dùng vừa hoàn thành task.
-  void NabiTaskDone({double? progress}) =>
-      Nabi.notifyTaskCompleted(newProgress: progress);
+  void setNabiTaskDone({double? progress}) =>
+      nabi.notifyTaskCompleted(newProgress: progress);
 
   /// Người dùng bỏ qua task.
-  void NabiTaskSkip() => Nabi.notifyTaskSkipped();
+  void setNabiTaskSkip() => nabi.notifyTaskSkipped();
 
   /// Force một trạng thái tạm thời.
-  void NabiForce(NabiVisualState state) =>
-      Nabi.update((ctx) => ctx.copyWith(forceState: state));
+  void forceNabiState(NabiVisualState state) =>
+      nabi.update((ctx) => ctx.copyWith(forceState: state));
 
   /// Xoá trạng thái tạm thời.
-  void NabiClearTransient() => Nabi.clearTransientState();
+  void clearNabiTransient() => nabi.clearTransientState();
 }

@@ -77,7 +77,7 @@ class _NabiCharacterState extends State<NabiCharacter>
               primaryColor: primary,
               secondaryColor: secondary,
               surfaceColor: scheme.surface,
-              outlineColor: scheme.onSurface.withOpacity(0.78),
+              outlineColor: scheme.onSurface.withValues(alpha: 0.78),
             ),
           );
         },
@@ -138,7 +138,7 @@ class _NabiCharacterPainter extends CustomPainter {
         width: 50 * unit,
         height: 9 * unit,
       ),
-      Paint()..color = Colors.black.withOpacity(0.13),
+      Paint()..color = Colors.black.withValues(alpha: 0.13),
     );
 
     _drawBody(canvas, unit, sway);
@@ -153,7 +153,10 @@ class _NabiCharacterPainter extends CustomPainter {
       Rect.fromLTWH(25 * u + sway * 0.3, 63 * u, 50 * u, 28 * u),
       Radius.circular(17 * u),
     );
-    canvas.drawRRect(body, Paint()..color = primaryColor.withOpacity(0.94));
+    canvas.drawRRect(
+      body,
+      Paint()..color = primaryColor.withValues(alpha: 0.94),
+    );
 
     // Áo khoác sáng gợi chất "đồng hành sức khỏe" nhưng vẫn tối giản.
     final coat = Path()
@@ -162,10 +165,13 @@ class _NabiCharacterPainter extends CustomPainter {
       ..lineTo(70 * u + sway * 0.3, 91 * u)
       ..lineTo(30 * u + sway * 0.3, 91 * u)
       ..close();
-    canvas.drawPath(coat, Paint()..color = surfaceColor.withOpacity(0.94));
+    canvas.drawPath(
+      coat,
+      Paint()..color = surfaceColor.withValues(alpha: 0.94),
+    );
 
     final seamPaint = Paint()
-      ..color = primaryColor.withOpacity(0.38)
+      ..color = primaryColor.withValues(alpha: 0.38)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.3 * u
       ..strokeCap = StrokeCap.round;
@@ -186,7 +192,7 @@ class _NabiCharacterPainter extends CustomPainter {
         width: 64 * u,
         height: 61 * u,
       ),
-      Paint()..color = primaryColor.withOpacity(0.95),
+      Paint()..color = primaryColor.withValues(alpha: 0.95),
     );
 
     // Tai + khuôn mặt.
@@ -225,7 +231,7 @@ class _NabiCharacterPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(69.2 * u + sway, 22.3 * u),
       1.4 * u,
-      Paint()..color = Colors.white.withOpacity(0.85),
+      Paint()..color = Colors.white.withValues(alpha: 0.85),
     );
   }
 
@@ -245,7 +251,7 @@ class _NabiCharacterPainter extends CustomPainter {
     if (emotion == NabiEmotion.happy ||
         emotion == NabiEmotion.celebrating ||
         emotion == NabiEmotion.encouraging) {
-      final blush = Paint()..color = secondaryColor.withOpacity(0.20);
+      final blush = Paint()..color = secondaryColor.withValues(alpha: 0.20);
       canvas.drawOval(
         Rect.fromCenter(
           center: Offset(31 * u + sway, 50 * u),
@@ -344,7 +350,8 @@ class _NabiCharacterPainter extends CustomPainter {
     final openHeight =
         (emotion == NabiEmotion.listening ? 10.5 : 8.2) * u * eyeScale;
     final eyePaint = Paint()..color = outlineColor;
-    final highlightPaint = Paint()..color = Colors.white.withOpacity(0.92);
+    final highlightPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.92);
 
     final leftRect = Rect.fromCenter(
       center: left,
@@ -446,7 +453,7 @@ class _NabiCharacterPainter extends CustomPainter {
           canvas.drawCircle(
             Offset((73 + i * 5) * u + sway, (15 - i * 2) * u),
             (1.8 + i * 0.2) * u,
-            Paint()..color = secondaryColor.withOpacity(0.74),
+            Paint()..color = secondaryColor.withValues(alpha: 0.74),
           );
         }
         break;
@@ -470,17 +477,17 @@ class _NabiCharacterPainter extends CustomPainter {
           canvas,
           Offset(83 * u + sway, 24 * u),
           4.3 * u,
-          secondaryColor.withOpacity(0.92),
+          secondaryColor.withValues(alpha: 0.92),
         );
         break;
       case NabiEmotion.concerned:
         canvas.drawCircle(
           Offset(82 * u + sway, 26 * u),
           4 * u,
-          Paint()..color = primaryColor.withOpacity(0.16),
+          Paint()..color = primaryColor.withValues(alpha: 0.16),
         );
         final alertPaint = Paint()
-          ..color = primaryColor.withOpacity(0.7)
+          ..color = primaryColor.withValues(alpha: 0.7)
           ..strokeWidth = 1.1 * u;
         canvas.drawLine(
           Offset(82 * u + sway, 24 * u),
@@ -490,7 +497,7 @@ class _NabiCharacterPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(82 * u + sway, 29 * u),
           0.7 * u,
-          Paint()..color = primaryColor.withOpacity(0.7),
+          Paint()..color = primaryColor.withValues(alpha: 0.7),
         );
         break;
       case NabiEmotion.sleepy:
@@ -498,7 +505,7 @@ class _NabiCharacterPainter extends CustomPainter {
           canvas,
           Offset(76 * u + sway, 19 * u),
           5 * u,
-          outlineColor.withOpacity(0.66),
+          outlineColor.withValues(alpha: 0.66),
         );
         break;
       default:

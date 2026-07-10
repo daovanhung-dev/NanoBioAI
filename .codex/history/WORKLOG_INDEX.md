@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 64
+- Total worklogs: 67
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -73,3 +73,6 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-09 | coding | coding | v1 lifestyle schedule, dashboard, localdb, cloud sync, Supabase docs | [Worklog - Daily schedule proof and score](../../docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md) |
 | 2026-07-09 | code + asset integration + test | test | lib/app_versions/v1/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1 | [Worklog - Nabi mascot 30fps](../../docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md) |
 | 2026-07-10 | bugfix | bugfix | v2 authentication, admin login, Supabase dev seed | [Worklog - Fix auth login sync failure](../../docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md) |
+| 2026-07-10 | fix-issues | fix-issues | v1 onboarding, AppLogger | [Worklog - Fix onboarding sensitive snapshot logging](../../docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md) |
+| 2026-07-10 | bugfix | bugfix | config/env, app entrypoints, auth/AI env readers | [Worklog - Fix env tracked and bundled](../../docs/worklog/2026-07-10/003-worklog-env-tracked-and-bundled.md) |
+| 2026-07-10 | bugfix | bugfix | Nabi providers/UI, onboarding UI, shared Nabi widgets, release | [Worklog - Release analyze cleanup](../../docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md) |

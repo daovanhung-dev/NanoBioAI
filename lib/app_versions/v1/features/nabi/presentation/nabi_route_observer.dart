@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/nabi_provider.dart';
 
-/// [NavigatorObserver] tự động cập nhật [NabiContextProvider] khi route thay đổi.
+/// [NavigatorObserver] tự động cập nhật [nabiContextProvider] khi route thay đổi.
 ///
 /// Đăng ký vào GoRouter:
 /// ```dart
@@ -28,9 +28,9 @@ class NabiRouteObserver extends NavigatorObserver {
     if (routeName == null) return;
     try {
       if (_ref != null) {
-        _ref.read(NabiContextProvider.notifier).setRoute(routeName);
+        _ref.read(nabiContextProvider.notifier).setRoute(routeName);
       } else {
-        _container?.read(NabiContextProvider.notifier).setRoute(routeName);
+        _container?.read(nabiContextProvider.notifier).setRoute(routeName);
       }
     } catch (_) {
       // Observer có thể bị gọi trước provider được khởi tạo – bỏ qua

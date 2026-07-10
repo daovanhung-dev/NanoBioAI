@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/core/config/app_env.dart';
 
 final dioProvider = Provider<Dio>((ref) {
   return Dio(
     BaseOptions(
-      baseUrl: dotenv.env['OPENAI_BASE_URL']!,
+      baseUrl: AppEnv.requiredString('OPENAI_BASE_URL'),
 
       connectTimeout: const Duration(seconds: 30),
 

@@ -1,6 +1,6 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_commands.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_profile.dart';
+import 'package:nano_app/core/config/app_env.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseAuthRemoteDatasource {
@@ -115,8 +115,6 @@ class SupabaseAuthRemoteDatasource {
   }
 
   static String? _env(String key) {
-    if (!dotenv.isInitialized) return null;
-    final value = dotenv.env[key]?.trim();
-    return value == null || value.isEmpty ? null : value;
+    return AppEnv.maybeString(key);
   }
 }

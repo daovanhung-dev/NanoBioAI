@@ -2,14 +2,15 @@
 
 - Canonical key: fix-issues
 - Workflow: .codex/workflows/fix-issues.md
-- Generated from 1 worklog(s).
+- Generated from 2 worklog(s).
 
 ## When To Read
 
-- Historical task type: fix-issues (1)
+- Historical task type: fix-issues (2)
 
 ## Common Modules
 
+- v1 onboarding, AppLogger: 1
 - AI Chat service: 1
 
 ## Work Pattern
@@ -29,3 +30,4 @@
 ## Source Worklogs
 
 - [Worklog - Fix AI Chat dotenv uninitialized](../../docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md) - AI Chat service
+- [Worklog - Fix onboarding sensitive snapshot logging](../../docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md) - v1 onboarding, AppLogger

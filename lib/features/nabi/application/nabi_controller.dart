@@ -62,6 +62,6 @@ class NabiController extends Notifier<NabiState> {
   }
 }
 
-final NabiControllerProvider = NotifierProvider<NabiController, NabiState>(
+final nabiControllerProvider = NotifierProvider<NabiController, NabiState>(
   NabiController.new,
 );

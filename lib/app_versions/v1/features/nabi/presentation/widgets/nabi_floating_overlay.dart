@@ -123,7 +123,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
 
   void _handleTap() {
     HapticFeedback.mediumImpact();
-    ref.read(NabiContextProvider.notifier).setRoute(V1RoutePaths.aiChat);
+    ref.read(nabiContextProvider.notifier).setRoute(V1RoutePaths.aiChat);
     if (widget.onTap != null) {
       widget.onTap!();
     } else {
@@ -133,7 +133,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final visualState = ref.watch(NabiVisualStateProvider);
+    final visualState = ref.watch(nabiVisualStateProvider);
     final animationType = NabiVisualAnimationMapper.fromVisualState(
       visualState,
     );
@@ -260,7 +260,7 @@ class _NabiLabel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(NabiVisualStateProvider);
+    final state = ref.watch(nabiVisualStateProvider);
 
     final labelText = switch (state) {
       NabiVisualState.chatTyping ||

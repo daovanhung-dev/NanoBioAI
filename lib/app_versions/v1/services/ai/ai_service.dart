@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
+import 'package:nano_app/core/config/app_env.dart';
 import 'package:nano_app/core/storage/localdb/datasources/ai_catalog_local_datasource.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
@@ -90,9 +90,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
 
     final apiKey =
         _cleanEnv(apiKeyOverride) ??
-        (_textGenerator == null
-            ? _cleanEnv(dotenv.env['GEMINI_API_KEY'])
-            : null);
+        (_textGenerator == null ? AppEnv.maybeString('GEMINI_API_KEY') : null);
     if (_textGenerator == null && (apiKey == null || apiKey.isEmpty)) {
       throw Exception('Không tìm thấy GEMINI_API_KEY');
     }
@@ -110,7 +108,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
                 )
               : null,
           overflowModelsCsv: _textGenerator == null
-              ? _cleanEnv(dotenv.env['GEMINI_PLAN_OVERFLOW_MODELS'])
+              ? AppEnv.maybeString('GEMINI_PLAN_OVERFLOW_MODELS')
               : null,
         );
     AITraceLogger.info(
@@ -1071,11 +1069,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
   }
 
   static String? _envWithLegacy(String key, String legacyKey) {
-    final value = dotenv.env.containsKey(key)
-        ? dotenv.env[key]
-        : dotenv.env[legacyKey];
-
-    return _cleanEnv(value);
+    return AppEnv.maybeStringWithLegacy(key, legacyKey);
   }
 
   static String? _cleanEnv(String? value) {

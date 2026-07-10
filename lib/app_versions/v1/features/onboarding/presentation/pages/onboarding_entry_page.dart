@@ -344,10 +344,13 @@ class _EntryLayout {
     final isVeryNarrow = width < 360;
     final isShort = height < 650;
     final isLandscape = width > height;
+    final isShortLandscape = isLandscape && height < 650;
     final isCompact = isVeryNarrow || isShort || (isLandscape && height < 560);
     final isWide = width >= 760;
     final heroBaseHeight = isVeryNarrow
-        ? 198.0
+        ? 188.0
+        : isShortLandscape
+        ? 148.0
         : isLandscape
         ? 204.0
         : isWide
@@ -374,8 +377,8 @@ class _EntryLayout {
           : isCompact
           ? 14
           : 21,
-      topGap: isCompact ? 12 : 20,
-      bottomPadding: isCompact ? 18 : 32,
+      topGap: isCompact ? 10 : 20,
+      bottomPadding: isCompact ? 16 : 32,
       contentMaxWidth: width >= 1200
           ? 1000
           : width >= 760
@@ -386,7 +389,7 @@ class _EntryLayout {
       heroHeight: math
           .min(heroBaseHeight + (normalizedTextScale - 1) * 42, 276)
           .toDouble(),
-      sectionGap: isCompact ? 12 : 14,
+      sectionGap: isCompact ? 10 : 14,
       cardGap: width >= 760 ? 16 : 12,
     );
   }
@@ -1107,8 +1110,9 @@ class _EntryPathCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardPadding = compact ? 14.0 : 16.0;
-    final iconSize = compact ? 40.0 : 43.0;
+    final cardPadding = compact ? 12.0 : 16.0;
+    final iconSize = compact ? 36.0 : 43.0;
+    final showBenefits = !compact;
 
     return Semantics(
       container: true,
@@ -1184,26 +1188,28 @@ class _EntryPathCard extends StatelessWidget {
                 height: 1.43,
               ),
             ),
-            SizedBox(height: compact ? 12 : 14),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return Wrap(
-                  spacing: 7,
-                  runSpacing: 7,
-                  children: benefits
-                      .map(
-                        (benefit) => _BenefitPill(
-                          icon: benefit.icon,
-                          label: benefit.label,
-                          color: accent,
-                          maxWidth: constraints.maxWidth,
-                        ),
-                      )
-                      .toList(growable: false),
-                );
-              },
-            ),
-            SizedBox(height: compact ? 14 : 16),
+            if (showBenefits) ...[
+              const SizedBox(height: 14),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return Wrap(
+                    spacing: 7,
+                    runSpacing: 7,
+                    children: benefits
+                        .map(
+                          (benefit) => _BenefitPill(
+                            icon: benefit.icon,
+                            label: benefit.label,
+                            color: accent,
+                            maxWidth: constraints.maxWidth,
+                          ),
+                        )
+                        .toList(growable: false),
+                  );
+                },
+              ),
+            ],
+            SizedBox(height: compact ? 12 : 16),
             SizedBox(width: double.infinity, child: action),
           ],
         ),

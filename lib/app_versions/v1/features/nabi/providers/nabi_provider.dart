@@ -8,16 +8,16 @@ import '../domain/nabi_visual_state.dart';
 ///
 /// Bất kỳ trang nào cũng có thể cập nhật context thông qua:
 ///   ```dart
-///   ref.read(NabiContextProvider.notifier).update((ctx) => ctx.copyWith(...));
+///   ref.read(nabiContextProvider.notifier).update((ctx) => ctx.copyWith(...));
 ///   ```
-final NabiContextProvider = NotifierProvider<NabiContextNotifier, NabiContext>(
+final nabiContextProvider = NotifierProvider<NabiContextNotifier, NabiContext>(
   NabiContextNotifier.new,
 );
 
 /// Provider tiện ích – trả về [NabiVisualState] đã được resolve.
 /// Widget chỉ cần watch provider này.
-final NabiVisualStateProvider = Provider<NabiVisualState>((ref) {
-  final ctx = ref.watch(NabiContextProvider);
+final nabiVisualStateProvider = Provider<NabiVisualState>((ref) {
+  final ctx = ref.watch(nabiContextProvider);
   return NabiStateResolver.resolve(ctx);
 });
 

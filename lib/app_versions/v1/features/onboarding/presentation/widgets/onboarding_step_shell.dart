@@ -64,9 +64,9 @@ class OnboardingStepShell extends StatelessWidget {
               child: _OnboardingBody(
                 title: title,
                 subtitle: subtitle,
-                child: child,
                 isScrollable: isScrollable,
                 layout: layout,
+                child: child,
               ),
             ),
             if (footer != null || onNext != null)

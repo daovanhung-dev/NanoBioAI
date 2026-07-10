@@ -6,29 +6,29 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 - coding - Coding: 18 worklog(s)
 - docs-context - Context and docs update: 18 worklog(s)
+- bugfix - Direct bugfix: 10 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
-- bugfix - Direct bugfix: 8 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - test - Test and verification: 3 worklog(s)
-- find-issues - Review and find issues: 1 worklog(s)
+- fix-issues - Fix documented issue: 2 worklog(s)
 - create-todo - Create todo docs: 1 worklog(s)
-- fix-issues - Fix documented issue: 1 worklog(s)
+- find-issues - Review and find issues: 1 worklog(s)
 - refactor-scaffold - Scaffold refactor: 1 worklog(s)
 
 ## Frequent Modules
 
 - unknown: 6
-- authentication: 2
-- docs/issues, docs/todo: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
-- docs/DD M01-M19: 2
+- docs/issues, docs/todo: 2
 - .codex: 2
-- M08 HEALTH_SCORE_HABITS.: 1
-- M02 PERSONAL_SCHEDULE_AI: 1
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
+- authentication: 2
+- docs/DD M01-M19: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
-- Admin dashboard / Supabase RPC: 1
 - lib/sale_referral, lib/services/supabase/sale,: 1
+- Admin dashboard / Supabase RPC: 1
+- M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox: 1
+- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
+- M08 HEALTH_SCORE_HABITS.: 1
 
 ## Reusable Project Skills
 

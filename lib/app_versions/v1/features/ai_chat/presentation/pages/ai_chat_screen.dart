@@ -31,13 +31,13 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ref.read(NabiContextProvider.notifier).setRoute(V1RoutePaths.aiChat);
+      ref.read(nabiContextProvider.notifier).setRoute(V1RoutePaths.aiChat);
     });
   }
 
   @override
   void dispose() {
-    ref.read(NabiContextProvider.notifier).setChatTyping(typing: false);
+    ref.read(nabiContextProvider.notifier).setChatTyping(typing: false);
     _textController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();

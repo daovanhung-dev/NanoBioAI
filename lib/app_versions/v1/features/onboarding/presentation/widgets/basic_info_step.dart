@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/constants/onboarding_options.dart'
-    as OnboardingCatalog;
+    as onboarding_catalog;
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/nabi_onboarding_experience.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
@@ -24,15 +24,6 @@ class BasicInfoStep extends ConsumerWidget {
     final bmi = _BmiReading.from(
       heightCm: state.heightCm,
       weightKg: state.weightKg,
-    );
-
-    final completedFields = _countCompletedFields(
-      fullName: state.fullName,
-      birthYear: state.birthYear,
-      gender: state.gender,
-      heightCm: state.heightCm,
-      weightKg: state.weightKg,
-      occupation: state.occupation,
     );
 
     return OnboardingStepShell(
@@ -124,7 +115,7 @@ class BasicInfoStep extends ConsumerWidget {
                   label: 'Nhóm công việc / sinh hoạt *',
                   hint: 'Chọn nhóm gần đúng nhất',
                   icon: Icons.work_outline_rounded,
-                  options: OnboardingCatalog.occupations,
+                  options: onboarding_catalog.occupations,
                   selectedCode: state.occupation,
                   onSelected: controller.updateOccupation,
                 ),
@@ -140,12 +131,6 @@ class BasicInfoStep extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // _ProfileProgressBanner(
-                  //   fullName: state.fullName,
-                  //   completedFields: completedFields,
-                  //   totalFields: 8,
-                  //   compact: layout.isCompact,
-                  // ),
                   SizedBox(height: layout.sectionGap),
 
                   _SectionCard(
@@ -181,7 +166,7 @@ class BasicInfoStep extends ConsumerWidget {
                             label: 'Giới tính *',
                             hint: 'Chọn giới tính',
                             icon: Icons.person_outline_rounded,
-                            options: OnboardingCatalog.genders,
+                            options: onboarding_catalog.genders,
                             selectedCode: state.gender,
                             onSelected: controller.updateGender,
                           ),
@@ -247,181 +232,6 @@ class _BasicInfoLayout {
       innerGap: isCompact ? 12 : 14,
       fieldGap: isCompact ? 10 : 12,
       desktopCardGap: 16,
-    );
-  }
-}
-
-class _ProfileProgressBanner extends StatelessWidget {
-  final String fullName;
-  final int completedFields;
-  final int totalFields;
-  final bool compact;
-
-  const _ProfileProgressBanner({
-    required this.fullName,
-    required this.completedFields,
-    required this.totalFields,
-    required this.compact,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = totalFields == 0
-        ? 0.0
-        : (completedFields / totalFields).clamp(0.0, 1.0).toDouble();
-
-    final shortName = _getShortName(fullName);
-
-    return Container(
-      padding: EdgeInsets.all(compact ? 14 : 17),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(compact ? 22 : 26),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [NabiPalette.violet, NabiPalette.royalBlue],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: NabiPalette.violet.withValues(alpha: 0.22),
-            blurRadius: 26,
-            offset: const Offset(0, 13),
-          ),
-        ],
-      ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            top: -52,
-            right: -34,
-            child: Container(
-              width: 138,
-              height: 138,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 48,
-            bottom: -78,
-            child: Container(
-              width: 154,
-              height: 154,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: NabiPalette.cyan.withValues(alpha: 0.16),
-              ),
-            ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _ProgressRing(progress: progress, compact: compact),
-              SizedBox(width: compact ? 12 : 15),
-              //  Expanded(
-              //     child: Column(
-              //       crossAxisAlignment: CrossAxisAlignment.start,
-              //       children: [
-              //         Text(
-              //           shortName == null
-              //               ? 'Hồ sơ sức khỏe của bạn'
-              //                : 'Rất vui được gặp bạn, $shortName',
-              //           style: TextStyle(
-              //             color: Colors.white,
-              //             fontSize: compact ? 15 : 17,
-              //             height: 1.15,
-              //             fontWeight: FontWeight.w900,
-              //             letterSpacing: -0.2,
-              //           ),
-              //         ),
-              //         SizedBox(height: compact ? 4 : 6),
-              //         Text(
-              //           completedFields == 0
-              //               ? 'Bắt đầu với vài thông tin đơn giản nhé.'
-              //               : 'Bạn đã hoàn thành ${completedFields - 1}/$totalFields thông tin cần thiết.',
-              //           style: TextStyle(
-              //             color: Colors.white.withValues(alpha: 0.84),
-              //             fontSize: compact ? 11.5 : 12.5,
-              //             height: 1.35,
-              //             fontWeight: FontWeight.w500,
-              //           ),
-              //         ),
-              //         SizedBox(height: compact ? 10 : 12),
-              //         TweenAnimationBuilder<double>(
-              //           tween: Tween<double>(begin: 0, end: progress),
-              //           duration: const Duration(milliseconds: 550),
-              //           curve: Curves.easeOutCubic,
-              //           builder: (context, value, _) {
-              //             return ClipRRect(
-              //               borderRadius: BorderRadius.circular(100),
-              //               child: LinearProgressIndicator(
-              //                 value: value,
-              //                 minHeight: compact ? 5 : 6,
-              //                 backgroundColor: Colors.white.withValues(
-              //                   alpha: 0.18,
-              //                 ),
-              //                 valueColor: const AlwaysStoppedAnimation<Color>(
-              //                   Colors.white,
-              //                 ),
-              //               ),
-              //             );
-              //           },
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProgressRing extends StatelessWidget {
-  final double progress;
-  final bool compact;
-
-  const _ProgressRing({required this.progress, required this.compact});
-
-  @override
-  Widget build(BuildContext context) {
-    final size = compact ? 52.0 : 60.0;
-
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0, end: progress),
-      duration: const Duration(milliseconds: 650),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, _) {
-        return SizedBox(
-          width: size,
-          height: size,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: size,
-                height: size,
-                child: CircularProgressIndicator(
-                  value: value,
-                  strokeWidth: compact ? 4.5 : 5,
-                  strokeCap: StrokeCap.round,
-                  backgroundColor: Colors.white.withValues(alpha: 0.18),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              Icon(
-                Icons.auto_awesome_rounded,
-                color: Colors.white,
-                size: compact ? 21 : 24,
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
@@ -652,7 +462,7 @@ class _BirthYearField extends StatelessWidget {
         _FieldLabel(label: 'Năm sinh', required: true),
         const SizedBox(height: 6),
         DropdownButtonFormField<int>(
-          value: effectiveValue,
+          initialValue: effectiveValue,
           isExpanded: true,
           icon: const Icon(
             Icons.keyboard_arrow_down_rounded,
@@ -984,34 +794,4 @@ class _BmiReading {
 
     return 'Chỉ số hiện cao hơn khoảng tham chiếu thông thường.';
   }
-}
-
-int _countCompletedFields({
-  required String fullName,
-  required int birthYear,
-  required String? gender,
-  required double heightCm,
-  required double weightKg,
-  required String? occupation,
-}) {
-  var count = 0;
-
-  if (fullName.trim().isNotEmpty) count++;
-  if (birthYear > 1900) count++;
-  if ((gender ?? '').trim().isNotEmpty) count++;
-  if (heightCm > 0) count++;
-  if (weightKg > 0) count++;
-  if ((occupation ?? '').trim().isNotEmpty) count++;
-
-  return count;
-}
-
-String? _getShortName(String fullName) {
-  final parts = fullName.trim().split(RegExp(r'\s+'));
-
-  if (parts.isEmpty || parts.first.isEmpty) {
-    return null;
-  }
-
-  return parts.last;
 }

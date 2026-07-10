@@ -9,10 +9,10 @@ void main() {
       addTearDown(container.dispose);
 
       container
-          .read(NabiControllerProvider.notifier)
+          .read(nabiControllerProvider.notifier)
           .dispatch(NabiEvent.taskCompleted);
 
-      final state = container.read(NabiControllerProvider);
+      final state = container.read(nabiControllerProvider);
       expect(state.context, NabiContext.dailyTasks);
       expect(state.emotion, NabiEmotion.celebrating);
       expect(state.bubbleText, contains('làm tốt'));
@@ -22,9 +22,9 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container.read(NabiControllerProvider.notifier).setChatThinking();
+      container.read(nabiControllerProvider.notifier).setChatThinking();
 
-      final state = container.read(NabiControllerProvider);
+      final state = container.read(nabiControllerProvider);
       expect(state.context, NabiContext.aiChat);
       expect(state.emotion, NabiEmotion.thinking);
       expect(state.isChatOpen, isTrue);
@@ -35,10 +35,10 @@ void main() {
       addTearDown(container.dispose);
 
       container
-          .read(NabiControllerProvider.notifier)
+          .read(nabiControllerProvider.notifier)
           .setContext(NabiContext.healthCalculation);
 
-      final state = container.read(NabiControllerProvider);
+      final state = container.read(nabiControllerProvider);
       expect(state.isVisible, isTrue);
       expect(state.emotion, NabiEmotion.thinking);
     });

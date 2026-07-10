@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,11 +12,7 @@ import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 import '../../domain/services/splash_route_decision.dart';
 import '../../providers/splash_provider.dart';
 
-enum _BootStage {
-  preparing,
-  checkingProfile,
-  ready,
-}
+enum _BootStage { preparing, checkingProfile, ready }
 
 extension _BootStagePresentation on _BootStage {
   String get statusLabel {
@@ -296,15 +291,16 @@ class _SplashPageState extends ConsumerState<SplashPage>
                                 curve: Curves.easeOutCubic,
                               ),
                               child: SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: const Offset(0, 0.035),
-                                  end: Offset.zero,
-                                ).animate(
-                                  CurvedAnimation(
-                                    parent: _entryController,
-                                    curve: Curves.easeOutCubic,
-                                  ),
-                                ),
+                                position:
+                                    Tween<Offset>(
+                                      begin: const Offset(0, 0.035),
+                                      end: Offset.zero,
+                                    ).animate(
+                                      CurvedAnimation(
+                                        parent: _entryController,
+                                        curve: Curves.easeOutCubic,
+                                      ),
+                                    ),
                                 child: _SplashExperience(
                                   title: widget.title,
                                   subtitle: widget.subtitle,
@@ -372,11 +368,19 @@ class _SplashLayout {
       showWellnessTags: width >= 355 && height >= 660,
       showFooterDescription: height >= 590,
       showPrivacyCaption: width >= 340 && height >= 620,
-      horizontalPadding: width < 360 ? 20 : width < 700 ? 27 : 48,
+      horizontalPadding: width < 360
+          ? 20
+          : width < 700
+          ? 27
+          : 48,
       verticalPadding: isCompact ? 14 : 22,
       headerGap: isCompact ? 14 : 21,
       footerGap: isCompact ? 13 : 21,
-      brandMarkSize: isCompact ? 86 : width >= 700 ? 118 : 106,
+      brandMarkSize: isCompact
+          ? 86
+          : width >= 700
+          ? 118
+          : 106,
     );
   }
 }
@@ -421,9 +425,7 @@ class _SplashAtmosphere extends StatelessWidget {
 }
 
 class _SplashAtmospherePainter extends CustomPainter {
-  const _SplashAtmospherePainter({
-    required this.phase,
-  });
+  const _SplashAtmospherePainter({required this.phase});
 
   final double phase;
 
@@ -437,30 +439,21 @@ class _SplashAtmospherePainter extends CustomPainter {
 
     glowPaint.color = NabiPalette.violet.withValues(alpha: 0.15);
     canvas.drawCircle(
-      Offset(
-        size.width * 0.12 + (wave * 22),
-        size.height * 0.15,
-      ),
+      Offset(size.width * 0.12 + (wave * 22), size.height * 0.15),
       size.width * 0.22,
       glowPaint,
     );
 
     glowPaint.color = NabiPalette.cyan.withValues(alpha: 0.14);
     canvas.drawCircle(
-      Offset(
-        size.width * 0.88,
-        size.height * 0.76 + (inverseWave * 24),
-      ),
+      Offset(size.width * 0.88, size.height * 0.76 + (inverseWave * 24)),
       size.width * 0.29,
       glowPaint,
     );
 
     glowPaint.color = NabiPalette.rose.withValues(alpha: 0.09);
     canvas.drawCircle(
-      Offset(
-        size.width * 0.48 + (inverseWave * 18),
-        size.height * 0.49,
-      ),
+      Offset(size.width * 0.48 + (inverseWave * 18), size.height * 0.49),
       size.width * 0.18,
       glowPaint,
     );
@@ -491,21 +484,16 @@ class _SplashAtmospherePainter extends CustomPainter {
     canvas.drawPath(upperWave, linePaint);
     canvas.drawPath(lowerWave, linePaint);
 
-    final particlePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.50);
+    final particlePaint = Paint()..color = Colors.white.withValues(alpha: 0.50);
 
     for (var index = 0; index < 8; index++) {
       final fraction = index / 8;
       final x = size.width * (0.06 + fraction * 0.9);
-      final y = size.height *
-          (0.12 +
-              ((math.sin((phase * math.pi * 2) + index) + 1) * 0.32));
+      final y =
+          size.height *
+          (0.12 + ((math.sin((phase * math.pi * 2) + index) + 1) * 0.32));
 
-      canvas.drawCircle(
-        Offset(x, y),
-        index.isEven ? 1.75 : 1.2,
-        particlePaint,
-      );
+      canvas.drawCircle(Offset(x, y), index.isEven ? 1.75 : 1.2, particlePaint);
     }
   }
 
@@ -542,16 +530,11 @@ class _SplashTopBar extends StatelessWidget {
         ),
         if (!compact)
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 7,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.42),
               borderRadius: BorderRadius.circular(99),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.76),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.76)),
             ),
             child: Text(
               'CHĂM SÓC CÁ NHÂN',
@@ -598,9 +581,7 @@ class _LaunchStatusPill extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.50),
               borderRadius: BorderRadius.circular(99),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.78),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.78)),
               boxShadow: [
                 BoxShadow(
                   color: stage.accent.withValues(alpha: 0.08),
@@ -690,10 +671,7 @@ class _SplashExperience extends StatelessWidget {
           ShaderMask(
             shaderCallback: (bounds) {
               return LinearGradient(
-                colors: [
-                  NabiPalette.violet,
-                  NabiPalette.cyan,
-                ],
+                colors: [NabiPalette.violet, NabiPalette.cyan],
               ).createShader(bounds);
             },
             child: Text(
@@ -758,16 +736,15 @@ class _BrandMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        ambientController,
-        pulseController,
-      ]),
+      animation: Listenable.merge([ambientController, pulseController]),
       builder: (context, _) {
         final phase = reduceMotion ? 0.5 : ambientController.value;
-        final floatingOffset =
-            reduceMotion ? 0.0 : math.sin(phase * math.pi * 2) * 5;
-        final scale =
-            reduceMotion ? 1.0 : 0.985 + (pulseController.value * 0.025);
+        final floatingOffset = reduceMotion
+            ? 0.0
+            : math.sin(phase * math.pi * 2) * 5;
+        final scale = reduceMotion
+            ? 1.0
+            : 0.985 + (pulseController.value * 0.025);
 
         return Transform.translate(
           offset: Offset(0, floatingOffset),
@@ -781,9 +758,7 @@ class _BrandMark extends StatelessWidget {
                 children: [
                   CustomPaint(
                     size: Size.square(size),
-                    painter: _BrandOrbitPainter(
-                      phase: phase,
-                    ),
+                    painter: _BrandOrbitPainter(phase: phase),
                   ),
                   Container(
                     width: size * 0.66,
@@ -793,10 +768,7 @@ class _BrandMark extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
-                          NabiPalette.violet,
-                          NabiPalette.cyan,
-                        ],
+                        colors: [NabiPalette.violet, NabiPalette.cyan],
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -833,9 +805,7 @@ class _BrandMark extends StatelessWidget {
 }
 
 class _BrandOrbitPainter extends CustomPainter {
-  const _BrandOrbitPainter({
-    required this.phase,
-  });
+  const _BrandOrbitPainter({required this.phase});
 
   final double phase;
 
@@ -862,10 +832,7 @@ class _BrandOrbitPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..color = NabiPalette.violet.withValues(alpha: 0.86);
 
-    final arcRect = Rect.fromCircle(
-      center: center,
-      radius: size.width * 0.46,
-    );
+    final arcRect = Rect.fromCircle(center: center, radius: size.width * 0.46);
 
     canvas.drawArc(
       arcRect,
@@ -897,9 +864,7 @@ class _BrandOrbitPainter extends CustomPainter {
 }
 
 class _EyebrowLabel extends StatelessWidget {
-  const _EyebrowLabel({
-    required this.compact,
-  });
+  const _EyebrowLabel({required this.compact});
 
   final bool compact;
 
@@ -913,9 +878,7 @@ class _EyebrowLabel extends StatelessWidget {
       decoration: BoxDecoration(
         color: NabiPalette.violet.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(
-          color: NabiPalette.violet.withValues(alpha: 0.14),
-        ),
+        border: Border.all(color: NabiPalette.violet.withValues(alpha: 0.14)),
       ),
       child: Text(
         'SỨC KHỎE THEO CÁCH CỦA BẠN',
@@ -975,25 +938,16 @@ class _WellnessTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.50),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.80),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.80)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 15,
-          ),
+          Icon(icon, color: color, size: 15),
           const SizedBox(width: 6),
           Text(
             label,
@@ -1101,10 +1055,7 @@ class _ReadinessPanel extends StatelessWidget {
                 ],
               ),
               SizedBox(height: compact ? 11 : 13),
-              _BootTimeline(
-                stage: stage,
-                compact: compact,
-              ),
+              _BootTimeline(stage: stage, compact: compact),
               if (showPrivacyCaption) ...[
                 SizedBox(height: compact ? 10 : 12),
                 const _PrivacyCaption(),
@@ -1118,10 +1069,7 @@ class _ReadinessPanel extends StatelessWidget {
 }
 
 class _BootTimeline extends StatelessWidget {
-  const _BootTimeline({
-    required this.stage,
-    required this.compact,
-  });
+  const _BootTimeline({required this.stage, required this.compact});
 
   final _BootStage stage;
   final bool compact;
@@ -1158,11 +1106,7 @@ class _BootTimeline extends StatelessWidget {
             ),
           ),
           if (index != steps.length - 1)
-            Expanded(
-              child: _TimelineConnector(
-                active: index < stage.index,
-              ),
-            ),
+            Expanded(child: _TimelineConnector(active: index < stage.index)),
         ],
       ],
     );
@@ -1239,9 +1183,7 @@ class _TimelineStep extends StatelessWidget {
 }
 
 class _TimelineConnector extends StatelessWidget {
-  const _TimelineConnector({
-    required this.active,
-  });
+  const _TimelineConnector({required this.active});
 
   final bool active;
 
@@ -1269,11 +1211,7 @@ class _PrivacyCaption extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          Icons.lock_outline_rounded,
-          size: 13,
-          color: NabiPalette.mutedInk,
-        ),
+        Icon(Icons.lock_outline_rounded, size: 13, color: NabiPalette.mutedInk),
         const SizedBox(width: 6),
         Flexible(
           child: Text(
@@ -1321,10 +1259,7 @@ class _LoadingFooter extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _BreathingDots(
-                  accent: stage.accent,
-                  controller: controller,
-                ),
+                _BreathingDots(accent: stage.accent, controller: controller),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
@@ -1375,8 +1310,8 @@ class _ShimmerLoadingTrack extends StatelessWidget {
                   final shimmerWidth = constraints.maxWidth * 0.42;
                   final left =
                       ((constraints.maxWidth + shimmerWidth) *
-                              controller.value) -
-                          shimmerWidth;
+                          controller.value) -
+                      shimmerWidth;
 
                   return Stack(
                     children: [
@@ -1416,10 +1351,7 @@ class _ShimmerLoadingTrack extends StatelessWidget {
 }
 
 class _BreathingDots extends StatelessWidget {
-  const _BreathingDots({
-    required this.accent,
-    required this.controller,
-  });
+  const _BreathingDots({required this.accent, required this.controller});
 
   final Color accent;
   final AnimationController controller;

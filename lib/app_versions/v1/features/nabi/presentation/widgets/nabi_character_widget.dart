@@ -394,7 +394,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
   @override
   Widget build(BuildContext context) {
     final NabiVisualState resolvedState =
-        widget.forceState ?? ref.watch(NabiVisualStateProvider);
+        widget.forceState ?? ref.watch(nabiVisualStateProvider);
 
     if (_currentState == NabiVisualState.idleHappy &&
         resolvedState != NabiVisualState.idleHappy) {

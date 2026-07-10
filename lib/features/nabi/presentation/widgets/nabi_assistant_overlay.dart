@@ -77,7 +77,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(NabiControllerProvider);
+    final state = ref.watch(nabiControllerProvider);
     final enabled = widget.config.isEnabled?.call(context) ?? true;
 
     if (!state.isVisible || !enabled) return const SizedBox.shrink();
@@ -112,7 +112,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
                     onLongPress: () {
                       HapticFeedback.selectionClick();
                       ref
-                          .read(NabiControllerProvider.notifier)
+                          .read(nabiControllerProvider.notifier)
                           .toggleMinimized();
                     },
                     onPanStart: (_) {
@@ -158,7 +158,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
 
   Future<void> _openChat() async {
     HapticFeedback.lightImpact();
-    final controller = ref.read(NabiControllerProvider.notifier);
+    final controller = ref.read(nabiControllerProvider.notifier);
 
     if (widget.config.onOpenChat != null) {
       await widget.config.onOpenChat!(context);
@@ -167,7 +167,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
 
     // Khi ở AI Chat, chạm Nabi chỉ đổi sang trạng thái lắng nghe; không push
     // route lặp hoặc làm mất nội dung hội thoại hiện tại.
-    final state = ref.read(NabiControllerProvider);
+    final state = ref.read(nabiControllerProvider);
     if (state.isChatOpen) {
       controller.setContext(
         state.context,
@@ -230,7 +230,7 @@ class _NabiFloatingControl extends StatelessWidget {
               borderRadius: BorderRadius.circular(characterSize),
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.16),
+                  color: Colors.black.withValues(alpha: 0.16),
                   blurRadius: 14,
                   offset: const Offset(0, 7),
                 ),
@@ -275,14 +275,14 @@ class _NabiSpeechBubble extends StatelessWidget {
       alignment: Alignment.bottomCenter,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withOpacity(0.98),
+          color: theme.colorScheme.surface.withValues(alpha: 0.98),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: theme.colorScheme.primary.withOpacity(0.12),
+            color: theme.colorScheme.primary.withValues(alpha: 0.12),
           ),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),

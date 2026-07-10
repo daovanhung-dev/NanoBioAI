@@ -1,4 +1,4 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:nano_app/core/config/app_env.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,7 +13,8 @@ class AccountSecurityService {
            deleteAccountFunctionName ?? _defaultDeleteAccountFunctionName;
 
   static String get _defaultDeleteAccountFunctionName {
-    return dotenv.maybeGet('AUTH_DELETE_ACCOUNT_FUNCTION') ?? 'delete-account';
+    return AppEnv.maybeString('AUTH_DELETE_ACCOUNT_FUNCTION') ??
+        'delete-account';
   }
 
   SupabaseClient? get _client {

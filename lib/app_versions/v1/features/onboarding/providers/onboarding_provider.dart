@@ -1,6 +1,6 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
+import 'package:nano_app/core/config/app_env.dart';
 
 import '../presentation/controllers/onboarding_controller.dart';
 
@@ -10,12 +10,10 @@ final onboardingProvider =
     );
 
 final onboardingAiDevCheckEnabledProvider = Provider<bool>((ref) {
-  if (!dotenv.isInitialized) {
-    return false;
-  }
-
-  final value = dotenv.env['ONBOARDING_AI_DEV_CHECK_ENABLED'];
-  return value?.trim().toLowerCase() == 'true';
+  return AppEnv.boolValue(
+    'ONBOARDING_AI_DEV_CHECK_ENABLED',
+    defaultValue: false,
+  );
 });
 
 final onboardingAiDevCheckProvider = FutureProvider<AIConnectionCheckResult?>((

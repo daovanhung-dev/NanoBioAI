@@ -10,7 +10,6 @@ import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/widgets/loading_gen_ai.dart';
 
 import '../../providers/onboarding_provider.dart';
-import '../constants/onboarding_options.dart';
 import 'nabi_onboarding_experience.dart';
 import 'onboarding_step_shell.dart';
 
@@ -195,10 +194,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
                 title: 'Mục tiêu của bạn',
                 subtitle:
                     'NaBi sẽ ưu tiên các gợi ý phù hợp với những điều bạn muốn đạt được.',
-                values: _labels(
-                  OnboardingCatalog.goals,
-                  state.goals,
-                ),
+                values: _labels(OnboardingCatalog.goals, state.goals),
                 fallback: _value(
                   state.otherGoal,
                   fallback: 'Chưa chọn mục tiêu',
@@ -213,10 +209,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
                 title: 'Điều cần lưu ý',
                 subtitle:
                     'Các thông tin này giúp lộ trình thận trọng và phù hợp hơn.',
-                values: _labels(
-                  OnboardingCatalog.conditions,
-                  state.conditions,
-                ),
+                values: _labels(OnboardingCatalog.conditions, state.conditions),
                 fallback: _value(
                   state.otherCondition,
                   fallback: 'Chưa có ghi chú',
@@ -239,10 +232,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
                     ),
                     const SizedBox(height: 15),
                     _ReviewTagGroup(
-                      values: _labels(
-                        OnboardingCatalog.habits,
-                        state.habits,
-                      ),
+                      values: _labels(OnboardingCatalog.habits, state.habits),
                       fallback: 'Chưa chọn thói quen cụ thể',
                       accent: NabiPalette.cyan,
                       icon: Icons.restaurant_menu_rounded,
@@ -336,13 +326,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
     Iterable<String> codes,
   ) {
     return codes
-        .map(
-          (code) => OnboardingCatalog.labelOf(
-            options,
-            code,
-            fallback: '',
-          ),
-        )
+        .map((code) => OnboardingCatalog.labelOf(options, code, fallback: ''))
         .where((label) => label.isNotEmpty)
         .toList(growable: false);
   }
@@ -384,11 +368,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
 
     Navigator.of(
       context,
-    ).push(
-      MaterialPageRoute(
-        builder: (_) => const AIGeneratingPage(),
-      ),
-    );
+    ).push(MaterialPageRoute(builder: (_) => const AIGeneratingPage()));
 
     try {
       await controller.saveOnboarding();
@@ -409,9 +389,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
 
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(message)),
-        );
+        ..showSnackBar(SnackBar(content: Text(message)));
     }
   }
 }
@@ -443,11 +421,7 @@ class _ReviewHero extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               NabiPalette.violet,
-              Color.lerp(
-                NabiPalette.violet,
-                NabiPalette.cyan,
-                0.48,
-              )!,
+              Color.lerp(NabiPalette.violet, NabiPalette.cyan, 0.48)!,
               NabiPalette.cyan,
             ],
           ),
@@ -480,19 +454,14 @@ class _ReviewHero extends StatelessWidget {
             Positioned(
               right: 18,
               bottom: 17 + wave * 3,
-              child: _ReviewOrbit(
-                isReady: isReady,
-                progress: progress,
-              ),
+              child: _ReviewOrbit(isReady: isReady, progress: progress),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(19, 19, 118, 18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _HeroEyebrow(
-                    label: 'KIỂM TRA LẦN CUỐI',
-                  ),
+                  const _HeroEyebrow(label: 'KIỂM TRA LẦN CUỐI'),
                   const SizedBox(height: 12),
                   const Text(
                     'Lộ trình riêng của bạn\nsắp được tạo.',
@@ -523,20 +492,14 @@ class _HeroBubble extends StatelessWidget {
   final double size;
   final Color color;
 
-  const _HeroBubble({
-    required this.size,
-    required this.color,
-  });
+  const _HeroBubble({required this.size, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }
@@ -544,9 +507,7 @@ class _HeroBubble extends StatelessWidget {
 class _HeroEyebrow extends StatelessWidget {
   final String label;
 
-  const _HeroEyebrow({
-    required this.label,
-  });
+  const _HeroEyebrow({required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -593,16 +554,11 @@ class _HeroProgressChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 240),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: isReady ? 0.20 : 0.13),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.25),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -635,10 +591,7 @@ class _ReviewOrbit extends StatelessWidget {
   final bool isReady;
   final double progress;
 
-  const _ReviewOrbit({
-    required this.isReady,
-    required this.progress,
-  });
+  const _ReviewOrbit({required this.isReady, required this.progress});
 
   @override
   Widget build(BuildContext context) {
@@ -655,9 +608,7 @@ class _ReviewOrbit extends StatelessWidget {
             height: 92,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.24),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
             ),
           ),
           AnimatedContainer(
@@ -667,9 +618,7 @@ class _ReviewOrbit extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: isReady ? 0.25 : 0.17),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.38),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.38)),
             ),
             child: Icon(
               isReady
@@ -713,10 +662,7 @@ class _OrbitBadge extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const _OrbitBadge({
-    required this.icon,
-    required this.color,
-  });
+  const _OrbitBadge({required this.icon, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -734,11 +680,7 @@ class _OrbitBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(
-        icon,
-        color: color,
-        size: 15,
-      ),
+      child: Icon(icon, color: color, size: 15),
     );
   }
 }
@@ -779,16 +721,11 @@ class _ReadinessNotice extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 13,
-        vertical: 11,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
       decoration: BoxDecoration(
         color: accent.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: accent.withValues(alpha: 0.14),
-        ),
+        border: Border.all(color: accent.withValues(alpha: 0.14)),
       ),
       child: Row(
         children: [
@@ -799,11 +736,7 @@ class _ReadinessNotice extends StatelessWidget {
               shape: BoxShape.circle,
               color: accent.withValues(alpha: 0.13),
             ),
-            child: Icon(
-              icon,
-              color: accent,
-              size: 17,
-            ),
+            child: Icon(icon, color: accent, size: 17),
           ),
           const SizedBox(width: 9),
           Expanded(
@@ -824,9 +757,7 @@ class _ReadinessNotice extends StatelessWidget {
 class _PremiumReviewSurface extends StatelessWidget {
   final Widget child;
 
-  const _PremiumReviewSurface({
-    required this.child,
-  });
+  const _PremiumReviewSurface({required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -836,9 +767,7 @@ class _PremiumReviewSurface extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.90),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.96),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.96)),
         boxShadow: [
           BoxShadow(
             color: NabiPalette.ink.withValues(alpha: 0.055),
@@ -879,11 +808,7 @@ class _ReviewSectionHeader extends StatelessWidget {
             color: accent.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(13),
           ),
-          child: Icon(
-            icon,
-            color: accent,
-            size: 20,
-          ),
+          child: Icon(icon, color: accent, size: 20),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -914,10 +839,7 @@ class _ReviewSectionHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 5),
-        _EditButton(
-          accent: accent,
-          onPressed: onEdit,
-        ),
+        _EditButton(accent: accent, onPressed: onEdit),
       ],
     );
   }
@@ -927,20 +849,13 @@ class _EditButton extends StatelessWidget {
   final Color accent;
   final VoidCallback onPressed;
 
-  const _EditButton({
-    required this.accent,
-    required this.onPressed,
-  });
+  const _EditButton({required this.accent, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
       onPressed: onPressed,
-      icon: Icon(
-        Icons.edit_outlined,
-        size: 14,
-        color: accent,
-      ),
+      icon: Icon(Icons.edit_outlined, size: 14, color: accent),
       label: Text(
         'Sửa',
         style: AppTextStyles.labelSmall.copyWith(
@@ -950,10 +865,7 @@ class _EditButton extends StatelessWidget {
       ),
       style: TextButton.styleFrom(
         minimumSize: Size.zero,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 6,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: VisualDensity.compact,
       ),
@@ -964,9 +876,7 @@ class _EditButton extends StatelessWidget {
 class _ReviewMetricGrid extends StatelessWidget {
   final List<Widget> children;
 
-  const _ReviewMetricGrid({
-    required this.children,
-  });
+  const _ReviewMetricGrid({required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -979,8 +889,7 @@ class _ReviewMetricGrid extends StatelessWidget {
             children: [
               for (var index = 0; index < children.length; index++) ...[
                 children[index],
-                if (index != children.length - 1)
-                  const SizedBox(height: 9),
+                if (index != children.length - 1) const SizedBox(height: 9),
               ],
             ],
           );
@@ -992,12 +901,7 @@ class _ReviewMetricGrid extends StatelessWidget {
           spacing: 10,
           runSpacing: 10,
           children: children
-              .map(
-                (child) => SizedBox(
-                  width: itemWidth,
-                  child: child,
-                ),
-              )
+              .map((child) => SizedBox(width: itemWidth, child: child))
               .toList(growable: false),
         );
       },
@@ -1023,16 +927,11 @@ class _ReviewMetric extends StatelessWidget {
     final isEmpty = value == 'Chưa cập nhật';
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 10,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
       decoration: BoxDecoration(
         color: accent.withValues(alpha: 0.045),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: accent.withValues(alpha: 0.10),
-        ),
+        border: Border.all(color: accent.withValues(alpha: 0.10)),
       ),
       child: Row(
         children: [
@@ -1043,11 +942,7 @@ class _ReviewMetric extends StatelessWidget {
               color: accent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(
-              icon,
-              size: 17,
-              color: accent,
-            ),
+            child: Icon(icon, size: 17, color: accent),
           ),
           const SizedBox(width: 9),
           Expanded(
@@ -1152,10 +1047,7 @@ class _ReviewTagGroup extends StatelessWidget {
       children: tags
           .map(
             (value) => Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 7,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
               decoration: BoxDecoration(
                 color: accent.withValues(alpha: isFallback ? 0.05 : 0.10),
                 borderRadius: BorderRadius.circular(14),
@@ -1167,13 +1059,9 @@ class _ReviewTagGroup extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    isFallback
-                        ? Icons.info_outline_rounded
-                        : icon,
+                    isFallback ? Icons.info_outline_rounded : icon,
                     size: 14,
-                    color: accent.withValues(
-                      alpha: isFallback ? 0.68 : 1,
-                    ),
+                    color: accent.withValues(alpha: isFallback ? 0.68 : 1),
                   ),
                   const SizedBox(width: 6),
                   ConstrainedBox(
@@ -1256,10 +1144,7 @@ class _LifestyleSignals extends StatelessWidget {
         return Row(
           children: [
             for (var index = 0; index < items.length; index++) ...[
-              SizedBox(
-                width: width,
-                child: items[index],
-              ),
+              SizedBox(width: width, child: items[index]),
               if (index != items.length - 1) const SizedBox(width: 8),
             ],
           ],
@@ -1291,9 +1176,7 @@ class _LifestyleSignalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: accent.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: accent.withValues(alpha: 0.11),
-        ),
+        border: Border.all(color: accent.withValues(alpha: 0.11)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1305,11 +1188,7 @@ class _LifestyleSignalCard extends StatelessWidget {
               color: accent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              size: 16,
-              color: accent,
-            ),
+            child: Icon(icon, size: 16, color: accent),
           ),
           const SizedBox(height: 9),
           Text(
@@ -1348,10 +1227,8 @@ class _ReviewNotesPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final notes = <String>[
-      if (allergyNote.trim().isNotEmpty)
-        'Dị ứng: ${allergyNote.trim()}',
-      if (treatmentNote.trim().isNotEmpty)
-        'Theo dõi: ${treatmentNote.trim()}',
+      if (allergyNote.trim().isNotEmpty) 'Dị ứng: ${allergyNote.trim()}',
+      if (treatmentNote.trim().isNotEmpty) 'Theo dõi: ${treatmentNote.trim()}',
     ];
 
     if (notes.isEmpty) return const SizedBox.shrink();
@@ -1362,18 +1239,12 @@ class _ReviewNotesPreview extends StatelessWidget {
       decoration: BoxDecoration(
         color: NabiPalette.rose.withValues(alpha: 0.055),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: NabiPalette.rose.withValues(alpha: 0.10),
-        ),
+        border: Border.all(color: NabiPalette.rose.withValues(alpha: 0.10)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.notes_rounded,
-            size: 17,
-            color: NabiPalette.rose,
-          ),
+          const Icon(Icons.notes_rounded, size: 17, color: NabiPalette.rose),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1394,10 +1265,7 @@ class _ConsentReviewCard extends StatelessWidget {
   final bool agreed;
   final VoidCallback onEdit;
 
-  const _ConsentReviewCard({
-    required this.agreed,
-    required this.onEdit,
-  });
+  const _ConsentReviewCard({required this.agreed, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -1410,9 +1278,7 @@ class _ConsentReviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: accent.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(19),
-        border: Border.all(
-          color: accent.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: accent.withValues(alpha: 0.15)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1460,10 +1326,7 @@ class _ConsentReviewCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 5),
-          _EditButton(
-            accent: accent,
-            onPressed: onEdit,
-          ),
+          _EditButton(accent: accent, onPressed: onEdit),
         ],
       ),
     );
@@ -1477,16 +1340,11 @@ class _ReviewFootnote extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 13,
-        vertical: 11,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
       decoration: BoxDecoration(
         color: NabiPalette.rose.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: NabiPalette.rose.withValues(alpha: 0.11),
-        ),
+        border: Border.all(color: NabiPalette.rose.withValues(alpha: 0.11)),
       ),
       child: Row(
         children: [

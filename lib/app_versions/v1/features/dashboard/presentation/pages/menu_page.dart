@@ -119,7 +119,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
     final route = index < routeByTab.length
         ? routeByTab[index]
         : V1RoutePaths.menu;
-    ref.Nabi.setRoute(route);
+    ref.nabi.setRoute(route);
   }
 
   @override

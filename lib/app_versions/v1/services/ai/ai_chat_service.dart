@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:nano_app/core/config/app_env.dart';
 
 import 'ai_exceptions.dart';
 import 'ai_trace_logger.dart';
@@ -465,26 +465,11 @@ class AIChatService {
   }
 
   static String? _envWithLegacy(String key, String legacyKey) {
-    final env = _dotenvEnvOrNull();
-    if (env == null) {
-      return null;
-    }
-
-    final value = env.containsKey(key) ? env[key] : env[legacyKey];
-
-    return _cleanEnv(value);
+    return AppEnv.maybeStringWithLegacy(key, legacyKey);
   }
 
   static String? _env(String key) {
-    return _cleanEnv(_dotenvEnvOrNull()?[key]);
-  }
-
-  static Map<String, String>? _dotenvEnvOrNull() {
-    try {
-      return dotenv.env;
-    } catch (_) {
-      return null;
-    }
+    return AppEnv.maybeString(key);
   }
 
   static String? _cleanEnv(String? value) {
