@@ -36,6 +36,11 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authBackendAvailability = ref.watch(authBackendAvailabilityProvider);
+    final authBackendFailure = authBackendAvailability.isReady
+        ? null
+        : authBackendUnavailableFailure(authBackendAvailability);
+
     return _AuthScaffold(
       eyebrow: 'TÀI KHOẢN NANOBIO',
       heroIcon: Icons.waving_hand_rounded,
@@ -100,11 +105,20 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
+              if (authBackendFailure != null) ...[
+                _InfoBox(
+                  icon: Icons.info_outline_rounded,
+                  title: 'Đăng nhập chưa sẵn sàng',
+                  message: authBackendFailure.userMessage,
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
               _PrimaryAuthButton(
+                key: const Key('login_submit_button'),
                 label: 'Tiếp tục',
                 icon: Icons.arrow_forward_rounded,
                 loading: _loading,
-                onPressed: _submit,
+                onPressed: authBackendAvailability.isReady ? _submit : null,
               ),
               const SizedBox(height: AppSpacing.sm),
               _AuthDivider(label: 'hoặc'),
@@ -124,6 +138,7 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
   }
 
   Future<void> _submit() async {
+    if (!ref.read(authBackendAvailabilityProvider).isReady) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     FocusManager.instance.primaryFocus?.unfocus();
@@ -1204,9 +1219,10 @@ class _PrimaryAuthButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool loading;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const _PrimaryAuthButton({
+    super.key,
     required this.label,
     required this.icon,
     required this.loading,
@@ -1216,19 +1232,22 @@ class _PrimaryAuthButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(AppRadius.lg);
+    final disabled = loading || onPressed == null;
 
     return Semantics(
       button: true,
-      enabled: !loading,
+      enabled: !disabled,
       label: label,
       child: SizedBox(
         width: double.infinity,
         height: 56,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            gradient: loading ? AppGradients.primarySoft : AppGradients.primary,
+            gradient: disabled
+                ? AppGradients.primarySoft
+                : AppGradients.primary,
             borderRadius: borderRadius,
-            boxShadow: loading
+            boxShadow: disabled
                 ? const []
                 : [
                     BoxShadow(
@@ -1243,7 +1262,7 @@ class _PrimaryAuthButton extends StatelessWidget {
             borderRadius: borderRadius,
             child: InkWell(
               borderRadius: borderRadius,
-              onTap: loading ? null : onPressed,
+              onTap: disabled ? null : onPressed,
               child: Center(
                 child: AnimatedSwitcher(
                   duration: AppDuration.fast,

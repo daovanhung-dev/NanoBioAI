@@ -70,7 +70,10 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
 
               if (check != null) ...[
                 const SizedBox(height: 10),
-                _AiCheckCard(check: check),
+                _AiCheckCard(
+                  key: const Key('onboarding_ai_dev_check_banner'),
+                  check: check,
+                ),
               ],
             ],
           );
@@ -164,20 +167,22 @@ class _PremiumWelcomeHero extends StatelessWidget {
                             progress: progress,
                           ),
                           const SizedBox(height: 13),
-                          Text(
-                            compact
-                                ? 'Không cần hoàn hảo.\nChỉ cần đúng với bạn.'
-                                : 'Không cần hoàn hảo.\nChỉ cần đúng với bạn.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: compact ? 25 : 29,
-                              height: 1.08,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.75,
+                          Expanded(
+                            child: Text(
+                              'Không cần hoàn hảo.\nChỉ cần đúng với bạn.',
+                              maxLines: compact ? 4 : 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: compact ? 25 : 29,
+                                height: 1.08,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.75,
+                              ),
                             ),
                           ),
-                          const Spacer(),
                           Container(
+                            width: double.infinity,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 11,
                               vertical: 8,
@@ -190,7 +195,6 @@ class _PremiumWelcomeHero extends StatelessWidget {
                               ),
                             ),
                             child: const Row(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.auto_awesome_rounded,
@@ -198,13 +202,17 @@ class _PremiumWelcomeHero extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                                 SizedBox(width: 7),
-                                Text(
-                                  'Lộ trình được thiết kế cho riêng bạn',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11.5,
-                                    height: 1,
-                                    fontWeight: FontWeight.w700,
+                                Expanded(
+                                  child: Text(
+                                    'Lộ trình được thiết kế cho riêng bạn',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.5,
+                                      height: 1,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -889,7 +897,7 @@ class _CommitmentHint extends StatelessWidget {
 class _AiCheckCard extends StatelessWidget {
   final AsyncValue<AIConnectionCheckResult?> check;
 
-  const _AiCheckCard({required this.check});
+  const _AiCheckCard({super.key, required this.check});
 
   @override
   Widget build(BuildContext context) {

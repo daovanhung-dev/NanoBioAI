@@ -430,3 +430,10 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: - Hoan thanh: Debt P1 release analyzer fail va debt Nabi import case mismatch.
 - docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md :: fail hoac format hygiene tuy theo blast radius.
 - docs/worklog/2026-07-10/005-worklog-v2-admin-regression.md :: - Cap nhat test stale expectation theo UI hien tai; targeted analyze/test pass. Full suite van can chay diagnostic va phan loai failure truoc khi ket luan.
+- docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: sửa 6 baseline failures và loại bỏ raw AI prompt/response khỏi log.
+- docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: - Tái hiện chính xác 6 baseline failures trước khi sửa.
+- docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: - Baseline `flutter test test/widget_test.dart test/app_versions/v3/features/familyplus/presentation/familyplus_page_test.dart`: FAIL 6 case, đã tái hiện trước patch.
+- docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: - Đã fix: 6 baseline failures; các overflow mobile lần lượt lộ ra trong hành
+- docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: - Chưa fix: các gap capability/RBAC/Supabase/E2E còn lại của kế hoạch tổng.
+- docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: - Cần kiểm tra tiếp: boot v2/Admin trên thiết bị, Supabase sandbox/seed/RBAC,

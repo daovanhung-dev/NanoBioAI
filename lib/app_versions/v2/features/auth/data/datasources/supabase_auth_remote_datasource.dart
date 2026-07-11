@@ -9,11 +9,10 @@ class SupabaseAuthRemoteDatasource {
   final String deleteAccountFunctionName;
 
   SupabaseAuthRemoteDatasource({
-    SupabaseClient? client,
+    required this.client,
     String? emailRedirectUrl,
     String? deleteAccountFunctionName,
-  }) : client = client ?? Supabase.instance.client,
-       emailRedirectUrl = emailRedirectUrl ?? _env('AUTH_EMAIL_REDIRECT_URL'),
+  }) : emailRedirectUrl = emailRedirectUrl ?? _env('AUTH_EMAIL_REDIRECT_URL'),
        deleteAccountFunctionName =
            deleteAccountFunctionName ??
            _env('AUTH_DELETE_ACCOUNT_FUNCTION') ??

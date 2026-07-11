@@ -16,7 +16,7 @@ Commit de xuat: test(v2-admin-regression): tao ma tran bang chung hoi quy v2 va 
 ### Pham vi module
 
 - In scope: 17 module co the kiem thu qua `lib/main_v2.dart` va `lib/main_admin.dart`: **M01-M09, M12-M19**.
-- Ngoai scope E2E: **M10** (theo doi nang cao) va **M11** (FamilyPlus). Hai module nay la V3 planned, khong co entrypoint E2E trong chien dich nay; khong duoc ghi nhan la PASS. Cac case V2/Admin phu thuoc FamilyPlus phai ghi `BLOCKED` hoac tham chieu chien dich V3, khong thay the bang gia dinh.
+- Ngoai scope E2E Android: **M10** (theo doi nang cao) va **M11** (FamilyPlus). Hai module nay la V3 planned, khong co entrypoint E2E trong chien dich nay; E2E duoc ghi `N/A` co ly do, con cac case `AUT-M10-*`/`AUT-M11-*` bat buoc `PASS` bang unit/widget/contract test va anh report da che du lieu.
 
 | Dot | Entry point | Pham vi | Dieu kien hoan tat dot | Trang thai |
 | --- | --- | --- | --- | --- |
@@ -25,7 +25,7 @@ Commit de xuat: test(v2-admin-regression): tao ma tran bang chung hoi quy v2 va 
 | P2 | `lib/main_v2.dart` | M05-M09 | Case auth/quota/chat/score/notification duoc thuc thi | PENDING |
 | P3 | `lib/main_v2.dart` | M12-M14 | Case Sale, payment va Diem Sale duoc thuc thi | PENDING |
 | P4 | `lib/main_admin.dart` | M15-M19 | Case Admin, doi soat, bao cao va audit duoc thuc thi | PENDING |
-| P5 | Ca hai | Retest, regression, anh, ghi chu va tong hop | Khong con `FAIL`/`BLOCKED` chua duoc xu ly trong scope | PENDING |
+| P5 | Ca hai + automation | Retest, M10/M11 automated-only, regression, anh, ghi chu va tong hop | Khong con `PENDING`/`FAIL`/`BLOCKED`; M10/M11 automated PASS va E2E N/A | PENDING |
 
 ### Lenh du kien (chua chay)
 
@@ -50,7 +50,7 @@ flutter screenshot -d 12b304f9 -o docs/test/v2-admin-regression/assets/<CASE-ID>
 | `SR` / `SA` / `SS` / `SC` | Sale pending-review / active / suspended / closed | Vong doi Sale va ma gioi thieu |
 | `RA` / `RB` / `RC` | Sale A, khach truc tiep B, tai khoan do B gioi thieu | Quan he 1 tang va hoa hong |
 | `PX` / `PY` / `PR` | Payment X, gia han Y, payment da hoan/huy | Hoa hong, retry va reversal |
-| `AS` / `AF` / `AU` / `AC` / `AV` | Super, Finance, Support, Content, View Admin | RBAC Admin |
+| `AS` / `AF` / `AU` / `AC` | Super Admin, Finance Admin, Support Admin, Content Admin | RBAC Admin bốn role; không seed/grant `view_admin` hoặc `operations_admin` mới |
 
 ### Quy uoc bang chung cua tung case
 
@@ -90,6 +90,8 @@ Ky hieu: `H` = happy path, `V` = validation/bien, `E` = loi/offline, `Q` = auth/
 | M07 AI Chat | x | x | x | x | x | x | x | BD §6 M07, AC-03, AC-04, AC-06 |
 | M08 Diem suc khoe | x | x | x | x | x | x | x | BD §6 M08 |
 | M09 Notification | x | x | x | x | x | x | x | BD §6 M09 |
+| M10 Theo doi nang cao | automated | automated | automated | automated | automated | automated | report | BD §6 M10; E2E N/A |
+| M11 FamilyPlus | automated | automated | automated | automated | automated | automated | report | BD §6 M11; E2E N/A |
 | M12 Referral | x | x | x | x | x | x | x | BD §7, AC-09, AC-10 |
 | M13 Payment | x | x | x | x | x | x | x | BD §8, AC-07, AC-08, AC-11, AC-15 |
 | M14 Diem Sale | x | x | x | x | x | x | x | BD §7, §9, AC-12-AC-18 |
@@ -105,7 +107,7 @@ Ky hieu: `H` = happy path, `V` = validation/bien, `E` = loi/offline, `Q` = auth/
 | --- | --- | --- | --- | --- | --- | --- |
 | PRE-01 | Android `12b304f9` ket noi | Xac nhan device dung, package ID dung va co the chup man hinh truoc khi chay case nghiep vu. | Device gate | `assets/PRE-01-pass.png` | `evidence/PRE-01.md` | PENDING |
 | PRE-02 | Cau hinh local da ignore | Khoi chay v2 va Admin chi den sandbox; khong hien thi/ghi endpoint secret hay production credential. | Sandbox gate | `assets/PRE-02-pass.png` | `evidence/PRE-02.md` | PENDING |
-| PRE-03 | Toan bo ma persona | Xac nhan G0/G1, F0/FQ3, PP/PL, SR/SA/SS/SC, RA/RB/RC, PX/PY/PR va AS/AF/AU/AC/AV ton tai, phan quyen dung va du lieu khong nhay cam. | Data gate | `assets/PRE-03-pass.png` | `evidence/PRE-03.md` | PENDING |
+| PRE-03 | Toan bo ma persona | Xac nhan G0/G1, F0/FQ3, PP/PL, SR/SA/SS/SC, RA/RB/RC, PX/PY/PR va AS/AF/AU/AC ton tai, phan quyen dung va du lieu khong nhay cam. | Data gate | `assets/PRE-03-pass.png` | `evidence/PRE-03.md` | PENDING |
 | PRE-04 | App da co state tu case truoc | Logout hoac `pm clear`, khoi chay lai va xac nhan state cua persona cu khong bi dung nham sang persona tiep theo. | State-isolation gate | `assets/PRE-04-pass.png` | `evidence/PRE-04.md` | PENDING |
 | PRE-05 | Workspace sach cho test | Chay baseline `flutter test`, luu command ID va phan loai tung failure; khong coi con so trong ke hoach la PASS khi chua xac minh. | Regression gate | `assets/PRE-05-pass.png` | `evidence/PRE-05.md` | PENDING |
 | PRE-06 | Thu muc evidence | Xac nhan quy tac dat ten anh/log hoat dong va anh mau khong co PII. | Evidence gate | `assets/PRE-06-pass.png` | `evidence/PRE-06.md` | PENDING |
@@ -182,7 +184,7 @@ Ky hieu: `H` = happy path, `V` = validation/bien, `E` = loi/offline, `Q` = auth/
 | V2-M07-02 | `FQ3` Chat | Thu Chat lan thu 4 qua UI/route/use-case/API; deu bi chan va khong tao request moi. | BD §6 M07, AC-04 | `assets/V2-M07-02-pass.png` | `evidence/V2-M07-02.md` | PENDING |
 | V2-M07-03 | `G0`/`G1` | Mo AI Chat qua menu/deep link/API; Guest bi chan o moi lop, dung theo allowlist. | BD §6 M07, AC-03 | `assets/V2-M07-03-pass.png` | `evidence/V2-M07-03.md` | PENDING |
 | V2-M07-04 | `F0`, AI/network loi | Timeout/mat mang/phan hoi loi va retry cung request; khong tru quota, khong luu ban ghi trung va UI bao trang thai ro rang. | BD §6 M07, §6 M06 - retry | `assets/V2-M07-04-pass.png` | `evidence/V2-M07-04.md` | PENDING |
-| V2-M07-05 | `F0` va `AV` | Relaunch kiem tra lich su theo chinh sach; Admin chi xem so lieu tong hop khi khong co scope doc noi dung suc khoe rieng tu. | BD §6 M07 - privacy/persistence | `assets/V2-M07-05-pass.png` | `evidence/V2-M07-05.md` | PENDING |
+| V2-M07-05 | `F0` va `AU` | Relaunch kiem tra lich su theo chinh sach; Support Admin chi xem so lieu/audit trong scope, khong doc noi dung suc khoe rieng tu. | BD §6 M07 - privacy/persistence | `assets/V2-M07-05-pass.png` | `evidence/V2-M07-05.md` | PENDING |
 
 ### M08 - Diem suc khoe va thoi quen
 
@@ -244,8 +246,8 @@ Ky hieu: `H` = happy path, `V` = validation/bien, `E` = loi/offline, `Q` = auth/
 
 | Case ID | Persona / tien dieu kien | Kich ban va ket qua mong doi | Phu BD/AC | Anh PASS du kien | Ghi chu / log du kien | Trang thai |
 | --- | --- | --- | --- | --- | --- | --- |
-| ADM-M15-01 | `AS` hoac `AV` co scope | Dang nhap Admin, mo dashboard, chon khoang thoi gian/bo loc; chi so hien dung trong pham vi permission. | BD §11.2, AC-19 | `assets/ADM-M15-01-pass.png` | `evidence/ADM-M15-01.md` | PENDING |
-| ADM-M15-02 | `AV` scope han che | Thu xem chi so/tong hop ngoai scope; backend/UI khong tiet lo du lieu khong duoc phep. | BD §11.2 - permission | `assets/ADM-M15-02-pass.png` | `evidence/ADM-M15-02.md` | PENDING |
+| ADM-M15-01 | `AS`/`AF`/`AU`/`AC` | Dang nhap Admin, mo dashboard, chon khoang thoi gian/bo loc; chi so hien dung trong pham vi permission. | BD §11.2, AC-19 | `assets/ADM-M15-01-pass.png` | `evidence/ADM-M15-01.md` | PENDING |
+| ADM-M15-02 | `AU` scope han che | Thu xem chi so/tong hop ngoai scope; backend/UI khong tiet lo du lieu khong duoc phep. | BD §11.2 - permission | `assets/ADM-M15-02-pass.png` | `evidence/ADM-M15-02.md` | PENDING |
 | ADM-M15-03 | `AS`, du lieu seed co drill-down | Drill-down tu dashboard den module dung, hanh dong chi duoc phep khi vao dung man va co audit. | BD §11.2 - drill-down/audit | `assets/ADM-M15-03-pass.png` | `evidence/ADM-M15-03.md` | PENDING |
 | ADM-M15-04 | `AS` | Smoke navigation Android qua 10 be mat quan tri: dashboard, nguoi dung, goi/cau hinh, Sale, payment, quy doi, noi dung/notification, doi soat, bao cao, audit/ho tro; loading/empty/error khong vo UI. | BD §11, §11.2-§12.2 | `assets/ADM-M15-04-pass.png` | `evidence/ADM-M15-04.md` | PENDING |
 
@@ -256,11 +258,11 @@ Ky hieu: `H` = happy path, `V` = validation/bien, `E` = loi/offline, `Q` = auth/
 | ADM-M16A-01 | `AS`/`AU`, user seed | Tim/loc user theo truong duoc phep, xem lich su can thiet; du lieu suc khoe nhay cam khong bi sua/tiet lo tuy tien. | BD §11.3, AC-24 | `assets/ADM-M16A-01-pass.png` | `evidence/ADM-M16A-01.md` | PENDING |
 | ADM-M16A-02 | `AS`/`AU`, user seed | Khoa/mo khoa tai khoan voi ly do, thoi han, xac nhan va notification; status/quyen thay doi dung, co audit. | BD §11.3, §11.8 | `assets/ADM-M16A-02-pass.png` | `evidence/ADM-M16A-02.md` | PENDING |
 | ADM-M16B-01 | `AS` co quyen cau hinh | Tao ban cau hinh goi/gia/quota/ty le quy doi co `effective_from`; khong sua giao dich/quyen lich su. | BD §11.4, AC-22 | `assets/ADM-M16B-01-pass.png` | `evidence/ADM-M16B-01.md` | PENDING |
-| ADM-M16B-02 | `AV`/role khong du quyen | Thu soan/duyet ap dung cau hinh va mo deep link/API; bi tu choi theo permission, audit khi co hanh dong nhay cam. | BD §11.4 - separation/RBAC | `assets/ADM-M16B-02-pass.png` | `evidence/ADM-M16B-02.md` | PENDING |
+| ADM-M16B-02 | `AU`/role khong du quyen | Thu soan/duyet ap dung cau hinh va mo deep link/API; bi tu choi theo permission, audit khi co hanh dong nhay cam. | BD §11.4 - separation/RBAC | `assets/ADM-M16B-02-pass.png` | `evidence/ADM-M16B-02.md` | PENDING |
 | ADM-M16C-01 | `SR`, `AS` | Duyet/tu choi ho so Sale voi ly do; duyet chuyen active, cap ma duy nhat va co audit/notification. | BD §11.5, §7.2 | `assets/ADM-M16C-01-pass.png` | `evidence/ADM-M16C-01.md` | PENDING |
 | ADM-M16C-02 | `SA`/`SS`/`SC`, `AS` | Tam dung/cham dut/cap lai/khoa ma theo policy; quan he va du lieu khach truc tiep khong lo suc khoe nhay cam. | BD §11.5, §7.3, AC-24 | `assets/ADM-M16C-02-pass.png` | `evidence/ADM-M16C-02.md` | PENDING |
 | ADM-M16D-01 | `AF`, `PP`, conversion pending | Duyet/tu choi payment va quy doi voi ly do, timestamp, actor, audit; trang thai sau duyet khong bi ghi de truc tiep. | BD §11.6, AC-21 | `assets/ADM-M16D-01-pass.png` | `evidence/ADM-M16D-01.md` | PENDING |
-| ADM-M16D-02 | `AU`/`AC`/`AV`, `PP` | Admin khong co Finance thu duyet payment qua UI/deep link/API; backend/API tu choi. | BD §11.6, AC-20 | `assets/ADM-M16D-02-pass.png` | `evidence/ADM-M16D-02.md` | PENDING |
+| ADM-M16D-02 | `AU`/`AC`, `PP` | Admin khong co Finance thu duyet payment qua UI/deep link/API; backend/API tu choi. | BD §11.6, AC-20 | `assets/ADM-M16D-02-pass.png` | `evidence/ADM-M16D-02.md` | PENDING |
 | ADM-M16E-01 | `AC`, segment seed | Tao/sua noi dung, FAQ, broadcast, template va feature flag theo moi truong; chi gui dung segment duoc phep va khong lo du lieu nhay cam. | BD §11.7 | `assets/ADM-M16E-01-pass.png` | `evidence/ADM-M16E-01.md` | PENDING |
 | ADM-M16E-02 | `AC` va role han che | Theo doi AI/notification/sync va thu sua cau hinh ngoai quyen; UI bao loi phu hop, backend chan va khong hien raw PII. | BD §11.7 - ops/RBAC | `assets/ADM-M16E-02-pass.png` | `evidence/ADM-M16E-02.md` | PENDING |
 
@@ -271,17 +273,17 @@ Ky hieu: `H` = happy path, `V` = validation/bien, `E` = loi/offline, `Q` = auth/
 | ADM-M17-01 | `AS`/`AF`, payment/entitlement/quota seed | Chay/yeu cau doi soat ky; doi chieu quyen goi, payment, quota, Diem Sale va Diem suc khoe voi du lieu nguon. | BD §12.1 - reconciliation | `assets/ADM-M17-01-pass.png` | `evidence/ADM-M17-01.md` | PENDING |
 | ADM-M17-02 | `PX` approved, `RA`/`RB` | Commission job xu ly/retry cung khoa giao dich; ledger va so du nguyen tu, khong nhan doi. | BD §12.1 - idempotency, AC-16 | `assets/ADM-M17-02-pass.png` | `evidence/ADM-M17-02.md` | PENDING |
 | ADM-M17-03 | Seed co sai lech co kiem soat | Bao cao sai lech dung loai (thieu/thua diem, trung, sai status, goi khong khop); xu ly bang adjustment, khong xoa lich su. | BD §12.1 - mismatch/adjustment | `assets/ADM-M17-03-pass.png` | `evidence/ADM-M17-03.md` | PENDING |
-| ADM-M17-04 | `AF` va `AV` | Chon ky/bo loc va thu truy cap doi soat ngoai pham vi; chi role du quyen duoc xem/xu ly, du lieu tai chinh khong dua tu UI cache. | BD §12.1 - RBAC/source | `assets/ADM-M17-04-pass.png` | `evidence/ADM-M17-04.md` | PENDING |
+| ADM-M17-04 | `AF` va `AU` | Chon ky/bo loc va thu truy cap doi soat ngoai pham vi; Finance duoc xem/xu ly, Support bi chan, du lieu tai chinh khong dua tu UI cache. | BD §12.1 - RBAC/source | `assets/ADM-M17-04-pass.png` | `evidence/ADM-M17-04.md` | PENDING |
 | ADM-M17-05 | `F0`, su kien M03/M08 da sua | Doi chieu/tinh lai Diem suc khoe theo phien ban cong thuc va chu ho so; khong tron voi Diem Sale hoac ghi de ket qua cu khong truy vet. | BD §12.1, §9 | `assets/ADM-M17-05-pass.png` | `evidence/ADM-M17-05.md` | PENDING |
 
 ### M18 - Thong ke va bao cao
 
 | Case ID | Persona / tien dieu kien | Kich ban va ket qua mong doi | Phu BD/AC | Anh PASS du kien | Ghi chu / log du kien | Trang thai |
 | --- | --- | --- | --- | --- | --- | --- |
-| ADM-M18-01 | `AS`/`AV`, du lieu seed da biet | Mo cac nhom bao cao san pham/goi/Sale/payment/van hanh; bo loc thoi gian, goi, Sale va status cho ket qua dung pham vi. | BD §12.2 - reporting | `assets/ADM-M18-01-pass.png` | `evidence/ADM-M18-01.md` | PENDING |
-| ADM-M18-02 | `AV`, health data seed | Bao cao suc khoe hien dang tong hop/an danh khi khong can nhan dien; khong lo chat/ho so nhay cam. | BD §12.2 - privacy | `assets/ADM-M18-02-pass.png` | `evidence/ADM-M18-02.md` | PENDING |
+| ADM-M18-01 | `AS`/`AF`, du lieu seed da biet | Mo cac nhom bao cao san pham/goi/Sale/payment/van hanh; bo loc thoi gian, goi, Sale va status cho ket qua dung pham vi. | BD §12.2 - reporting | `assets/ADM-M18-01-pass.png` | `evidence/ADM-M18-01.md` | PENDING |
+| ADM-M18-02 | `AF`, health data seed | Bao cao suc khoe hien dang tong hop/an danh khi khong can nhan dien; khong lo chat/ho so nhay cam. | BD §12.2 - privacy | `assets/ADM-M18-02-pass.png` | `evidence/ADM-M18-02.md` | PENDING |
 | ADM-M18-03 | `AS`/role co export | Export Excel/CSV/PDF duoc phep, lay so lieu tai chinh tu ledger/giao dich nguon va tao log export. | BD §12.2, AC-23 | `assets/ADM-M18-03-pass.png` | `evidence/ADM-M18-03.md` | PENDING |
-| ADM-M18-04 | `AV`/role khong export | Thu export qua UI/deep link/API; bi chan, khong tao file va khong lo du lieu. | BD §12.2, AC-23 | `assets/ADM-M18-04-pass.png` | `evidence/ADM-M18-04.md` | PENDING |
+| ADM-M18-04 | `AU`/`AC` | Thu export qua UI/deep link/API; bi chan, khong tao file va khong lo du lieu. | BD §12.2, AC-23 | `assets/ADM-M18-04-pass.png` | `evidence/ADM-M18-04.md` | PENDING |
 | ADM-M18-05 | `AS`, filter rong/loi tai du lieu | Empty/loading/error state Android ro rang; retry khong tao export trung hay lam sai bo loc da chon. | BD §12.2 - UI/retry | `assets/ADM-M18-05-pass.png` | `evidence/ADM-M18-05.md` | PENDING |
 
 ### M19 - Audit, bao mat va ho tro
@@ -289,17 +291,41 @@ Ky hieu: `H` = happy path, `V` = validation/bien, `E` = loi/offline, `Q` = auth/
 | Case ID | Persona / tien dieu kien | Kich ban va ket qua mong doi | Phu BD/AC | Anh PASS du kien | Ghi chu / log du kien | Trang thai |
 | --- | --- | --- | --- | --- | --- | --- |
 | ADM-M19-01 | `AS`, hanh dong payment/Sale/config | Mo audit log va loc theo thoi gian, actor, action, object, module; cac hanh dong bat buoc co ly do/timestamp/actor du. | BD §11.8, AC-21 | `assets/ADM-M19-01-pass.png` | `evidence/ADM-M19-01.md` | PENDING |
-| ADM-M19-02 | `AU`/`AV` | Thu xem audit nhay cam, sua role hoac dung deep link/API ngoai scope; bi chan dung permission va khong lo du lieu khong can thiet. | BD §11.8 - RBAC | `assets/ADM-M19-02-pass.png` | `evidence/ADM-M19-02.md` | PENDING |
+| ADM-M19-02 | `AU`/`AC` | Thu xem audit nhay cam, sua role hoac dung deep link/API ngoai scope; bi chan dung permission va khong lo du lieu khong can thiet. | BD §11.8 - RBAC | `assets/ADM-M19-02-pass.png` | `evidence/ADM-M19-02.md` | PENDING |
 | ADM-M19-03 | `AS`, su kien gia lap an toan | Kiem tra canh bao login bat thuong, loi quyen va giao dich nghi trung; co thong tin can xu ly nhung da che du lieu nhay cam. | BD §11.8 - security monitoring | `assets/ADM-M19-03-pass.png` | `evidence/ADM-M19-03.md` | PENDING |
 | ADM-M19-04 | `AU`/`AS`, ticket seed | Mo/xu ly ticket ho tro theo workflow, luu lich su va bang chung can thiet; khong dua PII/raw payload vao ghi chu. | BD §11.8 - support | `assets/ADM-M19-04-pass.png` | `evidence/ADM-M19-04.md` | PENDING |
 | ADM-M19-05 | `AS`, thay doi role | Super Admin quan ly role/permission; thay doi co audit, co hieu luc sau refresh/relaunch va khong tao quyen ngam cho role khac. | BD §11.8 - role lifecycle | `assets/ADM-M19-05-pass.png` | `evidence/ADM-M19-05.md` | PENDING |
 
+## Ma tran automated-only M10/M11 (E2E Android N/A)
+
+M10/M11 khong tao `main_v3.dart`. Anh chinh la anh report test da che du lieu; note phai ghi command ID, danh sach test, DD reference, actual result va ly do E2E `N/A`.
+
+### M10 - Theo doi nang cao va muc tieu
+
+| Case ID | Persona / tien dieu kien | Kich ban va ket qua mong doi | Phu BD/AC | Anh PASS du kien | Ghi chu / log du kien | Trang thai |
+| --- | --- | --- | --- | --- | --- | --- |
+| AUT-M10-01 | Free/Plus/FamilyPlus synthetic | Entitlement, tao muc tieu va retry cung business key dung contract; Free bi chan, paid duoc phep, khong tao muc tieu trung. | BD §6 M10; ADVANCED_TRACKING_GOALS-F01/FN01 | `assets/AUT-M10-01-pass.png` | `evidence/AUT-M10-01.md` | PENDING |
+| AUT-M10-02 | Paid co du lieu theo ky | Roadmap theo subject/ky duoc tinh va luu dung; reload va loc subject khong tron du lieu. | BD §6 M10; ADVANCED_TRACKING_GOALS-F02/FN02 | `assets/AUT-M10-02-pass.png` | `evidence/AUT-M10-02.md` | PENDING |
+| AUT-M10-03 | Repository success/empty/error/forbidden | Widget bao phu loading, locked, empty, ready, business error, system error va permission denied; action goi dung function. | DD ADVANCED_TRACKING_GOALS Views | `assets/AUT-M10-03-pass.png` | `evidence/AUT-M10-03.md` | PENDING |
+| AUT-M10-04 | Paid co nhieu goal/stage | Multi-goal, giai doan, so sanh lich su va dieu chinh lich trinh/phan hoi khong ghi de lich su. | BD §6 M10; DD feature/function branches | `assets/AUT-M10-04-pass.png` | `evidence/AUT-M10-04.md` | PENDING |
+| AUT-M10-05 | FamilyPlus owner/member/outsider | Chi subject cung package duoc truy cap; outsider va subject tuy y bi chan o use-case/contract, co audit an toan. | BD §6 M10, Q-15; DD ownership/security | `assets/AUT-M10-05-pass.png` | `evidence/AUT-M10-05.md` | PENDING |
+
+### M11 - FamilyPlus
+
+| Case ID | Persona / tien dieu kien | Kich ban va ket qua mong doi | Phu BD/AC | Anh PASS du kien | Ghi chu / log du kien | Trang thai |
+| --- | --- | --- | --- | --- | --- | --- |
+| AUT-M11-01 | FamilyPlus owner + 5 member synthetic | Group/member CRUD, duplicate request va gioi han toi da 5 thanh vien duoc enforce tai write/RPC; khong tao member thu sau. | BD §6 M11, Q-15; FAMILYPLUS-F01/FN01 | `assets/AUT-M11-01-pass.png` | `evidence/AUT-M11-01.md` | PENDING |
+| AUT-M11-02 | Owner/joined member/outsider | Q-15 visibility va live RLS cho phep joined member xem thong tin trong cung package, chan outsider; khong dua `can_view` trai contract vao quyet dinh quyen. | BD §6 M11, Q-15; FAMILYPLUS ownership/RLS | `assets/AUT-M11-02-pass.png` | `evidence/AUT-M11-02.md` | PENDING |
+| AUT-M11-03 | FamilyPlus chuyen subject | Onboarding, plan, dashboard, health score va notification doc/ghi dung subject; actor/subject duoc truy vet va khong ro ri cheo. | BD §6 M11; cross-module M01/M02/M03/M08/M09 | `assets/AUT-M11-03-pass.png` | `evidence/AUT-M11-03.md` | PENDING |
+| AUT-M11-04 | Package active/expired + repository states | Widget bao phu loading, locked, empty, ready, business/system error, permission denied; expiry thu hoi quyen dung contract. | DD FAMILYPLUS Views/entitlement | `assets/AUT-M11-04-pass.png` | `evidence/AUT-M11-04.md` | PENDING |
+| AUT-M11-05 | FamilyPlus payment owner + referral | Commission chi tinh tren phan gia cua owner; member add-on khong tao hoa hong sai, retry/reversal giu ledger nguyen tu. | BD Q-11; M11/M14 contract | `assets/AUT-M11-05-pass.png` | `evidence/AUT-M11-05.md` | PENDING |
+
 ## Gate bao cao cuoi chien dich
 
-- Khong duoc ket luan “test toan bo he thong thanh cong” khi con case `PENDING`, `FAIL` hoac `BLOCKED` trong 17 module in scope.
+- Khong duoc ket luan “test toan bo he thong thanh cong” khi con case `PENDING`, `FAIL` hoac `BLOCKED` trong 17 module E2E hoac 10 case automated-only M10/M11.
 - Moi `PASS` can co ghi chu case va anh tai duong dan da quy uoc; case khong co UI phai ghi ly do va bang chung backend/Android thay the trong ghi chu.
 - Moi loi da fix can co lien ket fix, targeted test/analyze/format, retest tren dung entrypoint va anh PASS moi.
-- Bao cao tong hop can phan biet ro: ket qua v2, ket qua Admin, failure baseline, V3 M10/M11 ngoai scope, va moi blocker sandbox/RLS/backend policy chua duoc tu y thay doi.
+- Bao cao tong hop can phan biet ro: ket qua v2, ket qua Admin, M10/M11 automated-only va E2E N/A, failure baseline, va moi gioi han sandbox/RLS/backend policy.
 
 ## Tai lieu nguon
 

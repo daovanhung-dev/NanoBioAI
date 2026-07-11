@@ -205,12 +205,13 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         if (decoded.isEmpty) {
           throw const FormatException('Gemini returned an empty JSON array');
         }
-        AITraceLogger.payload(
+        AITraceLogger.info(
           _tag,
           traceId,
           method,
-          'CONNECTION_CHECK_DECODED_JSON',
-          decoded,
+          'CONNECTION_CHECK_RESPONSE_VALIDATED',
+          'AI connection check response validated.',
+          data: {'model': entry.name, 'itemCount': decoded.length},
           location: StackTrace.current,
         );
 
@@ -240,8 +241,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
           traceId,
           method,
           'MODEL_CHECK_FAILED',
-          'AI connection check failed model=${entry.name} '
-              'reason=${_connectionCheckFailureMessage(error)}',
+          'AI connection check failed.',
           error,
           stackTrace,
           data: {'model': entry.name},
@@ -260,7 +260,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       method,
       'FAILURE',
       result.message,
-      data: {'lastModelName': lastModelName},
+      data: {'model': lastModelName},
       location: StackTrace.current,
     );
     return result;
@@ -278,23 +278,18 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       _tag,
       traceId,
       method,
-      data: {
-        'userId': userId,
-        'startDate': startDate.toIso8601String(),
-        'days': days,
-        'models': _modelNames(),
-        'healthData': _healthDataToMap(healthData),
-      },
+      data: {'days': days, 'models': _modelNames()},
       location: StackTrace.current,
     );
 
     final catalog = await _catalogLoader();
-    AITraceLogger.payload(
+    AITraceLogger.info(
       _tag,
       traceId,
       method,
       'CATALOG_LOADED',
-      _catalogSummary(catalog),
+      'AI catalog loaded.',
+      data: _catalogCounts(catalog),
       location: StackTrace.current,
     );
 
@@ -302,12 +297,13 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     final usedCodeCounts = <String, int>{};
     final codeItems = <Map<String, dynamic>>[];
     final chunks = _chunkPlan(days);
-    AITraceLogger.payload(
+    AITraceLogger.info(
       _tag,
       traceId,
       method,
       'CHUNK_PLAN',
-      chunks.map((chunk) => chunk.toMap()).toList(growable: false),
+      'Meal generation chunks prepared.',
+      data: {'chunkCount': chunks.length, 'days': days},
       location: StackTrace.current,
     );
 
@@ -320,15 +316,6 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         catalog: catalog.meals,
         usedMealCodes: _usedCodes(usedCodeCounts),
       );
-      AITraceLogger.payload(
-        _tag,
-        traceId,
-        method,
-        'MEAL_CHUNK_PROMPT_ORIGINAL day=${chunk.startDay}',
-        prompt,
-        location: StackTrace.current,
-      );
-
       final chunkItems = await _generateMealChunk(
         normalizer: normalizer,
         catalog: catalog,
@@ -339,12 +326,17 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       );
       _accumulateCodeCounts(chunkItems, 'meal_code', usedCodeCounts);
       codeItems.addAll(chunkItems);
-      AITraceLogger.payload(
+      AITraceLogger.info(
         _tag,
         traceId,
         method,
-        'MEAL_USED_CODE_COUNTS_AFTER_CHUNK day=${chunk.startDay}',
-        usedCodeCounts,
+        'MEAL_CHUNK_ACCUMULATED',
+        'Meal chunk counts accumulated.',
+        data: {
+          'chunkStartDay': chunk.startDay,
+          'itemCount': chunkItems.length,
+          'distinctCodeCount': usedCodeCounts.length,
+        },
         location: StackTrace.current,
       );
     }
@@ -364,19 +356,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       method,
       'SUCCESS',
       'Tạo thực đơn hoàn tất.',
-      data: {
-        'totalCodeItems': codeItems.length,
-        'totalMeals': meals.length,
-        'createdAt': createdAt,
-      },
-      location: StackTrace.current,
-    );
-    AITraceLogger.payload(
-      _tag,
-      traceId,
-      method,
-      'NORMALIZED_MEAL_PLAN_OUTPUT',
-      _mealPlansToMaps(meals),
+      data: {'codeItemCount': codeItems.length, 'mealCount': meals.length},
       location: StackTrace.current,
     );
     return meals;
@@ -393,22 +373,18 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       _tag,
       traceId,
       method,
-      data: {
-        'startDate': startDate.toIso8601String(),
-        'days': days,
-        'models': _modelNames(),
-        'profile': _dailyHealthProfileToMap(profile),
-      },
+      data: {'days': days, 'models': _modelNames()},
       location: StackTrace.current,
     );
 
     final catalog = await _catalogLoader();
-    AITraceLogger.payload(
+    AITraceLogger.info(
       _tag,
       traceId,
       method,
       'CATALOG_LOADED',
-      _catalogSummary(catalog),
+      'AI catalog loaded.',
+      data: _catalogCounts(catalog),
       location: StackTrace.current,
     );
 
@@ -416,12 +392,13 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     final usedCodeCounts = <String, int>{};
     final codeItems = <Map<String, dynamic>>[];
     final chunks = _chunkPlan(days);
-    AITraceLogger.payload(
+    AITraceLogger.info(
       _tag,
       traceId,
       method,
       'CHUNK_PLAN',
-      chunks.map((chunk) => chunk.toMap()).toList(growable: false),
+      'Exercise generation chunks prepared.',
+      data: {'chunkCount': chunks.length, 'days': days},
       location: StackTrace.current,
     );
 
@@ -434,15 +411,6 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         catalog: catalog.exercises,
         usedExerciseCodes: _usedCodes(usedCodeCounts),
       );
-      AITraceLogger.payload(
-        _tag,
-        traceId,
-        method,
-        'EXERCISE_CHUNK_PROMPT_ORIGINAL day=${chunk.startDay}',
-        prompt,
-        location: StackTrace.current,
-      );
-
       final chunkItems = await _generateExerciseChunk(
         normalizer: normalizer,
         catalog: catalog,
@@ -453,12 +421,17 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       );
       _accumulateCodeCounts(chunkItems, 'exercise_code', usedCodeCounts);
       codeItems.addAll(chunkItems);
-      AITraceLogger.payload(
+      AITraceLogger.info(
         _tag,
         traceId,
         method,
-        'EXERCISE_USED_CODE_COUNTS_AFTER_CHUNK day=${chunk.startDay}',
-        usedCodeCounts,
+        'EXERCISE_CHUNK_ACCUMULATED',
+        'Exercise chunk counts accumulated.',
+        data: {
+          'chunkStartDay': chunk.startDay,
+          'itemCount': chunkItems.length,
+          'distinctCodeCount': usedCodeCounts.length,
+        },
         location: StackTrace.current,
       );
     }
@@ -479,18 +452,9 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       'SUCCESS',
       'Tạo bài tập hoàn tất.',
       data: {
-        'totalCodeItems': codeItems.length,
-        'totalExercises': exercises.length,
-        'createdAt': createdAt,
+        'codeItemCount': codeItems.length,
+        'exerciseCount': exercises.length,
       },
-      location: StackTrace.current,
-    );
-    AITraceLogger.payload(
-      _tag,
-      traceId,
-      method,
-      'NORMALIZED_EXERCISE_OUTPUT',
-      _exerciseTasksToMaps(exercises),
       location: StackTrace.current,
     );
     return exercises;
@@ -518,12 +482,17 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             method: method,
             step: 'MEAL_CHUNK day=${chunk.startDay}',
           );
-          AITraceLogger.payload(
+          AITraceLogger.info(
             _tag,
             traceId,
             method,
-            'MEAL_DECODED_JSON day=${chunk.startDay} model=${entry.name}',
-            decoded,
+            'MEAL_RESPONSE_DECODED',
+            'Meal response decoded.',
+            data: {
+              'model': entry.name,
+              'chunkStartDay': chunk.startDay,
+              'itemCount': decoded.length,
+            },
             location: StackTrace.current,
           );
           final validated = normalizer.validateCodeItems(
@@ -533,12 +502,18 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             days: chunk.days,
             usedCodeCounts: usedCodeCounts,
           );
-          AITraceLogger.payload(
+          AITraceLogger.info(
             _tag,
             traceId,
             method,
-            'MEAL_VALIDATED_CODE_ITEMS day=${chunk.startDay} model=${entry.name}',
-            validated,
+            'MEAL_RESPONSE_VALIDATED',
+            'Meal response validated.',
+            data: {
+              'model': entry.name,
+              'source': AITraceLogger.aiGen,
+              'chunkStartDay': chunk.startDay,
+              'itemCount': validated.length,
+            },
             location: StackTrace.current,
           );
           return validated;
@@ -552,7 +527,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         'Chunk thực đơn tạo bằng AI.',
         data: {
           'source': AITraceLogger.aiGen,
-          'chunk': chunk.toMap(),
+          'chunkStartDay': chunk.startDay,
+          'chunkDays': chunk.days,
           'itemCount': items.length,
         },
         location: StackTrace.current,
@@ -567,7 +543,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         'Chunk thực đơn chuyển sang local fallback.',
         error,
         stackTrace,
-        data: {'source': AITraceLogger.localGen, 'chunk': chunk.toMap()},
+        data: {
+          'source': AITraceLogger.localGen,
+          'chunkStartDay': chunk.startDay,
+          'chunkDays': chunk.days,
+        },
         location: StackTrace.current,
       );
       final fallbackItems = normalizer.fallbackCodeItems(
@@ -576,12 +556,17 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         days: chunk.days,
         usedCodeCounts: usedCodeCounts,
       );
-      AITraceLogger.payload(
+      AITraceLogger.info(
         _tag,
         traceId,
         method,
-        'MEAL_LOCAL_FALLBACK_ITEMS day=${chunk.startDay}',
-        fallbackItems,
+        'MEAL_LOCAL_FALLBACK_READY',
+        'Meal local fallback prepared.',
+        data: {
+          'source': AITraceLogger.localGen,
+          'chunkStartDay': chunk.startDay,
+          'itemCount': fallbackItems.length,
+        },
         location: StackTrace.current,
       );
       return fallbackItems;
@@ -610,12 +595,17 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             method: method,
             step: 'EXERCISE_CHUNK day=${chunk.startDay}',
           );
-          AITraceLogger.payload(
+          AITraceLogger.info(
             _tag,
             traceId,
             method,
-            'EXERCISE_DECODED_JSON day=${chunk.startDay} model=${entry.name}',
-            decoded,
+            'EXERCISE_RESPONSE_DECODED',
+            'Exercise response decoded.',
+            data: {
+              'model': entry.name,
+              'chunkStartDay': chunk.startDay,
+              'itemCount': decoded.length,
+            },
             location: StackTrace.current,
           );
           final validated = normalizer.validateCodeItems(
@@ -625,12 +615,18 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             days: chunk.days,
             usedCodeCounts: usedCodeCounts,
           );
-          AITraceLogger.payload(
+          AITraceLogger.info(
             _tag,
             traceId,
             method,
-            'EXERCISE_VALIDATED_CODE_ITEMS day=${chunk.startDay} model=${entry.name}',
-            validated,
+            'EXERCISE_RESPONSE_VALIDATED',
+            'Exercise response validated.',
+            data: {
+              'model': entry.name,
+              'source': AITraceLogger.aiGen,
+              'chunkStartDay': chunk.startDay,
+              'itemCount': validated.length,
+            },
             location: StackTrace.current,
           );
           return validated;
@@ -644,7 +640,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         'Chunk bài tập tạo bằng AI.',
         data: {
           'source': AITraceLogger.aiGen,
-          'chunk': chunk.toMap(),
+          'chunkStartDay': chunk.startDay,
+          'chunkDays': chunk.days,
           'itemCount': items.length,
         },
         location: StackTrace.current,
@@ -659,7 +656,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         'Chunk bài tập chuyển sang local fallback.',
         error,
         stackTrace,
-        data: {'source': AITraceLogger.localGen, 'chunk': chunk.toMap()},
+        data: {
+          'source': AITraceLogger.localGen,
+          'chunkStartDay': chunk.startDay,
+          'chunkDays': chunk.days,
+        },
         location: StackTrace.current,
       );
       final fallbackItems = normalizer.fallbackCodeItems(
@@ -668,12 +669,17 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         days: chunk.days,
         usedCodeCounts: usedCodeCounts,
       );
-      AITraceLogger.payload(
+      AITraceLogger.info(
         _tag,
         traceId,
         method,
-        'EXERCISE_LOCAL_FALLBACK_ITEMS day=${chunk.startDay}',
-        fallbackItems,
+        'EXERCISE_LOCAL_FALLBACK_READY',
+        'Exercise local fallback prepared.',
+        data: {
+          'source': AITraceLogger.localGen,
+          'chunkStartDay': chunk.startDay,
+          'itemCount': fallbackItems.length,
+        },
         location: StackTrace.current,
       );
       return fallbackItems;
@@ -702,7 +708,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
           'Skipping model in transient-error cooldown.',
           data: {
             'model': entry.name,
-            'cooldownUntil': cooldownUntil.toIso8601String(),
+            'cooldownMs': cooldownUntil.difference(_now()).inMilliseconds,
           },
           location: StackTrace.current,
         );
@@ -864,12 +870,13 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     }
 
     final decoded = AIJsonParser.decodeArray(text);
-    AITraceLogger.payload(
+    AITraceLogger.info(
       _tag,
       traceId,
       method,
       '$step.DECODE_ARRAY',
-      decoded,
+      'AI response decoded as an array.',
+      data: {'model': entry.name, 'itemCount': decoded.length},
       location: StackTrace.current,
     );
     return decoded;
@@ -882,24 +889,32 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required String method,
     required String step,
   }) async {
-    AITraceLogger.payload(
+    final stopwatch = Stopwatch()..start();
+    AITraceLogger.info(
       _tag,
       traceId,
       method,
-      '$step.PROMPT_SENT model=${entry.name}',
-      prompt,
+      '$step.REQUEST_SENT',
+      'AI request sent.',
+      data: {'model': entry.name, 'promptLength': prompt.length},
       location: StackTrace.current,
     );
 
     final textGenerator = _textGenerator;
     if (textGenerator != null) {
       final text = await textGenerator(modelName: entry.name, prompt: prompt);
-      AITraceLogger.payload(
+      stopwatch.stop();
+      AITraceLogger.info(
         _tag,
         traceId,
         method,
-        '$step.RAW_RESPONSE model=${entry.name}',
-        text,
+        '$step.RESPONSE_RECEIVED',
+        'AI response received.',
+        data: {
+          'model': entry.name,
+          'responseLength': text.length,
+          'durationMs': stopwatch.elapsedMilliseconds,
+        },
         location: StackTrace.current,
       );
       return text;
@@ -915,12 +930,18 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     if (text == null) {
       throw Exception('Gemini trả về nội dung rỗng');
     }
-    AITraceLogger.payload(
+    stopwatch.stop();
+    AITraceLogger.info(
       _tag,
       traceId,
       method,
-      '$step.RAW_RESPONSE model=${entry.name}',
-      text,
+      '$step.RESPONSE_RECEIVED',
+      'AI response received.',
+      data: {
+        'model': entry.name,
+        'responseLength': text.length,
+        'durationMs': stopwatch.elapsedMilliseconds,
+      },
       location: StackTrace.current,
     );
     return text;
@@ -965,82 +986,12 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     return _models.map((entry) => entry.name).toList(growable: false);
   }
 
-  Map<String, Object?> _healthDataToMap(HealthDataInterface healthData) {
-    return {
-      'fullName': healthData.fullName,
-      'gender': healthData.gender,
-      'birthYear': healthData.birthYear,
-      'heightCm': healthData.heightCm,
-      'weightKg': healthData.weightKg,
-      'bmi': healthData.bmi,
-      'goals': healthData.goals,
-      'conditions': healthData.conditions,
-      'habits': healthData.habits,
-      'sleepQuality': healthData.sleepQuality,
-      'activityLevel': healthData.activityLevel,
-      'waterPerDay': healthData.waterPerDay,
-      'allergyName': healthData.allergyName,
-      'allergyNote': healthData.allergyNote,
-      'treatmentName': healthData.treatmentName,
-      'medicationName': healthData.medicationName,
-      'treatmentNote': healthData.treatmentNote,
-      'concernText': healthData.concernText,
-    };
-  }
-
-  Map<String, Object?> _dailyHealthProfileToMap(
-    DailyHealthProfileEntity profile,
-  ) {
-    return {
-      'userId': profile.userId,
-      'fullName': profile.fullName,
-      'goals': profile.goals,
-      'conditions': profile.conditions,
-      'habits': profile.habits,
-      'sleepQuality': profile.sleepQuality,
-      'activityLevel': profile.activityLevel,
-      'waterPerDay': profile.waterPerDay,
-    };
-  }
-
-  Map<String, Object?> _catalogSummary(AiCatalogBundle catalog) {
+  Map<String, Object?> _catalogCounts(AiCatalogBundle catalog) {
     return {
       'mealCount': catalog.meals.length,
-      'mealCodes': catalog.meals.map((item) => item.code).toList(),
       'exerciseCount': catalog.exercises.length,
-      'exerciseCodes': catalog.exercises.map((item) => item.code).toList(),
       'scheduleTaskCount': catalog.scheduleTasks.length,
-      'scheduleTaskCodes': catalog.scheduleTasks
-          .map((item) => item.code)
-          .toList(),
     };
-  }
-
-  List<Map<String, Object?>> _mealPlansToMaps(List<MealPlanModel> meals) {
-    return meals.map((meal) => meal.toMap()).toList(growable: false);
-  }
-
-  List<Map<String, Object?>> _exerciseTasksToMaps(
-    List<ExerciseTaskModel> exercises,
-  ) {
-    return exercises
-        .map(
-          (exercise) => {
-            'id': exercise.id,
-            'userId': exercise.userId,
-            'scheduleDate': exercise.scheduleDate,
-            'startTime': exercise.startTime,
-            'endTime': exercise.endTime,
-            'title': exercise.title,
-            'description': exercise.description,
-            'targetValue': exercise.targetValue,
-            'unit': exercise.unit,
-            'encouragement': exercise.encouragement,
-            'createdAt': exercise.createdAt,
-            'updatedAt': exercise.updatedAt,
-          },
-        )
-        .toList(growable: false);
   }
 
   String _connectionCheckFailureMessage(Object? error) {

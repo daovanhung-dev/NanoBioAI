@@ -226,6 +226,7 @@ Edit `.env` and add your API keys:
 # Supabase (Get from: https://supabase.com/dashboard)
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key
+AUTH_EMAIL_REDIRECT_URL=nanobio://auth/callback
 
 # Google Gemini AI (Get from: https://makersuite.google.com/app/apikey)
 GEMINI_API_KEY=your-gemini-api-key
@@ -236,18 +237,26 @@ GEMINI_PLAN_OVERFLOW_MODELS=
 
 ### **4. Run the App**
 
-```bash
-# Debug mode
-flutter run
+For authenticated device testing, do not use plain `flutter run`: it does not
+pass the local authentication configuration to the app. Use the validated
+PowerShell launcher instead (the default device is `12b304f9`):
 
-# Release mode
-flutter run --release
+```powershell
+# Validate required auth settings without starting Flutter
+powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -ValidateOnly
 
-# Specific device
-flutter run -d chrome        # Web
-flutter run -d android       # Android
-flutter run -d ios           # iOS
+# Run the authenticated app on the default physical device
+powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1
+
+# Run on another device or entrypoint
+powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -DeviceId <device-id>
+powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -EntryPoint lib/main_v2.dart
 ```
+
+The launcher reads the untracked `.env` file by default, checks the required
+Supabase and auth redirect settings without printing their values, and passes
+the file through Flutter's `--dart-define-from-file` option. Override it with
+`-EnvFile <path>` when using another ignored local environment file.
 
 ### **5. Build**
 

@@ -5,6 +5,7 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_rout
 import 'package:nano_app/app_versions/v2/features/auth/domain/repositories/auth_repository.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
+import 'package:nano_app/core/config/auth_backend_availability.dart';
 
 void main() {
   test('sign in succeeds when post-auth cloud sync fails', () async {
@@ -14,6 +15,9 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
+        authBackendAvailabilityProvider.overrideWithValue(
+          AuthBackendAvailability.ready,
+        ),
         v2AuthRepositoryProvider.overrideWithValue(authRepository),
         authenticatedUserDataSyncRepositoryProvider.overrideWithValue(
           syncRepository,

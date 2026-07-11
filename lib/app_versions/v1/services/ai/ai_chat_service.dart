@@ -72,7 +72,7 @@ class AIChatService {
       'AIChatService.constructor',
       'MODELS_RESOLVED',
       'Resolved chat model names',
-      data: {'models': resolvedModelNames, 'hasApiKey': hasApiKey},
+      data: {'models': resolvedModelNames},
       location: StackTrace.current,
     );
 
@@ -222,7 +222,7 @@ class AIChatService {
           'Skipping chat model in transient-error cooldown.',
           data: {
             'model': entry.name,
-            'cooldownUntil': cooldownUntil.toIso8601String(),
+            'cooldownMs': cooldownUntil.difference(_now()).inMilliseconds,
           },
           location: StackTrace.current,
         );
@@ -254,12 +254,13 @@ class AIChatService {
             entry,
           ).timeout(AIChatRetryPolicy.perAttemptTimeout);
           final validation = _validatedResponse(text);
-          AITraceLogger.payload(
+          AITraceLogger.info(
             _tag,
             traceId,
             method,
-            'VALIDATED_RESPONSE model=${entry.name}',
-            validation.toMap(),
+            'VALIDATED_RESPONSE',
+            'AI chat response validated.',
+            data: {'model': entry.name, ...validation.toMap()},
             location: StackTrace.current,
           );
           if (validation.source == AITraceLogger.aiGen) {

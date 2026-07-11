@@ -94,8 +94,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byKey(_aiDevCheckBannerKey), findsOneWidget);
-    expect(find.text('AI đã sẵn sàng.'), findsOneWidget);
-    expect(find.text('Model: fake-model'), findsOneWidget);
+    expect(find.text('Trợ lý đã sẵn sàng: fake-model.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -154,25 +153,28 @@ void main() {
     await tester.pump(const Duration(milliseconds: 900));
     expect(tester.takeException(), isNull);
 
-    await _tapByText(tester, 'Mình sẵn sàng rồi');
+    await _tapByText(tester, 'Tạo lộ trình của tôi');
 
     for (var i = 0; i < 4; i++) {
       await _tapByText(tester, 'Tiếp tục');
     }
 
     expect(container.read(onboardingProvider).currentStep, 5);
-    expect(find.text('Bước 6/8'), findsOneWidget);
+    expect(find.text('6/8'), findsOneWidget);
 
     await _tapByText(tester, 'Tiếp tục');
 
     expect(container.read(onboardingProvider).currentStep, 6);
-    expect(find.text('Bước 7/8'), findsOneWidget);
-    expect(find.text('Trước khi Nabiđồng hành cùng bạn'), findsOneWidget);
+    expect(find.text('7/8'), findsOneWidget);
+    expect(
+      find.text('Một xác nhận nhỏ,\nđể chăm sóc đúng cách.'),
+      findsOneWidget,
+    );
 
     await _tapByText(tester, 'Tôi hiểu và đồng ý');
 
     expect(container.read(onboardingProvider).currentStep, 6);
-    expect(find.text('Bước 7/8'), findsOneWidget);
+    expect(find.text('7/8'), findsOneWidget);
 
     ScaffoldMessenger.of(
       tester.element(find.byType(OnboardingPage)),
@@ -185,7 +187,7 @@ void main() {
     await _tapPrimaryOnboardingButton(tester);
 
     expect(container.read(onboardingProvider).currentStep, 7);
-    expect(find.text('Bước 8/8'), findsOneWidget);
+    expect(find.text('8/8'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(const SizedBox.shrink());

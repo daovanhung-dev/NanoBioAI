@@ -10,7 +10,9 @@ import 'app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'app_versions/v1/services/notifications/notification_lifecycle_refresher.dart';
 import 'app_versions/v1/services/notifications/notification_startup_scheduler.dart';
 import 'app_versions/v2/app/bio_ai_v2_app.dart';
+import 'app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'core/config/app_env.dart';
+import 'core/config/auth_backend_availability.dart';
 import 'core/storage/localdb/app_prefs.dart';
 import 'core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox.dart';
@@ -22,11 +24,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await AppEnv.loadOptionalDotEnv();
-  final supabaseInitialized = await _initializeSupabaseIfConfigured();
+  final authBackendAvailability = await _initializeSupabaseIfConfigured();
 
   runApp(
     ProviderScope(
       overrides: [
+        authBackendAvailabilityProvider.overrideWithValue(
+          authBackendAvailability,
+        ),
         onboardingCompletionCallbackProvider.overrideWith((ref) {
           return () async {
             await ref
@@ -40,28 +45,33 @@ Future<void> main() async {
     ),
   );
 
-  unawaited(_startPostLaunchServices(supabaseInitialized));
+  unawaited(_startPostLaunchServices(authBackendAvailability));
 }
 
-Future<bool> _initializeSupabaseIfConfigured() async {
+Future<AuthBackendAvailability> _initializeSupabaseIfConfigured() async {
   final config = AppEnv.maybeSupabaseConfig();
-  if (config == null) {
+  final availability = await initializeAuthBackendAvailability(
+    config: config,
+    initialize: (url, anonKey) async {
+      await Supabase.initialize(url: url, anonKey: anonKey);
+    },
+    onInitializationError: (error, stackTrace) {
+      debugPrint('$_bootstrapTag: Supabase initialization failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    },
+  );
+
+  if (availability == AuthBackendAvailability.missingConfiguration) {
     debugPrint('$_bootstrapTag: Supabase config missing; guest mode starts.');
-    return false;
   }
 
-  try {
-    await Supabase.initialize(url: config.url, anonKey: config.anonKey);
-    return true;
-  } catch (error, stackTrace) {
-    debugPrint('$_bootstrapTag: Supabase initialization failed: $error');
-    debugPrintStack(stackTrace: stackTrace);
-    return false;
-  }
+  return availability;
 }
 
-Future<void> _startPostLaunchServices(bool supabaseInitialized) async {
-  if (supabaseInitialized) {
+Future<void> _startPostLaunchServices(
+  AuthBackendAvailability authBackendAvailability,
+) async {
+  if (authBackendAvailability.isReady) {
     _startCloudSync();
   }
 

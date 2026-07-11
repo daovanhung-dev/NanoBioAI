@@ -254,17 +254,20 @@ class _LifestyleHero extends StatelessWidget {
                     label: 'NHỊP SỐNG CỦA BẠN',
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Mỗi lựa chọn nhỏ,\ntạo nên thay đổi lớn.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      height: 1.1,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.65,
+                  const Expanded(
+                    child: Text(
+                      'Mỗi lựa chọn nhỏ,\ntạo nên thay đổi lớn.',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        height: 1.1,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.65,
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   _HeroSelectionStatus(
                     selectedHabitCount: selectedHabitCount,
                   ),
@@ -370,14 +373,18 @@ class _HeroSelectionStatus extends StatelessWidget {
             size: 16,
           ),
           const SizedBox(width: 7),
-          Text(
-            hasSelection
-                ? '$selectedHabitCount thói quen đã chọn'
-                : 'Bắt đầu chọn thói quen',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w800,
+          Flexible(
+            child: Text(
+              hasSelection
+                  ? '$selectedHabitCount thói quen đã chọn'
+                  : 'Bắt đầu chọn thói quen',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],

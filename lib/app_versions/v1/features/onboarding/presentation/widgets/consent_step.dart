@@ -211,17 +211,20 @@ class _ConsentHero extends StatelessWidget {
                     label: 'NIỀM TIN & SỰ AN TÂM',
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Hiểu rõ trước khi\nbắt đầu hành trình.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      height: 1.1,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.65,
+                  const Expanded(
+                    child: Text(
+                      'Hiểu rõ trước khi\nbắt đầu hành trình.',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        height: 1.1,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.65,
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   _ConsentHeroStatus(
                     agreed: agreed,
                   ),
@@ -329,12 +332,16 @@ class _ConsentHeroStatus extends StatelessWidget {
             size: 16,
           ),
           const SizedBox(width: 7),
-          Text(
-            agreed ? 'Bạn đã xác nhận' : 'Cần xác nhận trước khi tiếp tục',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11.2,
-              fontWeight: FontWeight.w800,
+          Flexible(
+            child: Text(
+              agreed ? 'Bạn đã xác nhận' : 'Cần xác nhận trước khi tiếp tục',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11.2,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],

@@ -6,7 +6,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 - docs-context - Context and docs update: 19 worklog(s)
 - coding - Coding: 18 worklog(s)
-- bugfix - Direct bugfix: 10 worklog(s)
+- bugfix - Direct bugfix: 11 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - test - Test and verification: 3 worklog(s)
@@ -23,12 +23,12 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - .codex: 2
 - authentication: 2
 - docs/DD M01-M19: 2
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
-- lib/sale_referral, lib/services/supabase/sale,: 1
 - Admin dashboard / Supabase RPC: 1
-- M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox: 1
+- docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
 - M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
-- M08 HEALTH_SCORE_HABITS.: 1
+- M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M02 PERSONAL_SCHEDULE_AI: 1
+- M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox: 1
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
 
 ## Reusable Project Skills
 

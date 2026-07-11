@@ -321,7 +321,61 @@ void main() {
     });
   });
 
+  group('AITraceLogger redaction', () {
+    test('keeps only safe metadata and error type', () async {
+      final logs = await _captureDebugPrint(() async {
+        AITraceLogger.error(
+          'AI_TEST',
+          'safe-trace-id',
+          'safeMethod',
+          'SAFE_STAGE',
+          'AI operation failed.',
+          StateError('SENSITIVE_ERROR_VALUE_90210'),
+          StackTrace.fromString('SENSITIVE_STACK_VALUE_77123'),
+          data: const {
+            'source': AITraceLogger.localGen,
+            'rawPrompt': 'SENSITIVE_PROMPT_VALUE_11991',
+          },
+        );
+      });
+      final joined = logs.join('\n');
+
+      expect(joined, contains('traceId=safe-trace-id'));
+      expect(joined, contains('step=SAFE_STAGE'));
+      expect(joined, contains('errorType'));
+      expect(joined, contains('StateError'));
+      expect(joined, contains(AITraceLogger.localGen));
+      expect(joined, isNot(contains('SENSITIVE_ERROR_VALUE_90210')));
+      expect(joined, isNot(contains('SENSITIVE_STACK_VALUE_77123')));
+      expect(joined, isNot(contains('SENSITIVE_PROMPT_VALUE_11991')));
+      expect(joined, isNot(contains('StackTrace')));
+    });
+  });
+
   group('AIChatService', () {
+    test('logs metadata without chat message or response content', () async {
+      const message = 'SENSITIVE_CHAT_MESSAGE_93217';
+      const response =
+          'Mình sẽ hỗ trợ bạn với phản hồi riêng SENSITIVE_CHAT_RESPONSE_41723.';
+      final service = AIChatService(
+        modelNames: const ['fake-model'],
+        textGenerator: ({required modelName, required message}) async =>
+            response,
+      );
+
+      final logs = await _captureDebugPrint(() async {
+        expect(await service.sendMessage(message), response);
+      });
+      final joined = logs.join('\n');
+
+      expect(joined, contains('messageLength'));
+      expect(joined, contains('textLength'));
+      expect(joined, contains(AITraceLogger.aiGen));
+      expect(joined, isNot(contains(message)));
+      expect(joined, isNot(contains(response)));
+      expect(joined, isNot(contains('SENSITIVE_CHAT_RESPONSE_41723')));
+    });
+
     test('uses cheap default chat model and returns valid AI text', () async {
       final modelCalls = <String>[];
       final service = AIChatService(
@@ -474,7 +528,7 @@ void main() {
     });
 
     test(
-      'meal generation logs trace, prompt, raw response, and AI source',
+      'meal generation logs metadata without prompt, response, or health data',
       () async {
         final rawResponse = jsonEncode(
           _mealItemsForRange(startDay: 1, days: 1),
@@ -500,11 +554,19 @@ void main() {
 
         expect(joined, contains('traceId=meal-plan-'));
         expect(joined, contains('method=generateMealPlan'));
-        expect(joined, contains('PROMPT_SENT'));
-        expect(joined, contains(rawResponse));
+        expect(joined, contains('REQUEST_SENT'));
+        expect(joined, contains('RESPONSE_RECEIVED'));
+        expect(joined, contains('promptLength'));
+        expect(joined, contains('responseLength'));
+        expect(joined, contains('durationMs'));
         expect(joined, contains('MEAL_CHUNK_SUCCESS'));
         expect(joined, contains('source'));
         expect(joined, contains(AITraceLogger.aiGen));
+        expect(joined, isNot(contains('PROMPT_SENT')));
+        expect(joined, isNot(contains('RAW_RESPONSE')));
+        expect(joined, isNot(contains(rawResponse)));
+        expect(joined, isNot(contains(const _FakeHealthData().fullName)));
+        expect(joined, isNot(contains(const _FakeHealthData().concernText)));
       },
     );
 
@@ -543,37 +605,37 @@ void main() {
       expect(meals.map((meal) => meal.mealName), isNot(contains('Bua sang')));
     });
 
-    test(
-      'meal generation logs validation failure stack and local source',
-      () async {
-        final service = AIService(
-          modelNames: const ['fake-model'],
-          catalogLoader: () async => catalog,
-          textGenerator: ({required modelName, required prompt}) async {
-            final items = _mealItemsForRange(startDay: 1, days: 1);
-            items.first['meal_code'] = 'unknown_meal';
-            return jsonEncode(items);
-          },
+    test('meal generation logs redacted error type and local source', () async {
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          final items = _mealItemsForRange(startDay: 1, days: 1);
+          items.first['meal_code'] = 'unknown_meal';
+          return jsonEncode(items);
+        },
+      );
+
+      final logs = await _captureDebugPrint(() async {
+        final meals = await service.generateMealPlan(
+          healthData: const _FakeHealthData(),
+          userId: 'u1',
+          startDate: DateTime(2026, 6, 18),
+          days: 1,
         );
+        expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
+      });
+      final joined = logs.join('\n');
 
-        final logs = await _captureDebugPrint(() async {
-          final meals = await service.generateMealPlan(
-            healthData: const _FakeHealthData(),
-            userId: 'u1',
-            startDate: DateTime(2026, 6, 18),
-            days: 1,
-          );
-          expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
-        });
-        final joined = logs.join('\n');
-
-        expect(joined, contains('MEAL_CHUNK_LOCAL_FALLBACK'));
-        expect(joined, contains('Unknown meal_code'));
-        expect(joined, contains('StackTrace'));
-        expect(joined, contains(AITraceLogger.localGen));
-        expect(joined, contains('MEAL_LOCAL_FALLBACK_ITEMS'));
-      },
-    );
+      expect(joined, contains('MEAL_CHUNK_LOCAL_FALLBACK'));
+      expect(joined, contains('errorType'));
+      expect(joined, contains('FormatException'));
+      expect(joined, contains(AITraceLogger.localGen));
+      expect(joined, contains('MEAL_LOCAL_FALLBACK_READY'));
+      expect(joined, isNot(contains('Unknown meal_code')));
+      expect(joined, isNot(contains('unknown_meal')));
+      expect(joined, isNot(contains('StackTrace')));
+    });
 
     test('transient errors fail over to the next model', () async {
       final modelCalls = <String>[];
@@ -608,9 +670,9 @@ void main() {
       expect(modelCalls, ['primary-model', 'fallback-model']);
       expect(delays, hasLength(1));
       expect(joined, contains('RETRY_ATTEMPT_FAILED'));
-      expect(joined, contains('"modelAttempt": 1'));
-      expect(joined, contains('"totalAttempt": 1'));
-      expect(joined, contains('"transient": true'));
+      expect(joined, contains('"modelAttempt":1'));
+      expect(joined, contains('"totalAttempt":1'));
+      expect(joined, contains('"transient":true'));
       expect(joined, contains('RETRY_DELAY'));
       expect(joined, contains('delayMs'));
     });

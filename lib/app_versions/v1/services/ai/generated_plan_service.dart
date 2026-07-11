@@ -199,10 +199,7 @@ class GeneratedPlanService {
       days: days,
     );
 
-    AppLogger.info(
-      _tag,
-      'Resolved start date ${_dateKey(resolvedStartDate)} for $days days',
-    );
+    AppLogger.info(_tag, 'Resolved generated-plan range for $days days');
 
     try {
       final meals = await aiService.generateMealPlan(
@@ -253,12 +250,11 @@ class GeneratedPlanService {
       try {
         await scheduleReminders();
         AppLogger.success(_tag, 'Scheduled generated reminders');
-      } catch (error, stackTrace) {
-        AppLogger.error(
+      } catch (error) {
+        AppLogger.warning(
           _tag,
-          'Failed to schedule generated reminders',
-          error,
-          stackTrace,
+          'Failed to schedule generated reminders; '
+          'errorType=${error.runtimeType}',
         );
       }
 
@@ -295,7 +291,10 @@ class GeneratedPlanService {
       return null;
     }
 
-    AppLogger.info(_tag, 'Reusing generated plan request $requestId');
+    AppLogger.info(
+      _tag,
+      'Reusing generated plan request ref=${_maskedRequestId(requestId)}',
+    );
     return GeneratedPlanResult(
       requestId: requestId,
       startDate: existing.startDate!,
@@ -324,12 +323,11 @@ class GeneratedPlanService {
         days: days,
         errorCode: errorCode,
       );
-    } catch (error, stackTrace) {
-      AppLogger.error(
+    } catch (error) {
+      AppLogger.warning(
         _tag,
-        'Failed to record generated plan request failure',
-        error,
-        stackTrace,
+        'Failed to record generated plan request failure; '
+        'errorType=${error.runtimeType}',
       );
     }
   }
@@ -340,6 +338,15 @@ class GeneratedPlanService {
       throw StateError('Generated plan request id is required');
     }
     return normalized;
+  }
+
+  String _maskedRequestId(String requestId) {
+    var hash = 0x811c9dc5;
+    for (final codeUnit in requestId.codeUnits) {
+      hash ^= codeUnit;
+      hash = (hash * 0x01000193) & 0xffffffff;
+    }
+    return hash.toRadixString(16).padLeft(8, '0');
   }
 
   String _defaultRequestId({
@@ -358,12 +365,6 @@ class GeneratedPlanService {
       return 'invalid_generation';
     }
     return 'generation_failed';
-  }
-
-  String _dateKey(DateTime value) {
-    final month = value.month.toString().padLeft(2, '0');
-    final day = value.day.toString().padLeft(2, '0');
-    return '${value.year}-$month-$day';
   }
 
   DateTime _dateOnly(DateTime value) {

@@ -5,7 +5,41 @@ import 'package:nano_app/core/utils/logger/app_logger.dart';
 class AITraceLogger {
   static const aiGen = 'AI_GEN';
   static const localGen = 'LOCAL_GEN';
-  static const _chunkLength = 3500;
+
+  static const _allowedMetadataKeys = {
+    'chunkCount',
+    'chunkDays',
+    'chunkStartDay',
+    'codeItemCount',
+    'cooldownMs',
+    'cooldownSkips',
+    'days',
+    'delayMs',
+    'distinctCodeCount',
+    'durationMs',
+    'errorType',
+    'exerciseCount',
+    'itemCount',
+    'lastErrorType',
+    'mealCount',
+    'messageLength',
+    'model',
+    'modelAttempt',
+    'models',
+    'nextTotalAttempt',
+    'perModelTimeoutMs',
+    'promptLength',
+    'responseLength',
+    'scheduleTaskCount',
+    'source',
+    'reason',
+    'textLength',
+    'totalAttempt',
+    'totalAttempts',
+    'transient',
+    'retryable',
+    'streaming',
+  };
 
   static int _sequence = 0;
 
@@ -44,12 +78,9 @@ class AITraceLogger {
     Map<String, Object?> data = const {},
     StackTrace? location,
   }) {
-    AppLogger.success(
-      tag,
-      _line(traceId, method, step, message, location: location),
-    );
+    AppLogger.success(tag, _line(traceId, method, step, message));
     if (data.isNotEmpty) {
-      payload(tag, traceId, method, '$step.data', data, location: location);
+      _metadata(tag, traceId, method, '$step.data', data);
     }
   }
 
@@ -62,12 +93,9 @@ class AITraceLogger {
     Map<String, Object?> data = const {},
     StackTrace? location,
   }) {
-    AppLogger.info(
-      tag,
-      _line(traceId, method, step, message, location: location),
-    );
+    AppLogger.info(tag, _line(traceId, method, step, message));
     if (data.isNotEmpty) {
-      payload(tag, traceId, method, '$step.data', data, location: location);
+      _metadata(tag, traceId, method, '$step.data', data);
     }
   }
 
@@ -80,12 +108,9 @@ class AITraceLogger {
     Map<String, Object?> data = const {},
     StackTrace? location,
   }) {
-    AppLogger.warning(
-      tag,
-      _line(traceId, method, step, message, location: location),
-    );
+    AppLogger.warning(tag, _line(traceId, method, step, message));
     if (data.isNotEmpty) {
-      payload(tag, traceId, method, '$step.data', data, location: location);
+      _metadata(tag, traceId, method, '$step.data', data);
     }
   }
 
@@ -100,100 +125,56 @@ class AITraceLogger {
     Map<String, Object?> data = const {},
     StackTrace? location,
   }) {
-    AppLogger.error(
-      tag,
-      _line(traceId, method, step, message, location: location),
-      error,
-      stackTrace,
-    );
-    if (data.isNotEmpty) {
-      payload(tag, traceId, method, '$step.data', data, location: location);
-    }
+    AppLogger.error(tag, _line(traceId, method, step, message));
+    _metadata(tag, traceId, method, '$step.data', {
+      ...data,
+      'errorType': error.runtimeType.toString(),
+    });
   }
 
-  static void payload(
+  static void _metadata(
     String tag,
     String traceId,
     String method,
     String step,
-    Object? value, {
-    StackTrace? location,
-  }) {
-    final encoded = _encode(value);
-    if (encoded.length <= _chunkLength) {
-      AppLogger.info(
-        tag,
-        _line(traceId, method, step, encoded, location: location),
-      );
-      return;
+    Map<String, Object?> data,
+  ) {
+    final sanitized = <String, Object?>{};
+    for (final entry in data.entries) {
+      if (!_isAllowedMetadataKey(entry.key)) continue;
+      final value = _safeMetadataValue(entry.key, entry.value);
+      if (value != null) {
+        sanitized[entry.key] = value;
+      }
     }
+    if (sanitized.isEmpty) return;
 
-    final totalChunks = (encoded.length / _chunkLength).ceil();
-    for (var index = 0; index < totalChunks; index++) {
-      final start = index * _chunkLength;
-      final end = start + _chunkLength > encoded.length
-          ? encoded.length
-          : start + _chunkLength;
-      AppLogger.info(
-        tag,
-        _line(
-          traceId,
-          method,
-          '$step chunk=${index + 1}/$totalChunks length=${encoded.length}',
-          encoded.substring(start, end),
-          location: location,
-        ),
-      );
-    }
+    AppLogger.info(tag, _line(traceId, method, step, jsonEncode(sanitized)));
   }
 
   static String _line(
     String traceId,
     String method,
     String step,
-    String message, {
-    StackTrace? location,
-  }) {
-    return 'traceId=$traceId method=$method step=$step '
-        'location=${_location(location)} $message';
+    String message,
+  ) {
+    return 'traceId=$traceId method=$method step=$step $message';
   }
 
-  static String _location(StackTrace? stackTrace) {
-    final text = stackTrace?.toString().trim();
-    if (text == null || text.isEmpty) {
-      return 'unknown';
+  static bool _isAllowedMetadataKey(String key) {
+    return _allowedMetadataKeys.contains(key);
+  }
+
+  static Object? _safeMetadataValue(String key, Object? value) {
+    if (value is num || value is bool) {
+      return value;
     }
-    return text.split('\n').first.trim();
-  }
-
-  static String _encode(Object? value) {
     if (value is String) {
       return value;
     }
-
-    try {
-      return const JsonEncoder.withIndent('  ').convert(_jsonSafe(value));
-    } catch (_) {
-      return value.toString();
+    if (key == 'models' && value is Iterable<String>) {
+      return value.toList(growable: false);
     }
-  }
-
-  static Object? _jsonSafe(Object? value) {
-    if (value == null || value is num || value is bool || value is String) {
-      return value;
-    }
-    if (value is DateTime) {
-      return value.toIso8601String();
-    }
-    if (value is Map) {
-      return {
-        for (final entry in value.entries)
-          entry.key.toString(): _jsonSafe(entry.value),
-      };
-    }
-    if (value is Iterable) {
-      return value.map(_jsonSafe).toList(growable: false);
-    }
-    return value.toString();
+    return null;
   }
 }

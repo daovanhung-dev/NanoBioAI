@@ -34,7 +34,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Danh cho FamilyPlus'), findsOneWidget);
+    expect(find.text('Dành cho FamilyPlus'), findsOneWidget);
   });
 
   testWidgets('renders empty state safely', (tester) async {
@@ -50,8 +50,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Quan ly gia dinh'), findsOneWidget);
-    expect(find.text('Tao nhom FamilyPlus'), findsOneWidget);
+    expect(find.text('Quản lý gia đình'), findsOneWidget);
+    expect(find.text('Tạo nhóm FamilyPlus'), findsOneWidget);
   });
 
   testWidgets('renders ready member list safely', (tester) async {
