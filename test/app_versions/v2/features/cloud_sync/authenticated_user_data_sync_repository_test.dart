@@ -7,7 +7,9 @@ import 'package:nano_app/app_versions/v2/features/cloud_sync/data/repositories/a
 import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/cloud_sync_result.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/user_data_snapshot.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
+import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 
 void main() {
   group('AuthenticatedUserDataSyncRepositoryImpl', () {
@@ -32,10 +34,12 @@ void main() {
         final repository = AuthenticatedUserDataSyncRepositoryImpl(
           remoteDatasource: remote,
           localDatasource: local,
+          outbox: _FakeOutbox(),
         );
 
         final result = await repository.syncAfterAuthenticatedSession(
           AuthSyncReason.signUpSessionReady,
+          guestAction: GuestMergeAction.mergeNow,
         );
 
         expect(result.pushedLocalGuestData, isTrue);
@@ -45,6 +49,7 @@ void main() {
         expect(local.replacedUserId, 'auth-1');
         expect(local.removedLocalUserId, 'guest-1');
         expect(await AppPrefs.pendingGuestUserId(), isNull);
+        expect(await AppPrefs.pendingGuestSyncActionFor('auth-1'), isNull);
 
         final routeState = const AuthRouteStateResolver().resolve(
           session: const AuthSessionSnapshot(
@@ -71,10 +76,18 @@ void main() {
       final repository = AuthenticatedUserDataSyncRepositoryImpl(
         remoteDatasource: remote,
         localDatasource: local,
+        outbox: _FakeOutbox(),
       );
+
+      final consent = await repository.syncAfterAuthenticatedSession(
+        AuthSyncReason.signIn,
+      );
+      expect(consent.status, UserDataSyncStatus.awaitingConsent);
+      expect(local.replacedUserId, isNull);
 
       final result = await repository.syncAfterAuthenticatedSession(
         AuthSyncReason.signIn,
+        guestAction: GuestMergeAction.useExistingCloud,
       );
 
       expect(result.pushedLocalGuestData, isFalse);
@@ -104,9 +117,13 @@ void main() {
         final repository = AuthenticatedUserDataSyncRepositoryImpl(
           remoteDatasource: remote,
           localDatasource: local,
+          outbox: _FakeOutbox(),
         );
 
-        await repository.syncAfterAuthenticatedSession(AuthSyncReason.signIn);
+        await repository.syncAfterAuthenticatedSession(
+          AuthSyncReason.signIn,
+          guestAction: GuestMergeAction.useExistingCloud,
+        );
 
         expect(remote.pushedSnapshot, isNull);
         expect(local.replacedUserId, 'auth-1');
@@ -114,14 +131,114 @@ void main() {
       },
     );
 
+    test('pending auth outbox blocks Guest cloud inspection', () async {
+      await AppPrefs.setPendingGuestUserId('guest-1');
+      final remote = _FakeRemoteDatasource(
+        pullSnapshots: [_freshSnapshot('auth-1')],
+      );
+      final local = _FakeLocalDatasource({
+        'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
+      });
+      final outbox = _FakeOutbox(pendingCounts: [1, 1]);
+      final repository = AuthenticatedUserDataSyncRepositoryImpl(
+        remoteDatasource: remote,
+        localDatasource: local,
+        outbox: outbox,
+      );
+
+      final result = await repository.syncAfterAuthenticatedSession(
+        AuthSyncReason.signIn,
+      );
+
+      expect(result.status, UserDataSyncStatus.pendingUpload);
+      expect(remote.pullCalls, 0);
+      expect(await AppPrefs.pendingGuestUserId(), 'guest-1');
+    });
+
+    test('pending outbox is never followed by cloud pull', () async {
+      final remote = _FakeRemoteDatasource(
+        pullSnapshots: [_snapshot('auth-1', tableName: 'meal_plans')],
+      );
+      final local = _FakeLocalDatasource({});
+      final outbox = _FakeOutbox(pendingCounts: [1, 1]);
+      final repository = AuthenticatedUserDataSyncRepositoryImpl(
+        remoteDatasource: remote,
+        localDatasource: local,
+        outbox: outbox,
+      );
+
+      final result = await repository.syncAfterAuthenticatedSession(
+        AuthSyncReason.connectivity,
+      );
+
+      expect(result.status, UserDataSyncStatus.pendingUpload);
+      expect(result.pendingCount, 1);
+      expect(remote.pullCalls, 0);
+      expect(local.replacedUserId, isNull);
+      expect(outbox.drainCalls, 1);
+    });
+
+    test('confirmed outbox drain happens before cloud pull', () async {
+      final events = <String>[];
+      final remote = _FakeRemoteDatasource(
+        pullSnapshots: [_snapshot('auth-1', tableName: 'meal_plans')],
+        events: events,
+      );
+      final local = _FakeLocalDatasource({}, events: events);
+      final outbox = _FakeOutbox(
+        pendingCounts: [1, 0],
+        events: events,
+      );
+      final repository = AuthenticatedUserDataSyncRepositoryImpl(
+        remoteDatasource: remote,
+        localDatasource: local,
+        outbox: outbox,
+      );
+
+      final result = await repository.syncAfterAuthenticatedSession(
+        AuthSyncReason.resume,
+      );
+
+      expect(result.status, UserDataSyncStatus.success);
+      expect(events, [
+        'outbox:due',
+        'outbox:drain',
+        'cloud:pull',
+        'local:replace',
+      ]);
+    });
+
+    test('local write created during pull prevents cache replacement', () async {
+      final remote = _FakeRemoteDatasource(
+        pullSnapshots: [_snapshot('auth-1', tableName: 'meal_plans')],
+      );
+      final local = _FakeLocalDatasource({}, pendingOnReplace: 2);
+      final repository = AuthenticatedUserDataSyncRepositoryImpl(
+        remoteDatasource: remote,
+        localDatasource: local,
+        outbox: _FakeOutbox(),
+      );
+
+      final result = await repository.syncAfterAuthenticatedSession(
+        AuthSyncReason.resume,
+      );
+
+      expect(result.status, UserDataSyncStatus.pendingUpload);
+      expect(result.pendingCount, 2);
+      expect(local.replacedUserId, isNull);
+    });
+
     test(
       'sync failure after Guest upload does not clear pending Guest id',
       () async {
         await AppPrefs.setPendingGuestUserId('guest-1');
 
         final remote = _FakeRemoteDatasource(
-          pullSnapshots: [_freshSnapshot('auth-1')],
-          failFromPull: 2,
+          pullSnapshots: [
+            _freshSnapshot('auth-1'),
+            _snapshot('auth-1', tableName: 'meal_plans'),
+          ],
+          failOnPullCalls: const {2},
         );
         final local = _FakeLocalDatasource({
           'guest-1': _snapshot('guest-1', tableName: 'meal_plans'),
@@ -129,15 +246,30 @@ void main() {
         final repository = AuthenticatedUserDataSyncRepositoryImpl(
           remoteDatasource: remote,
           localDatasource: local,
+          outbox: _FakeOutbox(),
         );
 
-        await expectLater(
-          repository.syncAfterAuthenticatedSession(AuthSyncReason.signIn),
-          throwsStateError,
+        final result = await repository.syncAfterAuthenticatedSession(
+          AuthSyncReason.signIn,
+          guestAction: GuestMergeAction.mergeNow,
         );
 
+        expect(result.status, UserDataSyncStatus.error);
         expect(remote.pushedSnapshot, isNotNull);
         expect(await AppPrefs.pendingGuestUserId(), 'guest-1');
+        expect(
+          await AppPrefs.pendingGuestSyncActionFor('auth-1'),
+          GuestMergeAction.useExistingCloud.name,
+        );
+
+        final retry = await repository.syncAfterAuthenticatedSession(
+          AuthSyncReason.connectivity,
+        );
+
+        expect(retry.status, UserDataSyncStatus.success);
+        expect(local.replacedUserId, 'auth-1');
+        expect(await AppPrefs.pendingGuestUserId(), isNull);
+        expect(await AppPrefs.pendingGuestSyncActionFor('auth-1'), isNull);
       },
     );
   });
@@ -175,18 +307,59 @@ UserDataSnapshot _snapshot(
   );
 }
 
+class _FakeOutbox extends UserDataSyncOutbox {
+  final List<int> pendingCounts;
+  final List<String>? events;
+  var _pendingReadIndex = 0;
+  var drainCalls = 0;
+
+  _FakeOutbox({List<int>? pendingCounts, this.events})
+    : pendingCounts = pendingCounts ?? const [0],
+      super(currentUserId: () => 'auth-1', drainImmediately: false);
+
+  @override
+  Future<int> pendingCountForCurrentUser({Database? database}) async {
+    final index = _pendingReadIndex
+        .clamp(0, pendingCounts.length - 1)
+        .toInt();
+    _pendingReadIndex += 1;
+    return pendingCounts[index];
+  }
+
+  @override
+  Future<void> makeRetriesDueForCurrentUser({Database? database}) async {
+    events?.add('outbox:due');
+  }
+
+  @override
+  Future<int> drainPending({Database? database, int limit = 100}) async {
+    drainCalls += 1;
+    events?.add('outbox:drain');
+    return 0;
+  }
+}
+
 class _FakeRemoteDatasource implements UserDataSyncRemoteDatasource {
   @override
   final String? currentUserId = 'auth-1';
 
   final List<UserDataSnapshot?> pullSnapshots;
   final int? failFromPull;
+  final Set<int> failOnPullCalls;
+  final List<String>? events;
   int _pullCalls = 0;
 
   UserDataSnapshot? pushedSnapshot;
   String? pushedAuthUserId;
 
-  _FakeRemoteDatasource({required this.pullSnapshots, this.failFromPull});
+  _FakeRemoteDatasource({
+    required this.pullSnapshots,
+    this.failFromPull,
+    this.failOnPullCalls = const {},
+    this.events,
+  });
+
+  int get pullCalls => _pullCalls;
 
   UserDataSnapshot? get lastSnapshot => pullSnapshots.isEmpty
       ? null
@@ -199,8 +372,10 @@ class _FakeRemoteDatasource implements UserDataSyncRemoteDatasource {
 
   @override
   Future<UserDataSnapshot?> pullCurrentUserSnapshot() async {
+    events?.add('cloud:pull');
     _pullCalls += 1;
-    if (failFromPull != null && _pullCalls >= failFromPull!) {
+    if (failOnPullCalls.contains(_pullCalls) ||
+        (failFromPull != null && _pullCalls >= failFromPull!)) {
       throw StateError('pull failed');
     }
     if (pullSnapshots.isEmpty) return null;
@@ -220,11 +395,17 @@ class _FakeRemoteDatasource implements UserDataSyncRemoteDatasource {
 
 class _FakeLocalDatasource implements UserDataSyncLocalDatasource {
   final Map<String, UserDataSnapshot> snapshots;
+  final List<String>? events;
+  final int pendingOnReplace;
 
   String? replacedUserId;
   String? removedLocalUserId;
 
-  _FakeLocalDatasource(this.snapshots);
+  _FakeLocalDatasource(
+    this.snapshots, {
+    this.events,
+    this.pendingOnReplace = 0,
+  });
 
   @override
   Future<UserDataSnapshot?> readSnapshot(String userId) async {
@@ -237,6 +418,10 @@ class _FakeLocalDatasource implements UserDataSyncLocalDatasource {
     required UserDataSnapshot snapshot,
     String? removeLocalUserId,
   }) async {
+    if (pendingOnReplace > 0) {
+      throw LocalSyncPendingWriteException(pendingOnReplace);
+    }
+    events?.add('local:replace');
     replacedUserId = userId;
     removedLocalUserId = removeLocalUserId;
   }

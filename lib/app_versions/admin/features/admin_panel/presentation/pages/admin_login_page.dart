@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/controllers/admin_controller.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_access_state.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/services/supabase/auth/supabase_auth_error_translator.dart';
 
 /// Màn hình đăng nhập dành riêng cho khu vực quản trị.
 ///
 /// Giữ nguyên luồng nghiệp vụ:
-/// [AdminLoginPage] -> [adminControllerProvider.signInWithEmail] -> dashboard.
+/// [AdminLoginPage] -> [adminAccessControllerProvider] -> dashboard.
 ///
 /// Phần UI tập trung vào:
 /// - responsive desktop/mobile;
@@ -44,6 +43,12 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(adminAccessControllerProvider, (_, next) {
+      final access = next.asData?.value;
+      if (access?.isAuthorized == true && context.mounted) {
+        context.go(AdminRoutePaths.dashboard);
+      }
+    });
     final viewInsets = MediaQuery.viewInsetsOf(context);
 
     return Scaffold(
@@ -138,7 +143,7 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
 
     try {
       await ref
-          .read(adminControllerProvider.notifier)
+          .read(adminAccessControllerProvider.notifier)
           .signInWithEmail(
             email: _emailController.text.trim(),
             // Không trim mật khẩu vì khoảng trắng có thể là một phần mật khẩu.
@@ -158,9 +163,9 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
   }
 
   void _showLoginError(Object error) {
-    final message = error is AdminLoginFailure
+    final message = error is AdminAccessFailure
         ? error.message
-        : SupabaseAuthErrorTranslator.fromObject(error).fullMessage;
+        : 'Chưa thể đăng nhập quản trị lúc này. Vui lòng thử lại.';
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(

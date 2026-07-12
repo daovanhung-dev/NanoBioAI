@@ -108,3 +108,24 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 - Trigger signup khong lam loi tao account trong sandbox.
 - SQL seed chay lai duoc ma khong nhan ban du lieu.
 - Khong claim production-ready neu chua co sandbox/staging verification.
+
+## Auth V2 / M05 completion acceptance (2026-07-12)
+
+Các mục dưới đây là gate bắt buộc trước khi đánh dấu production acceptance. Source/migration đã được cập nhật nhưng kết quả sandbox/device vẫn `PENDING` trong phiên này.
+
+| ID | Kiểm tra | Kết quả mong đợi | Trạng thái |
+| --- | --- | --- | --- |
+| AUTH-M05-SBX-01 | Signup không referral | Tạo đúng một `auth.users`, một `public.users` và một self subject. | PENDING |
+| AUTH-M05-SBX-02 | Signup referral hợp lệ | Referral active/direct-only được tạo cùng transaction, không cần attach sau signup. | PENDING |
+| AUTH-M05-SBX-03 | Referral sai/inactive/collision | Toàn bộ signup rollback; không có auth user/profile/subject/referral mồ côi. | PENDING |
+| AUTH-M05-SBX-04 | User A/User B và server-owned fields | RLS chặn đọc/ghi chéo; snapshot không sửa membership/Sale/Admin/server-owned fields. | PENDING |
+| AUTH-M05-SBX-05 | Guest profile/meal/task/schedule/request ledger | Push/pull không mất hoặc nhân đôi; `personal_schedule_ai_requests` round-trip theo `request_id`. | PENDING |
+| AUTH-M05-SBX-06 | Pending outbox/push lỗi | Không pull hoặc replace cache; local write và marker được giữ. | PENDING |
+| AUTH-M05-SBX-07 | Pull lỗi/retry | Local cache được giữ; durable retry chạy lại idempotent khi connectivity/resume. | PENDING |
+| AUTH-M05-SBX-08 | Sparse snapshot | Default/nullable columns hợp lệ, retry không nhân đôi dữ liệu. | PENDING |
+| ADMIN-SBX-01 | Admin session riêng | Admin login không ghi đè session V2; restore đúng Admin session. | PENDING |
+| ADMIN-SBX-02 | Role revoked/session expired | `get_my_admin_session` bị từ chối hoặc token hết hạn dẫn tới sign-out và login gate. | PENDING |
+
+- Chạy migration `15-auth-sync-completion.sql` trên sandbox theo migration workflow.
+- Không chạy `config.sql` trên remote/production; file này chỉ dành cho destructive rebuild local/sandbox.
+- Ghi evidence không chứa token, UUID thật, email/phone thật hoặc dữ liệu sức khỏe nhạy cảm.

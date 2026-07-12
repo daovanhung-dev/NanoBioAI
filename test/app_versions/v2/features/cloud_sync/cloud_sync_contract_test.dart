@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/data/datasources/user_data_sync_tables.dart';
+import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
 
 void main() {
   group('cloud sync source contract', () {
@@ -37,6 +38,24 @@ void main() {
         expect(cloudTables, contains('health_score_ledgers'));
         expect(cloudTables, contains('wellness_point_ledgers'));
         expect(localTables, contains('notifications'));
+        expect(localTables, contains('personal_schedule_ai_requests'));
+        expect(cloudTables, contains('personal_schedule_ai_requests'));
+        expect(
+          SyncOutboxSchema.genericIdUserOwnedTables,
+          isNot(contains('personal_schedule_ai_requests')),
+        );
+        expect(
+          UserDataSyncTables.localColumnsByTable[
+            'personal_schedule_ai_requests'
+          ],
+          contains('request_id'),
+        );
+        expect(
+          UserDataSyncTables.cloudColumnsByTable[
+            'personal_schedule_ai_requests'
+          ],
+          contains('request_id'),
+        );
         expect(
           UserDataSyncTables.localColumnsByTable['lifestyle_schedule_items'],
           contains('completion_proof_path'),

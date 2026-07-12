@@ -207,7 +207,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
   }
 
   Future<void> _signOut() async {
-    await ref.read(adminControllerProvider.notifier).signOut();
+    await ref.read(adminAccessControllerProvider.notifier).signOut();
     if (mounted) context.go(AdminRoutePaths.login);
   }
 

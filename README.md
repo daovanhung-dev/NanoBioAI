@@ -237,36 +237,55 @@ GEMINI_PLAN_OVERFLOW_MODELS=
 
 ### **4. Run the App**
 
-For authenticated device testing, do not use plain `flutter run`: it does not
-pass the local authentication configuration to the app. Use the validated
-PowerShell launcher instead (the default device is `12b304f9`):
+Cấu hình Supabase phía client cần cho đăng nhập đã được đóng gói riêng tại
+`assets/config/auth.env`. File này chỉ chứa URL dự án, anon key công khai và
+cấu hình deep link; không chứa service-role key hoặc khóa Gemini. Vì vậy chạy
+Flutter theo cách thông thường vẫn có thể đăng nhập:
 
-```powershell
-# Validate required auth settings without starting Flutter
-powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -ValidateOnly
-
-# Run the authenticated app on the default physical device
-powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1
-
-# Run on another device or entrypoint
-powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -DeviceId <device-id>
-powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -EntryPoint lib/main_v2.dart
+```bash
+flutter run -t lib/main.dart
 ```
 
-The launcher reads the untracked `.env` file by default, checks the required
-Supabase and auth redirect settings without printing their values, and passes
-the file through Flutter's `--dart-define-from-file` option. Override it with
-`-EnvFile <path>` when using another ignored local environment file.
+Khi cần ghi đè cấu hình bằng `.env` local, dùng launcher đã kiểm tra sẵn
+(default device: `12b304f9`):
+
+```powershell
+# Chỉ kiểm tra cấu hình local
+powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -ValidateOnly
+
+# Chạy với cấu hình local được truyền bằng dart-define
+powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1
+
+# Chạy trên thiết bị khác
+powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -DeviceId <device-id>
+```
 
 ### **5. Build**
 
+Build trực tiếp bằng Flutter vẫn giữ khả năng đăng nhập vì public auth config
+đã nằm trong assets:
+
 ```bash
-# Android APK
-flutter build apk --release
+flutter build apk --release -t lib/main.dart
+```
 
-# Android App Bundle
-flutter build appbundle --release
+Có thể tiếp tục dùng script dưới đây để kiểm tra và ghi đè bằng `.env` local:
 
+```powershell
+# Android APK release
+powershell -ExecutionPolicy Bypass -File tools/build_authenticated.ps1
+
+# Android App Bundle release
+powershell -ExecutionPolicy Bypass -File tools/build_authenticated.ps1 -Target appbundle
+
+# Bản debug
+powershell -ExecutionPolicy Bypass -File tools/build_authenticated.ps1 -Mode debug
+```
+
+`.env` đầy đủ vẫn không được đưa vào Flutter assets. Chỉ bốn biến auth client
+được whitelist trong `assets/config/auth.env`.
+
+```bash
 # iOS
 flutter build ios --release
 

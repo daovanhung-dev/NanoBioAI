@@ -14,6 +14,7 @@ enum AuthFailureCode {
   configuration,
   authServer,
   deepLinkInvalid,
+  invalidReferralCode,
   unknown,
 }
 

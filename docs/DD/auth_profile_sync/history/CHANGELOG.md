@@ -1,5 +1,16 @@
 # CHANGELOG — AUTH_PROFILE_SYNC / Xác thực, hồ sơ và đồng bộ Guest
 
+## [v1.3] - 2026-07-12
+### Changed
+- Implemented Auth V2 callback/session lifecycle, Guest consent and push-before-pull authenticated sync.
+- Restored `personal_schedule_ai_requests` snapshot mapping by `request_id` and added a transaction guard against in-flight local writes.
+- Added atomic signup/referral migration, separate Admin session storage and `AdminAccessState` gate.
+- Updated regression/acceptance evidence backlog without claiming sandbox/device production acceptance.
+
+### Validation
+- Static source/YAML/import/SQL checks pass in the available environment.
+- Flutter analyze/test/build, Supabase sandbox and Android device evidence remain blocked/pending.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked AUTH_PROFILE_SYNC DD docs as `Approved - DD docs complete`.

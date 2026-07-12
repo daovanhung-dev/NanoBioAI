@@ -1,3 +1,4 @@
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_access_state.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -5,6 +6,15 @@ class AdminSupabaseDatasource {
   final SupabaseClient? clientOverride;
 
   const AdminSupabaseDatasource({this.clientOverride});
+
+  Stream<void> watchAuthChanges() {
+    return _client().auth.onAuthStateChange.map<void>((_) {});
+  }
+
+  bool get hasValidSession {
+    final session = _client().auth.currentSession;
+    return session != null && !session.isExpired;
+  }
 
   Future<void> signInWithEmail({
     required String email,
@@ -18,8 +28,17 @@ class AdminSupabaseDatasource {
   }
 
   Future<AdminSession> fetchSession() async {
-    final response = await _client().rpc('get_my_admin_session');
-    return AdminSession.fromMap(_firstMap(response));
+    try {
+      final response = await _client().rpc('get_my_admin_session');
+      return AdminSession.fromMap(_firstMap(response));
+    } on AuthException {
+      throw const AdminAccessRevokedException();
+    } on PostgrestException catch (error) {
+      if (_isAccessRevoked(error)) {
+        throw const AdminAccessRevokedException();
+      }
+      rethrow;
+    }
   }
 
   Future<List<AdminDashboardMetric>> fetchDashboardSummary({
@@ -189,6 +208,20 @@ String _paymentRpcFunctionFor(String action) {
     'refund' || 'cancel' || 'chargeback' => 'admin_refund_or_cancel_payment',
     _ => 'admin_review_payment',
   };
+}
+
+bool _isAccessRevoked(PostgrestException error) {
+  final code = error.code.toString().toUpperCase();
+  final message = error.message.toLowerCase();
+  return code == '401' ||
+      code == '403' ||
+      code == '42501' ||
+      code == 'PGRST301' ||
+      code == 'PGRST302' ||
+      message.contains('jwt expired') ||
+      message.contains('permission denied') ||
+      message.contains('not authorized') ||
+      message.contains('forbidden');
 }
 
 Map<String, Object?> _firstMap(Object? response) {

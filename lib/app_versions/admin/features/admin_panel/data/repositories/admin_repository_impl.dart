@@ -8,6 +8,12 @@ class AdminRepositoryImpl implements AdminRepository {
   const AdminRepositoryImpl({required this.datasource});
 
   @override
+  Stream<void> watchAuthChanges() => datasource.watchAuthChanges();
+
+  @override
+  bool get hasValidSession => datasource.hasValidSession;
+
+  @override
   Future<void> signInWithEmail({
     required String email,
     required String password,

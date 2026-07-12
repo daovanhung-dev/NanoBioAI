@@ -5,6 +5,7 @@ class RegisterCommand {
   final String? fullName;
   final String? phone;
   final bool acceptedTerms;
+  final String? referralCode;
 
   const RegisterCommand({
     required this.email,
@@ -13,6 +14,7 @@ class RegisterCommand {
     required this.acceptedTerms,
     this.fullName,
     this.phone,
+    this.referralCode,
   });
 }
 

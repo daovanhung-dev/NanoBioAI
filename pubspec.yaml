@@ -19,6 +19,7 @@ dependencies:
 
   # Navigation
   go_router: ^17.2.3
+  app_links: ^6.4.1
 
   # Network
   dio: ^5.9.2

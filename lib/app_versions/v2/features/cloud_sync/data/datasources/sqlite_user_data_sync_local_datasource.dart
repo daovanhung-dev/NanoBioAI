@@ -51,6 +51,18 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
 
     final db = await _db();
     await db.transaction((txn) async {
+      final pendingCount = Sqflite.firstIntValue(
+        await txn.rawQuery(
+          'SELECT COUNT(*) FROM ${SyncOutboxSchema.outboxTable} '
+          'WHERE user_id = ?',
+          [userId],
+        ),
+      ) ??
+          0;
+      if (pendingCount > 0) {
+        throw LocalSyncPendingWriteException(pendingCount);
+      }
+
       await SyncRuntimeState.setApplyingCloud(txn, true);
       try {
         if (removeLocalUserId != null &&

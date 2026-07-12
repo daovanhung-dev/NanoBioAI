@@ -66,3 +66,12 @@ Commit de xuat: feat(auth): hoan thanh authentication v2 theo BD/DD
 - Can deploy/chay SQL Supabase theo `docs/DD/authentication/database/README.md` truoc khi test manual tren moi truong that.
 - Xoa tai khoan phu thuoc Edge Function `delete-account` duoc deploy rieng, Flutter khong chua service-role key.
 - `subscription_tier` moi la hook doc tu Supabase, chua thay the DD entitlement/quota planned cho Free/Plus/FamilyPlus.
+
+## Cập nhật 2026-07-12 - Auth completion
+
+- Deep link cold/warm được hợp nhất qua `AuthDeepLinkCoordinator`; Supabase không tự parse callback.
+- Callback trả `AuthCallbackResult`, tách xác thực email và khôi phục mật khẩu.
+- Router/Auth Gate phản ứng theo session/email/profile/onboarding và user-data consent.
+- Referral + device fingerprint đi trong metadata `signUp`; không attach sau signup.
+- Sign-out có sync preflight và force path giữ durable marker.
+- Chi tiết: `../auth-v2-admin-m05-completion/001-feature-auth-v2-admin-m05-completion.md`.

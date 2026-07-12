@@ -158,12 +158,12 @@ Ky hieu: `H` = happy path, `V` = validation/bien, `E` = loi/offline, `Q` = auth/
 
 | Case ID | Persona / tien dieu kien | Kich ban va ket qua mong doi | Phu BD/AC | Anh PASS du kien | Ghi chu / log du kien | Trang thai |
 | --- | --- | --- | --- | --- | --- | --- |
-| V2-M05-01 | `G0`, tai khoan seed chua dung | Dang ky/dang nhap; he thong tao/lay mot ho so app gan `auth_user_id`, lay entitlement/Sale status tu nguon server va vao dashboard phu hop. | BD §6 M05 - auth flow | `assets/V2-M05-01-pass.png` | `evidence/V2-M05-01.md` | PENDING |
-| V2-M05-02 | `G1` co ho so va lich local | Dong bo Guest -> Member thanh cong; khong mat onboarding/lich dau tien va khong tao hai ho so cung `auth_user_id`. | BD §6 M05 - sync integrity | `assets/V2-M05-02-pass.png` | `evidence/V2-M05-02.md` | PENDING |
-| V2-M05-03 | `G1`, sync bi loi giua chung | Retry dong bo/relaunch; du lieu pending duoc xu ly an toan, khong nhan doi hay mat du lieu hop le. | BD §6 M05 - retry/persistence | `assets/V2-M05-03-pass.png` | `evidence/V2-M05-03.md` | PENDING |
-| V2-M05-04 | `F0` co cache local xung dot | Xac nhan quyen cuoi cung sau login den tu nguon server tin cay, khong mo quyen dua tren local cache. | BD §6 M05, §6 M06 - authorization | `assets/V2-M05-04-pass.png` | `evidence/V2-M05-04.md` | PENDING |
-| V2-M05-05 | `RA`/`RB`, chua co payment | Gan ma gioi thieu hop le o diem UX duoc phe duyet; tao toi da mot quan he truc tiep va khong tiet lo du lieu Sale nhay cam. | BD §6 M05, §7.4, AC-10 | `assets/V2-M05-05-pass.png` | `evidence/V2-M05-05.md` | PENDING |
-| V2-M05-06 | `RB` da co quan he/payment dau tien | Thu tu gioi thieu, gan trung, ma sau payment dau tien va logout/relaunch; bi chan theo rule, session cu khong lo quyen/du lieu. | BD §6 M05, §7.3 | `assets/V2-M05-06-pass.png` | `evidence/V2-M05-06.md` | PENDING |
+| V2-M05-01 | `G0`, email mới | Đăng ký không referral, xác thực email bằng cold/warm callback, khôi phục session và đi qua Auth Gate; tạo đúng một auth user/profile/self subject. | BD §6 M05 - auth lifecycle | `assets/V2-M05-01-pass.png` | `evidence/V2-M05-01.md` | PENDING |
+| V2-M05-02 | `G1`, tài khoản cloud mới | Auth Gate hỏi consent; **Đồng bộ ngay** rekey/push Guest rồi pull, giữ profile/meal/task/schedule/request ledger không mất hoặc nhân đôi. | BD §6 M05 - fresh Guest merge | `assets/V2-M05-02-pass.png` | `evidence/V2-M05-02.md` | PENDING |
+| V2-M05-03 | `G1`, push/pull lỗi hoặc local write trong lúc pull | Outbox được push trước pull; lỗi/pending/race không xóa local hoặc marker; resume/connectivity/manual retry idempotent. | BD §6 M05 - retry/persistence | `assets/V2-M05-03-pass.png` | `evidence/V2-M05-03.md` | PENDING |
+| V2-M05-04 | `G1`, tài khoản đã có cloud data | Auth Gate cảnh báo hai bước; **Để sau** giữ Guest và chặn phần authenticated; **Dùng dữ liệu tài khoản** mới xóa Guest/pull cloud. | BD §6 M05 - established cloud consent | `assets/V2-M05-04-pass.png` | `evidence/V2-M05-04.md` | PENDING |
+| V2-M05-05 | `RA`/`RB`, referral hợp lệ | Referral + fingerprint được gửi trong signup; active Sale/direct-only relation được tạo cùng transaction, không attach sau signup. | BD §6 M05, §7.4, AC-10 | `assets/V2-M05-05-pass.png` | `evidence/V2-M05-05.md` | PENDING |
+| V2-M05-06 | Referral sai/inactive/collision; session pending | Signup rollback toàn bộ, không để auth/profile mồ côi; password recovery hoạt động; sign-out preflight cảnh báo và force sign-out giữ marker. | BD §6 M05, §7.3 | `assets/V2-M05-06-pass.png` | `evidence/V2-M05-06.md` | PENDING |
 
 ### M06 - Goi thanh vien va quota
 
@@ -241,6 +241,15 @@ Ky hieu: `H` = happy path, `V` = validation/bien, `E` = loi/offline, `Q` = auth/
 | V2-M14-07 | `SA`, yeu cau conversion pending, `AF` | Duyet quy doi giu/tru dung mot lan, co trang thai/lich su ro rang; tu choi thi giai phong diem giu va luu ly do. | BD §7.10, AC-18 | `assets/V2-M14-07-pass.png` | `evidence/V2-M14-07.md` | PENDING |
 
 ## Ma tran case Admin
+
+
+### Admin Auth Gate - Session, role và cấu hình
+
+| Case ID | Persona / tiền điều kiện | Kịch bản và kết quả mong đợi | Phủ BD/AC | Ảnh PASS dự kiến | Ghi chú / log dự kiến | Trạng thái |
+| --- | --- | --- | --- | --- | --- | --- |
+| ADM-AUTH-01 | `AS`, session Admin đã lưu | Khởi động `main_admin`, restore bằng storage key Admin riêng, gọi `get_my_admin_session` và vào dashboard khi role active. | BD §11 - Admin access | `assets/ADM-AUTH-01-pass.png` | `evidence/ADM-AUTH-01.md` | PENDING |
+| ADM-AUTH-02 | User thường hoặc Admin bị thu hồi role | Login/restore không được vào route Admin; app sign-out Admin session và quay về login, không ảnh hưởng session V2. | BD §11.8 - role lifecycle | `assets/ADM-AUTH-02-pass.png` | `evidence/ADM-AUTH-02.md` | PENDING |
+| ADM-AUTH-03 | Token hết hạn hoặc thiếu cấu hình | Token hết hạn về login; thiếu cấu hình/lỗi kiểm tra role hiển thị support state và retry, không làm `main_admin` crash. | BD §11 - error/session | `assets/ADM-AUTH-03-pass.png` | `evidence/ADM-AUTH-03.md` | PENDING |
 
 ### M15 - Admin View / Dashboard
 

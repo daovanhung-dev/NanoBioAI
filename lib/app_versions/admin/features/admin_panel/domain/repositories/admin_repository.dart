@@ -1,6 +1,10 @@
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 
 abstract class AdminRepository {
+  Stream<void> watchAuthChanges();
+
+  bool get hasValidSession;
+
   Future<void> signInWithEmail({
     required String email,
     required String password,

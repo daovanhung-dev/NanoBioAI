@@ -1,15 +1,31 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AppEnv {
   AppEnv._();
 
-  static Future<void> loadOptionalDotEnv({String fileName = '.env'}) async {
+  static const String _bundledAuthConfigAsset = 'assets/config/auth.env';
+  static const Set<String> _publicAuthKeys = {
+    'SUPABASE_URL',
+    'SUPABASE_ANON_KEY',
+    'AUTH_EMAIL_REDIRECT_URL',
+    'AUTH_CONFIRM_EMAIL_REQUIRED',
+  };
+
+  static Map<String, String> _bundledAuthValues = const {};
+
+  static Future<void> loadOptionalDotEnv({
+    String fileName = '.env',
+    String bundledAuthFileName = _bundledAuthConfigAsset,
+  }) async {
     try {
       await dotenv.load(fileName: fileName, isOptional: true);
     } catch (_) {
-      // `.env` is intentionally not a bundled asset. Local legacy setups may
-      // still provide it; production configuration should use --dart-define.
+      // `.env` stays outside Flutter assets. Local development may still pass
+      // it through --dart-define-from-file or provide a legacy dotenv asset.
     }
+
+    await _loadBundledPublicAuthConfig(bundledAuthFileName);
   }
 
   static String requiredString(String key) {
@@ -17,12 +33,14 @@ class AppEnv {
     if (value != null) return value;
     throw StateError(
       'Missing required app configuration: $key. '
-      'Provide it via --dart-define or local dotenv fallback.',
+      'Provide it via --dart-define, local dotenv, or bundled public config.',
     );
   }
 
   static String? maybeString(String key) {
-    return _clean(_fromDartDefine(key)) ?? _clean(_fromDotEnv(key));
+    return _clean(_fromDartDefine(key)) ??
+        _clean(_fromDotEnv(key)) ??
+        _clean(_bundledAuthValues[key]);
   }
 
   static String? maybeStringWithLegacy(String key, String legacyKey) {
@@ -45,6 +63,56 @@ class AppEnv {
       'false' || '0' || 'no' || 'n' => false,
       _ => defaultValue,
     };
+  }
+
+  static void clearBundledAuthConfigForTesting() {
+    _bundledAuthValues = const {};
+  }
+
+  static Future<void> _loadBundledPublicAuthConfig(String fileName) async {
+    try {
+      final source = await rootBundle.loadString(fileName);
+      _bundledAuthValues = _parsePublicAuthConfig(source);
+    } catch (_) {
+      _bundledAuthValues = const {};
+    }
+  }
+
+  static Map<String, String> _parsePublicAuthConfig(String source) {
+    final values = <String, String>{};
+
+    for (final rawLine in source.split(RegExp(r'\r?\n'))) {
+      var line = rawLine.trim();
+      if (line.isEmpty || line.startsWith('#')) continue;
+
+      if (line.startsWith('export ')) {
+        line = line.substring('export '.length).trimLeft();
+      }
+
+      final separatorIndex = line.indexOf('=');
+      if (separatorIndex <= 0) continue;
+
+      final key = line
+          .substring(0, separatorIndex)
+          .replaceFirst('\uFEFF', '')
+          .trim();
+      if (!_publicAuthKeys.contains(key)) continue;
+
+      var value = line.substring(separatorIndex + 1).trim();
+      if (value.length >= 2) {
+        final first = value[0];
+        final last = value[value.length - 1];
+        if ((first == '"' && last == '"') ||
+            (first == "'" && last == "'")) {
+          value = value.substring(1, value.length - 1).trim();
+        }
+      }
+
+      final cleaned = _clean(value);
+      if (cleaned != null) values[key] = cleaned;
+    }
+
+    return Map.unmodifiable(values);
   }
 
   static String? _fromDotEnv(String key) {

@@ -8,19 +8,19 @@
 
 - Historical task type: bugfix (8)
 - Historical task type: fix (1)
-- Historical task type: fix flow dữ liệu (1)
 - Historical task type: fix UI/copy (1)
+- Historical task type: fix flow dữ liệu (1)
 
 ## Common Modules
 
-- v2 authentication, admin login, Supabase dev seed: 1
-- v2 authentication: 1
-- config/env, app entrypoints, auth/AI env readers: 1
+- AI chat: 1
+- Admin dashboard / Supabase RPC: 1
+- Dashboard, Lifestyle Schedule, Meal Plan, Nutrition: 1
 - M01 Onboarding, M05 AI, M11 FamilyPlus automated-only và: 1
 - Nabi providers/UI, onboarding UI, shared Nabi widgets, release: 1
-- Admin dashboard / Supabase RPC: 1
+- config/env, app entrypoints, auth/AI env readers: 1
 - lib/app_versions/v1/features/**/presentation: 1
-- AI chat: 1
+- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
 
 ## Work Pattern
 

@@ -60,14 +60,48 @@ void main() {
       );
       expect(controllerSource, contains('ref.watch(v2AuthChangesProvider)'));
       expect(controllerSource, contains('resolveAuthRouteState'));
-      expect(
-        controllerSource,
-        contains('authenticatedUserDataSyncRepositoryProvider'),
-      );
+      expect(controllerSource, contains('userDataSyncControllerProvider'));
+      expect(controllerSource, contains('AuthSignOutResult'));
+      expect(controllerSource, contains('AuthSyncReason.signOutPreflight'));
       expect(controllerSource, contains('AuthSyncReason.signIn'));
       expect(controllerSource, contains('AuthSyncReason.signUpSessionReady'));
       expect(controllerSource, contains('AuthSyncReason.authCallback'));
       expect(controllerSource, contains('RegistrationResult.sessionReady'));
+    });
+
+    test('auth callback and signup use the completed V2 contracts', () {
+      final datasourceSource = File(
+        'lib/app_versions/v2/features/auth/data/datasources/'
+        'supabase_auth_remote_datasource.dart',
+      ).readAsStringSync();
+      final routerSource = File(
+        'lib/app_versions/v2/router/v2_router.dart',
+      ).readAsStringSync();
+      final appSource = File(
+        'lib/app_versions/v2/app/bio_ai_v2_app.dart',
+      ).readAsStringSync();
+      final mainSource = File('lib/main_v2.dart').readAsStringSync();
+      final manifestSource = File(
+        'android/app/src/main/AndroidManifest.xml',
+      ).readAsStringSync();
+      final repositorySource = File(
+        'lib/app_versions/v2/features/auth/data/repositories/'
+        'supabase_auth_repository.dart',
+      ).readAsStringSync();
+
+      expect(datasourceSource, contains("'referral_code': referralCode"));
+      expect(datasourceSource, contains("'device_fingerprint': deviceFingerprint"));
+      expect(datasourceSource, contains('authCallbackTypeFromUri'));
+      expect(routerSource, contains('v2RouterProvider'));
+      expect(routerSource, contains('_protectedPaths'));
+      expect(appSource, contains('AuthDeepLinkCoordinator'));
+      expect(mainSource, contains('detectSessionInUri: false'));
+      expect(mainSource, contains('nanobio_user_auth_session'));
+      expect(manifestSource, contains('flutter_deeplinking_enabled'));
+      expect(manifestSource, contains('android:value="false"'));
+      expect(repositorySource, contains('_mapSignUpException'));
+      expect(repositorySource, contains('_safeUserMessageFor'));
+      expect(repositorySource, isNot(contains('userMessage: details.fullMessage')));
     });
 
     test('Flutter auth client does not insert baseline profile rows', () {

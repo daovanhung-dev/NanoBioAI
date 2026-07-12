@@ -10,8 +10,8 @@
 
 ## Common Modules
 
-- v1 onboarding, AppLogger: 1
 - AI Chat service: 1
+- v1 onboarding, AppLogger: 1
 
 ## Work Pattern
 

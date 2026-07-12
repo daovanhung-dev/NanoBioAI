@@ -179,6 +179,31 @@ class UserDataSyncOutbox {
     }
   }
 
+
+  Future<int> pendingCountForCurrentUser({Database? database}) async {
+    final userId = currentUserId();
+    if (userId == null || userId.isEmpty) return 0;
+    final db = database ?? await _db();
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) AS count FROM ${SyncOutboxSchema.outboxTable} '
+      'WHERE user_id = ? AND status IN (?, ?, ?)',
+      [userId, ..._pendingStatuses],
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  Future<void> makeRetriesDueForCurrentUser({Database? database}) async {
+    final userId = currentUserId();
+    if (userId == null || userId.isEmpty) return;
+    final db = database ?? await _db();
+    await db.update(
+      SyncOutboxSchema.outboxTable,
+      {'status': 'pending', 'next_retry_at': null},
+      where: 'user_id = ? AND status IN (?, ?)',
+      whereArgs: [userId, 'failed', 'syncing'],
+    );
+  }
+
   Future<int> drainPending({Database? database, int limit = 100}) async {
     if (_isDraining) return 0;
 
@@ -344,9 +369,12 @@ class UserDataSyncOutbox {
       return rows.isEmpty ? null : Map<String, Object?>.from(rows.first);
     }
 
+    final primaryKey = tableName == 'personal_schedule_ai_requests'
+        ? 'request_id'
+        : 'id';
     final rows = await db.query(
       tableName,
-      where: 'id = ? AND user_id = ?',
+      where: '$primaryKey = ? AND user_id = ?',
       whereArgs: [recordId, userId],
       limit: 1,
     );
@@ -395,7 +423,7 @@ class UserDataSyncOutbox {
       {
         'status': 'failed',
         'attempt_count': attempts,
-        'last_error': error.toString(),
+        'last_error': 'Không thể đồng bộ lúc này. Dữ liệu vẫn được giữ trên thiết bị.',
         'next_retry_at': timestamp
             .add(Duration(minutes: delayMinutes))
             .toIso8601String(),
@@ -454,7 +482,7 @@ class UserDataSyncOutbox {
         row[column] = userId;
         continue;
       }
-      if (column == 'id') {
+      if (column == 'id' || column == 'request_id') {
         row[column] = recordId;
         continue;
       }

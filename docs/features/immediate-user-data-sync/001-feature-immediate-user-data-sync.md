@@ -39,3 +39,12 @@ All remaining user-owned SQLite tables remain covered by existing outbox trigger
 - No service-role key or direct privileged client access is introduced.
 - No change is made to payment, Sale, membership, quota or Admin authority.
 - Device-only UI preferences without a Supabase domain contract are not promoted to cloud data by this change.
+
+## Hardening 2026-07-12
+
+- Authenticated coordinator là single-flight cho auth/startup/resume/connectivity/manual retry.
+- Outbox của đúng auth user luôn được drain trước pull; pending/push error bỏ qua pull.
+- `personal_schedule_ai_requests` nằm trong snapshot theo `request_id` và không dùng generic trigger cột `id`.
+- Transaction replace cache kiểm tra lại outbox để chặn local write xuất hiện trong lúc pull.
+- Pull error được lưu durable retry; Guest upload/xóa chỉ xảy ra sau consent rõ ràng.
+- Chi tiết: `../auth-v2-admin-m05-completion/001-feature-auth-v2-admin-m05-completion.md`.

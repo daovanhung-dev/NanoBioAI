@@ -4,6 +4,48 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Supabase Admin SQL contract', () {
+    test('keeps Auth V2 signup and referral validation atomic', () {
+      final migration = File(
+        'docs/supabase/15-auth-sync-completion.sql',
+      ).readAsStringSync();
+      final config = File('docs/supabase/config.sql').readAsStringSync();
+
+      for (final token in [
+        'create or replace function public.handle_auth_user_created()',
+        "new.raw_user_meta_data ->> 'referral_code'",
+        "new.raw_user_meta_data ->> 'device_fingerprint'",
+        "sp.status = 'active'",
+        'invalid_referral_code',
+        'referral_device_missing',
+        'referral_collision',
+        'referral_already_used',
+        "'policy', 'direct_only'",
+        'create trigger on_auth_user_created',
+      ]) {
+        expect(migration, contains(token), reason: token);
+        expect(config, contains(token), reason: 'config.sql: $token');
+      }
+
+      expect(
+        config.split('-- BEGIN 15-auth-sync-completion.sql').length - 1,
+        1,
+        reason: 'The rebuild config must include the migration exactly once.',
+      );
+    });
+
+    test('does not attach a referral after Auth signup', () {
+      final source = File(
+        'lib/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart',
+      ).readAsStringSync();
+      final registerPage = File(
+        'lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart',
+      ).readAsStringSync();
+
+      expect(source, contains("'referral_code': referralCode"));
+      expect(source, contains("'device_fingerprint': deviceFingerprint"));
+      expect(registerPage, isNot(contains('attach_my_referral_code')));
+    });
+
     test('declares Admin tables and RPCs used by Flutter Admin', () {
       final sql = File(
         'docs/supabase/11-admin-access-dashboard.sql',

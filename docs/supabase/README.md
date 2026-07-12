@@ -75,7 +75,8 @@ doi:
    `dev.admin@nanobio.local`.
 14. `14_mobile_sync_hotfix.sql` - hotfix snapshot sync khong insert NULL vao
    cot co default; logic nay da duoc fold vao `config.sql`.
-15. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
+15. `15-auth-sync-completion.sql` - migration khong pha huy cho atomic Auth V2 signup/referral; phai chay sandbox truoc va khong thay the bang `config.sql` tren remote/production.
+16. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
    va nghiem thu.
 
 Moi thay doi Supabase schema/RLS/RPC/seed/docs phai cap nhat `config.sql` cung

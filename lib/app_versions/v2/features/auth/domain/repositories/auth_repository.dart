@@ -1,3 +1,4 @@
+import '../entities/auth_callback_result.dart';
 import '../entities/auth_commands.dart';
 import '../entities/auth_route_state.dart';
 
@@ -16,7 +17,7 @@ abstract class AuthRepository {
 
   Future<void> updatePassword(UpdatePasswordCommand command);
 
-  Future<void> recoverSessionFromUri(Uri uri);
+  Future<AuthCallbackResult> recoverSessionFromUri(Uri uri);
 
   Future<void> signOut();
 

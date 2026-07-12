@@ -9,8 +9,8 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_vali
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/sale_referral/domain/services/sale_referral_code_validator.dart';
 import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
-import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
 
 class V2LoginPage extends ConsumerStatefulWidget {
   const V2LoginPage({super.key});
@@ -360,13 +360,11 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
               fullName: _fullName.text.trim(),
               phone: _phone.text.trim(),
               acceptedTerms: _acceptedTerms,
+              referralCode: _referralCodeValidator.normalize(_referralCode.text),
             ),
           );
 
       if (!mounted) return;
-      await _attachReferralCodeIfPossible(result);
-      if (!mounted) return;
-
       if (result == RegistrationResult.verificationRequired) {
         context.go(
           '${V2RoutePaths.verifyEmail}'
@@ -382,31 +380,6 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
     }
   }
 
-  Future<void> _attachReferralCodeIfPossible(RegistrationResult result) async {
-    final code = _referralCodeValidator.normalize(_referralCode.text);
-    if (code.isEmpty || result != RegistrationResult.sessionReady) return;
-
-    try {
-      await ref.read(saleParticipationServiceProvider).attachReferralCode(code);
-      ref.invalidate(saleStateProvider);
-      ref.invalidate(saleDashboardProvider);
-    } catch (_) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(AppSpacing.md),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-          ),
-          content: const Text(
-            'Tài khoản đã được tạo. Bạn có thể nhập lại mã giới thiệu trong phần Cài đặt.',
-          ),
-        ),
-      );
-    }
-  }
 }
 
 class V2VerifyEmailPage extends ConsumerStatefulWidget {
@@ -750,6 +723,9 @@ class V2AuthCallbackPage extends ConsumerStatefulWidget {
 }
 
 class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
+  Object? _error;
+  var _loading = true;
+
   @override
   void initState() {
     super.initState();
@@ -758,27 +734,76 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const _AuthScaffold(
-      eyebrow: 'ĐANG XÁC THỰC',
-      heroIcon: Icons.verified_user_rounded,
-      title: 'Nabi đang kiểm tra liên kết',
-      subtitle:
-          'Chỉ mất một chút thời gian để hoàn tất bước bảo mật này cho bạn.',
-      child: _AuthCallbackLoading(),
+    return _AuthScaffold(
+      eyebrow: _error == null ? 'ĐANG XÁC THỰC' : 'CẦN THỬ LẠI',
+      heroIcon: _error == null
+          ? Icons.verified_user_rounded
+          : Icons.support_agent_rounded,
+      title: _error == null
+          ? 'Nabi đang kiểm tra liên kết'
+          : 'Liên kết chưa hoàn tất',
+      subtitle: _error == null
+          ? 'Chỉ mất một chút thời gian để hoàn tất bước bảo mật này cho bạn.'
+          : 'Dữ liệu tài khoản chưa bị thay đổi. Bạn có thể thử lại bằng liên kết mới nhất trong email.',
+      child: _error == null
+          ? const _AuthCallbackLoading()
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _InfoBox(
+                  icon: Icons.info_outline_rounded,
+                  title: 'Chưa thể xác thực',
+                  message: _safeErrorMessage(_error!),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                _PrimaryAuthButton(
+                  label: 'Thử lại',
+                  icon: Icons.refresh_rounded,
+                  loading: _loading,
+                  onPressed: _recover,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _SecondaryAuthButton(
+                  label: 'Về đăng nhập',
+                  icon: Icons.login_rounded,
+                  onPressed: _loading
+                      ? null
+                      : () => context.go(V2RoutePaths.login),
+                ),
+              ],
+            ),
     );
   }
 
   Future<void> _recover() async {
+    if (_loading && _error != null) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
     try {
-      await ref
+      final result = await ref
           .read(v2AuthControllerProvider.notifier)
           .recoverSessionFromUri(widget.uri);
+      if (!mounted) return;
+      context.go(
+        result.isPasswordRecovery
+            ? V2RoutePaths.resetPassword
+            : V2RoutePaths.authGate,
+      );
     } catch (error) {
-      if (mounted) _showError(context, error);
+      if (!mounted) return;
+      setState(() => _error = error);
     } finally {
-      if (mounted) context.go(V2RoutePaths.authGate);
+      if (mounted) setState(() => _loading = false);
     }
   }
+}
+
+String _safeErrorMessage(Object error) {
+  if (error is AuthFailure) return error.userMessage;
+  return 'Nabi chưa thể xử lý yêu cầu này. Bạn hãy thử lại sau một chút.';
 }
 
 class _AuthScaffold extends StatelessWidget {

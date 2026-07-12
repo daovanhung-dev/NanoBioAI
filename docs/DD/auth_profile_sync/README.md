@@ -4,11 +4,11 @@
 |---|---|
 | Module Code | AUTH_PROFILE_SYNC |
 | BD Module | M05 |
-| Version | v1.0 |
+| Version | v1.3 |
 | Status | Approved - DD docs complete |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-30 |
+| Last Updated | 2026-07-12 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M05, 13, Appendix A UC-05 |
 
 ## Purpose
@@ -51,3 +51,10 @@
 - DD docs complete: all product questions are answered and documented as implementation policy.
 - Runtime, sandbox/RLS/API smoke, and production acceptance evidence are tracked in the Implementation Evidence Backlog, not as DD blockers.
 - Runtime code, SQL, Supabase config, and tests were not changed in this DD docs 100 percent pass.
+
+## Implementation Update 2026-07-12
+
+- Guest Settings now exposes login/register actions, account-only controls are hidden without a session, and authenticated APK/AAB builds use a validated `--dart-define-from-file` launcher.
+- Auth callback, Guest consent, push-before-pull, request ledger `request_id`, durable retry and Admin session isolation are implemented at source level.
+- Migration `docs/supabase/15-auth-sync-completion.sql` replaces the signup trigger contract without destructive schema changes.
+- Production acceptance remains pending Flutter compile/full tests, Supabase sandbox/RLS/atomic rollback and device evidence.

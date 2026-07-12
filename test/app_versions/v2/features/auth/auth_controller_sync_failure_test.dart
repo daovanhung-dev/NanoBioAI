@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_callback_result.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_commands.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_route_state.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/repositories/auth_repository.dart';
@@ -77,8 +78,9 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> recoverSessionFromUri(Uri uri) async {
+  Future<AuthCallbackResult> recoverSessionFromUri(Uri uri) async {
     signedIn = true;
+    return const AuthCallbackResult.emailConfirmation();
   }
 
   @override
@@ -106,9 +108,10 @@ class _FakeCloudSyncRepository implements AuthenticatedUserDataSyncRepository {
   _FakeCloudSyncRepository({this.failReasons = const {}});
 
   @override
-  Future<CloudSyncResult> syncAfterAuthenticatedSession(
-    AuthSyncReason reason,
-  ) async {
+  Future<UserDataSyncOutcome> syncAfterAuthenticatedSession(
+    AuthSyncReason reason, {
+    GuestMergeAction? guestAction,
+  }) async {
     reasons.add(reason);
     if (failReasons.contains(reason)) {
       throw StateError('post-auth sync failed');

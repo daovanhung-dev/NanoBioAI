@@ -13,6 +13,7 @@ import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/app_versions/v1/shared/widgets/ai_chat_fab.dart';
+import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/core/membership/membership_display_info.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/nabi.dart';
@@ -209,6 +210,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     final dashboardAsync = ref.watch(dashboardProvider);
     final dynamicAsync = ref.watch(dashboardDynamicProvider);
     final generationState = ref.watch(dashboardControllerProvider);
+    final userDataSyncState = ref.watch(userDataSyncControllerProvider);
 
     final body = dashboardAsync.when(
       loading: () => const _DashboardLoadingView(),
@@ -246,6 +248,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
                 onSaveWeight: _saveWeight,
                 pulseAnimation: _pulseController,
                 scoreAnimation: _scoreController,
+                userDataSyncState: userDataSyncState,
               ),
             ),
           ),
@@ -283,6 +286,7 @@ class _DashboardContent extends StatelessWidget {
   final Future<void> Function(double weightKg) onSaveWeight;
   final Animation<double> pulseAnimation;
   final Animation<double> scoreAnimation;
+  final UserDataSyncState userDataSyncState;
 
   const _DashboardContent({
     required this.dashboard,
@@ -299,6 +303,7 @@ class _DashboardContent extends StatelessWidget {
     required this.onSaveWeight,
     required this.pulseAnimation,
     required this.scoreAnimation,
+    required this.userDataSyncState,
   });
 
   @override
@@ -358,6 +363,11 @@ class _DashboardContent extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               const SizedBox(height: AppSpacing.lg),
+              if (userDataSyncState.status == UserDataSyncStatus.pendingUpload ||
+                  userDataSyncState.status == UserDataSyncStatus.error) ...[
+                _UserDataSyncBanner(state: userDataSyncState),
+                const SizedBox(height: AppSpacing.md),
+              ],
               if (isDynamicLoading) const _SyncBanner(),
               if (dynamicError != null) ...[
                 _InlineErrorBanner(message: dynamicError!),
@@ -1835,6 +1845,49 @@ class _EmptyDataCard extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UserDataSyncBanner extends ConsumerWidget {
+  final UserDataSyncState state;
+
+  const _UserDataSyncBanner({required this.state});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pending = state.status == UserDataSyncStatus.pendingUpload;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.warningSoft,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.warning.withValues(alpha: .28)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            pending ? Icons.cloud_upload_outlined : Icons.cloud_off_outlined,
+            color: AppColors.darkBorder,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              pending
+                  ? '${state.pendingCount} thay đổi đang chờ đồng bộ. '
+                      'Dữ liệu vẫn an toàn trên thiết bị.'
+                  : state.safeError ??
+                      'Chưa thể đồng bộ dữ liệu. Dữ liệu vẫn được giữ trên thiết bị.',
+              style: AppTextStyles.bodySmall,
+            ),
+          ),
+          TextButton(
+            onPressed: () =>
+                ref.read(userDataSyncControllerProvider.notifier).retry(),
+            child: const Text('Thử lại'),
           ),
         ],
       ),

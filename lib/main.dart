@@ -53,7 +53,16 @@ Future<AuthBackendAvailability> _initializeSupabaseIfConfigured() async {
   final availability = await initializeAuthBackendAvailability(
     config: config,
     initialize: (url, anonKey) async {
-      await Supabase.initialize(url: url, anonKey: anonKey);
+      await Supabase.initialize(
+        url: url,
+        anonKey: anonKey,
+        authOptions: FlutterAuthClientOptions(
+          detectSessionInUri: false,
+          localStorage: SharedPreferencesLocalStorage(
+            persistSessionKey: 'nanobio_user_auth_session',
+          ),
+        ),
+      );
     },
     onInitializationError: (error, stackTrace) {
       debugPrint('$_bootstrapTag: Supabase initialization failed: $error');

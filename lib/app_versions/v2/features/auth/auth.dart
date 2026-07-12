@@ -1,3 +1,5 @@
+export 'domain/entities/auth_sign_out_result.dart';
+export 'domain/entities/auth_callback_result.dart';
 export 'domain/entities/auth_commands.dart';
 export 'domain/entities/auth_failure.dart';
 export 'domain/entities/auth_profile.dart';

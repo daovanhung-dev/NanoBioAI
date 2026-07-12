@@ -1,4 +1,5 @@
 import 'package:nano_app/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart';
+import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_callback_result.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_commands.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_failure.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_route_state.dart';
@@ -63,7 +64,7 @@ class SupabaseAuthRepository implements AuthRepository {
       }
       return RegistrationResult.verificationRequired;
     } on AuthException catch (error) {
-      throw _mapAuthException(error);
+      throw _mapSignUpException(error, command);
     } catch (_) {
       throw _genericFailure();
     }
@@ -143,17 +144,27 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> recoverSessionFromUri(Uri uri) async {
+  Future<AuthCallbackResult> recoverSessionFromUri(Uri uri) async {
+    if (uri.scheme.toLowerCase() != 'nanobio' ||
+        uri.host.toLowerCase() != 'auth' ||
+        uri.path != '/callback') {
+      throw const AuthFailure(
+        code: AuthFailureCode.deepLinkInvalid,
+        userMessage: 'Liên kết xác thực không hợp lệ. Bạn hãy mở lại liên kết mới nhất trong email.',
+      );
+    }
+
     try {
-      await datasource.recoverSessionFromUri(uri);
+      return await datasource.recoverSessionFromUri(uri);
     } on AuthException catch (_) {
       throw const AuthFailure(
         code: AuthFailureCode.deepLinkInvalid,
-        userMessage:
-            'Liên kết này chưa mở được. Bạn thử mở lại từ email giúp Nabinhé.',
+        userMessage: 'Liên kết đã hết hạn hoặc không còn hợp lệ. Bạn hãy yêu cầu một liên kết mới rồi thử lại.',
       );
     } catch (_) {
-      throw _genericFailure();
+      throw _genericFailure(
+        'Nabi chưa thể hoàn tất xác thực lúc này. Bạn có thể thử lại bằng liên kết trong email.',
+      );
     }
   }
 
@@ -231,12 +242,71 @@ class SupabaseAuthRepository implements AuthRepository {
     }
   }
 
+  AuthFailure _mapSignUpException(
+    AuthException error,
+    RegisterCommand command,
+  ) {
+    final mapped = _mapAuthException(error);
+    if (mapped.code == AuthFailureCode.invalidReferralCode) return mapped;
+
+    final hasReferral = command.referralCode?.trim().isNotEmpty ?? false;
+    final normalized = error.message.toLowerCase();
+    final couldBeAtomicReferralRejection =
+        normalized.contains('database error saving new user') ||
+        normalized.contains('unexpected_failure');
+    if (hasReferral && couldBeAtomicReferralRejection) {
+      return _invalidReferralFailure();
+    }
+    return mapped;
+  }
+
   AuthFailure _mapAuthException(AuthException error) {
+    final normalized = error.message.toLowerCase();
+    if (normalized.contains('invalid_referral_code') ||
+        normalized.contains('referral_not_active') ||
+        normalized.contains('referral_collision') ||
+        normalized.contains('referral_already_used') ||
+        normalized.contains('referral_device_missing')) {
+      return _invalidReferralFailure();
+    }
+
     final details = SupabaseAuthErrorTranslator.fromAuthException(error);
     return AuthFailure(
       code: _failureCodeFor(details.kind),
-      userMessage: details.fullMessage,
+      userMessage: _safeUserMessageFor(details.kind),
     );
+  }
+
+  AuthFailure _invalidReferralFailure() {
+    return const AuthFailure(
+      code: AuthFailureCode.invalidReferralCode,
+      userMessage:
+          'Mã giới thiệu không hợp lệ hoặc không thể dùng cho tài khoản này. '
+          'Bạn hãy sửa hoặc xóa mã rồi đăng ký lại.',
+    );
+  }
+
+  String _safeUserMessageFor(SupabaseAuthErrorKind kind) {
+    return switch (kind) {
+      SupabaseAuthErrorKind.invalidCredentials =>
+        'Email hoặc mật khẩu không đúng. Bạn hãy kiểm tra lại rồi thử lại.',
+      SupabaseAuthErrorKind.emailUnverified =>
+        'Tài khoản cần xác thực email trước khi đăng nhập.',
+      SupabaseAuthErrorKind.emailAlreadyRegistered =>
+        'Email này đã có tài khoản. Bạn hãy đăng nhập hoặc đặt lại mật khẩu.',
+      SupabaseAuthErrorKind.weakPassword =>
+        'Mật khẩu chưa đủ an toàn. Bạn hãy chọn mật khẩu khác.',
+      SupabaseAuthErrorKind.rateLimited =>
+        'Bạn đã thử quá nhiều lần. Vui lòng chờ một lúc rồi thử lại.',
+      SupabaseAuthErrorKind.accountDisabled =>
+        'Tài khoản đang tạm khóa hoặc chưa được phép đăng nhập.',
+      SupabaseAuthErrorKind.network =>
+        'Chưa kết nối được dịch vụ đăng nhập. Bạn hãy kiểm tra mạng rồi thử lại.',
+      SupabaseAuthErrorKind.configuration ||
+      SupabaseAuthErrorKind.authServer ||
+      SupabaseAuthErrorKind.unknown =>
+        'Dịch vụ đăng nhập chưa sẵn sàng. Bạn hãy thử lại sau một chút.',
+    };
   }
 
   AuthFailureCode _failureCodeFor(SupabaseAuthErrorKind kind) {

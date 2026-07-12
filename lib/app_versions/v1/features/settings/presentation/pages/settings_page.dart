@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
+import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
+import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
@@ -11,8 +13,8 @@ import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dash
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/domain/entities/settings_preferences_entity.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
+import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/guest_account_access_card.dart';
 import 'package:nano_app/services/supabase/auth/account_security_provider.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_participation_page.dart';
 
@@ -30,7 +32,8 @@ class SettingsView extends ConsumerWidget {
         preferencesAsync.value ?? SettingsPreferencesEntity.defaults();
     final dashboard = dashboardAsync.value;
     final saleStateAsync = ref.watch(saleStateProvider);
-    final isAuthenticated = currentSupabaseUserIdOrNull() != null;
+    final isAuthenticated = ref.watch(currentAuthUserIdProvider) != null;
+    final syncState = ref.watch(userDataSyncControllerProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -65,6 +68,13 @@ class SettingsView extends ConsumerWidget {
                       _Header(isLoading: dashboardAsync.isLoading),
                       const SizedBox(height: AppSpacing.lg),
                       _ProfileCard(dashboard: dashboard),
+                      if (!isAuthenticated) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        GuestAccountAccessCard(
+                          onLogin: () => context.go(AuthRoutePaths.login),
+                          onRegister: () => context.go(AuthRoutePaths.register),
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.xl),
                       _SectionTitle('Tài khoản'),
                       const SizedBox(height: AppSpacing.md),
@@ -78,14 +88,16 @@ class SettingsView extends ConsumerWidget {
                                 : _profileSubtitle(dashboard),
                             onTap: () => context.push(V1RoutePaths.profile),
                           ),
-                          const _DividerLine(),
-                          _MenuItem(
-                            icon: Icons.lock_rounded,
-                            title: 'Bảo mật',
-                            subtitle:
-                                'Bảo vệ tài khoản và thông tin cá nhân của bạn',
-                            onTap: () => _showChangePasswordSheet(context),
-                          ),
+                          if (isAuthenticated) ...[
+                            const _DividerLine(),
+                            _MenuItem(
+                              icon: Icons.lock_rounded,
+                              title: 'Bảo mật',
+                              subtitle:
+                                  'Bảo vệ tài khoản và thông tin cá nhân của bạn',
+                              onTap: () => _showChangePasswordSheet(context),
+                            ),
+                          ],
                           const _DividerLine(),
                           _MenuItem(
                             icon: Icons.notifications_rounded,
@@ -220,21 +232,31 @@ class SettingsView extends ConsumerWidget {
                           _MenuItem(
                             icon: Icons.sync_rounded,
                             title: 'Dữ liệu của bạn',
-                            subtitle: _privacyModeLabel(
-                              preferences.dataPrivacyMode,
-                            ),
+                            subtitle: isAuthenticated
+                                ? _syncStatusLabel(
+                                    syncState,
+                                    fallback: _privacyModeLabel(
+                                      preferences.dataPrivacyMode,
+                                    ),
+                                  )
+                                : 'Đăng nhập để đồng bộ dữ liệu khi đổi thiết bị',
+                            onTap: isAuthenticated
+                                ? () => _showDataSyncSheet(context, ref)
+                                : () => context.go(AuthRoutePaths.login),
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.xl),
-                      _DangerCard(
-                        email: dashboard?.email.trim().isEmpty == false
-                            ? dashboard!.email
-                            : null,
-                        onLogout: () => _confirmLogout(context, ref),
-                        onDeleteAccount: () =>
-                            _confirmDeleteAccount(context, ref),
-                      ),
+                      if (isAuthenticated) ...[
+                        const SizedBox(height: AppSpacing.xl),
+                        _DangerCard(
+                          email: dashboard?.email.trim().isEmpty == false
+                              ? dashboard!.email
+                              : null,
+                          onLogout: () => _confirmLogout(context, ref),
+                          onDeleteAccount: () =>
+                              _confirmDeleteAccount(context, ref),
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.xxxl),
                     ],
                   ),
@@ -253,6 +275,41 @@ class SettingsView extends ConsumerWidget {
       isScrollControlled: true,
       useSafeArea: true,
       builder: (_) => const _ChangePasswordSheet(),
+    );
+  }
+
+  String _syncStatusLabel(
+    UserDataSyncState state, {
+    required String fallback,
+  }) {
+    return switch (state.status) {
+      UserDataSyncStatus.syncing => 'Đang đồng bộ dữ liệu...',
+      UserDataSyncStatus.awaitingConsent =>
+        'Đang chờ bạn xác nhận dữ liệu khách',
+      UserDataSyncStatus.pendingUpload =>
+        '${state.pendingCount} thay đổi đang chờ đồng bộ',
+      UserDataSyncStatus.success => state.lastSuccessAt == null
+          ? 'Đã đồng bộ'
+          : 'Đồng bộ gần nhất: ${_formatSyncTime(state.lastSuccessAt!)}',
+      UserDataSyncStatus.error =>
+        state.safeError ?? 'Đồng bộ chưa hoàn tất, dữ liệu vẫn được giữ',
+      UserDataSyncStatus.idle => fallback,
+    };
+  }
+
+  String _formatSyncTime(DateTime value) {
+    final local = value.toLocal();
+    String two(int number) => number.toString().padLeft(2, '0');
+    return '${two(local.hour)}:${two(local.minute)} '
+        '${two(local.day)}/${two(local.month)}/${local.year}';
+  }
+
+  Future<void> _showDataSyncSheet(BuildContext context, WidgetRef ref) {
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (_) => const _UserDataSyncSheet(),
     );
   }
 
@@ -279,9 +336,34 @@ class SettingsView extends ConsumerWidget {
     if (confirmed != true) return;
 
     try {
-      await ref.read(accountSecurityControllerProvider.notifier).signOut();
-      invalidateUserScopedProviders(ref);
+      final controller = ref.read(v2AuthControllerProvider.notifier);
+      var result = await controller.signOut();
       if (!context.mounted) return;
+
+      if (result.requiresForce) {
+        final force = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Còn dữ liệu chưa đồng bộ'),
+            content: Text(result.message ?? 'Dữ liệu vẫn được giữ trên thiết bị.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Ở lại và thử lại'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Vẫn đăng xuất'),
+              ),
+            ],
+          ),
+        );
+        if (force != true) return;
+        result = await controller.signOut(force: true);
+      }
+
+      if (!result.signedOut || !context.mounted) return;
+      invalidateUserScopedProviders(ref);
       context.go(AuthRoutePaths.authGate);
     } catch (_) {
       if (!context.mounted) return;
@@ -522,6 +604,80 @@ class _SaleSettingsEntry extends StatelessWidget {
       case SaleStatus.active:
         return 'Đọc điều lệ, chấp nhận và nhận quyền Sale cho tài khoản';
     }
+  }
+}
+
+class _UserDataSyncSheet extends ConsumerWidget {
+  const _UserDataSyncSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(userDataSyncControllerProvider);
+    final isWorking = state.status == UserDataSyncStatus.syncing;
+    final message = switch (state.status) {
+      UserDataSyncStatus.awaitingConsent =>
+        'Bạn cần hoàn tất lựa chọn dữ liệu tại màn xác nhận tài khoản.',
+      UserDataSyncStatus.pendingUpload =>
+        'Còn ${state.pendingCount} thay đổi trên thiết bị chưa gửi thành công. '
+        'Không có dữ liệu nào bị xóa.',
+      UserDataSyncStatus.error =>
+        state.safeError ?? 'Đồng bộ chưa hoàn tất. Dữ liệu vẫn được giữ trên thiết bị.',
+      UserDataSyncStatus.success => 'Dữ liệu tài khoản đã được đồng bộ.',
+      UserDataSyncStatus.syncing => 'Nabi đang đồng bộ dữ liệu của bạn...',
+      UserDataSyncStatus.idle =>
+        'Dữ liệu sức khỏe và lịch trình của tài khoản được đồng bộ theo cơ chế '
+        'an toàn: gửi thay đổi trên thiết bị trước, sau đó mới tải dữ liệu tài khoản.',
+    };
+
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Dữ liệu của bạn', style: AppTextStyles.heading3),
+          const SizedBox(height: AppSpacing.sm),
+          Text(message, style: AppTextStyles.bodyMedium),
+          if (state.lastSuccessAt != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Lần thành công gần nhất: ${state.lastSuccessAt!.toLocal()}',
+              style: AppTextStyles.bodySmall,
+            ),
+          ],
+          const SizedBox(height: AppSpacing.lg),
+          FilledButton.icon(
+            onPressed: isWorking
+                ? null
+                : () async {
+                    final outcome = await ref
+                        .read(userDataSyncControllerProvider.notifier)
+                        .retry();
+                    if (!context.mounted) return;
+                    final text = outcome.isSuccess
+                        ? 'Đồng bộ dữ liệu thành công.'
+                        : outcome.safeError ??
+                            'Chưa thể đồng bộ. Dữ liệu vẫn được giữ để thử lại.';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(text)),
+                    );
+                  },
+            icon: isWorking
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh_rounded),
+            label: const Text('Thử đồng bộ lại'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/cloud_sync_result.dart';
+import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 
+import 'authenticated_sync_trigger_registry.dart';
 import 'user_data_sync_outbox.dart';
 
 class UserDataSyncOutboxRefresher with WidgetsBindingObserver {
@@ -41,7 +44,7 @@ class UserDataSyncOutboxRefresher with WidgetsBindingObserver {
       _handleConnectivityResults,
     );
     _pollingTimer = Timer.periodic(pollingInterval, (_) {
-      unawaited(refreshIfDue(force: true));
+      unawaited(_refreshPendingIfNeeded());
     });
     _started = true;
 
@@ -74,6 +77,14 @@ class UserDataSyncOutboxRefresher with WidgetsBindingObserver {
     unawaited(refreshIfDue(force: true));
   }
 
+
+  Future<void> _refreshPendingIfNeeded() async {
+    final hasPendingUpload = await outbox.pendingCountForCurrentUser() > 0;
+    final hasPendingPull = await AppPrefs.isCloudPullRetryPending();
+    if (!hasPendingUpload && !hasPendingPull) return;
+    await refreshIfDue(force: true);
+  }
+
   Future<void> refreshIfDue({bool force = false}) async {
     if (_refreshing) return;
 
@@ -90,7 +101,11 @@ class UserDataSyncOutboxRefresher with WidgetsBindingObserver {
     _lastRefreshAttemptAt = current;
 
     try {
-      await outbox.drainPending();
+      final reason = force
+          ? AuthSyncReason.connectivity
+          : AuthSyncReason.resume;
+      final handled = await AuthenticatedSyncTriggerRegistry.request(reason);
+      if (!handled) await outbox.drainPending();
     } finally {
       _refreshing = false;
     }

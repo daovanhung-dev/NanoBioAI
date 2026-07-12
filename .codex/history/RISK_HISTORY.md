@@ -437,3 +437,12 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: - Đã fix: 6 baseline failures; các overflow mobile lần lượt lộ ra trong hành
 - docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: - Chưa fix: các gap capability/RBAC/Supabase/E2E còn lại của kế hoạch tổng.
 - docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md :: - Cần kiểm tra tiếp: boot v2/Admin trên thiết bị, Supabase sandbox/seed/RBAC,
+- docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - `.codex/tool/codex_quick_check.sh`: BLOCKED tại `flutter pub get` với exit 127; script được chuẩn hóa CRLF tạm thời để chạy trên Linux.
+- docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - `dart format`: BLOCKED - không có Dart SDK trong môi trường.
+- docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - `flutter analyze`: BLOCKED - không có Flutter SDK trong môi trường.
+- docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - `flutter test`: BLOCKED - không có Flutter SDK trong môi trường.
+- docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - Debug APK V2/Admin: BLOCKED - không có Flutter SDK và không có `adb`; Java có sẵn nhưng không đủ để build/chạy Flutter.
+- docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - Supabase sandbox/device `12b304f9`: BLOCKED - không có quyền/kết nối từ môi trường hiện tại.
+- docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - Chưa fix: merge concurrent đa thiết bị nằm ngoài contract đã khóa.
+- docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - Cần kiểm tra tiếp: compile/API compatibility bằng Flutter SDK, atomic rollback thực tế trên Supabase sandbox, RLS/idempotency và toàn bộ evidence device.

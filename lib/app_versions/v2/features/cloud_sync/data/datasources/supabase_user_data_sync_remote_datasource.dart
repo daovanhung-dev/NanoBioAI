@@ -131,16 +131,25 @@ class SupabaseUserDataSyncRemoteDatasource
       throw StateError('Unsupported cloud sync table: $table');
     }
 
-    final oldId = _readNonEmptyString(source['id']);
+    final isRequestLedger = table == 'personal_schedule_ai_requests';
+    final oldId = _readNonEmptyString(
+      source[isRequestLedger ? 'request_id' : 'id'],
+    );
     final row = <String, Object?>{
-      'id': oldId == null ? _newUuidV4() : idMap[oldId] ?? _newUuidV4(),
+      if (isRequestLedger)
+        'request_id': oldId ?? _newUuidV4()
+      else
+        'id': oldId == null ? _newUuidV4() : idMap[oldId] ?? _newUuidV4(),
       'user_id': authUserId,
     };
 
     for (final entry in source.entries) {
       final column = entry.key;
       if (!allowedColumns.contains(column)) continue;
-      if (column == 'id' || column == 'user_id' || column == 'subject_id') {
+      if (column == 'id' ||
+          column == 'request_id' ||
+          column == 'user_id' ||
+          column == 'subject_id') {
         continue;
       }
 

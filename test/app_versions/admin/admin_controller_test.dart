@@ -150,6 +150,12 @@ class _FakeAdminRepository implements AdminRepository {
   _FakeAdminRepository({required this.session});
 
   @override
+  Stream<void> watchAuthChanges() => const Stream<void>.empty();
+
+  @override
+  bool get hasValidSession => true;
+
+  @override
   Future<void> signInWithEmail({
     required String email,
     required String password,

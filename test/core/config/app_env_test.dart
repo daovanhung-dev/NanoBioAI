@@ -3,8 +3,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/config/app_env.dart';
 
 void main() {
-  setUp(dotenv.clean);
-  tearDown(dotenv.clean);
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    dotenv.clean();
+    AppEnv.clearBundledAuthConfigForTesting();
+  });
+
+  tearDown(() {
+    dotenv.clean();
+    AppEnv.clearBundledAuthConfigForTesting();
+  });
 
   group('AppEnv', () {
     test('reads optional values from dotenv fallback', () {
@@ -25,10 +34,30 @@ void main() {
       );
     });
 
-    test('does not require bundled dotenv asset', () async {
-      await AppEnv.loadOptionalDotEnv(fileName: 'missing.env');
+    test('keeps optional loading safe when both files are missing', () async {
+      await AppEnv.loadOptionalDotEnv(
+        fileName: 'missing.env',
+        bundledAuthFileName: 'missing-auth.env',
+      );
 
       expect(AppEnv.maybeString('UNKNOWN_KEY'), isNull);
+      expect(AppEnv.maybeSupabaseConfig(), isNull);
+    });
+
+    test('loads bundled public Supabase config for a plain app build', () async {
+      await AppEnv.loadOptionalDotEnv(fileName: 'missing.env');
+
+      final config = AppEnv.maybeSupabaseConfig();
+      expect(config, isNotNull);
+      final resolvedConfig = config!;
+      expect(Uri.parse(resolvedConfig.url).scheme, 'https');
+      expect(Uri.parse(resolvedConfig.url).host, endsWith('.supabase.co'));
+      expect(resolvedConfig.anonKey, isNotEmpty);
+      expect(
+        AppEnv.maybeString('AUTH_EMAIL_REDIRECT_URL'),
+        isNotEmpty,
+      );
+      expect(AppEnv.maybeString('GEMINI_API_KEY'), isNull);
     });
 
     test('returns no Supabase config when url or anon key is missing', () {

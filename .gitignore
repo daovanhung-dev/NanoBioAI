@@ -10,6 +10,7 @@
 .env.local
 .env.*.local
 *.env
+!assets/config/auth.env
 secrets.json
 firebase_options.dart
 

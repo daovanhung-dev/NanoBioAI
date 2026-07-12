@@ -4,8 +4,8 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
+- coding - Coding: 19 worklog(s)
 - docs-context - Context and docs update: 19 worklog(s)
-- coding - Coding: 18 worklog(s)
 - bugfix - Direct bugfix: 11 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
@@ -18,17 +18,17 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Frequent Modules
 
 - unknown: 7
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
-- docs/issues, docs/todo: 2
 - .codex: 2
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - authentication: 2
 - docs/DD M01-M19: 2
-- Admin dashboard / Supabase RPC: 1
-- docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
-- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
-- M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M02 PERSONAL_SCHEDULE_AI: 1
-- M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox: 1
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
+- docs/issues, docs/todo: 2
+- .codex project workflow: 1
+- .codex, agent context, docs integrity: 1
+- .codex, history learning, task-skills, project skill: 1
+- .codex, root AGENTS.md, .agents skill bridge: 1
+- .codex, workflow router, domain context, worklog learning, project skill.: 1
+- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
 
 ## Reusable Project Skills
 

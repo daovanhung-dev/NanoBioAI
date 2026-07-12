@@ -6,24 +6,24 @@
 
 ## When To Read
 
-- Historical task type: coding + test + docs-context (1)
-- Historical task type: coding + Supabase schema draft + test/docs. (1)
 - Historical task type: coding + Supabase schema draft + Admin UI + tests + docs (1)
+- Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)
+- Historical task type: coding + Supabase schema draft + test/docs (1)
+- Historical task type: coding + Supabase schema draft + test/docs. (1)
 - Historical task type: coding + Supabase schema draft + tests + DD/checklist docs (1)
+- Historical task type: coding + test + docs-context (1)
 - Historical task type: docs-context / audit checklist (1)
 - Historical task type: docs/coding (1)
-- Historical task type: coding + Supabase schema draft + test/docs (1)
-- Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)
 
 ## Common Modules
 
+- Admin app, Supabase Admin, Sale direct-only: 1
+- DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
 - M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
-- lib/sale_referral, lib/services/supabase/sale,: 1
 - M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
-- DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
 - Supabase database, membership, quota, FamilyPlus, Sale/referral: 1
-- Admin app, Supabase Admin, Sale direct-only: 1
+- lib/sale_referral, lib/services/supabase/sale,: 1
 - unknown: 1
 
 ## Work Pattern

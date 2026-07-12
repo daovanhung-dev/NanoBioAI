@@ -21,6 +21,7 @@ class UserDataSyncTables {
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations',
+    'personal_schedule_ai_requests',
   ];
 
   static const localColumnsByTable = <String, Set<String>>{
@@ -256,6 +257,21 @@ class UserDataSyncTables {
       'is_read',
       'created_at',
     },
+    'personal_schedule_ai_requests': {
+      'request_id',
+      'user_id',
+      'actor_mode',
+      'status',
+      'start_date',
+      'days',
+      'meal_count',
+      'exercise_count',
+      'schedule_item_count',
+      'error_code',
+      'created_at',
+      'updated_at',
+      'completed_at',
+    },
   };
 
   static const cloudColumnsByTable = <String, Set<String>>{
@@ -473,6 +489,21 @@ class UserDataSyncTables {
       'action_text',
       'is_read',
       'created_at',
+    },
+    'personal_schedule_ai_requests': {
+      'request_id',
+      'user_id',
+      'actor_mode',
+      'status',
+      'start_date',
+      'days',
+      'meal_count',
+      'exercise_count',
+      'schedule_item_count',
+      'error_code',
+      'created_at',
+      'updated_at',
+      'completed_at',
     },
   };
 

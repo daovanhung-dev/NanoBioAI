@@ -22,3 +22,9 @@ abstract interface class UserDataSyncRemoteDatasource {
     String authUserId,
   );
 }
+
+class LocalSyncPendingWriteException implements Exception {
+  final int pendingCount;
+
+  const LocalSyncPendingWriteException(this.pendingCount);
+}

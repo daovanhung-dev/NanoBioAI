@@ -15,7 +15,7 @@ class SyncOutboxSchema {
   static const personalScheduleAiRequestsTable =
       'personal_schedule_ai_requests';
 
-  static const userOwnedTables = <String>[
+  static const genericIdUserOwnedTables = <String>[
     'health_profiles',
     'lifestyle_habits',
     'health_goals',
@@ -33,6 +33,14 @@ class SyncOutboxSchema {
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations',
+  ];
+
+  /// Full snapshot contract. The request ledger uses `request_id` instead of
+  /// the generic `id`, so it participates in snapshots but has dedicated
+  /// SQLite triggers below.
+  static const userOwnedTables = <String>[
+    ...genericIdUserOwnedTables,
+    personalScheduleAiRequestsTable,
   ];
 
   static const createRuntimeStateTable = '''
@@ -104,7 +112,7 @@ ON sync_outbox(user_id, table_name, record_id)
     // that on rowid tables, but the old outbox trigger intentionally ignored
     // rows with a null ID. Normalize first so every user-owned change is
     // observable and can be represented in a cloud snapshot.
-    for (final table in userOwnedTables) {
+    for (final table in genericIdUserOwnedTables) {
       if (!await _tableExists(db, table)) continue;
       await db.execute(_normalizeIdAfterInsertTrigger(table));
     }
@@ -113,7 +121,7 @@ ON sync_outbox(user_id, table_name, record_id)
     await db.execute(_updateTriggerForUsers());
     await db.execute(_deleteTriggerForUsers());
 
-    for (final table in userOwnedTables) {
+    for (final table in genericIdUserOwnedTables) {
       if (!await _tableExists(db, table)) continue;
       await db.execute(_insertTriggerForUserOwnedTable(table));
       await db.execute(_updateTriggerForUserOwnedTable(table));
@@ -140,7 +148,7 @@ ON sync_outbox(user_id, table_name, record_id)
     await db.execute('DROP TRIGGER IF EXISTS trg_sync_outbox_users_update');
     await db.execute('DROP TRIGGER IF EXISTS trg_sync_outbox_users_delete');
 
-    for (final table in userOwnedTables) {
+    for (final table in genericIdUserOwnedTables) {
       await db.execute(
         'DROP TRIGGER IF EXISTS trg_sync_normalize_id_${table}_insert',
       );

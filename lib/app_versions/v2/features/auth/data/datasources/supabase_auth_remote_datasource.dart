@@ -1,3 +1,5 @@
+import 'package:nano_app/app_versions/v2/features/auth/data/services/device_fingerprint_provider.dart';
+import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_callback_result.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_commands.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_profile.dart';
 import 'package:nano_app/core/config/app_env.dart';
@@ -7,11 +9,13 @@ class SupabaseAuthRemoteDatasource {
   final SupabaseClient client;
   final String? emailRedirectUrl;
   final String deleteAccountFunctionName;
+  final DeviceFingerprintProvider deviceFingerprintProvider;
 
   SupabaseAuthRemoteDatasource({
     required this.client,
     String? emailRedirectUrl,
     String? deleteAccountFunctionName,
+    this.deviceFingerprintProvider = const DeviceFingerprintProvider(),
   }) : emailRedirectUrl = emailRedirectUrl ?? _env('AUTH_EMAIL_REDIRECT_URL'),
        deleteAccountFunctionName =
            deleteAccountFunctionName ??
@@ -23,8 +27,9 @@ class SupabaseAuthRemoteDatasource {
   }
 
   AuthSessionSnapshot? currentSessionSnapshot() {
+    final session = client.auth.currentSession;
     final user = client.auth.currentUser;
-    if (user == null) return null;
+    if (session == null || user == null || session.isExpired) return null;
 
     return AuthSessionSnapshot(
       userId: user.id,
@@ -47,9 +52,11 @@ class SupabaseAuthRemoteDatasource {
     return AuthProfile.fromMap(Map<String, Object?>.from(row));
   }
 
-  Future<AuthResponse> signUp(RegisterCommand command) {
+  Future<AuthResponse> signUp(RegisterCommand command) async {
     final fullName = command.fullName?.trim();
     final phone = command.phone?.trim();
+    final referralCode = command.referralCode?.trim().toUpperCase();
+    final deviceFingerprint = await deviceFingerprintProvider.getOrCreate();
 
     return client.auth.signUp(
       email: command.email.trim(),
@@ -58,6 +65,9 @@ class SupabaseAuthRemoteDatasource {
       data: {
         if (fullName != null && fullName.isNotEmpty) 'full_name': fullName,
         if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (referralCode != null && referralCode.isNotEmpty)
+          'referral_code': referralCode,
+        'device_fingerprint': deviceFingerprint,
       },
     );
   }
@@ -88,8 +98,16 @@ class SupabaseAuthRemoteDatasource {
     await client.auth.updateUser(UserAttributes(password: command.newPassword));
   }
 
-  Future<void> recoverSessionFromUri(Uri uri) async {
+  Future<AuthCallbackResult> recoverSessionFromUri(Uri uri) async {
+    final callbackType = authCallbackTypeFromUri(uri);
     await client.auth.getSessionFromUrl(uri);
+    return switch (callbackType) {
+      AuthCallbackType.passwordRecovery =>
+        const AuthCallbackResult.passwordRecovery(),
+      AuthCallbackType.emailConfirmation =>
+        const AuthCallbackResult.emailConfirmation(),
+      AuthCallbackType.unknown => const AuthCallbackResult.unknown(),
+    };
   }
 
   Future<void> touchLastLogin() async {
@@ -102,9 +120,7 @@ class SupabaseAuthRemoteDatasource {
         .eq('id', userId);
   }
 
-  Future<void> signOut() {
-    return client.auth.signOut();
-  }
+  Future<void> signOut() => client.auth.signOut();
 
   Future<void> requestAccountDeletion() async {
     await client.functions.invoke(
@@ -113,7 +129,5 @@ class SupabaseAuthRemoteDatasource {
     );
   }
 
-  static String? _env(String key) {
-    return AppEnv.maybeString(key);
-  }
+  static String? _env(String key) => AppEnv.maybeString(key);
 }
