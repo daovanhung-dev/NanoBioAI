@@ -6,7 +6,9 @@ import 'package:nano_app/core/storage/localdb/tables/daily_health_tasks_table.da
 import 'package:nano_app/core/storage/localdb/tables/health_score_ledgers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/wellness_rewards_cache_tables.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -115,6 +117,15 @@ class DatabaseService {
     await db.execute(LifestyleScheduleItemsTable.createTable);
     await db.execute(LifestyleScheduleItemsTable.createDateIndex);
     await db.execute(LifestyleScheduleItemsTable.createSourceIndex);
+
+    await db.execute(ScheduleCompletionProofsTable.createTable);
+    await db.execute(ScheduleCompletionProofsTable.createUserDateIndex);
+    await db.execute(ScheduleCompletionProofsTable.createScheduleIndex);
+    await db.execute(ScheduleCompletionProofsTable.createEligibilityIndex);
+
+    for (final statement in wellnessRewardCacheSchema) {
+      await db.execute(statement);
+    }
 
     await db.execute(NutritionLogsTable.createTable);
 

@@ -25,6 +25,69 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
   sync thanh cong; Postgres tu cap default, khong gap loi not-null `23502`.
 - [ ] Client thu ghi package/Sale/payment/commission/quota/subject cua user khac
   qua payload: RPC phai bo qua hoac tu choi.
+- [ ] Snapshot có hoặc không có key `wellness_point_ledgers` đều không insert,
+  update hay delete ledger server-owned; app chỉ pull/merge projection đọc.
+
+## Nhiệm vụ, bằng chứng và Điểm chăm sóc
+
+- [ ] Bật rollout bằng một config version mới trong sandbox; khi flag còn tắt,
+  RPC mutation trả `wellness_rewards_disabled` và không tạo dữ liệu.
+- [ ] Register chỉ chấp nhận member đã có schedule request `succeeded`, quota
+  event hợp lệ, mốc giờ tương lai và đúng 10 item khác nhau mỗi ngày.
+- [ ] Nhánh `member_new` vẫn bắt buộc manifest đầy đủ `days * 10` và quota
+  commit cùng request ID; marker Member ghim canonical manifest và chỉ cho một
+  registration identity. Manifest thiếu/thay item hoặc gọi lại bằng key khác
+  phải bị từ chối, tổng eligibility không vượt `schedule_item_count`.
+- [ ] Sau khi Guest đăng nhập, đúng một request `initial_guest/succeeded` được
+  marker server-owned ghim cho tài khoản. Server xác minh toàn plan có đúng 10
+  mốc AI khác giờ mỗi ngày, nhưng manifest đăng ký được là tập con item chưa
+  hoàn thành có `window_start > now()` trong phạm vi plan. Marker ghim cả danh
+  sách item có thể đăng ký và canonical hash gồm ID/ngày/giờ/source/snapshot;
+  sửa row cùng UUID giữa hai batch phải bị từ chối.
+- [ ] Retry hoặc batch bổ sung cùng request Guest không nhân đôi eligibility;
+  request Guest thứ hai, request bị thay đổi sau khi ghim, request đã thuộc tài
+  khoản khác hoặc có nhiều request Guest thành công đều trả stable code và
+  không tạo eligibility. Client không đọc/ghi trực tiếp được bảng marker.
+- [ ] `begin_my_schedule_completion` bị chặn trước `window_start` và tại đúng
+  `window_end`; trong `[window_start, window_end)` trả path bất biến dạng
+  `<uid>/<eligibility>/<attempt>.jpg`.
+- [ ] Camera cancel/permission deny không upload object, không finalize và không
+  tạo điểm. Retry begin/finalize cùng idempotency key không nhân đôi attempt,
+  proof, ledger hoặc allocation.
+- [ ] User A không upload/select path User B; MIME khác JPEG, file > 5 MB,
+  upsert, path tự tạo và path finalize khác begin đều bị chặn.
+- [ ] Object upload trước hạn có thể finalize retry sau hạn; object được tạo tại
+  hoặc sau `window_end` trả `proof_upload_outside_window`.
+- [ ] Finalize hợp lệ tạo đúng một proof active và `+10`: trạng thái pending đến
+  `window_end`, sau đó available; expiry đúng `window_end + 180 days` theo
+  program config version đã snapshot.
+- [ ] Undo trước hạn giữ proof với trạng thái reversed, tạo `-10` và cho phép
+  hoàn thành lại bằng ảnh mới; net của eligibility không vượt `+10`. Tại/sau
+  hạn undo trả `undo_window_locked`.
+- [ ] Các dòng cũ `wellness_schedule_v1` có delta `+1/-1` được chuyển thành
+  `+10/-10`, `is_redeemable = false` và không seed wallet.
+- [ ] Authenticated client không INSERT/UPDATE/DELETE được wallet, allocation,
+  ledger, eligibility, attempt, proof, inventory hoặc redemption.
+
+## Ưu đãi và voucher
+
+- [ ] Summary chuyển pending sang available và hết hạn idempotent; số dư ví
+  bằng tổng allocation còn hiệu lực.
+- [ ] Redeem khóa wallet, chọn allocation sắp hết hạn trước và cấp đúng một mã
+  bằng `FOR UPDATE SKIP LOCKED`; thiếu điểm/hết kho/lỗi cạnh tranh rollback toàn
+  bộ, không trừ điểm.
+- [ ] Hai thiết bị redeem đồng thời không nhận cùng code và không overspend.
+  Retry cùng idempotency key trả cùng redemption/code.
+- [ ] `list_my_reward_redemptions` không trả raw code; chỉ owner lấy code qua
+  `get_my_reward_code`. User B không đọc được code/giao dịch User A.
+- [ ] Admin upsert từ chối title/description không phải tiếng Việt có dấu; import
+  trả đúng accepted/duplicate/rejected và audit không chứa raw code. Cùng một
+  `code_hash` xuất hiện ở offer khác vẫn là duplicate toàn cục và không được cấp.
+- [ ] Admin hủy bắt buộc `external_revocation_confirmed = true`, reason và
+  idempotency; code chuyển retired, không về kho, refund đúng một lần thành
+  allocation available mới với expiry theo config hiện hành.
+- [ ] Permission `wellness_rewards.read/write` được kiểm tra ở từng Admin RPC;
+  mọi upsert/import/cancel đều có `admin_audit_events`.
 
 ## Membership va quota
 
@@ -123,9 +186,10 @@ Các mục dưới đây là gate bắt buộc trước khi đánh dấu product
 | AUTH-M05-SBX-06 | Pending outbox/push lỗi | Không pull hoặc replace cache; local write và marker được giữ. | PENDING |
 | AUTH-M05-SBX-07 | Pull lỗi/retry | Local cache được giữ; durable retry chạy lại idempotent khi connectivity/resume. | PENDING |
 | AUTH-M05-SBX-08 | Sparse snapshot | Default/nullable columns hợp lệ, retry không nhân đôi dữ liệu. | PENDING |
-| ADMIN-SBX-01 | Admin session riêng | Admin login không ghi đè session V2; restore đúng Admin session. | PENDING |
-| ADMIN-SBX-02 | Role revoked/session expired | `get_my_admin_session` bị từ chối hoặc token hết hạn dẫn tới sign-out và login gate. | PENDING |
+| ADMIN-SBX-01 | Phiên hợp nhất và chọn giao diện | Một Supabase session được restore; user-only vào user UI, admin-only vào Admin UI, dual-role vào user UI và có thể chuyển hai chiều. | PENDING |
+| ADMIN-SBX-02 | Role revoked/session expired | Role Admin bị thu hồi chuyển về user UI mà không sign-out nhầm; token hết hạn mới trở về auth gate. | PENDING |
+| ADMIN-SBX-03 | `app_access_mode` | `admin` không hiện nút user UI; `both` hiện nút chuyển trong Cài đặt/Admin top bar; thay đổi mode có hiệu lực sau refresh auth/access. | PENDING |
 
-- Chạy migration `15-auth-sync-completion.sql` trên sandbox theo migration workflow.
+- Chạy migration `15-auth-sync-completion.sql` và `17-unified-app-role-surface.sql` trên sandbox theo migration workflow.
 - Không chạy `config.sql` trên remote/production; file này chỉ dành cho destructive rebuild local/sandbox.
 - Ghi evidence không chứa token, UUID thật, email/phone thật hoặc dữ liệu sức khỏe nhạy cảm.

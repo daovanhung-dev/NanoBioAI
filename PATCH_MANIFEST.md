@@ -70,3 +70,40 @@ flutter analyze
 flutter test
 flutter run -t lib/main.dart
 ```
+
+---
+
+# Unified App Entrypoint và phân quyền giao diện
+
+## Mục tiêu
+
+- Chỉ chạy `lib/main.dart` cho toàn bộ V1/V2/V3/Admin.
+- Một Supabase session tự chọn giao diện theo quyền tài khoản.
+
+## Quy tắc
+
+- User-only: giao diện người dùng.
+- Admin-only: giao diện quản trị ngay sau đăng nhập.
+- User + Admin: mặc định giao diện người dùng, có nút chuyển Admin trong Cài đặt
+  và nút quay lại giao diện người dùng ở Admin top bar.
+
+## Backend cần áp dụng
+
+Chạy `docs/supabase/17-unified-app-role-surface.sql` trên Supabase sandbox để bổ sung `public.users.app_access_mode` và output
+`can_use_user_app` của `get_my_admin_session()`. Không chạy destructive
+`docs/supabase/config.sql` trên production.
+
+## Chạy ứng dụng
+
+```powershell
+flutter run -t lib/main.dart
+```
+
+## Kiểm tra đề xuất
+
+```powershell
+dart format lib test integration_test
+flutter analyze
+flutter test
+flutter build apk --debug -t lib/main.dart
+```

@@ -8,13 +8,15 @@ class SaleConversionPolicyService {
     required int availablePointCents,
     required int requestedPointCents,
   }) {
-    if (!policy.enabled) return 'Tinh nang quy doi diem Sale chua duoc mo.';
-    if (requestedPointCents <= 0) return 'So diem quy doi phai lon hon 0.';
+    if (!policy.enabled) {
+      return 'Tính năng quy đổi điểm cộng tác viên chưa được mở.';
+    }
+    if (requestedPointCents <= 0) return 'Số điểm quy đổi phải lớn hơn 0.';
     if (requestedPointCents < policy.minimumPointCents) {
-      return 'So diem chua dat muc toi thieu de quy doi.';
+      return 'Số điểm chưa đạt mức tối thiểu để quy đổi.';
     }
     if (requestedPointCents > availablePointCents) {
-      return 'So diem quy doi vuot qua diem kha dung.';
+      return 'Số điểm quy đổi vượt quá điểm khả dụng.';
     }
     return null;
   }

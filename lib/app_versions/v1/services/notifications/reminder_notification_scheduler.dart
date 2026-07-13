@@ -58,12 +58,13 @@ class LocalReminderNotificationScheduler
           NotificationActionIds.categoryId,
           actions: [
             DarwinNotificationAction.plain(
-              NotificationActionIds.done,
-              'Đã làm',
+              NotificationActionIds.openSchedule,
+              'Mở để chụp ảnh',
+              options: {DarwinNotificationActionOption.foreground},
             ),
             DarwinNotificationAction.plain(
               NotificationActionIds.skipped,
-              'Chưa làm',
+              'Để sau',
             ),
           ],
         ),
@@ -201,14 +202,14 @@ class LocalReminderNotificationScheduler
           channelAction: AndroidNotificationChannelAction.createIfNotExists,
           actions: [
             AndroidNotificationAction(
-              NotificationActionIds.done,
-              'Đã làm',
-              showsUserInterface: false,
+              NotificationActionIds.openSchedule,
+              'Mở để chụp ảnh',
+              showsUserInterface: true,
               cancelNotification: true,
             ),
             AndroidNotificationAction(
               NotificationActionIds.skipped,
-              'Chưa làm',
+              'Để sau',
               showsUserInterface: false,
               cancelNotification: true,
             ),

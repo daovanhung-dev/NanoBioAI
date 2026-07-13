@@ -7,7 +7,9 @@ import '../tables/lifestyle_schedule_items_table.dart';
 import '../tables/meal_catalog_table.dart';
 import '../tables/personal_schedule_ai_requests_table.dart';
 import '../tables/schedule_task_catalog_table.dart';
+import '../tables/schedule_completion_proofs_table.dart';
 import '../tables/wellness_point_ledgers_table.dart';
+import '../tables/wellness_rewards_cache_tables.dart';
 import '../seeders/ai_catalog_seeder.dart';
 import '../sync/sync_outbox_schema.dart';
 
@@ -52,6 +54,9 @@ class MigrationManager {
     }
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 13)) {
       await _migrateToV13(db);
+    }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 14)) {
+      await _migrateToV14(db);
     }
   }
 
@@ -297,6 +302,110 @@ class MigrationManager {
     await db.execute(WellnessPointLedgersTable.createSourceIndex);
     await SyncOutboxSchema.create(db);
     await SyncOutboxSchema.recreateTriggers(db);
+  }
+
+  static Future<void> _migrateToV14(Database db) async {
+    await db.execute(ScheduleCompletionProofsTable.createTable);
+    await db.execute(ScheduleCompletionProofsTable.createUserDateIndex);
+    await db.execute(ScheduleCompletionProofsTable.createScheduleIndex);
+    await db.execute(ScheduleCompletionProofsTable.createEligibilityIndex);
+
+    for (final statement in wellnessRewardCacheSchema) {
+      await db.execute(statement);
+    }
+    await SyncOutboxSchema.create(db);
+    await SyncOutboxSchema.recreateTriggers(db);
+
+    if (!await _tableExists(db, 'lifestyle_schedule_items')) return;
+    if (!await _columnExists(
+      db,
+      'lifestyle_schedule_items',
+      'completion_proof_path',
+    )) {
+      return;
+    }
+    for (final requiredColumn in <String>[
+      'id',
+      'user_id',
+      'schedule_date',
+      'start_time',
+      'title',
+      'is_completed',
+      'completion_proof_captured_at',
+      'completed_at',
+      'created_at',
+      'updated_at',
+    ]) {
+      if (!await _columnExists(
+        db,
+        'lifestyle_schedule_items',
+        requiredColumn,
+      )) {
+        return;
+      }
+    }
+
+    // Giữ lại bằng chứng v13 ngay cả khi cloud pull thay thế dòng lịch. Các
+    // đường dẫn cũ là absolute; ảnh mới từ v14 luôn lưu dưới dạng relative.
+    await db.execute('''
+      INSERT OR IGNORE INTO ${ScheduleCompletionProofsTable.tableName} (
+        id, user_id, schedule_item_id, reward_eligibility_id,
+        completion_attempt_id, schedule_date, start_time, schedule_title,
+        local_path, path_kind, captured_at, completed_at, status,
+        cloud_object_path, upload_status, reward_status, reversed_at,
+        created_at, updated_at
+      )
+      SELECT
+        'legacy_' || id,
+        user_id,
+        id,
+        NULL,
+        NULL,
+        COALESCE(schedule_date, ''),
+        COALESCE(start_time, ''),
+        COALESCE(title, 'Nhiệm vụ hằng ngày'),
+        completion_proof_path,
+        'legacy_absolute',
+        COALESCE(
+          completion_proof_captured_at,
+          completed_at,
+          updated_at,
+          created_at,
+          strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        ),
+        COALESCE(
+          completed_at,
+          completion_proof_captured_at,
+          updated_at,
+          created_at,
+          strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        ),
+        CASE WHEN COALESCE(is_completed, 0) = 1 THEN 'active' ELSE 'reversed' END,
+        NULL,
+        'local_only',
+        'legacy_non_redeemable',
+        CASE
+          WHEN COALESCE(is_completed, 0) = 1 THEN NULL
+          ELSE COALESCE(updated_at, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+        END,
+        COALESCE(
+          completion_proof_captured_at,
+          completed_at,
+          updated_at,
+          created_at,
+          strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        ),
+        COALESCE(
+          updated_at,
+          completion_proof_captured_at,
+          completed_at,
+          created_at,
+          strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        )
+      FROM lifestyle_schedule_items
+      WHERE completion_proof_path IS NOT NULL
+        AND TRIM(completion_proof_path) != ''
+    ''');
   }
 
   static Future<void> _addColumnIfMissing(

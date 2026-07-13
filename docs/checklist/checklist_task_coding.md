@@ -6,7 +6,7 @@ Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tra
 
 | Field | Value |
 |---|---|
-| Nguon | `docs/checklist/checklist_complete_DD.md` va `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` |
+| Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001` va `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` |
 | Ngay cap nhat | 2026-07-13 |
 | Muc dich | Ghi lai trang thai coding M01-M19 va coding gate rieng cho planned M20-M29. |
 
@@ -46,6 +46,29 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 
 ## Uu tien tiep theo
 
+### Delta nhiệm vụ, Điểm chăm sóc và voucher — 2026-07-13
+
+- [x] Chốt BD addendum và DD delta M03/M08/M09/M15/M16, giữ trạng thái Approved.
+- [x] Source-ready: cửa sổ 30 phút, camera proof local/private cloud, SQLite v14,
+  eligibility/begin/finalize/undo/reconcile, ví/cache/secure voucher, user/Admin UI,
+  migration 16/config, RLS/Storage contract và Việt hóa production surfaces.
+- [x] Targeted evidence đã báo: daily/proof analyze sạch; 59 lifestyle/migration/
+  notification/cloud-sync + 50 dashboard tests pass; EXIF pass; localization 96 +
+  54 tests/analyze/contract scan pass; reward client/Admin 38/38 + analyze pass.
+- [x] Supabase source/local evidence: 40 contract tests PASS; full `config.sql`
+  rebuild trên PostgreSQL 18 tạm với Auth/Storage stub PASS; local end-to-end
+  register→begin→upload→finalize→undo→refinalize→redeem→cancel, cross-user RLS
+  và direct-ledger rejection smoke PASS.
+- [ ] Apply migration/config vào dự án Supabase sandbox thật; tạo/kiểm tra bucket
+  private `schedule-completion-proofs` runtime và giữ
+  `wellness_rewards_rollout.enabled = false`.
+- [ ] Chạy sandbox RLS/concurrency/atomicity cho hai user, two-device retry,
+  pending→available→expiry, FEFO, overspend, inventory và cancel/refund/audit.
+- [ ] Nhập catalog/mã thử, smoke client/Admin và real-device camera/notification;
+  bổ sung job dọn proof khi xóa tài khoản; chỉ bật feature flag sau khi acceptance pass.
+- [ ] Root chạy full `flutter analyze`, `flutter test`, integrity và diff check;
+  không dùng targeted evidence ở trên để claim full validation.
+
 | Priority | Module | Viec can lam tiep | Ly do |
 |---:|---|---|---|
 | 1 | M15-M19 Admin/Reconciliation/Reporting/Audit | Verify Admin SQL/RPC sandbox, RLS, audit rows, payment reversal, reconciliation run/status actions, report export, retention, and privacy filters; record acceptance evidence. | Code/SQL/static contracts/tests da 100%; can sandbox/staging evidence de dat production acceptance. |
@@ -55,6 +78,14 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 | 5 | M13/M14 Payment/Sale | Verify selected payment/Sale policy in sandbox/provider flow: manual approval, entitlement activation, 24h hold, conversion payout, suspended Sale, and audit rows. | Runtime/SQL/tests da 100%; provider/staging evidence van thieu. |
 
 ## Notes tu phien coding gan nhat
+
+- 2026-07-13: Daily proof + Điểm chăm sóc/voucher + Việt hóa source đã tích hợp
+  cho M03/M08/M09/M15/M16. Targeted evidence: daily/proof analyze sạch, 59 + 50
+  test bundle và EXIF pass; localization 96 + 54 tests/analyze/contract scan pass;
+  reward client/Admin/cache/secure-store/gateway 38/38 và analyze pass; Supabase
+  contract 40 test, PostgreSQL 18 full-config rebuild và local end-to-end/RLS/
+  direct-ledger smoke pass. Chưa deploy Supabase sandbox thật hoặc kiểm tra bucket
+  runtime; feature flag phải giữ tắt.
 
 - 2026-07-12: Fix ket noi Gemini cho M05 AI: thay `google_generative_ai` cu bang `GeminiRestClient` REST voi `x-goog-api-key`, dong bo onboarding/meal/exercise/chat, bounded chat history, bat buoc AI key trong run/build, them live preflight va regression contracts. Static parse/path/secret checks PASS; live Gemini bi BLOCKED do sandbox DNS, Flutter/Dart/PowerShell/device smoke khong kha dung nen chua claim production acceptance.
 - 2026-07-12: Mo khoa dang nhap cho Guest trong Settings, an thao tac account-only khi chua co session, them auth-state provider phan ung va `tools/build_authenticated.ps1` de APK/AAB nhan Supabase qua `--dart-define-from-file` ma khong bundle `.env`. Static checks PASS; Flutter/Dart/PowerShell/device smoke BLOCKED trong moi truong hien tai.
@@ -74,3 +105,15 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - 2026-06-29: M15-M19 selected policy implementation da code/test local draft: Admin active full CRUD qua audited RPC/backend, reconciliation section/RPC mapping, dashboard timezone `Asia/Ho_Chi_Minh`, manual payment approval, 24h hold/refund-cancel window, no-new-points cho Sale suspended/closed, one-Admin point adjustment, DD/checklist/Supabase contracts updated. Implementation evidence backlog: sandbox/staging SQL/RPC/RLS/audit evidence.
 
 - 2026-07-12: Hoan tat medical UI refresh toan du an theo token/primitive chung: Material 3 theme, `AppExperience.builder` cho V1/V2/V3/Admin, `MedicalPageScaffold` cho production views, Auth V2 responsive, Dashboard/Features Hub/Settings/Home/empty states duoc nang cap. Static contract/import/raw-Scaffold/ZIP checks PASS. Flutter format/analyze/test/build va real-device accessibility/visual smoke SKIPPED vi moi truong khong co Flutter/Dart/PowerShell; khong thay doi DD coding progress hay business behavior.
+
+### Ứng dụng hợp nhất và phân giao diện theo quyền — 2026-07-13
+
+- [x] Chỉ giữ entrypoint runtime `lib/main.dart`; xóa `main_v2.dart` và `main_admin.dart`.
+- [x] Dùng một Supabase session cho user/Admin và tự chọn surface sau đăng nhập.
+- [x] Nhập route V1/V2/V3 vào router người dùng thống nhất.
+- [x] Admin-only mở thẳng Admin; user-only ở giao diện người dùng; dual-role có nút chuyển trong Cài đặt và Admin top bar.
+- [x] Role Admin bị thu hồi không làm mất phiên người dùng.
+- [x] Đồng bộ SQL `app_access_mode`/`can_use_user_app` vào migration nguồn và `config.sql`.
+- [x] Cập nhật unit/static contracts, launch config, integration/regression entrypoint và context docs.
+- [ ] Chạy `dart format`, `flutter analyze`, full `flutter test` và Android smoke trong máy có Flutter SDK.
+- [ ] Apply migration trên Supabase sandbox; smoke user-only/admin-only/both, restore session và revoke role.

@@ -37,7 +37,7 @@ class HealthScoreHabitsPage extends ConsumerWidget {
               _HealthScoreSupportState(
                 icon: Icons.lock_outline_rounded,
                 title: 'Cần đăng nhập',
-                message: vietnameseUiText(
+                message: vietnameseSystemUiText(
                   viewModel.message,
                   fallback: 'Đăng nhập để tiếp tục.',
                 ),
@@ -47,21 +47,21 @@ class HealthScoreHabitsPage extends ConsumerWidget {
             HealthScoreHabitsViewStatus.empty => _HealthScoreSupportState(
               icon: Icons.history_toggle_off_rounded,
               title: 'Chưa có lịch sử chăm sóc',
-              message:
-                  vietnameseUiText(
-                    viewModel.message,
-                    fallback: 'Hoàn thành lịch chăm sóc hằng ngày để Nabi tính điểm.',
-                  ),
+              message: vietnameseSystemUiText(
+                viewModel.message,
+                fallback:
+                    'Hoàn thành lịch chăm sóc hằng ngày để Nabi tính điểm.',
+              ),
               actionLabel: 'Làm mới',
               onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
             ),
             HealthScoreHabitsViewStatus.failure => _HealthScoreSupportState(
               icon: Icons.error_outline_rounded,
               title: 'Chưa tải được điểm sức khỏe',
-              message: vietnameseUiText(
-                  viewModel.message,
-                  fallback: 'Bạn thử lại sau ít phút.',
-                ),
+              message: vietnameseSystemUiText(
+                viewModel.message,
+                fallback: 'Bạn thử lại sau ít phút.',
+              ),
               actionLabel: 'Thử lại',
               onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
             ),
@@ -165,11 +165,6 @@ class _ScoreHeader extends StatelessWidget {
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            result.formulaVersion,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(

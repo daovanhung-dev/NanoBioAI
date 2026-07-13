@@ -1,19 +1,80 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/design_system.dart';
 import 'package:nano_app/core/theme/medical_ui.dart';
+import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
+import '../../domain/services/lifestyle_schedule_window_policy.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
+import '../controllers/lifestyle_schedule_controller.dart';
 import '../controllers/lifestyle_schedule_state.dart';
+import 'schedule_proof_gallery_page.dart';
 
-class LifestyleSchedulePage extends ConsumerWidget {
-  const LifestyleSchedulePage({super.key});
+class LifestyleSchedulePage extends ConsumerStatefulWidget {
+  final String? initialItemId;
+
+  const LifestyleSchedulePage({super.key, this.initialItemId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LifestyleSchedulePage> createState() =>
+      _LifestyleSchedulePageState();
+}
+
+class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
+    with WidgetsBindingObserver {
+  Timer? _boundaryTimer;
+  DateTime? _scheduledBoundary;
+  final GlobalKey _focusedItemKey = GlobalKey();
+  bool _didRevealFocusedItem = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final initialItemId = widget.initialItemId?.trim();
+      if (initialItemId != null && initialItemId.isNotEmpty) {
+        unawaited(() async {
+          await ref.read(lifestyleScheduleControllerProvider.future);
+          if (!mounted) return;
+          ref
+              .read(lifestyleScheduleControllerProvider.notifier)
+              .focusItem(initialItemId);
+        }());
+      }
+      unawaited(
+        ref
+            .read(lifestyleScheduleControllerProvider.notifier)
+            .reconcilePendingRewards(),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _boundaryTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    if (mounted) setState(() {});
+    final controller = ref.read(lifestyleScheduleControllerProvider.notifier);
+    unawaited(() async {
+      await controller.refresh();
+      await controller.reconcilePendingRewards();
+    }());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final scheduleAsync = ref.watch(lifestyleScheduleControllerProvider);
 
     return MedicalPageScaffold(
@@ -30,47 +91,105 @@ class LifestyleSchedulePage extends ConsumerWidget {
                 .refresh(),
           ),
         ),
-        data: (state) => _SchedulePageFrame(
-          child: RefreshIndicator(
-            onRefresh: () => ref
-                .read(lifestyleScheduleControllerProvider.notifier)
-                .refresh(),
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacingTokens.pagePadding,
-                    AppSpacingTokens.sectionSpacing,
-                    AppSpacingTokens.pagePadding,
-                    _ScheduleUi.bottomSafeSpace,
-                  ),
-                  sliver: SliverToBoxAdapter(
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          maxWidth: _ScheduleUi.maxContentWidth,
+        data: (state) {
+          _queueBoundaryRefresh(state.summary.items);
+          _queueFocusedItemReveal(state);
+          return _SchedulePageFrame(
+            child: RefreshIndicator(
+              onRefresh: () => ref
+                  .read(lifestyleScheduleControllerProvider.notifier)
+                  .refresh(),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacingTokens.pagePadding,
+                      AppSpacingTokens.sectionSpacing,
+                      AppSpacingTokens.pagePadding,
+                      _ScheduleUi.bottomSafeSpace,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: _ScheduleUi.maxContentWidth,
+                          ),
+                          child: _ScheduleContent(
+                            state: state,
+                            focusedItemKey: _focusedItemKey,
+                          ),
                         ),
-                        child: _ScheduleContent(state: state),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
+  }
+
+  void _queueBoundaryRefresh(List<LifestyleScheduleItemEntity> items) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final now = LifestyleScheduleWindowPolicy.vietnamNow();
+      final boundaries = <DateTime>[];
+      for (final item in items) {
+        final start = item.scheduledAt;
+        final deadline = item.completionDeadline;
+        if (start != null && start.isAfter(now)) boundaries.add(start);
+        if (deadline != null && deadline.isAfter(now)) {
+          boundaries.add(deadline);
+        }
+      }
+      boundaries.sort();
+      final next = boundaries.firstOrNull;
+      if (next == _scheduledBoundary && _boundaryTimer?.isActive == true) {
+        return;
+      }
+      _boundaryTimer?.cancel();
+      _scheduledBoundary = next;
+      if (next == null) return;
+      _boundaryTimer = Timer(
+        next.difference(now) + const Duration(milliseconds: 50),
+        () {
+          if (!mounted) return;
+          _scheduledBoundary = null;
+          setState(() {});
+        },
+      );
+    });
+  }
+
+  void _queueFocusedItemReveal(LifestyleScheduleState state) {
+    if (_didRevealFocusedItem || state.focusedItemId == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final targetContext = _focusedItemKey.currentContext;
+      if (targetContext == null) return;
+      _didRevealFocusedItem = true;
+      unawaited(
+        Scrollable.ensureVisible(
+          targetContext,
+          duration: const Duration(milliseconds: 420),
+          curve: Curves.easeOutCubic,
+          alignment: .18,
+        ),
+      );
+    });
   }
 }
 
 class _ScheduleContent extends StatelessWidget {
   final LifestyleScheduleState state;
+  final GlobalKey focusedItemKey;
 
-  const _ScheduleContent({required this.state});
+  const _ScheduleContent({required this.state, required this.focusedItemKey});
 
   @override
   Widget build(BuildContext context) {
@@ -82,12 +201,36 @@ class _ScheduleContent extends StatelessWidget {
         _ProgressCard(state: state),
         if (state.lastEncouragement != null) ...[
           const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
-          _EncouragementBanner(message: state.lastEncouragement!),
+          _EncouragementBanner(
+            message: vietnameseSystemUiText(
+              state.lastEncouragement,
+              fallback:
+                  'Bạn vừa hoàn thành thêm một mốc chăm sóc. Cứ giữ nhịp nhẹ nhàng nhé.',
+            ),
+          ),
+        ],
+        if (state.lastErrorMessage != null) ...[
+          const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
+          _ScheduleActionErrorBanner(
+            message: vietnameseSystemUiText(
+              state.lastErrorMessage,
+              fallback:
+                  'Nabi chưa thể cập nhật nhiệm vụ lúc này. Bạn thử lại sau nhé.',
+            ),
+          ),
         ],
         const SizedBox(height: AppSpacingTokens.sectionSpacing),
         _DateSection(state: state),
         const SizedBox(height: AppSpacingTokens.sectionSpacing),
-        _Timeline(items: state.selectedItems),
+        _Timeline(
+          items: state.selectedItems,
+          focusedItemId: state.focusedItemId,
+          focusedItemKey: focusedItemKey,
+        ),
+        if (state.completionProofs.isNotEmpty) ...[
+          const SizedBox(height: AppSpacingTokens.sectionSpacing),
+          ScheduleProofPreviewSection(proofs: state.completionProofs),
+        ],
       ],
     );
   }
@@ -646,6 +789,42 @@ class _EncouragementBanner extends ConsumerWidget {
   }
 }
 
+class _ScheduleActionErrorBanner extends ConsumerWidget {
+  final String message;
+
+  const _ScheduleActionErrorBanner({required this.message});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacingTokens.cardPadding),
+      decoration: BoxDecoration(
+        color: AppColorTokens.warningLight,
+        borderRadius: BorderRadius.circular(AppRadiusTokens.card),
+        border: Border.all(
+          color: AppColorTokens.warning.withValues(
+            alpha: _ScheduleUi.borderOpacity,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline_rounded, color: AppColorTokens.warning),
+          const SizedBox(width: AppSpacingTokens.itemSpacingLarge),
+          Expanded(child: Text(message, style: AppTextStyles.bodyMedium)),
+          IconButton(
+            onPressed: () => ref
+                .read(lifestyleScheduleControllerProvider.notifier)
+                .dismissError(),
+            icon: const Icon(Icons.close_rounded),
+            tooltip: 'Đóng thông báo',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _DateSection extends StatelessWidget {
   final LifestyleScheduleState state;
 
@@ -811,8 +990,14 @@ class _DateChip extends StatelessWidget {
 
 class _Timeline extends StatelessWidget {
   final List<LifestyleScheduleItemEntity> items;
+  final String? focusedItemId;
+  final GlobalKey focusedItemKey;
 
-  const _Timeline({required this.items});
+  const _Timeline({
+    required this.items,
+    required this.focusedItemId,
+    required this.focusedItemKey,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -839,6 +1024,7 @@ class _Timeline extends StatelessWidget {
           final meta = _ScheduleMeta.from(item.category, item.sourceType);
 
           return Padding(
+            key: item.id == focusedItemId ? focusedItemKey : null,
             padding: EdgeInsets.only(
               bottom: index == items.length - 1
                   ? 0
@@ -848,6 +1034,7 @@ class _Timeline extends StatelessWidget {
               item: item,
               meta: meta,
               isLast: index == items.length - 1,
+              highlighted: item.id == focusedItemId,
             ),
           );
         }),
@@ -860,16 +1047,18 @@ class _TimelineRow extends ConsumerWidget {
   final LifestyleScheduleItemEntity item;
   final _ScheduleMeta meta;
   final bool isLast;
+  final bool highlighted;
 
   const _TimelineRow({
     required this.item,
     required this.meta,
     required this.isLast,
+    required this.highlighted,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final now = DateTime.now();
+    final now = LifestyleScheduleWindowPolicy.vietnamNow();
     final status = item.completionStatusAt(now);
     final canToggle = item.isWithinCompletionWindow(now);
 
@@ -889,16 +1078,45 @@ class _TimelineRow extends ConsumerWidget {
               meta: meta,
               status: status,
               canToggle: canToggle,
-              onToggle: canToggle
-                  ? () => ref
-                        .read(lifestyleScheduleControllerProvider.notifier)
-                        .toggleItem(item)
-                  : null,
+              highlighted: highlighted,
+              onToggle: canToggle ? () => _toggle(context, ref) : null,
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _toggle(BuildContext context, WidgetRef ref) async {
+    final controller = ref.read(lifestyleScheduleControllerProvider.notifier);
+    final result = await controller.toggleItem(item);
+    if (result != LifestyleScheduleToggleResult.requiresNoRewardConfirmation ||
+        !context.mounted) {
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Tiếp tục mà không nhận điểm?'),
+        content: const Text(
+          'Thiết bị chưa thể xác nhận nhiệm vụ trực tuyến. Nếu tiếp tục, ảnh vẫn được lưu riêng trong ứng dụng nhưng nhiệm vụ này sẽ không được cộng 10 Điểm chăm sóc.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Để sau'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Chụp ảnh không nhận điểm'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await controller.toggleItem(item, allowWithoutReward: true);
+    }
   }
 }
 
@@ -976,6 +1194,7 @@ class _ScheduleItemCard extends StatelessWidget {
   final _ScheduleMeta meta;
   final CompletionWindowStatus status;
   final bool canToggle;
+  final bool highlighted;
   final VoidCallback? onToggle;
 
   const _ScheduleItemCard({
@@ -983,6 +1202,7 @@ class _ScheduleItemCard extends StatelessWidget {
     required this.meta,
     required this.status,
     required this.canToggle,
+    required this.highlighted,
     required this.onToggle,
   });
 
@@ -1021,7 +1241,10 @@ class _ScheduleItemCard extends StatelessWidget {
                 ? AppColorTokens.success.withValues(
                     alpha: _ScheduleUi.borderOpacity,
                   )
+                : highlighted
+                ? AppColorTokens.warning
                 : meta.color.withValues(alpha: _ScheduleUi.softBorderOpacity),
+            width: highlighted ? 2 : 1,
           ),
         ),
         child: Column(
@@ -1054,7 +1277,10 @@ class _ScheduleItemCard extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacingTokens.itemSpacing),
                       Text(
-                        item.title,
+                        vietnameseSystemUiText(
+                          item.title,
+                          fallback: 'Nhiệm vụ chăm sóc sức khỏe',
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.labelLarge.copyWith(
@@ -1079,7 +1305,11 @@ class _ScheduleItemCard extends StatelessWidget {
             if (item.description.isNotEmpty) ...[
               const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
               Text(
-                item.description,
+                vietnameseSystemUiText(
+                  item.description,
+                  fallback:
+                      'Thực hiện mốc chăm sóc này theo hướng dẫn của Nabi.',
+                ),
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: _SchedulePalette.textSecondary(context),
                   height: _ScheduleUi.relaxedLineHeight,
@@ -1110,6 +1340,8 @@ class _TimeBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final startTime = _scheduleTimeLabel(item.startTime);
+    final endTime = _scheduleTimeLabel(item.endTime);
     return Container(
       width: _ScheduleUi.timeBlockWidth,
       padding: const EdgeInsets.symmetric(
@@ -1123,14 +1355,14 @@ class _TimeBlock extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            item.startTime,
+            startTime ?? '--:--',
             textAlign: TextAlign.center,
             style: AppTextStyles.labelLarge.copyWith(color: color),
           ),
-          if (item.endTime.isNotEmpty) ...[
+          if (endTime != null) ...[
             const SizedBox(height: AppSpacingTokens.itemSpacing),
             Text(
-              item.endTime,
+              endTime,
               textAlign: TextAlign.center,
               style: AppTextStyles.caption.copyWith(
                 color: _SchedulePalette.textMuted(context),
@@ -1213,7 +1445,7 @@ class _OpenPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadiusTokens.badge),
       ),
       child: Text(
-        'Dang mo',
+        'Đang mở',
         style: AppTextStyles.labelMedium.copyWith(
           color: AppColorTokens.success,
         ),
@@ -1237,7 +1469,7 @@ class _LockedPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadiusTokens.badge),
       ),
       child: Text(
-        'Da khoa',
+        'Đã khóa',
         style: AppTextStyles.labelMedium.copyWith(
           color: AppColorTokens.warning,
         ),
@@ -1610,6 +1842,16 @@ String _namiCopy({required num score, required int completed}) {
     return 'Mọi thứ đang đi đúng hướng rồi. Nabi sẽ ở đây nhắc nhẹ phần còn lại để bạn không bị quá tải.';
   }
   return 'Không cần hoàn hảo đâu. Nabi chỉ mong bạn chọn thêm một việc nhỏ và làm thật dịu dàng với cơ thể mình.';
+}
+
+String? _scheduleTimeLabel(String value) {
+  final parsed = LifestyleScheduleWindowPolicy.parseScheduledAt(
+    scheduleDate: '2000-01-01',
+    startTime: value,
+  );
+  if (parsed == null) return null;
+  return '${parsed.hour.toString().padLeft(2, '0')}:'
+      '${parsed.minute.toString().padLeft(2, '0')}';
 }
 
 String _formatDate(DateTime date) {

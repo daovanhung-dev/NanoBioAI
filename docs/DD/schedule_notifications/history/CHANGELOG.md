@@ -1,5 +1,13 @@
 # CHANGELOG — SCHEDULE_NOTIFICATIONS / Thông báo lịch trình
 
+## [v1.3] - 2026-07-13
+### Changed
+- Replaced background completion semantics with `Mở để chụp ảnh` navigation to the exact schedule item and shared M03 camera-proof use case.
+- Preserved payload/subject validation and idempotency; skip remains a separate non-reward action when configured.
+
+### Validation
+- Targeted notification/lifestyle test evidence is recorded in the implementation delta; real-device delivery/action smoke remains open.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked SCHEDULE_NOTIFICATIONS DD docs as `Approved - DD docs complete`.

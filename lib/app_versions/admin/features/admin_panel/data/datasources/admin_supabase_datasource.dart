@@ -100,6 +100,10 @@ String adminRpcFunctionFor(AdminMutationCommand command) {
       command.action == 'adjust_points'
           ? 'admin_adjust_sale_points'
           : 'admin_review_sale_point_conversion',
+    AdminPanelSection.wellnessRewards =>
+      command.action == 'cancel'
+          ? 'admin_cancel_reward_redemption'
+          : 'admin_upsert_reward_offer',
     AdminPanelSection.reconciliation =>
       command.action == 'create_run'
           ? 'admin_create_reconciliation_run'
@@ -118,6 +122,7 @@ String adminListRpcForSection(AdminPanelSection section) {
     AdminPanelSection.payments => 'admin_list_payments',
     AdminPanelSection.sales => 'admin_list_sales',
     AdminPanelSection.saleConversions => 'admin_list_sale_point_conversions',
+    AdminPanelSection.wellnessRewards => 'admin_list_wellness_rewards',
     AdminPanelSection.reconciliation =>
       'admin_list_reconciliation_discrepancies',
     AdminPanelSection.plans => 'admin_list_plan_config_versions',
@@ -171,6 +176,20 @@ Map<String, Object?> adminRpcParamsFor(AdminMutationCommand command) {
           'p_payment_proof_path': _readPayloadString(
             command.payload['payment_proof_path'],
           ),
+      };
+    case AdminPanelSection.wellnessRewards:
+      if (command.action == 'cancel') {
+        return {
+          ...base,
+          'p_redemption_id': command.targetId,
+          'p_external_revocation_confirmed':
+              command.payload['external_revocation_confirmed'] == true,
+        };
+      }
+      return {
+        ...base,
+        'p_offer_id': command.targetId.isEmpty ? null : command.targetId,
+        ...command.payload,
       };
     case AdminPanelSection.reconciliation:
       if (command.action == 'create_run') {

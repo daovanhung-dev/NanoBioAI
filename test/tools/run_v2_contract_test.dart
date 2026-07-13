@@ -24,11 +24,7 @@ void main() {
         jsonDecode(File('.vscode/launch.json').readAsStringSync())
             as Map<String, dynamic>;
     final configurations = launch['configurations'] as List<dynamic>;
-    const entrypoints = [
-      'lib/main.dart',
-      'lib/main_v2.dart',
-      'lib/main_admin.dart',
-    ];
+    const entrypoints = ['lib/main.dart'];
 
     for (final entrypoint in entrypoints) {
       final matches = configurations

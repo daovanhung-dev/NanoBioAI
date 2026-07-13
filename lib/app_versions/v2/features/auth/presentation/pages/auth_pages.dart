@@ -1676,7 +1676,7 @@ class _AuthCallbackLoading extends StatelessWidget {
 
 String? _authValidationText(String? raw) {
   if (raw == null) return null;
-  return vietnameseUiText(raw);
+  return vietnameseSystemUiText(raw, fallback: 'Thông tin chưa hợp lệ.');
 }
 
 void _showError(BuildContext context, Object error) {

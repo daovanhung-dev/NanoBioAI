@@ -1,10 +1,10 @@
 # Admin App Surface
 
-Admin is a separate app surface beside `v1`, `v2`, and `v3`.
+Admin remains an isolated presentation surface, but it is selected by the unified app bootstrap beside `v1`, `v2`, and `v3`.
 
 Guardrails:
 
-- Entry point is `lib/main_admin.dart`.
+- Entry point is `lib/main.dart`; the app selects Admin after trusted role resolution.
 - UI must call providers/controllers, not Supabase or SQL directly.
 - Mutations must go through Admin RPC with permission, reason, idempotency, and
   audit.

@@ -7,7 +7,7 @@ import '../models/daily_health_task_model.dart';
 class DailyHealthTasksDao {
   static const _tag = 'DAILY_TRACKING_DAO';
 
-  final Database db;
+  final DatabaseExecutor db;
 
   const DailyHealthTasksDao(this.db);
 

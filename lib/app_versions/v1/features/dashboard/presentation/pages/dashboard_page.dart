@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/services/dashboard_companion_service.dart';
@@ -7,7 +10,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/control
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/widgets/companion/dashboard_companion_widgets.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
-import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v1/features/nabi/presentation/widgets/nabi_floating_overlay.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
@@ -28,16 +31,19 @@ class DashboardPage extends ConsumerStatefulWidget {
 }
 
 class _DashboardPageState extends ConsumerState<DashboardPage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _entryController;
   late final AnimationController _pulseController;
   late final AnimationController _scoreController;
   late final Animation<double> _fadeIn;
   late final Animation<Offset> _slideUp;
+  Timer? _scheduleStatusTimer;
+  final Set<String> _busyTimelineItems = <String>{};
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     _entryController = AnimationController(
       vsync: this,
@@ -62,10 +68,22 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     Future<void>.delayed(const Duration(milliseconds: 240), () {
       if (mounted) _scoreController.forward();
     });
+    _scheduleStatusTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted) ref.invalidate(dashboardDynamicProvider);
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.invalidate(dashboardDynamicProvider);
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _scheduleStatusTimer?.cancel();
     _entryController.dispose();
     _pulseController.dispose();
     _scoreController.dispose();
@@ -112,38 +130,29 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   }
 
   Future<void> _completeTimelineItem(DashboardTimelineItem item) async {
-    String? completionProofPath;
-    if (item.sourceType == DashboardTimelineSourceTypes.schedule) {
-      final sourceId = item.sourceId;
-      if (sourceId == null || sourceId.isEmpty) return;
-      try {
-        completionProofPath = await ref
-            .read(scheduleProofImageServiceProvider)
-            .captureProofForItem(sourceId);
-      } catch (_) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Nabi chÆ°a thá»ƒ lÆ°u áº£nh minh chá»©ng lÃºc nÃ y. MÃ¬nh thá»­ láº¡i sau má»™t chÃºt nhÃ©.',
-              ),
-            ),
-          );
+    if (!_busyTimelineItems.add(item.id)) return;
+    try {
+      final sourceId = item.sourceId?.trim();
+      if (sourceId == null || sourceId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nabi chưa tìm thấy nhiệm vụ trong lịch chăm sóc.'),
+          ),
+        );
         return;
       }
-      if (completionProofPath == null) return;
+      await context.push(
+        Uri(
+          path: V1RoutePaths.lifestyleSchedule,
+          queryParameters: {'item': sourceId},
+        ).toString(),
+      );
+      if (mounted) {
+        ref.invalidate(dashboardDynamicProvider);
+      }
+    } finally {
+      _busyTimelineItems.remove(item.id);
     }
-
-    await _runDashboardAction(
-      action: () => ref
-          .read(dashboardControllerProvider.notifier)
-          .completeTimelineItem(item, completionProofPath: completionProofPath),
-      successMessage: 'Nabi đã ghi nhận việc nhỏ này rồi nhé.',
-      errorMessage:
-          'Nabi chưa thể cập nhật việc này lúc này. Mình thử lại sau một chút nhé.',
-    );
   }
 
   Future<void> _saveDailyCheckIn(String mood) async {
@@ -186,22 +195,24 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     );
   }
 
-  Future<void> _runDashboardAction({
+  Future<bool> _runDashboardAction({
     required Future<void> Function() action,
     required String successMessage,
     required String errorMessage,
   }) async {
     try {
       await action();
-      if (!mounted) return;
+      if (!mounted) return false;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(successMessage)));
+      return true;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted) return false;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(errorMessage)));
+      return false;
     }
   }
 
@@ -362,7 +373,8 @@ class _DashboardContent extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               const SizedBox(height: AppSpacing.lg),
-              if (userDataSyncState.status == UserDataSyncStatus.pendingUpload ||
+              if (userDataSyncState.status ==
+                      UserDataSyncStatus.pendingUpload ||
                   userDataSyncState.status == UserDataSyncStatus.error) ...[
                 _UserDataSyncBanner(state: userDataSyncState),
                 const SizedBox(height: AppSpacing.md),
@@ -1396,10 +1408,10 @@ class _TimelineRow extends StatelessWidget {
           )
         else if (item.canComplete)
           IconButton(
-            tooltip: 'Đã làm',
+            tooltip: 'Mở để chụp ảnh',
             visualDensity: VisualDensity.compact,
             onPressed: () => onComplete(item),
-            icon: const Icon(Icons.check_circle_outline_rounded),
+            icon: const Icon(Icons.photo_camera_outlined),
             color: AppColors.primary,
           )
         else
@@ -1868,9 +1880,9 @@ class _UserDataSyncBanner extends ConsumerWidget {
             child: Text(
               pending
                   ? '${state.pendingCount} thay đổi đang chờ đồng bộ. '
-                      'Dữ liệu vẫn an toàn trên thiết bị.'
+                        'Dữ liệu vẫn an toàn trên thiết bị.'
                   : state.safeError ??
-                      'Chưa thể đồng bộ dữ liệu. Dữ liệu vẫn được giữ trên thiết bị.',
+                        'Chưa thể đồng bộ dữ liệu. Dữ liệu vẫn được giữ trên thiết bị.',
               style: AppTextStyles.bodySmall,
             ),
           ),

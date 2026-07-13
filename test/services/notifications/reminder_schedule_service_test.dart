@@ -66,6 +66,40 @@ void main() {
     expect(scheduler.scheduled.single.scheduledAt, DateTime(2026, 6, 17, 12));
   });
 
+  test('accepts seconds and fractional seconds in schedule time', () async {
+    await scheduleItemsDao.upsertMany([
+      _item(id: 'seconds', startTime: '12:34:56'),
+      _item(
+        id: 'fraction',
+        scheduleDate: '2026-06-18',
+        startTime: '07:08:09.250',
+      ),
+    ]);
+
+    await service.scheduleGeneratedReminders();
+
+    expect(
+      scheduler.scheduled.map((entry) => entry.scheduledAt),
+      containsAll([
+        DateTime(2026, 6, 17, 12, 34, 56),
+        DateTime(2026, 6, 18, 7, 8, 9, 250),
+      ]),
+    );
+  });
+
+  test('fails closed for an invalid schedule time', () async {
+    await scheduleItemsDao.upsertMany([
+      _item(id: 'invalid-time', startTime: '25:00'),
+      _item(id: 'valid-time', startTime: '12:00'),
+    ]);
+
+    await service.scheduleGeneratedReminders();
+
+    expect(scheduler.scheduled, hasLength(1));
+    final rows = await notificationsDao.getAll();
+    expect(rows.single.sourceId, 'valid-time');
+  });
+
   test('uses schedule item title and description as reminder copy', () async {
     await scheduleItemsDao.upsertMany([
       _item(
@@ -103,7 +137,32 @@ void main() {
       final scheduled = scheduler.scheduled.single;
 
       expect(scheduled.title, 'Nhắc việc sức khỏe');
-      expect(scheduled.body, 'Mở app để cập nhật tiến độ hôm nay');
+      expect(
+        scheduled.body,
+        'Mở ứng dụng để chụp ảnh và cập nhật tiến độ hôm nay.',
+      );
+    },
+  );
+
+  test(
+    'does not render English or unaccented system copy in reminders',
+    () async {
+      await scheduleItemsDao.upsertMany([
+        _item(
+          id: 'unsafe-copy',
+          title: 'Daily health reminder',
+          description: 'Vui long chup anh de hoan tat nhiem vu.',
+        ),
+      ]);
+
+      await service.scheduleGeneratedReminders();
+
+      final scheduled = scheduler.scheduled.single;
+      expect(scheduled.title, 'Nhắc việc sức khỏe');
+      expect(
+        scheduled.body,
+        'Mở ứng dụng để chụp ảnh và cập nhật tiến độ hôm nay.',
+      );
     },
   );
 

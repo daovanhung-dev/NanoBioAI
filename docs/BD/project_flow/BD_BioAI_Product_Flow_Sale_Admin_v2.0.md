@@ -19,6 +19,7 @@
 | Admin | Bổ sung role Admin, dashboard View, module tính toán/đối soát, thống kê, quản trị người dùng/gói/Sale/thanh toán/điểm/hệ thống và audit log. |
 | Độ chi tiết | Mở rộng mô tả module, trạng thái, dữ liệu, điều kiện, luồng chính, ngoại lệ, quyền hạn và tiêu chí chấp nhận. |
 | Extension M20–M29 | Đăng ký tài liệu mở rộng `BD-BIOAI-ADVANCED-HEALTH-001` cho danh mục chức năng sức khỏe nâng cao. Thay đổi này chỉ tạo cross-reference, không thay baseline M01–M19. |
+| Nhiệm vụ và Điểm chăm sóc | Bổ sung addendum Approved `BD-BIOAI-WELLNESS-REWARDS-001` cho cửa sổ nhiệm vụ 30 phút, ảnh bằng chứng, hệ Điểm chăm sóc thứ ba, voucher dùng một lần, quyền `wellness_rewards.read/write` và Việt hóa production. Khi có khác biệt trong phạm vi này, addendum ngày 2026-07-13 được ưu tiên. |
 
 > **Quy tắc ưu tiên:** Khi BD cũ, code hiện tại hoặc tài liệu khác mâu thuẫn với tài liệu này, team phải dừng ở điểm mâu thuẫn, ghi issue và xin Product Owner xác nhận. Không được giữ lại logic Sale cũ chỉ để tương thích với code hiện có.
 

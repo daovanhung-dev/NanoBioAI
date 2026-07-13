@@ -179,7 +179,6 @@ class UserDataSyncOutbox {
     }
   }
 
-
   Future<int> pendingCountForCurrentUser({Database? database}) async {
     final userId = currentUserId();
     if (userId == null || userId.isEmpty) return 0;
@@ -336,7 +335,7 @@ class UserDataSyncOutbox {
     final remote = const SupabaseUserDataSyncRemoteDatasource();
     if (remote.currentUserId != userId) {
       throw const AuthException(
-        'Cloud sync session does not match local data.',
+        'Phiên đồng bộ không khớp với dữ liệu trên thiết bị.',
       );
     }
 
@@ -347,7 +346,7 @@ class UserDataSyncOutbox {
       // Never acknowledge and delete dirty markers unless the exact local
       // snapshot that produced them can be reconstructed. Keeping the outbox
       // row allows a later repair/retry instead of silently losing a change.
-      throw StateError('Local user snapshot is unavailable for cloud sync.');
+      throw StateError('Dữ liệu trên thiết bị chưa sẵn sàng để đồng bộ.');
     }
 
     await remote.replaceCloudWithLocalSnapshot(snapshot, userId);
@@ -423,7 +422,8 @@ class UserDataSyncOutbox {
       {
         'status': 'failed',
         'attempt_count': attempts,
-        'last_error': 'Không thể đồng bộ lúc này. Dữ liệu vẫn được giữ trên thiết bị.',
+        'last_error':
+            'Không thể đồng bộ lúc này. Dữ liệu vẫn được giữ trên thiết bị.',
         'next_retry_at': timestamp
             .add(Duration(minutes: delayMinutes))
             .toIso8601String(),

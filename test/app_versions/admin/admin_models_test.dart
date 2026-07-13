@@ -19,6 +19,29 @@ void main() {
       expect(session.hasPermission(AdminPermissions.configWrite), isTrue);
       expect(session.hasWildcardPermission, isTrue);
       expect(AdminPanelSection.values.every(session.canAccessSection), isTrue);
+      expect(session.canUseUserApp, isTrue);
+    });
+
+    test('maps unified app access mode for dual and Admin-only accounts', () {
+      final dual = AdminSession.fromMap({
+        'user_id': 'dual-user',
+        'roles': ['super_admin'],
+        'permissions': ['*'],
+        'is_active': true,
+        'app_access_mode': 'both',
+        'can_use_user_app': true,
+      });
+      final adminOnly = AdminSession.fromMap({
+        'user_id': 'admin-only',
+        'roles': ['super_admin'],
+        'permissions': ['*'],
+        'is_active': true,
+        'app_access_mode': 'admin',
+        'can_use_user_app': false,
+      });
+
+      expect(dual.canUseUserApp, isTrue);
+      expect(adminOnly.canUseUserApp, isFalse);
     });
 
     test('requires active role for admin access', () {

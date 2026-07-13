@@ -5,6 +5,24 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
 
+enum ImagePickerFailureKind { pick, save }
+
+/// Lỗi có kiểu và thông điệp an toàn để tầng giao diện có thể hiển thị.
+class ImagePickerServiceException implements Exception {
+  final ImagePickerFailureKind kind;
+  final String userMessage;
+  final Object? cause;
+
+  const ImagePickerServiceException({
+    required this.kind,
+    required this.userMessage,
+    this.cause,
+  });
+
+  @override
+  String toString() => userMessage;
+}
+
 /// Service for handling image picking from camera/gallery with validation
 class ImagePickerService {
   final ImagePicker _picker = ImagePicker();
@@ -36,9 +54,13 @@ class ImagePickerService {
       );
 
       return image;
-    } catch (e) {
-      // Log error if needed
-      rethrow;
+    } catch (error) {
+      throw ImagePickerServiceException(
+        kind: ImagePickerFailureKind.pick,
+        userMessage:
+            'Nabi chưa thể mở máy ảnh lúc này. Bạn kiểm tra quyền máy ảnh rồi thử lại nhé.',
+        cause: error,
+      );
     }
   }
 
@@ -63,9 +85,13 @@ class ImagePickerService {
       );
 
       return image;
-    } catch (e) {
-      // Log error if needed
-      rethrow;
+    } catch (error) {
+      throw ImagePickerServiceException(
+        kind: ImagePickerFailureKind.pick,
+        userMessage:
+            'Nabi chưa thể mở thư viện ảnh lúc này. Bạn kiểm tra quyền truy cập rồi thử lại nhé.',
+        cause: error,
+      );
     }
   }
 
@@ -126,9 +152,13 @@ class ImagePickerService {
       await sourceFile.copy(filePath);
 
       return filePath;
-    } catch (e) {
-      // Log error if needed
-      rethrow;
+    } catch (error) {
+      throw ImagePickerServiceException(
+        kind: ImagePickerFailureKind.save,
+        userMessage:
+            'Nabi chưa thể lưu ảnh này. Bạn kiểm tra dung lượng rồi thử lại nhé.',
+        cause: error,
+      );
     }
   }
 
@@ -150,19 +180,19 @@ class ImagePickerService {
           .toLowerCase()
           .replaceAll('.', '');
       if (!allowedFormats.contains(extension)) {
-        return 'Invalid image format. Only PNG and JPEG are allowed.';
+        return 'Định dạng ảnh chưa phù hợp. Bạn chỉ có thể dùng ảnh PNG hoặc JPEG.';
       }
 
       // Check file size
       final fileSize = await file.length();
       if (fileSize > maxFileSizeBytes) {
         final fileSizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);
-        return 'Image size ($fileSizeMB MB) exceeds maximum allowed size of 5 MB.';
+        return 'Ảnh có dung lượng $fileSizeMB MB, vượt quá giới hạn 5 MB.';
       }
 
       return null;
-    } catch (e) {
-      return 'Failed to validate image: $e';
+    } catch (_) {
+      return 'Nabi chưa thể kiểm tra ảnh này. Bạn thử chọn ảnh khác nhé.';
     }
   }
 }

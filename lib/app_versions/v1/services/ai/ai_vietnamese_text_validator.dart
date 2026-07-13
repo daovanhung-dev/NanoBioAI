@@ -1,5 +1,7 @@
 class AIVietnameseTextValidator {
-  static final RegExp _mojibakePattern = RegExp(r'Ã|Ä|Æ|áº|á»|â€™|â€œ|â€|Â');
+  static final RegExp _mojibakePattern = RegExp(
+    r'(?:Ã|Â|Ä|Æ)[\u0080-\u00BF]|áº|á»|â€™|â€œ|â€|ï¿½|�',
+  );
   static final RegExp _letterPattern = RegExp(r"[A-Za-zÀ-ỹĐđ]", unicode: true);
   static final RegExp _vietnameseMarkPattern = RegExp(
     r'[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]',

@@ -44,7 +44,7 @@ class AIChatController extends Notifier<AIChatState> {
       final history = await _repository.getChatHistory();
       state = state.copyWith(messages: history);
     } catch (e) {
-      state = state.copyWith(error: 'Không thể tải lịch sử chat');
+      state = state.copyWith(error: 'Không thể tải lịch sử trò chuyện');
     }
   }
 
@@ -87,7 +87,7 @@ class AIChatController extends Notifier<AIChatState> {
       state = const AIChatState();
       ref.read(nabiContextProvider.notifier).clearTransientState();
     } catch (e) {
-      state = state.copyWith(error: 'Không thể xóa lịch sử chat');
+      state = state.copyWith(error: 'Không thể xóa lịch sử trò chuyện');
     }
   }
 

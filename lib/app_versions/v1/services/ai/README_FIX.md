@@ -23,7 +23,7 @@ Lớp AI dùng Gemini REST `generateContent` và gửi khóa bằng header
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -ValidateOnly
 powershell -ExecutionPolicy Bypass -File tools/test_gemini_connection.ps1
-powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -EntryPoint lib/main_v2.dart
+powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1
 ```
 
 Trong VS Code, dùng các profile `NanoBio - App (Auth + AI)`,
@@ -47,5 +47,5 @@ Launcher terminal chuẩn là `tools/run_v2.ps1`. Khi cần chạy Flutter trự
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/prepare_dart_defines.ps1
-flutter run -t lib/main_v2.dart --dart-define-from-file=.dart_tool/nanobio_defines.json
+flutter run -t lib/main.dart --dart-define-from-file=.dart_tool/nanobio_defines.json
 ```

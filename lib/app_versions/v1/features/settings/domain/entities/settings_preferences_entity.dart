@@ -7,7 +7,7 @@ class SettingsPreferencesEntity {
   /// Whether dark mode is enabled
   final bool isDarkMode;
 
-  /// Current language code ('vi' for Vietnamese, 'en' for English)
+  /// Current language code (`vi`; the app currently ships Vietnamese UI only)
   final String languageCode;
 
   /// Whether biometric authentication (Face ID/Touch ID) is enabled

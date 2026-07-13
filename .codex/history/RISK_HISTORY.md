@@ -498,3 +498,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: - Quick check toan repo con FAIL o baseline formatter drift; targeted format,
 - docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: co fail-closed va ranh gioi an toan ro.
 - docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: side effect ngoai scope truoc khi fail; da khoi phuc chinh xac.
+- docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md :: `Asia/Ho_Chi_Minh`, parser fail-closed, trạng thái tương lai/chưa mở/đã khóa,
+- docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md :: - Supabase migration 16/RLS/Storage smoke trên dự án sandbox thật: SKIPPED - chưa deploy sandbox; local PostgreSQL evidence ở trên không thay thế bước này.
+- docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md :: - Chua fix: chưa có bằng chứng migration 16, private bucket runtime, RLS, row-lock,
+- docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md :: - Can kiem tra tiep: giữ `wellness_rewards_rollout.enabled = false`; apply migration

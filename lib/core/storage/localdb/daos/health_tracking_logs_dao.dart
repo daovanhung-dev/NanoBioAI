@@ -8,7 +8,7 @@ class HealthTrackingLogsDao {
   static const tableName = 'health_tracking_logs';
   static const _tag = 'HEALTH_TRACKING_LOGS_DAO';
 
-  final Database db;
+  final DatabaseExecutor db;
 
   HealthTrackingLogsDao(this.db);
 

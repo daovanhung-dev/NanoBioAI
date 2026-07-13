@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
-
 @immutable
 class AppGradients {
   const AppGradients._();

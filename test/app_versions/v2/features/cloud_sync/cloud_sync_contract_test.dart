@@ -22,6 +22,7 @@ void main() {
       'sync table list excludes catalog, payment, sale, and family tables',
       () {
         const localTables = UserDataSyncTables.localUserOwnedTables;
+        const pullTables = UserDataSyncTables.cloudPullTables;
         const cloudTables = UserDataSyncTables.cloudCollectionTables;
         final allTableNames = {
           ...localTables,
@@ -34,7 +35,12 @@ void main() {
         expect(localTables, contains('daily_health_tasks'));
         expect(localTables, contains('lifestyle_schedule_items'));
         expect(localTables, contains('health_score_ledgers'));
-        expect(localTables, contains('wellness_point_ledgers'));
+        expect(localTables, isNot(contains('wellness_point_ledgers')));
+        expect(pullTables, contains('wellness_point_ledgers'));
+        expect(
+          SyncOutboxSchema.serverOwnedReadOnlyTables,
+          contains('wellness_point_ledgers'),
+        );
         expect(cloudTables, contains('health_score_ledgers'));
         expect(cloudTables, contains('wellness_point_ledgers'));
         expect(localTables, contains('notifications'));
@@ -45,15 +51,13 @@ void main() {
           isNot(contains('personal_schedule_ai_requests')),
         );
         expect(
-          UserDataSyncTables.localColumnsByTable[
-            'personal_schedule_ai_requests'
-          ],
+          UserDataSyncTables
+              .localColumnsByTable['personal_schedule_ai_requests'],
           contains('request_id'),
         );
         expect(
-          UserDataSyncTables.cloudColumnsByTable[
-            'personal_schedule_ai_requests'
-          ],
+          UserDataSyncTables
+              .cloudColumnsByTable['personal_schedule_ai_requests'],
           contains('request_id'),
         );
         expect(
@@ -68,6 +72,28 @@ void main() {
         expect(allTableNames, isNot(contains('payment_events')));
         expect(allTableNames, isNot(contains('sale_profiles')));
         expect(allTableNames, isNot(contains('family_groups')));
+      },
+    );
+
+    test(
+      'remote pull includes server-owned ledgers but snapshot push does not',
+      () {
+        final source = File(
+          'lib/app_versions/v2/features/cloud_sync/data/datasources/'
+          'supabase_user_data_sync_remote_datasource.dart',
+        ).readAsStringSync();
+
+        expect(
+          source,
+          contains('for (final table in UserDataSyncTables.cloudPullTables)'),
+        );
+        expect(
+          RegExp(
+            r'_cloudSnapshotPayload[\s\S]*?for \(final table in '
+            r'UserDataSyncTables\.localUserOwnedTables\)',
+          ).hasMatch(source),
+          isTrue,
+        );
       },
     );
   });

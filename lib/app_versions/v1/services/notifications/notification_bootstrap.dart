@@ -33,6 +33,7 @@ class NotificationBootstrap {
 
   static bool _timezoneInitialized = false;
   static bool _initialized = false;
+  static bool _launchResponseHandled = false;
 
   static ReminderNotificationScheduler get scheduler => _scheduler;
 
@@ -46,7 +47,27 @@ class NotificationBootstrap {
 
     _initialized = true;
 
+    await _handleLaunchResponseOnce();
+
     AppLogger.info(_tag, 'Notification bootstrap initialized');
+  }
+
+  static Future<void> _handleLaunchResponseOnce() async {
+    if (_launchResponseHandled) return;
+    _launchResponseHandled = true;
+    try {
+      final details = await _scheduler.plugin.getNotificationAppLaunchDetails();
+      final response = details?.notificationResponse;
+      if (details?.didNotificationLaunchApp == true && response != null) {
+        await handleNotificationResponse(response);
+      }
+    } catch (error, stackTrace) {
+      AppLogger.warning(
+        _tag,
+        'Cannot restore notification navigation; errorType=${error.runtimeType}',
+      );
+      debugPrint(stackTrace.toString());
+    }
   }
 
   static Future<void> scheduleGeneratedReminders() async {

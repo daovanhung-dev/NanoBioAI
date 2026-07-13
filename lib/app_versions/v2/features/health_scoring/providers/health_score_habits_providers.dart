@@ -24,14 +24,14 @@ class HealthScoreHabitsViewModel {
   const HealthScoreHabitsViewModel.authRequired()
     : this._(
         status: HealthScoreHabitsViewStatus.authRequired,
-        message: 'Please sign in to view health score.',
+        message: 'Vui lòng đăng nhập để xem điểm sức khỏe.',
       );
 
   const HealthScoreHabitsViewModel.empty(HealthScoreHabitsResult result)
     : this._(
         status: HealthScoreHabitsViewStatus.empty,
         result: result,
-        message: 'Chua co lich su cham soc trong giai doan nay.',
+        message: 'Chưa có lịch sử chăm sóc trong giai đoạn này.',
       );
 
   const HealthScoreHabitsViewModel.ready(HealthScoreHabitsResult result)
@@ -108,7 +108,7 @@ final healthScoreHabitsSummaryProvider =
         return HealthScoreHabitsViewModel.failure(error.safeMessage);
       } catch (_) {
         return const HealthScoreHabitsViewModel.failure(
-          'Tam thoi chua tai duoc diem suc khoe. Ban thu lai sau.',
+          'Tạm thời chưa tải được điểm sức khỏe. Bạn thử lại sau.',
         );
       }
     });

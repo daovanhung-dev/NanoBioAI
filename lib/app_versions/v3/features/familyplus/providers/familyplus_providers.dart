@@ -60,7 +60,7 @@ final familyPlusContextProvider = FutureProvider<FamilyPlusViewModel>((
     return FamilyPlusViewModel.failure(error.safeMessage);
   } catch (_) {
     return const FamilyPlusViewModel.failure(
-      'Nabi chua the tai du lieu FamilyPlus luc nay.',
+      'Nabi chưa thể tải dữ liệu FamilyPlus lúc này.',
     );
   }
 });
@@ -74,7 +74,7 @@ final familyPlusCreateDefaultGroupProvider = Provider<Future<void> Function()>((
         .read(familyPlusRepositoryProvider)
         .upsertGroup(
           FamilyPlusUpsertGroupCommand(
-            displayName: 'Gia dinh cua toi',
+            displayName: 'Gia đình của tôi',
             idempotencyKey: key,
           ),
         );

@@ -53,7 +53,10 @@ class _FamilyPlusBody extends ConsumerWidget {
         return _SupportState(
           icon: Icons.lock_outline_rounded,
           title: 'Cần đăng nhập',
-          message: vietnameseUiText(model.message, fallback: 'Bạn thử lại sau ít phút.'),
+          message: vietnameseSystemUiText(
+            model.message,
+            fallback: 'Bạn thử lại sau ít phút.',
+          ),
           actionLabel: 'Đăng nhập',
           onAction: () => context.go(V2RoutePaths.login),
         );
@@ -61,7 +64,10 @@ class _FamilyPlusBody extends ConsumerWidget {
         return _SupportState(
           icon: Icons.workspace_premium_outlined,
           title: 'Dành cho FamilyPlus',
-          message: vietnameseUiText(model.message, fallback: 'Bạn thử lại sau ít phút.'),
+          message: vietnameseSystemUiText(
+            model.message,
+            fallback: 'Bạn thử lại sau ít phút.',
+          ),
         );
       case FamilyPlusViewStatus.empty:
         return _EmptyFamilyState(contextModel: model.context!);
@@ -71,7 +77,10 @@ class _FamilyPlusBody extends ConsumerWidget {
         return _SupportState(
           icon: Icons.error_outline_rounded,
           title: 'Chưa sẵn sàng',
-          message: vietnameseUiText(model.message, fallback: 'Bạn thử lại sau ít phút.'),
+          message: vietnameseSystemUiText(
+            model.message,
+            fallback: 'Bạn thử lại sau ít phút.',
+          ),
         );
     }
   }
@@ -194,7 +203,6 @@ class _MemberTile extends ConsumerWidget {
     );
   }
 }
-
 
 String _familyRoleLabel(String role) {
   switch (role.trim().toLowerCase()) {

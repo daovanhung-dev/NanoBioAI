@@ -11,7 +11,7 @@ class SaleReferralCodeValidator {
     final normalized = normalize(value);
     if (normalized.isEmpty) return null;
     if (!_allowed.hasMatch(normalized)) {
-      return 'Ma gioi thieu chi gom chu cai, so va dau gach ngang.';
+      return 'Mã giới thiệu chỉ gồm chữ cái, chữ số và dấu gạch ngang.';
     }
     return null;
   }

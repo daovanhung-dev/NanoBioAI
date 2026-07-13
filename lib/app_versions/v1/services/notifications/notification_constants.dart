@@ -1,5 +1,7 @@
 class NotificationActionIds {
   static const categoryId = 'bioai_reminder_actions';
+  static const openSchedule = 'open_schedule';
+  // Chỉ giữ để xử lý notification cũ sau khi người dùng nâng cấp ứng dụng.
   static const done = 'done';
   static const skipped = 'skipped';
 }

@@ -6,12 +6,13 @@
 | BD Code | BD-BIOAI-PRODUCT-FLOW-002 |
 | BD Version | 2.0 |
 | Advanced Health Source BD | docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md (`BD-BIOAI-ADVANCED-HEALTH-001`) |
+| Daily Proof and Wellness Rewards Addendum | docs/BD/wellness_rewards/BD_BioAI_Daily_Proof_Wellness_Rewards_v1.0.md (`BD-BIOAI-WELLNESS-REWARDS-001`) |
 | DD Baseline Date | 2026-06-28 |
 | Last Updated | 2026-07-13 |
 | Status | M01-M19 Approved - DD docs complete; M20-M29 DD not started |
 
 ## Purpose
-This folder contains split module DDs for the approved BioAI / NanoBio product-flow baseline M01-M19. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18, approves DD docs for M01-M19, and moves runtime/sandbox evidence to a separate implementation backlog. Advanced-health modules M20-M29 are registered below as a future DD backlog only; no DD folder has been created and the approved UI catalog shell does not change DD or business coding progress.
+This folder contains split module DDs for the approved BioAI / NanoBio product-flow baseline M01-M19. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18, approves DD docs for M01-M19, and moves runtime/sandbox evidence to a separate implementation backlog. The Approved 2026-07-13 daily-proof and wellness-rewards addendum is traced through implementation deltas for M03, M08, M09, M15, and M16 without changing their Approved DD status. Advanced-health modules M20-M29 are registered below as a future DD backlog only; no DD folder has been created and the approved UI catalog shell does not change DD or business coding progress.
 
 ## Module Map
 
@@ -36,6 +37,20 @@ This folder contains split module DDs for the approved BioAI / NanoBio product-f
 | M17 | [Reconciliation](./reconciliation/README.md) | RECONCILIATION | Approved - DD docs complete | BD section 12.1, 14.4, 15, Appendix A UC-22 |
 | M18 | [Statistics and reporting](./reporting/README.md) | REPORTING | Approved - DD docs complete | BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 |
 | M19 | [Audit, security, and support](./audit_security/README.md) | AUDIT_SECURITY | Approved - DD docs complete | BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 |
+
+## Approved Cross-Module Delta - 2026-07-13
+
+The following implementation deltas trace `BD-BIOAI-WELLNESS-REWARDS-001` to the existing Approved module contracts:
+
+| Module | Delta | Main contract |
+|---|---|---|
+| M03 | [Dashboard and schedule execution](./dashboard_schedule/Implementation_Delta_2026-07-13.md) | 30-minute execution window, camera proof, local/cloud reconciliation and proof gallery |
+| M08 | [Health score and habits](./health_score_habits/Implementation_Delta_2026-07-13.md) | Separate Wellness Point wallet, pending/available/expiry/FEFO and voucher experience |
+| M09 | [Schedule notifications](./schedule_notifications/Implementation_Delta_2026-07-13.md) | Notification opens the exact item for camera capture; no background completion |
+| M15 | [Admin dashboard](./admin_dashboard/Implementation_Delta_2026-07-13.md) | Wellness reward inventory, transaction and rollout observability |
+| M16 | [Admin operations](./admin_operations/Implementation_Delta_2026-07-13.md) | Offer/code administration, atomic cancel/refund and audit contract |
+
+The addendum is the higher-priority source for conflicts limited to this feature. It does not replace unrelated rules in the product-flow baseline.
 
 ## Planned DD Backlog — M20-M29
 
@@ -70,6 +85,9 @@ Coding gate for M20-M29: only the UI catalog shell and shared development placeh
 - Pending payment never grants rights; only payment_approved activates entitlement and commission.
 - Commission is 10 percent of listed price; FamilyPlus commission uses owner portion only.
 - Points are credited after approved payment, held from conversion for 24 hours, and convert at 1 point = 1 VND with minimum 500,000 VND unless Admin changes versioned config.
+- Schedule completion is allowed only in `[start_time, start_time + 30 minutes)` in `Asia/Ho_Chi_Minh`; invalid time data fails closed, and eligible online completion requires private camera proof.
+- Wellness Points are a third, account-scoped point system: they are separate from Health Points and Sale Points, award `+10` per eligible completion, become available at window end, expire under the applicable versioned policy, and are spent FEFO.
+- Guest/offline completion may retain local proof but never creates redeemable Wellness Points. Keep the wellness-rewards rollout flag disabled until migration, private Storage, RLS, concurrency, inventory, and cancellation paths pass sandbox acceptance.
 - Refund/cancel is allowed only within 24 hours after purchase and reverses points immediately.
 - Suspended or closed Sale accounts receive no new points from old customers.
 - FamilyPlus supports up to 5 members; joined members can view all information of each other in the package.
@@ -116,4 +134,5 @@ Coding gate for M20-M29: only the UI catalog shell and shared development placeh
 - Runtime code, SQL, Supabase config, and tests are out of scope for this DD docs 100 percent pass.
 - `DD_Module_Template/` remains the source template and intentionally still contains placeholders.
 - M01-M19 DD docs are complete at the documentation layer: status Approved, Open Q = 0, and traceability/contracts are documented.
-- Runtime, sandbox/RLS/API smoke, and production acceptance evidence remain in the implementation evidence backlog and do not reduce DD docs completeness.
+- The 2026-07-13 implementation deltas record exact source and targeted test evidence separately from DD completeness. The migration/config rebuild and local contract smoke are source-level evidence, not proof of deployment to a real Supabase project.
+- Real Supabase sandbox bucket/RLS/API smoke, device camera/notification checks, full-root validation and production acceptance remain in the implementation evidence backlog and do not reduce DD docs completeness.

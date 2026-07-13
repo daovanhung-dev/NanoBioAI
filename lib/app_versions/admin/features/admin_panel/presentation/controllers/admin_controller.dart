@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_dependencies.dart';
+import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 
 class AdminLoginFailure implements Exception {
   final String message;
@@ -10,12 +11,12 @@ class AdminLoginFailure implements Exception {
 
   const AdminLoginFailure.noActiveAdminRole()
     : this._(
-        'Không có quyền quản trị: tài khoản đăng nhập thành công nhưng chưa có role Admin đang hoạt động.',
+        'Tài khoản đã đăng nhập nhưng chưa được cấp quyền quản trị đang hoạt động.',
       );
 
   const AdminLoginFailure.sessionCheckFailed()
     : this._(
-        'Không kiểm tra được quyền quản trị: đăng nhập Auth thành công nhưng RPC get_my_admin_session đang lỗi.',
+        'Nabi chưa thể kiểm tra quyền quản trị lúc này. Bạn thử lại sau nhé.',
       );
 
   @override
@@ -258,8 +259,8 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     );
   }
 
-  String _permissionDeniedMessage(String permission) {
-    return 'Tài khoản Admin chưa có quyền $permission.';
+  String _permissionDeniedMessage(String _) {
+    return 'Tài khoản quản trị chưa được cấp quyền thực hiện thao tác này.';
   }
 
   String _adminUiMessage(String message) {
@@ -269,15 +270,18 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       'Da xu ly payment.' => 'Đã xử lý thanh toán.',
       'Da xu ly hoan huy trong cua so 24 gio.' =>
         'Đã xử lý hoàn/hủy trong cửa sổ 24 giờ.',
-      'Da cap nhat Sale.' => 'Đã cập nhật Sale.',
+      'Da cap nhat Sale.' => 'Đã cập nhật cộng tác viên.',
       'Da luu phien ban cau hinh.' => 'Đã lưu phiên bản cấu hình.',
       'Da tao yeu cau xuat bao cao.' => 'Đã tạo yêu cầu xuất báo cáo.',
-      'Da ghi dieu chinh diem Sale.' => 'Đã ghi điều chỉnh điểm Sale.',
+      'Da ghi dieu chinh diem Sale.' => 'Đã ghi điều chỉnh điểm cộng tác viên.',
       'Da tao phien doi soat.' => 'Đã tạo phiên đối soát.',
       'Da cap nhat doi soat.' => 'Đã cập nhật đối soát.',
       'Da cap nhat yeu cau quy doi diem Sale.' =>
-        'Đã cập nhật yêu cầu quy đổi điểm Sale.',
-      _ => message,
+        'Đã cập nhật yêu cầu quy đổi điểm cộng tác viên.',
+      _ => vietnameseSystemUiText(
+        message,
+        fallback: 'Thao tác chưa hoàn tất. Bạn thử lại sau nhé.',
+      ),
     };
   }
 }

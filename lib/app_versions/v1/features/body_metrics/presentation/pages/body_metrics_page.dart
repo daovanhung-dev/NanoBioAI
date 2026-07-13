@@ -36,7 +36,7 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
       title: 'Cơ thể của bạn',
       subtitle:
           'Nabi giúp bạn ước tính nhanh các chỉ số cơ bản, nhẹ nhàng và rõ ràng.',
-      badge: 'M04 v1',
+      badge: 'CHỈ SỐ CƠ THỂ',
       icon: Icons.monitor_weight_rounded,
       gradient: AppGradients.primary,
       children: [
@@ -158,7 +158,10 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
     } on BasicHealthCalculatorException catch (error) {
       setState(() {
         _report = null;
-        _error = vietnameseUiText(error.message);
+        _error = vietnameseSystemUiText(
+          error.message,
+          fallback: 'Nabi chưa thể tính chỉ số lúc này. Bạn thử lại nhé.',
+        );
       });
     } catch (_) {
       setState(() {
@@ -264,8 +267,8 @@ class _ReportCard extends StatelessWidget {
             icon: Icons.bedtime_rounded,
             color: AppColors.primary,
             title: 'Giấc ngủ và vận động',
-            subtitle: '${vietnameseUiText(report.sleepGuidance)} ${vietnameseUiText(report.activityGuidance)}',
-            trailing: report.formulaVersion,
+            subtitle:
+                '${vietnameseUiText(report.sleepGuidance)} ${vietnameseUiText(report.activityGuidance)}',
           ),
         ],
       ),

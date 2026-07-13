@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/migrations/migration_manager.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_runtime_state.dart';
+import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_table.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -364,11 +365,17 @@ void main() {
     'migration v11 backfills missing sync ids and recreates triggers',
     () async {
       await db.execute('CREATE TABLE users (id TEXT PRIMARY KEY)');
-      for (final table in SyncOutboxSchema.userOwnedTables) {
+      for (final table in SyncOutboxSchema.genericIdUserOwnedTables) {
         await db.execute(
           'CREATE TABLE $table (id TEXT PRIMARY KEY, user_id TEXT)',
         );
       }
+      await db.execute('''
+        CREATE TABLE personal_schedule_ai_requests (
+          request_id TEXT PRIMARY KEY,
+          user_id TEXT
+        )
+      ''');
       await db.insert('users', {'id': 'auth-1'});
       await db.insert('meal_plans', {'id': null, 'user_id': 'auth-1'});
       await db.insert('daily_health_tasks', {'id': '', 'user_id': 'auth-1'});
@@ -415,7 +422,7 @@ void main() {
     'migration v12 syncs personal schedule AI requests by request id',
     () async {
       await db.execute('CREATE TABLE users (id TEXT PRIMARY KEY)');
-      for (final table in SyncOutboxSchema.userOwnedTables) {
+      for (final table in SyncOutboxSchema.genericIdUserOwnedTables) {
         await db.execute(
           'CREATE TABLE $table (id TEXT PRIMARY KEY, user_id TEXT)',
         );
@@ -535,5 +542,52 @@ void main() {
     );
     final scoreIndexNames = scoreIndexes.map((index) => index['name']).toList();
     expect(scoreIndexNames, contains('idx_health_score_ledgers_user_period'));
+  });
+
+  test('migration v14 backfills proof sidecar without sync trigger', () async {
+    await db.execute('''
+      CREATE TABLE lifestyle_schedule_items (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        schedule_date TEXT,
+        start_time TEXT,
+        title TEXT,
+        is_completed INTEGER DEFAULT 0,
+        completion_proof_path TEXT,
+        completion_proof_captured_at TEXT,
+        completed_at TEXT,
+        created_at TEXT,
+        updated_at TEXT
+      )
+    ''');
+    await db.insert('lifestyle_schedule_items', {
+      'id': 'schedule-legacy',
+      'user_id': 'u1',
+      'schedule_date': '2026-07-13',
+      'start_time': '07:00:00',
+      'title': 'Đi bộ buổi sáng',
+      'is_completed': 1,
+      'completion_proof_path': r'C:\app\schedule_proofs\legacy.jpg',
+      'completion_proof_captured_at': '2026-07-13T07:05:00',
+      'completed_at': '2026-07-13T07:05:00',
+      'created_at': '2026-07-12T08:00:00',
+      'updated_at': '2026-07-13T07:05:00',
+    });
+
+    await MigrationManager.runMigrations(db, 13, 14);
+    await MigrationManager.runMigrations(db, 13, 14);
+
+    final proofs = await db.query(ScheduleCompletionProofsTable.tableName);
+    expect(proofs, hasLength(1));
+    expect(proofs.single['id'], 'legacy_schedule-legacy');
+    expect(proofs.single['path_kind'], 'legacy_absolute');
+    expect(proofs.single['reward_status'], 'legacy_non_redeemable');
+    expect(proofs.single['status'], 'active');
+
+    final triggers = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'trigger' AND name LIKE ?",
+      ['%schedule_completion_proofs%'],
+    );
+    expect(triggers, isEmpty);
   });
 }

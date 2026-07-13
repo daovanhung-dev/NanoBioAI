@@ -1,20 +1,9 @@
 import 'package:sqflite/sqflite.dart';
 
-import '../models/wellness_point_ledger_model.dart';
-import '../tables/wellness_point_ledgers_table.dart';
-
 class WellnessPointLedgersDao {
   final Database db;
 
   const WellnessPointLedgersDao(this.db);
-
-  Future<void> insert(WellnessPointLedgerModel model) async {
-    await db.insert(
-      WellnessPointLedgersTable.tableName,
-      model.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
-  }
 
   Future<int> netPointsForSource({
     required String userId,

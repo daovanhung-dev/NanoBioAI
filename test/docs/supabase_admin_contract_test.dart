@@ -62,6 +62,10 @@ void main() {
         'create table if not exists public.admin_reconciliation_runs',
         'create table if not exists public.admin_reconciliation_discrepancies',
         'get_my_admin_session',
+        'app_access_mode',
+        'can_use_user_app',
+        "app_access_mode in ('user', 'both')",
+
         'get_admin_dashboard_summary',
         'admin_search_users',
         'admin_update_user_status',
@@ -82,6 +86,31 @@ void main() {
       ]) {
         expect(sql, contains(token), reason: token);
       }
+    });
+
+    test('declares non-destructive unified role-surface migration', () {
+      final migration = File(
+        'docs/supabase/17-unified-app-role-surface.sql',
+      ).readAsStringSync();
+
+      for (final token in [
+        'begin;',
+        'add column if not exists app_access_mode',
+        'users_app_access_mode_check',
+        'alter column app_access_mode set not null',
+        "app_access_mode = 'both'",
+        'revoke update (app_access_mode)',
+        'create or replace function public.get_my_admin_session()',
+        'can_use_user_app boolean',
+        "app_access_mode in ('user', 'both')",
+        'grant execute on function public.get_my_admin_session()',
+        'commit;',
+      ]) {
+        expect(migration, contains(token), reason: token);
+      }
+
+      expect(migration, isNot(contains('drop schema')));
+      expect(migration, isNot(contains('truncate table auth.users')));
     });
 
     test('qualifies Admin dashboard summary metric filters', () {

@@ -42,15 +42,13 @@ class SettingsValidator {
 
   /// Validates language code.
   ///
-  /// Checks if the language code is one of the supported languages:
-  /// - "vi" (Vietnamese)
-  /// - "en" (English)
+  /// Checks that the language code is Vietnamese (`vi`).
   ///
   /// Returns null if valid, otherwise returns an error message.
   ///
   /// Examples:
   /// - "vi" -> null (valid)
-  /// - "en" -> null (valid)
+  /// - "en" -> error (not supported)
   /// - "fr" -> error (not supported)
   /// - "" -> error (empty)
   static String? validateLanguageCode(String? code) {
@@ -58,9 +56,8 @@ class SettingsValidator {
       return 'Mã ngôn ngữ không được để trống';
     }
 
-    const supportedLanguages = ['vi', 'en'];
-    if (!supportedLanguages.contains(code)) {
-      return 'Mã ngôn ngữ phải là "vi" (Tiếng Việt) hoặc "en" (English)';
+    if (code != 'vi') {
+      return 'Ứng dụng hiện chỉ hỗ trợ giao diện tiếng Việt';
     }
 
     return null;

@@ -24,6 +24,7 @@ enum AdminPanelSection {
   payments('payments'),
   sales('sales'),
   saleConversions('sale_conversions'),
+  wellnessRewards('wellness_rewards'),
   reconciliation('reconciliation'),
   plans('plans'),
   reports('reports'),
@@ -51,6 +52,8 @@ abstract class AdminPermissions {
   static const salesWrite = 'sales.write';
   static const reconciliationWrite = 'reconciliation.write';
   static const pointsWrite = 'points.write';
+  static const wellnessRewardsRead = 'wellness_rewards.read';
+  static const wellnessRewardsWrite = 'wellness_rewards.write';
   static const plansWrite = 'plans.write';
   static const reportsWrite = 'reports.write';
   static const auditRead = 'audit.read';
@@ -68,6 +71,7 @@ String adminPermissionForSection(AdminPanelSection section) {
     AdminPanelSection.payments => AdminPermissions.paymentsWrite,
     AdminPanelSection.sales => AdminPermissions.salesWrite,
     AdminPanelSection.saleConversions => AdminPermissions.salesWrite,
+    AdminPanelSection.wellnessRewards => AdminPermissions.wellnessRewardsRead,
     AdminPanelSection.reconciliation => AdminPermissions.reconciliationWrite,
     AdminPanelSection.plans => AdminPermissions.plansWrite,
     AdminPanelSection.reports => AdminPermissions.reportsWrite,
@@ -85,6 +89,9 @@ bool adminSectionSupportsMutation(AdminPanelSection section) {
 
 String adminPermissionForMutation(AdminMutationCommand command) {
   if (command.action == 'adjust_points') return AdminPermissions.pointsWrite;
+  if (command.section == AdminPanelSection.wellnessRewards) {
+    return AdminPermissions.wellnessRewardsWrite;
+  }
   return adminPermissionForSection(command.section);
 }
 
@@ -93,12 +100,14 @@ class AdminSession {
   final List<AdminRoleCode> roles;
   final Set<String> permissions;
   final bool active;
+  final bool canUseUserApp;
 
   const AdminSession({
     required this.userId,
     required this.roles,
     required this.permissions,
     required this.active,
+    this.canUseUserApp = true,
   });
 
   static const anonymous = AdminSession(
@@ -106,6 +115,7 @@ class AdminSession {
     roles: [],
     permissions: {},
     active: false,
+    canUseUserApp: false,
   );
 
   bool get isAdmin => active && roles.isNotEmpty;
@@ -140,6 +150,9 @@ class AdminSession {
         map['permissions'],
       ).map((value) => value.toString()).toSet(),
       active: _readBool(map['is_active']) ?? false,
+      canUseUserApp:
+          _readBool(map['can_use_user_app']) ??
+          (_readString(map['app_access_mode']) != 'admin'),
     );
   }
 }

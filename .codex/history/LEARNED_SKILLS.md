@@ -4,7 +4,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- coding - Coding: 22 worklog(s)
+- coding - Coding: 23 worklog(s)
 - bugfix - Direct bugfix: 19 worklog(s)
 - docs-context - Context and docs update: 19 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
@@ -22,13 +22,13 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - M05 AI / runtime configuration / onboarding: 2
 - authentication: 2
 - docs/DD M01-M19: 2
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
-- M05 AI / AI Chat / runtime configuration: 2
 - .codex: 2
+- M05 AI / AI Chat / runtime configuration: 2
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
+- v2 authentication: 1
 - .codex, agent context, docs integrity: 1
 - M01 ONBOARDING_PROFILE, M03 DASHBOARD_SCHEDULE, M04 BASIC_HEALTH_CALC, M08 HEALTH_SCORE_HABITS, M13 PAYMENT_MEMBERSHIP, M14 SALE_POINTS, M15 ADMIN_DASHBOARD: 1
-- docs/checklist, technical debt audit summary: 1
-- v2 authentication: 1
+- M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M11 FAMILYPLUS, M12 REFERRAL_DIRECT, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
 
 ## Reusable Project Skills
 
@@ -39,6 +39,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - For DD work, trace BD -> BR/AC/UC -> DD and keep open product decisions as `Status: Draft`.
 - For issue/todo work, keep find issue, create issue, create todo, fix issue, and test as separate modes.
 - For Supabase work, treat SQL files as drafts until sandbox/staging verification is recorded.
+- For server-authoritative rewards, keep the rollout flag disabled until the private Storage bucket, owner-path RLS, idempotent ledger flow, FEFO spend, atomic inventory and cancel/refund behavior pass in a real Supabase sandbox; local PostgreSQL smoke is valuable but not deployment evidence.
 
 ## Command And Test Patterns
 

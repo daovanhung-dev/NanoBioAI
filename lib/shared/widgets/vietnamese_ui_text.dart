@@ -8,6 +8,36 @@ String vietnameseUiText(String? raw, {String fallback = ''}) {
 
   text = _exactTranslations[text] ?? text;
 
+  return _repairLegacyBrandSpacing(text);
+}
+
+/// Chuẩn hóa nội dung do hệ thống/backend kiểm soát trước khi hiển thị.
+///
+/// Khác với [vietnameseUiText], hàm này không trả nguyên văn chuỗi kỹ thuật,
+/// tiếng Anh, mojibake hoặc tiếng Việt không dấu chưa được nhận diện. Dữ liệu
+/// thực sự do người dùng nhập (tên, email, ghi chú) không được đưa qua hàm này.
+String vietnameseSystemUiText(
+  String? raw, {
+  String fallback = 'Nabi chưa thể hiển thị nội dung này. Bạn thử lại sau nhé.',
+}) {
+  final source = raw?.trim() ?? '';
+  if (source.isEmpty) return fallback;
+
+  final translated = _exactTranslations[source];
+  if (translated != null) return _repairLegacyBrandSpacing(translated);
+
+  final normalized = _repairLegacyBrandSpacing(source);
+  if (_mojibakePattern.hasMatch(normalized) ||
+      _technicalMessagePattern.hasMatch(normalized) ||
+      _internalCodePattern.hasMatch(normalized) ||
+      _englishMessagePattern.hasMatch(normalized) ||
+      _unaccentedVietnamesePattern.hasMatch(normalized)) {
+    return fallback;
+  }
+  return normalized;
+}
+
+String _repairLegacyBrandSpacing(String text) {
   // Sửa các chuỗi thương hiệu cũ bị dính từ khi hiển thị cho người dùng.
   return text
       .replaceAll('Nabiđang', 'Nabi đang')
@@ -25,6 +55,27 @@ String vietnameseUiText(String? raw, {String fallback = ''}) {
       .replaceAll('Nabinghĩ', 'Nabi nghĩ')
       .replaceAll('Nabitính', 'Nabi tính');
 }
+
+final _mojibakePattern = RegExp(
+  r'(?:Ã|Â|Ä|Æ)[\u0080-\u00BF]|áº|á»|â€™|â€œ|â€|ï¿½|�',
+);
+
+final _technicalMessagePattern = RegExp(
+  r'\b(exception|stack\s*trace|database|sqlite|postgres|table|query|parser|typeerror|stateerror|format(?:exception)?|rpc|http\s*\d{3})\b',
+  caseSensitive: false,
+);
+
+final _internalCodePattern = RegExp(r'^[A-Z][A-Z0-9_]{3,}$');
+
+final _englishMessagePattern = RegExp(
+  r'\b(please|failed|failure|invalid|unknown|unexpected|sign\s*in|log\s*in|permission|camera|gallery|image|upload|download|network|server|request|response|retry|cancel|success|error|daily|health|reminder|task|complete|completed|take|drink|walk|exercise|breakfast|lunch|dinner|sleep|today|tomorrow|open|tap|continue|redeem|offer|available|pending|issued|expired|points?)\b',
+  caseSensitive: false,
+);
+
+final _unaccentedVietnamesePattern = RegExp(
+  r'\b(khong|chua|vui long|tai khoan|nguoi dung|thong tin|du lieu|thu lai|dang nhap|dang ky|nhiem vu|suc khoe|gia dinh|thanh vien|diem|gioi thieu|hoan tat)\b',
+  caseSensitive: false,
+);
 
 const _exactTranslations = <String, String>{
   // Body metrics
@@ -65,8 +116,7 @@ const _exactTranslations = <String, String>{
       'Chưa có nhóm gia đình. Hãy tạo nhóm để bắt đầu.',
   'Tai khoan chua co quyen FamilyPlus phu hop.':
       'Tài khoản chưa có quyền FamilyPlus phù hợp.',
-  'Thong tin FamilyPlus chua hop le.':
-      'Thông tin FamilyPlus chưa hợp lệ.',
+  'Thong tin FamilyPlus chua hop le.': 'Thông tin FamilyPlus chưa hợp lệ.',
 
   // Sale/referral & payment fallback copy
   'Nguoi dung NanoBio': 'Người dùng NanoBio',
@@ -77,4 +127,12 @@ const _exactTranslations = <String, String>{
       'Số điểm quy đổi vượt quá điểm khả dụng.',
   'Thong tin tao yeu cau thanh toan chua hop le.':
       'Thông tin tạo yêu cầu thanh toán chưa hợp lệ.',
+
+  // Stable backend/error codes. Không hiển thị mã nội bộ trên UI.
+  'AUTH_REQUIRED': 'Vui lòng đăng nhập để tiếp tục.',
+  'FORBIDDEN': 'Bạn chưa có quyền sử dụng nội dung này.',
+  'INVALID_COMMAND': 'Thông tin gửi lên chưa hợp lệ.',
+  'NOT_FOUND': 'Nội dung bạn cần hiện chưa có sẵn.',
+  'NETWORK_ERROR': 'Kết nối chưa ổn định. Bạn thử lại sau nhé.',
+  'SERVER_ERROR': 'Hệ thống đang bận. Bạn thử lại sau nhé.',
 };

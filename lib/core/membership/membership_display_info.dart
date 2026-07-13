@@ -43,14 +43,14 @@ MembershipDisplayInfo membershipDisplayInfoForTier(String? rawTier) {
     case 'free':
       return const MembershipDisplayInfo(
         code: 'free',
-        label: 'Gói Free',
+        label: 'Gói Miễn phí',
         description: 'Bạn đang dùng gói miễn phí sau khi đăng nhập.',
         icon: Icons.verified_user_rounded,
       );
     default:
       return MembershipDisplayInfo(
         code: tier,
-        label: 'Gói ${_titleCase(tier)}',
+        label: 'Gói chưa xác định',
         description: 'Nabi đã ghi nhận trạng thái gói của bạn.',
         icon: Icons.verified_rounded,
       );
@@ -63,16 +63,4 @@ String _normalizeTier(String? rawTier) {
   if (tier == 'familyplus') return 'family_plus';
   if (tier == 'basic') return 'free';
   return tier;
-}
-
-String _titleCase(String value) {
-  final text = value.replaceAll('_', ' ').trim();
-  if (text.isEmpty) return 'Free';
-  return text
-      .split(RegExp(r'\s+'))
-      .map((word) {
-        if (word.isEmpty) return word;
-        return '${word[0].toUpperCase()}${word.substring(1)}';
-      })
-      .join(' ');
 }

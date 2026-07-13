@@ -1,13 +1,16 @@
 import 'package:sqflite/sqflite.dart';
 
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/lifestyle_schedule_window_policy.dart';
 import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 class DashboardDynamicLocalDatasource {
   final Database db;
+  final DateTime Function() _now;
 
-  DashboardDynamicLocalDatasource(this.db);
+  DashboardDynamicLocalDatasource(this.db, {DateTime Function()? now})
+    : _now = now ?? LifestyleScheduleWindowPolicy.vietnamNow;
 
   Future<DashboardDynamicEntity> fetch({
     SubjectAccessContext? subjectAccess,
@@ -18,7 +21,7 @@ class DashboardDynamicLocalDatasource {
     final userId = _readString(user['id']);
     if (userId == null || userId.isEmpty) return DashboardDynamicEntity.empty();
 
-    final today = _dateKey(DateTime.now());
+    final today = _dateKey(_now());
     final todayLog = await _todayHealthLog(userId: userId, today: today);
     final todayTasks = _dedupeTasks(
       await _todayTasks(userId: userId, today: today),
@@ -62,7 +65,7 @@ class DashboardDynamicLocalDatasource {
 
     return DashboardDynamicEntity(
       userId: userId,
-      generatedAt: DateTime.now(),
+      generatedAt: _now(),
       metrics: metrics,
       todayMeals: todayMeals,
       todayTasks: todayTasks,
@@ -201,7 +204,11 @@ class DashboardDynamicLocalDatasource {
       final canComplete =
           !isCompleted &&
           (sourceId?.isNotEmpty ?? false) &&
-          _canCompleteNow(_readString(row['start_time']));
+          LifestyleScheduleWindowPolicy.isWithinWindow(
+            scheduleDate: _readString(row['schedule_date']) ?? today,
+            startTime: _readString(row['start_time']) ?? '',
+            now: _now(),
+          );
 
       return _DashboardScheduleItem(
         sourceType: _readString(row['source_type']),
@@ -388,7 +395,7 @@ class DashboardDynamicLocalDatasource {
   Future<DashboardSelfCareStreak> _selfCareStreak({
     required String userId,
   }) async {
-    final today = _dateOnly(DateTime.now());
+    final today = _dateOnly(_now());
     final dates = List<DateTime>.generate(
       7,
       (index) => today.subtract(Duration(days: 6 - index)),
@@ -1067,23 +1074,6 @@ class DashboardDynamicLocalDatasource {
     final parsed = DateTime.tryParse(value);
     if (parsed == null) return null;
     return '${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}';
-  }
-
-  bool _canCompleteNow(String? startTime) {
-    final timeLabel = _timeFromIso(startTime);
-    if (timeLabel == null) return true;
-
-    final parts = timeLabel.split(':');
-    if (parts.length != 2) return true;
-
-    final hour = int.tryParse(parts[0]);
-    final minute = int.tryParse(parts[1]);
-    if (hour == null || minute == null) return true;
-
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day, hour, minute);
-    final deadline = start.add(const Duration(minutes: 30));
-    return !now.isBefore(start) && !now.isAfter(deadline);
   }
 
   String _formatNumber(double value) {

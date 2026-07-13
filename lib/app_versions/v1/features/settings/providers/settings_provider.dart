@@ -101,6 +101,10 @@ class SettingsPreferencesController
 
   Future<SettingsPreferencesEntity> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    return SettingsPreferencesModel.fromPreferences(prefs);
+    final model = SettingsPreferencesModel.fromPreferences(prefs);
+    if (prefs.getString(SettingsPreferencesModel.keyLanguageCode) != 'vi') {
+      await prefs.setString(SettingsPreferencesModel.keyLanguageCode, 'vi');
+    }
+    return model;
   }
 }

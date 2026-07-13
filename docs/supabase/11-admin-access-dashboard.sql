@@ -8,7 +8,9 @@ begin;
 
 alter table public.users
   add column if not exists admin_status text not null default 'active'
-    check (admin_status in ('active', 'suspended', 'closed'));
+    check (admin_status in ('active', 'suspended', 'closed')),
+  add column if not exists app_access_mode text not null default 'user'
+    check (app_access_mode in ('user', 'admin', 'both'));
 
 create table if not exists public.admin_roles (
   code text primary key
@@ -50,6 +52,24 @@ create table if not exists public.admin_user_roles (
   revoked_at timestamptz,
   primary key (user_id, role_code, scope)
 );
+
+-- Preserve the normal-user surface for existing active admins when upgrading
+-- from the previous schema. Set app_access_mode = 'admin' explicitly for an
+-- admin-only account.
+update public.users u
+set
+  app_access_mode = 'both',
+  updated_at = now()
+where u.app_access_mode = 'user'
+  and exists (
+    select 1
+    from public.admin_user_roles aur
+    where aur.user_id = u.id
+      and aur.is_active = true
+      and aur.revoked_at is null
+  );
+
+revoke update (app_access_mode) on public.users from anon, authenticated;
 
 create table if not exists public.admin_audit_events (
   id uuid primary key default gen_random_uuid(),
@@ -399,12 +419,16 @@ begin
 end;
 $$;
 
+drop function if exists public.get_my_admin_session();
+
 create or replace function public.get_my_admin_session()
 returns table (
   user_id uuid,
   roles text[],
   permissions text[],
-  is_active boolean
+  is_active boolean,
+  app_access_mode text,
+  can_use_user_app boolean
 )
 language sql
 stable
@@ -412,21 +436,35 @@ security definer
 set search_path = public, pg_temp
 as $$
   select
-    auth.uid() as user_id,
-    coalesce(array_agg(distinct aur.role_code) filter (where aur.role_code is not null), array[]::text[]) as roles,
-    coalesce(array_agg(distinct arp.permission_code) filter (where arp.permission_code is not null), array[]::text[]) as permissions,
+    u.id as user_id,
+    coalesce(
+      array_agg(distinct aur.role_code)
+        filter (where aur.role_code is not null),
+      array[]::text[]
+    ) as roles,
+    coalesce(
+      array_agg(distinct arp.permission_code)
+        filter (where arp.permission_code is not null),
+      array[]::text[]
+    ) as permissions,
     exists (
       select 1
       from public.admin_user_roles active_aur
-      where active_aur.user_id = auth.uid()
+      where active_aur.user_id = u.id
         and active_aur.is_active = true
         and active_aur.revoked_at is null
-    ) as is_active
-  from public.admin_user_roles aur
-  left join public.admin_role_permissions arp on arp.role_code = aur.role_code
-  where aur.user_id = auth.uid()
-    and aur.is_active = true
-    and aur.revoked_at is null
+    ) as is_active,
+    u.app_access_mode,
+    u.app_access_mode in ('user', 'both') as can_use_user_app
+  from public.users u
+  left join public.admin_user_roles aur
+    on aur.user_id = u.id
+   and aur.is_active = true
+   and aur.revoked_at is null
+  left join public.admin_role_permissions arp
+    on arp.role_code = aur.role_code
+  where u.id = auth.uid()
+  group by u.id, u.app_access_mode
 $$;
 
 drop function if exists public.get_admin_dashboard_summary(timestamptz, timestamptz, text);

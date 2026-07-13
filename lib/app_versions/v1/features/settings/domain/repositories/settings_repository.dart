@@ -90,14 +90,14 @@ abstract class SettingsRepository {
 
   /// Updates the application language.
   ///
-  /// [languageCode] should be either 'vi' (Vietnamese) or 'en' (English).
+  /// [languageCode] must be `vi` while the app ships Vietnamese UI only.
   /// The language change should be applied immediately to the UI.
   ///
   /// Throws an exception if an invalid language code is provided.
   ///
   /// Example:
   /// ```dart
-  /// await repository.updateLanguage('en'); // Switch to English
+  /// await repository.updateLanguage('vi');
   /// ```
   Future<void> updateLanguage(String languageCode);
 

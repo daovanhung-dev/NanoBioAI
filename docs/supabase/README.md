@@ -9,7 +9,7 @@ lieu tin cay cho NanoBio/BioAI.
 
 - Supabase la nguon du lieu tin cay cho user, ho so suc khoe, lich trinh AI,
   goi thanh vien, quota, FamilyPlus, Sale/referral, payment event, diem Sale,
-  Admin permission va audit.
+  Admin permission, audit, bằng chứng nhiệm vụ, Điểm chăm sóc và voucher.
 - SQLite trong app chi la cache/offline/local-first cho trai nghiem V1; khong
   dung SQLite, route param, SharedPreferences hay UI state de mo quyen tra phi,
   Sale, Admin hoac diem Sale.
@@ -36,10 +36,12 @@ schema `public`, sau do tao lai schema/RLS/RPC/seed/dev users/Admin bootstrap.
   `dev.free@nanobio.local`, `dev.plus@nanobio.local`,
   `dev.family@nanobio.local`, `dev.admin@nanobio.local`.
 - `dev.admin@nanobio.local` duoc bootstrap role `super_admin`.
-- SQL khong deploy duoc Edge Function `delete-account`, Auth redirect URL,
-  payment webhook/provider hoac storage bucket; cac phan do can cau hinh rieng.
-  Bucket private `sale-payout-proofs` cho minh chung chi tra Sale duoc huong
-  dan trong `13-sale-payout-storage.md`.
+- SQL khong deploy duoc Edge Function `delete-account`, Auth redirect URL hay
+  payment webhook/provider. Migration 16 tạo bucket private
+  `schedule-completion-proofs` và policy tương ứng; vẫn phải smoke test Storage
+  trong sandbox theo `16-schedule-proof-storage.md`. Bucket private
+  `sale-payout-proofs` cho minh chứng chi trả Sale vẫn được hướng dẫn riêng
+  trong `13-sale-payout-storage.md`.
 
 ## File module tham chieu
 
@@ -62,7 +64,9 @@ doi:
    RPC dang ky/dashboard; contract Sale final nam trong
    `12-sale-module-update.sql` va `config.sql`.
 8. `11-admin-access-dashboard.sql` - Admin roles, permissions, dashboard, audit
-   va RPC quan tri.
+   va RPC quan tri. `public.users.app_access_mode` quy dinh `user`, `admin` hoac
+   `both`; `get_my_admin_session()` tra `can_use_user_app` de entrypoint hop nhat
+   chon giao dien ma khong tao session Admin rieng.
 9. `12-sale-module-update.sql` - Sale dang ky cho Admin duyet, attach ma gioi
    thieu, ledger diem va queue quy doi noi bo.
 10. `13-membership-payment-request.sql` - RPC tao pending membership payment
@@ -76,7 +80,15 @@ doi:
 14. `14_mobile_sync_hotfix.sql` - hotfix snapshot sync khong insert NULL vao
    cot co default; logic nay da duoc fold vao `config.sql`.
 15. `15-auth-sync-completion.sql` - migration khong pha huy cho atomic Auth V2 signup/referral; phai chay sandbox truoc va khong thay the bang `config.sql` tren remote/production.
-16. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
+16. `16-wellness-rewards.sql` - migration không phá hủy cho eligibility lịch,
+   marker một request Guest/tài khoản và immutable batch Member, proof private,
+   ledger server-owned, ví Điểm chăm sóc, catalog/kho mã voucher, đổi điểm
+   atomic và Admin refund/audit.
+17. `16-schedule-proof-storage.md` - runbook bucket bằng chứng private, contract
+   begin/upload/finalize/undo và smoke test hai tài khoản.
+18. `17-unified-app-role-surface.sql` - migration không phá hủy cho entrypoint
+   hợp nhất, `app_access_mode` và output role-surface của Admin session.
+19. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
    va nghiem thu.
 
 Moi thay doi Supabase schema/RLS/RPC/seed/docs phai cap nhat `config.sql` cung

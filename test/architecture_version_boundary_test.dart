@@ -180,16 +180,12 @@ void main() {
       );
     });
 
-    test('entrypoints select the expected app version', () {
-      final mainV1 = _read(File('lib/main.dart'));
-      final mainV2 = _read(File('lib/main_v2.dart'));
-      final mainAdmin = _read(File('lib/main_admin.dart'));
+    test('single entrypoint boots the unified app', () {
+      final mainSource = _read(File('lib/main.dart'));
 
-      expect(mainV1.contains('BioAIV2App'), isTrue);
-      expect(mainV1.contains('BioAIV1App'), isFalse);
-      expect(mainV2.contains('BioAIV2App'), isTrue);
-      expect(mainAdmin.contains('BioAIAdminApp'), isTrue);
-      expect(mainAdmin.contains('NotificationBootstrap'), isFalse);
+      expect(mainSource.contains('BioAIApp'), isTrue);
+      expect(File('lib/main_v2.dart').existsSync(), isFalse);
+      expect(File('lib/main_admin.dart').existsSync(), isFalse);
     });
   });
 }

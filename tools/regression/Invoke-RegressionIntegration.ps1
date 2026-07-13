@@ -35,7 +35,7 @@ $resolvedEnv = Resolve-RegressionRepoFile -Path $EnvFile -Label 'Environment'
 & powershell -ExecutionPolicy Bypass -File `
   (Join-Path $script:RegressionRepoRoot 'tools/run_v2.ps1') `
   -EnvFile $resolvedEnv `
-  -EntryPoint $(if ($Surface -eq 'v2') { 'lib/main_v2.dart' } else { 'lib/main_admin.dart' }) `
+  -EntryPoint 'lib/main.dart' `
   -ValidateOnly
 if ($LASTEXITCODE -ne 0) {
   throw 'Environment validation failed.'

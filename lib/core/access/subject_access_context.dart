@@ -35,12 +35,12 @@ class SubjectAccessException implements Exception {
   const SubjectAccessException(this.code, this.safeMessage);
 
   const SubjectAccessException.authRequired()
-    : this('AUTH_REQUIRED', 'Can dang nhap de xem du lieu suc khoe.');
+    : this('AUTH_REQUIRED', 'Cần đăng nhập để xem dữ liệu sức khỏe.');
 
   const SubjectAccessException.familyPlusRequired()
     : this(
         'FAMILY_PLUS_REQUIRED',
-        'Chi goi FamilyPlus moi duoc xem ho so suc khoe cua thanh vien khac.',
+        'Chỉ gói FamilyPlus mới được xem hồ sơ sức khỏe của thành viên khác.',
       );
 
   @override

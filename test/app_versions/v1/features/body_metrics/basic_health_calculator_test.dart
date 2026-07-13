@@ -17,13 +17,13 @@ void main() {
 
       expect(report.formulaVersion, basicHealthCalculatorVersion);
       expect(report.bmi, 22.5);
-      expect(report.bmiCategory, 'Can doi');
+      expect(report.bmiCategory, 'Cân đối');
       expect(report.bmrKcal, 1402);
       expect(report.rmrKcal, 1472);
       expect(report.tdeeKcal, 2172);
       expect(report.hydrationMl, 2275);
-      expect(report.sleepGuidance, contains('7-9 gio'));
-      expect(report.activityGuidance, contains('150 phut'));
+      expect(report.sleepGuidance, contains('7–9 giờ'));
+      expect(report.activityGuidance, contains('150 phút'));
     });
 
     test('rejects invalid input ranges', () {

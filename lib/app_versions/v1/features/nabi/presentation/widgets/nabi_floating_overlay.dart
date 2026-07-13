@@ -206,7 +206,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
                                       showLabel: false,
                                       enabled: !_isDragging,
                                       semanticLabel:
-                                          'Nabi - cham de mo chat voi Nabi',
+                                          'Nabi - chạm để mở trò chuyện với Nabi',
                                       onTap: _handleTap,
                                     )
                                   : NabiCharacterWidget(
@@ -214,7 +214,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
                                       showAura: !_isDragging,
                                       onTap: _handleTap,
                                       semanticLabel:
-                                          'Nabi – chạm để mở chat với Nabi',
+                                          'Nabi – chạm để mở trò chuyện với Nabi',
                                     ),
                             ),
 

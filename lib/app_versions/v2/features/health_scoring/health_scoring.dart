@@ -18,12 +18,12 @@ class V2HealthScoringFeature {
   static const formulaVersion = healthScoreHabitsFormulaVersion;
 
   static const responsibilities = <String>[
-    'Tinh diem suc khoe v1 tu lich su hoan thanh lich cham soc that.',
-    'Doc bua an, nhiem vu hang ngay va nhip sinh hoat qua data layer.',
-    'Khong dung mock, fake hoac sample dashboard data trong production.',
-    'Giu diem cham soc v1 local tach khoi cong thuc health scoring v2.',
-    'Cho phep FamilyPlus xem subject khac qua policy dung chung.',
+    'Tính điểm sức khỏe từ lịch sử hoàn thành lịch chăm sóc thực tế.',
+    'Đọc bữa ăn, nhiệm vụ hằng ngày và nhịp sinh hoạt qua tầng dữ liệu.',
+    'Không dùng dữ liệu mẫu trong ứng dụng phát hành.',
+    'Giữ điểm chăm sóc tách khỏi công thức tính điểm sức khỏe.',
+    'Cho phép FamilyPlus xem thành viên khác theo chính sách dùng chung.',
   ];
   static const disclaimer =
-      'Diem suc khoe chi de theo doi xu huong cham soc hang ngay, khong thay the chan doan y khoa.';
+      'Điểm sức khỏe chỉ để theo dõi xu hướng chăm sóc hằng ngày, không thay thế chẩn đoán y khoa.';
 }

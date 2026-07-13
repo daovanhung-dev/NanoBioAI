@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/meal_plan_model.dart';
 
 class MealPlansDao {
-  final Database db;
+  final DatabaseExecutor db;
 
   MealPlansDao(this.db);
 

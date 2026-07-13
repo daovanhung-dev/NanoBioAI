@@ -6,6 +6,7 @@ abstract class AdminRoutePaths {
   static const payments = '/admin/payments';
   static const sales = '/admin/sales';
   static const saleConversions = '/admin/sale-conversions';
+  static const wellnessRewards = '/admin/wellness-rewards';
   static const reconciliation = '/admin/reconciliation';
   static const plans = '/admin/plans';
   static const reports = '/admin/reports';

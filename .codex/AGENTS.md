@@ -17,9 +17,7 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 | --- | --- | --- |
 | Install dependencies | `flutter pub get` | May update generated package state; do not run for docs-only work unless needed. |
 | Validate local auth env | `powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -ValidateOnly` | Checks required auth settings without printing values or starting Flutter. |
-| Run authenticated v1/v2 app | `powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1` | Defaults to device `12b304f9`, `.env`, and `lib/main.dart`; use parameters to override them. |
-| Run v2 entrypoint | `powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -EntryPoint lib/main_v2.dart` | Authenticated surface with validated local configuration. Plain `flutter run` is not recommended for authenticated device testing. |
-| Run admin app | `flutter run -t lib/main_admin.dart` | Admin surface entrypoint. |
+| Run unified app | `powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1` | Runs `lib/main.dart`; the authenticated session selects User or Admin automatically. Plain `flutter run` is not recommended for authenticated device testing. |
 | Build debug APK | `flutter build apk --debug` | Used by full check when `-BuildApk` is passed. |
 | Format touched Dart | `dart format <paths>` | Scope to touched Dart files; avoid repo-wide formatting unless requested. |
 | Format check | `dart format --set-exit-if-changed <paths>` | Use targeted paths for runtime changes. |

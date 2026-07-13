@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nano_app/app/app_surface_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/controllers/admin_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
+import 'package:nano_app/app_versions/admin/features/wellness_rewards/wellness_rewards_admin.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/core/localization/vietnam_time.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -91,7 +94,8 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
         child: _BlockingState(
           icon: Icons.cloud_off_rounded,
           title: 'Chưa tải được khu quản trị',
-          message: 'Nabi chưa lấy được phiên quản trị. Hãy thử lại sau ít phút.',
+          message:
+              'Nabi chưa lấy được phiên quản trị. Hãy thử lại sau ít phút.',
           actionLabel: 'Thử lại',
           onAction: () => ref.read(adminControllerProvider.notifier).refresh(),
         ),
@@ -171,6 +175,9 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
                                         .refresh();
                                   },
                                   onShowGuide: _showGuide,
+                                  onShowUserApp: data.session.canUseUserApp
+                                      ? _showUserApp
+                                      : null,
                                   onSignOut: _signOut,
                                 ),
                                 Expanded(
@@ -206,9 +213,13 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
     );
   }
 
+  void _showUserApp() {
+    ref.read(appSurfaceControllerProvider.notifier).showUser();
+  }
+
   Future<void> _signOut() async {
     await ref.read(adminAccessControllerProvider.notifier).signOut();
-    if (mounted) context.go(AdminRoutePaths.login);
+    ref.read(appSurfaceControllerProvider.notifier).reset();
   }
 
   Future<void> _runAction(
@@ -1069,6 +1080,7 @@ class _TopBar extends StatelessWidget {
   final ValueChanged<String> onSearch;
   final VoidCallback onRefresh;
   final VoidCallback onShowGuide;
+  final VoidCallback? onShowUserApp;
   final VoidCallback onSignOut;
 
   const _TopBar({
@@ -1079,6 +1091,7 @@ class _TopBar extends StatelessWidget {
     required this.onSearch,
     required this.onRefresh,
     required this.onShowGuide,
+    required this.onShowUserApp,
     required this.onSignOut,
   });
 
@@ -1111,6 +1124,7 @@ class _TopBar extends StatelessWidget {
             compact: narrow,
             onRefresh: onRefresh,
             onShowGuide: onShowGuide,
+            onShowUserApp: onShowUserApp,
             onSignOut: onSignOut,
           );
 
@@ -1334,12 +1348,14 @@ class _TopBarActions extends StatelessWidget {
   final bool compact;
   final VoidCallback onRefresh;
   final VoidCallback onShowGuide;
+  final VoidCallback? onShowUserApp;
   final VoidCallback onSignOut;
 
   const _TopBarActions({
     required this.compact,
     required this.onRefresh,
     required this.onShowGuide,
+    required this.onShowUserApp,
     required this.onSignOut,
   });
 
@@ -1360,6 +1376,14 @@ class _TopBarActions extends StatelessWidget {
             icon: Icons.refresh_rounded,
             onPressed: onRefresh,
           ),
+          if (onShowUserApp != null) ...[
+            const SizedBox(width: AppSpacing.xs),
+            _TopBarIconAction(
+              tooltip: 'Giao diện người dùng',
+              icon: Icons.health_and_safety_rounded,
+              onPressed: onShowUserApp!,
+            ),
+          ],
           const SizedBox(width: AppSpacing.xs),
           _TopBarIconAction(
             tooltip: 'Đăng xuất',
@@ -1379,6 +1403,14 @@ class _TopBarActions extends StatelessWidget {
           icon: const Icon(Icons.menu_book_rounded),
           label: const Text('Hướng dẫn'),
         ),
+        if (onShowUserApp != null) ...[
+          const SizedBox(width: AppSpacing.sm),
+          OutlinedButton.icon(
+            onPressed: onShowUserApp,
+            icon: const Icon(Icons.health_and_safety_rounded),
+            label: const Text('Giao diện người dùng'),
+          ),
+        ],
         const SizedBox(width: AppSpacing.sm),
         _TopBarIconAction(
           tooltip: 'Làm mới',
@@ -1451,6 +1483,11 @@ class _AdminContent extends StatelessWidget {
         : switch (state.section) {
             AdminPanelSection.dashboard => _DashboardView(state: state),
             AdminPanelSection.audit => _AuditView(events: state.auditEvents),
+            AdminPanelSection.wellnessRewards => AdminWellnessRewardsPanel(
+              canWrite: state.session.hasPermission(
+                AdminPermissions.wellnessRewardsWrite,
+              ),
+            ),
             _ => _WorkQueueView(state: state, onAction: onAction),
           };
 
@@ -2131,7 +2168,8 @@ class _SaleConversionPayoutDetail extends StatelessWidget {
     final proofPath = _metadataString(metadata, 'payment_proof_path');
     final shortId = item.id.length <= 8 ? item.id : item.id.substring(0, 8);
     final content =
-        _metadataString(metadata, 'payment_content') ?? 'CTV $shortId';
+        _metadataString(metadata, 'payment_content') ??
+        'Cộng tác viên $shortId';
     final currency = _metadataString(metadata, 'currency') ?? 'VND';
     final amount = _metadataInt(metadata, 'money_amount_cents');
     final qrPayload =
@@ -2422,7 +2460,8 @@ class _AuditView extends StatelessWidget {
     if (events.isEmpty) {
       return const _EmptyPanel(
         title: 'Chưa có nhật ký kiểm tra phù hợp',
-        message: 'Nhật ký kiểm tra sẽ hiển thị khi có thao tác quản trị được ghi nhận.',
+        message:
+            'Nhật ký kiểm tra sẽ hiển thị khi có thao tác quản trị được ghi nhận.',
       );
     }
 
@@ -2512,7 +2551,7 @@ class _AuditRow extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      '${event.target} - ${event.reason}',
+                      '${_auditTargetLabel(event.target)} · ${_auditReasonLabel(event.reason)}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.copyWith(
@@ -3140,24 +3179,37 @@ class _PermissionDeniedPanel extends StatelessWidget {
 String _permissionLabel(String permission) {
   switch (permission.trim().toLowerCase()) {
     case 'view_dashboard':
+    case 'dashboard.read':
       return 'xem bảng điều khiển';
     case 'manage_users':
+    case 'users.write':
       return 'quản lý người dùng';
     case 'manage_payments':
+    case 'payments.write':
       return 'quản lý thanh toán';
     case 'manage_sales':
+    case 'sales.write':
       return 'quản lý cộng tác viên';
     case 'manage_sale_conversions':
       return 'quản lý quy đổi điểm';
+    case 'wellness_rewards.read':
+      return 'xem Điểm chăm sóc và ưu đãi';
+    case 'wellness_rewards.write':
+      return 'quản lý Điểm chăm sóc và ưu đãi';
     case 'manage_reconciliation':
+    case 'reconciliation.write':
       return 'quản lý đối soát';
     case 'manage_plans':
+    case 'plans.write':
       return 'quản lý gói dịch vụ';
     case 'export_reports':
+    case 'reports.write':
       return 'xuất báo cáo';
     case 'view_audit':
+    case 'audit.read':
       return 'xem nhật ký kiểm tra';
     case 'manage_config':
+    case 'config.write':
       return 'quản lý cấu hình';
     default:
       return 'phù hợp';
@@ -3243,6 +3295,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.payments => 'Thanh toán',
       AdminPanelSection.sales => 'Cộng tác viên',
       AdminPanelSection.saleConversions => 'Quy đổi điểm cộng tác viên',
+      AdminPanelSection.wellnessRewards => 'Điểm chăm sóc',
       AdminPanelSection.reconciliation => 'Đối soát',
       AdminPanelSection.plans => 'Gói dịch vụ',
       AdminPanelSection.reports => 'Báo cáo',
@@ -3258,6 +3311,8 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.payments => 'Duyệt và kiểm tra thanh toán',
       AdminPanelSection.sales => 'Duyệt hồ sơ cộng tác viên',
       AdminPanelSection.saleConversions => 'Xử lý quy đổi điểm',
+      AdminPanelSection.wellnessRewards =>
+        'Quản lý ưu đãi và kho mã dùng một lần',
       AdminPanelSection.reconciliation => 'Kiểm tra sai lệch vận hành',
       AdminPanelSection.plans => 'Cập nhật gói dịch vụ',
       AdminPanelSection.reports => 'Yêu cầu xuất báo cáo',
@@ -3273,6 +3328,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.payments => AdminRoutePaths.payments,
       AdminPanelSection.sales => AdminRoutePaths.sales,
       AdminPanelSection.saleConversions => AdminRoutePaths.saleConversions,
+      AdminPanelSection.wellnessRewards => AdminRoutePaths.wellnessRewards,
       AdminPanelSection.reconciliation => AdminRoutePaths.reconciliation,
       AdminPanelSection.plans => AdminRoutePaths.plans,
       AdminPanelSection.reports => AdminRoutePaths.reports,
@@ -3289,6 +3345,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.sales => Icons.badge_outlined,
       AdminPanelSection.saleConversions =>
         Icons.published_with_changes_outlined,
+      AdminPanelSection.wellnessRewards => Icons.redeem_outlined,
       AdminPanelSection.reconciliation => Icons.fact_check_outlined,
       AdminPanelSection.plans => Icons.workspace_premium_outlined,
       AdminPanelSection.reports => Icons.summarize_outlined,
@@ -3304,6 +3361,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.payments => Icons.payments_rounded,
       AdminPanelSection.sales => Icons.badge_rounded,
       AdminPanelSection.saleConversions => Icons.published_with_changes_rounded,
+      AdminPanelSection.wellnessRewards => Icons.redeem_rounded,
       AdminPanelSection.reconciliation => Icons.fact_check_rounded,
       AdminPanelSection.plans => Icons.workspace_premium_rounded,
       AdminPanelSection.reports => Icons.summarize_rounded,
@@ -3352,6 +3410,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.config => const [
         _AdminAction('upsert', 'Lưu phiên bản', Icons.save_as_rounded),
       ],
+      AdminPanelSection.wellnessRewards => const [],
       AdminPanelSection.dashboard => const [],
       AdminPanelSection.audit => const [],
     };
@@ -3598,7 +3657,7 @@ String _formatMoney(int amount, String currency) {
 
 String _formatDateTime(DateTime? dateTime) {
   if (dateTime == null) return '';
-  final local = dateTime.toLocal();
+  final local = VietnamTime.wallClock(dateTime);
   final day = local.day.toString().padLeft(2, '0');
   final month = local.month.toString().padLeft(2, '0');
   final hour = local.hour.toString().padLeft(2, '0');
@@ -3618,6 +3677,37 @@ String _auditActionLabel(String action) {
     'admin_create_reconciliation_run' => 'Tạo phiên đối soát',
     'admin_update_reconciliation_discrepancy_status' => 'Cập nhật đối soát',
     'admin_review_sale_point_conversion' => 'Duyệt quy đổi điểm',
-    _ => action.replaceAll('_', ' '),
+    'admin_upsert_reward_offer' => 'Cập nhật ưu đãi Điểm chăm sóc',
+    'admin_import_reward_codes' => 'Nhập kho mã voucher',
+    'admin_cancel_reward_redemption' => 'Hủy giao dịch voucher',
+    _ => 'Hoạt động quản trị',
+  };
+}
+
+String _auditTargetLabel(String target) {
+  final normalized = target.trim().toLowerCase();
+  if (normalized.isEmpty) return 'Đối tượng quản trị';
+  if (normalized.contains('reward_offer')) return 'Ưu đãi Điểm chăm sóc';
+  if (normalized.contains('reward_code')) return 'Kho mã voucher';
+  if (normalized.contains('redemption')) return 'Giao dịch voucher';
+  if (normalized.contains('payment')) return 'Giao dịch thanh toán';
+  if (normalized.contains('sale')) return 'Hồ sơ cộng tác viên';
+  if (normalized.contains('user') || normalized.contains('profile')) {
+    return 'Tài khoản người dùng';
+  }
+  if (normalized.contains('config') || normalized.contains('plan')) {
+    return 'Cấu hình hệ thống';
+  }
+  return 'Đối tượng quản trị';
+}
+
+String _auditReasonLabel(String reason) {
+  final value = reason.trim();
+  if (value.isEmpty) return 'Không có mô tả';
+  return switch (value.toLowerCase()) {
+    'system' => 'Do hệ thống thực hiện',
+    'manual review' => 'Đã kiểm tra thủ công',
+    'user request' => 'Theo yêu cầu của người dùng',
+    _ => value,
   };
 }

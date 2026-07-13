@@ -27,7 +27,7 @@ void main() {
       expect(repository.signOutCalls, 0);
     });
 
-    test('rejects a restored non-Admin session and signs it out', () async {
+    test('rejects a restored non-Admin session without ending the user session', () async {
       final repository = _AccessRepository(session: AdminSession.anonymous);
       final container = _container(repository);
       addTearDown(container.dispose);
@@ -35,10 +35,10 @@ void main() {
       final state = await container.read(adminAccessControllerProvider.future);
 
       expect(state.status, AdminAccessStatus.unauthorized);
-      expect(repository.signOutCalls, 1);
+      expect(repository.signOutCalls, 0);
     });
 
-    test('signs out when the server reports a revoked role', () async {
+    test('rejects a revoked Admin role without ending the user session', () async {
       final repository = _AccessRepository(
         fetchFailure: const AdminAccessRevokedException(),
       );
@@ -48,7 +48,7 @@ void main() {
       final state = await container.read(adminAccessControllerProvider.future);
 
       expect(state.status, AdminAccessStatus.unauthorized);
-      expect(repository.signOutCalls, 1);
+      expect(repository.signOutCalls, 0);
     });
 
     test('does not call the Admin session RPC when auth is expired', () async {

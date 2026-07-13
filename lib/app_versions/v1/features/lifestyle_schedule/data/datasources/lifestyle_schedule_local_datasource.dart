@@ -2,22 +2,26 @@ import 'dart:convert';
 
 import 'package:nano_app/core/storage/localdb/daos/health_score_ledgers_dao.dart';
 import 'package:nano_app/core/storage/localdb/daos/health_tracking_logs_dao.dart';
-import 'package:nano_app/core/storage/localdb/daos/wellness_point_ledgers_dao.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/models/health_score_ledger_model.dart';
 import 'package:nano_app/core/storage/localdb/models/health_tracking_log_model.dart';
-import 'package:nano_app/core/storage/localdb/models/wellness_point_ledger_model.dart';
 import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
+import 'package:nano_app/core/storage/localdb/tables/wellness_rewards_cache_tables.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/daos/daily_health_tasks_dao.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/daos/meal_plan_dao.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
+import '../../domain/entities/schedule_completion_proof_entity.dart';
 import '../../domain/entities/lifestyle_schedule_summary_entity.dart';
 import '../../domain/services/daily_schedule_score_service.dart';
+import '../../domain/services/lifestyle_schedule_window_policy.dart';
+import '../../domain/services/schedule_completion_exception.dart';
 import '../daos/lifestyle_schedule_items_dao.dart';
+import '../daos/schedule_completion_proofs_dao.dart';
 import '../models/lifestyle_schedule_item_model.dart';
+import '../models/schedule_completion_proof_model.dart';
 import '../models/lifestyle_schedule_timeline_builder.dart';
 
 class LifestyleScheduleLocalDatasource {
@@ -27,7 +31,7 @@ class LifestyleScheduleLocalDatasource {
   LifestyleScheduleLocalDatasource({
     this.databaseOverride,
     DateTime Function()? now,
-  }) : _now = now ?? DateTime.now;
+  }) : _now = now ?? LifestyleScheduleWindowPolicy.vietnamNow;
 
   Future<Database> _db() async => databaseOverride ?? DatabaseService.database;
 
@@ -127,61 +131,146 @@ class LifestyleScheduleLocalDatasource {
     required bool isCompleted,
     String? completionProofPath,
     String? completionProofCapturedAt,
+    String? rewardEligibilityId,
+    String? completionAttemptId,
+    String? completionProofCloudObjectPath,
   }) async {
     final db = await _db();
     final nowDate = _now();
-    if (!item.isWithinCompletionWindow(nowDate)) {
-      throw StateError(
-        'Schedule item can only be changed from ${item.startTime} '
-        'to ${item.startTime} + 30 minutes',
-      );
-    }
-
     final proofPath = completionProofPath?.trim();
     if (isCompleted && (proofPath == null || proofPath.isEmpty)) {
-      throw StateError('Schedule completion requires a photo proof');
+      throw const ScheduleCompletionException(
+        ScheduleCompletionErrorCode.proofRequired,
+        'Bạn cần chụp ảnh minh chứng trước khi hoàn thành nhiệm vụ.',
+      );
     }
-
     final now = nowDate.toIso8601String();
-    final currentValue = isCompleted ? item.targetValue : 0.0;
-    final updated = item.copyWith(
-      currentValue: currentValue,
-      isCompleted: isCompleted,
-      completionProofPath: isCompleted ? proofPath : null,
-      completionProofCapturedAt: isCompleted
-          ? completionProofCapturedAt ?? now
-          : null,
-      completedAt: isCompleted ? now : null,
-      clearCompletionProof: !isCompleted,
-      updatedAt: now,
-    );
+    final updated = await db.transaction((transaction) async {
+      final scheduleDao = LifestyleScheduleItemsDao(transaction);
+      final currentModel = await scheduleDao.getById(item.id);
+      if (currentModel == null) {
+        throw const ScheduleCompletionException(
+          ScheduleCompletionErrorCode.notFound,
+          'Nabi chưa tìm thấy nhiệm vụ này. Bạn tải lại lịch trình nhé.',
+        );
+      }
+      final current = currentModel.toEntity();
+      _validateCompletionWindow(current, nowDate);
 
-    await LifestyleScheduleItemsDao(
-      db,
-    ).update(LifestyleScheduleItemModel.fromEntity(updated));
+      if (isCompleted && current.isCompleted) {
+        throw const ScheduleCompletionException(
+          ScheduleCompletionErrorCode.alreadyCompleted,
+          'Nhiệm vụ này đã được hoàn thành rồi.',
+        );
+      }
+      if (!isCompleted && !current.isCompleted) {
+        throw const ScheduleCompletionException(
+          ScheduleCompletionErrorCode.notCompleted,
+          'Nhiệm vụ này chưa được hoàn thành để hoàn tác.',
+        );
+      }
 
-    if (item.isMealLinked) {
-      await MealPlansDao(
-        db,
-      ).updateCompleted(id: item.sourceId!, isCompleted: isCompleted);
-    }
+      final capturedAt = completionProofCapturedAt ?? now;
+      final next = current.copyWith(
+        currentValue: isCompleted ? current.targetValue : 0,
+        isCompleted: isCompleted,
+        completionProofPath: isCompleted ? proofPath : null,
+        completionProofCapturedAt: isCompleted ? capturedAt : null,
+        completedAt: isCompleted ? now : null,
+        clearCompletionProof: !isCompleted,
+        updatedAt: now,
+      );
+      await scheduleDao.update(LifestyleScheduleItemModel.fromEntity(next));
 
-    if (item.isDailyTaskLinked) {
-      final dao = DailyHealthTasksDao(db);
-      final task = await dao.getById(item.sourceId!);
-      if (task != null) {
-        await dao.updateTask(
-          task.copyWith(
-            currentValue: isCompleted ? task.targetValue : 0,
-            isCompleted: isCompleted,
+      final proofDao = ScheduleCompletionProofsDao(transaction);
+      if (isCompleted) {
+        final normalizedEligibilityId = _nonEmpty(rewardEligibilityId);
+        await proofDao.insert(
+          ScheduleCompletionProofModel(
+            id: 'proof_${current.id}_${nowDate.microsecondsSinceEpoch}',
+            userId: current.userId,
+            scheduleItemId: current.id,
+            rewardEligibilityId: normalizedEligibilityId,
+            completionAttemptId: _nonEmpty(completionAttemptId),
+            scheduleDate: current.scheduleDate,
+            startTime: current.startTime,
+            scheduleTitle: current.title,
+            localPath: proofPath!,
+            pathKind: _isAbsolutePath(proofPath)
+                ? ScheduleProofPathKinds.legacyAbsolute
+                : ScheduleProofPathKinds.relative,
+            cloudObjectPath: _nonEmpty(completionProofCloudObjectPath),
+            capturedAt: capturedAt,
+            completedAt: now,
+            uploadStatus: normalizedEligibilityId == null
+                ? ScheduleProofUploadStatuses.localOnly
+                : ScheduleProofUploadStatuses.pending,
+            rewardStatus: normalizedEligibilityId == null
+                ? ScheduleProofRewardStatuses.notEligible
+                : ScheduleProofRewardStatuses.pending,
+            createdAt: now,
             updatedAt: now,
           ),
         );
+        final projectionUserId = _nonEmpty(current.userId);
+        if (normalizedEligibilityId != null && projectionUserId != null) {
+          await _ensureRewardEligibilityProjection(transaction);
+          await transaction.insert(
+            ScheduleRewardEligibilityCacheTable.tableName,
+            {
+              'schedule_item_id': current.id,
+              'user_id': projectionUserId,
+              'eligibility_id': normalizedEligibilityId,
+              'request_id': null,
+              'status': 'completion_pending',
+              'window_start': current.scheduledAt?.toIso8601String(),
+              'window_end': current.completionDeadline?.toIso8601String(),
+              'synced_at': now,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+      } else {
+        final activeProof = await proofDao.getLatestActiveForSchedule(
+          current.id,
+        );
+        if (activeProof != null) {
+          await proofDao.markReversed(id: activeProof.id, reversedAt: now);
+          if (activeProof.rewardEligibilityId != null) {
+            await _ensureRewardEligibilityProjection(transaction);
+            await transaction.update(
+              ScheduleRewardEligibilityCacheTable.tableName,
+              {'status': 'reversed', 'synced_at': now},
+              where: 'schedule_item_id = ?',
+              whereArgs: [current.id],
+            );
+          }
+        }
       }
-    }
 
-    await _syncDailyScheduleScore(db, updated, nowDate: nowDate);
-    await _syncWellnessPoints(db, updated, isCompleted: isCompleted, now: now);
+      if (current.isMealLinked) {
+        await MealPlansDao(
+          transaction,
+        ).updateCompleted(id: current.sourceId!, isCompleted: isCompleted);
+      }
+
+      if (current.isDailyTaskLinked) {
+        final taskDao = DailyHealthTasksDao(transaction);
+        final task = await taskDao.getById(current.sourceId!);
+        if (task != null) {
+          await taskDao.updateTask(
+            task.copyWith(
+              currentValue: isCompleted ? task.targetValue : 0,
+              isCompleted: isCompleted,
+              updatedAt: now,
+            ),
+          );
+        }
+      }
+
+      await _syncDailyScheduleScore(transaction, next, nowDate: nowDate);
+      return next;
+    });
     LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
 
     return updated;
@@ -190,26 +279,87 @@ class LifestyleScheduleLocalDatasource {
   Future<LifestyleScheduleItemEntity> completeItemById(
     String id, {
     String? completionProofPath,
+    String? rewardEligibilityId,
+    String? completionAttemptId,
+    String? completionProofCloudObjectPath,
   }) async {
     final db = await _db();
     final item = await LifestyleScheduleItemsDao(db).getById(id);
     if (item == null) {
-      throw StateError('Schedule item not found');
+      throw const ScheduleCompletionException(
+        ScheduleCompletionErrorCode.notFound,
+        'Nabi chưa tìm thấy nhiệm vụ này. Bạn tải lại lịch trình nhé.',
+      );
     }
 
     return updateItemCompletion(
       item: item.toEntity(),
       isCompleted: true,
       completionProofPath: completionProofPath,
+      rewardEligibilityId: rewardEligibilityId,
+      completionAttemptId: completionAttemptId,
+      completionProofCloudObjectPath: completionProofCloudObjectPath,
     );
+  }
+
+  Future<List<ScheduleCompletionProofModel>> getCompletionProofs() async {
+    final db = await _db();
+    final user = await _fetchLatestUser(db);
+    return ScheduleCompletionProofsDao(db).getByUser(user['id'].toString());
+  }
+
+  Future<void> updateCompletionProofRemoteState({
+    required String proofId,
+    String? rewardEligibilityId,
+    String? completionAttemptId,
+    String? cloudObjectPath,
+    String? uploadStatus,
+    String? rewardStatus,
+  }) async {
+    final db = await _db();
+    final updatedAt = _now().toUtc().toIso8601String();
+    await db.transaction((txn) async {
+      final proofDao = ScheduleCompletionProofsDao(txn);
+      final proof = await proofDao.getById(proofId);
+      await proofDao.updateRemoteState(
+        id: proofId,
+        rewardEligibilityId: rewardEligibilityId,
+        completionAttemptId: completionAttemptId,
+        cloudObjectPath: cloudObjectPath,
+        uploadStatus: uploadStatus,
+        rewardStatus: rewardStatus,
+        updatedAt: updatedAt,
+      );
+      if (proof != null && rewardStatus != null) {
+        await _ensureRewardEligibilityProjection(txn);
+        await txn.update(
+          ScheduleRewardEligibilityCacheTable.tableName,
+          {
+            'eligibility_id': rewardEligibilityId ?? proof.rewardEligibilityId,
+            'status': rewardStatus,
+            'synced_at': updatedAt,
+          },
+          where: 'schedule_item_id = ?',
+          whereArgs: [proof.scheduleItemId],
+        );
+      }
+    });
   }
 
   Future<Map<String, Object?>> _fetchLatestUser(Database db) async {
     final users = await db.query('users', orderBy: 'created_at DESC', limit: 1);
     if (users.isEmpty) {
-      throw Exception('Chua co du lieu nguoi dung trong SQLite.');
+      throw StateError('Nabi chưa tìm thấy hồ sơ phù hợp để mở lịch chăm sóc.');
     }
     return users.first;
+  }
+
+  Future<void> _ensureRewardEligibilityProjection(DatabaseExecutor db) async {
+    await db.execute(ScheduleRewardEligibilityCacheTable.createTable);
+    await db.execute(ScheduleRewardEligibilityCacheTable.createUserStatusIndex);
+    await db.execute(
+      ScheduleRewardEligibilityCacheTable.createEligibilityIndex,
+    );
   }
 
   void _validateGeneratedSchedule(
@@ -264,7 +414,7 @@ class LifestyleScheduleLocalDatasource {
   }
 
   Future<void> _syncDailyScheduleScore(
-    Database db,
+    DatabaseExecutor db,
     LifestyleScheduleItemEntity item, {
     required DateTime nowDate,
   }) async {
@@ -323,41 +473,47 @@ class LifestyleScheduleLocalDatasource {
     );
   }
 
-  Future<void> _syncWellnessPoints(
-    Database db,
-    LifestyleScheduleItemEntity item, {
-    required bool isCompleted,
-    required String now,
-  }) async {
-    final userId = item.userId;
-    if (userId == null || userId.isEmpty) return;
-
-    final dao = WellnessPointLedgersDao(db);
-    final currentNet = await dao.netPointsForSource(
-      userId: userId,
-      sourceType: DailyScheduleScoreService.wellnessSourceType,
-      sourceId: item.id,
-      programCode: DailyScheduleScoreService.wellnessProgramCode,
+  void _validateCompletionWindow(
+    LifestyleScheduleItemEntity item,
+    DateTime now,
+  ) {
+    final scheduled = item.scheduledAt;
+    if (scheduled == null) {
+      throw const ScheduleCompletionException(
+        ScheduleCompletionErrorCode.invalidScheduleTime,
+        'Giờ của nhiệm vụ chưa hợp lệ nên Nabi đã tạm khóa thao tác này.',
+      );
+    }
+    final status = LifestyleScheduleWindowPolicy.statusAt(
+      scheduleDate: item.scheduleDate,
+      startTime: item.startTime,
+      isCompleted: false,
+      now: now,
     );
-    final desiredNet = isCompleted ? 1 : 0;
-    final delta = desiredNet - currentNet;
-    if (delta == 0) return;
+    if (status == CompletionWindowStatus.waiting) {
+      throw const ScheduleCompletionException(
+        ScheduleCompletionErrorCode.waiting,
+        'Nhiệm vụ chưa đến giờ thực hiện. Bạn quay lại đúng giờ nhé.',
+      );
+    }
+    if (status == CompletionWindowStatus.locked) {
+      throw const ScheduleCompletionException(
+        ScheduleCompletionErrorCode.locked,
+        'Nhiệm vụ đã hết thời gian thực hiện và được khóa.',
+      );
+    }
+  }
 
-    await dao.insert(
-      WellnessPointLedgerModel(
-        id: 'wellness_${userId}_${item.id}_${desiredNet}_${DateTime.parse(now).microsecondsSinceEpoch}',
-        userId: userId,
-        sourceType: DailyScheduleScoreService.wellnessSourceType,
-        sourceId: item.id,
-        scheduleDate: item.scheduleDate,
-        pointsDelta: delta,
-        programCode: DailyScheduleScoreService.wellnessProgramCode,
-        idempotencyKey:
-            'wellness:${DailyScheduleScoreService.wellnessProgramCode}:$userId:${item.id}:$desiredNet:$now',
-        createdAt: now,
-        updatedAt: now,
-      ),
-    );
+  String? _nonEmpty(String? value) {
+    final text = value?.trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  bool _isAbsolutePath(String value) {
+    final normalized = value.trim();
+    return normalized.startsWith('/') ||
+        normalized.startsWith(r'\') ||
+        RegExp(r'^[A-Za-z]:[\\/]').hasMatch(normalized);
   }
 
   String _dateKey(DateTime value) {

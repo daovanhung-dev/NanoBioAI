@@ -108,9 +108,9 @@ void main() {
       expect(result, isNull);
     });
 
-    test('should return null for valid English code "en"', () {
+    test('should return error for unsupported English code "en"', () {
       final result = SettingsValidator.validateLanguageCode('en');
-      expect(result, isNull);
+      expect(result, contains('chỉ hỗ trợ giao diện tiếng Việt'));
     });
 
     test('should return error for null language code', () {
@@ -128,43 +128,37 @@ void main() {
     test('should return error for unsupported language code "fr"', () {
       final result = SettingsValidator.validateLanguageCode('fr');
       expect(result, isNotNull);
-      expect(result, contains('"vi"'));
-      expect(result, contains('"en"'));
+      expect(result, contains('chỉ hỗ trợ giao diện tiếng Việt'));
     });
 
     test('should return error for unsupported language code "es"', () {
       final result = SettingsValidator.validateLanguageCode('es');
       expect(result, isNotNull);
-      expect(result, contains('"vi"'));
-      expect(result, contains('"en"'));
+      expect(result, contains('chỉ hỗ trợ giao diện tiếng Việt'));
     });
 
     test('should return error for unsupported language code "ja"', () {
       final result = SettingsValidator.validateLanguageCode('ja');
       expect(result, isNotNull);
-      expect(result, contains('"vi"'));
-      expect(result, contains('"en"'));
+      expect(result, contains('chỉ hỗ trợ giao diện tiếng Việt'));
     });
 
     test('should return error for invalid uppercase code "VI"', () {
       final result = SettingsValidator.validateLanguageCode('VI');
       expect(result, isNotNull);
-      expect(result, contains('"vi"'));
-      expect(result, contains('"en"'));
+      expect(result, contains('chỉ hỗ trợ giao diện tiếng Việt'));
     });
 
     test('should return error for invalid uppercase code "EN"', () {
       final result = SettingsValidator.validateLanguageCode('EN');
       expect(result, isNotNull);
-      expect(result, contains('"vi"'));
-      expect(result, contains('"en"'));
+      expect(result, contains('chỉ hỗ trợ giao diện tiếng Việt'));
     });
 
     test('should return error for random string', () {
       final result = SettingsValidator.validateLanguageCode('invalid');
       expect(result, isNotNull);
-      expect(result, contains('"vi"'));
-      expect(result, contains('"en"'));
+      expect(result, contains('chỉ hỗ trợ giao diện tiếng Việt'));
     });
   });
 
@@ -201,11 +195,14 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('should return empty map for valid language code "en"', () {
+    test('should return error map for language code "en"', () {
       final result = SettingsValidator.validateLanguageSettings(
         languageCode: 'en',
       );
-      expect(result, isEmpty);
+      expect(
+        result['language_code'],
+        contains('chỉ hỗ trợ giao diện tiếng Việt'),
+      );
     });
 
     test('should return error map for invalid language code', () {
@@ -214,8 +211,10 @@ void main() {
       );
       expect(result, isNotEmpty);
       expect(result['language_code'], isNotNull);
-      expect(result['language_code'], contains('"vi"'));
-      expect(result['language_code'], contains('"en"'));
+      expect(
+        result['language_code'],
+        contains('chỉ hỗ trợ giao diện tiếng Việt'),
+      );
     });
 
     test('should return error map for null language code', () {

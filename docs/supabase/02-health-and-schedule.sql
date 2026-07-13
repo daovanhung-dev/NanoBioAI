@@ -390,7 +390,6 @@ begin
     'notifications',
     'health_tracking_logs',
     'health_score_ledgers',
-    'wellness_point_ledgers',
     'personal_schedule_ai_requests',
     'meal_catalog',
     'exercise_catalog',
@@ -437,7 +436,6 @@ begin
     'notifications',
     'health_tracking_logs',
     'health_score_ledgers',
-    'wellness_point_ledgers',
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations'
@@ -473,6 +471,16 @@ begin
   end loop;
 end;
 $$;
+
+-- Wellness points are a server-owned projection. Migration 16 adds the full
+-- proof/reward contract; this base module deliberately exposes read-only owner
+-- access and never grants client INSERT/UPDATE/DELETE.
+alter table public.wellness_point_ledgers enable row level security;
+drop policy if exists wellness_point_ledgers_select_own
+  on public.wellness_point_ledgers;
+create policy wellness_point_ledgers_select_own
+  on public.wellness_point_ledgers for select to authenticated
+  using (user_id = (select auth.uid()));
 
 alter table public.personal_schedule_ai_requests enable row level security;
 drop policy if exists personal_schedule_ai_requests_select_own
@@ -516,7 +524,6 @@ grant select, insert, update, delete
      public.notifications,
      public.health_tracking_logs,
      public.health_score_ledgers,
-     public.wellness_point_ledgers,
      public.nutrition_logs,
      public.ai_insights,
      public.ai_recommendations
@@ -524,6 +531,9 @@ grant select, insert, update, delete
 
 grant select on public.meal_catalog, public.exercise_catalog, public.schedule_task_catalog to authenticated;
 grant select on public.personal_schedule_ai_requests to authenticated;
+grant select on public.wellness_point_ledgers to authenticated;
+revoke insert, update, delete on public.wellness_point_ledgers
+  from anon, authenticated;
 revoke insert, update, delete on public.personal_schedule_ai_requests
   from anon, authenticated;
 revoke insert, update, delete on public.meal_catalog, public.exercise_catalog, public.schedule_task_catalog from anon, authenticated;

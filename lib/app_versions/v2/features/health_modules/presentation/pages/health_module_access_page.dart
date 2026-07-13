@@ -45,7 +45,7 @@ class HealthModuleAccessPage extends ConsumerWidget {
           HealthModuleAccessDestination.comingSoon => MedicalComingSoonPage(
             title: item.title,
             message: item.comingSoonMessage,
-            eyebrow: '${item.moduleId} • ${item.comingSoonEyebrow}',
+            eyebrow: item.comingSoonEyebrow,
             icon: item.icon,
             color: item.color,
             previewItems: item.previewItems,

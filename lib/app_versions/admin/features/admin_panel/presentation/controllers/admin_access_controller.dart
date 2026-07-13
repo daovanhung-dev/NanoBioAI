@@ -95,25 +95,15 @@ class AdminAccessController extends AsyncNotifier<AdminAccessState> {
     try {
       final session = await repository.fetchSession();
       if (!session.isAdmin) {
-        await _signOutSilently();
         return const AdminAccessState.unauthorized();
       }
       return AdminAccessState.authorized(session);
     } on AdminAccessRevokedException {
-      await _signOutSilently();
       return const AdminAccessState.unauthorized();
     } catch (_) {
       return const AdminAccessState.error(
         'Chưa thể kiểm tra quyền quản trị. Phiên hiện tại chưa được dùng để mở dữ liệu quản trị.',
       );
-    }
-  }
-
-  Future<void> _signOutSilently() async {
-    try {
-      await ref.read(adminRepositoryProvider).signOut();
-    } catch (_) {
-      // Preserve the safe access result.
     }
   }
 }

@@ -3,7 +3,7 @@
 ## Source
 
 - `lib/app_versions/v1/features/onboarding/`
-- `lib/main.dart`, `lib/main_v2.dart` when callback after onboarding changes.
+- `lib/main.dart` when callback after onboarding changes.
 - SQLite profile/goals/habits/conditions/allergies/treatments/survey DAO/models.
 - Tests: `test/app_versions/v1/features/onboarding/` and related feature tests.
 
@@ -17,6 +17,6 @@
 ## Search
 
 ```powershell
-rg "Onboarding|onboarding|submit|complete|callback" lib/app_versions/v1/features/onboarding lib/main.dart lib/main_v2.dart test
+rg "Onboarding|onboarding|submit|complete|callback" lib/app_versions/v1/features/onboarding lib/main.dart test
 rg "health_profiles|health_goals|lifestyle_habits|survey_answers|allergies|treatments" lib/core/storage/localdb lib/app_versions/v1/features/onboarding test
 ```

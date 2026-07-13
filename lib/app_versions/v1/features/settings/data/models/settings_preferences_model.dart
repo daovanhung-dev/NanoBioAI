@@ -45,7 +45,9 @@ class SettingsPreferencesModel extends SettingsPreferencesEntity {
 
     return SettingsPreferencesModel(
       isDarkMode: isDarkMode,
-      languageCode: prefs.getString(keyLanguageCode) ?? 'vi',
+      // Các phiên bản cũ từng lưu `en`. Giao diện hiện chỉ hỗ trợ tiếng Việt,
+      // vì vậy mọi giá trị cũ/không hợp lệ đều được nâng cấp an toàn về `vi`.
+      languageCode: normalizeLanguageCode(prefs.getString(keyLanguageCode)),
       biometricEnabled: prefs.getBool(keyBiometricEnabled) ?? false,
       pushEnabled: prefs.getBool(keyPushEnabled) ?? false,
       mealReminderEnabled: prefs.getBool(keyMealReminderEnabled) ?? false,
@@ -64,7 +66,7 @@ class SettingsPreferencesModel extends SettingsPreferencesEntity {
   ) {
     return SettingsPreferencesModel(
       isDarkMode: entity.isDarkMode,
-      languageCode: entity.languageCode,
+      languageCode: normalizeLanguageCode(entity.languageCode),
       biometricEnabled: entity.biometricEnabled,
       pushEnabled: entity.pushEnabled,
       mealReminderEnabled: entity.mealReminderEnabled,
@@ -101,7 +103,7 @@ class SettingsPreferencesModel extends SettingsPreferencesEntity {
   Future<bool> saveToPreferences(SharedPreferences prefs) async {
     final results = await Future.wait([
       prefs.setString(keyThemeMode, themeModeString),
-      prefs.setString(keyLanguageCode, languageCode),
+      prefs.setString(keyLanguageCode, normalizeLanguageCode(languageCode)),
       prefs.setBool(keyBiometricEnabled, biometricEnabled),
       prefs.setBool(keyPushEnabled, pushEnabled),
       prefs.setBool(keyMealReminderEnabled, mealReminderEnabled),
@@ -151,7 +153,7 @@ class SettingsPreferencesModel extends SettingsPreferencesEntity {
   }) {
     return SettingsPreferencesModel(
       isDarkMode: isDarkMode ?? this.isDarkMode,
-      languageCode: languageCode ?? this.languageCode,
+      languageCode: normalizeLanguageCode(languageCode ?? this.languageCode),
       biometricEnabled: biometricEnabled ?? this.biometricEnabled,
       pushEnabled: pushEnabled ?? this.pushEnabled,
       mealReminderEnabled: mealReminderEnabled ?? this.mealReminderEnabled,
@@ -163,4 +165,6 @@ class SettingsPreferencesModel extends SettingsPreferencesEntity {
       dataPrivacyMode: dataPrivacyMode ?? this.dataPrivacyMode,
     );
   }
+
+  static String normalizeLanguageCode(String? _) => 'vi';
 }

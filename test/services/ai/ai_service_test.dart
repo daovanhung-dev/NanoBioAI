@@ -211,6 +211,12 @@ void main() {
         isTrue,
       );
       expect(AIVietnameseTextValidator.isValidDisplayText('JSON'), isTrue);
+      expect(
+        AIVietnameseTextValidator.isValidDisplayText(
+          'ĐÃ SẴN SÀNG CHĂM SÓC SỨC KHỎE',
+        ),
+        isTrue,
+      );
     });
 
     test('rejects unaccented Vietnamese and mojibake text', () {

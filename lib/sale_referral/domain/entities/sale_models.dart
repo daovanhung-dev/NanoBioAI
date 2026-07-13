@@ -154,7 +154,7 @@ class SaleDirectCustomer {
 
   factory SaleDirectCustomer.fromMap(Map<String, Object?> map) {
     return SaleDirectCustomer(
-      displayName: readString(map['display_name']) ?? 'Nguoi dung NanoBio',
+      displayName: readString(map['display_name']) ?? 'Người dùng NanoBio',
       age: readNullableInt(map['age']),
       phone: readString(map['phone']),
       acceptedAt: readDate(map['accepted_at']),
@@ -189,7 +189,7 @@ class SalePointLedgerEntry {
   factory SalePointLedgerEntry.fromMap(Map<String, Object?> map) {
     return SalePointLedgerEntry(
       id: readString(map['id']) ?? '',
-      customerName: readString(map['customer_name']) ?? 'Nguoi dung NanoBio',
+      customerName: readString(map['customer_name']) ?? 'Người dùng NanoBio',
       planCode: readString(map['plan_code']) ?? '',
       paymentAmountCents: readInt(map['payment_amount_cents']),
       pointAmountCents: readInt(

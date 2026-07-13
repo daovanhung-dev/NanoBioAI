@@ -1,5 +1,13 @@
 # CHANGELOG — ADMIN_OPS / Admin quản lý hệ thống
 
+## [v1.3] - 2026-07-13
+### Changed
+- Added audited offer upsert, bulk code import, inventory/redemption listing and idempotent cancellation/refund contracts under `wellness_rewards.write`.
+- Recorded that cancelled codes are discarded permanently and plaintext unissued inventory is never listed.
+
+### Validation
+- SQL/client contract source is ready; migration 16, RLS, concurrency and audit behavior are not yet verified in sandbox.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked ADMIN_OPS DD docs as `Approved - DD docs complete`.

@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:nano_app/app/app_surface_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_access_state.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
-import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 class AdminAccessGate extends ConsumerStatefulWidget {
@@ -21,7 +20,10 @@ class _AdminAccessGateState extends ConsumerState<AdminAccessGate> {
   @override
   void initState() {
     super.initState();
-    unawaited(ref.read(adminAccessControllerProvider.notifier).refresh());
+    final current = ref.read(adminAccessControllerProvider).asData?.value;
+    if (current?.isAuthorized != true) {
+      unawaited(ref.read(adminAccessControllerProvider.notifier).refresh());
+    }
   }
 
   @override
@@ -41,7 +43,7 @@ class _AdminAccessGateState extends ConsumerState<AdminAccessGate> {
             return widget.child;
           case AdminAccessStatus.unauthorized:
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (context.mounted) context.go(AdminRoutePaths.login);
+              ref.read(appSurfaceControllerProvider.notifier).showUser();
             });
             return const _AdminChecking();
           case AdminAccessStatus.error:

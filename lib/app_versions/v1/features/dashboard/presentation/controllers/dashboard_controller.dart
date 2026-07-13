@@ -10,7 +10,6 @@ import 'package:nano_app/app_versions/v1/features/meal_plan/providers/meal_plan_
 import 'package:nano_app/app_versions/v1/features/nutrition/providers/nutrition_provider.dart';
 
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
-import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
 
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
@@ -115,40 +114,6 @@ class DashboardController extends AsyncNotifier<void> {
   String _memberPlanRequestId(String userId) {
     final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
     return 'member_plan:$userId:$timestamp';
-  }
-
-  Future<void> completeTimelineItem(
-    DashboardTimelineItem item, {
-    String? completionProofPath,
-  }) async {
-    if (!item.canComplete || item.isCompleted) return;
-    final sourceId = item.sourceId;
-    if (sourceId == null || sourceId.isEmpty) {
-      throw StateError('Missing timeline source id');
-    }
-
-    switch (item.sourceType) {
-      case DashboardTimelineSourceTypes.schedule:
-        await ref
-            .read(lifestyleScheduleRepositoryProvider)
-            .completeItemById(
-              sourceId,
-              completionProofPath: completionProofPath,
-            );
-        break;
-      case DashboardTimelineSourceTypes.meal:
-        await ref.read(mealPlanRepositoryProvider).completeMealById(sourceId);
-        break;
-      case DashboardTimelineSourceTypes.task:
-        await ref
-            .read(dailyHealthTrackingRepositoryProvider)
-            .completeTaskById(sourceId);
-        break;
-      default:
-        throw StateError('Timeline item cannot be completed');
-    }
-
-    _invalidateDashboardDependents();
   }
 
   Future<void> saveDailyCheckIn(String mood) async {

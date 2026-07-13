@@ -80,7 +80,7 @@ void main() {
       final appSource = File(
         'lib/app_versions/v2/app/bio_ai_v2_app.dart',
       ).readAsStringSync();
-      final mainSource = File('lib/main_v2.dart').readAsStringSync();
+      final mainSource = File('lib/main.dart').readAsStringSync();
       final manifestSource = File(
         'android/app/src/main/AndroidManifest.xml',
       ).readAsStringSync();
@@ -93,7 +93,10 @@ void main() {
       expect(datasourceSource, contains("'device_fingerprint': deviceFingerprint"));
       expect(datasourceSource, contains('authCallbackTypeFromUri'));
       expect(routerSource, contains('v2RouterProvider'));
-      expect(routerSource, contains('_protectedPaths'));
+      expect(routerSource, contains('exactProtectedPaths'));
+      expect(routerSource, contains('...v3Routes'));
+      expect(mainSource, contains('BioAIApp'));
+      expect(mainSource, contains('adminBackendAvailabilityProvider'));
       expect(appSource, contains('AuthDeepLinkCoordinator'));
       expect(mainSource, contains('detectSessionInUri: false'));
       expect(mainSource, contains('nanobio_user_auth_session'));

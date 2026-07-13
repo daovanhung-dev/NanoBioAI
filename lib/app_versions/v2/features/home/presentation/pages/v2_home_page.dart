@@ -54,6 +54,18 @@ class V2HomePage extends StatelessWidget {
                 ),
                 SizedBox(
                   width: itemWidth,
+                  child: MedicalMetricCard(
+                    label: 'Điểm chăm sóc',
+                    value: 'Đổi ưu đãi',
+                    helper:
+                        'Nhận điểm từ nhiệm vụ đúng giờ và đổi voucher phù hợp.',
+                    icon: Icons.redeem_rounded,
+                    color: AppColors.tertiary,
+                    onTap: () => context.go(V2RoutePaths.wellnessRewards),
+                  ),
+                ),
+                SizedBox(
+                  width: itemWidth,
                   child: const MedicalMetricCard(
                     label: 'Đồng bộ cá nhân',
                     value: 'An toàn và chủ động',

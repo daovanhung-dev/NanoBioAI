@@ -86,7 +86,7 @@ Canonical task-skill files are: `coding.md`, `bugfix.md`, `fix-issues.md`,
 
 ## Source Roots
 
-- App bootstrap: `lib/main.dart`, `lib/main_v2.dart`
+- Unified app bootstrap and role-based surface selection: `lib/main.dart`, `lib/app/`
 - v1 guest/basic: `lib/app_versions/v1/`
 - v2 authenticated free: `lib/app_versions/v2/`
 - v3 Plus/FamilyPlus planned: `lib/app_versions/v3/`

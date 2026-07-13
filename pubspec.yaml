@@ -11,6 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
 
   cupertino_icons: ^1.0.8
 
@@ -40,7 +43,10 @@ dependencies:
 
   # Settings Feature Dependencies
   local_auth: ^2.2.0
+  flutter_secure_storage: ^9.2.4
+  crypto: ^3.0.7
   image_picker: ^1.0.7
+  image: ^4.8.0
   permission_handler: ^11.2.0
   flutter_local_notifications: 19.5.0
   timezone: 0.10.1
@@ -64,6 +70,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - assets/

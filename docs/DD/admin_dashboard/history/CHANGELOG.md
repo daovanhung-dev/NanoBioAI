@@ -1,5 +1,13 @@
 # CHANGELOG — ADMIN_DASHBOARD / Admin View / Dashboard
 
+## [v1.3] - 2026-07-13
+### Changed
+- Added the `Điểm chăm sóc` Admin section/route and the independent `wellness_rewards.read/write` permission boundary.
+- Documented privacy-limited catalog, inventory aggregate and redemption drill-down behavior.
+
+### Validation
+- Client/Admin targeted evidence is referenced; Admin role/RLS sandbox smoke is still required.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked ADMIN_DASHBOARD DD docs as `Approved - DD docs complete`.

@@ -114,7 +114,8 @@ class _AIChatFABState extends State<AIChatFAB> with TickerProviderStateMixin {
         message: widget.tooltip,
         waitDuration: const Duration(milliseconds: 450),
         child: Semantics(
-          label: 'Mở Nabi chat, nơi Nabi có thể lắng nghe và đồng hành cùng bạn.',
+          label:
+              'Mở trò chuyện với Nabi, nơi Nabi có thể lắng nghe và đồng hành cùng bạn.',
           hint: 'Chạm hai lần để bắt đầu trò chuyện.',
           button: true,
           child: AnimatedBuilder(

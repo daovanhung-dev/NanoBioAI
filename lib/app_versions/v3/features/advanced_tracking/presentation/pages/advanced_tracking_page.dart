@@ -224,11 +224,6 @@ class _ProgressPanel extends StatelessWidget {
               height: 1.35,
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            result.formulaVersion,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
-          ),
         ],
       ),
     );

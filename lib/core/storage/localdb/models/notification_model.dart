@@ -129,6 +129,7 @@ class NotificationModel {
 class NotificationActionStatuses {
   static const pending = 'pending';
   static const done = 'done';
+  static const opened = 'opened';
   static const skipped = 'skipped';
   static const permissionDenied = 'permission_denied';
   static const scheduleFailed = 'schedule_failed';

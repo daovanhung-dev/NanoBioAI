@@ -4,12 +4,13 @@
 |---|---|
 | Module Code | ADMIN_OPS |
 | BD Module | M16 |
-| Version | v1.0 |
+| Version | v1.3 |
 | Status | Approved - DD docs complete |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-30 |
+| Last Updated | 2026-07-13 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
+| Approved Addendum | docs/BD/wellness_rewards/BD_BioAI_Daily_Proof_Wellness_Rewards_v1.0.md (BD-BIOAI-WELLNESS-REWARDS-001) |
 
 ## Purpose
 Quản trị người dùng, gói, Sale, payment, conversion, nội dung, cấu hình và vận hành sản phẩm.
@@ -23,10 +24,12 @@ Quản trị người dùng, gói, Sale, payment, conversion, nội dung, cấu 
 - [Diagrams](./diagrams/README.md)
 - [Assets](./assets/README.md)
 - [Change History](./history/CHANGELOG.md)
+- [Implementation Delta 2026-07-13](./Implementation_Delta_2026-07-13.md)
 
 ## Traceability Summary
 - ADMIN_OPS-F01: Quản lý người dùng/gói/Sale/config
 - ADMIN_OPS-F02: Quản lý tài chính hỗ trợ
+- Delta 2026-07-13: quản trị catalog, kho mã, giao dịch và hủy/refund Điểm chăm sóc.
 
 ## Dependent Modules
 - AUDIT_SECURITY: audit/permissions.

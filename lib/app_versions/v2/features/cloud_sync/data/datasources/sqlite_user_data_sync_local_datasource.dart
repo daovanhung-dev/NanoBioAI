@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_runtime_state.dart';
+import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_table.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/user_data_snapshot.dart';
@@ -51,13 +52,14 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
 
     final db = await _db();
     await db.transaction((txn) async {
-      final pendingCount = Sqflite.firstIntValue(
-        await txn.rawQuery(
-          'SELECT COUNT(*) FROM ${SyncOutboxSchema.outboxTable} '
-          'WHERE user_id = ?',
-          [userId],
-        ),
-      ) ??
+      final pendingCount =
+          Sqflite.firstIntValue(
+            await txn.rawQuery(
+              'SELECT COUNT(*) FROM ${SyncOutboxSchema.outboxTable} '
+              'WHERE user_id = ?',
+              [userId],
+            ),
+          ) ??
           0;
       if (pendingCount > 0) {
         throw LocalSyncPendingWriteException(pendingCount);
@@ -68,6 +70,17 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
         if (removeLocalUserId != null &&
             removeLocalUserId.isNotEmpty &&
             removeLocalUserId != userId) {
+          if (await _tableExists(
+            txn,
+            ScheduleCompletionProofsTable.tableName,
+          )) {
+            await txn.update(
+              ScheduleCompletionProofsTable.tableName,
+              {'user_id': userId},
+              where: 'user_id = ?',
+              whereArgs: [removeLocalUserId],
+            );
+          }
           await _deleteRowsForUser(txn, removeLocalUserId, includeUser: true);
           await txn.delete(
             SyncOutboxSchema.outboxTable,
@@ -95,6 +108,18 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
           }
         }
 
+        for (final table in SyncOutboxSchema.serverOwnedReadOnlyTables) {
+          if (!await _tableExists(txn, table)) continue;
+          final rows = snapshot.tables[table] ?? const <Map<String, Object?>>[];
+          for (final row in rows) {
+            await txn.insert(
+              table,
+              _localRowFromCloud(table, row, userId),
+              conflictAlgorithm: ConflictAlgorithm.replace,
+            );
+          }
+        }
+
         await txn.delete(
           SyncOutboxSchema.outboxTable,
           where: 'user_id = ?',
@@ -106,12 +131,24 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
     });
   }
 
+  Future<bool> _tableExists(DatabaseExecutor db, String tableName) async {
+    final rows = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+      [tableName],
+    );
+    return rows.isNotEmpty;
+  }
+
   Future<void> _deleteRowsForUser(
     Transaction txn,
     String userId, {
     required bool includeUser,
   }) async {
     for (final table in UserDataSyncTables.localUserOwnedTables.reversed) {
+      await txn.delete(table, where: 'user_id = ?', whereArgs: [userId]);
+    }
+    for (final table in SyncOutboxSchema.serverOwnedReadOnlyTables) {
+      if (!await _tableExists(txn, table)) continue;
       await txn.delete(table, where: 'user_id = ?', whereArgs: [userId]);
     }
 

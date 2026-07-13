@@ -274,7 +274,7 @@ void main() {
 
       const expectedKeys = {
         'theme_mode': 'String (light|dark)',
-        'language_code': 'String (vi|en)',
+        'language_code': 'String (vi)',
         'biometric_enabled': 'bool',
         'push_enabled': 'bool',
         'meal_reminder_enabled': 'bool',

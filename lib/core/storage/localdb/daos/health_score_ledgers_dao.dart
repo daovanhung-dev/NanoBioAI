@@ -4,7 +4,7 @@ import '../models/health_score_ledger_model.dart';
 import '../tables/health_score_ledgers_table.dart';
 
 class HealthScoreLedgersDao {
-  final Database db;
+  final DatabaseExecutor db;
 
   const HealthScoreLedgersDao(this.db);
 

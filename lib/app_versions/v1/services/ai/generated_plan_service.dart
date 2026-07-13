@@ -5,6 +5,8 @@ import 'package:nano_app/app_versions/v1/features/dashboard/domain/repositories/
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/datasources/daily_health_tracking_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application/schedule_reward_online_gateway.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application/schedule_reward_eligibility_projection_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
@@ -14,7 +16,7 @@ import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 class DashboardGenerationAuthRequiredException implements Exception {
   static const userMessage =
-      'Bạn cần đăng nhập để Nabitạo dữ liệu lịch trình 7 ngày mới nhé.';
+      'Bạn cần đăng nhập để Nabi tạo dữ liệu lịch trình 7 ngày mới nhé.';
 
   const DashboardGenerationAuthRequiredException();
 
@@ -46,6 +48,7 @@ class GeneratedPlanResult {
   final int exerciseCount;
   final int scheduleItemCount;
   final bool reusedExistingRequest;
+  final List<ScheduleRewardEligibilityItem> rewardEligibilityItems;
 
   const GeneratedPlanResult({
     this.requestId = '',
@@ -55,6 +58,7 @@ class GeneratedPlanResult {
     required this.exerciseCount,
     required this.scheduleItemCount,
     this.reusedExistingRequest = false,
+    this.rewardEligibilityItems = const [],
   });
 }
 
@@ -68,6 +72,8 @@ class GeneratedPlanService {
   final AiCatalogLocalDatasource catalogDatasource;
   final PersonalScheduleAiRequestStore requestStore;
   final PersonalScheduleQuotaGateway quotaGateway;
+  final ScheduleRewardOnlineGateway rewardGateway;
+  final ScheduleRewardEligibilityProjectionStore rewardProjectionStore;
   final Future<void> Function() scheduleReminders;
   final String? Function() currentUserId;
   final DateTime Function() now;
@@ -80,6 +86,8 @@ class GeneratedPlanService {
     this.catalogDatasource = const AiCatalogLocalDatasource(),
     PersonalScheduleAiRequestStore? requestStore,
     PersonalScheduleQuotaGateway? quotaGateway,
+    ScheduleRewardOnlineGateway? rewardGateway,
+    ScheduleRewardEligibilityProjectionStore? rewardProjectionStore,
     Future<void> Function()? scheduleReminders,
     String? Function()? currentUserId,
     DateTime Function()? now,
@@ -90,6 +98,11 @@ class GeneratedPlanService {
        requestStore = requestStore ?? LocalPersonalScheduleAiRequestStore(),
        quotaGateway =
            quotaGateway ?? const TrustedBackendPersonalScheduleQuotaGateway(),
+       rewardGateway =
+           rewardGateway ?? const SupabaseScheduleRewardOnlineGateway(),
+       rewardProjectionStore =
+           rewardProjectionStore ??
+           const SqliteScheduleRewardEligibilityProjectionStore(),
        now = now ?? DateTime.now;
 
   Future<GeneratedPlanResult> generateNextPlan({
@@ -131,6 +144,38 @@ class GeneratedPlanService {
       requestId: normalizedRequestId,
       at: now(),
     );
+
+    if (result.rewardEligibilityItems.isNotEmpty) {
+      try {
+        await rewardGateway.registerEligibilities(
+          requestId: normalizedRequestId,
+          items: result.rewardEligibilityItems,
+          idempotencyKey: 'eligibility:$normalizedRequestId:v1',
+        );
+        try {
+          await rewardProjectionStore.markRegistered(
+            userId: authUserId,
+            requestId: normalizedRequestId,
+            items: result.rewardEligibilityItems,
+          );
+        } catch (error) {
+          AppLogger.warning(
+            _tag,
+            'Reward eligibility local projection deferred; '
+            'errorType=${error.runtimeType}',
+          );
+        }
+        AppLogger.success(_tag, 'Registered schedule reward eligibility');
+      } catch (error) {
+        // Lịch đã được tạo và quota đã commit. Không báo thất bại giả; begin
+        // completion sẽ thử theo trạng thái server và chỉ cảnh báo không có điểm.
+        AppLogger.warning(
+          _tag,
+          'Reward eligibility registration deferred; '
+          'errorType=${error.runtimeType}',
+        );
+      }
+    }
 
     return result;
   }
@@ -265,6 +310,20 @@ class GeneratedPlanService {
         mealCount: meals.length,
         exerciseCount: exercises.length,
         scheduleItemCount: schedule.length,
+        rewardEligibilityItems: actorMode == GeneratedPlanActorModes.memberNew
+            ? schedule
+                  .map(
+                    (item) => ScheduleRewardEligibilityItem(
+                      scheduleItemId: item.id,
+                      scheduleDate: item.scheduleDate,
+                      startTime: item.startTime,
+                      title: item.title,
+                      sourceType: item.sourceType,
+                      sourceId: item.sourceId,
+                    ),
+                  )
+                  .toList(growable: false)
+            : const [],
       );
     } catch (error) {
       await _markFailedSafely(

@@ -635,7 +635,7 @@ foreach ($module in $moduleResults) {
       $module.status))
 }
 $markdown.Add('')
-$markdown.Add('M10 and M11 deliberately have no E2E catalog cases and are not routes through `main_v2.dart` or `main_admin.dart`. Their automated test files are candidates only; they become mapped evidence only when they cite the exact DD acceptance or Overall TC ID.')
+$markdown.Add('M10 and M11 deliberately have no E2E catalog cases and are not routes through `main.dart`. Their automated test files are candidates only; they become mapped evidence only when they cite the exact DD acceptance or Overall TC ID.')
 $markdown.Add('')
 $markdown.Add('## BD acceptance mapping')
 $markdown.Add('')

@@ -1,3 +1,8 @@
+import '../services/lifestyle_schedule_window_policy.dart';
+
+export '../services/lifestyle_schedule_window_policy.dart'
+    show CompletionWindowStatus;
+
 class LifestyleScheduleSourceTypes {
   static const mealPlan = 'meal_plan';
   static const exerciseTask = 'exercise_task';
@@ -15,10 +20,9 @@ class LifestyleScheduleCategories {
   static const sleep = 'sleep';
 }
 
-enum CompletionWindowStatus { waiting, open, locked, completed }
-
 class LifestyleScheduleItemEntity {
-  static const completionWindow = Duration(minutes: 30);
+  static const completionWindow =
+      LifestyleScheduleWindowPolicy.completionWindow;
 
   final String id;
   final String? userId;
@@ -82,15 +86,10 @@ class LifestyleScheduleItemEntity {
   bool get isQuantitative => targetValue > 1;
 
   DateTime? get scheduledAt {
-    final date = DateTime.tryParse(scheduleDate);
-    final parts = startTime.split(':');
-    if (date == null || parts.length != 2) return null;
-
-    final hour = int.tryParse(parts[0]);
-    final minute = int.tryParse(parts[1]);
-    if (hour == null || minute == null) return null;
-
-    return DateTime(date.year, date.month, date.day, hour, minute);
+    return LifestyleScheduleWindowPolicy.parseScheduledAt(
+      scheduleDate: scheduleDate,
+      startTime: startTime,
+    );
   }
 
   DateTime? get completionDeadline {
@@ -100,26 +99,24 @@ class LifestyleScheduleItemEntity {
   }
 
   CompletionWindowStatus completionStatusAt(DateTime now) {
-    if (isCompleted) return CompletionWindowStatus.completed;
-
-    final scheduled = scheduledAt;
-    if (scheduled == null) return CompletionWindowStatus.open;
-    if (now.isBefore(scheduled)) return CompletionWindowStatus.waiting;
-    if (now.isAfter(scheduled.add(completionWindow))) {
-      return CompletionWindowStatus.locked;
-    }
-    return CompletionWindowStatus.open;
+    return LifestyleScheduleWindowPolicy.statusAt(
+      scheduleDate: scheduleDate,
+      startTime: startTime,
+      isCompleted: isCompleted,
+      now: now,
+    );
   }
 
   bool isWithinCompletionWindow(DateTime now) {
-    final scheduled = scheduledAt;
-    if (scheduled == null) return true;
-    final deadline = scheduled.add(completionWindow);
-    return !now.isBefore(scheduled) && !now.isAfter(deadline);
+    return LifestyleScheduleWindowPolicy.isWithinWindow(
+      scheduleDate: scheduleDate,
+      startTime: startTime,
+      now: now,
+    );
   }
 
   bool canCompleteAt(DateTime now) {
-    return isWithinCompletionWindow(now);
+    return !isCompleted && isWithinCompletionWindow(now);
   }
 
   double get progressRatio {

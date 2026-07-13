@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/lifestyle_schedule_item_model.dart';
 
 class LifestyleScheduleItemsDao {
-  final Database db;
+  final DatabaseExecutor db;
 
   const LifestyleScheduleItemsDao(this.db);
 

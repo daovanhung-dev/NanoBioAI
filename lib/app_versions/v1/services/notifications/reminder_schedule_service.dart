@@ -4,6 +4,8 @@ import 'package:nano_app/core/storage/localdb/models/notification_model.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/lifestyle_schedule_window_policy.dart';
+import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'notification_constants.dart';
@@ -198,14 +200,17 @@ class ReminderScheduleService {
     final scheduledAt = _scheduledAt(item);
     if (scheduledAt == null) return null;
 
-    final title = item.title.trim().isNotEmpty
-        ? item.title
-        : 'Nhắc việc sức khỏe';
-    final body = item.description.trim().isNotEmpty
+    final title = vietnameseSystemUiText(
+      item.title,
+      fallback: 'Nhắc việc sức khỏe',
+    );
+    final bodySource = item.description.trim().isNotEmpty
         ? item.description
-        : item.encouragement.trim().isNotEmpty
-        ? item.encouragement
-        : 'Mở app để cập nhật tiến độ hôm nay';
+        : item.encouragement;
+    final body = vietnameseSystemUiText(
+      bodySource,
+      fallback: 'Mở ứng dụng để chụp ảnh và cập nhật tiến độ hôm nay.',
+    );
 
     return _ReminderCandidate(
       userId: item.userId,
@@ -219,15 +224,10 @@ class ReminderScheduleService {
   }
 
   DateTime? _scheduledAt(LifestyleScheduleItemModel item) {
-    final date = DateTime.tryParse(item.scheduleDate);
-    final parts = item.startTime.split(':');
-    if (date == null || parts.length != 2) return null;
-
-    final hour = int.tryParse(parts[0]);
-    final minute = int.tryParse(parts[1]);
-    if (hour == null || minute == null) return null;
-
-    return DateTime(date.year, date.month, date.day, hour, minute);
+    return LifestyleScheduleWindowPolicy.parseScheduledAt(
+      scheduleDate: item.scheduleDate,
+      startTime: item.startTime,
+    );
   }
 
   bool _matchesAnySubject(String? userId, Set<String?> subjectUserIds) {

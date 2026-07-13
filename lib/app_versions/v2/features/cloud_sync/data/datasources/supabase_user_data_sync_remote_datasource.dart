@@ -54,7 +54,7 @@ class SupabaseUserDataSyncRemoteDatasource
     if (user == null) return null;
 
     final tables = <String, List<Map<String, Object?>>>{};
-    for (final table in UserDataSyncTables.localUserOwnedTables) {
+    for (final table in UserDataSyncTables.cloudPullTables) {
       final response = await client.from(table).select().eq('user_id', userId);
       tables[table] = _copyDynamicRows(response);
     }

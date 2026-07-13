@@ -1,5 +1,13 @@
 # CHANGELOG — HEALTH_SCORE_HABITS / Điểm sức khỏe & thói quen
 
+## [v1.3] - 2026-07-13
+### Changed
+- Added the approved three-point-system boundary: Điểm sức khỏe, Điểm chăm sóc and Điểm Sale use separate purpose, ledger, balance and UI.
+- Documented that reward eligibility does not alter the M08 formula and that legacy wellness history is not redeemable balance.
+
+### Validation
+- DD remains Approved; Supabase sandbox evidence remains outside DD completeness.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked HEALTH_SCORE_HABITS DD docs as `Approved - DD docs complete`.

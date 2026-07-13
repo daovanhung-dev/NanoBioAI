@@ -96,7 +96,8 @@ final v1Routes = <RouteBase>[
   GoRoute(
     path: V1RoutePaths.lifestyleSchedule,
     name: V1RoutePaths.lifestyleSchedule,
-    builder: (context, state) => const LifestyleSchedulePage(),
+    builder: (context, state) =>
+        LifestyleSchedulePage(initialItemId: state.uri.queryParameters['item']),
   ),
 
   /// Sleep Tracking

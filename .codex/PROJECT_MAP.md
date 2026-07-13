@@ -4,7 +4,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 
 ## Source Roots
 
-- App bootstrap: `lib/main.dart`, `lib/main_v2.dart`
+- Unified app bootstrap: `lib/main.dart`
 - v1 guest/basic app: `lib/app_versions/v1/`
 - v2 authenticated free app: `lib/app_versions/v2/`
 - v3 Plus/FamilyPlus planned app: `lib/app_versions/v3/`

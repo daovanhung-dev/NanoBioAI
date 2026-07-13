@@ -19,6 +19,8 @@ import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_pla
 import 'package:nano_app/app_versions/v1/services/notifications/notification_action_handler.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_constants.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_payload.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_navigation_coordinator.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -28,6 +30,7 @@ void main() {
   late LifestyleScheduleItemsDao scheduleItemsDao;
   late NotificationActionHandler handler;
   late int syncRequests;
+  late List<Uri> navigatedUris;
 
   final fixedNow = DateTime.parse('2026-06-17T07:15:00.000');
 
@@ -50,6 +53,9 @@ void main() {
     mealPlansDao = MealPlansDao(db);
     scheduleItemsDao = LifestyleScheduleItemsDao(db);
     syncRequests = 0;
+    navigatedUris = [];
+    NotificationNavigationCoordinator.resetForTest();
+    NotificationNavigationCoordinator.register(navigatedUris.add);
     LocalUserDataSyncDispatcher.register(({Database? database}) {
       syncRequests++;
     });
@@ -68,45 +74,74 @@ void main() {
   });
 
   tearDown(() async {
+    NotificationNavigationCoordinator.resetForTest();
     await db.close();
   });
 
-  test(
-    'done schedule item is rejected because camera proof is required',
-    () async {
-      await mealPlansDao.insert(_meal(id: 'meal-1'));
-      await scheduleItemsDao.upsertMany([
-        _schedule(
-          id: 'schedule-1',
-          sourceType: LifestyleScheduleSourceTypes.mealPlan,
-          sourceId: 'meal-1',
-        ),
-      ]);
-      await notificationsDao.insert(
-        _notification(id: 'n-schedule-1', notificationId: 101),
-      );
+  test('open schedule action never completes source in background', () async {
+    await mealPlansDao.insert(_meal(id: 'meal-1'));
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-1',
+        sourceType: LifestyleScheduleSourceTypes.mealPlan,
+        sourceId: 'meal-1',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(id: 'n-schedule-1', notificationId: 101),
+    );
 
-      await handler.handleAction(
-        actionId: NotificationActionIds.done,
-        notificationId: 101,
-        payload: _payload(notificationId: 101, sourceId: 'schedule-1'),
-      );
+    await handler.handleAction(
+      actionId: NotificationActionIds.openSchedule,
+      notificationId: 101,
+      payload: _payload(notificationId: 101, sourceId: 'schedule-1'),
+    );
 
-      final notification = await notificationsDao.getByNotificationId(101);
-      final schedule = await scheduleItemsDao.getById('schedule-1');
-      final meal = await mealPlansDao.getById('meal-1');
+    final notification = await notificationsDao.getByNotificationId(101);
+    final schedule = await scheduleItemsDao.getById('schedule-1');
+    final meal = await mealPlansDao.getById('meal-1');
 
-      expect(notification, isNotNull);
-      expect(
-        notification!.actionStatus,
-        NotificationActionStatuses.actionFailed,
-      );
-      expect(notification.isRead, isTrue);
-      expect(schedule!.isCompleted, isFalse);
-      expect(meal!.isCompleted, isFalse);
-      expect(syncRequests, 1);
-    },
-  );
+    expect(notification, isNotNull);
+    expect(notification!.actionStatus, NotificationActionStatuses.opened);
+    expect(notification.isRead, isTrue);
+    expect(schedule!.isCompleted, isFalse);
+    expect(meal!.isCompleted, isFalse);
+    expect(syncRequests, 1);
+    expect(navigatedUris, hasLength(1));
+    expect(navigatedUris.single.path, V1RoutePaths.lifestyleSchedule);
+    expect(navigatedUris.single.queryParameters['item'], 'schedule-1');
+  });
+
+  test('body tap opens the task without completing it', () async {
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-body-tap',
+        sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+        sourceId: '',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-body-tap',
+        notificationId: 102,
+        sourceId: 'schedule-body-tap',
+      ),
+    );
+
+    await handler.handleAction(
+      actionId: null,
+      notificationId: 102,
+      payload: _payload(notificationId: 102, sourceId: 'schedule-body-tap'),
+    );
+
+    final notification = await notificationsDao.getByNotificationId(102);
+    final schedule = await scheduleItemsDao.getById('schedule-body-tap');
+
+    expect(notification!.actionStatus, NotificationActionStatuses.opened);
+    expect(schedule!.isCompleted, isFalse);
+    expect(navigatedUris, hasLength(1));
+    expect(navigatedUris.single.queryParameters['item'], 'schedule-body-tap');
+  });
 
   test('skipped records response without completing schedule source', () async {
     await scheduleItemsDao.upsertMany([
@@ -138,6 +173,7 @@ void main() {
     expect(notification.isRead, isTrue);
     expect(schedule!.isCompleted, isFalse);
     expect(syncRequests, 1);
+    expect(navigatedUris, isEmpty);
   });
 
   test('handled action is idempotent on retry', () async {
@@ -158,14 +194,14 @@ void main() {
     );
 
     await handler.handleAction(
-      actionId: NotificationActionIds.done,
+      actionId: NotificationActionIds.openSchedule,
       notificationId: 211,
       payload: _payload(notificationId: 211, sourceId: 'schedule-idempotent'),
     );
     final syncAfterFirstAction = syncRequests;
 
     await handler.handleAction(
-      actionId: NotificationActionIds.done,
+      actionId: NotificationActionIds.openSchedule,
       notificationId: 211,
       payload: _payload(notificationId: 211, sourceId: 'schedule-idempotent'),
     );
@@ -173,9 +209,10 @@ void main() {
     final notification = await notificationsDao.getByNotificationId(211);
     final meal = await mealPlansDao.getById('meal-idempotent');
 
-    expect(notification!.actionStatus, NotificationActionStatuses.actionFailed);
+    expect(notification!.actionStatus, NotificationActionStatuses.opened);
     expect(meal!.isCompleted, isFalse);
     expect(syncRequests, syncAfterFirstAction);
+    expect(navigatedUris, hasLength(1));
   });
 
   test('subject mismatch records failure without completing source', () async {
@@ -196,7 +233,7 @@ void main() {
     );
 
     await handler.handleAction(
-      actionId: NotificationActionIds.done,
+      actionId: NotificationActionIds.openSchedule,
       notificationId: 212,
       payload: _payload(
         notificationId: 212,
@@ -237,7 +274,7 @@ void main() {
       );
 
       await handler.handleAction(
-        actionId: NotificationActionIds.done,
+        actionId: NotificationActionIds.openSchedule,
         notificationId: 213,
         payload: _payload(notificationId: 213, sourceId: 'schedule-owner'),
       );
@@ -265,7 +302,7 @@ void main() {
     );
 
     await handler.handleAction(
-      actionId: NotificationActionIds.done,
+      actionId: NotificationActionIds.openSchedule,
       notificationId: 401,
       payload: _payload(notificationId: 401, sourceId: 'missing-schedule'),
     );
@@ -288,7 +325,7 @@ void main() {
     );
 
     await handler.handleAction(
-      actionId: NotificationActionIds.done,
+      actionId: NotificationActionIds.openSchedule,
       notificationId: 402,
       payload: _payload(
         notificationId: 402,
@@ -311,7 +348,7 @@ void main() {
 
     await expectLater(
       handler.handleAction(
-        actionId: NotificationActionIds.done,
+        actionId: NotificationActionIds.openSchedule,
         notificationId: 301,
         payload: '{invalid',
       ),

@@ -63,6 +63,11 @@ void main() {
         'request_sale_point_conversion',
         'create_membership_payment_request',
         'get_my_admin_session',
+        'app_access_mode',
+        'can_use_user_app',
+        "app_access_mode in ('user', 'both')",
+        'revoke update (app_access_mode)',
+
         'get_admin_dashboard_summary',
         'admin_search_users',
         'admin_review_payment',

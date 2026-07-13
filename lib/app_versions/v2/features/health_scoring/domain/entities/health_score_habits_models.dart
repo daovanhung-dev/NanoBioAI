@@ -205,16 +205,16 @@ class HealthScoreHabitsException implements Exception {
   const HealthScoreHabitsException(this.code, this.safeMessage);
 
   const HealthScoreHabitsException.authRequired()
-    : this('AUTH_REQUIRED', 'Please sign in to view health score.');
+    : this('AUTH_REQUIRED', 'Vui lòng đăng nhập để xem điểm sức khỏe.');
 
   const HealthScoreHabitsException.forbidden()
     : this(
         'FORBIDDEN',
-        'Chi goi FamilyPlus moi duoc xem ho so suc khoe cua thanh vien khac.',
+        'Chỉ gói FamilyPlus mới được xem hồ sơ sức khỏe của thành viên khác.',
       );
 
   const HealthScoreHabitsException.invalidCommand()
-    : this('INVALID_COMMAND', 'Health score request is invalid.');
+    : this('INVALID_COMMAND', 'Yêu cầu xem điểm sức khỏe chưa hợp lệ.');
 
   @override
   String toString() => '$code: $safeMessage';

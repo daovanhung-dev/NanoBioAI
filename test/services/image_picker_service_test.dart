@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nano_app/services/image_picker/image_picker_service.dart';
 
 void main() {
@@ -31,18 +34,33 @@ void main() {
   });
 
   group('ImagePickerService - getValidationError', () {
-    test('should return error for invalid format', () async {
-      // This test demonstrates the expected behavior
-      // In actual implementation, we would mock XFile
-      const invalidFormats = ['gif', 'bmp', 'webp', 'svg'];
+    test('returns a Vietnamese error for an invalid format', () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'image_picker_test_',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/proof.gif');
+      await file.writeAsBytes(const [1, 2, 3]);
 
-      for (final format in invalidFormats) {
-        expect(
-          ImagePickerService.allowedFormats.contains(format),
-          isFalse,
-          reason: '$format should not be in allowed formats',
-        );
-      }
+      final error = await service.getValidationError(XFile(file.path));
+
+      expect(error, contains('Định dạng ảnh chưa phù hợp'));
+      expect(error, isNot(contains('Invalid image format')));
+    });
+
+    test('returns a Vietnamese error for an image over 5 MB', () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'image_picker_test_',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/proof.jpg');
+      await file.writeAsBytes(
+        List<int>.filled(ImagePickerService.maxFileSizeBytes + 1, 0),
+      );
+
+      final error = await service.getValidationError(XFile(file.path));
+
+      expect(error, contains('vượt quá giới hạn 5 MB'));
     });
 
     test('should accept valid formats', () {
@@ -70,6 +88,17 @@ void main() {
       expect(service.validateImage, isA<Function>());
       expect(service.saveImageLocally, isA<Function>());
       expect(service.getValidationError, isA<Function>());
+    });
+
+    test('typed service errors expose only the safe Vietnamese message', () {
+      const error = ImagePickerServiceException(
+        kind: ImagePickerFailureKind.save,
+        userMessage: 'Nabi chưa thể lưu ảnh này.',
+        cause: FormatException('internal details'),
+      );
+
+      expect(error.toString(), 'Nabi chưa thể lưu ảnh này.');
+      expect(error.toString(), isNot(contains('internal details')));
     });
   });
 }

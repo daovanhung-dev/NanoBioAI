@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'app_versions/v2/app/bio_ai_v2_app.dart';
+import 'app/bio_ai_app.dart';
+import 'app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'core/config/app_env.dart';
 import 'core/config/auth_backend_availability.dart';
@@ -33,6 +34,9 @@ Future<void> main() async {
         authBackendAvailabilityProvider.overrideWithValue(
           authBackendAvailability,
         ),
+        adminBackendAvailabilityProvider.overrideWithValue(
+          authBackendAvailability,
+        ),
         onboardingCompletionCallbackProvider.overrideWith((ref) {
           return () async {
             await ref
@@ -42,7 +46,7 @@ Future<void> main() async {
           };
         }),
       ],
-      child: const BioAIV2App(),
+      child: const BioAIApp(),
     ),
   );
 

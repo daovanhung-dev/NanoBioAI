@@ -50,8 +50,8 @@ NanoBio / NamiAI is a Vietnamese health and lifestyle assistant. It is offline-f
 
 ### 2.2 Entrypoints and shell behavior
 
-- `lib/main.dart` and `lib/main_v2.dart` both initialize environment, Supabase, local-to-cloud write-through dispatching and notification scheduling, then run `BioAIV2App` inside `ProviderScope`. V2 routing still begins at V1 splash to preserve onboarding/handoff flow.
-- `lib/main_admin.dart` initializes environment/Supabase and runs `BioAIAdminApp`.
+- `lib/main.dart` is the only runtime entrypoint. It initializes environment, one shared Supabase session, local-to-cloud write-through dispatching and notifications, then runs `BioAIApp` inside `ProviderScope`.
+- `BioAIApp` resolves the active surface from the authenticated account: normal users stay in `BioAIV2App`, Admin-only accounts open `BioAIAdminApp`, and dual-role accounts can switch surfaces without a second login. The unified V2 router includes V1, V2 and V3 routes and still begins at V1 splash to preserve onboarding/handoff flow.
 - Every app currently applies `AppTheme.lightTheme`. Treat dark-mode support as token/component capability, not as a globally wired `themeMode` guarantee.
 - The V1 dashboard can be hosted standalone or in `MainNavigationPage`; `showStandaloneChatButton` prevents duplicate floating chat entry.
 
@@ -538,7 +538,7 @@ For every async screen/action decide and implement:
 
 - The app contains a polished high-animation onboarding/splash/dashboard path and several lightweight care pages. Preserve visual consistency but do not pretend session-only care-page interactions are persisted until their feature has a data contract.
 - `design_system.dart` documents a clean semantic-token + primitive direction; most complex existing feature pages still use `theme.dart` compatibility APIs. Gradual component-boundary migration is safer than a page-wide token rewrite.
-- The root entrypoint selects `BioAIV2App`, but V2’s router begins at V1 splash. A visual change around splash/onboarding/auth must test the entire handoff.
+- The root entrypoint selects the user/Admin surface through `BioAIApp`; the user router begins at V1 splash and includes V1/V2/V3 routes. Changes around splash/onboarding/auth/role switching must test the full handoff.
 - V3 mostly consists of planned feature scaffolds; do not copy V1 presentation/controllers into V3.
 - Admin and Sale UI may be visually richer/wider but need stronger permission, audit and trusted-data behavior than consumer health UI.
 - This archive includes build/cache artifacts and historical docs. Treat source files and current DD/checklists as authority; do not edit generated/cache directories.
@@ -560,6 +560,7 @@ nano_app/
 ├── .codex/                           # mandatory agent workflows/domains/skills/history
 ├── .agents/                          # discovery bridges to .codex skills
 ├── lib/
+│   ├── app/                            # unified surface resolver/controller
 │   ├── app_versions/
 │   │   ├── v1/                       # guest/basic app and primary wellness UI
 │   │   ├── v2/                       # authenticated/free app
@@ -570,9 +571,7 @@ nano_app/
 │   ├── sale_referral/                # independent sale/referral product axis
 │   ├── services/                     # Supabase, biometric, image picker integrations
 │   ├── shared/widgets/               # cross-feature reusable widgets
-│   ├── main.dart
-│   ├── main_v2.dart
-│   └── main_admin.dart
+│   └── main.dart                      # only executable entrypoint
 ├── test/                             # unit, architecture and widget tests
 └── android/ ios/ linux/ macos/ web/ windows/  # platform wrappers
 ```
@@ -1091,9 +1090,9 @@ All Dart source files under `lib/` are listed below so an Agent can locate the e
 | `lib/features/nabi/presentation/widgets/nabi_app_shell.dart` | 30 | `NabiAppShell` |
 | `lib/features/nabi/presentation/widgets/nabi_assistant_overlay.dart` | 307 | `NabiOverlayConfig`, `NabiAssistantOverlay`, `_NabiAssistantOverlayState`, `_NabiFloatingControl`, `_NabiSpeechBubble` |
 | `lib/features/nabi/presentation/widgets/nabi_character.dart` | 594 | `NabiCharacter`, `_NabiCharacterState`, `_NabiCharacterPainter` |
-| `lib/main.dart` | 60 | — |
-| `lib/main_admin.dart` | 20 | — |
-| `lib/main_v2.dart` | 60 | — |
+| `lib/app/app_surface_controller.dart` | 30 | `AppSurface`, `AppSurfaceController`, `resolveAppSurface` |
+| `lib/app/bio_ai_app.dart` | 67 | `BioAIApp` |
+| `lib/main.dart` | 123 | — |
 | `lib/sale_referral/data/datasources/sale_remote_datasource.dart` | 34 | `SaleRemoteDatasource` |
 | `lib/sale_referral/data/datasources/supabase_sale_remote_datasource.dart` | 114 | `SupabaseSaleRemoteDatasource` |
 | `lib/sale_referral/data/device/sale_device_hash_store.dart` | 32 | `SaleDeviceHashStore` |

@@ -185,10 +185,7 @@ void main() {
         events: events,
       );
       final local = _FakeLocalDatasource({}, events: events);
-      final outbox = _FakeOutbox(
-        pendingCounts: [1, 0],
-        events: events,
-      );
+      final outbox = _FakeOutbox(pendingCounts: [1, 0], events: events);
       final repository = AuthenticatedUserDataSyncRepositoryImpl(
         remoteDatasource: remote,
         localDatasource: local,
@@ -208,25 +205,28 @@ void main() {
       ]);
     });
 
-    test('local write created during pull prevents cache replacement', () async {
-      final remote = _FakeRemoteDatasource(
-        pullSnapshots: [_snapshot('auth-1', tableName: 'meal_plans')],
-      );
-      final local = _FakeLocalDatasource({}, pendingOnReplace: 2);
-      final repository = AuthenticatedUserDataSyncRepositoryImpl(
-        remoteDatasource: remote,
-        localDatasource: local,
-        outbox: _FakeOutbox(),
-      );
+    test(
+      'local write created during pull prevents cache replacement',
+      () async {
+        final remote = _FakeRemoteDatasource(
+          pullSnapshots: [_snapshot('auth-1', tableName: 'meal_plans')],
+        );
+        final local = _FakeLocalDatasource({}, pendingOnReplace: 2);
+        final repository = AuthenticatedUserDataSyncRepositoryImpl(
+          remoteDatasource: remote,
+          localDatasource: local,
+          outbox: _FakeOutbox(),
+        );
 
-      final result = await repository.syncAfterAuthenticatedSession(
-        AuthSyncReason.resume,
-      );
+        final result = await repository.syncAfterAuthenticatedSession(
+          AuthSyncReason.resume,
+        );
 
-      expect(result.status, UserDataSyncStatus.pendingUpload);
-      expect(result.pendingCount, 2);
-      expect(local.replacedUserId, isNull);
-    });
+        expect(result.status, UserDataSyncStatus.pendingUpload);
+        expect(result.pendingCount, 2);
+        expect(local.replacedUserId, isNull);
+      },
+    );
 
     test(
       'sync failure after Guest upload does not clear pending Guest id',
@@ -319,9 +319,7 @@ class _FakeOutbox extends UserDataSyncOutbox {
 
   @override
   Future<int> pendingCountForCurrentUser({Database? database}) async {
-    final index = _pendingReadIndex
-        .clamp(0, pendingCounts.length - 1)
-        .toInt();
+    final index = _pendingReadIndex.clamp(0, pendingCounts.length - 1).toInt();
     _pendingReadIndex += 1;
     return pendingCounts[index];
   }
@@ -344,7 +342,6 @@ class _FakeRemoteDatasource implements UserDataSyncRemoteDatasource {
   final String? currentUserId = 'auth-1';
 
   final List<UserDataSnapshot?> pullSnapshots;
-  final int? failFromPull;
   final Set<int> failOnPullCalls;
   final List<String>? events;
   int _pullCalls = 0;
@@ -354,7 +351,6 @@ class _FakeRemoteDatasource implements UserDataSyncRemoteDatasource {
 
   _FakeRemoteDatasource({
     required this.pullSnapshots,
-    this.failFromPull,
     this.failOnPullCalls = const {},
     this.events,
   });
@@ -374,8 +370,7 @@ class _FakeRemoteDatasource implements UserDataSyncRemoteDatasource {
   Future<UserDataSnapshot?> pullCurrentUserSnapshot() async {
     events?.add('cloud:pull');
     _pullCalls += 1;
-    if (failOnPullCalls.contains(_pullCalls) ||
-        (failFromPull != null && _pullCalls >= failFromPull!)) {
+    if (failOnPullCalls.contains(_pullCalls)) {
       throw StateError('pull failed');
     }
     if (pullSnapshots.isEmpty) return null;

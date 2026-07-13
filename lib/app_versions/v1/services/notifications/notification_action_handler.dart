@@ -12,6 +12,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'notification_constants.dart';
 import 'notification_payload.dart';
+import 'notification_navigation_coordinator.dart';
 
 class NotificationActionHandler {
   static const _tag = 'NOTIFICATION_ACTION_HANDLER';
@@ -69,7 +70,12 @@ class NotificationActionHandler {
     int? notificationId,
   }) async {
     try {
-      final normalizedActionId = actionId?.trim();
+      final rawActionId = actionId?.trim();
+      // Chạm vào thân thông báo không có actionId trên Android/iOS. Xem đây là
+      // thao tác mở lịch; không thực hiện hoàn thành nhiệm vụ trong nền.
+      final normalizedActionId = rawActionId == null || rawActionId.isEmpty
+          ? NotificationActionIds.openSchedule
+          : rawActionId;
       if (!_isSupportedAction(normalizedActionId)) {
         AppLogger.info(_tag, 'Ignore unsupported action: $actionId');
         return;
@@ -144,21 +150,16 @@ class NotificationActionHandler {
         return;
       }
 
-      final sourceUpdated = await _tryMarkSourceDone(
-        sourceType: sourceType,
-        sourceId: sourceId,
-        updatedAt: respondedAt,
-      );
-
+      // Notification chỉ mở ứng dụng. Mọi hoàn thành lịch đều phải đi qua
+      // camera và transaction trong LifestyleScheduleLocalDatasource.
       await notificationsDao.updateActionStatus(
         id: notification.id,
-        actionStatus: sourceUpdated
-            ? NotificationActionStatuses.done
-            : NotificationActionStatuses.actionFailed,
+        actionStatus: NotificationActionStatuses.opened,
         respondedAt: respondedAt,
         updatedAt: respondedAt,
       );
       LocalUserDataSyncDispatcher.requestImmediateSync(database: database);
+      NotificationNavigationCoordinator.openScheduleItem(sourceId);
     } on FormatException catch (error, stackTrace) {
       AppLogger.error(_tag, 'Invalid notification payload', error, stackTrace);
     } catch (error, stackTrace) {
@@ -221,7 +222,7 @@ class NotificationActionHandler {
       return item != null && _sameSubject(subject, item.userId);
     }
 
-    return true;
+    return sourceType.trim().isEmpty;
   }
 
   Future<void> _recordActionFailure({
@@ -249,96 +250,9 @@ class NotificationActionHandler {
     return text == null || text.isEmpty ? null : text;
   }
 
-  Future<bool> _tryMarkSourceDone({
-    required String sourceType,
-    required String sourceId,
-    required String updatedAt,
-  }) async {
-    try {
-      return await _markSourceDone(
-        sourceType: sourceType,
-        sourceId: sourceId,
-        updatedAt: updatedAt,
-      );
-    } catch (error, stackTrace) {
-      AppLogger.error(
-        _tag,
-        'Failed to mark notification source as done',
-        error,
-        stackTrace,
-      );
-      return false;
-    }
-  }
-
   bool _isSupportedAction(String? actionId) {
-    return actionId == NotificationActionIds.done ||
+    return actionId == NotificationActionIds.openSchedule ||
+        actionId == NotificationActionIds.done ||
         actionId == NotificationActionIds.skipped;
-  }
-
-  Future<bool> _markSourceDone({
-    required String sourceType,
-    required String sourceId,
-    required String updatedAt,
-  }) async {
-    if (sourceType == ReminderSourceTypes.meal) {
-      return _markMealDone(sourceId);
-    }
-
-    if (sourceType == ReminderSourceTypes.lifestyleScheduleItem) {
-      return _markLifestyleScheduleItemDone(sourceId);
-    }
-
-    if (sourceType == ReminderSourceTypes.dailyTask) {
-      return _markDailyTaskDone(sourceId, updatedAt);
-    }
-
-    AppLogger.warning(
-      _tag,
-      'Unsupported notification source type=$sourceType id=$sourceId',
-    );
-    return false;
-  }
-
-  Future<bool> _markMealDone(String sourceId) async {
-    final meal = await mealPlansDao.getById(sourceId);
-    if (meal == null) {
-      AppLogger.warning(_tag, 'Meal source not found: $sourceId');
-      return false;
-    }
-
-    await mealPlansDao.updateCompleted(id: sourceId, isCompleted: true);
-    return true;
-  }
-
-  Future<bool> _markDailyTaskDone(String sourceId, String updatedAt) async {
-    final task = await dailyHealthTasksDao.getById(sourceId);
-    if (task == null) {
-      AppLogger.warning(_tag, 'Daily task source not found: $sourceId');
-      return false;
-    }
-
-    await dailyHealthTasksDao.updateTask(
-      task.copyWith(
-        currentValue: task.targetValue,
-        isCompleted: true,
-        updatedAt: updatedAt,
-      ),
-    );
-    return true;
-  }
-
-  Future<bool> _markLifestyleScheduleItemDone(String sourceId) async {
-    final item = await lifestyleScheduleItemsDao.getById(sourceId);
-    if (item == null) {
-      AppLogger.warning(_tag, 'Schedule source not found: $sourceId');
-      return false;
-    }
-
-    AppLogger.warning(
-      _tag,
-      'Schedule item requires in-app camera proof before completion: $sourceId',
-    );
-    return false;
   }
 }

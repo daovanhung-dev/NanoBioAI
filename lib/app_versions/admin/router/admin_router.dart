@@ -28,6 +28,10 @@ final adminRouter = GoRouter(
       AdminPanelSection.saleConversions,
     ),
     _protected(
+      AdminRoutePaths.wellnessRewards,
+      AdminPanelSection.wellnessRewards,
+    ),
+    _protected(
       AdminRoutePaths.reconciliation,
       AdminPanelSection.reconciliation,
     ),

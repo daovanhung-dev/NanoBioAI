@@ -49,10 +49,10 @@ class MembershipPaymentException implements Exception {
   const MembershipPaymentException(this.code, this.safeMessage);
 
   const MembershipPaymentException.invalidCommand()
-    : this('INVALID_COMMAND', 'Thong tin tao yeu cau thanh toan chua hop le.');
+    : this('INVALID_COMMAND', 'Thông tin tạo yêu cầu thanh toán chưa hợp lệ.');
 
   const MembershipPaymentException.authRequired()
-    : this('AUTH_REQUIRED', 'Can dang nhap de tao yeu cau thanh toan.');
+    : this('AUTH_REQUIRED', 'Cần đăng nhập để tạo yêu cầu thanh toán.');
 
   @override
   String toString() => '$code: $safeMessage';

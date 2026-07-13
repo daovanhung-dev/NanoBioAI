@@ -402,7 +402,8 @@ class _DirectCustomersTab extends ConsumerWidget {
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
           title: 'Chưa tải được khách hàng trực tiếp',
-          message: 'Hệ thống chỉ hiển thị khách hàng được gắn trực tiếp với bạn.',
+          message:
+              'Hệ thống chỉ hiển thị khách hàng được gắn trực tiếp với bạn.',
         ),
         data: (items) {
           if (items.isEmpty) {
@@ -478,9 +479,9 @@ class _PointLedgerTab extends ConsumerWidget {
                 (item) => _ListTilePanel(
                   icon: Icons.receipt_long_rounded,
                   title:
-                      '${vietnameseUiText(item.customerName)} - ${_money(item.pointAmountCents, item.currency)}',
+                      '${vietnameseUiText(item.customerName)} • ${_money(item.pointAmountCents, item.currency)}',
                   subtitle:
-                      '${item.planCode} - ${_money(item.paymentAmountCents, item.currency)} - ${_statusLabel(item.status)}',
+                      '${_planLabel(item.planCode)} • ${_money(item.paymentAmountCents, item.currency)} • ${_statusLabel(item.status)}',
                 ),
               ),
             ],
@@ -1056,8 +1057,25 @@ String _statusLabel(String value) {
       return 'Từ chối';
     case 'reversed':
     case 'points_reversed':
-      return 'Đã đảo';
+      return 'Đã điều chỉnh';
     default:
       return 'Đang được xử lý';
+  }
+}
+
+String _planLabel(String value) {
+  switch (value.trim().toLowerCase().replaceAll('-', '_')) {
+    case 'free':
+    case 'basic':
+      return 'Gói Miễn phí';
+    case 'plus':
+    case 'premium':
+    case 'pro':
+      return 'Gói Plus';
+    case 'familyplus':
+    case 'family_plus':
+      return 'Gói FamilyPlus';
+    default:
+      return 'Gói chưa xác định';
   }
 }

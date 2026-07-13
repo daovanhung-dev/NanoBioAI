@@ -29,7 +29,6 @@ class SyncOutboxSchema {
     'notifications',
     'health_tracking_logs',
     'health_score_ledgers',
-    'wellness_point_ledgers',
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations',
@@ -42,6 +41,9 @@ class SyncOutboxSchema {
     ...genericIdUserOwnedTables,
     personalScheduleAiRequestsTable,
   ];
+
+  /// Projection do server sở hữu: chỉ pull/merge, tuyệt đối không tạo outbox.
+  static const serverOwnedReadOnlyTables = <String>['wellness_point_ledgers'];
 
   static const createRuntimeStateTable = '''
 CREATE TABLE IF NOT EXISTS sync_runtime_state (
@@ -117,9 +119,11 @@ ON sync_outbox(user_id, table_name, record_id)
       await db.execute(_normalizeIdAfterInsertTrigger(table));
     }
 
-    await db.execute(_insertTriggerForUsers());
-    await db.execute(_updateTriggerForUsers());
-    await db.execute(_deleteTriggerForUsers());
+    if (await _tableExists(db, 'users')) {
+      await db.execute(_insertTriggerForUsers());
+      await db.execute(_updateTriggerForUsers());
+      await db.execute(_deleteTriggerForUsers());
+    }
 
     for (final table in genericIdUserOwnedTables) {
       if (!await _tableExists(db, table)) continue;
@@ -148,7 +152,10 @@ ON sync_outbox(user_id, table_name, record_id)
     await db.execute('DROP TRIGGER IF EXISTS trg_sync_outbox_users_update');
     await db.execute('DROP TRIGGER IF EXISTS trg_sync_outbox_users_delete');
 
-    for (final table in genericIdUserOwnedTables) {
+    for (final table in <String>{
+      ...genericIdUserOwnedTables,
+      ...serverOwnedReadOnlyTables,
+    }) {
       await db.execute(
         'DROP TRIGGER IF EXISTS trg_sync_normalize_id_${table}_insert',
       );

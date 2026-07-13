@@ -21,7 +21,7 @@ class FamilyPlusGroup {
     return FamilyPlusGroup(
       id: _readString(map['id']),
       ownerUserId: _readString(map['owner_user_id']),
-      displayName: _readString(map['display_name'], fallback: 'Gia dinh'),
+      displayName: _readString(map['display_name'], fallback: 'Gia đình'),
       status: _readString(map['status'], fallback: 'active'),
     );
   }
@@ -56,7 +56,7 @@ class FamilyPlusMember {
       familyGroupId: _readString(map['family_group_id']),
       subjectId: _readString(map['subject_id']),
       userId: _readNullableString(map['user_id']),
-      displayName: _readString(map['display_name'], fallback: 'Thanh vien'),
+      displayName: _readString(map['display_name'], fallback: 'Thành viên'),
       role: _readString(map['role'], fallback: 'member'),
       status: _readString(map['status'], fallback: 'active'),
       canView: _readBool(map['can_view'], fallback: true),
@@ -131,20 +131,20 @@ class FamilyPlusViewModel {
   const FamilyPlusViewModel.authRequired()
     : this._(
         status: FamilyPlusViewStatus.authRequired,
-        message: 'Can dang nhap de quan ly FamilyPlus.',
+        message: 'Cần đăng nhập để quản lý FamilyPlus.',
       );
 
   const FamilyPlusViewModel.locked()
     : this._(
         status: FamilyPlusViewStatus.locked,
-        message: 'Tinh nang nay chi danh cho goi FamilyPlus dang hoat dong.',
+        message: 'Tính năng này chỉ dành cho gói FamilyPlus đang hoạt động.',
       );
 
   const FamilyPlusViewModel.empty(FamilyPlusContext context)
     : this._(
         status: FamilyPlusViewStatus.empty,
         context: context,
-        message: 'Chua co nhom gia dinh. Hay tao nhom de bat dau.',
+        message: 'Chưa có nhóm gia đình. Hãy tạo nhóm để bắt đầu.',
       );
 
   const FamilyPlusViewModel.ready(FamilyPlusContext context)
@@ -199,13 +199,13 @@ class FamilyPlusException implements Exception {
   const FamilyPlusException(this.code, this.safeMessage);
 
   const FamilyPlusException.authRequired()
-    : this('AUTH_REQUIRED', 'Can dang nhap de quan ly FamilyPlus.');
+    : this('AUTH_REQUIRED', 'Cần đăng nhập để quản lý FamilyPlus.');
 
   const FamilyPlusException.forbidden()
-    : this('FORBIDDEN', 'Tai khoan chua co quyen FamilyPlus phu hop.');
+    : this('FORBIDDEN', 'Tài khoản chưa có quyền FamilyPlus phù hợp.');
 
   const FamilyPlusException.invalidCommand()
-    : this('INVALID_COMMAND', 'Thong tin FamilyPlus chua hop le.');
+    : this('INVALID_COMMAND', 'Thông tin FamilyPlus chưa hợp lệ.');
 
   @override
   String toString() => '$code: $safeMessage';

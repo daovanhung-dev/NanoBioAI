@@ -1,5 +1,13 @@
 # CHANGELOG — DASHBOARD_SCHEDULE / Dashboard & Thực hiện lịch trình
 
+## [v1.3] - 2026-07-13
+### Changed
+- Added Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001` and implementation delta for the 30-minute window, camera proof, private local/cloud evidence, undo and server-authoritative `+10 Điểm chăm sóc` flow.
+- Kept DD status Approved and separated source-ready/targeted-test evidence from sandbox and real-device acceptance.
+
+### Validation
+- Docs delta only in this changelog; runtime and Supabase evidence is referenced, not reclassified as deployed production evidence.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked DASHBOARD_SCHEDULE DD docs as `Approved - DD docs complete`.

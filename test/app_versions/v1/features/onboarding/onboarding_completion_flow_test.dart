@@ -23,17 +23,15 @@ void main() {
     });
 
     test(
-      'entrypoints generate initial guest plan without auth early return',
+      'single entrypoint generates initial guest plan without auth early return',
       () {
-        for (final path in ['lib/main.dart', 'lib/main_v2.dart']) {
-          final source = File(path).readAsStringSync();
+        final source = File('lib/main.dart').readAsStringSync();
 
-          expect(source, contains('generateInitialGuestPlan'));
-          expect(
-            source,
-            isNot(contains('currentSupabaseUserIdOrNull() == null) return')),
-          );
-        }
+        expect(source, contains('generateInitialGuestPlan'));
+        expect(
+          source,
+          isNot(contains('currentSupabaseUserIdOrNull() == null) return')),
+        );
       },
     );
 

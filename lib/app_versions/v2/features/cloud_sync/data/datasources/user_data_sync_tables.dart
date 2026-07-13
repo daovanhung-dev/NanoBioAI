@@ -5,6 +5,13 @@ class UserDataSyncTables {
 
   static const localUserOwnedTables = SyncOutboxSchema.userOwnedTables;
 
+  /// Mọi bảng được phép kéo từ cloud, gồm projection server-owned chỉ đọc.
+  /// Danh sách push vẫn chỉ dùng [localUserOwnedTables].
+  static const cloudPullTables = <String>[
+    ...localUserOwnedTables,
+    ...SyncOutboxSchema.serverOwnedReadOnlyTables,
+  ];
+
   static const cloudCollectionTables = <String>[
     'health_goals',
     'health_conditions',

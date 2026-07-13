@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:nano_app/app/app_surface_controller.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
@@ -34,6 +36,11 @@ class SettingsView extends ConsumerWidget {
     final saleStateAsync = ref.watch(saleStateProvider);
     final isAuthenticated = ref.watch(currentAuthUserIdProvider) != null;
     final syncState = ref.watch(userDataSyncControllerProvider);
+    final adminAccess = ref.watch(adminAccessControllerProvider).asData?.value;
+    final canSwitchToAdmin =
+        isAuthenticated &&
+        adminAccess?.isAuthorized == true &&
+        adminAccess?.session?.canUseUserApp == true;
 
     return MedicalPageScaffold(
       backgroundColor: AppColors.background,
@@ -103,8 +110,8 @@ class SettingsView extends ConsumerWidget {
                             icon: Icons.notifications_rounded,
                             title: 'Thông báo',
                             subtitle: preferences.pushEnabled
-                                ? 'Đang bật nhắc nhở local'
-                                : 'Đang tắt nhắc nhở local',
+                                ? 'Đang bật nhắc nhở trên thiết bị'
+                                : 'Đang tắt nhắc nhở trên thiết bị',
                             trailing: Switch(
                               value: preferences.pushEnabled,
                               activeThumbColor: AppColors.primary,
@@ -120,6 +127,25 @@ class SettingsView extends ConsumerWidget {
                           ),
                         ],
                       ),
+                      if (canSwitchToAdmin) ...[
+                        const SizedBox(height: AppSpacing.xl),
+                        _SectionTitle('Chế độ làm việc'),
+                        const SizedBox(height: AppSpacing.md),
+                        _MenuCard(
+                          children: [
+                            _MenuItem(
+                              key: const Key('settings_switch_to_admin'),
+                              icon: Icons.admin_panel_settings_rounded,
+                              title: 'Chuyển sang giao diện quản trị',
+                              subtitle:
+                                  'Mở công cụ quản trị bằng chính tài khoản hiện tại',
+                              onTap: () => ref
+                                  .read(appSurfaceControllerProvider.notifier)
+                                  .showAdmin(),
+                            ),
+                          ],
+                        ),
+                      ],
                       if (isAuthenticated) ...[
                         const SizedBox(height: AppSpacing.xl),
                         _SectionTitle('Cùng Nabi phát triển'),
@@ -141,8 +167,8 @@ class SettingsView extends ConsumerWidget {
                             icon: Icons.dark_mode_rounded,
                             title: 'Chế độ tối',
                             subtitle: preferences.isDarkMode
-                                ? 'Đang lưu lựa chọn dark mode'
-                                : 'Đang lưu lựa chọn light mode',
+                                ? 'Giao diện tối đang được bật'
+                                : 'Giao diện sáng đang được bật',
                             trailing: Switch(
                               value: preferences.isDarkMode,
                               activeThumbColor: AppColors.primary,
@@ -278,19 +304,17 @@ class SettingsView extends ConsumerWidget {
     );
   }
 
-  String _syncStatusLabel(
-    UserDataSyncState state, {
-    required String fallback,
-  }) {
+  String _syncStatusLabel(UserDataSyncState state, {required String fallback}) {
     return switch (state.status) {
       UserDataSyncStatus.syncing => 'Đang đồng bộ dữ liệu...',
       UserDataSyncStatus.awaitingConsent =>
         'Đang chờ bạn xác nhận dữ liệu khách',
       UserDataSyncStatus.pendingUpload =>
         '${state.pendingCount} thay đổi đang chờ đồng bộ',
-      UserDataSyncStatus.success => state.lastSuccessAt == null
-          ? 'Đã đồng bộ'
-          : 'Đồng bộ gần nhất: ${_formatSyncTime(state.lastSuccessAt!)}',
+      UserDataSyncStatus.success =>
+        state.lastSuccessAt == null
+            ? 'Đã đồng bộ'
+            : 'Đồng bộ gần nhất: ${_formatSyncTime(state.lastSuccessAt!)}',
       UserDataSyncStatus.error =>
         state.safeError ?? 'Đồng bộ chưa hoàn tất, dữ liệu vẫn được giữ',
       UserDataSyncStatus.idle => fallback,
@@ -319,7 +343,7 @@ class SettingsView extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Đăng xuất?'),
         content: const Text(
-          'Nabi sẽ đưa bạn về màn đăng nhập. Dữ liệu cloud của bạn vẫn được giữ nguyên.',
+          'Nabi sẽ đưa bạn về màn đăng nhập. Dữ liệu trực tuyến của bạn vẫn được giữ nguyên.',
         ),
         actions: [
           TextButton(
@@ -345,7 +369,9 @@ class SettingsView extends ConsumerWidget {
           context: context,
           builder: (dialogContext) => AlertDialog(
             title: const Text('Còn dữ liệu chưa đồng bộ'),
-            content: Text(result.message ?? 'Dữ liệu vẫn được giữ trên thiết bị.'),
+            content: Text(
+              result.message ?? 'Dữ liệu vẫn được giữ trên thiết bị.',
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -548,8 +574,8 @@ class _SaleSettingsEntry extends StatelessWidget {
     return saleState.when(
       loading: () => const _MenuItem(
         icon: Icons.workspace_premium_rounded,
-        title: 'Không gian Sale',
-        subtitle: 'Nabiđang kiểm tra quyền Sale của bạn...',
+        title: 'Không gian cộng tác viên',
+        subtitle: 'Nabi đang kiểm tra quyền cộng tác viên của bạn...',
         trailing: SizedBox(
           height: 22,
           width: 22,
@@ -559,7 +585,8 @@ class _SaleSettingsEntry extends StatelessWidget {
       error: (_, __) => _MenuItem(
         icon: Icons.volunteer_activism_rounded,
         title: 'Tham gia kiếm tiền cùng Nabi',
-        subtitle: 'Mở điều lệ tham gia và thử kiểm tra lại quyền Sale.',
+        subtitle:
+            'Mở điều lệ tham gia và thử kiểm tra lại quyền cộng tác viên.',
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => const SaleParticipationPage(),
@@ -570,9 +597,9 @@ class _SaleSettingsEntry extends StatelessWidget {
         if (state.isActive) {
           return _MenuItem(
             icon: Icons.workspace_premium_rounded,
-            title: 'Chuyển sang không gian Sale',
+            title: 'Chuyển sang không gian cộng tác viên',
             subtitle: state.referralCode == null
-                ? 'Theo dõi mạng lưới, xếp hạng và công cụ Sale'
+                ? 'Theo dõi mạng lưới, xếp hạng và công cụ cộng tác viên'
                 : 'Mã giới thiệu: ${state.referralCode}',
             onTap: () => context.push(V2RoutePaths.sale),
           );
@@ -597,12 +624,12 @@ class _SaleSettingsEntry extends StatelessWidget {
       case SaleStatus.pending:
         return 'Xem lại điều lệ và trạng thái tham gia của bạn';
       case SaleStatus.suspended:
-        return 'Quyền Sale đang tạm khóa; xem thông tin hỗ trợ';
+        return 'Quyền cộng tác viên đang tạm khóa; xem thông tin hỗ trợ';
       case SaleStatus.closed:
-        return 'Quyền Sale đã đóng; xem thông tin hỗ trợ';
+        return 'Quyền cộng tác viên đã đóng; xem thông tin hỗ trợ';
       case SaleStatus.none:
       case SaleStatus.active:
-        return 'Đọc điều lệ, chấp nhận và nhận quyền Sale cho tài khoản';
+        return 'Đọc điều lệ, chấp nhận và nhận quyền cộng tác viên';
     }
   }
 }
@@ -619,14 +646,15 @@ class _UserDataSyncSheet extends ConsumerWidget {
         'Bạn cần hoàn tất lựa chọn dữ liệu tại màn xác nhận tài khoản.',
       UserDataSyncStatus.pendingUpload =>
         'Còn ${state.pendingCount} thay đổi trên thiết bị chưa gửi thành công. '
-        'Không có dữ liệu nào bị xóa.',
+            'Không có dữ liệu nào bị xóa.',
       UserDataSyncStatus.error =>
-        state.safeError ?? 'Đồng bộ chưa hoàn tất. Dữ liệu vẫn được giữ trên thiết bị.',
+        state.safeError ??
+            'Đồng bộ chưa hoàn tất. Dữ liệu vẫn được giữ trên thiết bị.',
       UserDataSyncStatus.success => 'Dữ liệu tài khoản đã được đồng bộ.',
       UserDataSyncStatus.syncing => 'Nabi đang đồng bộ dữ liệu của bạn...',
       UserDataSyncStatus.idle =>
         'Dữ liệu sức khỏe và lịch trình của tài khoản được đồng bộ theo cơ chế '
-        'an toàn: gửi thay đổi trên thiết bị trước, sau đó mới tải dữ liệu tài khoản.',
+            'an toàn: gửi thay đổi trên thiết bị trước, sau đó mới tải dữ liệu tài khoản.',
     };
 
     return Padding(
@@ -657,10 +685,10 @@ class _UserDataSyncSheet extends ConsumerWidget {
                     final text = outcome.isSuccess
                         ? 'Đồng bộ dữ liệu thành công.'
                         : outcome.safeError ??
-                            'Chưa thể đồng bộ. Dữ liệu vẫn được giữ để thử lại.';
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(text)),
-                    );
+                              'Chưa thể đồng bộ. Dữ liệu vẫn được giữ để thử lại.';
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(text)));
                   },
             icon: isWorking
                 ? const SizedBox.square(
@@ -688,8 +716,8 @@ class _ReferralCodeSettingsEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     return _MenuItem(
       icon: Icons.confirmation_number_rounded,
-      title: 'Nhap ma gioi thieu',
-      subtitle: 'Ma gioi thieu chi duoc nhap trong luc dang ky tai khoan moi.',
+      title: 'Nhập mã giới thiệu',
+      subtitle: 'Mã giới thiệu chỉ được nhập khi đăng ký tài khoản mới.',
       onTap: () => showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
@@ -735,10 +763,10 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nhap ma gioi thieu', style: AppTextStyles.heading3),
+            Text('Nhập mã giới thiệu', style: AppTextStyles.heading3),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Theo chinh sach Sale moi, ma gioi thieu chi duoc gan trong luc dang ky tai khoan. Tai khoan da tao khong the gan ma tu man hinh cai dat.',
+              'Theo chính sách cộng tác viên hiện tại, mã giới thiệu chỉ được gắn khi đăng ký. Tài khoản đã tạo không thể gắn mã từ màn hình cài đặt.',
               style: AppTextStyles.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -746,7 +774,7 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
               controller: _controller,
               textCapitalization: TextCapitalization.characters,
               decoration: const InputDecoration(
-                labelText: 'Ma gioi thieu',
+                labelText: 'Mã giới thiệu',
                 prefixIcon: Icon(Icons.confirmation_number_rounded),
               ),
               validator: (value) => _validator.validate(value ?? ''),
@@ -762,7 +790,7 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.check_rounded),
-                label: const Text('Gan ma gioi thieu'),
+                label: const Text('Gắn mã giới thiệu'),
               ),
             ),
           ],
@@ -779,7 +807,7 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Ma gioi thieu chi duoc gan khi dang ky tai khoan moi.'),
+        content: Text('Mã giới thiệu chỉ được gắn khi đăng ký tài khoản mới.'),
       ),
     );
   }
@@ -929,6 +957,7 @@ class _MenuItem extends StatelessWidget {
   final VoidCallback? onTap;
 
   const _MenuItem({
+    super.key,
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -1086,22 +1115,17 @@ String _goalsSubtitle(List<String> goals) {
 
 String _subscriptionLabel(String value) {
   final normalized = value.trim().toLowerCase();
-  if (normalized.isEmpty || normalized == 'free') return 'Gói Free';
-  if (normalized == 'premium') return 'Gói Premium';
-  if (normalized == 'pro') return 'Gói Pro';
-  return 'Gói ${value.trim()}';
+  if (normalized.isEmpty || normalized == 'free') return 'Gói Miễn phí';
+  if (normalized == 'plus' || normalized == 'premium' || normalized == 'pro') {
+    return 'Gói Plus';
+  }
+  if (normalized == 'familyplus' || normalized == 'family_plus') {
+    return 'Gói FamilyPlus';
+  }
+  return 'Gói chưa xác định';
 }
 
-String _languageLabel(String code) {
-  switch (code) {
-    case 'en':
-      return 'English';
-    case 'vi':
-      return 'Tiếng Việt';
-    default:
-      return code.isEmpty ? '--' : code;
-  }
-}
+String _languageLabel(String _) => 'Tiếng Việt';
 
 String _aiPersonalityLabel(String value) {
   switch (value) {
@@ -1119,7 +1143,7 @@ String _aiPersonalityLabel(String value) {
 String _privacyModeLabel(String value) {
   switch (value) {
     case 'cloud':
-      return 'Ưu tiên đồng bộ cloud';
+      return 'Ưu tiên đồng bộ trực tuyến';
     case 'local':
       return 'Chỉ lưu trên thiết bị';
     default:

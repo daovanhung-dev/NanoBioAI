@@ -8,7 +8,10 @@ import 'package:nano_app/app_versions/v2/features/health_scoring/health_scoring.
 import 'package:nano_app/app_versions/v2/features/health_modules/health_modules.dart';
 import 'package:nano_app/app_versions/v2/features/home/presentation/pages/v2_home_page.dart';
 import 'package:nano_app/app_versions/v2/features/payments/payments.dart';
+import 'package:nano_app/app_versions/v2/features/wellness_rewards/wellness_rewards.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
+import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
+import 'package:nano_app/app_versions/v3/router/v3_router.dart';
 import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_shell_page.dart';
 
@@ -78,6 +81,11 @@ final v2Routes = <RouteBase>[
     builder: (context, state) => const MembershipPaymentPage(),
   ),
   GoRoute(
+    path: V2RoutePaths.wellnessRewards,
+    name: V2RoutePaths.wellnessRewards,
+    builder: (context, state) => const WellnessRewardsPage(),
+  ),
+  GoRoute(
     path: V2RoutePaths.home,
     name: V2RoutePaths.home,
     builder: (context, state) => const V2HomePage(),
@@ -122,7 +130,7 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
         _ => V2RoutePaths.authGate,
       };
     },
-    routes: [...v1Routes, ...v2Routes],
+    routes: [...v1Routes, ...v2Routes, ...v3Routes],
   );
 });
 
@@ -130,8 +138,11 @@ abstract class V2RouteGuards {
   static const exactProtectedPaths = <String>{
     V2RoutePaths.home,
     V2RoutePaths.healthScore,
+    V2RoutePaths.wellnessRewards,
     V2RoutePaths.payments,
     V2RoutePaths.sale,
+    V3RoutePaths.home,
+    V3RoutePaths.advancedTracking,
   };
 
   static bool isProtectedPath(String path) {

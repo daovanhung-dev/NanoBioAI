@@ -33,7 +33,7 @@ final salePayoutProfileProvider = FutureProvider<SalePayoutProfile?>((
 ) async {
   final state = await ref.watch(saleStateProvider.future);
   if (!state.isActive) {
-    throw StateError('Sale payout profile requires active status.');
+    throw StateError('Quyền cộng tác viên chưa hoạt động.');
   }
   return ref.watch(saleRepositoryProvider).fetchPayoutProfile();
 });
@@ -41,7 +41,7 @@ final salePayoutProfileProvider = FutureProvider<SalePayoutProfile?>((
 final saleDashboardProvider = FutureProvider<SaleDashboard>((ref) async {
   final state = await ref.watch(saleStateProvider.future);
   if (!state.isActive) {
-    throw StateError('Sale dashboard requires active status.');
+    throw StateError('Quyền cộng tác viên chưa hoạt động.');
   }
   return ref.watch(saleRepositoryProvider).fetchDashboard();
 });
@@ -51,7 +51,7 @@ final saleDirectCustomersProvider = FutureProvider<List<SaleDirectCustomer>>((
 ) async {
   final state = await ref.watch(saleStateProvider.future);
   if (!state.isActive) {
-    throw StateError('Sale direct customers require active status.');
+    throw StateError('Quyền cộng tác viên chưa hoạt động.');
   }
   return ref.watch(saleRepositoryProvider).fetchDirectCustomers();
 });
@@ -61,7 +61,7 @@ final salePointLedgerProvider = FutureProvider<List<SalePointLedgerEntry>>((
 ) async {
   final state = await ref.watch(saleStateProvider.future);
   if (!state.isActive) {
-    throw StateError('Sale point ledger requires active status.');
+    throw StateError('Quyền cộng tác viên chưa hoạt động.');
   }
   return ref.watch(saleRepositoryProvider).fetchPointLedger();
 });
@@ -71,7 +71,7 @@ final saleConversionsProvider = FutureProvider<List<SaleConversionRequest>>((
 ) async {
   final state = await ref.watch(saleStateProvider.future);
   if (!state.isActive) {
-    throw StateError('Sale conversions require active status.');
+    throw StateError('Quyền cộng tác viên chưa hoạt động.');
   }
   return ref.watch(saleRepositoryProvider).fetchConversionRequests();
 });
