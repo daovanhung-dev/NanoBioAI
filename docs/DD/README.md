@@ -5,12 +5,13 @@
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md |
 | BD Code | BD-BIOAI-PRODUCT-FLOW-002 |
 | BD Version | 2.0 |
+| Advanced Health Source BD | docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md (`BD-BIOAI-ADVANCED-HEALTH-001`) |
 | DD Baseline Date | 2026-06-28 |
-| Last Updated | 2026-06-30 |
-| Status | Approved - DD docs complete |
+| Last Updated | 2026-07-13 |
+| Status | M01-M19 Approved - DD docs complete; M20-M29 DD not started |
 
 ## Purpose
-This folder contains split module DDs for the full BioAI / NanoBio product flow M01-M19. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18, approves DD docs for M01-M19, and moves runtime/sandbox evidence to a separate implementation backlog.
+This folder contains split module DDs for the approved BioAI / NanoBio product-flow baseline M01-M19. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18, approves DD docs for M01-M19, and moves runtime/sandbox evidence to a separate implementation backlog. Advanced-health modules M20-M29 are registered below as a future DD backlog only; no DD folder has been created and the approved UI catalog shell does not change DD or business coding progress.
 
 ## Module Map
 
@@ -35,6 +36,23 @@ This folder contains split module DDs for the full BioAI / NanoBio product flow 
 | M17 | [Reconciliation](./reconciliation/README.md) | RECONCILIATION | Approved - DD docs complete | BD section 12.1, 14.4, 15, Appendix A UC-22 |
 | M18 | [Statistics and reporting](./reporting/README.md) | REPORTING | Approved - DD docs complete | BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 |
 | M19 | [Audit, security, and support](./audit_security/README.md) | AUDIT_SECURITY | Approved - DD docs complete | BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 |
+
+## Planned DD Backlog — M20-M29
+
+| BD | Planned Module DD | Module Code | DD Status | Source |
+|---|---|---|---|---|
+| M20 | Not created | BLOOD_PRESSURE_TRACKING | Not started - source BD Draft | Advanced Health BD M20, UC-25, M20-BR01..03, M20-AC01..03 |
+| M21 | Not created | HEART_OXYGEN_TRACKING | Not started - source BD Draft | Advanced Health BD M21, UC-26, M21-BR01..03, M21-AC01..03 |
+| M22 | Not created | MEDICATION_ADHERENCE | Not started - source BD Draft | Advanced Health BD M22, UC-27, M22-BR01..03, M22-AC01..03 |
+| M23 | Not created | GLUCOSE_TRACKING | Not started - source BD Draft | Advanced Health BD M23, UC-28, M23-BR01..03, M23-AC01..03 |
+| M24 | Not created | SYMPTOM_PAIN_JOURNAL | Not started - source BD Draft | Advanced Health BD M24, UC-29, M24-BR01..03, M24-AC01..03 |
+| M25 | Not created | WOMENS_CYCLE_HEALTH | Not started - source BD Draft | Advanced Health BD M25, UC-30, M25-BR01..03, M25-AC01..03 |
+| M26 | Not created | RESPIRATORY_ALLERGY_TRACKING | Not started - source BD Draft | Advanced Health BD M26, UC-31, M26-BR01..03, M26-AC01..03 |
+| M27 | Not created | LAB_RESULT_TRACKING | Not started - source BD Draft | Advanced Health BD M27, UC-32, M27-BR01..03, M27-AC01..03 |
+| M28 | Not created | PREVENTIVE_CARE | Not started - source BD Draft | Advanced Health BD M28, UC-33, M28-BR01..03, M28-AC01..03 |
+| M29 | Not created | AI_HEALTH_TRENDS | Not started - source BD Draft | Advanced Health BD M29, UC-34, M29-BR01..05, M29-AC01..04 |
+
+Coding gate for M20-M29: only the UI catalog shell and shared development placeholder described by AHF-BR-001..006 are approved. Do not create DD folders or implement health-data/AI behavior until each module DD is approved.
 
 ## Reading Order
 1. Read this file first.

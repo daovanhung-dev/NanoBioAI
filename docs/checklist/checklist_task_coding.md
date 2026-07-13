@@ -6,9 +6,9 @@ Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tra
 
 | Field | Value |
 |---|---|
-| Nguon | `docs/checklist/checklist_complete_DD.md` |
-| Ngay cap nhat | 2026-07-12 |
-| Muc dich | Ghi lai trang thai coding 100% va production evidence backlog con lai. |
+| Nguon | `docs/checklist/checklist_complete_DD.md` va `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` |
+| Ngay cap nhat | 2026-07-13 |
+| Muc dich | Ghi lai trang thai coding M01-M19 va coding gate rieng cho planned M20-M29. |
 
 ## DD Progress Next Tasks
 
@@ -16,6 +16,27 @@ Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tra
 - [ ] Sau do doc file nay de tiep tuc note dang do cua phien truoc.
 - [ ] DD docs M01-M19 da Approved/100%; khi coding, chi claim production acceptance sau khi co implementation evidence backlog pass.
 - [ ] Sau moi phien coding, cap nhat `docs/checklist/checklist_complete_DD.md` va ghi task tiep theo vao file nay.
+- [ ] M20-M29 hien co DD 0% va business coding 0%; UI catalog shell/placeholder khong duoc tinh la nghiep vu da coding.
+- [ ] Khong tao form, persistence, API/AI, notification, schema/RLS hoac device integration M20-M29 truoc khi DD module Approved.
+
+## Advanced Health M20-M29 Coding Gate
+
+Status BD chung: `Draft - UI catalog shell approved`.
+
+| Module | Tier | DD | Business coding | Duoc phep hien tai | Blocker truoc business coding |
+|---|---|---:|---:|---|---|
+| M20 `BLOOD_PRESSURE_TRACKING` | Free | 0% | 0% | Catalog card + development placeholder | Clinical/source, lifecycle, FamilyPlus, schema/API/RLS/test DD |
+| M21 `HEART_OXYGEN_TRACKING` | Free | 0% | 0% | Catalog card + development placeholder | Device limitation/escalation, lifecycle, schema/API/RLS/test DD |
+| M22 `MEDICATION_ADHERENCE` | Free | 0% | 0% | Catalog card + development placeholder | Medication boundary, M09 reminder, privacy/RLS/test DD |
+| M23 `GLUCOSE_TRACKING` | Plus | 0% | 0% | Catalog card + development placeholder | Clinical/unit/threshold, entitlement, FamilyPlus/RLS/test DD |
+| M24 `SYMPTOM_PAIN_JOURNAL` | Plus | 0% | 0% | Catalog card + development placeholder | Escalation, free-text privacy, AI boundary/RLS/test DD |
+| M25 `WOMENS_CYCLE_HEALTH` | Plus | 0% | 0% | Catalog card + development placeholder | Sensitive/minor/FamilyPlus/revoke/retention/RLS/test DD |
+| M26 `RESPIRATORY_ALLERGY_TRACKING` | Plus | 0% | 0% | Catalog card + development placeholder | Action-plan/escalation/source/privacy/RLS/test DD |
+| M27 `LAB_RESULT_TRACKING` | Plus | 0% | 0% | Catalog card + development placeholder | Unit/range/source, user-confirmed AI extraction, import/retention/RLS/test DD |
+| M28 `PREVENTIVE_CARE` | Plus | 0% | 0% | Catalog card + development placeholder | Vietnam source/version, M09 reminder, FamilyPlus/RLS/test DD |
+| M29 `AI_HEALTH_TRENDS` | Plus | 0% | 0% | Catalog card + development placeholder | M06/M07/M19 consent/quota/safety/evaluation/provenance DD |
+
+UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai khong doc/ghi health data, khong goi module health API/AI, khong commit quota, khong tao notification va khong xin device permission; effective-access lookup phuc vu gate van duoc phep.
 
 ## DD Decision Update 2026-07-01
 

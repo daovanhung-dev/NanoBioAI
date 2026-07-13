@@ -18,6 +18,7 @@
 | Phê duyệt | Thanh toán chỉ tạo quyền chờ duyệt. Sau khi Admin xác minh và duyệt, hệ thống mới cộng **Điểm Sale** cho Sale. |
 | Admin | Bổ sung role Admin, dashboard View, module tính toán/đối soát, thống kê, quản trị người dùng/gói/Sale/thanh toán/điểm/hệ thống và audit log. |
 | Độ chi tiết | Mở rộng mô tả module, trạng thái, dữ liệu, điều kiện, luồng chính, ngoại lệ, quyền hạn và tiêu chí chấp nhận. |
+| Extension M20–M29 | Đăng ký tài liệu mở rộng `BD-BIOAI-ADVANCED-HEALTH-001` cho danh mục chức năng sức khỏe nâng cao. Thay đổi này chỉ tạo cross-reference, không thay baseline M01–M19. |
 
 > **Quy tắc ưu tiên:** Khi BD cũ, code hiện tại hoặc tài liệu khác mâu thuẫn với tài liệu này, team phải dừng ở điểm mâu thuẫn, ghi issue và xin Product Owner xác nhận. Không được giữ lại logic Sale cũ chỉ để tương thích với code hiện có.
 
@@ -197,6 +198,14 @@ Hệ thống **không được** dùng một trường duy nhất để suy ra t
 | M17 | Tính toán & đối soát | Admin | Tính/quét dữ liệu gói, hoa hồng, điểm, quota và sai lệch. |
 | M18 | Thống kê & báo cáo | Admin | Báo cáo sản phẩm, doanh thu, Sale, vận hành và xuất dữ liệu. |
 | M19 | Audit, bảo mật & hỗ trợ | Admin, Super Admin | Theo dõi thay đổi, xử lý ticket/vi phạm và kiểm soát truy cập. |
+
+## 4.1. Extension Registry — M20–M29
+
+M20–M29 được đặc tả trong tài liệu riêng [BD — Danh mục chức năng sức khỏe nâng cao M20–M29](../advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md) (`BD-BIOAI-ADVANCED-HEALTH-001`). Registry này không thay thế hoặc làm giảm hiệu lực của M01–M19.
+
+| Dải module | Tài liệu nguồn | Trạng thái | Phạm vi được phê duyệt |
+|---|---|---|---|
+| M20–M29 | `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` | `Draft - UI catalog shell approved` | Tên/thứ tự/tier của 10 catalog item và trang thông báo đang phát triển; DD và nghiệp vụ đầy đủ chưa được phê duyệt/coding. |
 
 ---
 

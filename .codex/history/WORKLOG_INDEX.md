@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 80
+- Total worklogs: 81
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -89,3 +89,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-13 | bugfix | bugfix | M05 AI / AI Chat / runtime configuration | [Worklog - Fix AI Chat missing runtime client](../../docs/worklog/2026-07-13/004-worklog-ai-chat-missing-runtime-client.md) |
 | 2026-07-13 | bugfix | bugfix | runtime configuration / AI chat | [Worklog - Runtime defines launcher contract](../../docs/worklog/2026-07-13/005-worklog-runtime-defines-contract.md) |
 | 2026-07-13 | bugfix | bugfix | M05 AI / AI Chat / runtime configuration | [Worklog - Fix VS Code AI Chat runtime config](../../docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md) |
+| 2026-07-13 | coding | coding | M20-M29 Advanced Health | [Worklog - Advanced Health M20-M29 catalog shell](../../docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md) |

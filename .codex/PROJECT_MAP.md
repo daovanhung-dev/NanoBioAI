@@ -82,6 +82,8 @@ rg --files -g '!build/**' -g '!.dart_tool/**' -g '!.git/**'
 ## Docs Routing
 
 - Product flow BD: `docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md`
+- Advanced health extension BD: `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` (`BD-BIOAI-ADVANCED-HEALTH-001`) for M20-M29. Status is `Draft - UI catalog shell approved`: only catalog cards/tier labels/development placeholder are approved; DD and business implementation remain 0%.
+- DD index: `docs/DD/README.md` keeps approved M01-M19 separate from the planned M20-M29 DD backlog. Do not create M20-M29 DD folders until the matching module is ready for the `docs-dd` workflow.
 - DD creation guide: `docs/DD/DD_Module_Creation_Guide_EN.md`
 - DD module template: `docs/DD/DD_Module_Template/README.md`
 - Auth BD: not present in the current working tree; use M05 `docs/DD/auth_profile_sync/README.md` and the live product-flow BD unless a specific auth BD path is provided.

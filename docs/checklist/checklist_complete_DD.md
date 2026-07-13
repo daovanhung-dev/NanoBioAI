@@ -6,11 +6,11 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 
 | Field | Value |
 |---|---|
-| Nguon | `docs/DD/README.md` va cac module `docs/DD/<module>/` |
-| Pham vi | BioAI / NanoBio DD v2.0 M01-M19 |
-| Loai tru | Module template folder, khong tinh vao M01-M19. |
-| Ngay cap nhat | 2026-07-12 |
-| Muc dich | Theo doi DD docs completeness rieng voi coding progress va implementation evidence backlog. |
+| Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, va Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001` |
+| Pham vi | BioAI / NanoBio: approved DD M01-M19 va planned DD backlog M20-M29 |
+| Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
+| Ngay cap nhat | 2026-07-13 |
+| Muc dich | Theo doi DD docs completeness rieng voi coding progress va implementation evidence backlog; khong tron UI discovery shell voi nghiep vu module. |
 
 ## Rubric phan tram
 
@@ -27,7 +27,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 
 `Coding progress %`: chi doi khi co bang chung code runtime, test, SQL/RPC, sandbox hoac acceptance thuc te.
 
-## Tong hop M01-M19
+## Tong hop M01-M29
 
 | Module | DD docs status | Open Q | DD completeness % | Coding progress % | DD docs evidence | Implementation evidence backlog | Next implementation evidence |
 |---|---|---:|---:|---:|---|---|---|
@@ -50,6 +50,16 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | M17 `RECONCILIATION` | Approved - DD docs complete | 0 | 100 | 100 | Reconciliation UI/RPC mapping includes section-level `create_run`, status updates, 24h hold contracts, suspended/closed Sale policy, Super Admin adjustment, no ledger overwrite, and focused tests. | Provider/staging discrepancy data and sandbox edge cases remain production acceptance backlog. | Test pending payment mismatch, refund/cancel, held points, suspended Sale, and manual approval evidence. |
 | M18 `REPORTING` | Approved - DD docs complete | 0 | 100 | 100 | Safe report catalog, fixed report types, `admin_list_report_catalog`, privacy-limited export filters, `p_report_type = targetId`, Vietnam timezone, audit, and static contract tests exist. | Retention policy execution and sandbox export evidence remain production acceptance backlog. | Verify export request audit, privacy filters, no raw payloads, retention, and timezone windowing in sandbox. |
 | M19 `AUDIT_SECURITY` | Approved - DD docs complete | 0 | 100 | 100 | Audit/security contracts cover Admin groups, Super Admin sensitive edits, point adjustment, reconciliation classify, reason/idempotency requirements, audit writes, and DTO tests blocking raw metadata, secrets, raw payment evidence, and health payloads. | Security response, retention, and sandbox audit rows remain production acceptance backlog. | Verify audit rows for payment, Sale, reconciliation, point adjustment, Admin list privacy, and retention in sandbox. |
+| M20 `BLOOD_PRESSURE_TRACKING` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M20/UC-25 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Clinical source/threshold, data lifecycle, FamilyPlus, schema/API/RLS and test design are unresolved. | Resolve relevant AHF-Q items, create and approve DD before business coding. |
+| M21 `HEART_OXYGEN_TRACKING` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M21/UC-26 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Device accuracy/limitation, escalation, data lifecycle, schema/API/RLS and tests are unresolved. | Approve safety/device policy, then create DD. |
+| M22 `MEDICATION_ADHERENCE` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M22/UC-27 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Medication boundary, schedule versioning, M09 reminder contract, privacy and tests are unresolved. | Approve medication/reminder policy, then create DD. |
+| M23 `GLUCOSE_TRACKING` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M23/UC-28 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Unit/threshold/clinical policy, entitlement, data lifecycle, RLS and tests are unresolved. | Approve clinical/access policy, then create DD. |
+| M24 `SYMPTOM_PAIN_JOURNAL` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M24/UC-29 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Escalation, free-text privacy, symptom catalog, AI boundary and tests are unresolved. | Approve safety/privacy policy, then create DD. |
+| M25 `WOMENS_CYCLE_HEALTH` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M25/UC-30 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Sensitive data, minor/pregnancy, FamilyPlus disclosure/revoke, retention/delete and tests are unresolved. | Approve privacy/clinical policy, then create DD. |
+| M26 `RESPIRATORY_ALLERGY_TRACKING` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M26/UC-31 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Action-plan/escalation, trigger catalog, device/source, privacy and tests are unresolved. | Approve respiratory safety policy, then create DD. |
+| M27 `LAB_RESULT_TRACKING` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M27/UC-32 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Unit/reference/source, correction, user-confirmed AI extraction, OCR/import boundary, retention/export and tests are unresolved. | Approve lab data and AI-extraction confirmation policy, then create DD. |
+| M28 `PREVENTIVE_CARE` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M28/UC-33 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Vietnam locale/source/version, minor/pregnancy, reminder and test policy are unresolved. | Approve preventive source policy, then create DD. |
+| M29 `AI_HEALTH_TRENDS` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M29/UC-34 exists; only catalog shell is approved. No DD folder, AI contract or business implementation evidence. | Consent, minimum data, model/prompt policy, safety evaluation, quota, audit, retention and tests are unresolved. | Approve M06/M07/M19 AI contract and create DD before any production AI call. |
 
 ## Accepted Decision Coverage
 
@@ -59,6 +69,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Health formulas Q-14 | Approved for DD docs | Wellness-reference only; production must keep version config and disclaimer copy. |
 | Sale/payment/payout | Approved for DD docs | Manual payment/payout approval, 24h hold, 24h refund/cancel, listed-price commission, owner-only FamilyPlus commission. |
 | Admin/privacy | Approved for DD docs | Full Admin group model, Super Admin-only sensitive edits, Sale privacy-limited phone/basic customer info. |
+| Advanced Health M20-M29 | BD Draft; UI catalog shell approved only | M20-M29 DD completeness 0% and business coding progress 0%; placeholder UI is not feature completion. |
 
 ## Implementation Evidence Backlog
 
@@ -83,6 +94,16 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | M17 `RECONCILIATION` | Provider/staging discrepancy data and sandbox edge cases. |
 | M18 `REPORTING` | Retention policy execution and sandbox export evidence. |
 | M19 `AUDIT_SECURITY` | Security response, retention, and sandbox audit rows evidence. |
+| M20 `BLOOD_PRESSURE_TRACKING` | First approve DD, clinical/source policy, manual data contract, FamilyPlus/RLS and tests; then collect implementation/sandbox evidence. |
+| M21 `HEART_OXYGEN_TRACKING` | First approve DD, device limitation/escalation policy, manual data contract, FamilyPlus/RLS and tests. |
+| M22 `MEDICATION_ADHERENCE` | First approve DD, no-prescribing boundary, schedule/event/M09 contract, privacy/RLS and tests. |
+| M23 `GLUCOSE_TRACKING` | First approve DD, clinical/unit/threshold policy, entitlement, FamilyPlus/RLS and tests. |
+| M24 `SYMPTOM_PAIN_JOURNAL` | First approve DD, escalation/free-text/AI boundary, FamilyPlus/RLS and tests. |
+| M25 `WOMENS_CYCLE_HEALTH` | First approve DD, sensitive/minor/FamilyPlus/revoke/retention policy, RLS and tests. |
+| M26 `RESPIRATORY_ALLERGY_TRACKING` | First approve DD, action-plan/escalation/source policy, FamilyPlus/RLS and tests. |
+| M27 `LAB_RESULT_TRACKING` | First approve DD, original unit/range/source, user-confirmed AI extraction, import/retention policy, RLS and tests. |
+| M28 `PREVENTIVE_CARE` | First approve DD, Vietnam source/version policy, M09 reminder contract, FamilyPlus/RLS and tests. |
+| M29 `AI_HEALTH_TRENDS` | First approve DD and M06/M07/M19 consent/quota/safety/evaluation/provenance contract before AI implementation evidence. |
 
 ## Quy tac Agent khi coding
 
@@ -90,4 +111,6 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 - Sau do doc `docs/checklist/checklist_task_coding.md` de lay note cong viec tu phien truoc.
 - Q-01..Q-18 khong con la PO blocker; khong invent rule khac neu conflict voi accepted decision registry.
 - DD completeness da la 100% cho M01-M19; chi tang coding progress khi co code/test/SQL/sandbox evidence moi.
+- M20-M29 hien co DD completeness 0% va business coding progress 0%. UI catalog shell/placeholder khong duoc tinh la DD hoac business feature completion.
+- Khong tao DD folder hoac coding health data/AI cho M20-M29 den khi module tuong ung co DD Approved va cac safety/privacy blocker duoc chot.
 - Runtime/sandbox/RLS/API/audit evidence phai ghi worklog va cap nhat backlog truoc khi claim production acceptance.

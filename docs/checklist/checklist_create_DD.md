@@ -7,9 +7,10 @@ Commit de xuat: docs(dd): cap nhat checklist tao DD
 | Field | Value |
 |---|---|
 | Current BD | `docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md` (`BD-BIOAI-PRODUCT-FLOW-002`) |
-| Current DD folder | `docs/DD/` split by module M01-M19 |
-| Ngay cap nhat | 2026-06-30 |
-| Status | M01-M19 are `Approved - DD docs complete`; Open Q = 0; DD completeness = 100%. |
+| Advanced Health BD | `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` (`BD-BIOAI-ADVANCED-HEALTH-001`) |
+| Current DD folder | `docs/DD/` contains approved M01-M19; M20-M29 folders do not exist |
+| Ngay cap nhat | 2026-07-13 |
+| Status | M01-M19 are `Approved - DD docs complete`; M20-M29 are `Not started`, DD completeness = 0%, business coding progress = 0%. |
 
 ## Current DD v2.0 M01-M19
 
@@ -34,6 +35,23 @@ Commit de xuat: docs(dd): cap nhat checklist tao DD
 | 17 | DD-RECONCILIATION-001 | M17 `RECONCILIATION` | Approved - DD docs complete | `docs/DD/reconciliation/` | 2026-06-29 | Source: BD section 12.1, 14.4, 15, Appendix A UC-22; implementation evidence backlog tracked in `checklist_complete_DD.md`. |
 | 18 | DD-REPORTING-001 | M18 `REPORTING` | Approved - DD docs complete | `docs/DD/reporting/` | 2026-06-29 | Source: BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24; implementation evidence backlog tracked in `checklist_complete_DD.md`. |
 | 19 | DD-AUDIT_SECURITY-001 | M19 `AUDIT_SECURITY` | Approved - DD docs complete | `docs/DD/audit_security/` | 2026-06-29 | Source: BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23; implementation evidence backlog tracked in `checklist_complete_DD.md`. |
+
+## Planned Advanced Health DD M20-M29
+
+UI catalog cards and the shared development placeholder are approved shell work only. They do not create a DD, do not change DD completeness, and do not count as business feature coding.
+
+| # | Planned DD | Module | Status | Planned output path | Created | Source/Blocker |
+|---:|---|---|---|---|---|---|
+| 20 | DD-BLOOD_PRESSURE_TRACKING-001 | M20 `BLOOD_PRESSURE_TRACKING` | Not started - source BD Draft | `docs/DD/blood_pressure_tracking/` | No | Advanced Health BD M20/UC-25; create only after AHF-Q blockers for this module are resolved. |
+| 21 | DD-HEART_OXYGEN_TRACKING-001 | M21 `HEART_OXYGEN_TRACKING` | Not started - source BD Draft | `docs/DD/heart_oxygen_tracking/` | No | Advanced Health BD M21/UC-26; device limitations and safety copy require approval. |
+| 22 | DD-MEDICATION_ADHERENCE-001 | M22 `MEDICATION_ADHERENCE` | Not started - source BD Draft | `docs/DD/medication_adherence/` | No | Advanced Health BD M22/UC-27; medication/reminder boundaries require DD. |
+| 23 | DD-GLUCOSE_TRACKING-001 | M23 `GLUCOSE_TRACKING` | Not started - source BD Draft | `docs/DD/glucose_tracking/` | No | Advanced Health BD M23/UC-28; thresholds/unit/clinical policy require approval. |
+| 24 | DD-SYMPTOM_PAIN_JOURNAL-001 | M24 `SYMPTOM_PAIN_JOURNAL` | Not started - source BD Draft | `docs/DD/symptom_pain_journal/` | No | Advanced Health BD M24/UC-29; escalation and free-text privacy require approval. |
+| 25 | DD-WOMENS_CYCLE_HEALTH-001 | M25 `WOMENS_CYCLE_HEALTH` | Not started - source BD Draft | `docs/DD/womens_cycle_health/` | No | Advanced Health BD M25/UC-30; sensitive/FamilyPlus/minor policy requires approval. |
+| 26 | DD-RESPIRATORY_ALLERGY_TRACKING-001 | M26 `RESPIRATORY_ALLERGY_TRACKING` | Not started - source BD Draft | `docs/DD/respiratory_allergy_tracking/` | No | Advanced Health BD M26/UC-31; action-plan and escalation policy require approval. |
+| 27 | DD-LAB_RESULT_TRACKING-001 | M27 `LAB_RESULT_TRACKING` | Not started - source BD Draft | `docs/DD/lab_result_tracking/` | No | Advanced Health BD M27/UC-32; unit/range/source and import boundary require approval. |
+| 28 | DD-PREVENTIVE_CARE-001 | M28 `PREVENTIVE_CARE` | Not started - source BD Draft | `docs/DD/preventive_care/` | No | Advanced Health BD M28/UC-33; Vietnam locale/source/version policy requires approval. |
+| 29 | DD-AI_HEALTH_TRENDS-001 | M29 `AI_HEALTH_TRENDS` | Not started - source BD Draft | `docs/DD/ai_health_trends/` | No | Advanced Health BD M29/UC-34; AI consent/safety/evaluation and M06/M07/M19 contract require approval. |
 
 ## Legacy Product Flow v1
 

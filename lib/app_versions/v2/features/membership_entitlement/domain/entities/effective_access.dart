@@ -22,7 +22,7 @@ class EffectiveAccess {
       userId: map['user_id']?.toString() ?? '',
       isAnonymous: _readBool(map['is_anonymous']),
       productAccess: _readText(map['product_access'], fallback: 'free'),
-      membershipPlan: _readText(map['membership_plan'], fallback: 'free'),
+      membershipPlan: _readText(map['membership_plan'], fallback: 'unknown'),
       saleStatus: _readText(map['sale_status'], fallback: 'none'),
       onboardingStatus: _readText(
         map['onboarding_status'],

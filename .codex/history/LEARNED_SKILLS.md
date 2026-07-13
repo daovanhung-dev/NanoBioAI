@@ -4,7 +4,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- coding - Coding: 21 worklog(s)
+- coding - Coding: 22 worklog(s)
 - bugfix - Direct bugfix: 19 worklog(s)
 - docs-context - Context and docs update: 19 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
@@ -19,16 +19,16 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 - unknown: 7
 - docs/issues, docs/todo: 2
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
+- M05 AI / runtime configuration / onboarding: 2
 - authentication: 2
 - docs/DD M01-M19: 2
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - M05 AI / AI Chat / runtime configuration: 2
 - .codex: 2
-- M05 AI / runtime configuration / onboarding: 2
 - .codex, agent context, docs integrity: 1
-- M09 SCHEDULE_NOTIFICATIONS, M10 ADVANCED_TRACKING_GOALS: 1
-- docs/prompts/bootstrap-ai-context.md: 1
+- M01 ONBOARDING_PROFILE, M03 DASHBOARD_SCHEDULE, M04 BASIC_HEALTH_CALC, M08 HEALTH_SCORE_HABITS, M13 PAYMENT_MEMBERSHIP, M14 SALE_POINTS, M15 ADMIN_DASHBOARD: 1
 - docs/checklist, technical debt audit summary: 1
+- v2 authentication: 1
 
 ## Reusable Project Skills
 

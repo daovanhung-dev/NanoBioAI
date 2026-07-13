@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/router/router.dart';
 import 'package:nano_app/app_versions/v2/features/auth/auth.dart';
-import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/app_versions/v2/features/health_scoring/health_scoring.dart';
+import 'package:nano_app/app_versions/v2/features/health_modules/health_modules.dart';
 import 'package:nano_app/app_versions/v2/features/home/presentation/pages/v2_home_page.dart';
 import 'package:nano_app/app_versions/v2/features/payments/payments.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
+import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_shell_page.dart';
 
 final v2Routes = <RouteBase>[
@@ -65,6 +66,13 @@ final v2Routes = <RouteBase>[
     builder: (context, state) => const HealthScoreHabitsPage(),
   ),
   GoRoute(
+    path: HealthModuleRoutePaths.detailPattern,
+    name: HealthModuleRoutePaths.detailRouteName,
+    builder: (context, state) => HealthModuleAccessPage(
+      moduleId: state.pathParameters['moduleId'] ?? '',
+    ),
+  ),
+  GoRoute(
     path: V2RoutePaths.payments,
     name: V2RoutePaths.payments,
     builder: (context, state) => const MembershipPaymentPage(),
@@ -92,7 +100,7 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
       final syncState = ref.read(userDataSyncControllerProvider);
       final isAccountEntry =
           path == V2RoutePaths.login || path == V2RoutePaths.register;
-      final isProtected = _protectedPaths.contains(path);
+      final isProtected = V2RouteGuards.isProtectedPath(path);
 
       if (isAccountEntry &&
           routeState != null &&
@@ -118,12 +126,20 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-const _protectedPaths = <String>{
-  V2RoutePaths.home,
-  V2RoutePaths.healthScore,
-  V2RoutePaths.payments,
-  V2RoutePaths.sale,
-};
+abstract class V2RouteGuards {
+  static const exactProtectedPaths = <String>{
+    V2RoutePaths.home,
+    V2RoutePaths.healthScore,
+    V2RoutePaths.payments,
+    V2RoutePaths.sale,
+  };
+
+  static bool isProtectedPath(String path) {
+    final normalizedPath = path.trim();
+    return exactProtectedPaths.contains(normalizedPath) ||
+        HealthModuleRoutePaths.matchesProtectedPrefix(normalizedPath);
+  }
+}
 
 class _RouterRefreshNotifier extends ChangeNotifier {
   void refresh() => notifyListeners();

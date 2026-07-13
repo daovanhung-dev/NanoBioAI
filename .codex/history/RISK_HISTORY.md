@@ -489,3 +489,12 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: ## Loi/Rui ro
 - docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: - Da fix: missing config co typed failure, banner ro rang va khong commit quota.
 - docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: - Hanh vi mong doi: timeout model chinh van retry/fallback sang model thu hai.
+- docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: - Fail closed cho access null/error/malformed/unknown va module ID la; membership
+- docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: - fail closed khi membership plan thieu.
+- docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: - `flutter test test/architecture_version_boundary_test.dart`: FAIL o hai vi
+- docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: PARTIAL/FAIL - `flutter pub get` PASS, sau do repo-wide Dart format gate phat
+- docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: - Architecture boundary test toan repo con FAIL do hai dependency baseline ngoai
+- docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: - Quick check toan repo con FAIL o baseline formatter drift; targeted format,
+- docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: co fail-closed va ranh gioi an toan ro.
+- docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md :: side effect ngoai scope truoc khi fail; da khoi phuc chinh xac.
