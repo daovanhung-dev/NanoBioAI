@@ -537,6 +537,17 @@ class OnboardingController extends Notifier<OnboardingState> {
       } on AIOverloadedException {
         rethrow;
       } catch (error, stackTrace) {
+        if (AIAuthenticationException.matches(error)) {
+          AppLogger.error(
+            _tag,
+            'Initial plan generation authentication failed',
+            error,
+            stackTrace,
+          );
+          throw const OnboardingInitialPlanException(
+            AIAuthenticationException.userMessage,
+          );
+        }
         AppLogger.error(
           _tag,
           'Initial plan generation failed',

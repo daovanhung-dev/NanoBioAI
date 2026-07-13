@@ -24,7 +24,7 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
     final ui = _MealPlanResponsiveUi.of(context);
     final mealState = ref.watch(mealPlanControllerProvider);
 
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [

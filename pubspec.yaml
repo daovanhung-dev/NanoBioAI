@@ -37,7 +37,6 @@ dependencies:
 
   # Env
   flutter_dotenv: ^6.0.1
-  google_generative_ai: ^0.4.7
 
   # Settings Feature Dependencies
   local_auth: ^2.2.0

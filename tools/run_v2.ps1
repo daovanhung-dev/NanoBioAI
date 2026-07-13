@@ -16,10 +16,11 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
-$requiredAuthKeys = @(
+$requiredRuntimeKeys = @(
   "SUPABASE_URL",
   "SUPABASE_ANON_KEY",
-  "AUTH_EMAIL_REDIRECT_URL"
+  "AUTH_EMAIL_REDIRECT_URL",
+  "GEMINI_API_KEY"
 )
 
 function Resolve-RepoFile {
@@ -108,13 +109,13 @@ function Test-IsPlaceholder {
   return $false
 }
 
-function Assert-AuthEnvironment {
+function Assert-RuntimeEnvironment {
   param([Parameter(Mandatory = $true)][string]$Path)
 
   $settings = Read-DotEnvSettings -Path $Path
   $invalidKeys = New-Object System.Collections.Generic.List[string]
 
-  foreach ($key in $requiredAuthKeys) {
+  foreach ($key in $requiredRuntimeKeys) {
     if (-not $settings.ContainsKey($key) -or (Test-IsPlaceholder -Value $settings[$key])) {
       $invalidKeys.Add($key) | Out-Null
     }
@@ -123,6 +124,36 @@ function Assert-AuthEnvironment {
   if ($invalidKeys.Count -gt 0) {
     throw "Environment validation failed. Set non-empty, non-placeholder values for: $($invalidKeys -join ', ')."
   }
+}
+
+function Get-DartDefineArguments {
+  param([Parameter(Mandatory = $true)][hashtable]$Settings)
+
+  $keys = @(
+    "SUPABASE_URL",
+    "SUPABASE_ANON_KEY",
+    "AUTH_EMAIL_REDIRECT_URL",
+    "AUTH_CONFIRM_EMAIL_REQUIRED",
+    "GEMINI_API_KEY",
+    "GEMINI_BASE_URL",
+    "GEMINI_MODEL",
+    "GEMINI_FALLBACK_MODELS",
+    "GEMINI_PLAN_MODEL",
+    "GEMINI_PLAN_FALLBACK_MODELS",
+    "GEMINI_PLAN_OVERFLOW_MODELS",
+    "GEMINI_CHAT_MODEL",
+    "GEMINI_CHAT_FALLBACK_MODELS",
+    "ONBOARDING_AI_DEV_CHECK_ENABLED"
+  )
+  $arguments = New-Object System.Collections.Generic.List[string]
+
+  foreach ($key in $keys) {
+    if ($Settings.ContainsKey($key) -and -not [string]::IsNullOrWhiteSpace($Settings[$key])) {
+      $arguments.Add("--dart-define=$key=$($Settings[$key])") | Out-Null
+    }
+  }
+
+  return $arguments.ToArray()
 }
 
 function Invoke-FlutterRun {
@@ -158,9 +189,10 @@ function Invoke-FlutterRun {
 
 $resolvedEnvFile = Resolve-RepoFile -Path $EnvFile -Label "Environment"
 $resolvedEntryPoint = Resolve-RepoFile -Path $EntryPoint -Label "Entry point"
-Assert-AuthEnvironment -Path $resolvedEnvFile
+$environment = Read-DotEnvSettings -Path $resolvedEnvFile
+Assert-RuntimeEnvironment -Path $resolvedEnvFile
 
-Write-Host "Authentication environment validation passed."
+Write-Host "Authentication and AI environment validation passed."
 if ($ValidateOnly) {
   Write-Host "Validation-only mode completed; Flutter was not started."
   return
@@ -171,9 +203,8 @@ $flutterArguments = @(
   "-d",
   $DeviceId,
   "-t",
-  $resolvedEntryPoint,
-  "--dart-define-from-file=$resolvedEnvFile"
-)
+  $resolvedEntryPoint
+) + (Get-DartDefineArguments -Settings $environment)
 
 Write-Host "Starting Flutter on device $DeviceId with validated local configuration."
 Push-Location $repoRoot

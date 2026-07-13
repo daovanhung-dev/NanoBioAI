@@ -7,6 +7,7 @@ import 'package:nano_app/core/theme/app_colors.dart';
 import 'package:nano_app/core/theme/app_gradients.dart';
 import 'package:nano_app/core/theme/app_shadows.dart';
 import 'package:nano_app/core/theme/app_text_styles.dart';
+import 'package:nano_app/core/theme/medical_ui.dart';
 
 class AIGeneratingPage extends StatefulWidget {
   const AIGeneratingPage({super.key});
@@ -131,7 +132,8 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
+      ambientBackground: false,
       backgroundColor: AppColors.background,
       body: Stack(
         children: [

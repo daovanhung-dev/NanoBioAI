@@ -134,7 +134,8 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlayStyle,
-      child: Scaffold(
+      child: MedicalPageScaffold(
+        ambientBackground: false,
         backgroundColor: AppColors.background,
         extendBody: true,
         body: LayoutBuilder(

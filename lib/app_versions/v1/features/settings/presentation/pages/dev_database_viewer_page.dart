@@ -104,7 +104,7 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         elevation: 0,
@@ -277,7 +277,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: AppDecoration.gradient(
-        colors: const [Color(0xFF0F172A), Color(0xFF2563EB)],
+        colors: AppGradients.dashboard.colors,
         radius: AppRadius.xxl,
         shadows: AppShadows.lg,
       ),

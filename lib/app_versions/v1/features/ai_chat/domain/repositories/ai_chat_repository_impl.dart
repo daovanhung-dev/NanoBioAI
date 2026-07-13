@@ -1,6 +1,7 @@
 import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
 
 import '../../../../services/ai/ai_chat_service.dart';
+import '../../../../services/ai/ai_exceptions.dart';
 import '../../data/models/chat_message_model.dart';
 import '../entities/chat_message_entity.dart';
 import 'ai_chat_repository.dart';
@@ -38,7 +39,12 @@ class AIChatRepositoryImpl implements AIChatRepository {
     _history.add(userMessage);
 
     // Get AI response
-    final responseText = await _aiChatService.sendMessage(message);
+    final String responseText;
+    try {
+      responseText = await _aiChatService.sendMessage(message);
+    } on AIConfigurationUnavailableException catch (_, stackTrace) {
+      Error.throwWithStackTrace(const AIChatUnavailableException(), stackTrace);
+    }
 
     await _quotaGateway?.commitCurrentUserQuota(
       featureKey: UsageQuotaFeatureKey.aiChatMessage,

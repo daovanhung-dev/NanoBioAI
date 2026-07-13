@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "NanoBio - App (Auth + AI)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "templateFor": "lib/main.dart",
+      "preLaunchTask": "NanoBio: prepare runtime defines",
+      "toolArgs": [
+        "--dart-define-from-file=.dart_tool/nanobio_defines.json"
+      ]
+    },
+    {
+      "name": "NanoBio - V2 App (Auth + AI)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_v2.dart",
+      "templateFor": "lib/main_v2.dart",
+      "preLaunchTask": "NanoBio: prepare runtime defines",
+      "toolArgs": [
+        "--dart-define-from-file=.dart_tool/nanobio_defines.json"
+      ]
+    },
+    {
+      "name": "NanoBio - Admin (Auth + AI)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_admin.dart",
+      "templateFor": "lib/main_admin.dart",
+      "preLaunchTask": "NanoBio: prepare runtime defines",
+      "toolArgs": [
+        "--dart-define-from-file=.dart_tool/nanobio_defines.json"
+      ]
+    }
+  ]
+}

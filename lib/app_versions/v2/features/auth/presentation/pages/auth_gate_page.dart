@@ -191,7 +191,7 @@ class _GuestConsentState extends StatelessWidget {
         : 'Tài khoản mới chưa có dữ liệu sức khỏe. Chọn “Đồng bộ ngay” để chuyển '
             'dữ liệu khách hiện tại vào tài khoản.';
 
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
@@ -265,7 +265,7 @@ class _AuthLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return const MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: Center(child: CircularProgressIndicator()),
     );
@@ -285,7 +285,7 @@ class _AuthSupportState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(

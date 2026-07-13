@@ -2,32 +2,32 @@
 
 - Canonical key: coding
 - Workflow: .codex/workflows/coding.md
-- Generated from 19 worklog(s).
+- Generated from 21 worklog(s).
 
 ## When To Read
 
-- Historical task type: coding (14)
-- Historical task type: coding/test/docs (3)
+- Historical task type: coding (15)
+- Historical task type: coding/test/docs (4)
 - Historical task type: feature (1)
 - Historical task type: feature Dashboard/UI + data write path (1)
 
 ## Common Modules
 
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
-- Authentication v2, Settings account security: 1
-- Dashboard, AI service, lifestyle schedule: 1
-- M01 ONBOARDING_PROFILE: 1
+- M09 SCHEDULE_NOTIFICATIONS, M10 ADVANCED_TRACKING_GOALS: 1
 - M01 ONBOARDING_PROFILE, M03 DASHBOARD_SCHEDULE, M04 BASIC_HEALTH_CALC, M08 HEALTH_SCORE_HABITS, M13 PAYMENT_MEMBERSHIP, M14 SALE_POINTS, M15 ADMIN_DASHBOARD: 1
 - M01 ONBOARDING_PROFILE, M05 AUTH_PROFILE_SYNC, local SQLite sync outbox: 1
-- M02 PERSONAL_SCHEDULE_AI: 1
+- M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M02 PERSONAL_SCHEDULE_AI: 1
 - M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M11 FAMILYPLUS, M12 REFERRAL_DIRECT, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
+- M05 AUTH_PROFILE_SYNC, Settings Guest entry, authenticated Android build.: 1
+- UI/UX dùng chung cho V1, V2, V3, Sale và Admin: 1
 
 ## Work Pattern
 
 - Start from the selected workflow, then this task skill, then one domain file.
-- Read `docs/checklist/checklist_complete_DD.md` first to identify DD module progress, blockers, and next step; then read `docs/checklist/checklist_task_coding.md` for prior-session coding notes.
+- Read docs/checklist/checklist_complete_DD.md first to identify DD module progress, blockers, and next step; then read docs/checklist/checklist_task_coding.md for prior-session coding notes.
 - Before coding from a DD module, state the module, current progress percentages, blockers, and exact next task from the checklist.
-- After coding, update `docs/checklist/checklist_complete_DD.md` and record upcoming work in `docs/checklist/checklist_task_coding.md`.
+- After coding, update docs/checklist/checklist_complete_DD.md and record upcoming work in docs/checklist/checklist_task_coding.md.
 - Prefer targeted `rg` and focused tests over broad reads/checks.
 - Record exact evidence in the worklog and add the self-review section.
 - Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.

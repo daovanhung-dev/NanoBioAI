@@ -22,7 +22,7 @@ class V1AuthEntryPage extends StatelessWidget {
               'tra quyền thành viên an toàn.';
     final actionLabel = _isRegister ? 'Tạo tài khoản' : 'Đăng nhập';
 
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(

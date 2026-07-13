@@ -15,7 +15,7 @@ class HealthInsightsView extends ConsumerWidget {
     final dashboardAsync = ref.watch(dashboardProvider);
     final dynamicAsync = ref.watch(dashboardDynamicProvider);
 
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: dashboardAsync.when(
@@ -163,7 +163,7 @@ class _SummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: AppDecoration.gradient(
-        colors: const [Color(0xFF2563EB), Color(0xFF06B6D4)],
+        colors: AppGradients.hero.colors,
         radius: AppRadius.xl,
         shadows: AppShadows.lg,
       ),

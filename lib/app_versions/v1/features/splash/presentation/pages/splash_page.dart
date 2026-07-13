@@ -248,7 +248,8 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
+      ambientBackground: false,
       backgroundColor: AppColors.background,
       body: Stack(
         children: [

@@ -86,8 +86,8 @@ void main() {
       test(
         'FOR ALL AI service calls, Gemini API integration works identically',
         () {
-          // OBSERVATION: ai_service.dart uses GenerativeModel with Gemini API
-          // INVARIANT: Gemini API integration and parsing logic must remain unchanged
+          // OBSERVATION: ai_service.dart delegates to a Gemini client.
+          // INVARIANT: Gemini integration and parsing behavior must remain available
 
           final aiServiceFile = File(
             'lib/app_versions/v1/services/ai/ai_service.dart',
@@ -96,11 +96,11 @@ void main() {
 
           final content = aiServiceFile.readAsStringSync();
 
-          // Verify Gemini API setup preserved
+          // Verify Gemini API setup is preserved through the REST client.
           expect(
-            content.contains('GenerativeModel'),
+            content.contains('GeminiRestClient'),
             isTrue,
-            reason: 'Must use GenerativeModel for Gemini API',
+            reason: 'Must use the Gemini REST client',
           );
 
           expect(
@@ -110,9 +110,9 @@ void main() {
           );
 
           expect(
-            content.contains('generateContent'),
+            content.contains('generateText'),
             isTrue,
-            reason: 'Must call generateContent API',
+            reason: 'Must call Gemini text generation',
           );
 
           // Verify generateMealPlan method signature exists

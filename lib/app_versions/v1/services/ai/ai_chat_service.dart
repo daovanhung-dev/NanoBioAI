@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:nano_app/core/config/app_env.dart';
 
 import 'ai_exceptions.dart';
 import 'ai_trace_logger.dart';
+import 'gemini_rest_client.dart';
 import 'ai_vietnamese_text_validator.dart';
 
 typedef AIChatTextGenerator =
@@ -32,6 +32,7 @@ class AIChatService {
   late final Future<void> Function(Duration) _delay;
   late final Random _random;
   late final AIChatTextGenerator? _textGenerator;
+  late final GeminiRestClient? _geminiClient;
   late final DateTime Function() _now;
   late final Duration _modelCooldown;
   final Map<String, DateTime> _modelCooldownUntil = {};
@@ -42,6 +43,7 @@ class AIChatService {
     Future<void> Function(Duration)? delay,
     Random? random,
     AIChatTextGenerator? textGenerator,
+    GeminiRestClient? geminiClient,
     DateTime Function()? now,
     Duration? modelCooldown,
   }) {
@@ -51,10 +53,19 @@ class AIChatService {
     _now = now ?? DateTime.now;
     _modelCooldown = modelCooldown ?? AIChatRetryPolicy.modelCooldown;
 
+    final needsRuntimeClient = _textGenerator == null && geminiClient == null;
     final apiKey = apiKeyOverride != null
         ? _cleanEnv(apiKeyOverride)
-        : (_textGenerator == null ? _env('GEMINI_API_KEY') : null);
-    final hasApiKey = apiKey != null && apiKey.isNotEmpty;
+        : (needsRuntimeClient ? _env('GEMINI_API_KEY') : null);
+    final hasRuntimeClient =
+        geminiClient != null || (apiKey != null && apiKey.isNotEmpty);
+    _geminiClient = _textGenerator == null && hasRuntimeClient
+        ? geminiClient ??
+              GeminiRestClient(
+                apiKey: apiKey!,
+                baseUrl: _env('GEMINI_BASE_URL'),
+              )
+        : null;
 
     final resolvedModelNames =
         modelNames ??
@@ -76,7 +87,7 @@ class AIChatService {
       location: StackTrace.current,
     );
 
-    if (!hasApiKey && _textGenerator == null) {
+    if (!hasRuntimeClient && _textGenerator == null) {
       AITraceLogger.warning(
         _tag,
         AITraceLogger.nextTraceId('ai-chat-init'),
@@ -90,22 +101,7 @@ class AIChatService {
 
     _models = [
       for (final modelName in resolvedModelNames)
-        _AIChatModelEntry(
-          name: modelName,
-          model: hasApiKey && _textGenerator == null
-              ? GenerativeModel(
-                  model: modelName,
-                  apiKey: apiKey,
-                  generationConfig: GenerationConfig(
-                    candidateCount: 1,
-                    maxOutputTokens: 512,
-                    temperature: 0.4,
-                    topP: 0.8,
-                  ),
-                  systemInstruction: _systemInstruction,
-                )
-              : null,
-        ),
+        _AIChatModelEntry(name: modelName),
     ];
   }
 
@@ -119,6 +115,10 @@ class AIChatService {
       data: {'models': _modelNames(), 'messageLength': message.length},
       location: StackTrace.current,
     );
+
+    if (!_hasRuntimeTextSource) {
+      _throwMissingConfiguration(traceId: traceId, method: method);
+    }
 
     try {
       final validation = await _runWithRetry(
@@ -172,6 +172,10 @@ class AIChatService {
       data: {'models': _modelNames(), 'messageLength': message.length},
       location: StackTrace.current,
     );
+
+    if (!_hasRuntimeTextSource) {
+      _throwMissingConfiguration(traceId: traceId, method: method);
+    }
 
     try {
       final validation = await _runWithRetry(
@@ -377,13 +381,24 @@ class AIChatService {
       return textGenerator(modelName: entry.name, message: message);
     }
 
-    final session = entry.chatSession;
-    if (session == null) {
-      throw StateError('Missing Gemini chat session for ${entry.name}');
+    final client = _geminiClient;
+    if (client == null) {
+      throw StateError('Missing Gemini REST client for ${entry.name}');
     }
 
-    final response = await session.sendMessage(Content.text(message));
-    return response.text ?? '';
+    final response = await client.generateText(
+      model: entry.name,
+      contents: entry.contentsWithUserMessage(message),
+      generationConfig: const GeminiGenerationConfig(
+        candidateCount: 1,
+        maxOutputTokens: 512,
+        temperature: 0.4,
+        topP: 0.8,
+      ),
+      systemInstruction: _systemInstruction,
+    );
+    entry.rememberTurn(userMessage: message, modelMessage: response);
+    return response;
   }
 
   Future<String> _sendTextStream(
@@ -395,13 +410,7 @@ class AIChatService {
       return textGenerator(modelName: entry.name, message: message);
     }
 
-    final session = entry.chatSession;
-    if (session == null) {
-      throw StateError('Missing Gemini chat session for ${entry.name}');
-    }
-
-    final response = session.sendMessageStream(Content.text(message));
-    return response.map((event) => event.text ?? '').join();
+    return _sendText(entry, message);
   }
 
   void _logValidation(
@@ -465,6 +474,25 @@ class AIChatService {
     return _models.map((entry) => entry.name).toList(growable: false);
   }
 
+  bool get _hasRuntimeTextSource =>
+      _textGenerator != null || _geminiClient != null;
+
+  Never _throwMissingConfiguration({
+    required String traceId,
+    required String method,
+  }) {
+    AITraceLogger.warning(
+      _tag,
+      traceId,
+      method,
+      'MISSING_API_KEY',
+      'AI chat is unavailable because GEMINI_API_KEY is missing.',
+      data: {'reason': 'missing_api_key', 'models': _modelNames()},
+      location: StackTrace.current,
+    );
+    throw const AIConfigurationUnavailableException();
+  }
+
   static String? _envWithLegacy(String key, String legacyKey) {
     return AppEnv.maybeStringWithLegacy(key, legacyKey);
   }
@@ -506,7 +534,7 @@ class AIChatService {
     );
   }
 
-  static final Content _systemInstruction = Content.system('''
+  static const String _systemInstruction = '''
 Bạn là Nabi, trợ lý sức khỏe thông minh và thân thiện.
 
 Vai trò:
@@ -530,7 +558,7 @@ Nguyên tắc an toàn:
 
 Ví dụ phong cách:
 "Mình hiểu bạn đang cảm thấy mệt. Bạn nên ưu tiên ngủ đủ 7 đến 8 tiếng mỗi đêm, uống đủ nước và ăn thêm rau xanh. Nếu tình trạng kéo dài hoặc nặng hơn, bạn nên trao đổi với bác sĩ nhé."
-''');
+''';
 }
 
 class AIChatModelCandidates {
@@ -612,18 +640,33 @@ class AIChatRetryPolicy {
 }
 
 class _AIChatModelEntry {
-  final String name;
-  final GenerativeModel? model;
-  ChatSession? _chatSession;
+  static const _maxHistoryMessages = 16;
 
-  _AIChatModelEntry({required this.name, required this.model}) {
-    resetChat();
+  final String name;
+  final List<GeminiContent> _history = [];
+
+  _AIChatModelEntry({required this.name});
+
+  List<GeminiContent> contentsWithUserMessage(String message) {
+    return [..._history, GeminiContent.user(message)];
   }
 
-  ChatSession? get chatSession => _chatSession;
+  void rememberTurn({
+    required String userMessage,
+    required String modelMessage,
+  }) {
+    _history
+      ..add(GeminiContent.user(userMessage))
+      ..add(GeminiContent.model(modelMessage));
+
+    final overflow = _history.length - _maxHistoryMessages;
+    if (overflow > 0) {
+      _history.removeRange(0, overflow);
+    }
+  }
 
   void resetChat() {
-    _chatSession = model?.startChat();
+    _history.clear();
   }
 }
 

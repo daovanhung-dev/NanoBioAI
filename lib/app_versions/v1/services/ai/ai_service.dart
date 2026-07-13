@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
 import 'package:nano_app/core/config/app_env.dart';
 import 'package:nano_app/core/storage/localdb/datasources/ai_catalog_local_datasource.dart';
@@ -16,6 +15,7 @@ import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_pla
 import 'ai_exceptions.dart';
 import 'ai_json_parser.dart';
 import 'ai_json_prompt_builder.dart';
+import 'gemini_rest_client.dart';
 import 'ai_trace_logger.dart';
 import 'prompts/exercise_tasks_prompt.dart';
 import 'prompts/meal_plan_prompt.dart';
@@ -65,6 +65,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
   late final Future<void> Function(Duration) _delay;
   late final Random _random;
   late final AITextGenerator? _textGenerator;
+  late final GeminiRestClient? _geminiClient;
   late final AiCatalogLoader _catalogLoader;
   late final DateTime Function() _now;
   late final Duration _modelCooldown;
@@ -76,6 +77,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     Future<void> Function(Duration)? delay,
     Random? random,
     AITextGenerator? textGenerator,
+    GeminiRestClient? geminiClient,
     AiCatalogLoader? catalogLoader,
     DateTime Function()? now,
     Duration? modelCooldown,
@@ -88,11 +90,30 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     _catalogLoader =
         catalogLoader ?? const AiCatalogLocalDatasource().loadActiveBundle;
 
-    final apiKey =
-        _cleanEnv(apiKeyOverride) ??
-        (_textGenerator == null ? AppEnv.maybeString('GEMINI_API_KEY') : null);
-    if (_textGenerator == null && (apiKey == null || apiKey.isEmpty)) {
-      throw Exception('Không tìm thấy GEMINI_API_KEY');
+    final needsRuntimeClient = _textGenerator == null && geminiClient == null;
+    final apiKey = apiKeyOverride != null
+        ? _cleanEnv(apiKeyOverride)
+        : (needsRuntimeClient ? AppEnv.maybeString('GEMINI_API_KEY') : null);
+    final hasRuntimeClient =
+        geminiClient != null || (apiKey != null && apiKey.isNotEmpty);
+    _geminiClient = _textGenerator == null && hasRuntimeClient
+        ? geminiClient ??
+              GeminiRestClient(
+                apiKey: apiKey!,
+                baseUrl: AppEnv.maybeString('GEMINI_BASE_URL'),
+              )
+        : null;
+
+    if (!hasRuntimeClient && _textGenerator == null) {
+      AITraceLogger.warning(
+        _tag,
+        AITraceLogger.nextTraceId('ai-service-init'),
+        'AIService.constructor',
+        'MISSING_API_KEY',
+        'AI plan generation will use local fallback because GEMINI_API_KEY is missing.',
+        data: {'source': AITraceLogger.localGen},
+        location: StackTrace.current,
+      );
     }
 
     final resolvedModelNames =
@@ -121,26 +142,9 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       location: StackTrace.current,
     );
 
-    final generationConfig = GenerationConfig(
-      candidateCount: 1,
-      maxOutputTokens: 8192,
-      temperature: 0.2,
-      topP: 0.8,
-      responseMimeType: 'application/json',
-    );
-
     _models = [
       for (final modelName in resolvedModelNames)
-        _AIModelEntry(
-          name: modelName,
-          model: _textGenerator == null
-              ? GenerativeModel(
-                  model: modelName,
-                  apiKey: apiKey!,
-                  generationConfig: generationConfig,
-                )
-              : null,
-        ),
+        _AIModelEntry(name: modelName),
     ];
   }
 
@@ -172,6 +176,20 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       return const AIConnectionCheckResult.failure(
         message: 'Không có model AI để kiểm tra.',
       );
+    }
+
+    if (_textGenerator == null && _geminiClient == null) {
+      const message = 'Thiếu GEMINI_API_KEY hoặc key đang rỗng.';
+      AITraceLogger.warning(
+        _tag,
+        traceId,
+        method,
+        'MISSING_API_KEY',
+        message,
+        data: {'source': AITraceLogger.localGen},
+        location: StackTrace.current,
+      );
+      return const AIConnectionCheckResult.failure(message: message);
     }
 
     Object? lastError;
@@ -920,16 +938,22 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       return text;
     }
 
-    final model = entry.model;
-    if (model == null) {
-      throw StateError('Missing Gemini model for ${entry.name}');
+    final client = _geminiClient;
+    if (client == null) {
+      throw StateError('Missing Gemini REST client for ${entry.name}');
     }
 
-    final response = await model.generateContent([Content.text(prompt)]);
-    final text = response.text;
-    if (text == null) {
-      throw Exception('Gemini trả về nội dung rỗng');
-    }
+    final text = await client.generateText(
+      model: entry.name,
+      contents: [GeminiContent.user(prompt)],
+      generationConfig: const GeminiGenerationConfig(
+        candidateCount: 1,
+        maxOutputTokens: 8192,
+        temperature: 0.2,
+        topP: 0.8,
+        responseMimeType: 'application/json',
+      ),
+    );
     stopwatch.stop();
     AITraceLogger.info(
       _tag,
@@ -1011,8 +1035,13 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       return AIOverloadedException.userMessage;
     }
 
+    if (AIAuthenticationException.matches(error)) {
+      return AIAuthenticationException.userMessage;
+    }
+
     final text = error.toString();
-    if (text.contains('GEMINI_API_KEY')) {
+    if (text.contains('GEMINI_API_KEY') ||
+        text.contains('Missing Gemini REST client')) {
       return 'Thiếu GEMINI_API_KEY hoặc key đang rỗng.';
     }
 
@@ -1118,9 +1147,8 @@ class AIRetryPolicy {
 
 class _AIModelEntry {
   final String name;
-  final GenerativeModel? model;
 
-  const _AIModelEntry({required this.name, required this.model});
+  const _AIModelEntry({required this.name});
 }
 
 class _AIChunk {

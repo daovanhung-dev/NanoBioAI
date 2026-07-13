@@ -35,7 +35,7 @@ class SettingsView extends ConsumerWidget {
     final isAuthenticated = ref.watch(currentAuthUserIdProvider) != null;
     final syncState = ref.watch(userDataSyncControllerProvider);
 
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: RefreshIndicator(
@@ -122,7 +122,7 @@ class SettingsView extends ConsumerWidget {
                       ),
                       if (isAuthenticated) ...[
                         const SizedBox(height: AppSpacing.xl),
-                        _SectionTitle('Cùng Nabiphát triển'),
+                        _SectionTitle('Cùng Nabi phát triển'),
                         const SizedBox(height: AppSpacing.md),
                         _MenuCard(
                           children: [
@@ -792,43 +792,13 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Cài đặt',
-                style: AppTextStyles.heading1.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                isLoading
-                    ? 'Nabiđang mở lại các lựa chọn của bạn...'
-                    : 'Nabi sẽ giữ các tùy chỉnh để ứng dụng hợp với bạn hơn.',
-                style: AppTextStyles.bodyMedium,
-              ),
-            ],
-          ),
-        ),
-        Container(
-          height: 58,
-          width: 58,
-          decoration: AppDecoration.gradient(
-            colors: const [AppColors.primary, AppColors.secondary],
-            radius: AppRadius.circular,
-            shadows: AppShadows.primary,
-          ),
-          child: const Icon(
-            Icons.settings_rounded,
-            color: Colors.white,
-            size: 28,
-          ),
-        ),
-      ],
+    return MedicalPageHero(
+      eyebrow: 'CÀI ĐẶT & QUYỀN RIÊNG TƯ',
+      title: 'Cài đặt',
+      subtitle: isLoading
+          ? 'Nabi đang mở lại các lựa chọn của bạn...'
+          : 'Quản lý tài khoản, quyền riêng tư, đồng bộ và trải nghiệm ứng dụng tại một nơi.',
+      icon: Icons.tune_rounded,
     );
   }
 }
@@ -845,16 +815,14 @@ class _ProfileCard extends StatelessWidget {
       fallback: 'Chưa có hồ sơ',
     );
     final subtitle = dashboard == null
-        ? 'Hoàn thành phần làm quen để Nabighi nhớ hồ sơ của bạn'
+        ? 'Hoàn thành phần làm quen để Nabi ghi nhớ hồ sơ của bạn'
         : _subscriptionLabel(dashboard!.subscriptionTier);
 
-    return Container(
+    return MedicalSurfaceCard(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: AppDecoration.gradient(
-        colors: const [Color(0xFF2563EB), Color(0xFF06B6D4)],
-        radius: AppRadius.xxl,
-        shadows: AppShadows.lg,
-      ),
+      gradient: AppGradients.hero,
+      borderColor: Colors.transparent,
+      elevated: true,
       child: Row(
         children: [
           Container(
@@ -903,7 +871,7 @@ class _ProfileCard extends StatelessWidget {
                   ),
                   child: Text(
                     dashboard == null
-                        ? 'Nabiđang chờ hồ sơ'
+                        ? 'Nabi đang chờ hồ sơ'
                         : 'Nabi đã ghi nhớ hồ sơ này',
                     style: AppTextStyles.labelMedium.copyWith(
                       color: Colors.white,
@@ -945,11 +913,9 @@ class _MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: AppDecoration.card(
-        radius: AppRadius.xxl,
-        shadows: AppShadows.soft,
-      ),
+    return MedicalSurfaceCard(
+      padding: EdgeInsets.zero,
+      elevated: true,
       child: Column(children: children),
     );
   }
@@ -979,14 +945,11 @@ class _MenuItem extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: [
-            Container(
-              height: 54,
-              width: 54,
-              decoration: BoxDecoration(
-                gradient: AppGradients.primary,
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              ),
-              child: Icon(icon, color: Colors.white),
+            MedicalIconBadge(
+              icon: icon,
+              color: AppColors.primaryDark,
+              backgroundColor: AppColors.primarySoft,
+              size: 48,
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(

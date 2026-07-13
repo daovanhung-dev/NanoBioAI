@@ -6,7 +6,7 @@ void main() {
   testWidgets('features hub renders current Nabicare tiles', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: FeaturesHubPage()));
 
-    expect(find.text('Góc chăm sóc'), findsOneWidget);
+    expect(find.text('Chăm sức khỏe theo cách dễ hiểu'), findsOneWidget);
     expect(find.text('Lịch trình cá nhân'), findsOneWidget);
     expect(find.text('Trò chuyện với Nabi'), findsOneWidget);
   });

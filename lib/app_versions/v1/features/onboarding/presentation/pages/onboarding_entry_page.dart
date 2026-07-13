@@ -92,7 +92,8 @@ class _OnboardingEntryPageState extends State<OnboardingEntryPage>
       context,
     ).scale(1).clamp(1.0, 1.30).toDouble();
 
-    return Scaffold(
+    return MedicalPageScaffold(
+      ambientBackground: false,
       backgroundColor: AppColors.background,
       body: Stack(
         children: [

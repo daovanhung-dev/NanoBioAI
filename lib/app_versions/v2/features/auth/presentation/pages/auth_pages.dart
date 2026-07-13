@@ -825,58 +825,197 @@ class _AuthScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final keyboardBottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return MedicalPageScaffold(
       resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          const _AuthAmbientBackground(),
-          SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 720;
-                final pagePadding = isWide ? AppSpacing.xl : AppSpacing.lg;
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 860;
+            final pagePadding = constraints.maxWidth >= 560
+                ? AppSpacing.xl
+                : AppSpacing.md;
 
-                return Center(
-                  child: SingleChildScrollView(
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: EdgeInsets.fromLTRB(
-                      pagePadding,
-                      AppSpacing.xl,
-                      pagePadding,
-                      AppSpacing.xl + keyboardBottomInset,
-                    ),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 520),
-                      child: Container(
-                        padding: EdgeInsets.all(
-                          isWide ? AppSpacing.xl : AppSpacing.lg,
-                        ),
-                        decoration: AppDecoration.card(
-                          radius: AppRadius.xxl,
-                          shadows: AppShadows.soft,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _AuthHero(
-                              eyebrow: eyebrow,
-                              icon: heroIcon,
-                              title: title,
-                              subtitle: subtitle,
-                            ),
-                            const SizedBox(height: AppSpacing.xl),
-                            child,
-                            const SizedBox(height: AppSpacing.lg),
-                            const _AuthTrustNote(),
-                          ],
-                        ),
+            return Center(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.fromLTRB(
+                  pagePadding,
+                  AppSpacing.md,
+                  pagePadding,
+                  AppSpacing.xl + keyboardBottomInset,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: isWide ? 980 : 560),
+                  child: Material(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(AppRadius.xxl),
+                    clipBehavior: Clip.antiAlias,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(AppRadius.xxl),
+                        border: Border.all(color: AppColors.borderLight),
+                        boxShadow: AppShadows.soft,
                       ),
+                      child: isWide
+                          ? IntrinsicHeight(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  SizedBox(
+                                    width: 350,
+                                    child: _AuthBrandPanel(
+                                      eyebrow: eyebrow,
+                                      icon: heroIcon,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(AppSpacing.xl),
+                                      child: _AuthFormContent(
+                                        title: title,
+                                        subtitle: subtitle,
+                                        child: child,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Padding(
+                              padding: EdgeInsets.all(
+                                constraints.maxWidth < 380
+                                    ? AppSpacing.md
+                                    : AppSpacing.lg,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _AuthHero(
+                                    eyebrow: eyebrow,
+                                    icon: heroIcon,
+                                    title: title,
+                                    subtitle: subtitle,
+                                  ),
+                                  const SizedBox(height: AppSpacing.xl),
+                                  child,
+                                  const SizedBox(height: AppSpacing.lg),
+                                  const _AuthTrustNote(),
+                                ],
+                              ),
+                            ),
                     ),
                   ),
-                );
-              },
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _AuthFormContent extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final Widget child;
+
+  const _AuthFormContent({
+    required this.title,
+    required this.subtitle,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(title, style: AppTextStyles.heading1),
+        const SizedBox(height: AppSpacing.sm),
+        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.55)),
+        const SizedBox(height: AppSpacing.xl),
+        child,
+        const SizedBox(height: AppSpacing.lg),
+        const _AuthTrustNote(),
+      ],
+    );
+  }
+}
+
+class _AuthBrandPanel extends StatelessWidget {
+  final String eyebrow;
+  final IconData icon;
+
+  const _AuthBrandPanel({required this.eyebrow, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    const benefits = [
+      ('Dữ liệu được bảo vệ', Icons.shield_outlined),
+      ('Tiếp tục hành trình trên nhiều thiết bị', Icons.devices_rounded),
+      ('Bạn chủ động kiểm soát thông tin', Icons.manage_accounts_outlined),
+    ];
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: AppGradients.hero),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const _AuthPanelPattern(),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MedicalStatusPill(
+                  label: eyebrow,
+                  icon: Icons.verified_user_outlined,
+                  foregroundColor: AppColors.textInverse,
+                  backgroundColor: Colors.white.withValues(alpha: .14),
+                  borderColor: Colors.white.withValues(alpha: .22),
+                ),
+                const Spacer(),
+                MedicalIconBadge(
+                  icon: icon,
+                  color: AppColors.textInverse,
+                  backgroundColor: Colors.white.withValues(alpha: .14),
+                  size: 72,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Nabi đồng hành\ncùng bạn mỗi ngày',
+                  style: AppTextStyles.heading1.copyWith(
+                    color: AppColors.textInverse,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                for (final benefit in benefits)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          benefit.$2,
+                          color: AppColors.textInverse.withValues(alpha: .92),
+                          size: 19,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            benefit.$1,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textInverse.withValues(alpha: .88),
+                              height: 1.45,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
@@ -885,77 +1024,40 @@ class _AuthScaffold extends StatelessWidget {
   }
 }
 
-class _AuthAmbientBackground extends StatelessWidget {
-  const _AuthAmbientBackground();
+class _AuthPanelPattern extends StatelessWidget {
+  const _AuthPanelPattern();
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: Stack(
-        fit: StackFit.expand,
         children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.primarySoft,
-                  AppColors.background,
-                  AppColors.secondarySoft,
-                ],
+          Positioned(
+            top: -70,
+            right: -70,
+            child: Container(
+              width: 210,
+              height: 210,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: .10),
+                  width: 32,
+                ),
               ),
             ),
           ),
           Positioned(
-            top: -96,
-            right: -72,
-            child: _AmbientOrb(
-              size: 230,
-              color: AppColors.primary.withValues(alpha: 0.12),
+            bottom: -80,
+            left: -60,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: .05),
+              ),
             ),
-          ),
-          Positioned(
-            bottom: -116,
-            left: -92,
-            child: _AmbientOrb(
-              size: 280,
-              color: AppColors.secondary.withValues(alpha: 0.10),
-            ),
-          ),
-          Positioned(
-            top: 224,
-            left: -54,
-            child: _AmbientOrb(
-              size: 124,
-              color: AppColors.tertiary.withValues(alpha: 0.08),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AmbientOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const _AmbientOrb({required this.size, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color,
-            blurRadius: size / 2,
-            spreadRadius: size / 12,
           ),
         ],
       ),

@@ -38,3 +38,35 @@ dart format lib/core/config/app_env.dart test/core/config/app_env_test.dart test
 flutter analyze lib/core/config/app_env.dart test/core/config/app_env_test.dart test/core/config/bundled_auth_config_contract_test.dart
 flutter test test/core/config/app_env_test.dart test/core/config/bundled_auth_config_contract_test.dart test/app_versions/v2/features/auth/auth_pages_smoke_test.dart
 ```
+
+---
+
+# Medical UI/UX Refresh toàn dự án
+
+## Mục tiêu
+
+Nâng cấp view của V1, V2, V3, Sale và Admin theo một hệ thống UI y tế hiện đại,
+chuyên nghiệp, dễ đọc và nhất quán mà không thay đổi nghiệp vụ.
+
+## Thay đổi chính
+
+- Medical palette mới: clinical blue, wellness teal, navy và màu trạng thái ngữ nghĩa.
+- Material 3 component theme cho input, button, card, navigation, dialog, sheet,
+  picker, chip, focus và feedback.
+- `AppExperience.builder` dùng chung cho mọi app surface.
+- Bộ primitive mới trong `lib/core/theme/medical_ui.dart`.
+- Tất cả view production dùng `MedicalPageScaffold`; onboarding, splash và màn
+  loading giữ nền chuyên biệt bằng chế độ không chèn ambient background.
+- Auth V2 hỗ trợ bố cục mobile/desktop, Dashboard/Hub/Settings/Home và trạng thái
+  chưa có dữ liệu được nâng cấp.
+- Thêm contract test và tài liệu triển khai tại
+  `docs/features/medical-ui-refresh/` và `docs/test/medical-ui-refresh/`.
+
+## Kiểm tra đề xuất
+
+```powershell
+dart format lib test
+flutter analyze
+flutter test
+flutter run -t lib/main.dart
+```

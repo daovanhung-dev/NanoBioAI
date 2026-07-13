@@ -43,7 +43,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
           return _SalePayoutProfileGate(onSaved: _refreshAll);
         }
 
-        return Scaffold(
+        return MedicalPageScaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
             title: const Text('NanoBio Cộng tác viên'),
@@ -158,7 +158,7 @@ class _SalePayoutProfileGateState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Hồ sơ chi trả cộng tác viên'),
@@ -946,7 +946,7 @@ class _SaleLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return const MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: Center(child: CircularProgressIndicator()),
     );
@@ -966,7 +966,7 @@ class _SaleSupportPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(

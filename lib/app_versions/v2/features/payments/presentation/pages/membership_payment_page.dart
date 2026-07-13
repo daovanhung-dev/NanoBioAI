@@ -22,7 +22,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Thanh toán gói thành viên'),

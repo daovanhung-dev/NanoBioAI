@@ -13,7 +13,7 @@ class NutritionPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(nutritionSummaryProvider);
 
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: summaryAsync.when(
@@ -135,7 +135,7 @@ class _Header extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: AppDecoration.gradient(
-        colors: const [Color(0xFF06B6D4), Color(0xFF22C55E)],
+        colors: AppGradients.health.colors,
         radius: AppRadius.xxl,
         shadows: AppShadows.lg,
       ),

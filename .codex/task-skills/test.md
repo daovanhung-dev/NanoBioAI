@@ -11,9 +11,9 @@
 
 ## Common Modules
 
-- M08 HEALTH_SCORE_HABITS.: 1
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
 - lib/app_versions/v1/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1: 1
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
+- M08 HEALTH_SCORE_HABITS.: 1
 
 ## Work Pattern
 

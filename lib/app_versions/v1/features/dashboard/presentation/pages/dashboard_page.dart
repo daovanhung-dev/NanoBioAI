@@ -256,8 +256,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       },
     );
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return MedicalPageScaffold(
       body: Stack(
         children: [
           Positioned.fill(child: body),
@@ -541,22 +540,19 @@ class _HeroPanel extends StatelessWidget {
       fallback: membershipInfo.label,
     );
     return Container(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
-        56,
+        MediaQuery.paddingOf(context).top + AppSpacing.md,
         AppSpacing.md,
         AppSpacing.lg,
       ),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.secondary],
-        ),
+        gradient: AppGradients.hero,
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
+          bottomLeft: Radius.circular(AppRadius.xxl),
+          bottomRight: Radius.circular(AppRadius.xxl),
         ),
+        boxShadow: AppShadows.primary,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -607,7 +603,7 @@ class _HeroPanel extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Nabi đã lấy dữ liệu mới nhất từ hệ thống để cùng bạn nhìn lại hôm nay.',
+            'Nabi đã cập nhật những ghi nhận mới nhất để cùng bạn nhìn lại hôm nay.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.white.withValues(alpha: 0.88),
               height: 1.45,
@@ -648,24 +644,18 @@ class _GeneratePlanCta extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
       elevation: 0,
       child: InkWell(
         onTap: isLoading ? null : onPressed,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(color: Colors.white.withValues(alpha: 0.68)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
+            boxShadow: AppShadows.sm,
           ),
           child: Row(
             children: [
@@ -1871,7 +1861,7 @@ class _UserDataSyncBanner extends ConsumerWidget {
         children: [
           Icon(
             pending ? Icons.cloud_upload_outlined : Icons.cloud_off_outlined,
-            color: AppColors.darkBorder,
+            color: AppColors.warningDark,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(

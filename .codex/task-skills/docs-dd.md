@@ -13,8 +13,8 @@
 
 - docs/DD M01-M19: 2
 - docs/DD: 1
-- docs/DD/product_flow, docs/checklist: 1
 - docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
+- docs/DD/product_flow, docs/checklist: 1
 
 ## Work Pattern
 

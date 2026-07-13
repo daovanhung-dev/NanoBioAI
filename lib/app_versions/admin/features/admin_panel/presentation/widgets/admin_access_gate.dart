@@ -62,7 +62,7 @@ class _AdminChecking extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    return const MedicalPageScaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 
@@ -74,7 +74,7 @@ class _AdminSupport extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.scaffold,
       body: Center(
         child: Padding(

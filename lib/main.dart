@@ -24,6 +24,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await AppEnv.loadOptionalDotEnv();
+  _logRuntimeConfigStatus();
   final authBackendAvailability = await _initializeSupabaseIfConfigured();
 
   runApp(
@@ -46,6 +47,13 @@ Future<void> main() async {
   );
 
   unawaited(_startPostLaunchServices(authBackendAvailability));
+}
+
+void _logRuntimeConfigStatus() {
+  debugPrint(
+    '$_bootstrapTag: Gemini config present: '
+    '${AppEnv.maybeString('GEMINI_API_KEY') != null}',
+  );
 }
 
 Future<AuthBackendAvailability> _initializeSupabaseIfConfigured() async {

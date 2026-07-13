@@ -14,7 +14,7 @@ class FamilyPlusPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(familyPlusContextProvider);
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('FamilyPlus'),

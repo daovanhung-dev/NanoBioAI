@@ -4,10 +4,12 @@ class OnboardingInitialPlanException implements Exception {
   static const userMessage =
       'NaBi đã lưu hồ sơ, nhưng chưa thể tạo lịch cá nhân đầu tiên lúc này. Bạn thử lại sau một chút nhé.';
 
-  const OnboardingInitialPlanException();
+  final String message;
+
+  const OnboardingInitialPlanException([this.message = userMessage]);
 
   @override
-  String toString() => userMessage;
+  String toString() => message;
 }
 
 class OnboardingCompletionResult {

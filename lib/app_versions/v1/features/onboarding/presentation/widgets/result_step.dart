@@ -22,7 +22,8 @@ class ResultStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
+      ambientBackground: false,
       backgroundColor: Colors.transparent,
       body: NabiAmbientBackground(
         child: SafeArea(

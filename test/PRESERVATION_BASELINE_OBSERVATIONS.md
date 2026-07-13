@@ -35,20 +35,20 @@ Result: 00:03 +15: All tests passed!
 ### 2. AI Service Gemini Integration (Property 3.2)
 
 **Observation**:
-- `ai_service.dart` uses `GenerativeModel` from `google_generative_ai` package
-- API key loaded from `dotenv.env['GEMINI_API_KEY']`
+- `ai_service.dart` delegates Gemini calls to `GeminiRestClient`
+- API key is loaded through `AppEnv` and sent only in the `x-goog-api-key` header
 - `generateMealPlan()` returns `Future<List<MealPlanModel>>`
 - JSON response parsing with retry logic (3 attempts)
 - Response cleaning: removes markdown, fixes trailing commas
 
 **Invariant After Fix**:
-- Gemini API integration logic MUST remain identical
+- Gemini API integration behavior MUST remain available
 - JSON parsing and cleaning logic MUST be preserved
 - Retry mechanism MUST work the same way
 - Return type `List<MealPlanModel>` MUST be unchanged
 
 **Test Coverage**:
-- ✅ `GenerativeModel` usage confirmed
+- ✅ `GeminiRestClient` usage confirmed
 - ✅ API key from environment confirmed
 - ✅ `generateContent` API call confirmed
 - ✅ JSON parsing with `jsonDecode` confirmed

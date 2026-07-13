@@ -97,6 +97,7 @@ class AIChatController extends Notifier<AIChatState> {
 }
 
 String _messageForSendError(Object error) {
+  if (error is AIChatUnavailableException) return error.userMessage;
   if (error is UsageQuotaException) return error.userMessage;
   return 'Không thể gửi tin nhắn. Bạn thử lại sau một chút nhé.';
 }

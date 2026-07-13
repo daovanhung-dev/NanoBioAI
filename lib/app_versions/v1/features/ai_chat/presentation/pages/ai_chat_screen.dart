@@ -21,6 +21,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+  late final NabiContextNotifier _nabiContextNotifier;
 
   int _lastMessageCount = 0;
   bool _lastLoadingState = false;
@@ -28,16 +29,17 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   @override
   void initState() {
     super.initState();
+    _nabiContextNotifier = ref.read(nabiContextProvider.notifier);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ref.read(nabiContextProvider.notifier).setRoute(V1RoutePaths.aiChat);
+      _nabiContextNotifier.setRoute(V1RoutePaths.aiChat);
     });
   }
 
   @override
   void dispose() {
-    ref.read(nabiContextProvider.notifier).setChatTyping(typing: false);
+    _nabiContextNotifier.setChatTyping(typing: false);
     _textController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
@@ -88,6 +90,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiChatControllerProvider);
+    final error = state.error;
 
     _syncAutoScroll(
       messageCount: state.messages.length,
@@ -100,7 +103,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
         systemNavigationBarColor: AppColors.background,
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
-      child: Scaffold(
+      child: MedicalPageScaffold(
         resizeToAvoidBottomInset: true,
         backgroundColor: AppColors.background,
         appBar: _buildAppBar(context),
@@ -115,6 +118,13 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
                       isLoading: state.isLoading,
                     ),
             ),
+            if (error != null)
+              _ChatErrorBanner(
+                message: error,
+                onDismiss: () {
+                  ref.read(aiChatControllerProvider.notifier).dismissError();
+                },
+              ),
             _ChatComposer(
               controller: _textController,
               focusNode: _focusNode,
@@ -165,6 +175,57 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
         child: Container(
           height: 1,
           color: AppColors.border.withValues(alpha: .42),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatErrorBanner extends StatelessWidget {
+  final String message;
+  final VoidCallback onDismiss;
+
+  const _ChatErrorBanner({required this.message, required this.onDismiss});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        width: double.infinity,
+        color: AppColors.errorSoft,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.pagePadding,
+          vertical: AppSpacing.sm,
+        ),
+        child: _CenteredContent(
+          maxWidth: 820,
+          child: Row(
+            children: [
+              const Icon(
+                Icons.info_outline_rounded,
+                color: AppColors.error,
+                size: 20,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  message,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onDismiss,
+                icon: const Icon(Icons.close_rounded),
+                color: AppColors.error,
+                iconSize: 20,
+                tooltip: 'Đóng thông báo',
+              ),
+            ],
+          ),
         ),
       ),
     );

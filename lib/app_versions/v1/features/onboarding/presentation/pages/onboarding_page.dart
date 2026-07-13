@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/core/theme/medical_ui.dart';
 
 import '../widgets/basic_info_step.dart';
 import '../widgets/consent_step.dart';
@@ -34,7 +35,8 @@ class OnboardingPage extends ConsumerWidget {
         if (didPop || state.currentStep <= 0) return;
         ref.read(onboardingProvider.notifier).previousStep();
       },
-      child: Scaffold(
+      child: MedicalPageScaffold(
+        ambientBackground: false,
         backgroundColor: Colors.transparent,
         body: NabiAmbientBackground(
           child: AnimatedSwitcher(

@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
@@ -17,10 +16,26 @@ import 'package:nano_app/app_versions/v1/services/ai/ai_json_prompt_builder.dart
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_trace_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_vietnamese_text_validator.dart';
+import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/prompts/exercise_tasks_prompt.dart';
 import 'package:nano_app/app_versions/v1/services/ai/prompts/meal_plan_prompt.dart';
 
 void main() {
+  test(
+    'AI authentication failures are recognized without exposing credentials',
+    () {
+      const error = GeminiApiException(
+        statusCode: 401,
+        status: 'UNAUTHENTICATED',
+        message: 'Request had invalid authentication credentials.',
+      );
+
+      expect(AIAuthenticationException.matches(error), isTrue);
+      expect(AIAuthenticationException.userMessage, isNot(contains('AQ.')));
+      expect(AIAuthenticationException.userMessage, isNot(contains('AIza')));
+    },
+  );
+
   const catalog = AiCatalogBundle(
     meals: AiCatalogSeedData.meals,
     exercises: AiCatalogSeedData.exercises,
@@ -31,23 +46,30 @@ void main() {
     test('matches Gemini overload and capacity errors', () {
       expect(
         AIOverloadedException.matches(
-          GenerativeAIException(
-            'Server Error [503]: The model is overloaded. Try again later.',
+          const GeminiApiException(
+            statusCode: 503,
+            status: 'UNAVAILABLE',
+            message: 'The model is overloaded. Try again later.',
           ),
         ),
         isTrue,
       );
       expect(
         AIOverloadedException.matches(
-          ServerException(
-            'Resource has been exhausted, check quota or rate limit.',
+          const GeminiApiException(
+            statusCode: 429,
+            status: 'RESOURCE_EXHAUSTED',
+            message: 'Resource has been exhausted, check quota or rate limit.',
           ),
         ),
         isTrue,
       );
       expect(
         AIOverloadedException.matches(
-          ServerException('Too many requests. Please retry later.'),
+          const GeminiApiException(
+            statusCode: 429,
+            message: 'Too many requests. Please retry later.',
+          ),
         ),
         isTrue,
       );
@@ -59,13 +81,17 @@ void main() {
       );
       expect(
         AIOverloadedException.matches(
-          GenerativeAIException('Server Error [500]: Internal error.'),
+          const GeminiApiException(statusCode: 500, message: 'Internal error.'),
         ),
         isTrue,
       );
       expect(
         AIOverloadedException.matches(
-          GenerativeAIException('Server Error [504]: Deadline exceeded.'),
+          const GeminiApiException(
+            statusCode: 504,
+            status: 'DEADLINE_EXCEEDED',
+            message: 'Deadline exceeded.',
+          ),
         ),
         isTrue,
       );
@@ -319,6 +345,27 @@ void main() {
       expect(result.message, contains('Không thể kết nối AI'));
       expect(result.modelName, 'fake-model');
     });
+
+    test('fails safely when runtime API key is missing', () async {
+      late AIConnectionCheckResult result;
+
+      final logs = await _captureDebugPrint(() async {
+        final service = AIService(
+          apiKeyOverride: '',
+          modelNames: const ['fake-model'],
+        );
+
+        result = await service.checkConnection(
+          perModelTimeout: const Duration(milliseconds: 100),
+        );
+      });
+
+      expect(result.success, isFalse);
+      expect(result.message, 'Thiếu GEMINI_API_KEY hoặc key đang rỗng.');
+      expect(result.modelName, isNull);
+      expect(logs.join('\n'), contains('MISSING_API_KEY'));
+      expect(logs.join('\n'), isNot(contains('AIza')));
+    });
   });
 
   group('AITraceLogger redaction', () {
@@ -456,25 +503,46 @@ void main() {
       },
     );
 
-    test('missing API key does not crash and returns local fallback', () async {
-      final service = AIChatService(
-        apiKeyOverride: '',
-        modelNames: const ['fake-model'],
-      );
+    test('missing API key throws without retrying models', () async {
+      final logs = await _captureDebugPrint(() async {
+        final service = AIChatService(
+          apiKeyOverride: '',
+          modelNames: const ['fake-model'],
+        );
 
-      final result = await service.sendMessage('Xin chào');
+        await expectLater(
+          service.sendMessage('Xin chào'),
+          throwsA(isA<AIConfigurationUnavailableException>()),
+        );
+      });
+      final joined = logs.join('\n');
 
-      expect(result, contains('Mình chưa thể phản hồi bằng AI'));
+      expect(joined, contains('MISSING_API_KEY'));
+      expect(joined, contains('missing_api_key'));
+      expect(joined, isNot(contains('RETRY_ATTEMPT_START')));
+      expect(joined, isNot(contains('RETRY_ATTEMPT_FAILED')));
+      expect(joined, isNot(contains('RETRY_EXHAUSTED')));
+      expect(joined, isNot(contains('StateError')));
+      expect(joined, isNot(contains('AIza')));
     });
 
     test(
-      'missing API key without dotenv or model override uses local fallback',
+      'missing API key without dotenv or model override throws safely',
       () async {
-        final service = AIChatService(apiKeyOverride: '', delay: (_) async {});
+        final logs = await _captureDebugPrint(() async {
+          final service = AIChatService(
+            apiKeyOverride: '',
+            delay: (_) async {},
+          );
 
-        final result = await service.sendMessage('Xin chào');
+          await expectLater(
+            service.sendMessage('Xin chào'),
+            throwsA(isA<AIConfigurationUnavailableException>()),
+          );
+        });
 
-        expect(result, contains('Mình chưa thể phản hồi bằng AI'));
+        expect(logs.join('\n'), contains('MISSING_API_KEY'));
+        expect(logs.join('\n'), isNot(contains('StateError')));
       },
     );
 
@@ -499,6 +567,28 @@ void main() {
 
         expect(result, contains('Mình đang ở đây'));
         expect(modelCalls, ['primary-model', 'fallback-model']);
+      },
+    );
+
+    test(
+      'sendMessageStream throws without retry when API key is missing',
+      () async {
+        final logs = await _captureDebugPrint(() async {
+          final service = AIChatService(
+            apiKeyOverride: '',
+            modelNames: const ['fake-model'],
+          );
+
+          await expectLater(
+            service.sendMessageStream('Xin chào'),
+            throwsA(isA<AIConfigurationUnavailableException>()),
+          );
+        });
+        final joined = logs.join('\n');
+
+        expect(joined, contains('MISSING_API_KEY'));
+        expect(joined, isNot(contains('RETRY_ATTEMPT_START')));
+        expect(joined, isNot(contains('StateError')));
       },
     );
   });
@@ -740,6 +830,36 @@ void main() {
       expect(logs.join('\n'), contains(AITraceLogger.localGen));
     });
 
+    test(
+      'missing runtime API key uses local meal fallback instead of crashing',
+      () async {
+        final logs = await _captureDebugPrint(() async {
+          final service = AIService(
+            apiKeyOverride: '',
+            modelNames: const ['fake-model'],
+            catalogLoader: () async => catalog,
+            delay: (_) async {},
+          );
+
+          final meals = await service.generateMealPlan(
+            healthData: const _FakeHealthData(),
+            userId: 'u1',
+            startDate: DateTime(2026, 6, 18),
+            days: 1,
+          );
+
+          expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
+        });
+        final joined = logs.join('\n');
+
+        expect(joined, contains('MISSING_API_KEY'));
+        expect(joined, contains('MEAL_CHUNK_LOCAL_FALLBACK'));
+        expect(joined, contains(AITraceLogger.localGen));
+        expect(joined, isNot(contains('AIza')));
+        expect(joined, isNot(contains(const _FakeHealthData().fullName)));
+      },
+    );
+
     test('exercise generation returns fourteen catalog-mapped tasks', () async {
       final prompts = <String>[];
       final service = AIService(
@@ -830,15 +950,21 @@ void main() {
     test('classifies only transient errors as retryable with backoff', () {
       expect(
         AIRetryPolicy.isTransient(
-          GenerativeAIException(
-            'Server Error [503]: This model is currently experiencing high demand.',
+          const GeminiApiException(
+            statusCode: 503,
+            status: 'UNAVAILABLE',
+            message: 'This model is currently experiencing high demand.',
           ),
         ),
         isTrue,
       );
       expect(
         AIRetryPolicy.isTransient(
-          ServerException('Resource has been exhausted.'),
+          const GeminiApiException(
+            statusCode: 429,
+            status: 'RESOURCE_EXHAUSTED',
+            message: 'Resource has been exhausted.',
+          ),
         ),
         isTrue,
       );

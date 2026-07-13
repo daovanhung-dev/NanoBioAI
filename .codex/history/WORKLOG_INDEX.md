@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 70
+- Total worklogs: 80
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -79,3 +79,13 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-10 | unknown | docs-context | unknown | [Worklog 005 - Hoi quy v2 + Admin](../../docs/worklog/2026-07-10/005-worklog-v2-admin-regression.md) |
 | 2026-07-11 | bugfix | bugfix | M01 Onboarding, M05 AI, M11 FamilyPlus automated-only và | [Worklog - P0 baseline regression v2 + Admin](../../docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md) |
 | 2026-07-12 | coding | coding | M05 AUTH_PROFILE_SYNC, M12 REFERRAL_DIRECT, M15-M16 Admin access | [Worklog - Auth V2, Admin và M05 completion](../../docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md) |
+| 2026-07-12 | coding | coding | M05 AUTH_PROFILE_SYNC, Settings Guest entry, authenticated Android build. | [Worklog - Mở khóa đăng nhập người dùng](../../docs/worklog/2026-07-12/002-worklog-auth-login-unlock.md) |
+| 2026-07-12 | bugfix | bugfix | M05 Authentication / App bootstrap config | [Worklog - Fix đăng nhập bị khóa do thiếu runtime config](../../docs/worklog/2026-07-12/003-worklog-auth-login-runtime-config.md) |
+| 2026-07-12 | coding/test/docs | coding | UI/UX dùng chung cho V1, V2, V3, Sale và Admin | [Worklog - Medical UI Refresh toàn dự án](../../docs/worklog/2026-07-12/004-worklog-medical-ui-refresh.md) |
+| 2026-07-12 | bugfix | bugfix | M05 AI / Meal / Exercise / AI Chat / runtime config | [Worklog - Fix kết nối Gemini cho toàn bộ tác vụ AI](../../docs/worklog/2026-07-12/005-worklog-gemini-ai-connection.md) |
+| 2026-07-13 | bugfix | bugfix | M05 AI / runtime configuration / onboarding | [Worklog - Fix Gemini API key sau onboarding](../../docs/worklog/2026-07-13/001-worklog-fix-gemini-runtime-config.md) |
+| 2026-07-13 | bugfix | bugfix | M05 AI / onboarding / Gemini authentication | [Worklog - Chẩn đoán lỗi tạo lịch trình AI sau onboarding](../../docs/worklog/2026-07-13/002-worklog-gemini-authentication-key.md) |
+| 2026-07-13 | bugfix | bugfix | M05 AI / runtime configuration / onboarding | [Worklog - Fix Gemini API key runtime cho main_v2](../../docs/worklog/2026-07-13/003-worklog-gemini-main-v2-runtime-key.md) |
+| 2026-07-13 | bugfix | bugfix | M05 AI / AI Chat / runtime configuration | [Worklog - Fix AI Chat missing runtime client](../../docs/worklog/2026-07-13/004-worklog-ai-chat-missing-runtime-client.md) |
+| 2026-07-13 | bugfix | bugfix | runtime configuration / AI chat | [Worklog - Runtime defines launcher contract](../../docs/worklog/2026-07-13/005-worklog-runtime-defines-contract.md) |
+| 2026-07-13 | bugfix | bugfix | M05 AI / AI Chat / runtime configuration | [Worklog - Fix VS Code AI Chat runtime config](../../docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md) |

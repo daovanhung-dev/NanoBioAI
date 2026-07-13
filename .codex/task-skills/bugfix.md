@@ -2,25 +2,25 @@
 
 - Canonical key: bugfix
 - Workflow: .codex/workflows/bugfix.md
-- Generated from 11 worklog(s).
+- Generated from 19 worklog(s).
 
 ## When To Read
 
-- Historical task type: bugfix (8)
+- Historical task type: bugfix (16)
 - Historical task type: fix (1)
-- Historical task type: fix UI/copy (1)
 - Historical task type: fix flow dữ liệu (1)
+- Historical task type: fix UI/copy (1)
 
 ## Common Modules
 
-- AI chat: 1
-- Admin dashboard / Supabase RPC: 1
-- Dashboard, Lifestyle Schedule, Meal Plan, Nutrition: 1
+- M05 AI / AI Chat / runtime configuration: 2
+- M05 AI / runtime configuration / onboarding: 2
+- M05 Authentication / App bootstrap config: 1
 - M01 Onboarding, M05 AI, M11 FamilyPlus automated-only và: 1
 - Nabi providers/UI, onboarding UI, shared Nabi widgets, release: 1
-- config/env, app entrypoints, auth/AI env readers: 1
-- lib/app_versions/v1/features/**/presentation: 1
-- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
+- M05 AI / onboarding / Gemini authentication: 1
+- runtime configuration / AI chat: 1
+- M05 AI / Meal / Exercise / AI Chat / runtime config: 1
 
 ## Work Pattern
 
@@ -49,3 +49,4 @@
 - [Worklog - Fix env tracked and bundled](../../docs/worklog/2026-07-10/003-worklog-env-tracked-and-bundled.md) - config/env, app entrypoints, auth/AI env readers
 - [Worklog - Release analyze cleanup](../../docs/worklog/2026-07-10/004-worklog-release-analyze-cleanup.md) - Nabi providers/UI, onboarding UI, shared Nabi widgets, release
 - [Worklog - P0 baseline regression v2 + Admin](../../docs/worklog/2026-07-11/001-worklog-v2-admin-p0-baseline.md) - M01 Onboarding, M05 AI, M11 FamilyPlus automated-only và
+- [Worklog - Fix đăng nhập bị khóa do thiếu runtime config](../../docs/worklog/2026-07-12/003-worklog-auth-login-runtime-config.md) - M05 Authentication / App bootstrap config

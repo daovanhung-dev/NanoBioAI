@@ -446,3 +446,46 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - Chưa fix: merge concurrent đa thiết bị nằm ngoài contract đã khóa.
 - docs/worklog/2026-07-12/001-worklog-auth-v2-admin-m05-completion.md :: - Cần kiểm tra tiếp: compile/API compatibility bằng Flutter SDK, atomic rollback thực tế trên Supabase sandbox, RLS/idempotency và toàn bộ evidence device.
+- docs/worklog/2026-07-12/002-worklog-auth-login-unlock.md :: - BLOCKED: `dart format`, `flutter analyze`, `flutter test`, APK build vì môi trường không có Flutter/Dart/PowerShell.
+- docs/worklog/2026-07-12/003-worklog-auth-login-runtime-config.md :: - `dart format ...`: SKIPPED - không có Dart SDK.
+- docs/worklog/2026-07-12/003-worklog-auth-login-runtime-config.md :: - `flutter analyze ...`: SKIPPED - không có Flutter SDK.
+- docs/worklog/2026-07-12/003-worklog-auth-login-runtime-config.md :: - `flutter test ...`: SKIPPED - không có Flutter SDK.
+- docs/worklog/2026-07-12/003-worklog-auth-login-runtime-config.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED - không có PowerShell.
+- docs/worklog/2026-07-12/003-worklog-auth-login-runtime-config.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-07-12/003-worklog-auth-login-runtime-config.md :: - Chưa fix: chưa có bằng chứng compile/test/device trong môi trường hiện tại.
+- docs/worklog/2026-07-12/003-worklog-auth-login-runtime-config.md :: - Cần kiểm tra tiếp: chạy APK trên thiết bị và đăng nhập bằng tài khoản thật; xác nhận RLS/Supabase staging theo `OPEN_RISKS`.
+- docs/worklog/2026-07-12/004-worklog-medical-ui-refresh.md :: - `flutter analyze`: SKIPPED - không có Flutter SDK.
+- docs/worklog/2026-07-12/004-worklog-medical-ui-refresh.md :: - `flutter test`: SKIPPED - không có Flutter SDK.
+- docs/worklog/2026-07-12/004-worklog-medical-ui-refresh.md :: - `dart format`: SKIPPED - không có Dart SDK.
+- docs/worklog/2026-07-12/004-worklog-medical-ui-refresh.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED - không có PowerShell.
+- docs/worklog/2026-07-12/004-worklog-medical-ui-refresh.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-12/004-worklog-medical-ui-refresh.md :: - Chua fix: chưa có golden screenshot và real-device accessibility smoke.
+- docs/worklog/2026-07-12/004-worklog-medical-ui-refresh.md :: - Can kiem tra tiep: compile/analyze/test bằng Flutter 3.35.6; text scale; TalkBack/VoiceOver; tablet/desktop.
+- docs/worklog/2026-07-12/005-worklog-gemini-ai-connection.md :: - Live Gemini request: BLOCKED - sandbox DNS `gaierror`.
+- docs/worklog/2026-07-12/005-worklog-gemini-ai-connection.md :: - `dart format`, `flutter analyze`, `flutter test`, `flutter build`: SKIPPED - không có Dart/Flutter SDK.
+- docs/worklog/2026-07-12/005-worklog-gemini-ai-connection.md :: - PowerShell scripts: SKIPPED - không có PowerShell.
+- docs/worklog/2026-07-12/005-worklog-gemini-ai-connection.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED - không có PowerShell.
+- docs/worklog/2026-07-12/005-worklog-gemini-ai-connection.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-07-12/005-worklog-gemini-ai-connection.md :: - Chưa fix: không có bằng chứng live API, compile, Flutter test và device smoke trong sandbox.
+- docs/worklog/2026-07-12/005-worklog-gemini-ai-connection.md :: - Cần kiểm tra tiếp: chạy preflight, targeted tests, analyze/build và thao tác onboarding/chat/tạo plan trên thiết bị có mạng.
+- docs/worklog/2026-07-13/001-worklog-fix-gemini-runtime-config.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-13/002-worklog-gemini-authentication-key.md :: - `tools/test_gemini_connection.ps1`: FAIL_EXPECTED - Gemini trả HTTP 401 với credential hiện tại.
+- docs/worklog/2026-07-13/002-worklog-gemini-authentication-key.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-07-13/002-worklog-gemini-authentication-key.md :: - Chưa fix được từ code: credential `AQ...` bị Gemini endpoint từ chối server-side.
+- docs/worklog/2026-07-13/002-worklog-gemini-authentication-key.md :: - Cần kiểm tra tiếp: thay credential bằng key Gemini được endpoint chấp nhận, rebuild app và chạy onboarding trên device.
+- docs/worklog/2026-07-13/003-worklog-gemini-main-v2-runtime-key.md :: - Doi `AIService` de thieu key khong crash provider; `checkConnection()` tra failure an toan va meal generation fallback local.
+- docs/worklog/2026-07-13/003-worklog-gemini-main-v2-runtime-key.md :: - `lib/app_versions/v1/services/ai/ai_service.dart` - sua - missing key khong con crash constructor, checkConnection fail an toan.
+- docs/worklog/2026-07-13/003-worklog-gemini-main-v2-runtime-key.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-13/003-worklog-gemini-main-v2-runtime-key.md :: - Chua fix/khong thuoc code: neu chay bang "Run current file" hoac lenh Flutter khong co Dart defines, device van khong co key, nhung app khong con crash.
+- docs/worklog/2026-07-13/003-worklog-gemini-main-v2-runtime-key.md :: - Can kiem tra tiep: smoke onboarding tren device bang `NanoBio - V2 App (Auth + AI)` hoac `tools/run_v2.ps1 -EntryPoint lib/main_v2.dart`.
+- docs/worklog/2026-07-13/004-worklog-ai-chat-missing-runtime-client.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-13/004-worklog-ai-chat-missing-runtime-client.md :: - Chua fix/khong thuoc code: neu app duoc chay khong co Dart defines, AI Chat van fallback local vi khong co key.
+- docs/worklog/2026-07-13/004-worklog-ai-chat-missing-runtime-client.md :: - Can kiem tra tiep: smoke AI Chat tren device bang launch config `NanoBio - V2 App (Auth + AI)` hoac script runtime co defines.
+- docs/worklog/2026-07-13/005-worklog-runtime-defines-contract.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: - Them typed missing-config failure tu service den repository/controller.
+- docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: - `lib/app_versions/v1/services/ai/ai_chat_service.dart` - fail fast khi thieu
+- docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: - `test/services/ai/ai_service_test.dart` - missing-config typed failure.
+- docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: - UI device smoke: model chinh timeout mot lan; fallback model cho response
+- docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: - Da fix: missing config co typed failure, banner ro rang va khong commit quota.
+- docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md :: - Hanh vi mong doi: timeout model chinh van retry/fallback sang model thu hai.

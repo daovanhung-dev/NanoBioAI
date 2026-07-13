@@ -72,7 +72,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
     final saleState = ref.watch(saleStateProvider);
     final authenticated = currentSupabaseUserIdOrNull() != null;
 
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
@@ -185,7 +185,7 @@ class _BuildTermsBody extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: AppDecoration.gradient(
-              colors: const [Color(0xFF0F766E), Color(0xFF2563EB)],
+              colors: AppGradients.ai.colors,
               radius: AppRadius.xxl,
               shadows: AppShadows.lg,
             ),

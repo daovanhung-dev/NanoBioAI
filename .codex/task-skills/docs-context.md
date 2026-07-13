@@ -7,20 +7,20 @@
 ## When To Read
 
 - Historical task type: docs-context (8)
-- Historical task type: docs (5)
 - Historical task type: unknown (5)
+- Historical task type: docs (5)
 - Historical task type: docs/context update (1)
 
 ## Common Modules
 
 - unknown: 5
 - .codex: 2
-- .codex project workflow: 1
-- .codex, agent context, docs integrity: 1
-- .codex, history learning, task-skills, project skill: 1
-- .codex, root AGENTS.md, .agents skill bridge: 1
-- .codex, workflow router, domain context, worklog learning, project skill.: 1
 - .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
+- docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
+- .codex, root AGENTS.md, .agents skill bridge: 1
+- docs/checklist, technical debt audit summary: 1
+- docs/prompts/bootstrap-ai-context.md: 1
+- .codex, agent context, docs integrity: 1
 
 ## Work Pattern
 

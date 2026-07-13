@@ -237,39 +237,42 @@ GEMINI_PLAN_OVERFLOW_MODELS=
 
 ### **4. Run the App**
 
-Cấu hình Supabase phía client cần cho đăng nhập đã được đóng gói riêng tại
-`assets/config/auth.env`. File này chỉ chứa URL dự án, anon key công khai và
-cấu hình deep link; không chứa service-role key hoặc khóa Gemini. Vì vậy chạy
-Flutter theo cách thông thường vẫn có thể đăng nhập:
+Cấu hình đăng nhập công khai nằm tại `assets/config/auth.env`, còn khóa Gemini
+không được đóng gói thành asset. Vì vậy mọi phiên chạy cần dùng AI phải truyền
+`.env` sẽ được launcher parse và chuyển thành các `--dart-define` an toàn. Cấu hình VS Code
+`NanoBio - App (Auth + AI)` dùng cùng nguyên tắc.
 
-```bash
-flutter run -t lib/main.dart
-```
-
-Khi cần ghi đè cấu hình bằng `.env` local, dùng launcher đã kiểm tra sẵn
-(default device: `12b304f9`):
+Trên Windows, launcher dưới đây kiểm tra cả Auth và `GEMINI_API_KEY` trước khi
+khởi động (device mặc định: `12b304f9`):
 
 ```powershell
 # Chỉ kiểm tra cấu hình local
 powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -ValidateOnly
 
-# Chạy với cấu hình local được truyền bằng dart-define
+# Kiểm tra kết nối Gemini thật, tự thử các model đã cấu hình
+powershell -ExecutionPolicy Bypass -File tools/test_gemini_connection.ps1
+
+# Chạy ứng dụng với Auth + AI
 powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1
 
 # Chạy trên thiết bị khác
 powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -DeviceId <device-id>
 ```
 
-### **5. Build**
-
-Build trực tiếp bằng Flutter vẫn giữ khả năng đăng nhập vì public auth config
-đã nằm trong assets:
+Có thể chạy trực tiếp trên macOS/Linux hoặc terminal khác bằng các define tương ứng
+(không truyền trực tiếp file `.env` cho `--dart-define-from-file`, vì cờ đó chỉ nhận JSON):
 
 ```bash
-flutter build apk --release -t lib/main.dart
+flutter run -t lib/main.dart \
+  --dart-define=SUPABASE_URL=<supabase-url> \
+  --dart-define=SUPABASE_ANON_KEY=<supabase-anon-key> \
+  --dart-define=AUTH_EMAIL_REDIRECT_URL=<redirect-url> \
+  --dart-define=GEMINI_API_KEY=<gemini-api-key>
 ```
 
-Có thể tiếp tục dùng script dưới đây để kiểm tra và ghi đè bằng `.env` local:
+### **5. Build**
+
+Dùng script để chặn bản build bị thiếu cấu hình AI:
 
 ```powershell
 # Android APK release
@@ -282,15 +285,26 @@ powershell -ExecutionPolicy Bypass -File tools/build_authenticated.ps1 -Target a
 powershell -ExecutionPolicy Bypass -File tools/build_authenticated.ps1 -Mode debug
 ```
 
-`.env` đầy đủ vẫn không được đưa vào Flutter assets. Chỉ bốn biến auth client
-được whitelist trong `assets/config/auth.env`.
+`.env` không được đưa vào Flutter assets. Giá trị được truyền tại thời điểm
+build bằng Dart defines, còn API key chỉ được gửi tới Gemini trong header
+`x-goog-api-key`.
 
 ```bash
+# Android không dùng PowerShell: truyền các define như phần chạy trực tiếp ở trên.
+
 # iOS
-flutter build ios --release
+flutter build ios --release -t lib/main.dart \
+  --dart-define=SUPABASE_URL=<supabase-url> \
+  --dart-define=SUPABASE_ANON_KEY=<supabase-anon-key> \
+  --dart-define=AUTH_EMAIL_REDIRECT_URL=<redirect-url> \
+  --dart-define=GEMINI_API_KEY=<gemini-api-key>
 
 # Web
-flutter build web --release
+flutter build web --release -t lib/main.dart \
+  --dart-define=SUPABASE_URL=<supabase-url> \
+  --dart-define=SUPABASE_ANON_KEY=<supabase-anon-key> \
+  --dart-define=AUTH_EMAIL_REDIRECT_URL=<redirect-url> \
+  --dart-define=GEMINI_API_KEY=<gemini-api-key>
 ```
 
 ---
@@ -518,7 +532,7 @@ void main() {
 
 2. **Build**:
    ```bash
-   flutter build appbundle --release
+   powershell -ExecutionPolicy Bypass -File tools/build_authenticated.ps1 -Target appbundle
    ```
 
 3. **Upload to Play Store**:
@@ -532,7 +546,7 @@ void main() {
 
 2. **Build**:
    ```bash
-   flutter build ios --release
+   # Dùng các --dart-define tương ứng; không truyền trực tiếp file .env.
    ```
 
 3. **Upload to App Store**:
@@ -542,7 +556,7 @@ void main() {
 ### **Web**
 
 ```bash
-flutter build web --release
+# Dùng các --dart-define tương ứng; không truyền trực tiếp file .env.
 ```
 
 Deploy to:

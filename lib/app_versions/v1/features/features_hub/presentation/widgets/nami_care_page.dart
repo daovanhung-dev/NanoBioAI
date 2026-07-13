@@ -21,40 +21,52 @@ class NamiCareScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          const _NamiCareBackground(),
-          SafeArea(
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
+    return MedicalPageScaffold(
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final horizontal = constraints.maxWidth >= 720
+                ? AppSpacing.xl
+                : AppSpacing.md;
+            return CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
+                  padding: EdgeInsets.fromLTRB(
+                    horizontal,
                     AppSpacing.md,
-                    AppSpacing.lg,
-                    AppSpacing.md,
+                    horizontal,
                     128,
                   ),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _NamiCareHeader(
-                        title: title,
-                        subtitle: subtitle,
-                        badge: badge,
-                        icon: icon,
-                        gradient: gradient,
+                  sliver: SliverToBoxAdapter(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 760),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _NamiCareHeader(
+                              title: title,
+                              subtitle: subtitle,
+                              badge: badge,
+                              icon: icon,
+                              gradient: gradient,
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            ...children,
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                      ...children,
-                    ]),
+                    ),
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -74,15 +86,9 @@ class NamiCareSurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return MedicalSurfaceCard(
       padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: borderColor ?? AppColors.borderLight),
-        boxShadow: AppShadows.sm,
-      ),
+      borderColor: borderColor,
       child: child,
     );
   }
@@ -96,28 +102,7 @@ class NamiCareSectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: AppTextStyles.heading4.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: AppTypography.bold,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            subtitle!,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.45,
-            ),
-          ),
-        ],
-      ],
-    );
+    return MedicalSectionHeader(title: title, subtitle: subtitle);
   }
 }
 
@@ -149,12 +134,13 @@ class NamiCareInfoTile extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: selected ? color.withValues(alpha: .08) : AppColors.card,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
           color: selected
               ? color.withValues(alpha: .32)
               : AppColors.borderLight,
         ),
+        boxShadow: selected ? AppShadows.sm : AppShadows.xs,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +207,7 @@ class NamiCareInfoTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         onTap: onTap,
         child: tile,
       ),
@@ -303,37 +289,11 @@ class NamiCareEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NamiCareSurfaceCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: .12),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-            ),
-            child: Icon(icon, color: color, size: 26),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            title,
-            style: AppTextStyles.heading5.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: AppTypography.bold,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            message,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
+    return MedicalEmptyState(
+      icon: icon,
+      color: color,
+      title: title,
+      message: message,
     );
   }
 }
@@ -360,7 +320,8 @@ class _NamiCareHeader extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(AppRadius.xxl),
-        boxShadow: AppShadows.lg,
+        border: Border.all(color: Colors.white.withValues(alpha: .12)),
+        boxShadow: AppShadows.primary,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -431,64 +392,6 @@ class _NamiCareHeader extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _NamiCareBackground extends StatelessWidget {
-  const _NamiCareBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(child: Container(color: AppColors.background)),
-        Positioned(
-          top: -90,
-          right: -80,
-          child: _GlowOrb(size: 220, color: AppColors.primary, opacity: .1),
-        ),
-        Positioned(
-          top: 240,
-          left: -120,
-          child: _GlowOrb(size: 240, color: AppColors.secondary, opacity: .08),
-        ),
-        Positioned(
-          bottom: -120,
-          right: -100,
-          child: _GlowOrb(size: 260, color: AppColors.primary, opacity: .07),
-        ),
-      ],
-    );
-  }
-}
-
-class _GlowOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-  final double opacity;
-
-  const _GlowOrb({
-    required this.size,
-    required this.color,
-    required this.opacity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color.withValues(alpha: opacity),
-            color.withValues(alpha: opacity * .35),
-            Colors.transparent,
-          ],
-        ),
       ),
     );
   }

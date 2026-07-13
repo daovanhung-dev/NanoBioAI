@@ -6,209 +6,182 @@ import 'app_colors.dart';
 class AppGradients {
   const AppGradients._();
 
-  // ============================================================
-  // PRIMARY
-  // ============================================================
-
   static const LinearGradient primary = LinearGradient(
-    colors: [AppColors.primary, AppColors.secondary],
+    colors: [Color(0xFF2C7BEA), Color(0xFF0D4EA6)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient primaryReverse = LinearGradient(
-    colors: [AppColors.secondary, AppColors.primary],
+    colors: [Color(0xFF0D4EA6), Color(0xFF2C7BEA)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient primarySoft = LinearGradient(
-    colors: [AppColors.primarySoft, Colors.white],
+    colors: [Color(0xFFF6FAFF), Color(0xFFEAF3FF)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient premium = LinearGradient(
-    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+    colors: [Color(0xFF1769E0), Color(0xFF6750A4)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient premiumDark = LinearGradient(
-    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+    colors: [Color(0xFF173B67), Color(0xFF332761)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // ============================================================
-  // SURFACE
-  // ============================================================
-
   static const LinearGradient surface = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFF8FAFC)],
+    colors: [Color(0xFFFFFFFF), Color(0xFFF7FAFC)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient surfaceAlt = LinearGradient(
-    colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
+    colors: [Color(0xFFF8FBFD), Color(0xFFF0F5F9)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient darkSurface = LinearGradient(
-    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+    colors: [Color(0xFF173244), Color(0xFF081723)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient darkSurfaceElevated = LinearGradient(
-    colors: [Color(0xFF1F2937), Color(0xFF111827)],
+    colors: [Color(0xFF214256), Color(0xFF102433)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // ============================================================
-  // STATUS
-  // ============================================================
-
   static const LinearGradient success = LinearGradient(
-    colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+    colors: [Color(0xFF2AA981), Color(0xFF0F766E)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient warning = LinearGradient(
-    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+    colors: [Color(0xFFC68811), Color(0xFF9A6200)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient danger = LinearGradient(
-    colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+    colors: [Color(0xFFD84A62), Color(0xFFA8243B)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient info = LinearGradient(
-    colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)],
+    colors: [Color(0xFF2D7DB7), Color(0xFF1261A0)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // ============================================================
-  // HEALTH / FITNESS
-  // ============================================================
-
   static const LinearGradient health = LinearGradient(
-    colors: [Color(0xFF34D399), Color(0xFF10B981)],
+    colors: [Color(0xFF35B995), Color(0xFF16825D)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient energy = LinearGradient(
-    colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+    colors: [Color(0xFFE0A126), Color(0xFF9A6200)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient sleep = LinearGradient(
-    colors: [Color(0xFF6366F1), Color(0xFF4338CA)],
+    colors: [Color(0xFF6D79D8), Color(0xFF4856B8)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient meditation = LinearGradient(
-    colors: [Color(0xFFA78BFA), Color(0xFF8B5CF6)],
+    colors: [Color(0xFF7E71C8), Color(0xFF6750A4)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // ============================================================
-  // AI / MODERN APP
-  // ============================================================
-
   static const LinearGradient ai = LinearGradient(
-    colors: [Color(0xFF06B6D4), Color(0xFF8B5CF6)],
+    colors: [Color(0xFF0F766E), Color(0xFF1769E0)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient futuristic = LinearGradient(
-    colors: [Color(0xFF0EA5E9), Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+    colors: [Color(0xFF12304A), Color(0xFF1769E0), Color(0xFF0F766E)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // ============================================================
-  // OVERLAYS
-  // ============================================================
-
   static const LinearGradient overlayTop = LinearGradient(
-    colors: [Colors.black54, Colors.transparent],
+    colors: [Color(0xB312304A), Colors.transparent],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient overlayBottom = LinearGradient(
-    colors: [Colors.transparent, Colors.black54],
+    colors: [Colors.transparent, Color(0xB312304A)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient overlayLeft = LinearGradient(
-    colors: [Colors.black45, Colors.transparent],
+    colors: [Color(0x9912304A), Colors.transparent],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
 
   static const LinearGradient overlayRight = LinearGradient(
-    colors: [Colors.transparent, Colors.black45],
+    colors: [Colors.transparent, Color(0x9912304A)],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
 
-  // ============================================================
-  // HERO / BACKGROUND
-  // ============================================================
-
   static const LinearGradient hero = LinearGradient(
-    colors: [Color(0xFF3B82F6), Color(0xFF06B6D4), Color(0xFF8B5CF6)],
+    colors: [Color(0xFF12304A), Color(0xFF1769E0), Color(0xFF0F766E)],
+    stops: [0, 0.58, 1],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient dashboard = LinearGradient(
-    colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+    colors: [Color(0xFF12304A), Color(0xFF174668)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient onboarding = LinearGradient(
-    colors: [Color(0xFFF8FAFC), Color(0xFFE0F2FE)],
+    colors: [Color(0xFFF9FCFE), Color(0xFFEAF3FF), Color(0xFFE8F7F5)],
+    stops: [0, .55, 1],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
-  // ============================================================
-  // GLASSMORPHISM
-  // ============================================================
+  static const LinearGradient medicalBackground = LinearGradient(
+    colors: [Color(0xFFF8FBFD), Color(0xFFF1F7FB), Color(0xFFF7FBFA)],
+    stops: [0, .62, 1],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   static const LinearGradient glass = LinearGradient(
-    colors: [Color(0x33FFFFFF), Color(0x11FFFFFF)],
+    colors: [Color(0xE6FFFFFF), Color(0xBFFFFFFF)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient glassDark = LinearGradient(
-    colors: [Color(0x221E293B), Color(0x11111827)],
+    colors: [Color(0xD9173244), Color(0xB3102433)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
-
-  // ============================================================
-  // HELPERS
-  // ============================================================
 
   static LinearGradient custom({
     required List<Color> colors,

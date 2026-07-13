@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/design_system.dart';
+import 'package:nano_app/core/theme/medical_ui.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
@@ -15,7 +16,8 @@ class LifestyleSchedulePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final scheduleAsync = ref.watch(lifestyleScheduleControllerProvider);
 
-    return Scaffold(
+    return MedicalPageScaffold(
+      ambientBackground: false,
       backgroundColor: _SchedulePalette.background(context),
       body: scheduleAsync.when(
         loading: () => const _SchedulePageFrame(child: _ScheduleLoadingState()),

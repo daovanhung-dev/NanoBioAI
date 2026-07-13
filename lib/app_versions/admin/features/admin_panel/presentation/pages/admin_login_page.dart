@@ -51,7 +51,7 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
     });
     final viewInsets = MediaQuery.viewInsetsOf(context);
 
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.scaffold,
       body: DecoratedBox(
         decoration: const BoxDecoration(gradient: AppGradients.surfaceAlt),

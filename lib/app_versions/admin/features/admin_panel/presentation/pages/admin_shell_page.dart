@@ -119,7 +119,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
             final isCompact = constraints.maxWidth < _desktopBreakpoint;
             final isWide = constraints.maxWidth >= _wideBreakpoint;
 
-            return Scaffold(
+            return MedicalPageScaffold(
               backgroundColor: AppColors.scaffold,
               drawer: isCompact
                   ? _AdminDrawer(
@@ -459,7 +459,7 @@ class _AdminStateScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
       backgroundColor: AppColors.scaffold,
       body: Stack(
         children: [

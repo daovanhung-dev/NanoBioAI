@@ -1,6 +1,35 @@
 import 'dart:async';
 
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'gemini_rest_client.dart';
+
+class AIConfigurationUnavailableException implements Exception {
+  const AIConfigurationUnavailableException();
+
+  @override
+  String toString() => 'AI runtime configuration is unavailable.';
+}
+
+class AIAuthenticationException implements Exception {
+  static const userMessage =
+      'Khóa AI hiện tại chưa được Gemini chấp nhận. Bạn hãy tạo một Gemini API key hợp lệ rồi cập nhật cấu hình và mở lại ứng dụng nhé.';
+
+  const AIAuthenticationException();
+
+  static bool matches(Object error) {
+    if (error is! GeminiApiException) {
+      return false;
+    }
+
+    final status = error.status?.toLowerCase();
+    return error.statusCode == 401 ||
+        error.statusCode == 403 ||
+        status == 'unauthenticated' ||
+        status == 'permission_denied';
+  }
+
+  @override
+  String toString() => userMessage;
+}
 
 class AIOverloadedException implements Exception {
   static const userMessage = 'AI đang quá tải. Bạn thử lại sau nhé.';
@@ -12,10 +41,11 @@ class AIOverloadedException implements Exception {
       return true;
     }
 
-    final message = error is GenerativeAIException
-        ? error.message
-        : error.toString();
-    final normalized = message.toLowerCase();
+    if (error is GeminiApiException && error.isTransient) {
+      return true;
+    }
+
+    final normalized = error.toString().toLowerCase();
 
     return normalized.contains('overload') ||
         RegExp(r'server error \[(408|429|5\d\d)\]').hasMatch(normalized) ||
