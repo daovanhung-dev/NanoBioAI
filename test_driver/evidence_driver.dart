@@ -12,13 +12,15 @@ final RegExp _screenshotNamePattern = RegExp(
 
 Future<void> main() async {
   final repoRoot = path.normalize(Directory.current.absolute.path);
-  final evidenceRoot = path.normalize(
-    path.join(repoRoot, 'docs', 'test', 'v2-admin-regression'),
-  );
   final requestedRoot = Platform.environment['NANOBIO_EVIDENCE_ROOT'];
-  if (requestedRoot != null &&
-      path.normalize(path.absolute(requestedRoot)) != evidenceRoot) {
-    throw StateError('Evidence output must stay inside the regression folder.');
+  final testDocsRoot = path.normalize(path.join(repoRoot, 'docs', 'test'));
+  final evidenceRoot = path.normalize(
+    path.absolute(
+      requestedRoot ?? path.join(testDocsRoot, 'v2-admin-regression'),
+    ),
+  );
+  if (!path.isWithin(testDocsRoot, evidenceRoot)) {
+    throw StateError('Evidence output must stay inside docs/test.');
   }
 
   final commandId = Platform.environment['NANOBIO_TEST_COMMAND_ID'];
