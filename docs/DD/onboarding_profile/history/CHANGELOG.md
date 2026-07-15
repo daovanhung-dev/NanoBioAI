@@ -1,5 +1,12 @@
 # CHANGELOG — ONBOARDING_PROFILE / Onboarding & Hồ sơ sức khỏe
 
+## [v1.3] - 2026-07-15
+### Changed
+- Added the required versioned daily-routine profile, onboarding/legacy-user confirmation gate, source files and tests in the logbug 14-7-26 implementation delta.
+
+### Validation
+- Runtime tests are linked from the delta; sandbox sync/RLS evidence remains pending.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked ONBOARDING_PROFILE DD docs as `Approved - DD docs complete`.

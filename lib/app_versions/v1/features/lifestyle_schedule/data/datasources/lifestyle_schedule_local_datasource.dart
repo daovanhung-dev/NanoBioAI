@@ -395,11 +395,6 @@ class LifestyleScheduleLocalDatasource {
           )
           .length;
 
-      if (dayItems.length != LifestyleScheduleTimelineBuilder.itemsPerDay) {
-        throw StateError(
-          'Expected ${LifestyleScheduleTimelineBuilder.itemsPerDay} schedule items for $date',
-        );
-      }
       if (mealCount != LifestyleScheduleTimelineBuilder.mealItemsPerDay) {
         throw StateError('Missing meal schedule items for $date');
       }
@@ -407,8 +402,23 @@ class LifestyleScheduleLocalDatasource {
           LifestyleScheduleTimelineBuilder.exerciseItemsPerDay) {
         throw StateError('Missing exercise schedule items for $date');
       }
-      if (routineCount != LifestyleScheduleTimelineBuilder.routineItemsPerDay) {
+      final hasNap = dayItems.any(
+        (item) =>
+            item.sourceType == LifestyleScheduleSourceTypes.aiSchedule &&
+            item.sourceId == 'routine_nap',
+      );
+      final expectedRoutineCount =
+          LifestyleScheduleTimelineBuilder.routineItemsPerDay +
+          (hasNap ? 1 : 0);
+      if (routineCount != expectedRoutineCount) {
         throw StateError('Missing routine schedule items for $date');
+      }
+      final expectedItems =
+          LifestyleScheduleTimelineBuilder.mealItemsPerDay +
+          LifestyleScheduleTimelineBuilder.exerciseItemsPerDay +
+          expectedRoutineCount;
+      if (dayItems.length != expectedItems) {
+        throw StateError('Expected $expectedItems schedule items for $date');
       }
     }
   }
@@ -481,7 +491,7 @@ class LifestyleScheduleLocalDatasource {
     if (scheduled == null) {
       throw const ScheduleCompletionException(
         ScheduleCompletionErrorCode.invalidScheduleTime,
-        'Giờ của nhiệm vụ chưa hợp lệ nên Nabi đã tạm khóa thao tác này.',
+        'Ngày hoặc giờ của nhiệm vụ chưa hợp lệ nên Nabi đã tạm khóa thao tác này.',
       );
     }
     final status = LifestyleScheduleWindowPolicy.statusAt(

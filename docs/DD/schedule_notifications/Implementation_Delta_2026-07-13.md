@@ -23,7 +23,7 @@ idempotent hiện hành và không được tạo Điểm chăm sóc.
 |---|---|
 | M09-DELTA-BR01 | Payload chứa source/subject hợp lệ; payload rỗng, sai source hoặc sai owner bị bỏ qua an toàn. |
 | M09-DELTA-BR02 | Tap notification/CTA hoàn thành gọi navigation coordinator, không ghi completed trong background isolate. |
-| M09-DELTA-BR03 | Deep-link mang schedule item id; trang lịch mở đúng item và áp dụng `[start, start + 30 phút)`. |
+| M09-DELTA-BR03 | Deep-link mang schedule item id; trang lịch mở đúng item và áp dụng `[start, start + 30 phút]`. |
 | M09-DELTA-BR04 | Resume/startup refresh trạng thái ở mốc mở/khóa; notification không mở khóa nhiệm vụ tương lai hoặc dữ liệu giờ lỗi. |
 
 ## 3. Implementation map

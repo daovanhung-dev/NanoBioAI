@@ -9,7 +9,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, va Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001` |
 | Pham vi | BioAI / NanoBio: approved DD M01-M19, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, va planned DD backlog M20-M29 |
 | Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
-| Ngay cap nhat | 2026-07-13 |
+| Ngay cap nhat | 2026-07-15 |
 | Muc dich | Theo doi DD docs completeness rieng voi coding progress va implementation evidence backlog; khong tron UI discovery shell voi nghiep vu module. |
 
 ## Rubric phan tram
@@ -73,6 +73,16 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 
 ## Implementation Evidence Backlog
 
+### Cap nhat implementation evidence 2026-07-15 — logbug 14-7-26
+
+- M01: thêm daily routine versioned `daily_routine_v1`, onboarding/legacy editor, stable survey answer và outbox hiện có.
+- M02: thêm horizon gate inclusive, malformed fail-closed, idempotent replay, per-user single-flight và resolver-owned timing.
+- M03: dashboard dùng chung horizon, completion/undo inclusive đến đúng `+30 phút`, camera recheck và invalid-time lock.
+- M07: runtime defines thống nhất, AI typed fail-closed và commit quota retry ba lần cùng request id.
+- M09: reminder dùng schedule time đã resolve; không đổi notification mechanism.
+- DD/coding progress vẫn 100% theo source + targeted tests; production acceptance vẫn thiếu Supabase sandbox/Storage/RLS/concurrency và real-device smoke.
+- Logbug progress theo trọng số 50/30/20 hiện `90%`: DD 50/50, code 30/30, verification 10/20.
+
 ### Cập nhật implementation evidence 2026-07-13 — nhiệm vụ, proof và Điểm chăm sóc
 
 DD M03/M08/M09/M15/M16 vẫn `Approved - DD docs complete` và coding progress
@@ -82,7 +92,7 @@ không đồng nghĩa production acceptance.
 
 | Module | Source/targeted evidence mới | Evidence còn thiếu trước production |
 |---|---|---|
-| M03 `DASHBOARD_SCHEDULE` | Time policy `[start, start + 30 phút)`, fail-closed parser, camera/JPEG/EXIF proof, app-private gallery, SQLite v14 sidecar/cache, online begin/upload/finalize/undo/reconcile, dashboard/deep-link và focused tests đã có source. Daily/proof analyze sạch; 59 lifestyle/migration/notification/cloud-sync + 50 dashboard bundle và EXIF tests pass. Supabase contract 40 test, full `config.sql` rebuild PostgreSQL 18 tạm, local end-to-end/RLS/direct-ledger smoke PASS. | Deploy migration 16/bucket vào Supabase sandbox thật, kiểm tra runtime Storage/RLS hai user, exact-end/upload/finalize/two-device concurrency, account-deletion cleanup và real-device camera/resume/cloud-download smoke. |
+| M03 `DASHBOARD_SCHEDULE` | Time policy `[start, start + 30 phút]`, fail-closed parser, camera/JPEG/EXIF proof, app-private gallery, SQLite v14 sidecar/cache, online begin/upload/finalize/undo/reconcile, dashboard/deep-link và focused tests đã có source. Daily/proof analyze sạch; 59 lifestyle/migration/notification/cloud-sync + 50 dashboard bundle và EXIF tests pass. Supabase contract 40 test, full `config.sql` rebuild PostgreSQL 18 tạm, local end-to-end/RLS/direct-ledger smoke PASS. | Deploy migration 16/bucket vào Supabase sandbox thật, kiểm tra runtime Storage/RLS hai user, exact-end/upload/finalize/two-device concurrency, account-deletion cleanup và real-device camera/resume/cloud-download smoke. |
 | M08 `HEALTH_SCORE_HABITS` | DD delta tách Điểm sức khỏe, Điểm chăm sóc và Điểm Sale; local completion/proof/health projection transaction và legacy history non-redeemable có source contract. Full config rebuild và local reward/RLS/direct-ledger smoke PASS. | Sandbox thật chứng minh ledger/snapshot tách biệt, legacy không vào redeem balance và FamilyPlus/owner visibility. |
 | M09 `SCHEDULE_NOTIFICATIONS` | Copy `Mở để chụp ảnh`, payload/owner validation, navigation coordinator và exact-item deep-link dùng M03 proof use case; notification bundle nằm trong 59 test pass. | Android/iOS foreground/background/terminated real-device smoke và Supabase cross-device reconcile. |
 | M15 `ADMIN_DASHBOARD` | Admin section/route `Điểm chăm sóc`, `wellness_rewards.read/write`, safe Vietnamese permission/action/audit mapping và reward Admin tests có source; reward bundle 38/38 + targeted analyze pass; Supabase contract/rebuild/local RLS smoke PASS. | Sandbox thật cho role matrix, privacy-limited response, inventory aggregate và denied-route/API evidence. |

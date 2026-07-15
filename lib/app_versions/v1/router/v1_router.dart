@@ -4,6 +4,7 @@ import 'package:nano_app/app_versions/v1/features/body_metrics/presentation/page
 import 'package:nano_app/app_versions/v1/features/dashboard/dashboard.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/menu_page.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/presentation/pages/nutrition_page.dart';
@@ -98,6 +99,12 @@ final v1Routes = <RouteBase>[
     name: V1RoutePaths.lifestyleSchedule,
     builder: (context, state) =>
         LifestyleSchedulePage(initialItemId: state.uri.queryParameters['item']),
+  ),
+
+  GoRoute(
+    path: V1RoutePaths.dailyRoutinePreferences,
+    name: V1RoutePaths.dailyRoutinePreferences,
+    builder: (context, state) => const DailyRoutinePreferencesPage(),
   ),
 
   /// Sleep Tracking

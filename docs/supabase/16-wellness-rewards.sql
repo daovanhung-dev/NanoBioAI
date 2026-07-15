@@ -77,7 +77,7 @@ create table if not exists public.guest_schedule_reward_registrations (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint guest_reward_plan_shape_valid check (
-    plan_item_count = plan_days * 10
+    plan_item_count between plan_days * 10 and plan_days * 11
     and cardinality(plan_item_ids) = plan_item_count
     and eligible_item_ids <@ plan_item_ids
   )
@@ -98,11 +98,28 @@ create table if not exists public.member_schedule_reward_registrations (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint member_reward_plan_shape_valid check (
-    plan_item_count = plan_days * 10
+    plan_item_count between plan_days * 10 and plan_days * 11
     and registered_item_count between 0 and plan_item_count
   ),
   unique (user_id, registration_idempotency_key)
 );
+
+alter table public.guest_schedule_reward_registrations
+  drop constraint if exists guest_reward_plan_shape_valid;
+alter table public.guest_schedule_reward_registrations
+  add constraint guest_reward_plan_shape_valid check (
+    plan_item_count between plan_days * 10 and plan_days * 11
+    and cardinality(plan_item_ids) = plan_item_count
+    and eligible_item_ids <@ plan_item_ids
+  );
+
+alter table public.member_schedule_reward_registrations
+  drop constraint if exists member_reward_plan_shape_valid;
+alter table public.member_schedule_reward_registrations
+  add constraint member_reward_plan_shape_valid check (
+    plan_item_count between plan_days * 10 and plan_days * 11
+    and registered_item_count between 0 and plan_item_count
+  );
 
 create table if not exists public.schedule_reward_eligibilities (
   id uuid primary key default gen_random_uuid(),
@@ -942,7 +959,8 @@ begin
   if v_request.request_id is null
      or v_request.start_date is null
      or v_request.days not between 1 and 7
-     or v_request.schedule_item_count <> v_request.days * 10 then
+     or v_request.schedule_item_count < v_request.days * 10
+     or v_request.schedule_item_count > v_request.days * 11 then
     raise exception using errcode = 'P0001', message = 'schedule_request_not_eligible';
   end if;
 
@@ -1068,8 +1086,8 @@ begin
          and lsi.schedule_date >= v_request.start_date
          and lsi.schedule_date < v_request.start_date + v_request.days
        group by lsi.schedule_date
-       having count(*) <> 10
-           or count(distinct lsi.start_time) <> 10
+       having count(*) not between 10 and 11
+           or count(distinct lsi.start_time) <> count(*)
      ) then
     if v_request.actor_mode = 'initial_guest' then
       raise exception using errcode = 'P0001', message = 'guest_schedule_plan_invalid';
@@ -1414,7 +1432,7 @@ begin
   if now() < v_eligibility.window_start then
     raise exception using errcode = 'P0001', message = 'schedule_window_not_open';
   end if;
-  if now() >= v_eligibility.window_end then
+  if now() > v_eligibility.window_end then
     raise exception using errcode = 'P0001', message = 'schedule_window_locked';
   end if;
 
@@ -1589,7 +1607,7 @@ begin
     raise exception using errcode = 'P0001', message = 'proof_not_uploaded';
   end if;
   if v_object.created_at < greatest(v_attempt.began_at, v_eligibility.window_start)
-     or v_object.created_at >= v_eligibility.window_end then
+     or v_object.created_at > v_eligibility.window_end then
     raise exception using errcode = 'P0001', message = 'proof_upload_outside_window';
   end if;
 
@@ -1621,7 +1639,7 @@ begin
   for update;
 
   v_reward_status := case
-    when now() >= v_eligibility.window_end then 'available'
+    when now() > v_eligibility.window_end then 'available'
     else 'pending'
   end;
 
@@ -1885,7 +1903,7 @@ begin
   if v_eligibility.id is null then
     raise exception using errcode = 'P0001', message = 'eligibility_not_found';
   end if;
-  if now() >= v_eligibility.window_end then
+  if now() > v_eligibility.window_end then
     raise exception using errcode = 'P0001', message = 'undo_window_locked';
   end if;
 

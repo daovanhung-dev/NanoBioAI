@@ -2,15 +2,24 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/lifestyle_schedule_window_policy.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/schedule_horizon_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/repositories/schedule_horizon_reader.dart';
 import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 class DashboardDynamicLocalDatasource {
   final Database db;
   final DateTime Function() _now;
+  final ScheduleHorizonReader _scheduleHorizonReader;
 
-  DashboardDynamicLocalDatasource(this.db, {DateTime Function()? now})
-    : _now = now ?? LifestyleScheduleWindowPolicy.vietnamNow;
+  DashboardDynamicLocalDatasource(
+    this.db, {
+    DateTime Function()? now,
+    ScheduleHorizonReader? scheduleHorizonReader,
+  }) : _now = now ?? LifestyleScheduleWindowPolicy.vietnamNow,
+       _scheduleHorizonReader =
+           scheduleHorizonReader ??
+           ScheduleHorizonLocalDatasource(databaseOverride: db);
 
   Future<DashboardDynamicEntity> fetch({
     SubjectAccessContext? subjectAccess,
@@ -356,39 +365,19 @@ class DashboardDynamicLocalDatasource {
     required String userId,
     required String today,
   }) async {
-    final rows = await db.rawQuery(
-      '''
-      SELECT MAX(plan_date) AS last_date FROM meal_plans WHERE user_id = ?
-      UNION ALL
-      SELECT MAX(schedule_date) AS last_date FROM lifestyle_schedule_items WHERE user_id = ?
-      ''',
-      [userId, userId],
-    );
-    final lastDate = rows
-        .map((row) => _readString(row['last_date']))
-        .whereType<String>()
-        .map((value) => value.length >= 10 ? value.substring(0, 10) : value)
-        .where((value) => value.isNotEmpty)
-        .fold<String?>(null, (current, value) {
-          if (current == null) return value;
-          return value.compareTo(current) > 0 ? value : current;
-        });
-
-    if (lastDate == null) return const DashboardPlanStatus.empty();
-
     final todayDate = _readDate(today);
-    final lastPlanDate = _readDate(lastDate);
-    if (todayDate == null || lastPlanDate == null) {
-      return DashboardPlanStatus(lastPlanDate: lastDate, remainingDays: 0);
-    }
-
-    final remainingDays = lastPlanDate.isBefore(todayDate)
-        ? 0
-        : lastPlanDate.difference(todayDate).inDays + 1;
+    if (todayDate == null) throw const FormatException('Invalid business date');
+    final horizon = await _scheduleHorizonReader.read(
+      userId: userId,
+      today: todayDate,
+    );
+    final lastDate = horizon.lastScheduledDate == null
+        ? null
+        : _dateKey(horizon.lastScheduledDate!);
 
     return DashboardPlanStatus(
       lastPlanDate: lastDate,
-      remainingDays: remainingDays,
+      remainingDays: horizon.remainingDays,
     );
   }
 

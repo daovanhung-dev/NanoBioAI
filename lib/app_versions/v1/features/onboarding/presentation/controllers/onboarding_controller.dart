@@ -4,6 +4,8 @@ import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/providers/daily_routine_preferences_provider.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
 import '../../domain/repositories/onboarding_repository.dart';
@@ -44,6 +46,8 @@ class OnboardingState {
 
   final String concernText;
   final bool agreed;
+  final DailyRoutinePreferences routinePreferences;
+  final bool routineConfirmed;
 
   const OnboardingState({
     this.currentStep = 0,
@@ -72,6 +76,8 @@ class OnboardingState {
     this.treatmentNote = '',
     this.concernText = '',
     this.agreed = false,
+    this.routinePreferences = DailyRoutinePreferences.defaultValue,
+    this.routineConfirmed = false,
   });
 
   double get bmi {
@@ -85,6 +91,7 @@ class OnboardingState {
       gender.trim().isNotEmpty &&
       birthYear > 1900 &&
       occupation.trim().isNotEmpty &&
+      routineConfirmed &&
       agreed;
 
   OnboardingEntity toEntity() {
@@ -142,6 +149,8 @@ class OnboardingState {
     String? treatmentNote,
     String? concernText,
     bool? agreed,
+    DailyRoutinePreferences? routinePreferences,
+    bool? routineConfirmed,
   }) {
     return OnboardingState(
       currentStep: currentStep ?? this.currentStep,
@@ -170,6 +179,8 @@ class OnboardingState {
       treatmentNote: treatmentNote ?? this.treatmentNote,
       concernText: concernText ?? this.concernText,
       agreed: agreed ?? this.agreed,
+      routinePreferences: routinePreferences ?? this.routinePreferences,
+      routineConfirmed: routineConfirmed ?? this.routineConfirmed,
     );
   }
 }
@@ -255,6 +266,7 @@ class OnboardingController extends Notifier<OnboardingState> {
       'Health Conditions',
       'Lifestyle Habits',
       'Extras (Allergy & Treatment)',
+      'Daily Routine Preferences',
       'Consent & Disclaimer',
       'Review & Submit',
     ];
@@ -386,6 +398,17 @@ class OnboardingController extends Notifier<OnboardingState> {
   void setAgreed(bool value) {
     AppLogger.form(_tag, 'agreed', value ? 'accepted' : 'not_accepted');
     state = state.copyWith(agreed: value);
+  }
+
+  void updateRoutinePreferences(DailyRoutinePreferences value) {
+    state = state.copyWith(routinePreferences: value, routineConfirmed: false);
+  }
+
+  void confirmRoutineAndContinue() {
+    final errors = state.routinePreferences.validate();
+    if (errors.isNotEmpty) return;
+    state = state.copyWith(routineConfirmed: true);
+    nextStep();
   }
 
   void toggleGoal(String code) {
@@ -525,6 +548,11 @@ class OnboardingController extends Notifier<OnboardingState> {
 
       await _repository.save(entity);
       AppLogger.success(_tag, 'Onboarding profile saved successfully');
+
+      await ref
+          .read(dailyRoutinePreferencesRepositoryProvider)
+          .saveForCurrentUser(state.routinePreferences);
+      AppLogger.success(_tag, 'Daily routine preferences saved successfully');
 
       AppLogger.info(_tag, 'Generating onboarding meal plan and daily tasks');
       final onCompletionCallback = ref.read(

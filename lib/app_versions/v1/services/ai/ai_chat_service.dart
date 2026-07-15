@@ -25,8 +25,6 @@ class AIChatService {
       'Mình chưa hiểu rõ ý bạn. Bạn có thể diễn đạt lại ngắn hơn một chút được không?';
   static const _invalidVietnameseFallback =
       'Mình chưa tạo được câu trả lời thật rõ ràng lúc này. Bạn thử hỏi lại theo cách khác nhé.';
-  static const _technicalFallback =
-      'Mình chưa thể phản hồi bằng AI lúc này. Bạn thử lại sau một chút nhé.';
 
   late final List<_AIChatModelEntry> _models;
   late final Future<void> Function(Duration) _delay;
@@ -141,7 +139,7 @@ class AIChatService {
         data: {'source': AITraceLogger.localGen, 'reason': 'retry_exhausted'},
         location: StackTrace.current,
       );
-      return _technicalFallback;
+      _throwTypedFailure(error, stackTrace);
     }
   }
 
@@ -198,7 +196,7 @@ class AIChatService {
         data: {'source': AITraceLogger.localGen, 'reason': 'retry_exhausted'},
         location: StackTrace.current,
       );
-      return Stream.value(_technicalFallback);
+      _throwTypedFailure(error, stackTrace);
     }
   }
 
@@ -491,6 +489,22 @@ class AIChatService {
       location: StackTrace.current,
     );
     throw const AIConfigurationUnavailableException();
+  }
+
+  Never _throwTypedFailure(Object error, StackTrace stackTrace) {
+    if (error is AIConfigurationUnavailableException ||
+        error is AIAuthenticationException ||
+        error is AIOverloadedException ||
+        error is AIResponseInvalidException) {
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+    if (AIAuthenticationException.matches(error)) {
+      Error.throwWithStackTrace(const AIAuthenticationException(), stackTrace);
+    }
+    if (AIOverloadedException.matches(error)) {
+      Error.throwWithStackTrace(const AIOverloadedException(), stackTrace);
+    }
+    Error.throwWithStackTrace(const AIResponseInvalidException(), stackTrace);
   }
 
   static String? _envWithLegacy(String key, String legacyKey) {

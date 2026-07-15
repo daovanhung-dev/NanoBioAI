@@ -2,8 +2,17 @@ import 'package:nano_app/core/storage/localdb/datasources/ai_catalog_local_datas
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/repositories/dashboard_repository.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/data/datasources/daily_routine_preferences_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository_impl.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/services/schedule_timing_resolver.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/datasources/daily_health_tracking_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/schedule_horizon_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_horizon.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/repositories/schedule_horizon_reader.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/lifestyle_schedule_window_policy.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application/schedule_reward_online_gateway.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application/schedule_reward_eligibility_projection_store.dart';
@@ -64,6 +73,7 @@ class GeneratedPlanResult {
 
 class GeneratedPlanService {
   static const _tag = 'GENERATED_PLAN';
+  static final Map<String, Future<GeneratedPlanResult>> _inFlightByUser = {};
 
   final DashboardRepository dashboardRepository;
   final DailyHealthTrackingLocalDatasource dailyHealthDatasource;
@@ -72,6 +82,9 @@ class GeneratedPlanService {
   final AiCatalogLocalDatasource catalogDatasource;
   final PersonalScheduleAiRequestStore requestStore;
   final PersonalScheduleQuotaGateway quotaGateway;
+  final ScheduleHorizonReader scheduleHorizonReader;
+  final DailyRoutinePreferencesRepository routinePreferencesRepository;
+  final ScheduleTimingResolver timingResolver;
   final ScheduleRewardOnlineGateway rewardGateway;
   final ScheduleRewardEligibilityProjectionStore rewardProjectionStore;
   final Future<void> Function() scheduleReminders;
@@ -86,6 +99,9 @@ class GeneratedPlanService {
     this.catalogDatasource = const AiCatalogLocalDatasource(),
     PersonalScheduleAiRequestStore? requestStore,
     PersonalScheduleQuotaGateway? quotaGateway,
+    ScheduleHorizonReader? scheduleHorizonReader,
+    DailyRoutinePreferencesRepository? routinePreferencesRepository,
+    this.timingResolver = const ScheduleTimingResolver(),
     ScheduleRewardOnlineGateway? rewardGateway,
     ScheduleRewardEligibilityProjectionStore? rewardProjectionStore,
     Future<void> Function()? scheduleReminders,
@@ -98,6 +114,13 @@ class GeneratedPlanService {
        requestStore = requestStore ?? LocalPersonalScheduleAiRequestStore(),
        quotaGateway =
            quotaGateway ?? const TrustedBackendPersonalScheduleQuotaGateway(),
+       scheduleHorizonReader =
+           scheduleHorizonReader ?? const ScheduleHorizonLocalDatasource(),
+       routinePreferencesRepository =
+           routinePreferencesRepository ??
+           const DailyRoutinePreferencesRepositoryImpl(
+             datasource: DailyRoutinePreferencesLocalDatasource(),
+           ),
        rewardGateway =
            rewardGateway ?? const SupabaseScheduleRewardOnlineGateway(),
        rewardProjectionStore =
@@ -121,9 +144,57 @@ class GeneratedPlanService {
     );
     if (existing != null) return existing;
 
-    final decision = await quotaGateway.checkGeneration(
-      userId: authUserId!,
+    final activeRequest = _inFlightByUser[authUserId!];
+    if (activeRequest != null) return activeRequest;
+
+    final request = _generateNextPlanSingleFlight(
+      authUserId: authUserId,
       requestId: normalizedRequestId,
+      days: days,
+      requestedStartDate: startDate,
+      appendAfterExisting: appendAfterExisting,
+    );
+    _inFlightByUser[authUserId] = request;
+    try {
+      return await request;
+    } finally {
+      if (identical(_inFlightByUser[authUserId], request)) {
+        _inFlightByUser.remove(authUserId);
+      }
+    }
+  }
+
+  Future<GeneratedPlanResult> _generateNextPlanSingleFlight({
+    required String authUserId,
+    required String requestId,
+    required int days,
+    required DateTime? requestedStartDate,
+    required bool appendAfterExisting,
+  }) async {
+    final existing = await _existingSucceededResult(
+      requestId,
+      actorMode: GeneratedPlanActorModes.memberNew,
+    );
+    if (existing != null) return existing;
+
+    final profile = await dailyHealthDatasource.fetchLatestProfile();
+    final horizon = await scheduleHorizonReader.read(
+      userId: profile.userId,
+      today: LifestyleScheduleWindowPolicy.vietnamNow(),
+    );
+    if (!horizon.canGenerate) {
+      throw PersonalScheduleStillActiveException(horizon.remainingDays);
+    }
+    final preferences = await routinePreferencesRepository.loadForUser(
+      profile.userId,
+    );
+    if (preferences == null) {
+      throw const DailyRoutinePreferencesRequiredException();
+    }
+
+    final decision = await quotaGateway.checkGeneration(
+      userId: authUserId,
+      requestId: requestId,
       at: now(),
     );
     if (!decision.allowed) {
@@ -132,30 +203,33 @@ class GeneratedPlanService {
 
     final result = await _generatePlan(
       actorMode: GeneratedPlanActorModes.memberNew,
-      requestId: normalizedRequestId,
+      requestId: requestId,
       days: days,
-      startDate: startDate,
+      startDate: appendAfterExisting
+          ? horizon.nextStartDate
+          : requestedStartDate ?? horizon.nextStartDate,
       appendAfterExisting: appendAfterExisting,
       markGuestInitialPlanUsed: false,
+      routinePreferences: preferences,
     );
 
     await quotaGateway.commitGeneration(
       userId: authUserId,
-      requestId: normalizedRequestId,
+      requestId: requestId,
       at: now(),
     );
 
     if (result.rewardEligibilityItems.isNotEmpty) {
       try {
         await rewardGateway.registerEligibilities(
-          requestId: normalizedRequestId,
+          requestId: requestId,
           items: result.rewardEligibilityItems,
-          idempotencyKey: 'eligibility:$normalizedRequestId:v1',
+          idempotencyKey: 'eligibility:$requestId:v1',
         );
         try {
           await rewardProjectionStore.markRegistered(
             userId: authUserId,
-            requestId: normalizedRequestId,
+            requestId: requestId,
             items: result.rewardEligibilityItems,
           );
         } catch (error) {
@@ -192,6 +266,7 @@ class GeneratedPlanService {
       startDate: startDate,
       appendAfterExisting: false,
       markGuestInitialPlanUsed: true,
+      routinePreferences: null,
     );
   }
 
@@ -202,16 +277,15 @@ class GeneratedPlanService {
     DateTime? startDate,
     required bool appendAfterExisting,
     required bool markGuestInitialPlanUsed,
+    required DailyRoutinePreferences? routinePreferences,
   }) async {
     final generatedAt = now();
     final fallbackStartDate = _dateOnly(
       startDate ??
-          DateTime(generatedAt.year, generatedAt.month, generatedAt.day + 1),
+          LifestyleScheduleWindowPolicy.toVietnamWallClock(generatedAt),
     );
     AppLogger.action(_tag, 'Generate next plan');
 
-    final DashboardEntity dashboardData = await dashboardRepository
-        .fetchDashboard();
     final profile = await dailyHealthDatasource.fetchLatestProfile();
     final userId = profile.userId;
     final resolvedRequestId = requestId == null || requestId.trim().isEmpty
@@ -229,12 +303,16 @@ class GeneratedPlanService {
       throw const GuestInitialPlanAlreadyUsedException();
     }
 
-    final resolvedStartDate = appendAfterExisting
-        ? await scheduleDatasource.getNextGeneratedPlanStartDate(
-            userId: userId,
-            fallbackStartDate: fallbackStartDate,
-          )
-        : fallbackStartDate;
+    final preferences =
+        routinePreferences ??
+        await routinePreferencesRepository.loadForUser(userId);
+    if (preferences == null) {
+      throw const DailyRoutinePreferencesRequiredException();
+    }
+    final DashboardEntity dashboardData = await dashboardRepository
+        .fetchDashboard();
+
+    final resolvedStartDate = fallbackStartDate;
 
     await requestStore.markGenerating(
       requestId: resolvedRequestId,
@@ -247,19 +325,45 @@ class GeneratedPlanService {
     AppLogger.info(_tag, 'Resolved generated-plan range for $days days');
 
     try {
-      final meals = await aiService.generateMealPlan(
+      final generatedMeals = await aiService.generateMealPlan(
         healthData: dashboardData,
         userId: userId,
         startDate: resolvedStartDate,
         days: days,
       );
+      final meals = generatedMeals
+          .map((meal) {
+            final date = _requiredDate(meal.planDate);
+            final range = timingResolver
+                .resolve(preferences, date)
+                .mealRange(meal.mealOrder);
+            return meal.copyWith(startTime: range.start, endTime: range.end);
+          })
+          .toList(growable: false);
       AppLogger.info(_tag, 'Generated ${meals.length} meal records');
 
-      final exercises = await aiService.generateExerciseTasks(
+      final generatedExercises = await aiService.generateExerciseTasks(
         profile: profile,
         startDate: resolvedStartDate,
         days: days,
       );
+      final exerciseIndexByDate = <String, int>{};
+      final exercises = generatedExercises
+          .map((exercise) {
+            final index = exerciseIndexByDate.update(
+              exercise.scheduleDate,
+              (value) => value + 1,
+              ifAbsent: () => 0,
+            );
+            final range = timingResolver
+                .resolve(preferences, _requiredDate(exercise.scheduleDate))
+                .workoutRange(index);
+            return exercise.copyWith(
+              startTime: range.start,
+              endTime: range.end,
+            );
+          })
+          .toList(growable: false);
       AppLogger.info(_tag, 'Generated ${exercises.length} exercise records');
 
       final catalog = await catalogDatasource.loadActiveBundle();
@@ -272,6 +376,8 @@ class GeneratedPlanService {
         startDate: resolvedStartDate,
         days: days,
         createdAt: createdAt,
+        routinePreferences: preferences,
+        timingResolver: timingResolver,
       );
       scheduleDatasource.validateGeneratedSchedule(
         schedule,
@@ -428,5 +534,11 @@ class GeneratedPlanService {
 
   DateTime _dateOnly(DateTime value) {
     return DateTime(value.year, value.month, value.day);
+  }
+
+  DateTime _requiredDate(String value) {
+    final parsed = DateTime.tryParse(value.trim());
+    if (parsed == null) throw const FormatException('Invalid schedule date');
+    return _dateOnly(parsed);
   }
 }

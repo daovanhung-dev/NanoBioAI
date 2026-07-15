@@ -1,5 +1,12 @@
 # CHANGELOG — DASHBOARD_SCHEDULE / Dashboard & Thực hiện lịch trình
 
+## [v1.4] - 2026-07-15
+### Changed
+- Added shared horizon CTA gating, inclusive completion boundary and post-camera deadline recheck for logbug 14-7-26.
+
+### Validation
+- Targeted boundary/runtime and SQL contract tests are linked from the delta.
+
 ## [v1.3] - 2026-07-13
 ### Changed
 - Added Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001` and implementation delta for the 30-minute window, camera proof, private local/cloud evidence, undo and server-authoritative `+10 Điểm chăm sóc` flow.

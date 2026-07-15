@@ -469,7 +469,7 @@ void main() {
       expect(delays, hasLength(1));
     });
 
-    test('returns local fallback when all transient attempts fail', () async {
+    test('throws typed failure when all transient attempts fail', () async {
       final modelCalls = <String>[];
       final service = AIChatService(
         modelNames: const ['primary-model', 'fallback-model'],
@@ -480,10 +480,12 @@ void main() {
         },
       );
 
-      final result = await service.sendMessage('Tôi cần tư vấn');
+      await expectLater(
+        service.sendMessage('Tôi cần tư vấn'),
+        throwsA(isA<AIOverloadedException>()),
+      );
 
       expect(modelCalls, ['primary-model', 'fallback-model']);
-      expect(result, contains('Mình chưa thể phản hồi bằng AI'));
     });
 
     test(

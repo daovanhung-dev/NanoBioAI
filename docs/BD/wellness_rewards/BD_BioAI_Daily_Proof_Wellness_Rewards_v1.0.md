@@ -38,14 +38,14 @@ Ngoài phạm vi:
 
 | ID | Quy tắc đã chốt |
 |---|---|
-| WR-BR-001 | Một mốc chỉ thao tác trong cửa sổ nửa mở `[start_time, start_time + 30 phút)` theo `Asia/Ho_Chi_Minh`. Trước giờ là `Chưa mở`; từ đúng phút 30 là `Đã khóa`. |
+| WR-BR-001 | Một mốc chỉ thao tác trong cửa sổ đóng `[start_time, start_time + 30 phút]` theo `Asia/Ho_Chi_Minh`. Trước giờ là `Chưa mở`; đúng phút 30 vẫn hợp lệ và chỉ khóa sau mốc đó. |
 | WR-BR-002 | Parser chấp nhận `HH:mm`, `HH:mm:ss` và phần giây. Giá trị ngày/giờ không hợp lệ phải khóa an toàn, không được mở nhầm nhiệm vụ. |
 | WR-BR-003 | Có thể xem ngày tương lai nhưng không được thao tác. Trạng thái phải tự làm mới ở mốc mở, mốc khóa và khi ứng dụng resume. |
 | WR-BR-004 | Hoàn thành bắt buộc chụp trực tiếp từ camera. Hủy camera, từ chối quyền hoặc lỗi xử lý ảnh không thay đổi nhiệm vụ. |
 | WR-BR-005 | Ảnh tối đa 5 MB, được chuẩn hóa JPEG, hướng xoay và loại metadata vị trí trước khi lưu hoặc tải lên. |
 | WR-BR-006 | Ảnh local nằm trong thư mục app-private `schedule_proofs`; cơ sở dữ liệu chỉ lưu đường dẫn tương đối và metadata sidecar để cloud pull không làm mất liên kết. |
 | WR-BR-007 | Ứng dụng có khu `Bằng chứng nhiệm vụ` và trang xem tất cả, gồm thumbnail, thời gian, nhiệm vụ, trạng thái `Đang hiệu lực`, `Đã hoàn tác` hoặc `Không nhận điểm`, xem toàn màn hình và tải lại cloud khi local thiếu. |
-| WR-BR-008 | Hoàn tác chỉ được phép trước `window_end`. Ảnh được giữ với nhãn `Đã hoàn tác`; khoản `+10` đang chờ bị đảo. Sau `window_end` không được hoàn tác. |
+| WR-BR-008 | Hoàn tác được phép đến hết `window_end`. Ảnh được giữ với nhãn `Đã hoàn tác`; khoản `+10` đang chờ bị đảo. Sau `window_end` không được hoàn tác. |
 | WR-BR-009 | Notification không hoàn thành nền. Hành động là `Mở để chụp ảnh` và deep-link đúng nhiệm vụ vào use case hoàn thành dùng chung. |
 
 ## 3. Eligibility, xác nhận online và Điểm chăm sóc
@@ -56,7 +56,7 @@ Ngoài phạm vi:
 | WR-BR-011 | Luồng online là `begin` → mở camera → lưu local → upload private → `finalize`. Máy chủ dùng thời gian của mình, khóa eligibility và xác nhận proof/completion/`+10` trong transaction idempotent. |
 | WR-BR-012 | Nếu object được Storage ghi trước hạn nhưng `finalize` mất response, reconciler được hoàn tất sau hạn theo `storage.objects.created_at`. Upload đến máy chủ sau hạn không được thưởng. |
 | WR-BR-013 | Guest hoặc người dùng offline vẫn được hoàn thành và giữ ảnh local nhưng không nhận điểm đổi voucher; UI phải cảnh báo trước. Sau đăng nhập chỉ nhiệm vụ Guest chưa đến giờ mới có thể được đăng ký eligibility. |
-| WR-BR-014 | Mỗi eligibility hợp lệ tạo đúng một khoản `+10 Điểm chăm sóc`. Khoản này khả dụng tại `window_end` và hết hạn tại `window_end + 180 ngày` theo cấu hình version hóa. |
+| WR-BR-014 | Mỗi eligibility hợp lệ tạo đúng một khoản `+10 Điểm chăm sóc`. Khoản này khả dụng sau `window_end` và hết hạn tại `window_end + 180 ngày` theo cấu hình version hóa. |
 | WR-BR-015 | Thay đổi thời hạn chỉ áp dụng cho khoản phát sinh sau phiên bản cấu hình mới; không hồi tố. Điểm được tiêu theo khoản sắp hết hạn trước. |
 | WR-BR-016 | Không có trần điểm theo ngày ngoài số eligibility hợp lệ. Một eligibility không được thưởng hai lần dù double tap, retry hoặc hai thiết bị. |
 | WR-BR-017 | Dữ liệu legacy `+1/-1` được hiển thị thành `+10/-10` có nhãn lịch sử nhưng không tham gia số dư đổi voucher. |
@@ -132,13 +132,13 @@ redemption cache và sync state. Mã voucher rõ chỉ được lưu trong secur
 
 | ID | Kết quả phải đạt |
 |---|---|
-| WR-AC-001 | Biên trước giờ, đúng giờ, ngay trước phút 30 và đúng phút 30 cho trạng thái chính xác theo `Asia/Ho_Chi_Minh`. |
+| WR-AC-001 | Biên trước giờ, đúng giờ, ngay trước phút 30, đúng phút 30 và ngay sau phút 30 cho trạng thái chính xác theo `Asia/Ho_Chi_Minh`. |
 | WR-AC-002 | Hủy camera, từ chối quyền, ảnh sai loại/quá 5 MB hoặc time lỗi không thay đổi nhiệm vụ và không tạo điểm. |
 | WR-AC-003 | Local completion, proof, linked task/meal và health-score projection commit nguyên tử; ảnh orphan được reconcile hoặc dọn an toàn. |
 | WR-AC-004 | Double tap, retry, hai thiết bị hoặc mất response chỉ tạo một completion/proof thưởng và một khoản `+10`. |
 | WR-AC-005 | Upload trước hạn có thể finalize sau hạn; upload sau hạn không được thưởng. |
 | WR-AC-006 | Guest/offline được giữ ảnh local nhưng không có số dư đổi voucher. |
-| WR-AC-007 | `+10` chuyển pending → available tại `window_end`, hết hạn sau 180 ngày; cấu hình mới không hồi tố và FEFO tiêu đúng. |
+| WR-AC-007 | `+10` chuyển pending → available sau `window_end`, hết hạn sau 180 ngày; cấu hình mới không hồi tố và FEFO tiêu đúng. |
 | WR-AC-008 | User A không đọc/upload path user B; chặn MIME/size/path/upsert giả và direct ledger/inventory DML. |
 | WR-AC-009 | Đổi voucher atomic; thiếu điểm, hết kho hoặc conflict không làm thay đổi số dư. |
 | WR-AC-010 | Hủy giao dịch Admin idempotent, hoàn điểm đúng một lần, không trả mã về kho và có audit. |

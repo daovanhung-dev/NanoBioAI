@@ -15,7 +15,7 @@ Migration tham chiếu: `16-wellness-rewards.sql`.
   luôn dùng trường `storage_path` từ RPC begin.
 - Thời điểm `storage.objects.created_at` là bằng chứng thời gian phía server.
   `finalize_my_schedule_completion` chỉ thưởng khi object được tạo trong cửa
-  sổ `[window_start, window_end)`, đúng MIME và kích thước.
+  sổ `[window_start, window_end]`, đúng MIME và kích thước.
 - Ảnh được giữ đến khi xóa tài khoản. Không tạo nút xóa ảnh riêng và không cấp
   signed URL công khai. Khi cần xem ảnh, client đăng nhập đọc object qua SDK;
   RLS vẫn áp dụng cho mỗi request.

@@ -8,8 +8,16 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
-$sourcePath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $EnvFile))
-$outputPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $OutputFile))
+$sourcePath = if ([System.IO.Path]::IsPathRooted($EnvFile)) {
+  [System.IO.Path]::GetFullPath($EnvFile)
+} else {
+  [System.IO.Path]::GetFullPath((Join-Path $repoRoot $EnvFile))
+}
+$outputPath = if ([System.IO.Path]::IsPathRooted($OutputFile)) {
+  [System.IO.Path]::GetFullPath($OutputFile)
+} else {
+  [System.IO.Path]::GetFullPath((Join-Path $repoRoot $OutputFile))
+}
 
 if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
   throw "Environment file was not found: $EnvFile"

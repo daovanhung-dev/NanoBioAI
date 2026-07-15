@@ -23,6 +23,7 @@ Cho phép Member hỏi đáp AI theo gói và quota, chặn Guest và vượt qu
 - [Diagrams](./diagrams/README.md)
 - [Assets](./assets/README.md)
 - [Change History](./history/CHANGELOG.md)
+- [Implementation Delta 2026-07-15 — Logbug 14-7-26](./Implementation_Delta_2026-07-15_Logbug_14-7-26.md)
 
 ## Traceability Summary
 - AI_CHAT-F01: Mở AI Chat theo quyền

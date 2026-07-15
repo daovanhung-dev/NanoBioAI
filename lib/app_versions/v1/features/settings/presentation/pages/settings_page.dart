@@ -95,6 +95,16 @@ class SettingsView extends ConsumerWidget {
                                 : _profileSubtitle(dashboard),
                             onTap: () => context.push(V1RoutePaths.profile),
                           ),
+                          const _DividerLine(),
+                          _MenuItem(
+                            icon: Icons.schedule_rounded,
+                            title: 'Lịch sinh hoạt cá nhân',
+                            subtitle:
+                                'Chỉnh giờ thức, ngủ, ăn, tập và khoảng bận',
+                            onTap: () => context.push(
+                              V1RoutePaths.dailyRoutinePreferences,
+                            ),
+                          ),
                           if (isAuthenticated) ...[
                             const _DividerLine(),
                             _MenuItem(

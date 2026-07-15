@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/datasources/ai_catalog_local_datasource.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
@@ -6,9 +8,13 @@ import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dash
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/datasources/daily_health_tracking_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/exercise_task_model.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_horizon.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/repositories/schedule_horizon_reader.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
@@ -31,6 +37,8 @@ void main() {
         dailyHealthDatasource: dailyHealthDatasource,
         scheduleDatasource: scheduleDatasource,
         aiService: aiService,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
         currentUserId: () => null,
         scheduleReminders: () async {
           reminderCalls++;
@@ -71,6 +79,8 @@ void main() {
         aiService: aiService,
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
         currentUserId: () => null,
         scheduleReminders: () async {
           reminderCalls++;
@@ -85,7 +95,7 @@ void main() {
       expect(result.days, 1);
       expect(result.mealCount, 5);
       expect(result.exerciseCount, 2);
-      expect(result.scheduleItemCount, 10);
+      expect(result.scheduleItemCount, 11);
       expect(requestStore.commitCalls, 1);
       expect(requestStore.guestInitialPlanUsed, isTrue);
       expect(repository.fetchCalls, 1);
@@ -116,6 +126,8 @@ void main() {
         aiService: aiService,
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
         currentUserId: () => null,
         scheduleReminders: () async {},
       );
@@ -150,6 +162,8 @@ void main() {
         aiService: aiService,
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
         currentUserId: () => null,
         scheduleReminders: () async {},
       );
@@ -188,6 +202,8 @@ void main() {
       aiService: aiService,
       catalogDatasource: const _FakeCatalogDatasource(),
       requestStore: requestStore,
+      routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+      scheduleHorizonReader: const _FakeScheduleHorizonReader(),
       quotaGateway: quotaGateway,
       currentUserId: () => 'auth-user-1',
       scheduleReminders: () async {},
@@ -226,6 +242,8 @@ void main() {
         aiService: _RecordingAIService(),
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
         quotaGateway: quotaGateway,
         currentUserId: () => 'auth-user-1',
         scheduleReminders: () async {},
@@ -237,7 +255,7 @@ void main() {
         startDate: DateTime(2026, 1, 2),
       );
 
-      expect(result.scheduleItemCount, 10);
+      expect(result.scheduleItemCount, 11);
       expect(requestStore.generatingCalls, 1);
       expect(requestStore.commitCalls, 1);
       expect(quotaGateway.checkCalls, 1);
@@ -262,6 +280,8 @@ void main() {
         aiService: aiService,
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
         quotaGateway: quotaGateway,
         currentUserId: () => 'auth-user-1',
         scheduleReminders: () async {},
@@ -286,6 +306,111 @@ void main() {
     },
   );
 
+  test('generateNextPlan blocks active horizon before quota and AI', () async {
+    final quotaGateway = _RecordingQuotaGateway();
+    final aiService = _RecordingAIService();
+    final service = GeneratedPlanService(
+      dashboardRepository: _RecordingDashboardRepository(userId: 'active-user'),
+      dailyHealthDatasource: _RecordingDailyHealthDatasource(
+        userId: 'active-user',
+      ),
+      scheduleDatasource: _RecordingScheduleDatasource(),
+      aiService: aiService,
+      requestStore: _RecordingRequestStore(),
+      quotaGateway: quotaGateway,
+      routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+      scheduleHorizonReader: const _FixedScheduleHorizonReader(
+        remainingDays: 2,
+      ),
+      currentUserId: () => 'active-user',
+      scheduleReminders: () async {},
+    );
+
+    await expectLater(
+      service.generateNextPlan(requestId: 'active-request', days: 1),
+      throwsA(
+        isA<PersonalScheduleStillActiveException>().having(
+          (error) => error.remainingDays,
+          'remainingDays',
+          2,
+        ),
+      ),
+    );
+    expect(quotaGateway.checkCalls, 0);
+    expect(aiService.mealCalls, 0);
+  });
+
+  test('malformed horizon fails closed before quota and AI', () async {
+    final quotaGateway = _RecordingQuotaGateway();
+    final aiService = _RecordingAIService();
+    final service = GeneratedPlanService(
+      dashboardRepository: _RecordingDashboardRepository(userId: 'bad-user'),
+      dailyHealthDatasource: _RecordingDailyHealthDatasource(
+        userId: 'bad-user',
+      ),
+      scheduleDatasource: _RecordingScheduleDatasource(),
+      aiService: aiService,
+      requestStore: _RecordingRequestStore(),
+      quotaGateway: quotaGateway,
+      routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+      scheduleHorizonReader: const _ThrowingScheduleHorizonReader(),
+      currentUserId: () => 'bad-user',
+      scheduleReminders: () async {},
+    );
+
+    await expectLater(
+      service.generateNextPlan(requestId: 'bad-request', days: 1),
+      throwsA(isA<ScheduleHorizonDataException>()),
+    );
+    expect(quotaGateway.checkCalls, 0);
+    expect(aiService.mealCalls, 0);
+  });
+
+  test(
+    'single-flight shares one generation across concurrent requests',
+    () async {
+      final quotaGateway = _RecordingQuotaGateway();
+      final aiService = _BlockingAIService();
+      final requestStore = _RecordingRequestStore();
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(
+          userId: 'concurrent-user',
+        ),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(
+          userId: 'concurrent-user',
+        ),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: aiService,
+        catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
+        quotaGateway: quotaGateway,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+        currentUserId: () => 'concurrent-user',
+        scheduleReminders: () async {},
+      );
+
+      final first = service.generateNextPlan(
+        requestId: 'concurrent-request-1',
+        days: 1,
+      );
+      await aiService.started.future;
+      final second = service.generateNextPlan(
+        requestId: 'concurrent-request-2',
+        days: 1,
+      );
+      aiService.release.complete();
+      final results = await Future.wait([first, second]);
+
+      expect(results[0].requestId, 'concurrent-request-1');
+      expect(results[1].requestId, 'concurrent-request-1');
+      expect(quotaGateway.checkCalls, 1);
+      expect(quotaGateway.commitCalls, 1);
+      expect(requestStore.commitCalls, 1);
+      expect(aiService.mealCalls, 1);
+    },
+  );
+
   test('requireAuthenticatedGeneratedPlanUser rejects missing user id', () {
     expect(
       () => requireAuthenticatedGeneratedPlanUser(null),
@@ -300,6 +425,73 @@ void main() {
       returnsNormally,
     );
   });
+}
+
+class _FakeRoutinePreferencesRepository
+    implements DailyRoutinePreferencesRepository {
+  final preferences = DailyRoutinePreferences.defaults();
+
+  @override
+  Future<DailyRoutinePreferences?> loadForCurrentUser() async => preferences;
+
+  @override
+  Future<DailyRoutinePreferences?> loadForUser(String userId) async =>
+      preferences;
+
+  @override
+  Future<void> saveForCurrentUser(DailyRoutinePreferences preferences) async {}
+
+  @override
+  Future<void> saveForUser(
+    String userId,
+    DailyRoutinePreferences preferences,
+  ) async {}
+}
+
+class _FakeScheduleHorizonReader implements ScheduleHorizonReader {
+  const _FakeScheduleHorizonReader();
+
+  @override
+  Future<ScheduleHorizon> read({
+    required String userId,
+    required DateTime today,
+  }) async {
+    return ScheduleHorizon(
+      lastScheduledDate: null,
+      remainingDays: 0,
+      nextStartDate: DateTime(2026, 1, 2),
+    );
+  }
+}
+
+class _FixedScheduleHorizonReader implements ScheduleHorizonReader {
+  final int remainingDays;
+
+  const _FixedScheduleHorizonReader({required this.remainingDays});
+
+  @override
+  Future<ScheduleHorizon> read({
+    required String userId,
+    required DateTime today,
+  }) async {
+    return ScheduleHorizon(
+      lastScheduledDate: today.add(Duration(days: remainingDays - 1)),
+      remainingDays: remainingDays,
+      nextStartDate: today.add(Duration(days: remainingDays)),
+    );
+  }
+}
+
+class _ThrowingScheduleHorizonReader implements ScheduleHorizonReader {
+  const _ThrowingScheduleHorizonReader();
+
+  @override
+  Future<ScheduleHorizon> read({
+    required String userId,
+    required DateTime today,
+  }) {
+    throw const ScheduleHorizonDataException();
+  }
 }
 
 class _RecordingDashboardRepository implements DashboardRepository {
@@ -597,6 +789,24 @@ class _FailingExerciseAIService extends _RecordingAIService {
   }) async {
     exerciseCalls++;
     throw StateError('exercise generation failed');
+  }
+}
+
+class _BlockingAIService extends _RecordingAIService {
+  final started = Completer<void>();
+  final release = Completer<void>();
+
+  @override
+  Future<List<MealPlanModel>> generateMealPlan({
+    required HealthDataInterface healthData,
+    required String userId,
+    required DateTime startDate,
+    int days = 7,
+  }) async {
+    mealCalls++;
+    if (!started.isCompleted) started.complete();
+    await release.future;
+    return _mealPlans(userId: userId, startDate: startDate);
   }
 }
 

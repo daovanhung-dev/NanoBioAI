@@ -82,7 +82,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
     final isReadyToGenerate = state.canSave && state.agreed;
 
     return OnboardingStepShell(
-      stepIndex: 7,
+      stepIndex: 8,
       title: 'Mọi thứ đã sẵn sàng,\nđể bắt đầu hành trình.',
       subtitle:
           'Kiểm tra nhanh lần cuối. Bạn có thể quay lại chỉnh sửa bất kỳ phần nào trước khi tạo lịch trình.',

@@ -125,7 +125,7 @@ class LifestyleScheduleWindowPolicy {
     if (vietnamNow.isBefore(scheduled)) {
       return CompletionWindowStatus.waiting;
     }
-    if (!vietnamNow.isBefore(scheduled.add(completionWindow))) {
+    if (vietnamNow.isAfter(scheduled.add(completionWindow))) {
       return CompletionWindowStatus.locked;
     }
     return CompletionWindowStatus.open;
@@ -143,6 +143,6 @@ class LifestyleScheduleWindowPolicy {
     if (scheduled == null) return false;
     final vietnamNow = toVietnamWallClock(now);
     final deadline = scheduled.add(completionWindow);
-    return !vietnamNow.isBefore(scheduled) && vietnamNow.isBefore(deadline);
+    return !vietnamNow.isBefore(scheduled) && !vietnamNow.isAfter(deadline);
   }
 }

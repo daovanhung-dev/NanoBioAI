@@ -12,6 +12,9 @@ import 'package:nano_app/app_versions/v1/features/onboarding/presentation/contro
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/repository_providers.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/providers/daily_routine_preferences_provider.dart';
 import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -78,6 +81,9 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWithValue(repository),
+          dailyRoutinePreferencesRepositoryProvider.overrideWithValue(
+            _FakeRoutinePreferencesRepository(),
+          ),
           onboardingCompletionCallbackProvider.overrideWith((ref) {
             return () async {
               callbackCalls++;
@@ -105,6 +111,9 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWithValue(repository),
+          dailyRoutinePreferencesRepositoryProvider.overrideWithValue(
+            _FakeRoutinePreferencesRepository(),
+          ),
           onboardingCompletionCallbackProvider.overrideWith((ref) {
             return () async => const OnboardingCompletionResult.skipped();
           }),
@@ -139,6 +148,9 @@ void main() {
         final container = ProviderContainer(
           overrides: [
             onboardingRepositoryProvider.overrideWithValue(repository),
+            dailyRoutinePreferencesRepositoryProvider.overrideWithValue(
+              _FakeRoutinePreferencesRepository(),
+            ),
             onboardingCompletionCallbackProvider.overrideWith((ref) {
               return () async {
                 callbackCalls++;
@@ -173,6 +185,9 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           onboardingRepositoryProvider.overrideWithValue(repository),
+          dailyRoutinePreferencesRepositoryProvider.overrideWithValue(
+            _FakeRoutinePreferencesRepository(),
+          ),
           onboardingCompletionCallbackProvider.overrideWith((ref) {
             return () async =>
                 const OnboardingCompletionResult.generatedInitialPlan();
@@ -240,6 +255,7 @@ void _seedValidState(OnboardingController controller) {
   controller.updateGender('Nam');
   controller.updateBirthYear('1995');
   controller.updateOccupation('Nhan vien van phong');
+  controller.confirmRoutineAndContinue();
   controller.setAgreed(true);
 }
 
@@ -256,6 +272,7 @@ void _seedSensitiveState(OnboardingController controller) {
   controller.toggleGoal('lose_weight');
   controller.toggleCondition('stress');
   controller.toggleHabit('skip_breakfast');
+  controller.confirmRoutineAndContinue();
   controller.setAgreed(true);
 }
 
@@ -313,5 +330,29 @@ class _CapturingOnboardingLocalDatasource extends OnboardingLocalDatasource {
   @override
   Future<void> markOnboardingCompleted(String userId) async {
     completedUserId = userId;
+  }
+}
+
+class _FakeRoutinePreferencesRepository
+    implements DailyRoutinePreferencesRepository {
+  int saveCalls = 0;
+
+  @override
+  Future<DailyRoutinePreferences?> loadForCurrentUser() async => null;
+
+  @override
+  Future<DailyRoutinePreferences?> loadForUser(String userId) async => null;
+
+  @override
+  Future<void> saveForCurrentUser(DailyRoutinePreferences preferences) async {
+    saveCalls++;
+  }
+
+  @override
+  Future<void> saveForUser(
+    String userId,
+    DailyRoutinePreferences preferences,
+  ) async {
+    saveCalls++;
   }
 }

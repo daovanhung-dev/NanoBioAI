@@ -1,5 +1,12 @@
 # CHANGELOG — SCHEDULE_NOTIFICATIONS / Thông báo lịch trình
 
+## [v1.4] - 2026-07-15
+### Changed
+- Notifications now consume resolver-owned schedule times and the deep-link contract uses the inclusive completion boundary.
+
+### Validation
+- No notification mechanism change; real-device smoke remains pending.
+
 ## [v1.3] - 2026-07-13
 ### Changed
 - Replaced background completion semantics with `Mở để chụp ảnh` navigation to the exact schedule item and shared M03 camera-proof use case.

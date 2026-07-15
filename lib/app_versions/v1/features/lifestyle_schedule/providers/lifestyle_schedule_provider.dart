@@ -8,8 +8,13 @@ import '../application/schedule_reward_eligibility_reconciler.dart';
 import '../data/datasources/lifestyle_schedule_local_datasource.dart';
 import '../domain/repositories/lifestyle_schedule_repository.dart';
 import '../domain/repositories/lifestyle_schedule_repository_impl.dart';
+import '../domain/services/lifestyle_schedule_window_policy.dart';
 import '../presentation/controllers/lifestyle_schedule_controller.dart';
 import '../presentation/controllers/lifestyle_schedule_state.dart';
+
+final lifestyleScheduleClockProvider = Provider<DateTime Function()>((ref) {
+  return LifestyleScheduleWindowPolicy.vietnamNow;
+});
 
 final lifestyleScheduleLocalDatasourceProvider =
     Provider<LifestyleScheduleLocalDatasource>((ref) {

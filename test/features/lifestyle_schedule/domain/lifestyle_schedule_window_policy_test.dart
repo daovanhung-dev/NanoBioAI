@@ -47,7 +47,7 @@ void main() {
     );
   });
 
-  test('window is half-open from start through before minute 30', () {
+  test('window includes the exact 30 minute deadline', () {
     CompletionWindowStatus statusAt(DateTime now) {
       return LifestyleScheduleWindowPolicy.statusAt(
         scheduleDate: '2026-07-13',
@@ -66,8 +66,9 @@ void main() {
       statusAt(DateTime(2026, 7, 13, 7, 29, 59, 999)),
       CompletionWindowStatus.open,
     );
+    expect(statusAt(DateTime(2026, 7, 13, 7, 30)), CompletionWindowStatus.open);
     expect(
-      statusAt(DateTime(2026, 7, 13, 7, 30)),
+      statusAt(DateTime(2026, 7, 13, 7, 30, 0, 1)),
       CompletionWindowStatus.locked,
     );
   });

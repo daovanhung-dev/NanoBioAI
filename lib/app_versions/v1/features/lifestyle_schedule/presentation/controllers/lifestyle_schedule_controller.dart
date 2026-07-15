@@ -27,12 +27,14 @@ class LifestyleScheduleController
     extends AsyncNotifier<LifestyleScheduleState> {
   late final LifestyleScheduleRepository _repository;
   late final ScheduleRewardOnlineGateway _rewardGateway;
+  late final DateTime Function() _now;
   final Set<String> _busyItemIds = <String>{};
 
   @override
   Future<LifestyleScheduleState> build() async {
     _repository = ref.read(lifestyleScheduleRepositoryProvider);
     _rewardGateway = ref.read(scheduleRewardOnlineGatewayProvider);
+    _now = ref.read(lifestyleScheduleClockProvider);
     final summary = await _repository.getWeekSchedule();
     final proofs = await _repository.getCompletionProofs();
     final selectedDate = _defaultSelectedDate(summary.availableDates);
@@ -115,14 +117,19 @@ class LifestyleScheduleController
     var localCommitted = false;
     ScheduleRewardCompletionAttempt? remoteAttempt;
     try {
-      final windowStatus = item.completionStatusAt(
-        LifestyleScheduleWindowPolicy.vietnamNow(),
-      );
+      final windowStatus = item.completionStatusAt(_now());
+      if (item.scheduledAt == null) {
+        state = AsyncData(
+          current.copyWith(
+            lastErrorMessage:
+                'Ngày hoặc giờ của nhiệm vụ chưa hợp lệ. Nabi đã khóa thao tác để bảo vệ kết quả của bạn.',
+            clearEncouragement: true,
+          ),
+        );
+        return LifestyleScheduleToggleResult.blocked;
+      }
       if (windowStatus != CompletionWindowStatus.open &&
-          !(item.isCompleted &&
-              item.isWithinCompletionWindow(
-                LifestyleScheduleWindowPolicy.vietnamNow(),
-              ))) {
+          !(item.isCompleted && item.isWithinCompletionWindow(_now()))) {
         final message = windowStatus == CompletionWindowStatus.waiting
             ? 'Nhiệm vụ chưa đến giờ thực hiện. Bạn quay lại đúng giờ nhé.'
             : 'Nhiệm vụ đã hết thời gian thực hiện và được khóa.';
@@ -150,6 +157,20 @@ class LifestyleScheduleController
             .captureProofForItem(item.id);
         if (completionProofPath == null) {
           return LifestyleScheduleToggleResult.cancelled;
+        }
+        if (!item.isWithinCompletionWindow(_now())) {
+          await ref
+              .read(scheduleProofImageServiceProvider)
+              .deleteProof(completionProofPath);
+          completionProofPath = null;
+          state = AsyncData(
+            current.copyWith(
+              lastErrorMessage:
+                  'Cửa sổ hoàn thành đã kết thúc khi camera đóng. Nabi chưa đánh dấu nhiệm vụ này.',
+              clearEncouragement: true,
+            ),
+          );
+          return LifestyleScheduleToggleResult.blocked;
         }
       } else {
         final activeProof = _activeProofFor(item.id, current.completionProofs);

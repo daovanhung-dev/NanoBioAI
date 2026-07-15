@@ -11,15 +11,15 @@
 ## 1. Delta nghiệp vụ được chấp nhận
 
 - `start_time` được hiểu theo `Asia/Ho_Chi_Minh`; chỉ hoàn thành trong
-  `[start_time, start_time + 30 phút)`. Ngày tương lai và mốc chưa mở chỉ xem;
-  từ đúng `window_end` khóa thao tác. Dữ liệu giờ lỗi khóa an toàn.
+  `[start_time, start_time + 30 phút]`. Ngày tương lai và mốc chưa mở chỉ xem;
+  sau `window_end` khóa thao tác. Dữ liệu giờ lỗi khóa an toàn.
 - Hoàn thành bắt buộc chụp trực tiếp bằng camera. Ảnh được chuẩn hóa JPEG,
   hướng xoay và metadata trước khi ghi; giới hạn 5 MB.
 - Ảnh local nằm trong `schedule_proofs`, metadata sidecar nằm ngoài snapshot
   schedule. Hủy camera/lỗi quyền không thay đổi task.
 - Gallery `Bằng chứng nhiệm vụ` giữ cả ảnh đã hoàn tác và ảnh không nhận điểm;
   có thể xem toàn màn hình, và client có contract tải lại cloud nếu local thiếu.
-- Hoàn tác chỉ trước `window_end`, giữ ảnh và đảo khoản thưởng đang chờ.
+- Hoàn tác đến hết `window_end`, giữ ảnh và đảo khoản thưởng đang chờ.
 - Guest/offline được hoàn thành local nhưng không nhận số dư đổi voucher.
 - Member online đi qua một use case `begin` → camera/local → upload private →
   `finalize`; retry/reconcile phải idempotent.
@@ -28,7 +28,7 @@
 
 | ID delta | Contract |
 |---|---|
-| M03-DELTA-FN01 | `LifestyleScheduleWindowPolicy` parse ngày/giờ, tính trạng thái và mốc refresh theo cửa sổ nửa mở 30 phút. |
+| M03-DELTA-FN01 | `LifestyleScheduleWindowPolicy` parse ngày/giờ, tính trạng thái và mốc refresh theo cửa sổ đóng 30 phút. |
 | M03-DELTA-FN02 | Controller hoàn thành dùng camera proof và một transaction local cho schedule, proof, linked meal/task và health-score projection. |
 | M03-DELTA-FN03 | `ScheduleRewardOnlineGateway` đăng ký eligibility, begin, upload `upsert:false`, finalize, undo và reconcile attempt mất response. |
 | M03-DELTA-V01 | Trang lịch hiển thị trạng thái `Chưa mở`, khả dụng, `Đã khóa`, cảnh báo Guest/offline và section proof ở cuối. |

@@ -33,7 +33,8 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 - [ ] Bật rollout bằng một config version mới trong sandbox; khi flag còn tắt,
   RPC mutation trả `wellness_rewards_disabled` và không tạo dữ liệu.
 - [ ] Register chỉ chấp nhận member đã có schedule request `succeeded`, quota
-  event hợp lệ, mốc giờ tương lai và đúng 10 item khác nhau mỗi ngày.
+  event hợp lệ, mốc giờ tương lai và đúng 10 hoặc 11 item khác nhau mỗi ngày
+  tùy cấu hình ngủ trưa.
 - [ ] Nhánh `member_new` vẫn bắt buộc manifest đầy đủ `days * 10` và quota
   commit cùng request ID; marker Member ghim canonical manifest và chỉ cho một
   registration identity. Manifest thiếu/thay item hoặc gọi lại bằng key khác
@@ -49,7 +50,7 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
   khoản khác hoặc có nhiều request Guest thành công đều trả stable code và
   không tạo eligibility. Client không đọc/ghi trực tiếp được bảng marker.
 - [ ] `begin_my_schedule_completion` bị chặn trước `window_start` và tại đúng
-  `window_end`; trong `[window_start, window_end)` trả path bất biến dạng
+  `window_end`; trong `[window_start, window_end]` trả path bất biến dạng
   `<uid>/<eligibility>/<attempt>.jpg`.
 - [ ] Camera cancel/permission deny không upload object, không finalize và không
   tạo điểm. Retry begin/finalize cùng idempotency key không nhân đôi attempt,

@@ -1,6 +1,8 @@
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/services/schedule_timing_resolver.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
 import 'exercise_task_model.dart';
@@ -23,6 +25,8 @@ class LifestyleScheduleTimelineBuilder {
     required DateTime startDate,
     int days = 7,
     required String createdAt,
+    DailyRoutinePreferences? routinePreferences,
+    ScheduleTimingResolver timingResolver = const ScheduleTimingResolver(),
   }) {
     final scheduleCatalog = catalog.scheduleTasksByCode;
     final wakeTask = _requiredRoutine(scheduleCatalog, 'routine_wake');
@@ -54,6 +58,10 @@ class LifestyleScheduleTimelineBuilder {
     final result = <LifestyleScheduleItemModel>[];
     for (var dayIndex = 0; dayIndex < days; dayIndex++) {
       final date = _dateKey(startDate.add(Duration(days: dayIndex)));
+      final dayDate = startDate.add(Duration(days: dayIndex));
+      final resolvedTiming = routinePreferences == null
+          ? null
+          : timingResolver.resolve(routinePreferences, dayDate);
       final dayMeals = [...mealsByDate[date] ?? <MealPlanModel>[]]
         ..sort((a, b) => a.mealOrder.compareTo(b.mealOrder));
       final dayExercises = [...exercisesByDate[date] ?? <ExerciseTaskModel>[]]
@@ -72,12 +80,14 @@ class LifestyleScheduleTimelineBuilder {
           date: date,
           item: wakeTask,
           createdAt: createdAt,
+          timeRange: resolvedTiming?.wakeRange,
         ),
         _routine(
           profile: profile,
           date: date,
           item: waterTask,
           createdAt: createdAt,
+          timeRange: resolvedTiming?.morningWaterRange,
         ),
         ...dayMeals.map(
           (meal) => LifestyleScheduleItemModel(
@@ -125,11 +135,19 @@ class LifestyleScheduleTimelineBuilder {
             updatedAt: createdAt,
           ),
         ),
+        if (resolvedTiming?.napRange != null)
+          _nap(
+            profile: profile,
+            date: date,
+            timeRange: resolvedTiming!.napRange!,
+            createdAt: createdAt,
+          ),
         _routine(
           profile: profile,
           date: date,
           item: sleepTask,
           createdAt: createdAt,
+          timeRange: resolvedTiming?.sleepPreparationRange,
         ),
       ];
 
@@ -159,13 +177,14 @@ class LifestyleScheduleTimelineBuilder {
     required String date,
     required ScheduleTaskCatalogItemModel item,
     required String createdAt,
+    RoutineTimeRange? timeRange,
   }) {
     return LifestyleScheduleItemModel(
       id: '',
       userId: profile.userId,
       scheduleDate: date,
-      startTime: item.startTime,
-      endTime: item.endTime,
+      startTime: timeRange?.start ?? item.startTime,
+      endTime: timeRange?.end ?? item.endTime,
       title: item.title,
       description: item.description,
       category: item.category,
@@ -178,6 +197,35 @@ class LifestyleScheduleTimelineBuilder {
       sortOrder: 0,
       aiGenerated: true,
       encouragement: item.encouragement,
+      createdAt: createdAt,
+      updatedAt: createdAt,
+    );
+  }
+
+  LifestyleScheduleItemModel _nap({
+    required DailyHealthProfileEntity profile,
+    required String date,
+    required RoutineTimeRange timeRange,
+    required String createdAt,
+  }) {
+    return LifestyleScheduleItemModel(
+      id: '',
+      userId: profile.userId,
+      scheduleDate: date,
+      startTime: timeRange.start,
+      endTime: timeRange.end,
+      title: 'Ngủ trưa',
+      description: 'Dành một khoảng nghỉ trưa theo nhịp sinh hoạt bạn đã chọn.',
+      category: LifestyleScheduleCategories.sleep,
+      sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+      sourceId: 'routine_nap',
+      targetValue: 1,
+      currentValue: 0,
+      unit: 'lần',
+      isCompleted: false,
+      sortOrder: 0,
+      aiGenerated: true,
+      encouragement: 'Một giấc nghỉ vừa đủ giúp buổi chiều nhẹ nhàng hơn.',
       createdAt: createdAt,
       updatedAt: createdAt,
     );

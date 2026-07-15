@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 82
+- Total worklogs: 84
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -91,3 +91,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-13 | bugfix | bugfix | M05 AI / AI Chat / runtime configuration | [Worklog - Fix VS Code AI Chat runtime config](../../docs/worklog/2026-07-13/006-worklog-vscode-ai-chat-runtime-config.md) |
 | 2026-07-13 | coding | coding | M20-M29 Advanced Health | [Worklog - Advanced Health M20-M29 catalog shell](../../docs/worklog/2026-07-13/007-worklog-advanced-health-catalog-shell.md) |
 | 2026-07-13 | coding/test/docs | coding | M03 DASHBOARD_SCHEDULE, M08 HEALTH_SCORE_HABITS, M09 SCHEDULE_NOTIFICATIONS, M15 ADMIN_DASHBOARD, M16 ADMIN_OPS; localization V1/V2/V3/Sale/Admin. | [Worklog - Nhiệm vụ hằng ngày, bằng chứng, Điểm chăm sóc, voucher và Việt hóa](../../docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md) |
+| 2026-07-13 | coding/test/docs | coding | unknown | [Worklog - Hợp nhất phiên bản và phân giao diện theo quyền](../../docs/worklog/2026-07-13/009-worklog-unified-role-app.md) |
+| 2026-07-15 | unknown | docs-context | unknown | [Worklog — triển khai logbug 14-7-26](../../docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md) |

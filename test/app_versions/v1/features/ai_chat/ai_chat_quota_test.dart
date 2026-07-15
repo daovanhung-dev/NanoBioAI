@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/app_versions/v1/features/ai_chat/domain/entities/chat_message_entity.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository_impl.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_chat_service.dart';
@@ -53,7 +54,7 @@ void main() {
 
       await expectLater(
         repository.sendMessage('Tôi cần hỗ trợ'),
-        throwsStateError,
+        throwsA(isA<AIChatUnavailableException>()),
       );
 
       expect(quotaGateway.checkCalls, 1);
@@ -84,6 +85,49 @@ void main() {
       expect(quotaGateway.commitCalls, 0);
       expect(aiService.sendCalls, 1);
     });
+
+    test(
+      'retries quota commit at most three times with one request id',
+      () async {
+        final quotaGateway = _RecordingUsageQuotaGateway(failCommitAttempts: 2);
+        final repository = AIChatRepositoryImpl(
+          aiChatService: _RecordingAIChatService(),
+          quotaGateway: quotaGateway,
+          requestIdFactory: (_) => 'stable-request',
+          delay: (_) async {},
+        );
+
+        final response = await repository.sendMessage('Tôi cần một gợi ý');
+
+        expect(response.role, MessageRole.assistant);
+        expect(quotaGateway.commitCalls, 3);
+        expect(quotaGateway.commitRequestIds, [
+          'stable-request',
+          'stable-request',
+          'stable-request',
+        ]);
+      },
+    );
+
+    test('commit failure is fail-closed and adds no AI answer', () async {
+      final quotaGateway = _RecordingUsageQuotaGateway(failCommitAttempts: 3);
+      final repository = AIChatRepositoryImpl(
+        aiChatService: _RecordingAIChatService(),
+        quotaGateway: quotaGateway,
+        requestIdFactory: (_) => 'failed-commit-request',
+        delay: (_) async {},
+      );
+
+      await expectLater(
+        repository.sendMessage('Tôi cần một gợi ý'),
+        throwsA(isA<UsageQuotaUnavailableException>()),
+      );
+
+      expect(quotaGateway.commitCalls, 3);
+      final history = await repository.getChatHistory();
+      expect(history, hasLength(1));
+      expect(history.single.role, MessageRole.user);
+    });
   });
 }
 
@@ -112,10 +156,15 @@ class _RecordingAIChatService extends AIChatService {
 
 class _RecordingUsageQuotaGateway implements UsageQuotaGateway {
   final bool allowed;
+  final int failCommitAttempts;
   int checkCalls = 0;
   int commitCalls = 0;
+  final List<String> commitRequestIds = [];
 
-  _RecordingUsageQuotaGateway({this.allowed = true});
+  _RecordingUsageQuotaGateway({
+    this.allowed = true,
+    this.failCommitAttempts = 0,
+  });
 
   @override
   Future<UsageQuotaDecision> checkCurrentUserQuota({
@@ -137,5 +186,9 @@ class _RecordingUsageQuotaGateway implements UsageQuotaGateway {
     DateTime? at,
   }) async {
     commitCalls++;
+    commitRequestIds.add(requestId);
+    if (commitCalls <= failCommitAttempts) {
+      throw StateError('quota commit unavailable');
+    }
   }
 }

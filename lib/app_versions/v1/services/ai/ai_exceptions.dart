@@ -9,6 +9,13 @@ class AIConfigurationUnavailableException implements Exception {
   String toString() => 'AI runtime configuration is unavailable.';
 }
 
+class AIResponseInvalidException implements Exception {
+  const AIResponseInvalidException();
+
+  @override
+  String toString() => 'AI response is unavailable or invalid.';
+}
+
 class AIAuthenticationException implements Exception {
   static const userMessage =
       'Khóa AI hiện tại chưa được Gemini chấp nhận. Bạn hãy tạo một Gemini API key hợp lệ rồi cập nhật cấu hình và mở lại ứng dụng nhé.';

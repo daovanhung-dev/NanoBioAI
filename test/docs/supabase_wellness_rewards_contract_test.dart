@@ -22,7 +22,10 @@ void main() {
         '-- BEGIN 16-wellness-rewards.sql',
         '-- END 16-wellness-rewards.sql',
       ).trim();
-      expect(embedded, migration.trim());
+      expect(
+        embedded.replaceAll('\r\n', '\n'),
+        migration.trim().replaceAll('\r\n', '\n'),
+      );
     });
 
     test('declares server-owned proof, wallet and voucher tables', () {
@@ -61,7 +64,9 @@ void main() {
         "'points_delta', v_allocation.original_points",
         "'points_delta', -v_allocation.original_points",
         "v_path := v_user_id::text || '/' || v_eligibility.id::text || '/' || v_attempt_id::text || '.jpg'",
-        'v_request.schedule_item_count <> v_request.days * 10',
+        'v_request.schedule_item_count < v_request.days * 10',
+        'v_request.schedule_item_count > v_request.days * 11',
+        'plan_item_count between plan_days * 10 and plan_days * 11',
         'schedule_items_outside_request_range',
       ]) {
         expect(migration, contains(token), reason: token);
@@ -82,7 +87,7 @@ void main() {
       expect(finalize, contains('storage_path_mismatch'));
       expect(
         finalize,
-        contains("v_object.created_at >= v_eligibility.window_end"),
+        contains("v_object.created_at > v_eligibility.window_end"),
       );
       expect(
         _functionBlock(migration, 'undo_my_schedule_completion'),
@@ -115,7 +120,8 @@ void main() {
           'jsonb_build_array(',
           'v_guest_marker.eligible_item_ids',
           '= any(v_guest_eligible_item_ids)',
-          'count(distinct lsi.start_time) <> 10',
+          'count(*) not between 10 and 11',
+          'count(distinct lsi.start_time) <> count(*)',
           'where lsi.is_completed = false',
           'and lsi.ai_generated = true',
           'schedule_window_must_be_future',
@@ -229,7 +235,7 @@ void main() {
         "'expiry_days', 180",
         "'time_zone', 'Asia/Ho_Chi_Minh'",
         "window_end = window_start + interval '30 minutes'",
-        "when now() >= v_eligibility.window_end then 'available'",
+        "when now() > v_eligibility.window_end then 'available'",
         'v_eligibility.window_end + make_interval(days => v_program.expiry_days)',
         "program_code = 'wellness_schedule_v1'",
         "program_code = 'wellness_schedule_legacy_v1'",

@@ -85,7 +85,7 @@ Coding gate for M20-M29: only the UI catalog shell and shared development placeh
 - Pending payment never grants rights; only payment_approved activates entitlement and commission.
 - Commission is 10 percent of listed price; FamilyPlus commission uses owner portion only.
 - Points are credited after approved payment, held from conversion for 24 hours, and convert at 1 point = 1 VND with minimum 500,000 VND unless Admin changes versioned config.
-- Schedule completion is allowed only in `[start_time, start_time + 30 minutes)` in `Asia/Ho_Chi_Minh`; invalid time data fails closed, and eligible online completion requires private camera proof.
+- Schedule completion is allowed only in `[start_time, start_time + 30 minutes]` in `Asia/Ho_Chi_Minh`; invalid time data fails closed, and eligible online completion requires private camera proof.
 - Wellness Points are a third, account-scoped point system: they are separate from Health Points and Sale Points, award `+10` per eligible completion, become available at window end, expire under the applicable versioned policy, and are spent FEFO.
 - Guest/offline completion may retain local proof but never creates redeemable Wellness Points. Keep the wellness-rewards rollout flag disabled until migration, private Storage, RLS, concurrency, inventory, and cancellation paths pass sandbox acceptance.
 - Refund/cancel is allowed only within 24 hours after purchase and reverses points immediately.

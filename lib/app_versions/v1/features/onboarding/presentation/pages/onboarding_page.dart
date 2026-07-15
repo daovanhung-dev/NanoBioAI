@@ -8,6 +8,7 @@ import 'package:nano_app/core/theme/medical_ui.dart';
 import '../widgets/basic_info_step.dart';
 import '../widgets/consent_step.dart';
 import '../widgets/conditions_step.dart';
+import '../widgets/daily_routine_step.dart';
 import '../widgets/extras_step.dart';
 import '../widgets/goals_step.dart';
 import '../widgets/lifestyle_step.dart';
@@ -70,7 +71,8 @@ class OnboardingPage extends ConsumerWidget {
                 3 => const ConditionsStep(),
                 4 => const LifestyleStep(),
                 5 => const ExtrasStep(),
-                6 => const ConsentStep(),
+                6 => const DailyRoutineStep(),
+                7 => const ConsentStep(),
                 _ => const ReviewStep(),
               },
             ),

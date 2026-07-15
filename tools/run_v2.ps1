@@ -126,36 +126,6 @@ function Assert-RuntimeEnvironment {
   }
 }
 
-function Get-DartDefineArguments {
-  param([Parameter(Mandatory = $true)][hashtable]$Settings)
-
-  $keys = @(
-    "SUPABASE_URL",
-    "SUPABASE_ANON_KEY",
-    "AUTH_EMAIL_REDIRECT_URL",
-    "AUTH_CONFIRM_EMAIL_REQUIRED",
-    "GEMINI_API_KEY",
-    "GEMINI_BASE_URL",
-    "GEMINI_MODEL",
-    "GEMINI_FALLBACK_MODELS",
-    "GEMINI_PLAN_MODEL",
-    "GEMINI_PLAN_FALLBACK_MODELS",
-    "GEMINI_PLAN_OVERFLOW_MODELS",
-    "GEMINI_CHAT_MODEL",
-    "GEMINI_CHAT_FALLBACK_MODELS",
-    "ONBOARDING_AI_DEV_CHECK_ENABLED"
-  )
-  $arguments = New-Object System.Collections.Generic.List[string]
-
-  foreach ($key in $keys) {
-    if ($Settings.ContainsKey($key) -and -not [string]::IsNullOrWhiteSpace($Settings[$key])) {
-      $arguments.Add("--dart-define=$key=$($Settings[$key])") | Out-Null
-    }
-  }
-
-  return $arguments.ToArray()
-}
-
 function Invoke-FlutterRun {
   param([Parameter(Mandatory = $true)][string[]]$Arguments)
 
@@ -189,7 +159,6 @@ function Invoke-FlutterRun {
 
 $resolvedEnvFile = Resolve-RepoFile -Path $EnvFile -Label "Environment"
 $resolvedEntryPoint = Resolve-RepoFile -Path $EntryPoint -Label "Entry point"
-$environment = Read-DotEnvSettings -Path $resolvedEnvFile
 Assert-RuntimeEnvironment -Path $resolvedEnvFile
 
 Write-Host "Authentication and AI environment validation passed."
@@ -198,13 +167,23 @@ if ($ValidateOnly) {
   return
 }
 
+$definesFile = Join-Path $repoRoot ".dart_tool/nanobio_defines.json"
+$prepareScript = Join-Path $repoRoot "tools/prepare_dart_defines.ps1"
+& powershell -ExecutionPolicy Bypass -File $prepareScript `
+  -EnvFile $resolvedEnvFile `
+  -OutputFile $definesFile
+if ($LASTEXITCODE -ne 0) {
+  throw "Preparing runtime Dart defines failed with exit code $LASTEXITCODE."
+}
+
 $flutterArguments = @(
   "run",
   "-d",
   $DeviceId,
   "-t",
-  $resolvedEntryPoint
-) + (Get-DartDefineArguments -Settings $environment)
+  $resolvedEntryPoint,
+  "--dart-define-from-file=$definesFile"
+)
 
 Write-Host "Starting Flutter on device $DeviceId with validated local configuration."
 Push-Location $repoRoot

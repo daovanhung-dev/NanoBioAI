@@ -223,18 +223,24 @@ class TrustedBackendUsageQuotaGateway implements UsageQuotaGateway {
     required String requestId,
     required DateTime at,
   }) async {
-    final response = await rpcClient.rpc(
-      'check_usage_quota',
-      params: _params(
-        userId: userId,
-        featureKey: featureKey,
-        requestId: requestId,
-        at: at,
-      ),
-    );
-    final decision = UsageQuotaDecision.fromRpcResponse(response);
-    if (!decision.allowed) throw UsageQuotaExceededException(decision);
-    return decision;
+    try {
+      final response = await rpcClient.rpc(
+        'check_usage_quota',
+        params: _params(
+          userId: userId,
+          featureKey: featureKey,
+          requestId: requestId,
+          at: at,
+        ),
+      );
+      final decision = UsageQuotaDecision.fromRpcResponse(response);
+      if (!decision.allowed) throw UsageQuotaExceededException(decision);
+      return decision;
+    } on UsageQuotaException {
+      rethrow;
+    } catch (_) {
+      throw const UsageQuotaUnavailableException();
+    }
   }
 
   Future<void> commitQuota({
@@ -243,17 +249,23 @@ class TrustedBackendUsageQuotaGateway implements UsageQuotaGateway {
     required String requestId,
     required DateTime at,
   }) async {
-    final response = await rpcClient.rpc(
-      'commit_usage_quota',
-      params: _params(
-        userId: userId,
-        featureKey: featureKey,
-        requestId: requestId,
-        at: at,
-      ),
-    );
-    final decision = UsageQuotaDecision.fromRpcResponse(response);
-    if (!decision.allowed) throw UsageQuotaExceededException(decision);
+    try {
+      final response = await rpcClient.rpc(
+        'commit_usage_quota',
+        params: _params(
+          userId: userId,
+          featureKey: featureKey,
+          requestId: requestId,
+          at: at,
+        ),
+      );
+      final decision = UsageQuotaDecision.fromRpcResponse(response);
+      if (!decision.allowed) throw UsageQuotaExceededException(decision);
+    } on UsageQuotaException {
+      rethrow;
+    } catch (_) {
+      throw const UsageQuotaUnavailableException();
+    }
   }
 
   Map<String, Object?> _params({

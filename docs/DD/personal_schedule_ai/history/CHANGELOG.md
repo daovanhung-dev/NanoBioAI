@@ -1,5 +1,12 @@
 # CHANGELOG — PERSONAL_SCHEDULE_AI / AI Lịch trình cá nhân
 
+## [v1.3] - 2026-07-15
+### Changed
+- Added schedule-horizon gating, idempotency/single-flight order, deterministic timing and 10/11-item manifest rules for logbug 14-7-26.
+
+### Validation
+- Targeted runtime and SQL contract tests are linked from the delta; sandbox apply remains pending.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked PERSONAL_SCHEDULE_AI DD docs as `Approved - DD docs complete`.

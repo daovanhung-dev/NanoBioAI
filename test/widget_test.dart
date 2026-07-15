@@ -15,6 +15,7 @@ void main() {
       gender: 'Nam',
       birthYear: 1995,
       occupation: 'Nhan vien van phong',
+      routineConfirmed: true,
     );
 
     test('không cho lưu khi người dùng chưa đồng ý điều khoản', () {
@@ -160,12 +161,18 @@ void main() {
     }
 
     expect(container.read(onboardingProvider).currentStep, 5);
-    expect(find.text('6/8'), findsOneWidget);
+    expect(find.text('6/9'), findsOneWidget);
 
     await _tapByText(tester, 'Tiếp tục');
 
     expect(container.read(onboardingProvider).currentStep, 6);
-    expect(find.text('7/8'), findsOneWidget);
+    expect(find.text('7/9'), findsOneWidget);
+
+    container.read(onboardingProvider.notifier).confirmRoutineAndContinue();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(container.read(onboardingProvider).currentStep, 7);
+    expect(find.text('8/9'), findsOneWidget);
     expect(
       find.text('Một xác nhận nhỏ,\nđể chăm sóc đúng cách.'),
       findsOneWidget,
@@ -173,8 +180,8 @@ void main() {
 
     await _tapByText(tester, 'Tôi hiểu và đồng ý');
 
-    expect(container.read(onboardingProvider).currentStep, 6);
-    expect(find.text('7/8'), findsOneWidget);
+    expect(container.read(onboardingProvider).currentStep, 7);
+    expect(find.text('8/9'), findsOneWidget);
 
     ScaffoldMessenger.of(
       tester.element(find.byType(OnboardingPage)),
@@ -186,8 +193,8 @@ void main() {
 
     await _tapPrimaryOnboardingButton(tester);
 
-    expect(container.read(onboardingProvider).currentStep, 7);
-    expect(find.text('8/8'), findsOneWidget);
+    expect(container.read(onboardingProvider).currentStep, 8);
+    expect(find.text('9/9'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(const SizedBox.shrink());

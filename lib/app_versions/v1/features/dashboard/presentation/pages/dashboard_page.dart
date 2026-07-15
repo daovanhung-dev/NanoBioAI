@@ -10,6 +10,8 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/control
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/widgets/companion/dashboard_companion_widgets.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_horizon.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v1/features/nabi/presentation/widgets/nabi_floating_overlay.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
@@ -110,6 +112,35 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       );
     } catch (error) {
       if (!mounted) return;
+      if (error is DailyRoutinePreferencesRequiredException) {
+        final saved = await context.push<bool>(
+          V1RoutePaths.dailyRoutinePreferences,
+        );
+        if (saved != true || !mounted) return;
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Tạo lịch 7 ngày mới?'),
+            content: const Text(
+              'Nabi đã lưu nhịp sinh hoạt. Chỉ khi bạn xác nhận, Nabi mới dùng một lượt để tạo lịch mới.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Để sau'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Tạo lịch'),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true && mounted) {
+          await _generateAdditionalPlan();
+        }
+        return;
+      }
       final message = switch (error) {
         DashboardGenerationAuthRequiredException() =>
           DashboardGenerationAuthRequiredException.userMessage,
@@ -119,6 +150,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           PersonalScheduleQuotaExceededException.userMessage,
         PersonalScheduleQuotaUnavailableException() =>
           PersonalScheduleQuotaUnavailableException.userMessage,
+        PersonalScheduleStillActiveException() =>
+          'Lịch trình hiện tại vẫn còn ${error.remainingDays} ngày. Bạn có thể tạo lịch mới khi còn 1 ngày nhé.',
+        ScheduleHorizonDataException() =>
+          ScheduleHorizonDataException.userMessage,
         AIOverloadedException() => AIOverloadedException.userMessage,
         _ =>
           'Nabi chưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',
@@ -363,6 +398,7 @@ class _DashboardContent extends StatelessWidget {
             membershipInfo: membershipInfo,
             bmi: bmi,
             unreadNotifications: dynamicData.unreadNotificationCount,
+            planStatus: dynamicData.planStatus,
             isGeneratingPlan: isGeneratingPlan,
             onGeneratePlan: onGeneratePlan,
             pulseAnimation: pulseAnimation,
@@ -530,6 +566,7 @@ class _HeroPanel extends StatelessWidget {
   final MembershipDisplayInfo membershipInfo;
   final double bmi;
   final int unreadNotifications;
+  final DashboardPlanStatus planStatus;
   final bool isGeneratingPlan;
   final Future<void> Function() onGeneratePlan;
   final Animation<double> pulseAnimation;
@@ -539,6 +576,7 @@ class _HeroPanel extends StatelessWidget {
     required this.membershipInfo,
     required this.bmi,
     required this.unreadNotifications,
+    required this.planStatus,
     required this.isGeneratingPlan,
     required this.onGeneratePlan,
     required this.pulseAnimation,
@@ -638,6 +676,7 @@ class _HeroPanel extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           _GeneratePlanCta(
             isLoading: isGeneratingPlan,
+            remainingDays: planStatus.remainingDays,
             onPressed: onGeneratePlan,
           ),
         ],
@@ -648,18 +687,24 @@ class _HeroPanel extends StatelessWidget {
 
 class _GeneratePlanCta extends StatelessWidget {
   final bool isLoading;
+  final int remainingDays;
   final Future<void> Function() onPressed;
 
-  const _GeneratePlanCta({required this.isLoading, required this.onPressed});
+  const _GeneratePlanCta({
+    required this.isLoading,
+    required this.remainingDays,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isLocked = remainingDays >= 2;
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(AppRadius.xl),
       elevation: 0,
       child: InkWell(
-        onTap: isLoading ? null : onPressed,
+        onTap: isLoading || isLocked ? null : onPressed,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         child: Container(
           width: double.infinity,
@@ -700,6 +745,8 @@ class _GeneratePlanCta extends StatelessWidget {
                     Text(
                       isLoading
                           ? 'Nabi đang tạo dữ liệu 7 ngày...'
+                          : isLocked
+                          ? 'Còn $remainingDays ngày trong lịch hiện tại'
                           : 'Tạo dữ liệu 7 ngày',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: AppColors.textPrimary,
@@ -708,7 +755,11 @@ class _GeneratePlanCta extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'Thêm 7 ngày thực đơn, vận động và lịch trình nhẹ nhàng cho bạn.',
+                      isLocked
+                          ? 'Bạn có thể tạo lịch mới khi lịch hiện tại còn 1 ngày.'
+                          : remainingDays == 1
+                          ? 'Hôm nay là ngày cuối, bạn có thể chuẩn bị lịch tiếp theo.'
+                          : 'Nabi sẽ sắp lịch mới theo nhịp sinh hoạt của bạn.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                         height: 1.35,
@@ -720,7 +771,9 @@ class _GeneratePlanCta extends StatelessWidget {
               const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right_rounded,
-                color: AppColors.primary.withValues(alpha: isLoading ? 0.4 : 1),
+                color: AppColors.primary.withValues(
+                  alpha: isLoading || isLocked ? 0.4 : 1,
+                ),
               ),
             ],
           ),

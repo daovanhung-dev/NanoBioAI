@@ -24,6 +24,7 @@ Lên lịch nhắc theo plan/item và xử lý thao tác hoàn thành/bỏ qua t
 - [Diagrams](./diagrams/README.md)
 - [Assets](./assets/README.md)
 - [Change History](./history/CHANGELOG.md)
+- [Implementation Delta 2026-07-15 — Logbug 14-7-26](./Implementation_Delta_2026-07-15_Logbug_14-7-26.md)
 - [Implementation Delta 2026-07-13](./Implementation_Delta_2026-07-13.md)
 
 ## Traceability Summary

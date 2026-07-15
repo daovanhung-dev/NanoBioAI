@@ -41,14 +41,12 @@ class _ConsentStepState extends ConsumerState<ConsentStep>
     final controller = ref.read(onboardingProvider.notifier);
 
     return OnboardingStepShell(
-      stepIndex: 6,
+      stepIndex: 7,
       title: 'Một xác nhận nhỏ,\nđể chăm sóc đúng cách.',
       subtitle:
           'NaBi đưa ra gợi ý chăm sóc hằng ngày, không thay thế chẩn đoán hoặc điều trị y tế.',
       onBack: controller.previousStep,
-      nextLabel: state.agreed
-          ? 'Tiếp tục tạo lộ trình'
-          : 'Tôi hiểu và đồng ý',
+      nextLabel: state.agreed ? 'Tiếp tục tạo lộ trình' : 'Tôi hiểu và đồng ý',
       onNext: () {
         if (!state.agreed) {
           ScaffoldMessenger.of(context)
@@ -76,9 +74,7 @@ class _ConsentStepState extends ConsumerState<ConsentStep>
               ),
               const SizedBox(height: 14),
 
-              _ConsentStatusNotice(
-                agreed: state.agreed,
-              ),
+              _ConsentStatusNotice(agreed: state.agreed),
               const SizedBox(height: 14),
 
               const _ConsentPremiumSurface(
@@ -143,10 +139,7 @@ class _ConsentHero extends StatelessWidget {
   final bool agreed;
   final double progress;
 
-  const _ConsentHero({
-    required this.agreed,
-    required this.progress,
-  });
+  const _ConsentHero({required this.agreed, required this.progress});
 
   @override
   Widget build(BuildContext context) {
@@ -197,19 +190,14 @@ class _ConsentHero extends StatelessWidget {
             Positioned(
               right: 18,
               bottom: 18 + wave * 3,
-              child: _ConsentTrustOrbit(
-                agreed: agreed,
-                progress: progress,
-              ),
+              child: _ConsentTrustOrbit(agreed: agreed, progress: progress),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(19, 19, 115, 18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _ConsentHeroLabel(
-                    label: 'NIỀM TIN & SỰ AN TÂM',
-                  ),
+                  const _ConsentHeroLabel(label: 'NIỀM TIN & SỰ AN TÂM'),
                   const SizedBox(height: 12),
                   const Expanded(
                     child: Text(
@@ -225,9 +213,7 @@ class _ConsentHero extends StatelessWidget {
                       ),
                     ),
                   ),
-                  _ConsentHeroStatus(
-                    agreed: agreed,
-                  ),
+                  _ConsentHeroStatus(agreed: agreed),
                 ],
               ),
             ),
@@ -242,20 +228,14 @@ class _ConsentHeroBubble extends StatelessWidget {
   final double size;
   final Color color;
 
-  const _ConsentHeroBubble({
-    required this.size,
-    required this.color,
-  });
+  const _ConsentHeroBubble({required this.size, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }
@@ -263,9 +243,7 @@ class _ConsentHeroBubble extends StatelessWidget {
 class _ConsentHeroLabel extends StatelessWidget {
   final String label;
 
-  const _ConsentHeroLabel({
-    required this.label,
-  });
+  const _ConsentHeroLabel({required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -302,24 +280,17 @@ class _ConsentHeroLabel extends StatelessWidget {
 class _ConsentHeroStatus extends StatelessWidget {
   final bool agreed;
 
-  const _ConsentHeroStatus({
-    required this.agreed,
-  });
+  const _ConsentHeroStatus({required this.agreed});
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: agreed ? 0.20 : 0.12),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.24),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -354,10 +325,7 @@ class _ConsentTrustOrbit extends StatelessWidget {
   final bool agreed;
   final double progress;
 
-  const _ConsentTrustOrbit({
-    required this.agreed,
-    required this.progress,
-  });
+  const _ConsentTrustOrbit({required this.agreed, required this.progress});
 
   @override
   Widget build(BuildContext context) {
@@ -374,9 +342,7 @@ class _ConsentTrustOrbit extends StatelessWidget {
             height: 92,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.24),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
             ),
           ),
           AnimatedContainer(
@@ -386,14 +352,10 @@ class _ConsentTrustOrbit extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: agreed ? 0.25 : 0.17),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.38),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.38)),
             ),
             child: Icon(
-              agreed
-                  ? Icons.verified_user_rounded
-                  : Icons.shield_outlined,
+              agreed ? Icons.verified_user_rounded : Icons.shield_outlined,
               color: Colors.white,
               size: 30,
             ),
@@ -432,10 +394,7 @@ class _ConsentOrbitBadge extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const _ConsentOrbitBadge({
-    required this.icon,
-    required this.color,
-  });
+  const _ConsentOrbitBadge({required this.icon, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -453,11 +412,7 @@ class _ConsentOrbitBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(
-        icon,
-        color: color,
-        size: 15,
-      ),
+      child: Icon(icon, color: color, size: 15),
     );
   }
 }
@@ -465,9 +420,7 @@ class _ConsentOrbitBadge extends StatelessWidget {
 class _ConsentStatusNotice extends StatelessWidget {
   final bool agreed;
 
-  const _ConsentStatusNotice({
-    required this.agreed,
-  });
+  const _ConsentStatusNotice({required this.agreed});
 
   @override
   Widget build(BuildContext context) {
@@ -476,16 +429,11 @@ class _ConsentStatusNotice extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 240),
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 13,
-        vertical: 11,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
       decoration: BoxDecoration(
         color: accent.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: accent.withValues(alpha: 0.13),
-        ),
+        border: Border.all(color: accent.withValues(alpha: 0.13)),
       ),
       child: Row(
         children: [
@@ -525,9 +473,7 @@ class _ConsentStatusNotice extends StatelessWidget {
 class _ConsentPremiumSurface extends StatelessWidget {
   final Widget child;
 
-  const _ConsentPremiumSurface({
-    required this.child,
-  });
+  const _ConsentPremiumSurface({required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -537,9 +483,7 @@ class _ConsentPremiumSurface extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.90),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.96),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.96)),
         boxShadow: [
           BoxShadow(
             color: NabiPalette.ink.withValues(alpha: 0.055),
@@ -578,11 +522,7 @@ class _ConsentSectionHeader extends StatelessWidget {
             color: accent.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(13),
           ),
-          child: Icon(
-            icon,
-            color: accent,
-            size: 20,
-          ),
+          child: Icon(icon, color: accent, size: 20),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -642,11 +582,7 @@ class _ConsentCommitmentRow extends StatelessWidget {
             color: accent.withValues(alpha: 0.11),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            color: accent,
-            size: 19,
-          ),
+          child: Icon(icon, color: accent, size: 19),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -703,16 +639,11 @@ class _MedicalBoundaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 13,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
         color: NabiPalette.amber.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: NabiPalette.amber.withValues(alpha: 0.16),
-        ),
+        border: Border.all(color: NabiPalette.amber.withValues(alpha: 0.16)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -763,10 +694,7 @@ class _ConsentAgreementCard extends StatelessWidget {
   final bool agreed;
   final ValueChanged<bool> onChanged;
 
-  const _ConsentAgreementCard({
-    required this.agreed,
-    required this.onChanged,
-  });
+  const _ConsentAgreementCard({required this.agreed, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -864,16 +792,11 @@ class _AfterOnboardingHint extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 13,
-        vertical: 11,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
       decoration: BoxDecoration(
         color: NabiPalette.rose.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: NabiPalette.rose.withValues(alpha: 0.11),
-        ),
+        border: Border.all(color: NabiPalette.rose.withValues(alpha: 0.11)),
       ),
       child: Row(
         children: [

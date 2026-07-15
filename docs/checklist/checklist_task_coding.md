@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tra
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001` va `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` |
-| Ngay cap nhat | 2026-07-13 |
+| Ngay cap nhat | 2026-07-15 |
 | Muc dich | Ghi lai trang thai coding M01-M19 va coding gate rieng cho planned M20-M29. |
 
 ## DD Progress Next Tasks
@@ -45,6 +45,15 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - Production evidence backlog con lai la sandbox/RLS/API/audit/provider/real-device smoke, khong phai blocker coding cua luot nay.
 
 ## Uu tien tiep theo
+
+### Logbug 14-7-26 — 2026-07-15
+
+- [x] DD delta M01/M02/M03/M07/M09 và BD/Supabase boundary contract.
+- [x] Horizon gate, single-flight, routine/timing resolver, nap item 10/11, dashboard CTA và inclusive completion/camera recheck.
+- [x] AI Chat typed fail-closed, quota commit retry và runtime defines thống nhất.
+- [x] Targeted tests, SQL/tool contracts và full analyzer pass.
+- [ ] Apply/smoke Supabase sandbox sau khi có CLI + verified project ref; giữ rollout false.
+- [ ] Xử lý baseline full-suite failures theo task riêng; không dùng chúng để hạ DD/coding progress của delta.
 
 ### Delta nhiệm vụ, Điểm chăm sóc và voucher — 2026-07-13
 

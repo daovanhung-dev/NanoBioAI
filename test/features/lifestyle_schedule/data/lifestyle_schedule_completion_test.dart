@@ -315,7 +315,7 @@ void main() {
     expect(updated.isCompleted, isTrue);
   });
 
-  test('exact 30 minute deadline is locked', () async {
+  test('exact 30 minute deadline is accepted', () async {
     datasource = LifestyleScheduleLocalDatasource(
       databaseOverride: db,
       now: () => DateTime.parse('2026-06-17T07:30:00.000'),
@@ -327,20 +327,12 @@ void main() {
     );
     await LifestyleScheduleItemsDao(db).upsertMany([item]);
 
-    await expectLater(
-      datasource.updateItemCompletion(
-        item: item.toEntity(),
-        isCompleted: true,
-        completionProofPath: 'schedule_proofs/deadline.jpg',
-      ),
-      throwsA(
-        isA<ScheduleCompletionException>().having(
-          (error) => error.code,
-          'code',
-          ScheduleCompletionErrorCode.locked,
-        ),
-      ),
+    final completed = await datasource.updateItemCompletion(
+      item: item.toEntity(),
+      isCompleted: true,
+      completionProofPath: 'schedule_proofs/deadline.jpg',
     );
+    expect(completed.isCompleted, isTrue);
   });
 
   test('invalid stored time fails closed', () async {

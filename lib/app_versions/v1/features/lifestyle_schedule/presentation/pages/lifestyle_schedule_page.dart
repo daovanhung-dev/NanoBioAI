@@ -3,9 +3,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nano_app/core/theme/design_system.dart';
 import 'package:nano_app/core/theme/medical_ui.dart';
 import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
 import '../../domain/services/lifestyle_schedule_window_policy.dart';
@@ -137,7 +139,7 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
   void _queueBoundaryRefresh(List<LifestyleScheduleItemEntity> items) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final now = LifestyleScheduleWindowPolicy.vietnamNow();
+      final now = ref.read(lifestyleScheduleClockProvider)();
       final boundaries = <DateTime>[];
       for (final item in items) {
         final start = item.scheduledAt;
@@ -197,6 +199,15 @@ class _ScheduleContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _NamiHero(state: state),
+        const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
+        Align(
+          alignment: Alignment.centerRight,
+          child: OutlinedButton.icon(
+            onPressed: () => context.push(V1RoutePaths.dailyRoutinePreferences),
+            icon: const Icon(Icons.tune_rounded),
+            label: const Text('Tùy chỉnh lịch cá nhân'),
+          ),
+        ),
         const SizedBox(height: AppSpacingTokens.sectionSpacing),
         _ProgressCard(state: state),
         if (state.lastEncouragement != null) ...[
@@ -1058,7 +1069,7 @@ class _TimelineRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final now = LifestyleScheduleWindowPolicy.vietnamNow();
+    final now = ref.watch(lifestyleScheduleClockProvider)();
     final status = item.completionStatusAt(now);
     final canToggle = item.isWithinCompletionWindow(now);
 

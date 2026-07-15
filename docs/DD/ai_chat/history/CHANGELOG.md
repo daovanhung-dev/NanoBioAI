@@ -1,5 +1,12 @@
 # CHANGELOG — AI_CHAT / AI Chat
 
+## [v1.3] - 2026-07-15
+### Changed
+- Added unified runtime defines, typed fail-closed AI behavior and quota commit retry ordering for logbug 14-7-26.
+
+### Validation
+- AI chat and launcher contract tests are linked from the delta.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked AI_CHAT DD docs as `Approved - DD docs complete`.

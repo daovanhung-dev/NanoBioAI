@@ -4,9 +4,9 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- coding - Coding: 23 worklog(s)
+- coding - Coding: 24 worklog(s)
+- docs-context - Context and docs update: 20 worklog(s)
 - bugfix - Direct bugfix: 19 worklog(s)
-- docs-context - Context and docs update: 19 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - test - Test and verification: 3 worklog(s)
@@ -17,7 +17,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 7
+- unknown: 9
 - docs/issues, docs/todo: 2
 - M05 AI / runtime configuration / onboarding: 2
 - authentication: 2
@@ -39,7 +39,6 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - For DD work, trace BD -> BR/AC/UC -> DD and keep open product decisions as `Status: Draft`.
 - For issue/todo work, keep find issue, create issue, create todo, fix issue, and test as separate modes.
 - For Supabase work, treat SQL files as drafts until sandbox/staging verification is recorded.
-- For server-authoritative rewards, keep the rollout flag disabled until the private Storage bucket, owner-path RLS, idempotent ledger flow, FEFO spend, atomic inventory and cancel/refund behavior pass in a real Supabase sandbox; local PostgreSQL smoke is valuable but not deployment evidence.
 
 ## Command And Test Patterns
 

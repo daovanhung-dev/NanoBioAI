@@ -480,7 +480,7 @@ abstract final class OnboardingCatalog {
     'Trên 2 lít/ngày',
   ];
 
-  static const int totalSteps = 8;
+  static const int totalSteps = 9;
 
   static String labelOf(
     Iterable<OnboardingChoiceOption> options,

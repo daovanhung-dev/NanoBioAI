@@ -23,6 +23,7 @@ Sinh hoặc thay đổi lịch trình cá nhân gồm thực đơn, bài tập v
 - [Diagrams](./diagrams/README.md)
 - [Assets](./assets/README.md)
 - [Change History](./history/CHANGELOG.md)
+- [Implementation Delta 2026-07-15 — Logbug 14-7-26](./Implementation_Delta_2026-07-15_Logbug_14-7-26.md)
 
 ## Traceability Summary
 - PERSONAL_SCHEDULE_AI-F01: Sinh lịch trình đầu tiên cho Guest

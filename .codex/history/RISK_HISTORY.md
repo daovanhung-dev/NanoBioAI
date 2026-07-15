@@ -503,3 +503,10 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md :: ## Loi/Rui ro
 - docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md :: - Chua fix: chưa có bằng chứng migration 16, private bucket runtime, RLS, row-lock,
 - docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md :: - Can kiem tra tiep: giữ `wellness_rewards_rollout.enabled = false`; apply migration
+- docs/worklog/2026-07-13/009-worklog-unified-role-app.md :: - Dart formatter/analyzer/tests/build: SKIPPED do môi trường không có Flutter/Dart.
+- docs/worklog/2026-07-13/009-worklog-unified-role-app.md :: - `.codex` PowerShell integrity/history refresh: SKIPPED do không có PowerShell.
+- docs/worklog/2026-07-13/009-worklog-unified-role-app.md :: ## Chú ý và rủi ro
+- docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md :: - AI Chat fail closed với typed error; quota commit retry tối đa ba lần cùng request id; không publish assistant trước commit.
+- docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md :: - Full suite JSON run → 852 success, 7 failure, 1 error. Các lỗi còn lại là baseline/ngoài phạm vi: Admin/localization copy, auth sync expectation, Advanced Health coming-soon, FamilyPlus copy, version-boundary hiện hữu và raw Scaffold của proof gallery.
+- docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md :: - Muc do hoan thanh task: runtime/DD/static contract hoàn tất; sandbox/production acceptance còn blocked có bằng chứng.
+- docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md :: - Bang chung kiem chung: analyzer sạch, targeted tests pass, full-suite JSON phân loại rõ baseline failure.
