@@ -88,7 +88,10 @@ doi:
    begin/upload/finalize/undo và smoke test hai tài khoản.
 18. `17-unified-app-role-surface.sql` - migration không phá hủy cho entrypoint
    hợp nhất, `app_access_mode` và output role-surface của Admin session.
-19. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
+19. `18-nabi-companion-notifications.sql` - schema/RLS/RPC versioned definition,
+   user state, preference và analytics M30; rollout mặc định tắt đến khi sandbox
+   và device acceptance pass.
+20. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
    va nghiem thu.
 
 Moi thay doi Supabase schema/RLS/RPC/seed/docs phai cap nhat `config.sql` cung

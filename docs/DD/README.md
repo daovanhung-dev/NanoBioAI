@@ -7,12 +7,13 @@
 | BD Version | 2.0 |
 | Advanced Health Source BD | docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md (`BD-BIOAI-ADVANCED-HEALTH-001`) |
 | Daily Proof and Wellness Rewards Addendum | docs/BD/wellness_rewards/BD_BioAI_Daily_Proof_Wellness_Rewards_v1.0.md (`BD-BIOAI-WELLNESS-REWARDS-001`) |
+| Nabi Companion Notification BD | docs/BD/notification_Nabi/BD_thong_bao_nut_noi_Nabi.md (`BD-NABI-NOTIFICATION-001`) |
 | DD Baseline Date | 2026-06-28 |
-| Last Updated | 2026-07-13 |
-| Status | M01-M19 Approved - DD docs complete; M20-M29 DD not started |
+| Last Updated | 2026-07-17 |
+| Status | M01-M19 and M30 Approved - DD docs complete; M20-M29 DD not started |
 
 ## Purpose
-This folder contains split module DDs for the approved BioAI / NanoBio product-flow baseline M01-M19. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18, approves DD docs for M01-M19, and moves runtime/sandbox evidence to a separate implementation backlog. The Approved 2026-07-13 daily-proof and wellness-rewards addendum is traced through implementation deltas for M03, M08, M09, M15, and M16 without changing their Approved DD status. Advanced-health modules M20-M29 are registered below as a future DD backlog only; no DD folder has been created and the approved UI catalog shell does not change DD or business coding progress.
+This folder contains split module DDs for the approved BioAI / NanoBio product-flow baseline M01-M19 and the approved M30 Nabi companion-notification implementation contract. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18, and the 2026-07-17 M30 pass records the user-approved mapping and rollout decisions for `BD-NABI-NOTIFICATION-001`. Runtime/sandbox evidence remains separate from DD completeness. Advanced-health modules M20-M29 remain a future DD backlog only.
 
 ## Module Map
 
@@ -37,6 +38,7 @@ This folder contains split module DDs for the approved BioAI / NanoBio product-f
 | M17 | [Reconciliation](./reconciliation/README.md) | RECONCILIATION | Approved - DD docs complete | BD section 12.1, 14.4, 15, Appendix A UC-22 |
 | M18 | [Statistics and reporting](./reporting/README.md) | REPORTING | Approved - DD docs complete | BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 |
 | M19 | [Audit, security, and support](./audit_security/README.md) | AUDIT_SECURITY | Approved - DD docs complete | BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 |
+| M30 | [Nabi companion notifications](./nabi_companion_notifications/README.md) | NABI_COMPANION_NOTIFICATIONS | Approved - implementation contract | `BD-NABI-NOTIFICATION-001` sections 1-22 and accepted implementation plan 2026-07-17 |
 
 ## Approved Cross-Module Delta - 2026-07-13
 

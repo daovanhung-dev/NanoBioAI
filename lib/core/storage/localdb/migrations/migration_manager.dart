@@ -10,6 +10,7 @@ import '../tables/schedule_task_catalog_table.dart';
 import '../tables/schedule_completion_proofs_table.dart';
 import '../tables/wellness_point_ledgers_table.dart';
 import '../tables/wellness_rewards_cache_tables.dart';
+import '../tables/nabi_notification_tables.dart';
 import '../seeders/ai_catalog_seeder.dart';
 import '../sync/sync_outbox_schema.dart';
 
@@ -57,6 +58,9 @@ class MigrationManager {
     }
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 14)) {
       await _migrateToV14(db);
+    }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 15)) {
+      await _migrateToV15(db);
     }
   }
 
@@ -406,6 +410,10 @@ class MigrationManager {
       WHERE completion_proof_path IS NOT NULL
         AND TRIM(completion_proof_path) != ''
     ''');
+  }
+
+  static Future<void> _migrateToV15(Database db) async {
+    await NabiNotificationTables.create(db);
   }
 
   static Future<void> _addColumnIfMissing(

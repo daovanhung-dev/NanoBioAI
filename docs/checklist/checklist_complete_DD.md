@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Field | Value |
 |---|---|
 | Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, va Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001` |
-| Pham vi | BioAI / NanoBio: approved DD M01-M19, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, va planned DD backlog M20-M29 |
+| Pham vi | BioAI / NanoBio: approved DD M01-M19 and M30, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, va planned DD backlog M20-M29 |
 | Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
 | Ngay cap nhat | 2026-07-15 |
 | Muc dich | Theo doi DD docs completeness rieng voi coding progress va implementation evidence backlog; khong tron UI discovery shell voi nghiep vu module. |
@@ -27,7 +27,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 
 `Coding progress %`: chi doi khi co bang chung code runtime, test, SQL/RPC, sandbox hoac acceptance thuc te.
 
-## Tong hop M01-M29
+## Tong hop M01-M30
 
 | Module | DD docs status | Open Q | DD completeness % | Coding progress % | DD docs evidence | Implementation evidence backlog | Next implementation evidence |
 |---|---|---:|---:|---:|---|---|---|
@@ -60,6 +60,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | M27 `LAB_RESULT_TRACKING` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M27/UC-32 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Unit/reference/source, correction, user-confirmed AI extraction, OCR/import boundary, retention/export and tests are unresolved. | Approve lab data and AI-extraction confirmation policy, then create DD. |
 | M28 `PREVENTIVE_CARE` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M28/UC-33 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Vietnam locale/source/version, minor/pregnancy, reminder and test policy are unresolved. | Approve preventive source policy, then create DD. |
 | M29 `AI_HEALTH_TRENDS` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M29/UC-34 exists; only catalog shell is approved. No DD folder, AI contract or business implementation evidence. | Consent, minimum data, model/prompt policy, safety evaluation, quota, audit, retention and tests are unresolved. | Approve M06/M07/M19 AI contract and create DD before any production AI call. |
+| M30 `NABI_COMPANION_NOTIFICATIONS` | Approved - implementation contract | 0 | 100 | 0 | DD module, catalog 20 IDs, rule/API/entity/view/import/test trace and accepted plan decisions are documented. | Runtime, SQLite v15, Supabase RLS/RPC, supporting flows, device delivery and sandbox evidence are not yet complete. | Implement M30 source in DD order; keep rollout disabled until targeted tests, sandbox and device smoke pass. |
 
 ## Accepted Decision Coverage
 

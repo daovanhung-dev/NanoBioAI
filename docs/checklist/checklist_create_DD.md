@@ -8,9 +8,9 @@ Commit de xuat: docs(dd): cap nhat checklist tao DD
 |---|---|
 | Current BD | `docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md` (`BD-BIOAI-PRODUCT-FLOW-002`) |
 | Advanced Health BD | `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` (`BD-BIOAI-ADVANCED-HEALTH-001`) |
-| Current DD folder | `docs/DD/` contains approved M01-M19; M20-M29 folders do not exist |
-| Ngay cap nhat | 2026-07-13 |
-| Status | M01-M19 are `Approved - DD docs complete`; M20-M29 are `Not started`, DD completeness = 0%, business coding progress = 0%. |
+| Current DD folder | `docs/DD/` contains approved M01-M19 and M30; M20-M29 folders do not exist |
+| Ngay cap nhat | 2026-07-17 |
+| Status | M01-M19 and M30 are Approved DD contracts; M20-M29 are `Not started`, DD completeness = 0%, business coding progress = 0%. |
 
 ## Current DD v2.0 M01-M19
 
@@ -52,6 +52,12 @@ UI catalog cards and the shared development placeholder are approved shell work 
 | 27 | DD-LAB_RESULT_TRACKING-001 | M27 `LAB_RESULT_TRACKING` | Not started - source BD Draft | `docs/DD/lab_result_tracking/` | No | Advanced Health BD M27/UC-32; unit/range/source and import boundary require approval. |
 | 28 | DD-PREVENTIVE_CARE-001 | M28 `PREVENTIVE_CARE` | Not started - source BD Draft | `docs/DD/preventive_care/` | No | Advanced Health BD M28/UC-33; Vietnam locale/source/version policy requires approval. |
 | 29 | DD-AI_HEALTH_TRENDS-001 | M29 `AI_HEALTH_TRENDS` | Not started - source BD Draft | `docs/DD/ai_health_trends/` | No | Advanced Health BD M29/UC-34; AI consent/safety/evaluation and M06/M07/M19 contract require approval. |
+
+## Approved Nabi Companion DD M30
+
+| # | DD | Module | Status | Output path | Created | Source |
+|---:|---|---|---|---|---|---|
+| 30 | DD-NABI-COMPANION-NOTIFICATIONS-001 | M30 `NABI_COMPANION_NOTIFICATIONS` | Approved - implementation contract | `docs/DD/nabi_companion_notifications/` | 2026-07-17 | `BD-NABI-NOTIFICATION-001` sections 1-22 and accepted implementation plan 2026-07-17. |
 
 ## Legacy Product Flow v1
 

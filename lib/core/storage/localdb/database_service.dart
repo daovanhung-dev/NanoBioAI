@@ -9,6 +9,7 @@ import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_reques
 import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_rewards_cache_tables.dart';
+import 'package:nano_app/core/storage/localdb/tables/nabi_notification_tables.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -126,6 +127,8 @@ class DatabaseService {
     for (final statement in wellnessRewardCacheSchema) {
       await db.execute(statement);
     }
+
+    await NabiNotificationTables.create(db);
 
     await db.execute(NutritionLogsTable.createTable);
 

@@ -138,3 +138,4 @@ Generated DD folders for docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v
 - docs/DD/reconciliation/: DD M17 RECONCILIATION from BD-BIOAI-PRODUCT-FLOW-002.
 - docs/DD/reporting/: DD M18 REPORTING from BD-BIOAI-PRODUCT-FLOW-002.
 - docs/DD/audit_security/: DD M19 AUDIT_SECURITY from BD-BIOAI-PRODUCT-FLOW-002.
+- docs/DD/nabi_companion_notifications/: DD M30 NABI_COMPANION_NOTIFICATIONS from BD-NABI-NOTIFICATION-001.
