@@ -1662,7 +1662,7 @@ class _AdminOverviewPanel extends StatelessWidget {
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          'Theo dõi chỉ số, xử lý yêu cầu và kiểm tra lịch sử thao tác trong một giao diện tập trung.',
+                          'Theo dõi chỉ số, xử lý yêu cầu và xem lịch sử.',
                           style: AppTextStyles.bodyLarge.copyWith(
                             color: AppColors.darkTextSecondary,
                             height: 1.52,
@@ -2026,7 +2026,7 @@ class _QueueSummaryBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  'Kiểm tra thông tin trước khi xác nhận. Mọi quyết định đều cần lý do để lưu vào nhật ký kiểm tra.',
+                  'Kiểm tra kỹ và nhập lý do trước khi xác nhận.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                     height: 1.35,
@@ -2503,7 +2503,7 @@ class _AuditNoticeBanner extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
-              'Nhật ký giúp truy vết quyết định vận hành. Chỉ dùng dữ liệu này trong phạm vi được phân quyền.',
+              'Nhật ký chỉ dùng trong phạm vi được phân quyền.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.4,
@@ -2609,7 +2609,7 @@ class _ReasonDialogState extends State<_ReasonDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hãy nhập lý do ngắn gọn, rõ ràng để người có quyền xem nhật ký kiểm tra hiểu được quyết định này.',
+              'Nhập lý do ngắn gọn để lưu vào nhật ký.',
               style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
             ),
             const SizedBox(height: AppSpacing.md),

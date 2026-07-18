@@ -72,7 +72,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tiến độ tuần này'), findsOneWidget);
-    expect(find.textContaining('1/2 ngày đạt mục tiêu'), findsOneWidget);
+    expect(find.textContaining('1/2 ngày'), findsOneWidget);
     expect(find.text('Từng ngày một'), findsOneWidget);
   });
 

@@ -1111,7 +1111,7 @@ class _TimelineRow extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Tiếp tục mà không nhận điểm?'),
         content: const Text(
-          'Thiết bị chưa thể xác nhận nhiệm vụ trực tuyến. Nếu tiếp tục, ảnh vẫn được lưu riêng trong ứng dụng nhưng nhiệm vụ này sẽ không được cộng 10 Điểm chăm sóc.',
+          'Ảnh vẫn được lưu, nhưng nhiệm vụ này không cộng 10 Điểm chăm sóc.',
         ),
         actions: [
           TextButton(
@@ -1844,15 +1844,15 @@ int _remainingItems(LifestyleScheduleState state) {
 
 String _namiCopy({required num score, required int completed}) {
   if (completed == 0) {
-    return 'Nabi đã sắp từng việc nhỏ theo nhịp trong ngày. Bạn cứ bắt đầu bằng một mục dễ nhất, mình đi chậm mà đều nhé.';
+    return 'Bắt đầu bằng một việc dễ nhất hôm nay nhé.';
   }
   if (score >= 90) {
     return 'Bạn đang chăm sóc bản thân rất tốt. Nabi tự hào về nhịp hôm nay của bạn lắm.';
   }
   if (score >= 60) {
-    return 'Mọi thứ đang đi đúng hướng rồi. Nabi sẽ ở đây nhắc nhẹ phần còn lại để bạn không bị quá tải.';
+    return 'Bạn đang đi đúng hướng. Làm phần còn lại thật nhẹ thôi.';
   }
-  return 'Không cần hoàn hảo đâu. Nabi chỉ mong bạn chọn thêm một việc nhỏ và làm thật dịu dàng với cơ thể mình.';
+  return 'Không cần hoàn hảo. Chọn thêm một việc nhỏ là đủ.';
 }
 
 String? _scheduleTimeLabel(String value) {

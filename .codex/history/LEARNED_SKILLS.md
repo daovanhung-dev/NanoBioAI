@@ -5,7 +5,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Canonical Work Types Seen
 
 - coding - Coding: 24 worklog(s)
-- docs-context - Context and docs update: 20 worklog(s)
+- docs-context - Context and docs update: 21 worklog(s)
 - bugfix - Direct bugfix: 19 worklog(s)
 - supabase-schema - Supabase schema and RLS: 8 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
@@ -17,7 +17,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 9
+- unknown: 10
 - docs/issues, docs/todo: 2
 - M05 AI / runtime configuration / onboarding: 2
 - authentication: 2

@@ -17,11 +17,41 @@ void main() {
       final lines = file.readAsLinesSync();
       for (var index = 0; index < lines.length; index++) {
         final line = lines[index];
-        if (line.trimLeft().startsWith('//')) continue;
+        if (_isIgnoredLine(line)) continue;
         for (final rule in _forbiddenUiCopy.entries) {
           if (rule.value.hasMatch(line)) {
             violations.add('$path:${index + 1}: ${rule.key}');
           }
+        }
+      }
+    }
+
+    expect(violations, isEmpty, reason: violations.join('\n'));
+  });
+
+  test('production-owned primary UI copy stays concise', () {
+    final files = Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.dart'))
+        .where((file) => _isUserFacingSource(_normalize(file.path)))
+        .toList(growable: false);
+
+    final violations = <String>[];
+    for (final file in files) {
+      final path = _normalize(file.path);
+      if (_isLongCopyExemptPath(path)) continue;
+
+      final lines = file.readAsLinesSync();
+      for (var index = 0; index < lines.length; index++) {
+        final line = lines[index];
+        if (_isIgnoredLine(line) || _isLongCopyExemptLine(path, line)) {
+          continue;
+        }
+
+        for (final match in _longUiLiteral.allMatches(line)) {
+          final literal = match.group(0)!;
+          violations.add('$path:${index + 1}: ${literal.length - 2} chars');
         }
       }
     }
@@ -74,6 +104,33 @@ bool _isUserFacingSource(String path) {
 }
 
 String _normalize(String path) => path.replaceAll('\\', '/');
+
+bool _isIgnoredLine(String line) {
+  final trimmed = line.trimLeft();
+  return trimmed.startsWith('//') ||
+      trimmed.startsWith('import ') ||
+      trimmed.startsWith('export ') ||
+      trimmed.startsWith('part ');
+}
+
+bool _isLongCopyExemptPath(String path) {
+  return path.endsWith('/services/supabase/sale/sale_terms.dart');
+}
+
+bool _isLongCopyExemptLine(String path, String line) {
+  if (path.endsWith(
+        '/app_versions/admin/features/admin_panel/presentation/pages/admin_shell_page.dart',
+      ) &&
+      line.contains('_emv(')) {
+    return true;
+  }
+
+  return line.contains('Key(') ||
+      line.contains('idempotencyKey') ||
+      line.contains('RegExp(');
+}
+
+final _longUiLiteral = RegExp(r"""["'][^"']{101,}["']""");
 
 final _forbiddenUiCopy = <String, RegExp>{
   'mojibake': RegExp(r'(?:Ã|Â|Ä|Æ)[\u0080-\u00BF]|áº|á»|â€™|â€œ|â€|ï¿½|�'),

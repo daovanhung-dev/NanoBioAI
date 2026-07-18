@@ -510,3 +510,10 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md :: - Full suite JSON run → 852 success, 7 failure, 1 error. Các lỗi còn lại là baseline/ngoài phạm vi: Admin/localization copy, auth sync expectation, Advanced Health coming-soon, FamilyPlus copy, version-boundary hiện hữu và raw Scaffold của proof gallery.
 - docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md :: - Muc do hoan thanh task: runtime/DD/static contract hoàn tất; sandbox/production acceptance còn blocked có bằng chứng.
 - docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md :: - Bang chung kiem chung: analyzer sạch, targeted tests pass, full-suite JSON phân loại rõ baseline failure.
+- docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - Manual static scan `rg -n -P "'&#91;^'&#93;{101,}'" lib --glob "!lib/l10n/app_localizations*.dart"` → không còn long single-quoted production UI literal ngoài regex/import/internal prompt/SaleTerms đầy đủ.
+- docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - Full `flutter test` trên tree hiện tại → FAIL với 5 baseline failures ngoài phạm vi copy:
+- docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - `test/app_versions/v2/features/auth/auth_controller_sync_failure_test.dart`: Riverpod provider bị modify trong lúc provider init; expected sync reason `authGateRefresh` không xuất hiện.
+- docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - `test/architecture_version_boundary_test.dart`: unified entrypoint boundary expectation fail.
+- docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - Các full-suite failures còn lại thuộc auth sync behavior, architecture boundary và medical scaffold contract; không sửa trong task rút gọn copy để tránh mở rộng phạm vi.
+- docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - Bằng chứng kiểm chứng: analyzer sạch, targeted tests pass, full suite current run phân loại rõ baseline failures.
+- docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - Điểm tốn token/chưa tối ưu: full suite có baseline failures kéo dài thời gian; lần sau nên đọc baseline failure note trước khi rerun full.

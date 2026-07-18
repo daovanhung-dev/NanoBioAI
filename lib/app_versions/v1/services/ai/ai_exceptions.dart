@@ -18,7 +18,7 @@ class AIResponseInvalidException implements Exception {
 
 class AIAuthenticationException implements Exception {
   static const userMessage =
-      'Khóa AI hiện tại chưa được Gemini chấp nhận. Bạn hãy tạo một Gemini API key hợp lệ rồi cập nhật cấu hình và mở lại ứng dụng nhé.';
+      'Khóa AI chưa hợp lệ. Cập nhật cấu hình rồi mở lại ứng dụng.';
 
   const AIAuthenticationException();
 

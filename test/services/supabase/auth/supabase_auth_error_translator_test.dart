@@ -33,7 +33,7 @@ void main() {
         );
 
         expect(details.kind, SupabaseAuthErrorKind.authServer);
-        expect(details.fullMessage, contains('không phải lỗi mật khẩu'));
+        expect(details.fullMessage, contains('đăng nhập đang lỗi'));
       },
     );
 

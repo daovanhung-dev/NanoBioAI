@@ -766,7 +766,7 @@ class _ConsentAgreementCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Tôi hiểu NaBi là công cụ gợi ý hỗ trợ chăm sóc hằng ngày và không thay thế tư vấn, chẩn đoán hoặc điều trị từ bác sĩ.',
+                          'Tôi hiểu NaBi không thay thế tư vấn y tế.',
                           style: AppTextStyles.bodySmall.copyWith(
                             color: NabiPalette.mutedInk,
                             height: 1.38,

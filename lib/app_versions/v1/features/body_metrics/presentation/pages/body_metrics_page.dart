@@ -134,8 +134,7 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
           icon: Icons.medical_information_rounded,
           color: AppColors.primary,
           title: 'Thông tin tham khảo',
-          message:
-              'Các chỉ số này chỉ hỗ trợ theo dõi sức khỏe cá nhân và không thay thế chẩn đoán, tư vấn hay điều trị y khoa.',
+          message: 'Chỉ số chỉ để tham khảo, không thay thế tư vấn y khoa.',
         ),
       ],
     );

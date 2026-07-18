@@ -21,7 +21,7 @@ class PersonalScheduleQuotaDecision {
 
 class PersonalScheduleQuotaExceededException implements Exception {
   static const userMessage =
-      'Tháng này bạn đã dùng hết lượt tạo lịch mới. Bạn quay lại sau kỳ làm mới hoặc đăng nhập gói phù hợp nhé.';
+      'Bạn đã hết lượt tạo lịch tháng này. Hãy chờ kỳ mới hoặc nâng gói.';
 
   final DateTime? resetAt;
 

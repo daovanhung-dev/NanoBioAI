@@ -75,8 +75,7 @@ class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({
     super.key,
     this.title = 'NaBi',
-    this.subtitle =
-        'Một không gian nhỏ để lắng nghe cơ thể, chăm sóc thói quen và bắt đầu ngày mới theo cách vừa vặn với bạn.',
+    this.subtitle = 'Lắng nghe cơ thể và chăm thói quen mỗi ngày.',
   });
 
   final String title;

@@ -43,10 +43,7 @@ class MedicalPageScaffold extends StatelessWidget {
     if (ambientBackground) {
       content = Stack(
         fit: StackFit.expand,
-        children: [
-          const MedicalAmbientBackground(),
-          content,
-        ],
+        children: [const MedicalAmbientBackground(), content],
       );
     }
 
@@ -111,7 +108,8 @@ class MedicalScrollPage extends StatelessWidget {
               ),
               slivers: [
                 SliverPadding(
-                  padding: padding ??
+                  padding:
+                      padding ??
                       EdgeInsets.fromLTRB(
                         horizontal,
                         AppSpacing.md,
@@ -488,10 +486,7 @@ class MedicalSectionHeader extends StatelessWidget {
             ],
           ),
         ),
-        if (action != null) ...[
-          const SizedBox(width: AppSpacing.sm),
-          action!,
-        ],
+        if (action != null) ...[const SizedBox(width: AppSpacing.sm), action!],
       ],
     );
   }
@@ -554,8 +549,7 @@ class MedicalStatusPill extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.circular),
         border: Border.all(
-          color:
-              borderColor ?? foregroundColor.withValues(alpha: .16),
+          color: borderColor ?? foregroundColor.withValues(alpha: .16),
         ),
       ),
       child: Row(
@@ -675,7 +669,11 @@ class MedicalEmptyState extends StatelessWidget {
             size: 64,
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(title, textAlign: TextAlign.center, style: AppTextStyles.heading4),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.heading4,
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             message,
@@ -726,9 +724,8 @@ class MedicalComingSoonPage extends StatelessWidget {
         MedicalEmptyState(
           icon: icon,
           color: color,
-          title: 'Nabi đang hoàn thiện trải nghiệm này',
-          message:
-              'Bạn vẫn có thể tiếp tục chăm sóc bản thân ở các mục đang hoạt động. Khi phần này sẵn sàng, Nabi sẽ hướng dẫn thật rõ ràng và nhẹ nhàng.',
+          title: 'Nabi đang hoàn thiện mục này',
+          message: 'Bạn vẫn có thể dùng các mục đang hoạt động.',
         ),
         if (previewItems.isNotEmpty)
           MedicalSurfaceCard(
@@ -736,9 +733,8 @@ class MedicalComingSoonPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 MedicalSectionHeader(
-                  title: 'Những điều đang được chuẩn bị',
-                  subtitle:
-                      'Thiết kế tập trung vào sự rõ ràng, riêng tư và dễ sử dụng.',
+                  title: 'Đang chuẩn bị',
+                  subtitle: 'Rõ ràng, riêng tư và dễ dùng.',
                   icon: Icons.fact_check_outlined,
                   color: color,
                 ),
@@ -749,7 +745,11 @@ class MedicalComingSoonPage extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.check_circle_rounded, color: color, size: 20),
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: color,
+                          size: 20,
+                        ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(item, style: AppTextStyles.bodyMedium),

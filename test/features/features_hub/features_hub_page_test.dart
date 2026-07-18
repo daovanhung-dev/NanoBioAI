@@ -87,6 +87,8 @@ void main() {
       500,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.ensureVisible(m20Tile);
+    await tester.pumpAndSettle();
     await tester.tap(m20Tile);
     await tester.pumpAndSettle();
 

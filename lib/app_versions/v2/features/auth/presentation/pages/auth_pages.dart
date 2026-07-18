@@ -199,8 +199,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
       eyebrow: 'BẮT ĐẦU CÙNG NABI',
       heroIcon: Icons.auto_awesome_rounded,
       title: 'Tạo tài khoản NanoBio',
-      subtitle:
-          'Hồ sơ của bạn sẽ được bảo vệ để Nabi có thể đồng hành xuyên suốt hành trình khỏe mạnh.',
+      subtitle: 'Bảo vệ hồ sơ để Nabi đồng hành lâu dài.',
       child: AutofillGroup(
         child: Form(
           key: _formKey,
@@ -360,7 +359,9 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
               fullName: _fullName.text.trim(),
               phone: _phone.text.trim(),
               acceptedTerms: _acceptedTerms,
-              referralCode: _referralCodeValidator.normalize(_referralCode.text),
+              referralCode: _referralCodeValidator.normalize(
+                _referralCode.text,
+              ),
             ),
           );
 
@@ -379,7 +380,6 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
       if (mounted) setState(() => _loading = false);
     }
   }
-
 }
 
 class V2VerifyEmailPage extends ConsumerStatefulWidget {
@@ -410,8 +410,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
       eyebrow: 'XÁC THỰC TÀI KHOẢN',
       heroIcon: Icons.mark_email_read_rounded,
       title: 'Kiểm tra email nhé',
-      subtitle:
-          'Nabi đã gửi một liên kết xác thực tới $email. Mở liên kết đó rồi quay lại đây để tiếp tục.',
+      subtitle: 'Mở liên kết xác thực gửi tới $email rồi quay lại.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -744,7 +743,7 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
           : 'Liên kết chưa hoàn tất',
       subtitle: _error == null
           ? 'Chỉ mất một chút thời gian để hoàn tất bước bảo mật này cho bạn.'
-          : 'Dữ liệu tài khoản chưa bị thay đổi. Bạn có thể thử lại bằng liên kết mới nhất trong email.',
+          : 'Tài khoản chưa đổi. Hãy thử liên kết mới nhất.',
       child: _error == null
           ? const _AuthCallbackLoading()
           : Column(
@@ -837,7 +836,8 @@ class _AuthScaffold extends StatelessWidget {
 
             return Center(
               child: SingleChildScrollView(
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: EdgeInsets.fromLTRB(
                   pagePadding,
                   AppSpacing.md,
@@ -870,7 +870,9 @@ class _AuthScaffold extends StatelessWidget {
                                   ),
                                   Expanded(
                                     child: Padding(
-                                      padding: const EdgeInsets.all(AppSpacing.xl),
+                                      padding: const EdgeInsets.all(
+                                        AppSpacing.xl,
+                                      ),
                                       child: _AuthFormContent(
                                         title: title,
                                         subtitle: subtitle,
@@ -1007,7 +1009,9 @@ class _AuthBrandPanel extends StatelessWidget {
                           child: Text(
                             benefit.$1,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textInverse.withValues(alpha: .88),
+                              color: AppColors.textInverse.withValues(
+                                alpha: .88,
+                              ),
                               height: 1.45,
                             ),
                           ),

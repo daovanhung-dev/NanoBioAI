@@ -103,7 +103,7 @@ void main() {
       expect(state.deniedPermission, AdminPermissions.paymentsWrite);
       expect(
         state.lastMessage,
-        'Tài khoản Admin chưa có quyền payments.write.',
+        'Tài khoản quản trị chưa được cấp quyền thực hiện thao tác này.',
       );
     });
   });

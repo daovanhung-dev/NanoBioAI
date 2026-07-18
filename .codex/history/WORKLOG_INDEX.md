@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 84
+- Total worklogs: 85
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -93,3 +93,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-13 | coding/test/docs | coding | M03 DASHBOARD_SCHEDULE, M08 HEALTH_SCORE_HABITS, M09 SCHEDULE_NOTIFICATIONS, M15 ADMIN_DASHBOARD, M16 ADMIN_OPS; localization V1/V2/V3/Sale/Admin. | [Worklog - Nhiệm vụ hằng ngày, bằng chứng, Điểm chăm sóc, voucher và Việt hóa](../../docs/worklog/2026-07-13/008-worklog-daily-proof-wellness-rewards-localization.md) |
 | 2026-07-13 | coding/test/docs | coding | unknown | [Worklog - Hợp nhất phiên bản và phân giao diện theo quyền](../../docs/worklog/2026-07-13/009-worklog-unified-role-app.md) |
 | 2026-07-15 | unknown | docs-context | unknown | [Worklog — triển khai logbug 14-7-26](../../docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md) |
+| 2026-07-18 | unknown | docs-context | unknown | [Worklog — rút gọn copy hiển thị toàn dự án](../../docs/worklog/2026-07-18/001-worklog-short-ui-copy.md) |

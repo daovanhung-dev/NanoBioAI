@@ -46,8 +46,7 @@ class ConditionsStep extends ConsumerWidget {
                     icon: Icons.health_and_safety_outlined,
                     eyebrow: 'TÌNH TRẠNG CẦN LƯU Ý',
                     title: 'Triệu chứng hoặc tình trạng hiện tại',
-                    subtitle:
-                        'Hãy chọn những điều bạn muốn NaBi cân nhắc khi tạo gợi ý ăn uống, vận động và lịch sinh hoạt.',
+                    subtitle: 'Chọn điều NaBi cần cân nhắc khi gợi ý.',
                     compact: layout.isCompact,
                     trailing: _SelectedCountBadge(
                       count: state.conditions.length,
@@ -58,9 +57,7 @@ class ConditionsStep extends ConsumerWidget {
                         SizedBox(height: layout.innerGap),
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.all(
-                            layout.isCompact ? 10 : 12,
-                          ),
+                          padding: EdgeInsets.all(layout.isCompact ? 10 : 12),
                           decoration: BoxDecoration(
                             color: NabiPalette.rose.withValues(alpha: 0.035),
                             borderRadius: BorderRadius.circular(
@@ -163,10 +160,7 @@ class _SelectionOverviewBanner extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            NabiPalette.violet,
-            NabiPalette.royalBlue,
-          ],
+          colors: [NabiPalette.violet, NabiPalette.royalBlue],
         ),
         boxShadow: [
           BoxShadow(
@@ -206,10 +200,7 @@ class _SelectionOverviewBanner extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _HealthStatusOrb(
-                hasSelection: hasSelection,
-                compact: compact,
-              ),
+              _HealthStatusOrb(hasSelection: hasSelection, compact: compact),
               SizedBox(width: compact ? 12 : 15),
               Expanded(
                 child: Column(
@@ -230,8 +221,8 @@ class _SelectionOverviewBanner extends StatelessWidget {
                     SizedBox(height: compact ? 4 : 6),
                     Text(
                       hasSelection
-                          ? 'Bạn đã chọn $selectedCount mục cần lưu ý. Gợi ý sau này sẽ được điều chỉnh thận trọng hơn.'
-                          : 'Hãy chọn những điều bạn muốn NaBi cân nhắc trong hành trình chăm sóc sức khỏe.',
+                          ? 'Đã chọn $selectedCount mục cần lưu ý.'
+                          : 'Chọn điều NaBi cần cân nhắc.',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.84),
                         fontSize: compact ? 11.5 : 12.5,
@@ -254,10 +245,7 @@ class _HealthStatusOrb extends StatelessWidget {
   final bool hasSelection;
   final bool compact;
 
-  const _HealthStatusOrb({
-    required this.hasSelection,
-    required this.compact,
-  });
+  const _HealthStatusOrb({required this.hasSelection, required this.compact});
 
   @override
   Widget build(BuildContext context) {
@@ -269,9 +257,7 @@ class _HealthStatusOrb extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.white.withValues(alpha: 0.14),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.28),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
       ),
       child: Icon(
         hasSelection
@@ -316,14 +302,9 @@ class _PremiumConditionsCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            accentColor.withValues(alpha: 0.028),
-          ],
+          colors: [Colors.white, accentColor.withValues(alpha: 0.028)],
         ),
-        border: Border.all(
-          color: accentColor.withValues(alpha: 0.11),
-        ),
+        border: Border.all(color: accentColor.withValues(alpha: 0.11)),
         boxShadow: [
           BoxShadow(
             color: NabiPalette.ink.withValues(alpha: 0.045),
@@ -434,9 +415,7 @@ class _PremiumConditionsCard extends StatelessWidget {
 class _SelectedCountBadge extends StatelessWidget {
   final int count;
 
-  const _SelectedCountBadge({
-    required this.count,
-  });
+  const _SelectedCountBadge({required this.count});
 
   @override
   Widget build(BuildContext context) {
@@ -482,15 +461,11 @@ class _ChoiceGuidance extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 18,
-            color: NabiPalette.amber,
-          ),
+          Icon(Icons.info_outline_rounded, size: 18, color: NabiPalette.amber),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Bạn có thể chọn nhiều mục. Lựa chọn “Không có vấn đề đặc biệt” sẽ tự thay thế các lựa chọn còn lại.',
+              'Có thể chọn nhiều mục. “Không có vấn đề” sẽ thay các mục khác.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.34,
@@ -526,7 +501,7 @@ class _OtherNoteHint extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Chỉ cần ghi điều thực sự cần thiết, ví dụ những lưu ý về thói quen ăn uống hoặc vận động.',
+              'Chỉ ghi điều cần thiết về ăn uống hoặc vận động.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.34,
@@ -549,9 +524,7 @@ class _MedicalBoundaryInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: NabiPalette.cyan.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: NabiPalette.cyan.withValues(alpha: 0.13),
-        ),
+        border: Border.all(color: NabiPalette.cyan.withValues(alpha: 0.13)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -584,7 +557,7 @@ class _MedicalBoundaryInfoCard extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                'Thông tin của bạn chỉ giúp NaBi đưa ra gợi ý thận trọng hơn. Khi có triệu chứng đáng lo ngại, hãy ưu tiên trao đổi với bác sĩ hoặc cơ sở y tế.',
+                'Thông tin chỉ giúp NaBi gợi ý thận trọng hơn.',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: NabiPalette.mutedInk,
                   height: 1.35,
@@ -596,11 +569,7 @@ class _MedicalBoundaryInfoCard extends StatelessWidget {
           if (stacked) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                icon,
-                const SizedBox(height: 10),
-                content,
-              ],
+              children: [icon, const SizedBox(height: 10), content],
             );
           }
 

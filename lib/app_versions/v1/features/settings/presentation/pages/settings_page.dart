@@ -776,7 +776,7 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
             Text('Nhập mã giới thiệu', style: AppTextStyles.heading3),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Theo chính sách cộng tác viên hiện tại, mã giới thiệu chỉ được gắn khi đăng ký. Tài khoản đã tạo không thể gắn mã từ màn hình cài đặt.',
+              'Mã giới thiệu chỉ được gắn khi đăng ký tài khoản.',
               style: AppTextStyles.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.lg),

@@ -29,8 +29,7 @@ class BasicInfoStep extends ConsumerWidget {
     return OnboardingStepShell(
       stepIndex: 1,
       title: 'Một vài thông tin cơ bản',
-      subtitle:
-          'Chỉ cần chọn gần đúng. NaBi sẽ dùng những dữ liệu này để tạo gợi ý phù hợp hơn với bạn.',
+      subtitle: 'Chọn gần đúng để NaBi gợi ý phù hợp hơn.',
       onBack: controller.previousStep,
       onNext: controller.nextStep,
       child: LayoutBuilder(
@@ -705,7 +704,7 @@ class _PrivacyInfoCard extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                'Dữ liệu này chỉ phục vụ việc cá nhân hóa hành trình sức khỏe. Bạn có thể thay đổi bất cứ lúc nào sau khi hoàn tất.',
+                'Dữ liệu chỉ dùng để cá nhân hóa. Bạn có thể đổi sau.',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: NabiPalette.mutedInk,
                   height: 1.35,

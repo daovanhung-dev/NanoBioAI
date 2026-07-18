@@ -1330,8 +1330,7 @@ class _StartGuideCard extends StatelessWidget {
           Expanded(
             child: _NoticeText(
               title: 'Bạn luôn làm chủ thông tin của mình',
-              description:
-                  'NaBi chỉ dùng thông tin bạn chọn chia sẻ để tạo gợi ý phù hợp hơn. Bạn có thể cập nhật hồ sơ bất cứ lúc nào.',
+              description: 'NaBi chỉ dùng thông tin bạn chọn chia sẻ.',
             ),
           ),
         ],

@@ -9,6 +9,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Thông tin tham khảo'), findsOneWidget);
-    expect(find.textContaining('không thay thế chẩn đoán'), findsOneWidget);
+    expect(find.textContaining('không thay thế tư vấn y khoa'), findsOneWidget);
   });
 }

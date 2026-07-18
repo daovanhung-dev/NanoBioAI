@@ -15,10 +15,7 @@ void main() {
       _FakeSaleRepository(state: const SaleState(status: SaleStatus.pending)),
     );
 
-    expect(
-      find.text('Hồ sơ cộng tác viên đang chờ quản trị viên duyệt'),
-      findsOneWidget,
-    );
+    expect(find.text('Hồ sơ đang chờ duyệt'), findsOneWidget);
   });
 
   testWidgets('shows suspended and closed Sale support states', (tester) async {

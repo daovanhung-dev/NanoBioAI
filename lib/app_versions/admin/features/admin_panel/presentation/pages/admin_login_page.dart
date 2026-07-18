@@ -249,7 +249,7 @@ class _LoginIntroPanel extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Trung tâm vận hành dành cho đội ngũ được phân quyền: duyệt thanh toán, quản lý cộng tác viên, đối soát và theo dõi lịch sử xử lý.',
+                'Duyệt thanh toán, quản lý cộng tác viên và đối soát.',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.darkTextSecondary,
                   height: 1.55,

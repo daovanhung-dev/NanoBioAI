@@ -66,7 +66,7 @@ void main() {
     await container.read(familyPlusCreateDefaultGroupProvider)();
 
     expect(repository.groupCalls, 1);
-    expect(repository.lastGroupName, 'Gia dinh cua toi');
+    expect(repository.lastGroupName, 'Gia đình của tôi');
     expect(repository.lastGroupKey, startsWith('family-group-'));
   });
 }

@@ -24,8 +24,7 @@ class GoalsStep extends ConsumerWidget {
     return OnboardingStepShell(
       stepIndex: 2,
       title: 'Bạn muốn tiến gần điều gì?',
-      subtitle:
-          'Hãy chọn những ưu tiên thật sự quan trọng với bạn lúc này. Bạn có thể chọn nhiều mục tiêu.',
+      subtitle: 'Chọn những ưu tiên quan trọng lúc này.',
       onBack: controller.previousStep,
       onNext: controller.nextStep,
       child: LayoutBuilder(
@@ -292,9 +291,7 @@ class _GoalCounterOrb extends StatelessWidget {
                   strokeWidth: compact ? 4.5 : 5,
                   strokeCap: StrokeCap.round,
                   backgroundColor: Colors.white.withValues(alpha: 0.18),
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Colors.white,
-                  ),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
               AnimatedSwitcher(
@@ -351,10 +348,7 @@ class _GoalSelectionCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            accent.withValues(alpha: 0.035),
-          ],
+          colors: [Colors.white, accent.withValues(alpha: 0.035)],
         ),
         border: Border.all(
           color: accent.withValues(alpha: isSelected ? 0.20 : 0.11),
@@ -397,7 +391,7 @@ class _GoalSelectionCard extends StatelessWidget {
                   ),
                   SizedBox(height: compact ? 10 : 12),
                   Text(
-                    'Chọn tất cả những điều phù hợp. NaBi sẽ dùng mức ưu tiên này để xây dựng lịch ăn, vận động và nghỉ ngơi phù hợp hơn.',
+                    'NaBi dùng ưu tiên này để gợi ý lịch phù hợp hơn.',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: NabiPalette.mutedInk,
                       fontSize: compact ? 11.5 : null,
@@ -410,15 +404,12 @@ class _GoalSelectionCard extends StatelessWidget {
                     padding: EdgeInsets.all(compact ? 9 : 12),
                     decoration: BoxDecoration(
                       color: accent.withValues(alpha: 0.035),
-                      borderRadius: BorderRadius.circular(
-                        compact ? 16 : 18,
-                      ),
-                      border: Border.all(
-                        color: accent.withValues(alpha: 0.09),
-                      ),
+                      borderRadius: BorderRadius.circular(compact ? 16 : 18),
+                      border: Border.all(color: accent.withValues(alpha: 0.09)),
                     ),
                     child: Semantics(
-                      label: 'Danh sách mục tiêu sức khỏe có thể chọn nhiều mục',
+                      label:
+                          'Danh sách mục tiêu sức khỏe có thể chọn nhiều mục',
                       child: child,
                     ),
                   ),
@@ -541,9 +532,7 @@ class _GoalCountBadge extends StatelessWidget {
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 180),
         child: Text(
-          hasSelection
-              ? '$selectedCount đã chọn'
-              : '$totalGoals lựa chọn',
+          hasSelection ? '$selectedCount đã chọn' : '$totalGoals lựa chọn',
           key: ValueKey(selectedCount),
           style: TextStyle(
             color: hasSelection ? accent : NabiPalette.mutedInk,
@@ -561,10 +550,7 @@ class _SelectionStatus extends StatelessWidget {
   final int selectedCount;
   final bool compact;
 
-  const _SelectionStatus({
-    required this.selectedCount,
-    required this.compact,
-  });
+  const _SelectionStatus({required this.selectedCount, required this.compact});
 
   @override
   Widget build(BuildContext context) {
@@ -581,9 +567,7 @@ class _SelectionStatus extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: color.withValues(alpha: 0.12),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.12)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -726,10 +710,7 @@ class _GoalGuidanceCard extends StatelessWidget {
   final bool compact;
   final int selectedCount;
 
-  const _GoalGuidanceCard({
-    required this.compact,
-    required this.selectedCount,
-  });
+  const _GoalGuidanceCard({required this.compact, required this.selectedCount});
 
   @override
   Widget build(BuildContext context) {
@@ -740,9 +721,7 @@ class _GoalGuidanceCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(compact ? 20 : 23),
         color: NabiPalette.amber.withValues(alpha: 0.07),
-        border: Border.all(
-          color: NabiPalette.amber.withValues(alpha: 0.14),
-        ),
+        border: Border.all(color: NabiPalette.amber.withValues(alpha: 0.14)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -790,11 +769,7 @@ class _GoalGuidanceCard extends StatelessWidget {
           if (stacked) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                icon,
-                const SizedBox(height: 10),
-                content,
-              ],
+              children: [icon, const SizedBox(height: 10), content],
             );
           }
 

@@ -32,8 +32,7 @@ class FeaturesHubPage extends StatelessWidget {
                   MedicalPageHero(
                     eyebrow: 'TRUNG TÂM CHĂM SÓC',
                     title: 'Chăm sức khỏe theo cách dễ hiểu',
-                    subtitle:
-                        'Mỗi công cụ được sắp theo mục tiêu rõ ràng để bạn theo dõi, hiểu và cải thiện sức khỏe từng bước.',
+                    subtitle: 'Chọn công cụ theo mục tiêu chăm sóc của bạn.',
                     icon: Icons.health_and_safety_rounded,
                     actions: [
                       MedicalStatusPill(
@@ -49,8 +48,7 @@ class FeaturesHubPage extends StatelessWidget {
                   const MedicalSectionHeader(
                     key: Key('current-features-section'),
                     title: 'Công cụ chăm sóc hiện tại',
-                    subtitle:
-                        'Chọn một mục, Nabi sẽ đưa bạn đến đúng nơi cần thiết.',
+                    subtitle: 'Chọn mục bạn muốn dùng hôm nay.',
                     icon: Icons.dashboard_customize_outlined,
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -64,8 +62,7 @@ class FeaturesHubPage extends StatelessWidget {
                   const MedicalSectionHeader(
                     key: Key('advanced-health-features-section'),
                     title: 'Theo dõi chuyên sâu đang phát triển',
-                    subtitle:
-                        'Mười công cụ mới đang được hoàn thiện để bạn theo dõi sức khỏe chủ động hơn.',
+                    subtitle: 'Các mục mới đang được hoàn thiện.',
                     icon: Icons.health_and_safety_outlined,
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -95,21 +92,21 @@ class FeaturesHubPage extends StatelessWidget {
     return [
       _FeatureAction(
         title: 'Lịch trình cá nhân',
-        subtitle: 'Nabi giúp bạn nhìn lại nhịp sống trong tuần.',
+        subtitle: 'Xem nhịp sống trong tuần.',
         icon: Icons.event_note_rounded,
         color: AppColors.primary,
         onTap: () => context.push(V1RoutePaths.lifestyleSchedule),
       ),
       _FeatureAction(
         title: 'Nhiệm vụ hôm nay',
-        subtitle: 'Từng việc nhỏ, Nabi sẽ cùng bạn hoàn thành nhẹ nhàng.',
+        subtitle: 'Hoàn thành từng việc nhỏ.',
         icon: Icons.favorite_rounded,
         color: AppColors.success,
         onTap: () => context.push(V1RoutePaths.healthTracking),
       ),
       _FeatureAction(
         title: 'Thực đơn theo tuần',
-        subtitle: 'Những bữa ăn được chuẩn bị để bạn dễ chăm mình hơn.',
+        subtitle: 'Xem bữa ăn đã chuẩn bị.',
         icon: Icons.restaurant_rounded,
         color: AppColors.secondary,
         onTap: () => context.push(V1RoutePaths.mealPlan),
@@ -123,7 +120,7 @@ class FeaturesHubPage extends StatelessWidget {
       ),
       _FeatureAction(
         title: 'Chỉ số cơ thể',
-        subtitle: 'Tính nhanh BMI, BMR/RMR, TDEE và gợi ý nước, ngủ, vận động.',
+        subtitle: 'Tính BMI, BMR/RMR, TDEE và gợi ý cơ bản.',
         icon: Icons.monitor_weight_rounded,
         color: AppColors.info,
         onTap: () => context.push(V1RoutePaths.bodyMetrics),
@@ -144,14 +141,14 @@ class FeaturesHubPage extends StatelessWidget {
       ),
       _FeatureAction(
         title: 'Cộng đồng chăm sóc',
-        subtitle: 'Kết nối với những người cũng đang quan tâm sức khỏe.',
+        subtitle: 'Kết nối cùng người quan tâm sức khỏe.',
         icon: Icons.groups_rounded,
         color: AppColors.error,
         onTap: () => context.push(V1RoutePaths.community),
       ),
       _FeatureAction(
         title: 'Trò chuyện với Nabi',
-        subtitle: 'Hỏi Nabi bất cứ điều gì bạn đang băn khoăn hôm nay.',
+        subtitle: 'Hỏi điều bạn đang băn khoăn.',
         icon: Icons.auto_awesome_rounded,
         color: AppColors.secondary,
         onTap: () => context.push(V1RoutePaths.aiChat),

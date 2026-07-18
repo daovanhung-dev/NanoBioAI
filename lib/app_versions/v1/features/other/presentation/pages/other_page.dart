@@ -158,7 +158,7 @@ class _SummaryCard extends StatelessWidget {
         ? insights.first.content
         : recommendations.isNotEmpty
         ? recommendations.first.description
-        : 'Nabi chưa có nhận xét mới cho hôm nay. Khi bạn chăm sóc thêm vài nhịp nhỏ, mình sẽ tổng hợp lại dịu dàng hơn.';
+        : 'Nabi sẽ cập nhật khi có thêm ghi nhận.';
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -818,9 +818,9 @@ String _scoreTitle(int score) {
 
 String _scoreMessage(int score) {
   if (score <= 0) {
-    return 'Nabi sẽ cập nhật điểm khi có thêm ghi nhận sức khỏe, nhiệm vụ, bữa ăn, nước uống hoặc giấc ngủ.';
+    return 'Nabi sẽ cập nhật khi có thêm ghi nhận.';
   }
-  return 'Điểm này được Nabi tổng hợp từ những ghi nhận sức khỏe, nhiệm vụ hằng ngày, bữa ăn, nước uống và giấc ngủ.';
+  return 'Điểm tổng hợp từ nhiệm vụ, bữa ăn, nước và giấc ngủ.';
 }
 
 String _scoreLabel(int score) {

@@ -12,8 +12,7 @@ class V2HomePage extends StatelessWidget {
     return MedicalScrollPage(
       eyebrow: 'TÀI KHOẢN NANOBIO',
       title: 'Chăm sóc cá nhân, liền mạch hơn',
-      subtitle:
-          'Dữ liệu sức khỏe của bạn được đồng bộ an toàn để Nabi có thể tiếp tục đồng hành trên các thiết bị.',
+      subtitle: 'Đồng bộ an toàn để tiếp tục trên nhiều thiết bị.',
       icon: Icons.health_and_safety_rounded,
       actions: [
         FilledButton.icon(
@@ -29,14 +28,15 @@ class V2HomePage extends StatelessWidget {
       children: [
         const MedicalSectionHeader(
           title: 'Tổng quan tài khoản',
-          subtitle:
-              'Các chức năng dành cho thành viên được sắp xếp theo nhu cầu, không theo cấu trúc kỹ thuật.',
+          subtitle: 'Các chức năng được sắp theo nhu cầu.',
           icon: Icons.dashboard_customize_rounded,
         ),
         LayoutBuilder(
           builder: (context, constraints) {
             final width = constraints.maxWidth;
-            final itemWidth = width >= 660 ? (width - AppSpacing.md) / 2 : width;
+            final itemWidth = width >= 660
+                ? (width - AppSpacing.md) / 2
+                : width;
             return Wrap(
               spacing: AppSpacing.md,
               runSpacing: AppSpacing.md,
@@ -69,7 +69,8 @@ class V2HomePage extends StatelessWidget {
                   child: const MedicalMetricCard(
                     label: 'Đồng bộ cá nhân',
                     value: 'An toàn và chủ động',
-                    helper: 'Nabi chỉ dùng dữ liệu để phục vụ trải nghiệm của bạn.',
+                    helper:
+                        'Nabi chỉ dùng dữ liệu để phục vụ trải nghiệm của bạn.',
                     icon: Icons.cloud_done_rounded,
                     color: AppColors.secondary,
                   ),

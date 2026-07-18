@@ -35,7 +35,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
           Text('Chọn gói cần nâng cấp', style: AppTextStyles.heading2),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Yêu cầu sẽ ở trạng thái chờ xác nhận cho đến khi hệ thống quản trị xác nhận thanh toán hợp lệ.',
+            'Yêu cầu chờ duyệt trước khi gói được mở.',
             style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -107,8 +107,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
           .execute(command);
       setState(() {
         _request = request;
-        _message =
-            'Đã tạo yêu cầu chờ xác nhận. Gói sẽ không được cấp trước khi được duyệt.';
+        _message = 'Đã tạo yêu cầu. Gói sẽ mở sau khi duyệt.';
       });
     } on MembershipPaymentException catch (error) {
       setState(() => _message = error.safeMessage);
@@ -187,10 +186,15 @@ class _PaymentRequestPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Yêu cầu ${_paymentStatusLabel(request.status)}', style: AppTextStyles.labelLarge),
+          Text(
+            'Yêu cầu ${_paymentStatusLabel(request.status)}',
+            style: AppTextStyles.labelLarge,
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            '${_planLabel(request.planCode)} / ${_billingCycleLabel(request.billingCycle)} - ${request.amountCents} ${request.currency}',
+            '${_planLabel(request.planCode)} / '
+            '${_billingCycleLabel(request.billingCycle)} - '
+            '${request.amountCents} ${request.currency}',
             style: AppTextStyles.bodyMedium,
           ),
         ],

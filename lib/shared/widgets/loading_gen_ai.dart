@@ -502,7 +502,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
 
   Widget _buildFooter() {
     return Text(
-      'Bạn có thể giữ màn hình này mở thêm một chút nhé. Tôi vẫn đang ở đây và sẽ mang câu trả lời đến ngay khi đã sẵn sàng.',
+      'Giữ màn hình mở thêm chút. Nabi sẽ trả lời khi sẵn sàng.',
       style: AppTextStyles.caption.copyWith(
         color: AppColors.textMuted,
         height: 1.45,

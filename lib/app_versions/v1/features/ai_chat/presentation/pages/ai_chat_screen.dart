@@ -537,7 +537,7 @@ class _ChatGptEmptyState extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Bạn có thể hỏi về bữa ăn, giấc ngủ, vận động, cảm xúc hoặc chỉ đơn giản là kể cho Nabi nghe điều bạn đang bận tâm.',
+                'Hỏi về ăn uống, ngủ, vận động, cảm xúc hoặc điều bạn bận tâm.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textSecondary,
@@ -742,7 +742,7 @@ class _CareNote extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Nabi có thể đồng hành và gợi ý nhẹ nhàng. Với vấn đề sức khỏe nghiêm trọng, bạn vẫn nên hỏi bác sĩ nhé.',
+              'Vấn đề sức khỏe nghiêm trọng vẫn nên hỏi bác sĩ.',
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.45,

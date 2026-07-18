@@ -195,7 +195,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               Text('Chỉnh sửa hồ sơ', style: AppTextStyles.heading3),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Email được quản lý bởi hệ thống xác thực Supabase nên Nabi chỉ cập nhật hồ sơ sức khỏe và thông tin hiển thị ở đây.',
+                'Email đăng nhập không đổi tại đây.',
                 style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -692,7 +692,9 @@ String _subscriptionLabel(String value) {
   final normalized = value.trim().toLowerCase();
   if (normalized.isEmpty || normalized == 'free') return 'Gói Cơ bản';
   if (normalized == 'plus') return 'Gói Plus';
-  if (normalized == 'family_plus' || normalized == 'familyplus') return 'Gói FamilyPlus';
+  if (normalized == 'family_plus' || normalized == 'familyplus') {
+    return 'Gói FamilyPlus';
+  }
   if (normalized == 'premium') return 'Gói Nâng cao';
   if (normalized == 'pro') return 'Gói Chuyên nghiệp';
   return 'Gói đang cập nhật';

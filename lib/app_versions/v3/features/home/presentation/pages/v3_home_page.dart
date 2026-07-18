@@ -31,15 +31,13 @@ class V3HomePage extends StatelessWidget {
     return MedicalScrollPage(
       eyebrow: 'PLUS & FAMILYPLUS',
       title: 'Chăm sóc sâu hơn, vẫn thật dễ dùng',
-      subtitle:
-          'Các trải nghiệm nâng cao chỉ được mở khi quyền thành viên được xác nhận an toàn và minh bạch.',
+      subtitle: 'Tính năng nâng cao mở theo quyền thành viên.',
       icon: Icons.workspace_premium_rounded,
       gradient: AppGradients.premium,
       children: [
         const MedicalSectionHeader(
           title: 'Trải nghiệm đang được hoàn thiện',
-          subtitle:
-              'Mỗi chức năng được thiết kế để giúp bạn hiểu thông tin nhanh hơn, không tạo thêm áp lực.',
+          subtitle: 'Hiểu nhanh hơn, ít áp lực hơn.',
           icon: Icons.view_quilt_rounded,
           color: AppColors.tertiary,
         ),
@@ -60,7 +58,10 @@ class V3HomePage extends StatelessWidget {
                     children: [
                       Text(feature.title, style: AppTextStyles.heading5),
                       const SizedBox(height: AppSpacing.xs),
-                      Text(feature.description, style: AppTextStyles.bodyMedium),
+                      Text(
+                        feature.description,
+                        style: AppTextStyles.bodyMedium,
+                      ),
                     ],
                   ),
                 ),
@@ -76,8 +77,7 @@ class V3HomePage extends StatelessWidget {
           icon: Icons.verified_user_rounded,
           color: AppColors.secondary,
           title: 'Quyền lợi luôn được kiểm tra an toàn',
-          message:
-              'Nabi không tự mở tính năng trả phí hoặc suy đoán gói thành viên. Trạng thái sẽ được xác nhận trước khi sử dụng.',
+          message: 'Nabi chỉ mở tính năng sau khi xác nhận quyền.',
         ),
       ],
     );

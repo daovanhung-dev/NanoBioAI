@@ -176,7 +176,7 @@ class _HydrationIntro extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Mục tiêu dịu nhẹ: ${result.targetMl} ml mỗi ngày trong giai đoạn ${result.period.startDate} - ${result.period.endDate}.',
+            '${result.targetMl} ml/ngày, ${result.period.startDate} - ${result.period.endDate}.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
               height: 1.45,
@@ -218,7 +218,7 @@ class _ProgressPanel extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            '$percent% - ${result.completedDays}/${result.totalDays} ngày đạt mục tiêu, trung bình ${result.averageWaterMl} ml/ngày.',
+            '$percent% • ${result.completedDays}/${result.totalDays} ngày • TB ${result.averageWaterMl} ml/ngày.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
               height: 1.35,

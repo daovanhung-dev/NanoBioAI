@@ -14,7 +14,7 @@ class ScheduleHorizon {
 
 class ScheduleHorizonDataException implements Exception {
   static const userMessage =
-      'Nabi chưa đọc được ngày trong lịch hiện tại. Bạn chưa nên tạo lịch mới cho đến khi dữ liệu được kiểm tra lại nhé.';
+      'Nabi chưa đọc được ngày lịch. Hãy thử lại sau khi dữ liệu được kiểm tra.';
 
   const ScheduleHorizonDataException();
 
@@ -24,7 +24,7 @@ class ScheduleHorizonDataException implements Exception {
 
 class PersonalScheduleStillActiveException implements Exception {
   static const userMessage =
-      'Lịch trình hiện tại vẫn còn ít nhất 2 ngày. Bạn tiếp tục theo lịch này rồi quay lại khi còn 1 ngày nhé.';
+      'Lịch hiện tại còn ít nhất 2 ngày. Hãy quay lại khi còn 1 ngày.';
 
   final int remainingDays;
 

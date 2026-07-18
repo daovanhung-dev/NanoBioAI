@@ -179,8 +179,7 @@ const _configuration = SupabaseAuthErrorDetails(
 const _authServer = SupabaseAuthErrorDetails(
   kind: SupabaseAuthErrorKind.authServer,
   title: 'Lỗi hệ thống đăng nhập',
-  message:
-      'Máy chủ Auth hoặc database đang trả lỗi. Đây không phải lỗi mật khẩu; hãy kiểm tra cấu hình và seed Auth.',
+  message: 'Hệ thống đăng nhập đang lỗi. Hãy kiểm tra cấu hình và thử lại.',
 );
 
 const _unknown = SupabaseAuthErrorDetails(

@@ -261,9 +261,9 @@ class DashboardPlanStatusCard extends StatelessWidget {
     final message = !hasPlan
         ? 'Khi sẵn sàng, bạn có thể để Nabi sắp nhẹ thực đơn, vận động và nhắc nhở.'
         : planStatus.remainingDays == 1
-        ? 'Hôm nay là ngày cuối trong lịch trình hiện tại. Bạn có thể tạo nhịp 7 ngày mới để Nabi tiếp tục đồng hành liền mạch.'
+        ? 'Hôm nay là ngày cuối. Bạn có thể tạo nhịp 7 ngày mới.'
         : planStatus.remainingDays > 0
-        ? 'Còn ${planStatus.remainingDays} ngày trong kế hoạch. Kế hoạch của bạn vẫn còn đủ dùng, mình cứ đi nhẹ từng ngày nhé.'
+        ? 'Còn ${planStatus.remainingDays} ngày trong kế hoạch hiện tại.'
         : 'Kế hoạch hiện tại đã đến hạn, Nabi có thể chuẩn bị thêm nhịp mới cho bạn.';
 
     return _CompanionCard(

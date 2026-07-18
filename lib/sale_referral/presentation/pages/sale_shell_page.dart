@@ -105,7 +105,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
 
   String _inactiveTitle(SaleStatus status) {
     return switch (status) {
-      SaleStatus.pending => 'Hồ sơ cộng tác viên đang chờ quản trị viên duyệt',
+      SaleStatus.pending => 'Hồ sơ đang chờ duyệt',
       SaleStatus.suspended => 'Tài khoản cộng tác viên đang tạm dừng',
       SaleStatus.closed => 'Tài khoản cộng tác viên đã đóng',
       SaleStatus.none || SaleStatus.active => 'Bạn chưa có quyền cộng tác viên',
@@ -114,14 +114,13 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
 
   String _inactiveMessage(SaleStatus status) {
     return switch (status) {
-      SaleStatus.pending =>
-        'Yêu cầu của bạn đã được ghi nhận. Khi quản trị viên duyệt, mã giới thiệu và bảng điều khiển sẽ được mở.',
+      SaleStatus.pending => 'Mã giới thiệu sẽ mở sau khi được duyệt.',
       SaleStatus.suspended =>
         'Bạn cần liên hệ hỗ trợ để kiểm tra lý do tạm dừng trước khi tiếp tục.',
       SaleStatus.closed =>
         'Trạng thái cộng tác viên đã đóng. Vui lòng liên hệ hỗ trợ nếu cần xem xét lại.',
-      SaleStatus.none || SaleStatus.active =>
-        'Vào Cài đặt > Đồng hành phát triển cùng NanoBio để đọc và chấp nhận điều lệ cộng tác viên.',
+      SaleStatus.none ||
+      SaleStatus.active => 'Vào Cài đặt để đọc và chấp nhận điều lệ.',
     };
   }
 }
@@ -191,7 +190,7 @@ class _SalePayoutProfileGateState
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Cần hoàn tất thông tin này trước khi vào bảng điều khiển cộng tác viên hoặc gửi yêu cầu rút tiền.',
+                      'Hoàn tất trước khi dùng dashboard hoặc rút tiền.',
                       style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -380,8 +379,9 @@ class _OverviewTab extends ConsumerWidget {
                     ? 'Quy đổi điểm đang mở'
                     : 'Quy đổi điểm chưa mở',
                 subtitle: data.conversionPolicy.enabled
-                    ? 'Chỉ điểm giao dịch cộng tác viên đã qua 24 giờ mới được quy đổi. Tối thiểu ${_money(data.conversionPolicy.minimumPointCents, data.conversionPolicy.currency)}.'
-                    : 'Hệ thống sẽ hiển thị nút yêu cầu khi quản trị viên bật cấu hình quy đổi điểm.',
+                    ? 'Điểm sau 24 giờ. Tối thiểu '
+                          '${_money(data.conversionPolicy.minimumPointCents, data.conversionPolicy.currency)}.'
+                    : 'Nút yêu cầu sẽ mở khi Admin bật quy đổi.',
               ),
             ],
           );
@@ -418,8 +418,7 @@ class _DirectCustomersTab extends ConsumerWidget {
             children: [
               const _HeroPanel(
                 title: 'Khách hàng trực tiếp',
-                subtitle:
-                    'Thông tin hiển thị theo mối quan hệ giới thiệu trực tiếp đã được hệ thống xác nhận.',
+                subtitle: 'Chỉ hiển thị khách đã gắn trực tiếp với bạn.',
               ),
               const SizedBox(height: AppSpacing.lg),
               ...items.map(
@@ -441,7 +440,7 @@ String _customerSubtitle(SaleDirectCustomer item) {
   final age = item.age == null ? 'Tuổi: chưa có' : 'Tuổi: ${item.age}';
   final phone = item.phone == null ? 'SĐT: chưa có' : 'SĐT: ${item.phone}';
   final points = _money(item.approvedPointCents, item.currency);
-  return '$age - $phone - ${item.successfulPayments} thanh toán hợp lệ - $points điểm đã duyệt';
+  return '$age - $phone - ${item.successfulPayments} thanh toán - $points điểm';
 }
 
 class _PointLedgerTab extends ConsumerWidget {
@@ -455,8 +454,7 @@ class _PointLedgerTab extends ConsumerWidget {
         loading: () => const _CenteredProgress(),
         error: (_, __) => const _EmptySaleState(
           title: 'Chưa tải được điểm cộng tác viên',
-          message:
-              'Điểm cộng tác viên chỉ được tạo từ thanh toán hợp lệ đã được hệ thống tin cậy ghi nhận.',
+          message: 'Điểm chỉ đến từ thanh toán hợp lệ.',
         ),
         data: (items) {
           if (items.isEmpty) {
@@ -471,17 +469,19 @@ class _PointLedgerTab extends ConsumerWidget {
             children: [
               const _HeroPanel(
                 title: 'Sổ điểm cộng tác viên',
-                subtitle:
-                    'Mỗi dòng liên kết với một thanh toán hợp lệ và không được tạo từ ứng dụng.',
+                subtitle: 'Mỗi dòng gắn với một thanh toán hợp lệ.',
               ),
               const SizedBox(height: AppSpacing.lg),
               ...items.map(
                 (item) => _ListTilePanel(
                   icon: Icons.receipt_long_rounded,
                   title:
-                      '${vietnameseUiText(item.customerName)} • ${_money(item.pointAmountCents, item.currency)}',
+                      '${vietnameseUiText(item.customerName)} • '
+                      '${_money(item.pointAmountCents, item.currency)}',
                   subtitle:
-                      '${_planLabel(item.planCode)} • ${_money(item.paymentAmountCents, item.currency)} • ${_statusLabel(item.status)}',
+                      '${_planLabel(item.planCode)} • '
+                      '${_money(item.paymentAmountCents, item.currency)} • '
+                      '${_statusLabel(item.status)}',
                 ),
               ),
             ],

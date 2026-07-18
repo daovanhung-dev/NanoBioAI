@@ -72,8 +72,7 @@ class _AuthGatePageState extends ConsumerState<AuthGatePage> {
         if (routeState.status == AuthRouteStatus.profileBootstrapUnavailable) {
           return _AuthSupportState(
             title: 'Hồ sơ đang được chuẩn bị',
-            message:
-                'Nabi đã thấy phiên đăng nhập, nhưng hồ sơ nền chưa sẵn sàng. Bạn thử lại sau một chút hoặc liên hệ hỗ trợ nhé.',
+            message: 'Hồ sơ chưa sẵn sàng. Hãy thử lại sau.',
             onRetry: () => controller.refresh(),
           );
         }
@@ -100,9 +99,12 @@ class _AuthGatePageState extends ConsumerState<AuthGatePage> {
       return;
     }
 
-    final message = outcome.safeError ??
+    final message =
+        outcome.safeError ??
         'Chưa thể đồng bộ. Dữ liệu trên thiết bị vẫn được giữ nguyên.';
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _signOut() async {
@@ -185,11 +187,11 @@ class _GuestConsentState extends StatelessWidget {
     final message = cloudHasData
         ? isEstablishedWarning
               ? 'Dữ liệu trên thiết bị là dữ liệu khách, còn tài khoản này đã có '
-                  'dữ liệu riêng. Không có dữ liệu nào bị xóa nếu bạn chưa xác nhận.'
+                    'dữ liệu riêng. Không có dữ liệu nào bị xóa nếu bạn chưa xác nhận.'
               : 'Khi tiếp tục, dữ liệu khách trên thiết bị sẽ được thay bằng dữ liệu '
-                  'của tài khoản. Hãy chắc chắn bạn muốn dùng dữ liệu tài khoản.'
+                    'của tài khoản. Hãy chắc chắn bạn muốn dùng dữ liệu tài khoản.'
         : 'Tài khoản mới chưa có dữ liệu sức khỏe. Chọn “Đồng bộ ngay” để chuyển '
-            'dữ liệu khách hiện tại vào tài khoản.';
+              'dữ liệu khách hiện tại vào tài khoản.';
 
     return MedicalPageScaffold(
       backgroundColor: AppColors.background,

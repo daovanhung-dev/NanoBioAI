@@ -479,7 +479,7 @@ class _AdminWellnessRewardsPanelState
               ),
             );
         _showMessage(
-          '${result.message} Nhận ${result.acceptedCount}, trùng ${result.duplicateCount}, từ chối ${result.rejectedCount}.',
+          'Nhận ${result.acceptedCount}, trùng ${result.duplicateCount}, từ chối ${result.rejectedCount}.',
         );
       } on AdminWellnessRewardException catch (error) {
         _showMessage(error.safeMessage);
@@ -503,7 +503,7 @@ class _AdminWellnessRewardsPanelState
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Mã ${redemption.maskedCode} sẽ bị loại vĩnh viễn và điểm được hoàn đúng một lần.',
+                'Mã ${redemption.maskedCode} sẽ bị hủy và hoàn điểm một lần.',
               ),
               const SizedBox(height: AppSpacing.md),
               TextField(

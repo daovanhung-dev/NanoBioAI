@@ -20,7 +20,7 @@ void main() {
 
     expect(find.byType(MedicalComingSoonPage), findsOneWidget);
     expect(find.text('Nhật ký huyết áp'), findsOneWidget);
-    expect(find.textContaining('M20'), findsOneWidget);
+    expect(find.textContaining('nhật ký huyết áp an toàn'), findsOneWidget);
   });
 
   testWidgets('Plus and FamilyPlus open the correct Plus placeholder', (

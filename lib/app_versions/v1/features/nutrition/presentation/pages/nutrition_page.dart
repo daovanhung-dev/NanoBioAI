@@ -21,8 +21,7 @@ class NutritionPage extends ConsumerWidget {
           error: (error, _) => _StateCard(
             icon: Icons.spa_rounded,
             title: 'Nabi chưa mở được góc dinh dưỡng của bạn',
-            message:
-                'Có vẻ dữ liệu bữa ăn đang cần thêm một chút thời gian để sẵn sàng. Bạn thử làm mới lại nhé, Nabi vẫn ở đây cùng bạn.',
+            message: 'Dữ liệu bữa ăn chưa sẵn sàng. Hãy thử làm mới.',
             onRetry: () => ref.invalidate(nutritionSummaryProvider),
           ),
           data: (summary) => RefreshIndicator(
@@ -246,24 +245,24 @@ class _Header extends StatelessWidget {
     final logged = summary.loggedCalories;
 
     if (planned <= 0 && logged <= 0) {
-      return 'Hôm nay vẫn còn rất nhẹ nhàng. Khi bạn ăn hoặc ghi nhận bữa đầu tiên, Nabi sẽ theo dõi cùng bạn.';
+      return 'Ghi bữa đầu tiên để Nabi theo dõi cùng bạn.';
     }
 
     if (planned <= 0) {
-      return 'Bạn đã bắt đầu ghi nhận bữa ăn rồi. Nabi sẽ tiếp tục giữ lại những nhịp nhỏ này cho bạn.';
+      return 'Bạn đã bắt đầu ghi nhận bữa ăn hôm nay.';
     }
 
     final ratio = logged / planned;
 
     if (ratio < .45) {
-      return 'Bạn vẫn còn khá nhiều khoảng trống năng lượng trong ngày. Mình cứ đi chậm thôi, không cần vội.';
+      return 'Hôm nay vẫn còn nhiều khoảng trống năng lượng.';
     }
 
     if (ratio <= 1.05) {
       return 'Nhịp ăn hôm nay đang khá cân bằng. Nabi thấy bạn đang chăm mình rất ổn đó.';
     }
 
-    return 'Hôm nay năng lượng đã hơi vượt kế hoạch một chút. Không sao cả, bữa sau mình chọn nhẹ nhàng hơn nhé.';
+    return 'Năng lượng hơi vượt kế hoạch. Bữa sau mình chọn nhẹ hơn.';
   }
 }
 
@@ -323,18 +322,18 @@ class _NamiNoteCard extends StatelessWidget {
     final protein = summary.protein;
 
     if (!hasMeals && !hasLogs) {
-      return 'Hôm nay Nabi chưa thấy bữa ăn nào được ghi nhận. Bạn có thể bắt đầu từ một bữa thật đơn giản, miễn là cơ thể thấy dễ chịu.';
+      return 'Bắt đầu bằng một bữa đơn giản khi bạn sẵn sàng.';
     }
 
     if (protein > 0 && protein < 30) {
-      return 'Bạn đã có ghi nhận dinh dưỡng rồi. Nếu được, mình thêm một chút đạm lành mạnh để cơ thể có thêm năng lượng hồi phục nhé.';
+      return 'Bạn có thể thêm chút đạm lành mạnh hôm nay.';
     }
 
     if (hasMeals && !hasLogs) {
-      return 'Thực đơn hôm nay đã sẵn sàng. Khi bạn dùng bữa xong, chỉ cần ghi nhận lại một chút để Nabi đồng hành sát hơn.';
+      return 'Thực đơn đã sẵn sàng. Ghi lại sau khi dùng bữa nhé.';
     }
 
-    return 'Bạn đang chăm mình bằng những ghi nhận rất nhỏ nhưng rất đáng quý. Nabi sẽ giữ nhịp này cùng bạn.';
+    return 'Những ghi nhận nhỏ đang giúp Nabi hiểu bạn hơn.';
   }
 }
 
@@ -484,11 +483,9 @@ class _MealPlanSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Section(
       title: 'Bữa ăn Nabi gợi ý hôm nay',
-      subtitle:
-          'Một vài lựa chọn nhỏ để ngày của bạn nhẹ bụng và đủ năng lượng hơn.',
+      subtitle: 'Gợi ý nhẹ bụng, đủ năng lượng.',
       emptyTitle: 'Hôm nay Nabi chưa có thực đơn cho bạn',
-      emptyMessage:
-          'Không sao đâu. Khi thực đơn sẵn sàng, Nabi sẽ đặt ở đây để bạn dễ chọn bữa phù hợp với mình.',
+      emptyMessage: 'Thực đơn sẽ hiển thị ở đây khi sẵn sàng.',
       emptyIcon: Icons.restaurant_menu_rounded,
       children: meals.map((meal) {
         return _SurfaceCard(
@@ -558,8 +555,7 @@ class _NutritionLogSection extends StatelessWidget {
 
   const _NutritionLogSection({
     this.title = 'Bữa ăn bạn đã ghi nhận',
-    this.subtitle =
-        'Nabi sẽ gom lại từng bữa để bạn nhìn thấy hành trình chăm mình rõ hơn.',
+    this.subtitle = 'Xem lại các bữa bạn đã ghi nhận.',
     required this.logs,
   });
 
@@ -569,8 +565,7 @@ class _NutritionLogSection extends StatelessWidget {
       title: title,
       subtitle: subtitle,
       emptyTitle: 'Chưa có bữa ăn nào được ghi nhận',
-      emptyMessage:
-          'Bạn chưa cần làm mọi thứ thật hoàn hảo. Chỉ cần ghi lại bữa đầu tiên, Nabi sẽ cùng bạn theo dõi từng chút một.',
+      emptyMessage: 'Ghi bữa đầu tiên khi bạn sẵn sàng.',
       emptyIcon: Icons.receipt_long_rounded,
       children: logs.map((log) {
         return _SurfaceCard(
