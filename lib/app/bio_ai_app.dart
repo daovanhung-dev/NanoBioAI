@@ -12,8 +12,22 @@ class BioAIApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authIdentity = ref.watch(v2AuthChangesProvider);
     final currentUserId = ref.watch(currentAuthUserIdProvider);
     final requestedSurface = ref.watch(appSurfaceControllerProvider);
+
+    ref.listen<String?>(currentAuthUserIdProvider, (previous, next) {
+      if (previous != null && next == null) {
+        ref.read(appSurfaceControllerProvider.notifier).reset();
+      }
+    });
+
+    if (ref.watch(authBackendAvailabilityProvider).isReady &&
+        authIdentity.isLoading) {
+      return const _AccessResolvingApp(
+        key: ValueKey('auth-identity-resolving'),
+      );
+    }
 
     if (currentUserId == null) {
       return const BioAIV2App(key: ValueKey('user-app'));
@@ -42,7 +56,7 @@ class BioAIApp extends ConsumerWidget {
 }
 
 class _AccessResolvingApp extends StatelessWidget {
-  const _AccessResolvingApp();
+  const _AccessResolvingApp({super.key});
 
   @override
   Widget build(BuildContext context) {

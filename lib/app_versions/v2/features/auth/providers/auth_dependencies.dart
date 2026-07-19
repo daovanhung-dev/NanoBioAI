@@ -32,9 +32,9 @@ final v2AuthRepositoryProvider = Provider<AuthRepository>((ref) {
   );
 });
 
-final v2AuthChangesProvider = StreamProvider<void>((ref) {
+final v2AuthChangesProvider = StreamProvider<String?>((ref) {
   if (!ref.watch(authBackendAvailabilityProvider).isReady) {
-    return const Stream<void>.empty();
+    return const Stream<String?>.empty();
   }
   return ref.watch(v2AuthRepositoryProvider).watchAuthChanges();
 });

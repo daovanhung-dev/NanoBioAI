@@ -13,6 +13,7 @@ import 'package:sqflite/sqflite.dart';
 import 'notification_constants.dart';
 import 'notification_payload.dart';
 import 'notification_navigation_coordinator.dart';
+import 'active_notification_subject.dart';
 
 class NotificationActionHandler {
   static const _tag = 'NOTIFICATION_ACTION_HANDLER';
@@ -23,6 +24,7 @@ class NotificationActionHandler {
   final LifestyleScheduleItemsDao lifestyleScheduleItemsDao;
   final LifestyleScheduleLocalDatasource lifestyleScheduleDatasource;
   final Database? database;
+  final ActiveNotificationSubjectReader _activeSubjectUserId;
   final DateTime Function() _now;
 
   NotificationActionHandler({
@@ -32,8 +34,11 @@ class NotificationActionHandler {
     required this.lifestyleScheduleItemsDao,
     required this.lifestyleScheduleDatasource,
     this.database,
+    ActiveNotificationSubjectReader? activeSubjectUserId,
     DateTime Function()? now,
-  }) : _now = now ?? DateTime.now;
+  }) : _activeSubjectUserId =
+           activeSubjectUserId ?? resolveActiveNotificationSubject,
+       _now = now ?? DateTime.now;
 
   factory NotificationActionHandler.fromDatabase(Database db) {
     final now = DateTime.now;
@@ -47,6 +52,7 @@ class NotificationActionHandler {
         now: now,
       ),
       database: db,
+      activeSubjectUserId: resolveActiveNotificationSubject,
       now: now,
     );
   }
@@ -70,12 +76,9 @@ class NotificationActionHandler {
     int? notificationId,
   }) async {
     try {
-      final rawActionId = actionId?.trim();
       // Chạm vào thân thông báo không có actionId trên Android/iOS. Xem đây là
       // thao tác mở lịch; không thực hiện hoàn thành nhiệm vụ trong nền.
-      final normalizedActionId = rawActionId == null || rawActionId.isEmpty
-          ? NotificationActionIds.openSchedule
-          : rawActionId;
+      final normalizedActionId = _normalizeActionId(actionId);
       if (!_isSupportedAction(normalizedActionId)) {
         AppLogger.info(_tag, 'Ignore unsupported action: $actionId');
         return;
@@ -119,6 +122,21 @@ class NotificationActionHandler {
       final subjectUserId = parsedPayload.subjectUserId ?? notification.userId;
 
       if (!_payloadMatchesNotification(parsedPayload, notification)) {
+        await _recordActionFailure(
+          notification: notification,
+          respondedAt: respondedAt,
+        );
+        return;
+      }
+
+      // Notifications can outlive an account switch. Never let a response
+      // from User A navigate or mutate state while User B is active.
+      final activeSubjectUserId = await _activeSubjectUserId();
+      if (!_isActiveSubject(subjectUserId, activeSubjectUserId)) {
+        AppLogger.warning(
+          _tag,
+          'Notification action rejected for inactive subject',
+        );
         await _recordActionFailure(
           notification: notification,
           respondedAt: respondedAt,
@@ -245,6 +263,16 @@ class NotificationActionHandler {
     return normalizedLeft == normalizedRight;
   }
 
+  bool _isActiveSubject(String? notificationSubject, String? activeSubject) {
+    final normalizedNotificationSubject = _normalizeSubject(
+      notificationSubject,
+    );
+    final normalizedActiveSubject = _normalizeSubject(activeSubject);
+    return normalizedNotificationSubject != null &&
+        normalizedActiveSubject != null &&
+        normalizedNotificationSubject == normalizedActiveSubject;
+  }
+
   String? _normalizeSubject(String? value) {
     final text = value?.trim();
     return text == null || text.isEmpty ? null : text;
@@ -252,7 +280,18 @@ class NotificationActionHandler {
 
   bool _isSupportedAction(String? actionId) {
     return actionId == NotificationActionIds.openSchedule ||
-        actionId == NotificationActionIds.done ||
         actionId == NotificationActionIds.skipped;
+  }
+
+  String _normalizeActionId(String? actionId) {
+    final rawActionId = actionId?.trim();
+    // The legacy `done` action remains compatible by opening the task; it
+    // never completes the task silently in a background isolate.
+    if (rawActionId == null ||
+        rawActionId.isEmpty ||
+        rawActionId == NotificationActionIds.done) {
+      return NotificationActionIds.openSchedule;
+    }
+    return rawActionId;
   }
 }

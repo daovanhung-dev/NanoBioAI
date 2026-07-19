@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 87
+- Total worklogs: 88
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -94,5 +94,6 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-13 | coding/test/docs | coding | unknown | [Worklog - Hợp nhất phiên bản và phân giao diện theo quyền](../../docs/worklog/2026-07-13/009-worklog-unified-role-app.md) |
 | 2026-07-15 | unknown | docs-context | unknown | [Worklog — triển khai logbug 14-7-26](../../docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md) |
 | 2026-07-18 | unknown | docs-context | unknown | [Worklog — rút gọn copy hiển thị toàn dự án](../../docs/worklog/2026-07-18/001-worklog-short-ui-copy.md) |
-| 2026-07-19. | test. | test | P0 preflight Android thiet bi that. | [Worklog - Full project real-device P0](../../docs/worklog/2026-07-19/001-worklog-full-project-real-device-p0.md) |
-| 2026-07-19. | test. | test | full-project real-device campaign P0-P7. | [Worklog - Full project real-device baseline](../../docs/worklog/2026-07-19/002-worklog-full-project-real-device-baseline.md) |
+| 2026-07-19 | coding/bugfix/test/docs | supabase-schema | M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M09 SCHEDULE_NOTIFICATIONS, M15 ADMIN_DASHBOARD | [Worklog - Ưu tiên Admin, khôi phục luồng AI và harden thông báo](../../docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md) |
+| 2026-07-19 | bugfix/test/docs | test | M02 PERSONAL_SCHEDULE_AI, M07 AI_CHAT | [Worklog - Fix Gemini Android runtime va chat fallback](../../docs/worklog/2026-07-19/002-worklog-gemini-android-runtime-and-chat-fallback.md) |
+| 2026-07-19 | bugfix/test/docs | test | M07 AI_CHAT, M05 runtime configuration | [Worklog - Fix Chat AI native debug runtime](../../docs/worklog/2026-07-19/003-worklog-chat-ai-native-debug-runtime.md) |

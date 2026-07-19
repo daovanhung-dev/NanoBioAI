@@ -25,7 +25,7 @@ class SupabaseAuthRepository implements AuthRepository {
   });
 
   @override
-  Stream<void> watchAuthChanges() => datasource.watchAuthChanges();
+  Stream<String?> watchAuthChanges() => datasource.watchAuthChanges();
 
   @override
   Future<AuthRouteState> resolveAuthRouteState() async {
@@ -150,7 +150,8 @@ class SupabaseAuthRepository implements AuthRepository {
         uri.path != '/callback') {
       throw const AuthFailure(
         code: AuthFailureCode.deepLinkInvalid,
-        userMessage: 'Liên kết xác thực không hợp lệ. Bạn hãy mở lại liên kết mới nhất trong email.',
+        userMessage:
+            'Liên kết xác thực không hợp lệ. Bạn hãy mở lại liên kết mới nhất trong email.',
       );
     }
 
@@ -159,7 +160,8 @@ class SupabaseAuthRepository implements AuthRepository {
     } on AuthException catch (_) {
       throw const AuthFailure(
         code: AuthFailureCode.deepLinkInvalid,
-        userMessage: 'Liên kết đã hết hạn hoặc không còn hợp lệ. Bạn hãy yêu cầu một liên kết mới rồi thử lại.',
+        userMessage:
+            'Liên kết đã hết hạn hoặc không còn hợp lệ. Bạn hãy yêu cầu một liên kết mới rồi thử lại.',
       );
     } catch (_) {
       throw _genericFailure(

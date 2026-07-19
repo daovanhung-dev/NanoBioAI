@@ -9,6 +9,7 @@ import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'active_notification_subject.dart';
 import 'notification_action_handler.dart';
 import 'reminder_notification_scheduler.dart';
 import 'reminder_schedule_service.dart';
@@ -33,23 +34,34 @@ class NotificationBootstrap {
 
   static bool _timezoneInitialized = false;
   static bool _initialized = false;
+  static Future<void>? _initializing;
   static bool _launchResponseHandled = false;
 
   static ReminderNotificationScheduler get scheduler => _scheduler;
 
-  static Future<void> initialize() async {
-    if (_initialized) return;
+  static Future<void> initialize() {
+    if (_initialized) return Future<void>.value();
+    return _initializing ??= _initializeOnce();
+  }
 
-    WidgetsFlutterBinding.ensureInitialized();
+  static Future<void> _initializeOnce() async {
+    try {
+      WidgetsFlutterBinding.ensureInitialized();
 
-    await _initializeTimezone();
-    await _scheduler.initialize();
+      await _initializeTimezone();
+      await _scheduler.initialize();
 
-    _initialized = true;
+      // Mark initialization complete before restoring a launch action. The
+      // response handler calls initialize() again, and must not await this
+      // in-flight future recursively.
+      _initialized = true;
 
-    await _handleLaunchResponseOnce();
+      await _handleLaunchResponseOnce();
 
-    AppLogger.info(_tag, 'Notification bootstrap initialized');
+      AppLogger.info(_tag, 'Notification bootstrap initialized');
+    } finally {
+      _initializing = null;
+    }
   }
 
   static Future<void> _handleLaunchResponseOnce() async {
@@ -70,12 +82,30 @@ class NotificationBootstrap {
     }
   }
 
-  static Future<void> scheduleGeneratedReminders() async {
+  static Future<void> scheduleGeneratedReminders({
+    String? subjectUserId,
+  }) async {
+    await initialize();
+
+    final service = await ReminderScheduleService.create(
+      scheduler: _scheduler,
+      activeSubjectUserId: () => resolveActiveNotificationSubject(
+        requestedSubjectUserId: subjectUserId,
+      ),
+    );
+
+    await service.scheduleGeneratedReminders();
+  }
+
+  static Future<void> clearGeneratedReminders({String? subjectUserId}) async {
     await initialize();
 
     final service = await ReminderScheduleService.create(scheduler: _scheduler);
-
-    await service.scheduleGeneratedReminders();
+    await service.clearPendingReminders(
+      subjectUserId: await resolveActiveNotificationSubject(
+        requestedSubjectUserId: subjectUserId,
+      ),
+    );
   }
 
   static Future<void> handleNotificationResponse(

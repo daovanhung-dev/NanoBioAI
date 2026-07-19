@@ -62,6 +62,9 @@ class MigrationManager {
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 15)) {
       await _migrateToV15(db);
     }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 16)) {
+      await _migrateToV16(db);
+    }
   }
 
   static bool _shouldRunMigration(
@@ -414,6 +417,20 @@ class MigrationManager {
 
   static Future<void> _migrateToV15(Database db) async {
     await NabiNotificationTables.create(db);
+  }
+
+  static Future<void> _migrateToV16(Database db) async {
+    if (!await _tableExists(db, PersonalScheduleAiRequestsTable.tableName)) {
+      await db.execute(PersonalScheduleAiRequestsTable.createTable);
+      await db.execute(PersonalScheduleAiRequestsTable.createUserModeIndex);
+      return;
+    }
+    await _addColumnIfMissing(
+      db,
+      tableName: PersonalScheduleAiRequestsTable.tableName,
+      columnName: 'generation_source',
+      definition: "TEXT NOT NULL DEFAULT 'unknown'",
+    );
   }
 
   static Future<void> _addColumnIfMissing(

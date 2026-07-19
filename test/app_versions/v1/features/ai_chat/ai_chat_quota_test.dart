@@ -41,6 +41,7 @@ void main() {
       expect(quotaGateway.checkCalls, 1);
       expect(quotaGateway.commitCalls, 1);
       expect(aiService.sendCalls, 1);
+      expect(aiService.acceptedTurns, 1);
       expect(await repository.getChatHistory(), hasLength(2));
     });
 
@@ -60,6 +61,10 @@ void main() {
       expect(quotaGateway.checkCalls, 1);
       expect(quotaGateway.commitCalls, 0);
       expect(aiService.sendCalls, 1);
+      expect(aiService.acceptedTurns, 0);
+      final history = await repository.getChatHistory();
+      expect(history, hasLength(1));
+      expect(history.single.role, MessageRole.user);
     });
 
     test('maps missing configuration and does not commit quota', () async {
@@ -72,19 +77,58 @@ void main() {
 
       await expectLater(
         repository.sendMessage('Tôi cần hỗ trợ'),
-        throwsA(
-          isA<AIChatUnavailableException>().having(
-            (error) => error.userMessage,
-            'userMessage',
-            AIChatUnavailableException.message,
-          ),
-        ),
+        throwsA(isA<AIConfigurationUnavailableException>()),
       );
 
       expect(quotaGateway.checkCalls, 1);
       expect(quotaGateway.commitCalls, 0);
       expect(aiService.sendCalls, 1);
     });
+
+    test('preserves Gemini authentication failure without an answer', () async {
+      final quotaGateway = _RecordingUsageQuotaGateway();
+      final repository = AIChatRepositoryImpl(
+        aiChatService: _RecordingAIChatService(
+          failure: const AIAuthenticationException(),
+        ),
+        quotaGateway: quotaGateway,
+      );
+
+      await expectLater(
+        repository.sendMessage('Tôi cần hỗ trợ'),
+        throwsA(isA<AIAuthenticationException>()),
+      );
+
+      expect(quotaGateway.commitCalls, 0);
+      expect(await repository.getChatHistory(), hasLength(1));
+    });
+
+    test(
+      'preserves overload and invalid-response failures without an answer',
+      () async {
+        for (final failure in <Object>[
+          const AIOverloadedException(),
+          const AIResponseInvalidException(),
+        ]) {
+          final quotaGateway = _RecordingUsageQuotaGateway();
+          final repository = AIChatRepositoryImpl(
+            aiChatService: _RecordingAIChatService(failure: failure),
+            quotaGateway: quotaGateway,
+          );
+
+          Object? captured;
+          try {
+            await repository.sendMessage('Tôi cần hỗ trợ');
+          } catch (error) {
+            captured = error;
+          }
+
+          expect(captured, same(failure));
+          expect(quotaGateway.commitCalls, 0);
+          expect(await repository.getChatHistory(), hasLength(1));
+        }
+      },
+    );
 
     test(
       'retries quota commit at most three times with one request id',
@@ -111,8 +155,9 @@ void main() {
 
     test('commit failure is fail-closed and adds no AI answer', () async {
       final quotaGateway = _RecordingUsageQuotaGateway(failCommitAttempts: 3);
+      final aiService = _RecordingAIChatService();
       final repository = AIChatRepositoryImpl(
-        aiChatService: _RecordingAIChatService(),
+        aiChatService: aiService,
         quotaGateway: quotaGateway,
         requestIdFactory: (_) => 'failed-commit-request',
         delay: (_) async {},
@@ -124,6 +169,7 @@ void main() {
       );
 
       expect(quotaGateway.commitCalls, 3);
+      expect(aiService.acceptedTurns, 0);
       final history = await repository.getChatHistory();
       expect(history, hasLength(1));
       expect(history.single.role, MessageRole.user);
@@ -134,23 +180,31 @@ void main() {
 class _RecordingAIChatService extends AIChatService {
   final bool shouldFail;
   final bool configurationUnavailable;
+  final Object? failure;
   int sendCalls = 0;
+  int acceptedTurns = 0;
 
   _RecordingAIChatService({
     this.shouldFail = false,
     this.configurationUnavailable = false,
+    this.failure,
   }) : super(
          textGenerator: ({required modelName, required message}) async => '',
        );
 
   @override
-  Future<String> sendMessage(String message) async {
+  Future<AIChatPreparedResponse> prepareMessage(String message) async {
     sendCalls++;
+    final failure = this.failure;
+    if (failure != null) throw failure;
     if (configurationUnavailable) {
       throw const AIConfigurationUnavailableException();
     }
     if (shouldFail) throw StateError('AI chat failed');
-    return 'Nabi đã nghe bạn và sẽ gợi ý nhẹ nhàng.';
+    return AIChatPreparedResponse(
+      text: 'Nabi đã nghe bạn và sẽ gợi ý nhẹ nhàng.',
+      onAccepted: () => acceptedTurns++,
+    );
   }
 }
 

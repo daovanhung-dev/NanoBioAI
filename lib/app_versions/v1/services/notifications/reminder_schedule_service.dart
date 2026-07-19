@@ -13,54 +13,73 @@ import 'notification_id_generator.dart';
 import 'notification_payload.dart';
 import 'reminder_notification_scheduler.dart';
 
+typedef ActiveReminderSubjectReader = Future<String?> Function();
+
 class ReminderScheduleService {
   static const _tag = 'REMINDER_SCHEDULE_SERVICE';
 
   final LifestyleScheduleItemsDao scheduleItemsDao;
   final NotificationsDao notificationsDao;
   final ReminderNotificationScheduler scheduler;
+  final ActiveReminderSubjectReader activeSubjectUserId;
   final DateTime Function() _now;
 
   ReminderScheduleService({
     required this.scheduleItemsDao,
     required this.notificationsDao,
     required this.scheduler,
+    ActiveReminderSubjectReader? activeSubjectUserId,
     DateTime Function()? now,
-  }) : _now = now ?? DateTime.now;
+  }) : activeSubjectUserId = activeSubjectUserId ?? _noActiveSubject,
+       _now = now ?? DateTime.now;
 
   factory ReminderScheduleService.fromDatabase({
     required Database db,
     required ReminderNotificationScheduler scheduler,
+    ActiveReminderSubjectReader? activeSubjectUserId,
     DateTime Function()? now,
   }) {
     return ReminderScheduleService(
       scheduleItemsDao: LifestyleScheduleItemsDao(db),
       notificationsDao: NotificationsDao(db),
       scheduler: scheduler,
+      activeSubjectUserId: activeSubjectUserId,
       now: now,
     );
   }
 
   static Future<ReminderScheduleService> create({
     required ReminderNotificationScheduler scheduler,
+    ActiveReminderSubjectReader? activeSubjectUserId,
     DateTime Function()? now,
   }) async {
     final db = await DatabaseService.database;
     return ReminderScheduleService.fromDatabase(
       db: db,
       scheduler: scheduler,
+      activeSubjectUserId: activeSubjectUserId,
       now: now,
     );
   }
 
   Future<void> scheduleGeneratedReminders() async {
-    final items = await scheduleItemsDao.getAll();
+    final subjectUserId = _activeSubjectId(await activeSubjectUserId());
+    final items = subjectUserId == null
+        ? const <LifestyleScheduleItemModel>[]
+        : await scheduleItemsDao.getAllByUserId(subjectUserId);
 
-    await _deletePendingForSources(
-      sourceType: ReminderSourceTypes.lifestyleScheduleItem,
-      sourceIds: items.map((item) => item.id).toList(),
-      subjectUserIds: items.map((item) => item.userId).toSet(),
+    await _clearPendingForRefresh(
+      activeSubjectUserId: subjectUserId,
+      activeSourceIds: items.map((item) => item.id).toSet(),
     );
+
+    if (subjectUserId == null) {
+      AppLogger.info(
+        _tag,
+        'Skip reminder scheduling because no subject is active',
+      );
+      return;
+    }
 
     final candidates = items
         .where((item) => !item.isCompleted)
@@ -88,37 +107,70 @@ class ReminderScheduleService {
     }
   }
 
-  Future<void> _deletePendingForSources({
-    required String sourceType,
-    required List<String> sourceIds,
-    required Set<String?> subjectUserIds,
-  }) async {
-    if (sourceIds.isEmpty) return;
-
-    final pending = await notificationsDao.getPendingBySources(
-      sourceType: sourceType,
-      sourceIds: sourceIds,
+  Future<void> clearPendingReminders({String? subjectUserId}) async {
+    final activeSubject = _activeSubjectId(subjectUserId);
+    final pending = await notificationsDao.getPendingBySourceType(
+      ReminderSourceTypes.lifestyleScheduleItem,
     );
 
     for (final notification in pending) {
-      if (!_matchesAnySubject(notification.userId, subjectUserIds)) {
+      if (activeSubject != null &&
+          !_matchesSubject(notification.userId, activeSubject)) {
         continue;
       }
-      final notificationId = notification.notificationId;
-      if (notificationId != null) {
-        try {
-          await scheduler.cancel(notificationId);
-        } catch (error, stackTrace) {
-          AppLogger.error(
-            _tag,
-            'Failed to cancel notification $notificationId',
-            error,
-            stackTrace,
-          );
-        }
-      }
-      await notificationsDao.delete(notification.id);
+      await _cancelAndDelete(notification);
     }
+  }
+
+  Future<void> _clearPendingForRefresh({
+    required String? activeSubjectUserId,
+    required Set<String> activeSourceIds,
+  }) async {
+    final pending = await notificationsDao.getPendingBySourceType(
+      ReminderSourceTypes.lifestyleScheduleItem,
+    );
+
+    for (final notification in pending) {
+      final isActiveSubject =
+          activeSubjectUserId != null &&
+          _matchesSubject(notification.userId, activeSubjectUserId);
+      final sourceStillExists =
+          isActiveSubject &&
+          notification.sourceId != null &&
+          activeSourceIds.contains(notification.sourceId);
+
+      // Every pending row for the active subject is replaced by this refresh.
+      // Rows from another subject or a removed source must also be cancelled so
+      // an account switch or a deleted task cannot leave an OS reminder behind.
+      final cleanupReason = !isActiveSubject
+          ? 'other_subject'
+          : sourceStillExists
+          ? 'refresh'
+          : 'stale_source';
+      AppLogger.info(_tag, 'Clear pending reminder reason=$cleanupReason');
+      await _cancelAndDelete(notification);
+    }
+  }
+
+  Future<void> _cancelAndDelete(NotificationModel notification) async {
+    final notificationId = notification.notificationId;
+    if (notificationId != null) {
+      try {
+        await scheduler.cancel(notificationId);
+      } catch (error, stackTrace) {
+        AppLogger.error(
+          _tag,
+          'Failed to cancel a pending reminder',
+          error,
+          stackTrace,
+        );
+        // Keep the pending row so a later refresh can retry the OS cancel.
+        // Deleting it here would lose the durable cleanup signal while the
+        // stale notification may still be scheduled by the platform.
+        return;
+      }
+    }
+    await notificationsDao.delete(notification.id);
   }
 
   Future<bool> _requestPermission() async {
@@ -230,12 +282,18 @@ class ReminderScheduleService {
     );
   }
 
-  bool _matchesAnySubject(String? userId, Set<String?> subjectUserIds) {
-    final normalizedUserId = _normalizeSubject(userId);
-    return subjectUserIds.map(_normalizeSubject).contains(normalizedUserId);
+  static Future<String?> _noActiveSubject() async => null;
+
+  String? _activeSubjectId(String? userId) {
+    final text = userId?.trim();
+    return text == null || text.isEmpty ? null : text;
   }
 
-  String _normalizeSubject(String? userId) {
+  bool _matchesSubject(String? left, String right) {
+    return _subjectKey(left) == _subjectKey(right);
+  }
+
+  String _subjectKey(String? userId) {
     final text = userId?.trim();
     return text == null || text.isEmpty ? 'local_subject' : text;
   }

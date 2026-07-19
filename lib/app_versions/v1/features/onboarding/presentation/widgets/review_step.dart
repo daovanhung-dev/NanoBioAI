@@ -373,6 +373,20 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
     try {
       await controller.saveOnboarding();
 
+      final generationSource = ref
+          .read(onboardingProvider)
+          .initialPlanGenerationSource;
+      if (generationSource.isBasicSuggestion && context.mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Nabi đã tạo lịch gợi ý cơ bản đầu tiên. Khi AI sẵn sàng, bạn có thể tạo lại để nhận gợi ý cá nhân hơn nhé.',
+              ),
+            ),
+          );
+      }
       if (context.mounted) {
         V1AppNavigator.goMenu(context);
       }

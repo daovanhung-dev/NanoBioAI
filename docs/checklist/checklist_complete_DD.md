@@ -74,6 +74,14 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 
 ## Implementation Evidence Backlog
 
+### Cập nhật implementation evidence 2026-07-19 — Admin, AI và notification reliability
+
+- M05/M15: `AppSurface.automatic` đưa Admin-only và dual-role vào Admin ngay sau identity/access resolve; user surface chỉ là lựa chọn chủ động của dual-role. Auth stream nay phát `String?` từ session event, nên Settings bỏ card Guest ngay khi login. Regression Admin/Auth/Settings/router: 10 tests PASS; analyzer toàn dự án sạch.
+- M02/M06/M07: Chat giữ chuỗi quota check → Gemini hợp lệ → quota commit → accept assistant turn; không có local chat giả. Lịch mang `generation_source` qua SQLite v16; nếu bất kỳ chunk dùng catalog local thì hiển thị “lịch gợi ý cơ bản” và không commit quota member. AI/quota/migration bundle: 81 tests PASS.
+- M09: refresh chỉ dùng active subject, hủy OS notification và xóa pending rows của subject khác/source đã mất; nếu OS cancel lỗi thì giữ row để retry; tap notification cũ sau User A → User B fail-closed. Có iOS registrant/delegate, action “Mở nhiệm vụ + Để sau”, legacy `done` mở task và V3 route exact-item. Notification bundle: 44 tests PASS.
+- Gemini Android update 2026-07-19: debug BuildConfig fallback đảm bảo IDE/gutter không bỏ mất config; `flutter run` thuần boot `nativeBuildConfig`. Chat UI smoke đã qua quota allowed → Gemini valid response → quota commit. Tạo lịch UI smoke còn pending; không được giả AI hoạt động.
+- Supabase sandbox/RLS quota acceptance vẫn pending: workspace không có CLI, `supabase/config.toml` hay disposable project ref. Không sửa/deploy SQL production và không chạy `config.sql` ngoài sandbox disposable.
+
 ### Cap nhat implementation evidence 2026-07-15 — logbug 14-7-26
 
 - M01: thêm daily routine versioned `daily_routine_v1`, onboarding/legacy editor, stable survey answer và outbox hiện có.

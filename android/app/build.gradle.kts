@@ -1,8 +1,23 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+val localEnvironment = Properties().apply {
+    val envFile = rootProject.file("../.env")
+    if (envFile.isFile) {
+        envFile.inputStream().use(::load)
+    }
+}
+
+fun buildConfigString(value: String): String =
+    "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+
+val debugGeminiApiKey =
+    localEnvironment.getProperty("GEMINI_API_KEY")?.trim().orEmpty()
 
 android {
     namespace = "com.example.nano_app"
@@ -27,9 +42,25 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Production continues to receive this through --dart-define. The
+        // Android debug build gets a local-only fallback below so an IDE gutter
+        // run cannot silently omit Gemini configuration.
+        buildConfigField("String", "GEMINI_API_KEY", buildConfigString(""))
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
+        getByName("debug") {
+            buildConfigField(
+                "String",
+                "GEMINI_API_KEY",
+                buildConfigString(debugGeminiApiKey),
+            )
+        }
         release {
             signingConfig = signingConfigs.getByName("debug")
         }

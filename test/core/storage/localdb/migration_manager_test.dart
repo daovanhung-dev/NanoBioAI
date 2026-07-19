@@ -590,4 +590,42 @@ void main() {
     );
     expect(triggers, isEmpty);
   });
+
+  test(
+    'migration v16 retains generated-plan provenance with a safe legacy default',
+    () async {
+      await db.execute('''
+        CREATE TABLE personal_schedule_ai_requests (
+          request_id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          actor_mode TEXT NOT NULL,
+          status TEXT NOT NULL
+        )
+      ''');
+      await db.insert('personal_schedule_ai_requests', {
+        'request_id': 'legacy-request',
+        'user_id': 'u1',
+        'actor_mode': 'member_new',
+        'status': 'succeeded',
+      });
+
+      await MigrationManager.runMigrations(db, 15, 16);
+      await MigrationManager.runMigrations(db, 15, 16);
+
+      final columns = await db.rawQuery(
+        'PRAGMA table_info(personal_schedule_ai_requests)',
+      );
+      final sourceColumns = columns
+          .where((column) => column['name'] == 'generation_source')
+          .toList();
+      expect(sourceColumns, hasLength(1));
+
+      final rows = await db.query(
+        'personal_schedule_ai_requests',
+        where: 'request_id = ?',
+        whereArgs: ['legacy-request'],
+      );
+      expect(rows.single['generation_source'], 'unknown');
+    },
+  );
 }

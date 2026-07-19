@@ -59,7 +59,7 @@ class LocalReminderNotificationScheduler
           actions: [
             DarwinNotificationAction.plain(
               NotificationActionIds.openSchedule,
-              'Mở để chụp ảnh',
+              'Mở nhiệm vụ',
               options: {DarwinNotificationActionOption.foreground},
             ),
             DarwinNotificationAction.plain(
@@ -203,7 +203,7 @@ class LocalReminderNotificationScheduler
           actions: [
             AndroidNotificationAction(
               NotificationActionIds.openSchedule,
-              'Mở để chụp ảnh',
+              'Mở nhiệm vụ',
               showsUserInterface: true,
               cancelNotification: true,
             ),

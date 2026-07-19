@@ -517,16 +517,17 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - Các full-suite failures còn lại thuộc auth sync behavior, architecture boundary và medical scaffold contract; không sửa trong task rút gọn copy để tránh mở rộng phạm vi.
 - docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - Bằng chứng kiểm chứng: analyzer sạch, targeted tests pass, full suite current run phân loại rõ baseline failures.
 - docs/worklog/2026-07-18/001-worklog-short-ui-copy.md :: - Điểm tốn token/chưa tối ưu: full suite có baseline failures kéo dài thời gian; lần sau nên đọc baseline failure note trước khi rerun full.
-- docs/worklog/2026-07-19/001-worklog-full-project-real-device-p0.md :: - Thu cai APK debug co san tren dung thiet bi; Xiaomi huy lenh cai voi `INSTALL_FAILED_USER_RESTRICTED`.
-- docs/worklog/2026-07-19/001-worklog-full-project-real-device-p0.md :: - `tools/run_v2.ps1 -ValidateOnly`: BLOCKED - thieu `.env`.
-- docs/worklog/2026-07-19/001-worklog-full-project-real-device-p0.md :: - `flutter run -d 12b304f9 -t lib/main.dart`: BLOCKED - Gradle khong tim thay Java/JAVA_HOME.
-- docs/worklog/2026-07-19/001-worklog-full-project-real-device-p0.md :: - `flutter install --debug -d 12b304f9`: BLOCKED - `INSTALL_FAILED_USER_RESTRICTED`.
-- docs/worklog/2026-07-19/001-worklog-full-project-real-device-p0.md :: ## Loi/Rui ro
-- docs/worklog/2026-07-19/001-worklog-full-project-real-device-p0.md :: - Chua fix: khong co bug code da sua trong phien nay.
-- docs/worklog/2026-07-19/001-worklog-full-project-real-device-p0.md :: - Can kiem tra tiep: final sweep P1-P8 tren APK hash hien tai; can Android API 33+ va sandbox seed/persona.
-- docs/worklog/2026-07-19/002-worklog-full-project-real-device-baseline.md :: - Thu cai APK current tren Xiaomi; Android huy cai dat voi `INSTALL_FAILED_USER_RESTRICTED`.
-- docs/worklog/2026-07-19/002-worklog-full-project-real-device-baseline.md :: - `flutter install --debug -d 12b304f9`: BLOCKED - Android huy cai dat.
-- docs/worklog/2026-07-19/002-worklog-full-project-real-device-baseline.md :: ## Loi/Rui ro
-- docs/worklog/2026-07-19/002-worklog-full-project-real-device-baseline.md :: - Chua fix: thiet bi Xiaomi can mo khoa/xac nhan cai APK current; can Android API 33+ va Supabase sandbox seed/persona truoc P1-P7.
-- docs/worklog/2026-07-19/002-worklog-full-project-real-device-baseline.md :: - Can kiem tra tiep: sau khi blocker duoc mo khoa, chay lien tuc P0-P7 va xu ly moi FAIL theo BD/DD cua module anh huong.
-- docs/worklog/2026-07-19/002-worklog-full-project-real-device-baseline.md :: - Bang chung kiem chung: validation PASS, 688 Dart tests PASS, APK build PASS va Android install BLOCKED.
+- docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md :: - Notification chỉ schedule lịch của subject hoạt động; refresh hủy OS notification và xóa pending rows của subject cũ hoặc source đã mất. Nếu OS cancel lỗi, pending row được giữ để retry thay vì mất tín hiệu cleanup. Tap notification User A sau khi chuyển User B bị fail-closed.
+- docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md :: - `lib/app_versions/v1/services/ai/` - typed chat failure, acknowledge sau quota, provenance lịch và quota logging.
+- docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md :: - `powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -DeviceId 12b304f9`: PASS - build debug, cài và bootstrap trên Android thật; manual role/login/chat/permission cases chưa thể chạy.
+- docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md :: - `powershell -ExecutionPolicy Bypass -File tools/test_gemini_connection.ps1 -TimeoutSec 20`: BLOCKED - mọi model trả HTTP 401; không lộ key.
+- docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md :: - Kiểm tra Supabase tooling: BLOCKED - không có `supabase` CLI, `supabase/config.toml` hay project sandbox được chỉ định.
+- docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md :: - Chua fix tu code: credential trong `.env` bị Gemini endpoint từ chối HTTP 401. App đã hiển thị lỗi xác thực đúng; cần cấp key Gemini hợp lệ từ Google AI Studio, rebuild qua launcher rồi smoke lại.
+- docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md :: - Can kiem tra tiep: Supabase sandbox quota/RLS/idempotency, Android manual Admin/login/chat/schedule/permission/exact-alarm/reboot, và iOS foreground/background/terminated action trên thiết bị thật. Không triển khai hay chạy SQL production trong phiên này.
+- docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md :: - Dang do: acceptance phụ thuộc credential Gemini hợp lệ, sandbox chuyên dụng và thiết bị/account thực để chạy manual smoke.
+- docs/worklog/2026-07-19/002-worklog-gemini-android-runtime-and-chat-fallback.md :: - `tools/test_gemini_connection.ps1 -TimeoutSec 20`: PASS voi model kha dung.
+- docs/worklog/2026-07-19/002-worklog-gemini-android-runtime-and-chat-fallback.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-19/002-worklog-gemini-android-runtime-and-chat-fallback.md :: - Can kiem tra tiep: smoke UI Chat va tao lich tren account con quota; Supabase
+- docs/worklog/2026-07-19/003-worklog-chat-ai-native-debug-runtime.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-19/003-worklog-chat-ai-native-debug-runtime.md :: - Can kiem tra tiep: tao lich UI smoke theo account/quota; Supabase sandbox quota

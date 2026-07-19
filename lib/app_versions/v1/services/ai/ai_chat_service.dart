@@ -15,16 +15,33 @@ typedef AIChatTextGenerator =
       required String message,
     });
 
+/// A validated model response that is not yet part of the chat context.
+///
+/// The repository acknowledges it only after the trusted quota commit
+/// succeeds. This keeps a failed request out of the next Gemini prompt.
+class AIChatPreparedResponse {
+  final String text;
+  final void Function() _onAccepted;
+  bool _accepted = false;
+
+  AIChatPreparedResponse({required this.text, void Function()? onAccepted})
+    : _onAccepted = onAccepted ?? _noOp;
+
+  void accept() {
+    if (_accepted) return;
+    _accepted = true;
+    _onAccepted();
+  }
+
+  static void _noOp() {}
+}
+
 final aiChatServiceProvider = Provider<AIChatService>((ref) {
   return AIChatService();
 });
 
 class AIChatService {
   static const _tag = 'AI_CHAT';
-  static const _emptyFallback =
-      'Mình chưa hiểu rõ ý bạn. Bạn có thể diễn đạt lại ngắn hơn một chút được không?';
-  static const _invalidVietnameseFallback =
-      'Mình chưa tạo được câu trả lời thật rõ ràng lúc này. Bạn thử hỏi lại theo cách khác nhé.';
 
   late final List<_AIChatModelEntry> _models;
   late final Future<void> Function(Duration) _delay;
@@ -91,8 +108,8 @@ class AIChatService {
         AITraceLogger.nextTraceId('ai-chat-init'),
         'AIChatService.constructor',
         'MISSING_API_KEY',
-        'Chat AI will use local fallback because GEMINI_API_KEY is missing.',
-        data: {'source': AITraceLogger.localGen},
+        'Chat AI is unavailable because GEMINI_API_KEY is missing.',
+        data: {'reason': 'missing_api_key'},
         location: StackTrace.current,
       );
     }
@@ -104,8 +121,14 @@ class AIChatService {
   }
 
   Future<String> sendMessage(String message) async {
+    final preparedResponse = await prepareMessage(message);
+    preparedResponse.accept();
+    return preparedResponse.text;
+  }
+
+  Future<AIChatPreparedResponse> prepareMessage(String message) async {
     final traceId = AITraceLogger.nextTraceId('ai-chat-message');
-    const method = 'sendMessage';
+    const method = 'prepareMessage';
     AITraceLogger.start(
       _tag,
       traceId,
@@ -126,17 +149,25 @@ class AIChatService {
         operation: (entry) => _sendText(entry, message),
       );
       _logValidation(traceId, method, validation);
-      return validation.text;
+      return AIChatPreparedResponse(
+        text: validation.text,
+        onAccepted: () {
+          validation.entry.rememberTurn(
+            userMessage: message,
+            modelMessage: validation.text,
+          );
+        },
+      );
     } catch (error, stackTrace) {
       AITraceLogger.error(
         _tag,
         traceId,
         method,
-        'ERROR_LOCAL_FALLBACK',
-        'AI chat failed and used local fallback.',
+        'ERROR_TYPED_FAILURE',
+        'AI chat failed without creating a fallback response.',
         error,
         stackTrace,
-        data: {'source': AITraceLogger.localGen, 'reason': 'retry_exhausted'},
+        data: {'reason': 'retry_exhausted'},
         location: StackTrace.current,
       );
       _throwTypedFailure(error, stackTrace);
@@ -161,43 +192,9 @@ class AIChatService {
   }
 
   Future<Stream<String>> sendMessageStream(String message) async {
-    final traceId = AITraceLogger.nextTraceId('ai-chat-stream');
-    const method = 'sendMessageStream';
-    AITraceLogger.start(
-      _tag,
-      traceId,
-      method,
-      data: {'models': _modelNames(), 'messageLength': message.length},
-      location: StackTrace.current,
-    );
-
-    if (!_hasRuntimeTextSource) {
-      _throwMissingConfiguration(traceId: traceId, method: method);
-    }
-
-    try {
-      final validation = await _runWithRetry(
-        traceId: traceId,
-        method: method,
-        label: 'AI_CHAT_STREAM',
-        operation: (entry) => _sendTextStream(entry, message),
-      );
-      _logValidation(traceId, method, validation);
-      return Stream.value(validation.text);
-    } catch (error, stackTrace) {
-      AITraceLogger.error(
-        _tag,
-        traceId,
-        method,
-        'ERROR_LOCAL_FALLBACK',
-        'AI chat stream failed and used local fallback.',
-        error,
-        stackTrace,
-        data: {'source': AITraceLogger.localGen, 'reason': 'retry_exhausted'},
-        location: StackTrace.current,
-      );
-      _throwTypedFailure(error, stackTrace);
-    }
+    final preparedResponse = await prepareMessage(message);
+    preparedResponse.accept();
+    return Stream.value(preparedResponse.text);
   }
 
   Future<_AIChatValidationResult> _runWithRetry({
@@ -255,7 +252,12 @@ class AIChatService {
           final text = await operation(
             entry,
           ).timeout(AIChatRetryPolicy.perAttemptTimeout);
-          final validation = _validatedResponse(text);
+          final responseText = _validatedResponse(text);
+          final validation = _AIChatValidationResult(
+            text: responseText,
+            reason: 'valid_ai_response',
+            entry: entry,
+          );
           AITraceLogger.info(
             _tag,
             traceId,
@@ -265,39 +267,37 @@ class AIChatService {
             data: {'model': entry.name, ...validation.toMap()},
             location: StackTrace.current,
           );
-          if (validation.source == AITraceLogger.aiGen) {
-            AITraceLogger.success(
-              _tag,
-              traceId,
-              method,
-              'RETRY_ATTEMPT_SUCCESS',
-              label,
-              data: {
-                'model': entry.name,
-                'modelAttempt': modelAttempt,
-                'totalAttempt': totalAttempts,
-              },
-              location: StackTrace.current,
-            );
-            return validation;
-          }
-
-          lastError = FormatException(validation.reason);
-          lastStackTrace = StackTrace.current;
+          AITraceLogger.success(
+            _tag,
+            traceId,
+            method,
+            'RETRY_ATTEMPT_SUCCESS',
+            label,
+            data: {
+              'model': entry.name,
+              'modelAttempt': modelAttempt,
+              'totalAttempt': totalAttempts,
+            },
+            location: StackTrace.current,
+          );
+          return validation;
+        } on AIResponseInvalidException catch (error, stackTrace) {
+          lastError = error;
+          lastStackTrace = stackTrace;
           AITraceLogger.warning(
             _tag,
             traceId,
             method,
             'RETRY_ATTEMPT_INVALID_RESPONSE',
-            'Chat model returned invalid display text.',
+            'Chat model returned an invalid display response.',
             data: {
               'model': entry.name,
               'modelAttempt': modelAttempt,
               'totalAttempt': totalAttempts,
-              'reason': validation.reason,
             },
             location: StackTrace.current,
           );
+          break;
         } catch (error, stackTrace) {
           lastError = error;
           lastStackTrace = stackTrace;
@@ -395,20 +395,7 @@ class AIChatService {
       ),
       systemInstruction: _systemInstruction,
     );
-    entry.rememberTurn(userMessage: message, modelMessage: response);
     return response;
-  }
-
-  Future<String> _sendTextStream(
-    _AIChatModelEntry entry,
-    String message,
-  ) async {
-    final textGenerator = _textGenerator;
-    if (textGenerator != null) {
-      return textGenerator(modelName: entry.name, message: message);
-    }
-
-    return _sendText(entry, message);
   }
 
   void _logValidation(
@@ -416,25 +403,12 @@ class AIChatService {
     String method,
     _AIChatValidationResult validation,
   ) {
-    if (validation.source == AITraceLogger.aiGen) {
-      AITraceLogger.success(
-        _tag,
-        traceId,
-        method,
-        'SUCCESS',
-        'AI chat returned a valid response.',
-        data: {'source': validation.source, 'reason': validation.reason},
-        location: StackTrace.current,
-      );
-      return;
-    }
-
-    AITraceLogger.warning(
+    AITraceLogger.success(
       _tag,
       traceId,
       method,
-      'LOCAL_FALLBACK',
-      'AI chat used local fallback.',
+      'SUCCESS',
+      'AI chat returned a valid response.',
       data: validation.toMap(),
       location: StackTrace.current,
     );
@@ -523,29 +497,17 @@ class AIChatService {
     return cleaned;
   }
 
-  static _AIChatValidationResult _validatedResponse(String? rawText) {
+  static String _validatedResponse(String? rawText) {
     final text = rawText?.trim() ?? '';
     if (text.isEmpty) {
-      return const _AIChatValidationResult(
-        text: _emptyFallback,
-        source: AITraceLogger.localGen,
-        reason: 'empty_response',
-      );
+      throw const AIResponseInvalidException();
     }
 
     if (!AIVietnameseTextValidator.isValidDisplayText(text)) {
-      return const _AIChatValidationResult(
-        text: _invalidVietnameseFallback,
-        source: AITraceLogger.localGen,
-        reason: 'invalid_vietnamese_response',
-      );
+      throw const AIResponseInvalidException();
     }
 
-    return _AIChatValidationResult(
-      text: text,
-      source: AITraceLogger.aiGen,
-      reason: 'valid_ai_response',
-    );
+    return text;
   }
 
   static const String _systemInstruction = '''
@@ -577,7 +539,14 @@ Ví dụ phong cách:
 
 class AIChatModelCandidates {
   static const defaultPrimaryModel = 'gemini-3.1-flash-lite';
-  static const defaultFallbackModels = ['gemini-2.5-flash-lite'];
+  // Keep chat aligned with the verified plan fallback set. Some Gemini
+  // projects do not have access to the lite preview models, while 3.5 Flash
+  // remains available. A non-transient model error still advances to the next
+  // candidate, so chat can recover without pretending a local reply is AI.
+  static const defaultFallbackModels = [
+    'gemini-3.5-flash',
+    'gemini-2.5-flash-lite',
+  ];
 
   const AIChatModelCandidates._();
 
@@ -686,16 +655,20 @@ class _AIChatModelEntry {
 
 class _AIChatValidationResult {
   final String text;
-  final String source;
   final String reason;
+  final _AIChatModelEntry entry;
 
   const _AIChatValidationResult({
     required this.text,
-    required this.source,
     required this.reason,
+    required this.entry,
   });
 
   Map<String, Object?> toMap() {
-    return {'source': source, 'reason': reason, 'textLength': text.length};
+    return {
+      'source': AITraceLogger.aiGen,
+      'reason': reason,
+      'textLength': text.length,
+    };
   }
 }

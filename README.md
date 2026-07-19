@@ -240,7 +240,7 @@ GEMINI_PLAN_OVERFLOW_MODELS=
 Cấu hình đăng nhập công khai nằm tại `assets/config/auth.env`, còn khóa Gemini
 không được đóng gói thành asset. Vì vậy mọi phiên chạy cần dùng AI phải truyền
 `.env` sẽ được launcher parse và chuyển thành các `--dart-define` an toàn. Cấu hình VS Code
-`NanoBio - App (Auth + AI)` dùng cùng nguyên tắc.
+`NanoBio - Unified App (User + Admin)` dùng cùng nguyên tắc.
 
 Trên Windows, launcher dưới đây kiểm tra cả Auth và `GEMINI_API_KEY` trước khi
 khởi động (device mặc định: `12b304f9`):
@@ -257,6 +257,22 @@ powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1
 
 # Chạy trên thiết bị khác
 powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -DeviceId <device-id>
+```
+
+#### Android Studio
+
+Profile chia sẻ `NanoBio - Authenticated App` chuyển
+`--dart-define-from-file=.dart_tool/nanobio_defines.json` cho Flutter. Với Android
+debug, cả lệnh `flutter run` trực tiếp và nút Run theo entrypoint cũng có fallback
+native đọc `GEMINI_API_KEY` từ `.env` **chỉ khi build local**. Vì vậy APK debug không
+còn âm thầm mất cấu hình AI khi IDE bỏ qua profile; production vẫn dùng launcher và
+Dart define, không đóng gói `.env` thành asset.
+
+Trước lần chạy Android Studio đầu tiên (và sau khi thay `.env`), tạo lại file defines
+mà không in secret nếu dùng profile chia sẻ:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/prepare_dart_defines.ps1
 ```
 
 Có thể chạy trực tiếp trên macOS/Linux hoặc terminal khác bằng các define tương ứng

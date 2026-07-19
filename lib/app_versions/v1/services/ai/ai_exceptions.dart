@@ -3,17 +3,23 @@ import 'dart:async';
 import 'gemini_rest_client.dart';
 
 class AIConfigurationUnavailableException implements Exception {
+  static const userMessage =
+      'Nabi chưa sẵn sàng trò chuyện AI lúc này. Bạn thử lại sau một chút nhé.';
+
   const AIConfigurationUnavailableException();
 
   @override
-  String toString() => 'AI runtime configuration is unavailable.';
+  String toString() => userMessage;
 }
 
 class AIResponseInvalidException implements Exception {
+  static const userMessage =
+      'Nabi chưa nhận được câu trả lời phù hợp lúc này. Bạn thử lại sau một chút nhé.';
+
   const AIResponseInvalidException();
 
   @override
-  String toString() => 'AI response is unavailable or invalid.';
+  String toString() => userMessage;
 }
 
 class AIAuthenticationException implements Exception {

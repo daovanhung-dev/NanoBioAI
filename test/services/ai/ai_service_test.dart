@@ -11,6 +11,7 @@ import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/e
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_chat_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_json_parser.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_json_prompt_builder.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
@@ -511,6 +512,32 @@ void main() {
       },
     );
 
+    test(
+      'throws a typed invalid response instead of a local chat reply',
+      () async {
+        final service = AIChatService(
+          modelNames: const ['empty-model', 'invalid-model'],
+          textGenerator: ({required modelName, required message}) async {
+            return modelName == 'empty-model'
+                ? ''
+                : 'This response is not valid Vietnamese.';
+          },
+        );
+
+        final logs = await _captureDebugPrint(() async {
+          await expectLater(
+            service.sendMessage('Tôi cần hỗ trợ'),
+            throwsA(isA<AIResponseInvalidException>()),
+          );
+        });
+
+        final joined = logs.join('\n');
+        expect(joined, contains('RETRY_ATTEMPT_INVALID_RESPONSE'));
+        expect(joined, contains('ERROR_TYPED_FAILURE'));
+        expect(joined, isNot(contains('LOCAL_FALLBACK')));
+      },
+    );
+
     test('missing API key throws without retrying models', () async {
       final logs = await _captureDebugPrint(() async {
         final service = AIChatService(
@@ -688,13 +715,15 @@ void main() {
         },
       );
 
-      final meals = await service.generateMealPlan(
+      final result = await service.generateMealPlanWithSource(
         healthData: const _FakeHealthData(),
         userId: 'u1',
         startDate: DateTime(2026, 6, 18),
         days: 8,
       );
+      final meals = result.value;
 
+      expect(result.source, PlanGenerationSource.localFallback);
       expect(meals, hasLength(40));
       expect(
         meals.where((meal) => meal.planDate == '2026-06-25'),
@@ -950,6 +979,28 @@ void main() {
           'gemini-2.5-flash-lite',
           'gemini-2.5-flash',
         ],
+      );
+    });
+  });
+
+  group('AIChatModelCandidates', () {
+    test('includes the verified Flash fallback when chat env is absent', () {
+      expect(
+        AIChatModelCandidates.resolve(
+          primaryModel: null,
+          fallbackModelsCsv: null,
+        ),
+        ['gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-2.5-flash-lite'],
+      );
+    });
+
+    test('uses an explicit chat fallback list without adding defaults', () {
+      expect(
+        AIChatModelCandidates.resolve(
+          primaryModel: 'chat-primary',
+          fallbackModelsCsv: 'chat-secondary, chat-primary',
+        ),
+        ['chat-primary', 'chat-secondary'],
       );
     });
   });

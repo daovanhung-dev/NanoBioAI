@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:nano_app/core/utils/logger/app_logger.dart';
+
 class UsageQuotaFeatureKey {
   static const aiChatMessage = 'ai_chat_message';
   static const personalScheduleGeneration = 'personal_schedule_generation';
@@ -180,6 +182,9 @@ abstract class UsageQuotaGateway {
 
 class TrustedBackendUsageQuotaGateway implements UsageQuotaGateway {
   static const resetTimezone = 'Asia/Ho_Chi_Minh';
+  static const _tag = 'USAGE_QUOTA';
+  static const _checkRpc = 'check_usage_quota';
+  static const _commitRpc = 'commit_usage_quota';
 
   final UsageQuotaRpcClient rpcClient;
   final DateTime Function() now;
@@ -224,8 +229,9 @@ class TrustedBackendUsageQuotaGateway implements UsageQuotaGateway {
     required DateTime at,
   }) async {
     try {
+      _logRpc(rpcName: _checkRpc, stage: 'REQUEST', status: 'started');
       final response = await rpcClient.rpc(
-        'check_usage_quota',
+        _checkRpc,
         params: _params(
           userId: userId,
           featureKey: featureKey,
@@ -234,11 +240,27 @@ class TrustedBackendUsageQuotaGateway implements UsageQuotaGateway {
         ),
       );
       final decision = UsageQuotaDecision.fromRpcResponse(response);
-      if (!decision.allowed) throw UsageQuotaExceededException(decision);
+      if (!decision.allowed) {
+        _logRpc(rpcName: _checkRpc, stage: 'RESPONSE', status: 'denied');
+        throw UsageQuotaExceededException(decision);
+      }
+      _logRpc(rpcName: _checkRpc, stage: 'RESPONSE', status: 'allowed');
       return decision;
-    } on UsageQuotaException {
+    } on UsageQuotaException catch (error) {
+      _logRpc(
+        rpcName: _checkRpc,
+        stage: 'FAILURE',
+        status: 'typed_error',
+        error: error,
+      );
       rethrow;
-    } catch (_) {
+    } catch (error) {
+      _logRpc(
+        rpcName: _checkRpc,
+        stage: 'FAILURE',
+        status: 'unavailable',
+        error: error,
+      );
       throw const UsageQuotaUnavailableException();
     }
   }
@@ -250,8 +272,9 @@ class TrustedBackendUsageQuotaGateway implements UsageQuotaGateway {
     required DateTime at,
   }) async {
     try {
+      _logRpc(rpcName: _commitRpc, stage: 'REQUEST', status: 'started');
       final response = await rpcClient.rpc(
-        'commit_usage_quota',
+        _commitRpc,
         params: _params(
           userId: userId,
           featureKey: featureKey,
@@ -260,12 +283,38 @@ class TrustedBackendUsageQuotaGateway implements UsageQuotaGateway {
         ),
       );
       final decision = UsageQuotaDecision.fromRpcResponse(response);
-      if (!decision.allowed) throw UsageQuotaExceededException(decision);
-    } on UsageQuotaException {
+      if (!decision.allowed) {
+        _logRpc(rpcName: _commitRpc, stage: 'RESPONSE', status: 'denied');
+        throw UsageQuotaExceededException(decision);
+      }
+      _logRpc(rpcName: _commitRpc, stage: 'RESPONSE', status: 'committed');
+    } on UsageQuotaException catch (error) {
+      _logRpc(
+        rpcName: _commitRpc,
+        stage: 'FAILURE',
+        status: 'typed_error',
+        error: error,
+      );
       rethrow;
-    } catch (_) {
+    } catch (error) {
+      _logRpc(
+        rpcName: _commitRpc,
+        stage: 'FAILURE',
+        status: 'unavailable',
+        error: error,
+      );
       throw const UsageQuotaUnavailableException();
     }
+  }
+
+  void _logRpc({
+    required String rpcName,
+    required String stage,
+    required String status,
+    Object? error,
+  }) {
+    final errorType = error == null ? '' : ' errorType=${error.runtimeType}';
+    AppLogger.info(_tag, 'rpc=$rpcName stage=$stage status=$status$errorType');
   }
 
   Map<String, Object?> _params({

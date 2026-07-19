@@ -1,5 +1,6 @@
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
 import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
@@ -30,6 +31,7 @@ class PersonalScheduleAiRequestRecord {
   final int mealCount;
   final int exerciseCount;
   final int scheduleItemCount;
+  final PlanGenerationSource generationSource;
   final String? errorCode;
 
   const PersonalScheduleAiRequestRecord({
@@ -42,6 +44,7 @@ class PersonalScheduleAiRequestRecord {
     required this.mealCount,
     required this.exerciseCount,
     required this.scheduleItemCount,
+    this.generationSource = PlanGenerationSource.unknown,
     this.errorCode,
   });
 
@@ -56,6 +59,9 @@ class PersonalScheduleAiRequestRecord {
       mealCount: _readInt(map['meal_count']),
       exerciseCount: _readInt(map['exercise_count']),
       scheduleItemCount: _readInt(map['schedule_item_count']),
+      generationSource: PlanGenerationSource.fromStorage(
+        map['generation_source'],
+      ),
       errorCode: map['error_code']?.toString(),
     );
   }
@@ -102,6 +108,7 @@ abstract class PersonalScheduleAiRequestStore {
     required int days,
     required List<MealPlanModel> meals,
     required List<LifestyleScheduleItemModel> schedule,
+    required PlanGenerationSource generationSource,
     required bool replaceExistingRange,
     required bool markGuestInitialPlanUsed,
   });
@@ -204,6 +211,7 @@ class LocalPersonalScheduleAiRequestStore
     required int days,
     required List<MealPlanModel> meals,
     required List<LifestyleScheduleItemModel> schedule,
+    required PlanGenerationSource generationSource,
     required bool replaceExistingRange,
     required bool markGuestInitialPlanUsed,
   }) async {
@@ -253,6 +261,7 @@ class LocalPersonalScheduleAiRequestStore
             .where((item) => item.sourceType == 'exercise_task')
             .length,
         scheduleItemCount: schedule.length,
+        generationSource: generationSource,
         completedAt: _now().toIso8601String(),
       );
 
@@ -282,6 +291,7 @@ class LocalPersonalScheduleAiRequestStore
     int mealCount = 0,
     int exerciseCount = 0,
     int scheduleItemCount = 0,
+    PlanGenerationSource generationSource = PlanGenerationSource.unknown,
     String? errorCode,
     String? completedAt,
   }) async {
@@ -298,6 +308,7 @@ class LocalPersonalScheduleAiRequestStore
         'meal_count': mealCount,
         'exercise_count': exerciseCount,
         'schedule_item_count': scheduleItemCount,
+        'generation_source': generationSource.storageValue,
         'error_code': errorCode,
         'created_at': now,
         'updated_at': now,

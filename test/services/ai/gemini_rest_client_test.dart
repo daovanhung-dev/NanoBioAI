@@ -5,57 +5,60 @@ import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
 
 void main() {
   group('GeminiRestClient', () {
-    test('accepts authorization keys and sends x-goog-api-key header', () async {
-      const authorizationKey = 'AQ.test-authorization-key';
-      String? capturedUrl;
-      Map<String, String>? capturedHeaders;
-      Map<String, Object?>? capturedBody;
+    test(
+      'accepts authorization keys and sends x-goog-api-key header',
+      () async {
+        const authorizationKey = 'AQ.test-authorization-key';
+        String? capturedUrl;
+        Map<String, String>? capturedHeaders;
+        Map<String, Object?>? capturedBody;
 
-      final client = GeminiRestClient(
-        apiKey: authorizationKey,
-        baseUrl: 'https://example.test/v1beta/',
-        post: ({required url, required headers, required body}) async {
-          capturedUrl = url;
-          capturedHeaders = headers;
-          capturedBody = body;
-          return const GeminiHttpResponse(
-            statusCode: 200,
-            data: {
-              'candidates': [
-                {
-                  'content': {
-                    'parts': [
-                      {'text': 'Xin chào từ Gemini.'},
-                    ],
+        final client = GeminiRestClient(
+          apiKey: authorizationKey,
+          baseUrl: 'https://example.test/v1beta/',
+          post: ({required url, required headers, required body}) async {
+            capturedUrl = url;
+            capturedHeaders = headers;
+            capturedBody = body;
+            return const GeminiHttpResponse(
+              statusCode: 200,
+              data: {
+                'candidates': [
+                  {
+                    'content': {
+                      'parts': [
+                        {'text': 'Xin chào từ Gemini.'},
+                      ],
+                    },
                   },
-                },
-              ],
-            },
-          );
-        },
-      );
+                ],
+              },
+            );
+          },
+        );
 
-      final result = await client.generateText(
-        model: 'models/gemini-3.5-flash',
-        contents: const [GeminiContent.user('Xin chào')],
-        systemInstruction: 'Luôn trả lời bằng tiếng Việt.',
-        generationConfig: const GeminiGenerationConfig(
-          maxOutputTokens: 128,
-          temperature: 0.2,
-          topP: 0.8,
-        ),
-      );
+        final result = await client.generateText(
+          model: 'models/gemini-3.5-flash',
+          contents: const [GeminiContent.user('Xin chào')],
+          systemInstruction: 'Luôn trả lời bằng tiếng Việt.',
+          generationConfig: const GeminiGenerationConfig(
+            maxOutputTokens: 128,
+            temperature: 0.2,
+            topP: 0.8,
+          ),
+        );
 
-      expect(result, 'Xin chào từ Gemini.');
-      expect(
-        capturedUrl,
-        'https://example.test/v1beta/models/gemini-3.5-flash:generateContent',
-      );
-      expect(capturedHeaders?['x-goog-api-key'], authorizationKey);
-      expect(capturedHeaders?['Content-Type'], 'application/json');
-      expect(capturedBody?['systemInstruction'], isNotNull);
-      expect(capturedBody?['contents'], isA<List>());
-    });
+        expect(result, 'Xin chào từ Gemini.');
+        expect(
+          capturedUrl,
+          'https://example.test/v1beta/models/gemini-3.5-flash:generateContent',
+        );
+        expect(capturedHeaders?['x-goog-api-key'], authorizationKey);
+        expect(capturedHeaders?['Content-Type'], 'application/json');
+        expect(capturedBody?['systemInstruction'], isNotNull);
+        expect(capturedBody?['contents'], isA<List>());
+      },
+    );
 
     test('joins text parts from a successful response', () async {
       final client = GeminiRestClient(
@@ -208,6 +211,55 @@ void main() {
         expect((secondContents.first as Map)['role'], 'user');
         expect((secondContents[1] as Map)['role'], 'model');
         expect((secondContents.last as Map)['role'], 'user');
+      },
+    );
+
+    test(
+      'prepared chat response enters history only after acknowledgement',
+      () async {
+        final requestBodies = <Map<String, Object?>>[];
+        final client = GeminiRestClient(
+          apiKey: 'AQ.fake-key',
+          post: ({required url, required headers, required body}) async {
+            requestBodies.add(body);
+            return const GeminiHttpResponse(
+              statusCode: 200,
+              data: {
+                'candidates': [
+                  {
+                    'content': {
+                      'parts': [
+                        {'text': 'Mình đang ở đây để hỗ trợ bạn nhé.'},
+                      ],
+                    },
+                  },
+                ],
+              },
+            );
+          },
+        );
+        final service = AIChatService(
+          modelNames: const ['gemini-test'],
+          geminiClient: client,
+          delay: (_) async {},
+        );
+
+        final first = await service.prepareMessage('Tin nhắn đầu tiên');
+        await service.prepareMessage('Tin nhắn chưa được chấp nhận');
+
+        final beforeAcknowledgement = requestBodies.last['contents'] as List;
+        expect(beforeAcknowledgement, hasLength(1));
+
+        first
+          ..accept()
+          ..accept();
+        await service.prepareMessage('Tin nhắn sau khi chấp nhận');
+
+        final afterAcknowledgement = requestBodies.last['contents'] as List;
+        expect(afterAcknowledgement, hasLength(3));
+        expect((afterAcknowledgement[0] as Map)['role'], 'user');
+        expect((afterAcknowledgement[1] as Map)['role'], 'model');
+        expect((afterAcknowledgement[2] as Map)['role'], 'user');
       },
     );
   });

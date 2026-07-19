@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
+
 class OnboardingInitialPlanException implements Exception {
   static const userMessage =
       'NaBi đã lưu hồ sơ, nhưng chưa thể tạo lịch cá nhân đầu tiên lúc này. Bạn thử lại sau một chút nhé.';
@@ -14,11 +16,16 @@ class OnboardingInitialPlanException implements Exception {
 
 class OnboardingCompletionResult {
   final bool generatedInitialPlan;
+  final PlanGenerationSource generationSource;
 
-  const OnboardingCompletionResult._({required this.generatedInitialPlan});
+  const OnboardingCompletionResult._({
+    required this.generatedInitialPlan,
+    this.generationSource = PlanGenerationSource.unknown,
+  });
 
-  const OnboardingCompletionResult.generatedInitialPlan()
-    : this._(generatedInitialPlan: true);
+  const OnboardingCompletionResult.generatedInitialPlan({
+    PlanGenerationSource generationSource = PlanGenerationSource.unknown,
+  }) : this._(generatedInitialPlan: true, generationSource: generationSource);
 
   const OnboardingCompletionResult.skipped()
     : this._(generatedInitialPlan: false);

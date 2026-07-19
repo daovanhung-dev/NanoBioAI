@@ -22,8 +22,10 @@ class SupabaseAuthRemoteDatasource {
            _env('AUTH_DELETE_ACCOUNT_FUNCTION') ??
            'delete-account';
 
-  Stream<void> watchAuthChanges() {
-    return client.auth.onAuthStateChange.map<void>((_) {});
+  Stream<String?> watchAuthChanges() {
+    return client.auth.onAuthStateChange.map(
+      (authState) => authState.session?.user.id,
+    );
   }
 
   AuthSessionSnapshot? currentSessionSnapshot() {

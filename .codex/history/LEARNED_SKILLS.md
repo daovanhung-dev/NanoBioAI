@@ -7,7 +7,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - coding - Coding: 24 worklog(s)
 - docs-context - Context and docs update: 21 worklog(s)
 - bugfix - Direct bugfix: 19 worklog(s)
-- supabase-schema - Supabase schema and RLS: 8 worklog(s)
+- supabase-schema - Supabase schema and RLS: 9 worklog(s)
 - test - Test and verification: 5 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - fix-issues - Fix documented issue: 2 worklog(s)
@@ -19,16 +19,16 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 - unknown: 10
 - M05 AI / runtime configuration / onboarding: 2
-- docs/issues, docs/todo: 2
-- authentication: 2
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
-- docs/DD M01-M19: 2
 - M05 AI / AI Chat / runtime configuration: 2
+- docs/issues, docs/todo: 2
+- docs/DD M01-M19: 2
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
+- authentication: 2
 - .codex: 2
+- docs/prompts/bootstrap-ai-context.md: 1
 - M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M11 FAMILYPLUS, M12 REFERRAL_DIRECT, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
 - M01 ONBOARDING_PROFILE, M03 DASHBOARD_SCHEDULE, M04 BASIC_HEALTH_CALC, M08 HEALTH_SCORE_HABITS, M13 PAYMENT_MEMBERSHIP, M14 SALE_POINTS, M15 ADMIN_DASHBOARD: 1
 - v1 lifestyle schedule, dashboard, localdb, cloud sync, Supabase docs: 1
-- v2 authentication: 1
 
 ## Reusable Project Skills
 

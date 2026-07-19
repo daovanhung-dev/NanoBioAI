@@ -1,6 +1,15 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+/// Safe origin information for diagnostics. Never use this to expose values.
+enum AppEnvValueSource {
+  dartDefine,
+  dotEnv,
+  nativeBuildConfig,
+  bundledPublicConfig,
+  missing,
+}
+
 class AppEnv {
   AppEnv._();
 
@@ -11,8 +20,13 @@ class AppEnv {
     'AUTH_EMAIL_REDIRECT_URL',
     'AUTH_CONFIRM_EMAIL_REQUIRED',
   };
+  static const Set<String> _nativePrivateKeys = {'GEMINI_API_KEY'};
+  static const MethodChannel _nativeRuntimeConfigChannel = MethodChannel(
+    'com.example.nano_app/runtime_config',
+  );
 
   static Map<String, String> _bundledAuthValues = const {};
+  static Map<String, String> _nativeRuntimeValues = const {};
 
   static Future<void> loadOptionalDotEnv({
     String fileName = '.env',
@@ -25,6 +39,7 @@ class AppEnv {
       // it through --dart-define-from-file or provide a legacy dotenv asset.
     }
 
+    await _loadNativeRuntimeConfig();
     await _loadBundledPublicAuthConfig(bundledAuthFileName);
   }
 
@@ -38,9 +53,29 @@ class AppEnv {
   }
 
   static String? maybeString(String key) {
-    return _clean(_fromDartDefine(key)) ??
-        _clean(_fromDotEnv(key)) ??
-        _clean(_bundledAuthValues[key]);
+    return switch (valueSource(key)) {
+      AppEnvValueSource.dartDefine => _clean(_fromDartDefine(key)),
+      AppEnvValueSource.dotEnv => _clean(_fromDotEnv(key)),
+      AppEnvValueSource.nativeBuildConfig => _clean(_nativeRuntimeValues[key]),
+      AppEnvValueSource.bundledPublicConfig => _clean(_bundledAuthValues[key]),
+      AppEnvValueSource.missing => null,
+    };
+  }
+
+  /// Returns only where a value was resolved from; the value itself is never
+  /// included so this can be logged safely during app bootstrap.
+  static AppEnvValueSource valueSource(String key) {
+    if (_clean(_fromDartDefine(key)) != null) {
+      return AppEnvValueSource.dartDefine;
+    }
+    if (_clean(_fromDotEnv(key)) != null) return AppEnvValueSource.dotEnv;
+    if (_clean(_nativeRuntimeValues[key]) != null) {
+      return AppEnvValueSource.nativeBuildConfig;
+    }
+    if (_clean(_bundledAuthValues[key]) != null) {
+      return AppEnvValueSource.bundledPublicConfig;
+    }
+    return AppEnvValueSource.missing;
   }
 
   static String? maybeStringWithLegacy(String key, String legacyKey) {
@@ -67,6 +102,35 @@ class AppEnv {
 
   static void clearBundledAuthConfigForTesting() {
     _bundledAuthValues = const {};
+  }
+
+  static void clearNativeRuntimeConfigForTesting() {
+    _nativeRuntimeValues = const {};
+  }
+
+  static Future<void> _loadNativeRuntimeConfig() async {
+    try {
+      final raw = await _nativeRuntimeConfigChannel.invokeMethod<Object?>(
+        'getPrivateRuntimeConfig',
+      );
+      if (raw is! Map) {
+        _nativeRuntimeValues = const {};
+        return;
+      }
+
+      final values = <String, String>{};
+      for (final entry in raw.entries) {
+        final key = entry.key.toString();
+        if (!_nativePrivateKeys.contains(key)) continue;
+
+        final value = _clean(entry.value?.toString());
+        if (value != null) values[key] = value;
+      }
+      _nativeRuntimeValues = Map.unmodifiable(values);
+    } catch (_) {
+      // Non-Android platforms and tests have no native runtime config channel.
+      _nativeRuntimeValues = const {};
+    }
   }
 
   static Future<void> _loadBundledPublicAuthConfig(String fileName) async {
@@ -102,8 +166,7 @@ class AppEnv {
       if (value.length >= 2) {
         final first = value[0];
         final last = value[value.length - 1];
-        if ((first == '"' && last == '"') ||
-            (first == "'" && last == "'")) {
+        if ((first == '"' && last == '"') || (first == "'" && last == "'")) {
           value = value.substring(1, value.length - 1).trim();
         }
       }

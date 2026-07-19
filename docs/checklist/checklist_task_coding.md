@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tra
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-07-17 |
+| Ngay cap nhat | 2026-07-19 |
 | Muc dich | Ghi lai trang thai coding M01-M19/M30 va coding gate rieng cho planned M20-M29. |
 
 ## DD Progress Next Tasks
@@ -45,6 +45,18 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - Production evidence backlog con lai la sandbox/RLS/API/audit/provider/real-device smoke, khong phai blocker coding cua luot nay.
 
 ## Uu tien tiep theo
+
+### Reliability closure M05/M02/M06/M07/M09 — 2026-07-19
+
+- [x] Admin automatic surface: Admin-only/dual-role ưu tiên Admin; dual-role vẫn đổi sang user bằng thao tác chủ động.
+- [x] Auth identity event: Settings phản ứng ngay sau login, không đọc singleton auth ở race window.
+- [x] AI/chat quota fail-closed và schedule provenance/fallback minh bạch; SQLite v16 lưu nguồn tạo lịch.
+- [x] Notification active-subject cleanup, iOS native callback, action open/skip, legacy done compatibility và V3 deep-link.
+- [x] Runtime Gemini Android đã dùng `dartDefine`; Gemini preflight PASS với model khả dụng và Chat có fallback `gemini-3.5-flash` (2026-07-19). Không bypass quota hay giả câu trả lời.
+- [x] Chat Android `12b304f9` smoke end-to-end qua `flutter run` không define: native debug config, quota allowed, Gemini response hợp lệ và quota commit (2026-07-19).
+- [ ] Chạy manual UI tạo lịch trên Android `12b304f9` bằng tài khoản còn quota; ghi lại lifecycle an toàn.
+- [ ] Cấp Supabase sandbox disposable + CLI/project ref để chạy quota/RLS/idempotency acceptance; không chạy `config.sql` trên production.
+- [ ] Chạy Android permission deny/allow, exact-alarm off/reboot và iOS foreground/background/terminated action với account test được cấp.
 
 ### M30 Nabi companion notifications — 2026-07-17
 

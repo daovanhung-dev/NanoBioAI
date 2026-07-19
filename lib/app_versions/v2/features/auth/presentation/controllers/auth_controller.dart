@@ -126,6 +126,20 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     }
 
     state = const AsyncValue.loading();
+    try {
+      await NotificationBootstrap.clearGeneratedReminders();
+    } catch (error, stackTrace) {
+      AppLogger.warning(
+        'AUTH_CONTROLLER',
+        'Notification cleanup skipped before sign-out: $error',
+      );
+      AppLogger.error(
+        'AUTH_CONTROLLER',
+        'Notification cleanup failed before sign-out',
+        error,
+        stackTrace,
+      );
+    }
     await _repository.signOut();
     _invalidateLocalUserData();
     ref.invalidate(userDataSyncControllerProvider);
@@ -182,9 +196,12 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
               .read(authenticatedUserDataSyncRepositoryProvider)
               .syncAfterAuthenticatedSession(reason);
 
-    if (!result.pulledAnyData) return;
-    _invalidateLocalUserData();
+    if (result.pulledAnyData) {
+      _invalidateLocalUserData();
+    }
+  }
 
+  Future<void> _refreshRemindersAfterAuth() async {
     try {
       await NotificationBootstrap.scheduleGeneratedReminders();
     } catch (error, stackTrace) {
@@ -218,6 +235,8 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
         error,
         stackTrace,
       );
+    } finally {
+      await _refreshRemindersAfterAuth();
     }
   }
 

@@ -119,6 +119,18 @@ class NotificationsDao {
     return maps.map(NotificationModel.fromMap).toList();
   }
 
+  Future<List<NotificationModel>> getPendingBySourceType(
+    String sourceType,
+  ) async {
+    final maps = await db.query(
+      NotificationsTable.tableName,
+      where: 'source_type = ? AND action_status = ?',
+      whereArgs: [sourceType, NotificationActionStatuses.pending],
+    );
+
+    return maps.map(NotificationModel.fromMap).toList();
+  }
+
   Future<void> deletePendingBySources({
     required String sourceType,
     required List<String> sourceIds,

@@ -15,6 +15,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/enti
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v1/features/nabi/presentation/widgets/nabi_floating_overlay.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/app_versions/v1/shared/widgets/ai_chat_fab.dart';
@@ -101,15 +102,19 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
 
   Future<void> _generateAdditionalPlan() async {
     try {
-      await ref
+      final result = await ref
           .read(dashboardControllerProvider.notifier)
           .generateAdditionalPlan();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Nabi đã thêm kế hoạch 7 ngày tiếp theo rồi nhé.'),
-        ),
-      );
+      final message = switch (result.generationSource) {
+        PlanGenerationSource.ai =>
+          'Nabi đã thêm kế hoạch 7 ngày tiếp theo rồi nhé.',
+        PlanGenerationSource.localFallback || PlanGenerationSource.unknown =>
+          'Nabi đã thêm lịch gợi ý cơ bản 7 ngày. Khi AI sẵn sàng, bạn có thể tạo lại để nhận gợi ý cá nhân hơn nhé.',
+      };
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } catch (error) {
       if (!mounted) return;
       if (error is DailyRoutinePreferencesRequiredException) {

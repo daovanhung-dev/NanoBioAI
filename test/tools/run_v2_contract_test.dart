@@ -47,4 +47,31 @@ void main() {
       );
     }
   });
+
+  test('shared Android Studio profile forwards runtime defines', () {
+    final profile = File(
+      '.run/NanoBio__Authenticated_App.xml',
+    ).readAsStringSync();
+
+    expect(profile, contains('FlutterRunConfigurationType'));
+    expect(profile, contains('lib/main.dart'));
+    expect(
+      profile,
+      contains('--dart-define-from-file=.dart_tool/nanobio_defines.json'),
+    );
+  });
+
+  test('Android debug runs have a local Gemini config fallback', () {
+    final gradle = File('android/app/build.gradle.kts').readAsStringSync();
+    final activity = File(
+      'android/app/src/main/kotlin/com/example/nano_app/MainActivity.kt',
+    ).readAsStringSync();
+
+    expect(gradle, contains('rootProject.file("../.env")'));
+    expect(gradle, contains('getByName("debug")'));
+    expect(gradle, contains('GEMINI_API_KEY'));
+    expect(activity, contains('com.example.nano_app/runtime_config'));
+    expect(activity, contains('getPrivateRuntimeConfig'));
+    expect(activity, contains('BuildConfig.GEMINI_API_KEY'));
+  });
 }

@@ -39,6 +39,7 @@ void main() {
       scheduleItemsDao: scheduleItemsDao,
       notificationsDao: notificationsDao,
       scheduler: scheduler,
+      activeSubjectUserId: () async => 'user-1',
       now: () => fixedNow,
     );
   });
@@ -64,6 +65,21 @@ void main() {
     expect(rows.single.sourceType, ReminderSourceTypes.lifestyleScheduleItem);
     expect(rows.single.sourceId, 'future');
     expect(scheduler.scheduled.single.scheduledAt, DateTime(2026, 6, 17, 12));
+  });
+
+  test('schedules only the active subject timeline', () async {
+    await scheduleItemsDao.upsertMany([
+      _item(id: 'active-subject'),
+      _item(id: 'other-subject', userId: 'user-2'),
+    ]);
+
+    await service.scheduleGeneratedReminders();
+
+    final rows = await notificationsDao.getAll();
+    expect(scheduler.scheduled, hasLength(1));
+    expect(rows, hasLength(1));
+    expect(rows.single.userId, 'user-1');
+    expect(rows.single.sourceId, 'active-subject');
   });
 
   test('accepts seconds and fractional seconds in schedule time', () async {
@@ -228,7 +244,7 @@ void main() {
     expect(rows.single.sourceId, 'reschedule');
   });
 
-  test('reschedule keeps pending rows for a different subject', () async {
+  test('reschedule clears other-subject and stale pending reminders', () async {
     await scheduleItemsDao.upsertMany([_item(id: 'reschedule')]);
     await notificationsDao.insert(
       _notification(id: 'same-subject-pending', notificationId: 998),
@@ -240,15 +256,86 @@ void main() {
         userId: 'user-2',
       ),
     );
+    await notificationsDao.insert(
+      _notification(
+        id: 'deleted-source-pending',
+        notificationId: 996,
+        sourceId: 'deleted-source',
+      ),
+    );
 
     await service.scheduleGeneratedReminders();
 
     final rows = await notificationsDao.getAll();
 
-    expect(scheduler.cancelled, [998]);
+    expect(scheduler.cancelled, unorderedEquals([998, 997, 996]));
     expect(rows.any((row) => row.id == 'same-subject-pending'), isFalse);
-    expect(rows.any((row) => row.id == 'other-subject-pending'), isTrue);
+    expect(rows.any((row) => row.id == 'other-subject-pending'), isFalse);
+    expect(rows.any((row) => row.id == 'deleted-source-pending'), isFalse);
     expect(rows.where((row) => row.userId == 'user-1'), hasLength(1));
+  });
+
+  test('clears pending reminders when no subject is active', () async {
+    await scheduleItemsDao.upsertMany([_item(id: 'signed-out')]);
+    await notificationsDao.insert(
+      _notification(id: 'signed-out-pending', notificationId: 995),
+    );
+    final signedOutService = ReminderScheduleService(
+      scheduleItemsDao: scheduleItemsDao,
+      notificationsDao: notificationsDao,
+      scheduler: scheduler,
+      activeSubjectUserId: () async => null,
+      now: () => fixedNow,
+    );
+
+    await signedOutService.scheduleGeneratedReminders();
+
+    expect(scheduler.cancelled, [995]);
+    expect(scheduler.permissionRequested, isFalse);
+    expect(await notificationsDao.getAll(), isEmpty);
+  });
+
+  test(
+    'keeps a pending row when OS cancellation fails so refresh can retry',
+    () async {
+      await notificationsDao.insert(
+        _notification(id: 'retry-cancel', notificationId: 992),
+      );
+      scheduler.failCancelIds.add(992);
+      final signedOutService = ReminderScheduleService(
+        scheduleItemsDao: scheduleItemsDao,
+        notificationsDao: notificationsDao,
+        scheduler: scheduler,
+        activeSubjectUserId: () async => null,
+        now: () => fixedNow,
+      );
+
+      await signedOutService.scheduleGeneratedReminders();
+
+      expect(scheduler.cancelled, [992]);
+      expect(await notificationsDao.getAll(), hasLength(1));
+
+      scheduler.failCancelIds.remove(992);
+      await signedOutService.scheduleGeneratedReminders();
+
+      expect(scheduler.cancelled, [992, 992]);
+      expect(await notificationsDao.getAll(), isEmpty);
+    },
+  );
+
+  test('clears only the explicit subject before sign-out', () async {
+    await notificationsDao.insert(
+      _notification(id: 'active-account', notificationId: 994),
+    );
+    await notificationsDao.insert(
+      _notification(id: 'other-account', notificationId: 993, userId: 'user-2'),
+    );
+
+    await service.clearPendingReminders(subjectUserId: 'user-1');
+
+    final rows = await notificationsDao.getAll();
+    expect(scheduler.cancelled, [994]);
+    expect(rows.map((row) => row.id), ['other-account']);
   });
 
   test('schedule failure records failed row and continues', () async {
@@ -277,6 +364,7 @@ NotificationModel _notification({
   required String id,
   required int notificationId,
   String userId = 'user-1',
+  String sourceId = 'reschedule',
 }) {
   return NotificationModel(
     id: id,
@@ -285,7 +373,7 @@ NotificationModel _notification({
     body: 'Old reminder body',
     type: NotificationTypes.reminder,
     sourceType: ReminderSourceTypes.lifestyleScheduleItem,
-    sourceId: 'reschedule',
+    sourceId: sourceId,
     scheduledAt: '2026-06-17T07:00:00.000',
     notificationId: notificationId,
     actionStatus: NotificationActionStatuses.pending,
@@ -297,6 +385,7 @@ NotificationModel _notification({
 
 LifestyleScheduleItemModel _item({
   required String id,
+  String userId = 'user-1',
   String scheduleDate = '2026-06-17',
   String startTime = '12:00',
   String title = 'Timeline task',
@@ -306,7 +395,7 @@ LifestyleScheduleItemModel _item({
 }) {
   return LifestyleScheduleItemModel(
     id: id,
-    userId: 'user-1',
+    userId: userId,
     scheduleDate: scheduleDate,
     startTime: startTime,
     endTime: '',
@@ -332,6 +421,7 @@ class FakeReminderNotificationScheduler
   bool permissionGranted = true;
   bool permissionRequested = false;
   final failScheduleIds = <int>{};
+  final failCancelIds = <int>{};
   final scheduled = <ScheduledReminder>[];
   final cancelled = <int>[];
 
@@ -369,6 +459,9 @@ class FakeReminderNotificationScheduler
   @override
   Future<void> cancel(int id) async {
     cancelled.add(id);
+    if (failCancelIds.contains(id)) {
+      throw StateError('Failed to cancel $id');
+    }
   }
 }
 

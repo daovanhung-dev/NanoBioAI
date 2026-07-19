@@ -39,10 +39,12 @@ Future<void> main() async {
         ),
         onboardingCompletionCallbackProvider.overrideWith((ref) {
           return () async {
-            await ref
+            final result = await ref
                 .read(generatedPlanServiceProvider)
                 .generateInitialGuestPlan(days: 7);
-            return const OnboardingCompletionResult.generatedInitialPlan();
+            return OnboardingCompletionResult.generatedInitialPlan(
+              generationSource: result.generationSource,
+            );
           };
         }),
       ],
@@ -54,9 +56,13 @@ Future<void> main() async {
 }
 
 void _logRuntimeConfigStatus() {
+  final geminiConfigSource = AppEnv.valueSource('GEMINI_API_KEY');
   debugPrint(
     '$_bootstrapTag: Gemini config present: '
-    '${AppEnv.maybeString('GEMINI_API_KEY') != null}',
+    '${geminiConfigSource != AppEnvValueSource.missing}',
+  );
+  debugPrint(
+    '$_bootstrapTag: Gemini config source: ${geminiConfigSource.name}',
   );
 }
 

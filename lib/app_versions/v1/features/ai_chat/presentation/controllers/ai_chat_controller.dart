@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/nabi/providers/nabi_provider.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
 
 import '../../domain/entities/chat_message_entity.dart';
@@ -97,8 +98,18 @@ class AIChatController extends Notifier<AIChatState> {
 }
 
 String _messageForSendError(Object error) {
-  if (error is AIChatUnavailableException) return error.userMessage;
   if (error is UsageQuotaException) return error.userMessage;
+  if (error is AIConfigurationUnavailableException) {
+    return AIConfigurationUnavailableException.userMessage;
+  }
+  if (error is AIAuthenticationException) {
+    return AIAuthenticationException.userMessage;
+  }
+  if (error is AIOverloadedException) return AIOverloadedException.userMessage;
+  if (error is AIResponseInvalidException) {
+    return AIResponseInvalidException.userMessage;
+  }
+  if (error is AIChatUnavailableException) return error.userMessage;
   return 'Không thể gửi tin nhắn. Bạn thử lại sau một chút nhé.';
 }
 

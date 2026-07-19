@@ -1,3 +1,3 @@
 class DatabaseVersion {
-  static const currentVersion = 15;
+  static const currentVersion = 16;
 }

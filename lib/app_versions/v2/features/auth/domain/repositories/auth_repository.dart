@@ -3,7 +3,7 @@ import '../entities/auth_commands.dart';
 import '../entities/auth_route_state.dart';
 
 abstract class AuthRepository {
-  Stream<void> watchAuthChanges();
+  Stream<String?> watchAuthChanges();
 
   Future<AuthRouteState> resolveAuthRouteState();
 

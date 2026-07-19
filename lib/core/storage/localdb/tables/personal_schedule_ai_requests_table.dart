@@ -12,6 +12,7 @@ class PersonalScheduleAiRequestsTable {
     meal_count INTEGER NOT NULL DEFAULT 0,
     exercise_count INTEGER NOT NULL DEFAULT 0,
     schedule_item_count INTEGER NOT NULL DEFAULT 0,
+    generation_source TEXT NOT NULL DEFAULT 'unknown',
     error_code TEXT,
     created_at TEXT,
     updated_at TEXT,

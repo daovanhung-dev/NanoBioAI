@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/config/app_env.dart';
@@ -8,11 +9,13 @@ void main() {
   setUp(() {
     dotenv.clean();
     AppEnv.clearBundledAuthConfigForTesting();
+    AppEnv.clearNativeRuntimeConfigForTesting();
   });
 
   tearDown(() {
     dotenv.clean();
     AppEnv.clearBundledAuthConfigForTesting();
+    AppEnv.clearNativeRuntimeConfigForTesting();
   });
 
   group('AppEnv', () {
@@ -29,6 +32,10 @@ void main() {
         'delete-account-dev',
       );
       expect(
+        AppEnv.valueSource('AUTH_DELETE_ACCOUNT_FUNCTION'),
+        AppEnvValueSource.dotEnv,
+      );
+      expect(
         AppEnv.boolValue('AUTH_CONFIRM_EMAIL_REQUIRED', defaultValue: true),
         isFalse,
       );
@@ -41,24 +48,55 @@ void main() {
       );
 
       expect(AppEnv.maybeString('UNKNOWN_KEY'), isNull);
+      expect(AppEnv.valueSource('UNKNOWN_KEY'), AppEnvValueSource.missing);
       expect(AppEnv.maybeSupabaseConfig(), isNull);
     });
 
-    test('loads bundled public Supabase config for a plain app build', () async {
-      await AppEnv.loadOptionalDotEnv(fileName: 'missing.env');
+    test(
+      'uses Android debug build config when dotenv is unavailable',
+      () async {
+        const channel = MethodChannel('com.example.nano_app/runtime_config');
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async {
+              if (call.method == 'getPrivateRuntimeConfig') {
+                return {'GEMINI_API_KEY': 'native-debug-key'};
+              }
+              return null;
+            });
+        addTearDown(() {
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+              .setMockMethodCallHandler(channel, null);
+        });
 
-      final config = AppEnv.maybeSupabaseConfig();
-      expect(config, isNotNull);
-      final resolvedConfig = config!;
-      expect(Uri.parse(resolvedConfig.url).scheme, 'https');
-      expect(Uri.parse(resolvedConfig.url).host, endsWith('.supabase.co'));
-      expect(resolvedConfig.anonKey, isNotEmpty);
-      expect(
-        AppEnv.maybeString('AUTH_EMAIL_REDIRECT_URL'),
-        isNotEmpty,
-      );
-      expect(AppEnv.maybeString('GEMINI_API_KEY'), isNull);
-    });
+        await AppEnv.loadOptionalDotEnv(
+          fileName: 'missing.env',
+          bundledAuthFileName: 'missing-auth.env',
+        );
+
+        expect(AppEnv.maybeString('GEMINI_API_KEY'), 'native-debug-key');
+        expect(
+          AppEnv.valueSource('GEMINI_API_KEY'),
+          AppEnvValueSource.nativeBuildConfig,
+        );
+      },
+    );
+
+    test(
+      'loads bundled public Supabase config for a plain app build',
+      () async {
+        await AppEnv.loadOptionalDotEnv(fileName: 'missing.env');
+
+        final config = AppEnv.maybeSupabaseConfig();
+        expect(config, isNotNull);
+        final resolvedConfig = config!;
+        expect(Uri.parse(resolvedConfig.url).scheme, 'https');
+        expect(Uri.parse(resolvedConfig.url).host, endsWith('.supabase.co'));
+        expect(resolvedConfig.anonKey, isNotEmpty);
+        expect(AppEnv.maybeString('AUTH_EMAIL_REDIRECT_URL'), isNotEmpty);
+        expect(AppEnv.maybeString('GEMINI_API_KEY'), isNull);
+        expect(AppEnv.valueSource('GEMINI_API_KEY'), AppEnvValueSource.missing);
+      },
+    );
 
     test('returns no Supabase config when url or anon key is missing', () {
       dotenv.loadFromString(envString: 'SUPABASE_URL=https://example.test');

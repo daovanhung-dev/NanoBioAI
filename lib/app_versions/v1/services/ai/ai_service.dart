@@ -13,6 +13,7 @@ import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_pla
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 
 import 'ai_exceptions.dart';
+import 'ai_generation_result.dart';
 import 'ai_json_parser.dart';
 import 'ai_json_prompt_builder.dart';
 import 'gemini_rest_client.dart';
@@ -290,6 +291,21 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required DateTime startDate,
     int days = 7,
   }) async {
+    final result = await generateMealPlanWithSource(
+      healthData: healthData,
+      userId: userId,
+      startDate: startDate,
+      days: days,
+    );
+    return result.value;
+  }
+
+  Future<AIGenerationResult<List<MealPlanModel>>> generateMealPlanWithSource({
+    required HealthDataInterface healthData,
+    required String userId,
+    required DateTime startDate,
+    int days = 7,
+  }) async {
     final traceId = AITraceLogger.nextTraceId('meal-plan');
     const method = 'generateMealPlan';
     AITraceLogger.start(
@@ -314,6 +330,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     final normalizer = const MealPlanAiNormalizer();
     final usedCodeCounts = <String, int>{};
     final codeItems = <Map<String, dynamic>>[];
+    final chunkSources = <PlanGenerationSource>[];
     final chunks = _chunkPlan(days);
     AITraceLogger.info(
       _tag,
@@ -334,7 +351,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         catalog: catalog.meals,
         usedMealCodes: _usedCodes(usedCodeCounts),
       );
-      final chunkItems = await _generateMealChunk(
+      final chunkResult = await _generateMealChunk(
         normalizer: normalizer,
         catalog: catalog,
         prompt: prompt,
@@ -342,8 +359,9 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         usedCodeCounts: usedCodeCounts,
         traceId: traceId,
       );
-      _accumulateCodeCounts(chunkItems, 'meal_code', usedCodeCounts);
-      codeItems.addAll(chunkItems);
+      _accumulateCodeCounts(chunkResult.items, 'meal_code', usedCodeCounts);
+      codeItems.addAll(chunkResult.items);
+      chunkSources.add(chunkResult.source);
       AITraceLogger.info(
         _tag,
         traceId,
@@ -352,7 +370,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         'Meal chunk counts accumulated.',
         data: {
           'chunkStartDay': chunk.startDay,
-          'itemCount': chunkItems.length,
+          'itemCount': chunkResult.items.length,
           'distinctCodeCount': usedCodeCounts.length,
         },
         location: StackTrace.current,
@@ -368,19 +386,38 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       days: days,
       createdAt: createdAt,
     );
+    final source = PlanGenerationSource.combine(chunkSources);
     AITraceLogger.success(
       _tag,
       traceId,
       method,
       'SUCCESS',
       'Tạo thực đơn hoàn tất.',
-      data: {'codeItemCount': codeItems.length, 'mealCount': meals.length},
+      data: {
+        'codeItemCount': codeItems.length,
+        'mealCount': meals.length,
+        'source': source.storageValue,
+      },
       location: StackTrace.current,
     );
-    return meals;
+    return AIGenerationResult(value: meals, source: source);
   }
 
   Future<List<ExerciseTaskModel>> generateExerciseTasks({
+    required DailyHealthProfileEntity profile,
+    required DateTime startDate,
+    int days = 7,
+  }) async {
+    final result = await generateExerciseTasksWithSource(
+      profile: profile,
+      startDate: startDate,
+      days: days,
+    );
+    return result.value;
+  }
+
+  Future<AIGenerationResult<List<ExerciseTaskModel>>>
+  generateExerciseTasksWithSource({
     required DailyHealthProfileEntity profile,
     required DateTime startDate,
     int days = 7,
@@ -409,6 +446,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     final normalizer = const ExerciseTasksAiNormalizer();
     final usedCodeCounts = <String, int>{};
     final codeItems = <Map<String, dynamic>>[];
+    final chunkSources = <PlanGenerationSource>[];
     final chunks = _chunkPlan(days);
     AITraceLogger.info(
       _tag,
@@ -429,7 +467,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         catalog: catalog.exercises,
         usedExerciseCodes: _usedCodes(usedCodeCounts),
       );
-      final chunkItems = await _generateExerciseChunk(
+      final chunkResult = await _generateExerciseChunk(
         normalizer: normalizer,
         catalog: catalog,
         prompt: prompt,
@@ -437,8 +475,9 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         usedCodeCounts: usedCodeCounts,
         traceId: traceId,
       );
-      _accumulateCodeCounts(chunkItems, 'exercise_code', usedCodeCounts);
-      codeItems.addAll(chunkItems);
+      _accumulateCodeCounts(chunkResult.items, 'exercise_code', usedCodeCounts);
+      codeItems.addAll(chunkResult.items);
+      chunkSources.add(chunkResult.source);
       AITraceLogger.info(
         _tag,
         traceId,
@@ -447,7 +486,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         'Exercise chunk counts accumulated.',
         data: {
           'chunkStartDay': chunk.startDay,
-          'itemCount': chunkItems.length,
+          'itemCount': chunkResult.items.length,
           'distinctCodeCount': usedCodeCounts.length,
         },
         location: StackTrace.current,
@@ -463,6 +502,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       days: days,
       createdAt: createdAt,
     );
+    final source = PlanGenerationSource.combine(chunkSources);
     AITraceLogger.success(
       _tag,
       traceId,
@@ -472,13 +512,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       data: {
         'codeItemCount': codeItems.length,
         'exerciseCount': exercises.length,
+        'source': source.storageValue,
       },
       location: StackTrace.current,
     );
-    return exercises;
+    return AIGenerationResult(value: exercises, source: source);
   }
 
-  Future<List<Map<String, dynamic>>> _generateMealChunk({
+  Future<_GeneratedPlanChunk> _generateMealChunk({
     required MealPlanAiNormalizer normalizer,
     required AiCatalogBundle catalog,
     required String prompt,
@@ -551,7 +592,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         },
         location: StackTrace.current,
       );
-      return items;
+      return _GeneratedPlanChunk(items: items, source: PlanGenerationSource.ai);
     } catch (error, stackTrace) {
       AITraceLogger.error(
         _tag,
@@ -587,11 +628,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         },
         location: StackTrace.current,
       );
-      return fallbackItems;
+      return _GeneratedPlanChunk(
+        items: fallbackItems,
+        source: PlanGenerationSource.localFallback,
+      );
     }
   }
 
-  Future<List<Map<String, dynamic>>> _generateExerciseChunk({
+  Future<_GeneratedPlanChunk> _generateExerciseChunk({
     required ExerciseTasksAiNormalizer normalizer,
     required AiCatalogBundle catalog,
     required String prompt,
@@ -664,7 +708,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         },
         location: StackTrace.current,
       );
-      return items;
+      return _GeneratedPlanChunk(items: items, source: PlanGenerationSource.ai);
     } catch (error, stackTrace) {
       AITraceLogger.error(
         _tag,
@@ -700,7 +744,10 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         },
         location: StackTrace.current,
       );
-      return fallbackItems;
+      return _GeneratedPlanChunk(
+        items: fallbackItems,
+        source: PlanGenerationSource.localFallback,
+      );
     }
   }
 
@@ -1149,6 +1196,13 @@ class _AIModelEntry {
   final String name;
 
   const _AIModelEntry({required this.name});
+}
+
+class _GeneratedPlanChunk {
+  final List<Map<String, dynamic>> items;
+  final PlanGenerationSource source;
+
+  const _GeneratedPlanChunk({required this.items, required this.source});
 }
 
 class _AIChunk {

@@ -3,6 +3,7 @@ import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/providers/daily_routine_preferences_provider.dart';
@@ -16,6 +17,7 @@ class OnboardingState {
   final int currentStep;
   final bool isSaving;
   final String? savedLog;
+  final PlanGenerationSource initialPlanGenerationSource;
 
   final String email;
   final String phone;
@@ -53,6 +55,7 @@ class OnboardingState {
     this.currentStep = 0,
     this.isSaving = false,
     this.savedLog,
+    this.initialPlanGenerationSource = PlanGenerationSource.unknown,
     this.email = '',
     this.phone = '',
     this.fullName = '',
@@ -126,6 +129,7 @@ class OnboardingState {
     int? currentStep,
     bool? isSaving,
     String? savedLog,
+    PlanGenerationSource? initialPlanGenerationSource,
     String? email,
     String? phone,
     String? fullName,
@@ -156,6 +160,8 @@ class OnboardingState {
       currentStep: currentStep ?? this.currentStep,
       isSaving: isSaving ?? this.isSaving,
       savedLog: savedLog ?? this.savedLog,
+      initialPlanGenerationSource:
+          initialPlanGenerationSource ?? this.initialPlanGenerationSource,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       fullName: fullName ?? this.fullName,
@@ -559,9 +565,11 @@ class OnboardingController extends Notifier<OnboardingState> {
         onboardingCompletionCallbackProvider,
       );
       var generatedPlan = false;
+      var generationSource = PlanGenerationSource.unknown;
       try {
         final completionResult = await onCompletionCallback();
         generatedPlan = completionResult.generatedInitialPlan;
+        generationSource = completionResult.generationSource;
       } on AIOverloadedException {
         rethrow;
       } catch (error, stackTrace) {
@@ -597,9 +605,13 @@ class OnboardingController extends Notifier<OnboardingState> {
       await AppPrefs.setOnboardingCompleted(true);
       AppLogger.success(_tag, 'Onboarding completed flag set');
 
+      final savedLog = generationSource.isBasicSuggestion
+          ? 'Mình đã lưu hồ sơ sức khỏe và lịch gợi ý cơ bản đầu tiên của bạn. Khi AI sẵn sàng, bạn có thể tạo lại lịch để nhận gợi ý cá nhân hơn nhé.'
+          : 'Mình đã lưu hồ sơ sức khỏe của bạn thành công.';
       state = state.copyWith(
         isSaving: false,
-        savedLog: 'Mình đã lưu hồ sơ sức khỏe của bạn thành công.',
+        savedLog: savedLog,
+        initialPlanGenerationSource: generationSource,
       );
 
       // Log completion summary
@@ -619,6 +631,7 @@ class OnboardingController extends Notifier<OnboardingState> {
         'Saved To Database': true,
         'Meal Plan Generated': generatedPlan,
         'Daily Health Tasks Generated': generatedPlan,
+        'Plan Generation Source': generationSource.storageValue,
       });
       AppLogger.separator(_tag);
     } catch (e, st) {

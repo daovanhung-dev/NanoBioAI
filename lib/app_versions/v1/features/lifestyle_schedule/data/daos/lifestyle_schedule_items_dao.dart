@@ -66,6 +66,19 @@ class LifestyleScheduleItemsDao {
     return maps.map(LifestyleScheduleItemModel.fromMap).toList();
   }
 
+  Future<List<LifestyleScheduleItemModel>> getAllByUserId(String userId) async {
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty) return const [];
+
+    final maps = await db.query(
+      LifestyleScheduleItemsTable.tableName,
+      where: 'user_id = ?',
+      whereArgs: [normalizedUserId],
+      orderBy: 'schedule_date ASC, sort_order ASC, start_time ASC',
+    );
+    return maps.map(LifestyleScheduleItemModel.fromMap).toList();
+  }
+
   Future<void> update(LifestyleScheduleItemModel item) async {
     await db.update(
       LifestyleScheduleItemsTable.tableName,

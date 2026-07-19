@@ -33,7 +33,8 @@ class _AdminAccessGateState extends ConsumerState<AdminAccessGate> {
       loading: () => const _AdminChecking(),
       error: (_, __) => _AdminSupport(
         message: 'Chưa thể kiểm tra quyền quản trị. Vui lòng thử lại.',
-        onRetry: () => ref.read(adminAccessControllerProvider.notifier).refresh(),
+        onRetry: () =>
+            ref.read(adminAccessControllerProvider.notifier).refresh(),
       ),
       data: (value) {
         switch (value.status) {
@@ -43,12 +44,13 @@ class _AdminAccessGateState extends ConsumerState<AdminAccessGate> {
             return widget.child;
           case AdminAccessStatus.unauthorized:
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ref.read(appSurfaceControllerProvider.notifier).showUser();
+              ref.read(appSurfaceControllerProvider.notifier).reset();
             });
             return const _AdminChecking();
           case AdminAccessStatus.error:
             return _AdminSupport(
-              message: value.safeMessage ??
+              message:
+                  value.safeMessage ??
                   'Khu vực quản trị chưa sẵn sàng. Vui lòng thử lại.',
               onRetry: () =>
                   ref.read(adminAccessControllerProvider.notifier).refresh(),
@@ -64,7 +66,9 @@ class _AdminChecking extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MedicalPageScaffold(body: Center(child: CircularProgressIndicator()));
+    return const MedicalPageScaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
   }
 }
 

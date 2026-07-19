@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:nano_app/core/utils/logger/app_logger.dart';
+
 class PersonalScheduleQuotaDecision {
   final bool allowed;
   final DateTime? resetAt;
@@ -59,6 +61,9 @@ class TrustedBackendPersonalScheduleQuotaGateway
     implements PersonalScheduleQuotaGateway {
   static const featureKey = 'personal_schedule_generation';
   static const resetTimezone = 'Asia/Ho_Chi_Minh';
+  static const _tag = 'SCHEDULE_QUOTA';
+  static const _checkRpc = 'check_personal_schedule_generation_quota';
+  static const _commitRpc = 'commit_personal_schedule_generation_quota';
 
   final SupabaseClient? clientOverride;
 
@@ -85,8 +90,9 @@ class TrustedBackendPersonalScheduleQuotaGateway
     }
 
     try {
+      _logRpc(rpcName: _checkRpc, stage: 'REQUEST', status: 'started');
       final response = await client.rpc(
-        'check_personal_schedule_generation_quota',
+        _checkRpc,
         params: {
           'p_user_id': userId,
           'p_request_id': requestId,
@@ -97,12 +103,26 @@ class TrustedBackendPersonalScheduleQuotaGateway
       );
       final decision = _decisionFromResponse(response);
       if (!decision.allowed) {
+        _logRpc(rpcName: _checkRpc, stage: 'RESPONSE', status: 'denied');
         throw PersonalScheduleQuotaExceededException(resetAt: decision.resetAt);
       }
+      _logRpc(rpcName: _checkRpc, stage: 'RESPONSE', status: 'allowed');
       return decision;
-    } on PersonalScheduleQuotaExceededException {
+    } on PersonalScheduleQuotaExceededException catch (error) {
+      _logRpc(
+        rpcName: _checkRpc,
+        stage: 'FAILURE',
+        status: 'typed_error',
+        error: error,
+      );
       rethrow;
-    } catch (_) {
+    } catch (error) {
+      _logRpc(
+        rpcName: _checkRpc,
+        stage: 'FAILURE',
+        status: 'unavailable',
+        error: error,
+      );
       throw const PersonalScheduleQuotaUnavailableException();
     }
   }
@@ -119,8 +139,9 @@ class TrustedBackendPersonalScheduleQuotaGateway
     }
 
     try {
-      await client.rpc(
-        'commit_personal_schedule_generation_quota',
+      _logRpc(rpcName: _commitRpc, stage: 'REQUEST', status: 'started');
+      final response = await client.rpc(
+        _commitRpc,
         params: {
           'p_user_id': userId,
           'p_request_id': requestId,
@@ -129,9 +150,39 @@ class TrustedBackendPersonalScheduleQuotaGateway
           'p_committed_at': at.toUtc().toIso8601String(),
         },
       );
-    } catch (_) {
+      final decision = _decisionFromResponse(response);
+      if (!decision.allowed) {
+        _logRpc(rpcName: _commitRpc, stage: 'RESPONSE', status: 'denied');
+        throw PersonalScheduleQuotaExceededException(resetAt: decision.resetAt);
+      }
+      _logRpc(rpcName: _commitRpc, stage: 'RESPONSE', status: 'committed');
+    } on PersonalScheduleQuotaExceededException catch (error) {
+      _logRpc(
+        rpcName: _commitRpc,
+        stage: 'FAILURE',
+        status: 'typed_error',
+        error: error,
+      );
+      rethrow;
+    } catch (error) {
+      _logRpc(
+        rpcName: _commitRpc,
+        stage: 'FAILURE',
+        status: 'unavailable',
+        error: error,
+      );
       throw const PersonalScheduleQuotaUnavailableException();
     }
+  }
+
+  void _logRpc({
+    required String rpcName,
+    required String stage,
+    required String status,
+    Object? error,
+  }) {
+    final errorType = error == null ? '' : ' errorType=${error.runtimeType}';
+    AppLogger.info(_tag, 'rpc=$rpcName stage=$stage status=$status$errorType');
   }
 
   PersonalScheduleQuotaDecision _decisionFromResponse(Object? response) {

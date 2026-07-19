@@ -17,6 +17,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application/schedule_reward_online_gateway.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application/schedule_reward_eligibility_projection_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
@@ -57,6 +58,7 @@ class GeneratedPlanResult {
   final int exerciseCount;
   final int scheduleItemCount;
   final bool reusedExistingRequest;
+  final PlanGenerationSource generationSource;
   final List<ScheduleRewardEligibilityItem> rewardEligibilityItems;
 
   const GeneratedPlanResult({
@@ -67,6 +69,7 @@ class GeneratedPlanResult {
     required this.exerciseCount,
     required this.scheduleItemCount,
     this.reusedExistingRequest = false,
+    this.generationSource = PlanGenerationSource.unknown,
     this.rewardEligibilityItems = const [],
   });
 }
@@ -213,11 +216,19 @@ class GeneratedPlanService {
       routinePreferences: preferences,
     );
 
-    await quotaGateway.commitGeneration(
-      userId: authUserId,
-      requestId: requestId,
-      at: now(),
-    );
+    if (result.generationSource.isFullyAiGenerated) {
+      await quotaGateway.commitGeneration(
+        userId: authUserId,
+        requestId: requestId,
+        at: now(),
+      );
+    } else {
+      AppLogger.info(
+        _tag,
+        'Skipped member generation quota commit; '
+        'source=${result.generationSource.storageValue}',
+      );
+    }
 
     if (result.rewardEligibilityItems.isNotEmpty) {
       try {
@@ -325,13 +336,13 @@ class GeneratedPlanService {
     AppLogger.info(_tag, 'Resolved generated-plan range for $days days');
 
     try {
-      final generatedMeals = await aiService.generateMealPlan(
+      final generatedMeals = await aiService.generateMealPlanWithSource(
         healthData: dashboardData,
         userId: userId,
         startDate: resolvedStartDate,
         days: days,
       );
-      final meals = generatedMeals
+      final meals = generatedMeals.value
           .map((meal) {
             final date = _requiredDate(meal.planDate);
             final range = timingResolver
@@ -342,13 +353,14 @@ class GeneratedPlanService {
           .toList(growable: false);
       AppLogger.info(_tag, 'Generated ${meals.length} meal records');
 
-      final generatedExercises = await aiService.generateExerciseTasks(
-        profile: profile,
-        startDate: resolvedStartDate,
-        days: days,
-      );
+      final generatedExercises = await aiService
+          .generateExerciseTasksWithSource(
+            profile: profile,
+            startDate: resolvedStartDate,
+            days: days,
+          );
       final exerciseIndexByDate = <String, int>{};
-      final exercises = generatedExercises
+      final exercises = generatedExercises.value
           .map((exercise) {
             final index = exerciseIndexByDate.update(
               exercise.scheduleDate,
@@ -384,6 +396,10 @@ class GeneratedPlanService {
         startDate: resolvedStartDate,
         days: days,
       );
+      final generationSource = PlanGenerationSource.combine([
+        generatedMeals.source,
+        generatedExercises.source,
+      ]);
 
       await requestStore.commitGeneratedPlan(
         requestId: resolvedRequestId,
@@ -393,6 +409,7 @@ class GeneratedPlanService {
         days: days,
         meals: meals,
         schedule: schedule,
+        generationSource: generationSource,
         replaceExistingRange: !appendAfterExisting,
         markGuestInitialPlanUsed: markGuestInitialPlanUsed,
       );
@@ -416,6 +433,7 @@ class GeneratedPlanService {
         mealCount: meals.length,
         exerciseCount: exercises.length,
         scheduleItemCount: schedule.length,
+        generationSource: generationSource,
         rewardEligibilityItems: actorMode == GeneratedPlanActorModes.memberNew
             ? schedule
                   .map(
@@ -468,6 +486,7 @@ class GeneratedPlanService {
       exerciseCount: existing.exerciseCount,
       scheduleItemCount: existing.scheduleItemCount,
       reusedExistingRequest: true,
+      generationSource: existing.generationSource,
     );
   }
 
@@ -525,7 +544,12 @@ class GeneratedPlanService {
   }
 
   String _errorCode(Object error) {
+    if (error is AIConfigurationUnavailableException) {
+      return 'ai_configuration_unavailable';
+    }
+    if (error is AIAuthenticationException) return 'ai_authentication_failed';
     if (error is AIOverloadedException) return 'ai_overloaded';
+    if (error is AIResponseInvalidException) return 'ai_response_invalid';
     if (error is FormatException || error is StateError) {
       return 'invalid_generation';
     }

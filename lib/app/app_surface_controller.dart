@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum AppSurface { user, admin }
+enum AppSurface { automatic, user, admin }
 
 AppSurface resolveAppSurface({
   required bool isSignedIn,
@@ -9,8 +9,10 @@ AppSurface resolveAppSurface({
   required AppSurface requestedSurface,
 }) {
   if (!isSignedIn || !isAuthorizedAdmin) return AppSurface.user;
-  if (!canUseUserApp) return AppSurface.admin;
-  return requestedSurface;
+  if (requestedSurface == AppSurface.user && canUseUserApp) {
+    return AppSurface.user;
+  }
+  return AppSurface.admin;
 }
 
 final appSurfaceControllerProvider =
@@ -20,11 +22,11 @@ final appSurfaceControllerProvider =
 
 class AppSurfaceController extends Notifier<AppSurface> {
   @override
-  AppSurface build() => AppSurface.user;
+  AppSurface build() => AppSurface.automatic;
 
   void showUser() => state = AppSurface.user;
 
   void showAdmin() => state = AppSurface.admin;
 
-  void reset() => state = AppSurface.user;
+  void reset() => state = AppSurface.automatic;
 }

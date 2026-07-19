@@ -1,6 +1,7 @@
 import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
 
 import '../../../../services/ai/ai_chat_service.dart';
+import '../../../../services/ai/ai_exceptions.dart';
 import '../../data/models/chat_message_model.dart';
 import '../entities/chat_message_entity.dart';
 import 'ai_chat_repository.dart';
@@ -42,19 +43,26 @@ class AIChatRepositoryImpl implements AIChatRepository {
     _history.add(userMessage);
 
     // Get AI response
-    final String responseText;
+    final AIChatPreparedResponse preparedResponse;
     try {
-      responseText = await _aiChatService.sendMessage(message);
-    } catch (_, stackTrace) {
+      preparedResponse = await _aiChatService.prepareMessage(message);
+    } catch (error, stackTrace) {
+      if (error is AIConfigurationUnavailableException ||
+          error is AIAuthenticationException ||
+          error is AIOverloadedException ||
+          error is AIResponseInvalidException) {
+        Error.throwWithStackTrace(error, stackTrace);
+      }
       Error.throwWithStackTrace(const AIChatUnavailableException(), stackTrace);
     }
 
     await _commitQuotaWithRetry(requestId: requestId);
+    preparedResponse.accept();
 
     // Create AI message
     final aiMessage = ChatMessageModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      content: responseText,
+      content: preparedResponse.text,
       role: MessageRole.assistant,
       timestamp: DateTime.now(),
     );

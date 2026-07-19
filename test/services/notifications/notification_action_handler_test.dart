@@ -69,6 +69,7 @@ void main() {
         now: () => fixedNow,
       ),
       database: db,
+      activeSubjectUserId: () async => 'user-1',
       now: () => fixedNow,
     );
   });
@@ -141,6 +142,40 @@ void main() {
     expect(schedule!.isCompleted, isFalse);
     expect(navigatedUris, hasLength(1));
     expect(navigatedUris.single.queryParameters['item'], 'schedule-body-tap');
+  });
+
+  test('legacy done action opens the task without completing it', () async {
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-legacy-done',
+        sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+        sourceId: '',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-legacy-done',
+        notificationId: 103,
+        sourceId: 'schedule-legacy-done',
+      ),
+    );
+
+    await handler.handleAction(
+      actionId: NotificationActionIds.done,
+      notificationId: 103,
+      payload: _payload(notificationId: 103, sourceId: 'schedule-legacy-done'),
+    );
+
+    final notification = await notificationsDao.getByNotificationId(103);
+    final schedule = await scheduleItemsDao.getById('schedule-legacy-done');
+
+    expect(notification!.actionStatus, NotificationActionStatuses.opened);
+    expect(schedule!.isCompleted, isFalse);
+    expect(navigatedUris, hasLength(1));
+    expect(
+      navigatedUris.single.queryParameters['item'],
+      'schedule-legacy-done',
+    );
   });
 
   test('skipped records response without completing schedule source', () async {
@@ -252,6 +287,56 @@ void main() {
     expect(meal!.isCompleted, isFalse);
     expect(syncRequests, 1);
   });
+
+  test(
+    'old account notification is rejected after active account changes',
+    () async {
+      await scheduleItemsDao.upsertMany([
+        _schedule(
+          id: 'schedule-user-a',
+          sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+          sourceId: '',
+        ),
+      ]);
+      await notificationsDao.insert(
+        _notification(
+          id: 'n-user-a',
+          notificationId: 214,
+          sourceId: 'schedule-user-a',
+        ),
+      );
+      final switchedAccountHandler = NotificationActionHandler(
+        notificationsDao: notificationsDao,
+        mealPlansDao: mealPlansDao,
+        dailyHealthTasksDao: DailyHealthTasksDao(db),
+        lifestyleScheduleItemsDao: scheduleItemsDao,
+        lifestyleScheduleDatasource: LifestyleScheduleLocalDatasource(
+          databaseOverride: db,
+          now: () => fixedNow,
+        ),
+        database: db,
+        activeSubjectUserId: () async => 'user-2',
+        now: () => fixedNow,
+      );
+
+      await switchedAccountHandler.handleAction(
+        actionId: NotificationActionIds.openSchedule,
+        notificationId: 214,
+        payload: _payload(notificationId: 214, sourceId: 'schedule-user-a'),
+      );
+
+      final notification = await notificationsDao.getByNotificationId(214);
+      final schedule = await scheduleItemsDao.getById('schedule-user-a');
+
+      expect(
+        notification!.actionStatus,
+        NotificationActionStatuses.actionFailed,
+      );
+      expect(schedule!.isCompleted, isFalse);
+      expect(navigatedUris, isEmpty);
+      expect(syncRequests, 1);
+    },
+  );
 
   test(
     'source owner mismatch records failure without completing source',

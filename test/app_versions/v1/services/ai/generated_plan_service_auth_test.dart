@@ -17,6 +17,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/enti
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/repositories/schedule_horizon_reader.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
@@ -144,6 +145,7 @@ void main() {
       );
 
       expect(retried.reusedExistingRequest, isTrue);
+      expect(retried.generationSource, PlanGenerationSource.ai);
       expect(aiService.mealCalls, 1);
       expect(aiService.exerciseCalls, 1);
       expect(requestStore.commitCalls, 1);
@@ -260,6 +262,58 @@ void main() {
       expect(requestStore.commitCalls, 1);
       expect(quotaGateway.checkCalls, 1);
       expect(quotaGateway.commitCalls, 1);
+    },
+  );
+
+  test(
+    'member local fallback is persisted, skips quota commit, and survives reminder failure',
+    () async {
+      final requestStore = _RecordingRequestStore();
+      final quotaGateway = _RecordingQuotaGateway();
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(
+          userId: 'auth-user-1',
+        ),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(
+          userId: 'auth-user-1',
+        ),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: _RecordingAIService(
+          mealSource: PlanGenerationSource.localFallback,
+          exerciseSource: PlanGenerationSource.localFallback,
+        ),
+        catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+        quotaGateway: quotaGateway,
+        currentUserId: () => 'auth-user-1',
+        scheduleReminders: () async {
+          throw StateError('notification scheduling failed');
+        },
+      );
+
+      final result = await service.generateNextPlan(
+        requestId: 'member-local-fallback',
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+      );
+      final replay = await service.generateNextPlan(
+        requestId: 'member-local-fallback',
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+      );
+
+      expect(result.generationSource, PlanGenerationSource.localFallback);
+      expect(replay.reusedExistingRequest, isTrue);
+      expect(replay.generationSource, PlanGenerationSource.localFallback);
+      expect(requestStore.commitCalls, 1);
+      expect(
+        requestStore.records['member-local-fallback']?.generationSource,
+        PlanGenerationSource.localFallback,
+      );
+      expect(quotaGateway.checkCalls, 1);
+      expect(quotaGateway.commitCalls, 0);
     },
   );
 
@@ -636,6 +690,7 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
     required int days,
     required List<MealPlanModel> meals,
     required List<LifestyleScheduleItemModel> schedule,
+    required PlanGenerationSource generationSource,
     required bool replaceExistingRange,
     required bool markGuestInitialPlanUsed,
   }) async {
@@ -655,6 +710,7 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
           .where((item) => item.sourceType == 'exercise_task')
           .length,
       scheduleItemCount: schedule.length,
+      generationSource: generationSource,
     );
   }
 }
@@ -729,11 +785,15 @@ class _RecordingScheduleDatasource extends LifestyleScheduleLocalDatasource {
 class _RecordingAIService extends AIService {
   int mealCalls = 0;
   int exerciseCalls = 0;
+  final PlanGenerationSource mealSource;
+  final PlanGenerationSource exerciseSource;
 
-  _RecordingAIService()
-    : super(
-        textGenerator: ({required modelName, required prompt}) async => '[]',
-      );
+  _RecordingAIService({
+    this.mealSource = PlanGenerationSource.ai,
+    this.exerciseSource = PlanGenerationSource.ai,
+  }) : super(
+         textGenerator: ({required modelName, required prompt}) async => '[]',
+       );
 
   @override
   Future<List<MealPlanModel>> generateMealPlan({
@@ -777,6 +837,41 @@ class _RecordingAIService extends AIService {
         updatedAt: now,
       ),
     ].map((item) => item.copyWith(scheduleDate: date)).toList();
+  }
+
+  @override
+  Future<AIGenerationResult<List<MealPlanModel>>> generateMealPlanWithSource({
+    required HealthDataInterface healthData,
+    required String userId,
+    required DateTime startDate,
+    int days = 7,
+  }) async {
+    return AIGenerationResult(
+      value: await generateMealPlan(
+        healthData: healthData,
+        userId: userId,
+        startDate: startDate,
+        days: days,
+      ),
+      source: mealSource,
+    );
+  }
+
+  @override
+  Future<AIGenerationResult<List<ExerciseTaskModel>>>
+  generateExerciseTasksWithSource({
+    required DailyHealthProfileEntity profile,
+    required DateTime startDate,
+    int days = 7,
+  }) async {
+    return AIGenerationResult(
+      value: await generateExerciseTasks(
+        profile: profile,
+        startDate: startDate,
+        days: days,
+      ),
+      source: exerciseSource,
+    );
   }
 }
 
@@ -1007,5 +1102,40 @@ class _GuardedAIService extends AIService {
   }) async {
     exerciseCalls++;
     throw StateError('generateExerciseTasks should not be called without auth');
+  }
+
+  @override
+  Future<AIGenerationResult<List<MealPlanModel>>> generateMealPlanWithSource({
+    required HealthDataInterface healthData,
+    required String userId,
+    required DateTime startDate,
+    int days = 7,
+  }) async {
+    return AIGenerationResult(
+      value: await generateMealPlan(
+        healthData: healthData,
+        userId: userId,
+        startDate: startDate,
+        days: days,
+      ),
+      source: PlanGenerationSource.ai,
+    );
+  }
+
+  @override
+  Future<AIGenerationResult<List<ExerciseTaskModel>>>
+  generateExerciseTasksWithSource({
+    required DailyHealthProfileEntity profile,
+    required DateTime startDate,
+    int days = 7,
+  }) async {
+    return AIGenerationResult(
+      value: await generateExerciseTasks(
+        profile: profile,
+        startDate: startDate,
+        days: days,
+      ),
+      source: PlanGenerationSource.ai,
+    );
   }
 }
