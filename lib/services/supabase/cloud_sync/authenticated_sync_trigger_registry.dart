@@ -1,4 +1,4 @@
-import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/cloud_sync_result.dart';
+import 'authenticated_user_data_sync_contracts.dart';
 
 /// Bridges app lifecycle/connectivity events into the same authenticated sync
 /// coordinator used by AuthController. When UI providers are not ready yet,

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/design_system.dart';
+import 'package:nano_app/core/theme/medical_ui.dart';
 import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 
 import '../../application/schedule_proof_image_service.dart';
@@ -83,7 +84,7 @@ class ScheduleProofGalleryPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final service = ref.watch(scheduleProofImageServiceProvider);
     final rewardGateway = ref.watch(scheduleRewardOnlineGatewayProvider);
-    return Scaffold(
+    return MedicalPageScaffold(
       appBar: AppBar(title: const Text('Bằng chứng nhiệm vụ')),
       body: proofs.isEmpty
           ? const Center(
@@ -328,7 +329,8 @@ class _ScheduleProofViewerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
+      ambientBackground: false,
       backgroundColor: Colors.black,
       appBar: AppBar(
         foregroundColor: Colors.white,

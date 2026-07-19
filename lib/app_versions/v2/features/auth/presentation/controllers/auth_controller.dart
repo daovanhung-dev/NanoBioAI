@@ -25,8 +25,13 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     }
 
     ref.watch(v2AuthChangesProvider);
-    await _trySyncAfterAuth(AuthSyncReason.authGateRefresh);
-    final next = await ref.watch(v2AuthRepositoryProvider).resolveAuthRouteState();
+    await _trySyncAfterAuth(
+      AuthSyncReason.authGateRefresh,
+      updateSyncState: false,
+    );
+    final next = await ref
+        .watch(v2AuthRepositoryProvider)
+        .resolveAuthRouteState();
     if (next.status == AuthRouteStatus.unauthenticated) {
       _invalidateLocalUserData();
     }
@@ -59,8 +64,7 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
   Future<RegistrationResult> signUpWithEmail(RegisterCommand command) {
     return _runAccountMutation(
       (repository) => repository.signUpWithEmail(command),
-      syncReasonForResult: (result) =>
-          result == RegistrationResult.sessionReady
+      syncReasonForResult: (result) => result == RegistrationResult.sessionReady
           ? AuthSyncReason.signUpSessionReady
           : null,
     );
@@ -109,8 +113,8 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     } catch (_) {
       // The durable marker stays queued. UI decides whether to force sign-out.
     }
-    final pending =
-        await UserDataSyncOutbox.shared.pendingCountForCurrentUser();
+    final pending = await UserDataSyncOutbox.shared
+        .pendingCountForCurrentUser();
 
     if (pending > 0 && !force) {
       return AuthSignOutResult.confirmForce(
@@ -147,7 +151,8 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
 
     try {
       final result = await action(_repository);
-      final resolvedSyncReason = syncReasonForResult?.call(result) ?? syncReason;
+      final resolvedSyncReason =
+          syncReasonForResult?.call(result) ?? syncReason;
       if (resolvedSyncReason != null) {
         await _trySyncAfterAuth(resolvedSyncReason);
       }
@@ -167,10 +172,15 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     }
   }
 
-  Future<void> _syncAfterAuth(AuthSyncReason reason) async {
-    final result = await ref
-        .read(userDataSyncControllerProvider.notifier)
-        .sync(reason);
+  Future<void> _syncAfterAuth(
+    AuthSyncReason reason, {
+    bool updateSyncState = true,
+  }) async {
+    final result = updateSyncState
+        ? await ref.read(userDataSyncControllerProvider.notifier).sync(reason)
+        : await ref
+              .read(authenticatedUserDataSyncRepositoryProvider)
+              .syncAfterAuthenticatedSession(reason);
 
     if (!result.pulledAnyData) return;
     _invalidateLocalUserData();
@@ -191,9 +201,12 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     }
   }
 
-  Future<void> _trySyncAfterAuth(AuthSyncReason reason) async {
+  Future<void> _trySyncAfterAuth(
+    AuthSyncReason reason, {
+    bool updateSyncState = true,
+  }) async {
     try {
-      await _syncAfterAuth(reason);
+      await _syncAfterAuth(reason, updateSyncState: updateSyncState);
     } catch (error, stackTrace) {
       AppLogger.warning(
         'AUTH_CONTROLLER',

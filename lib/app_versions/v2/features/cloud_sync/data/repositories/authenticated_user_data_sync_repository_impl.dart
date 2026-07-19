@@ -6,7 +6,6 @@ import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart
 
 import '../../domain/entities/cloud_sync_result.dart';
 import '../../domain/entities/user_data_snapshot.dart';
-import '../../domain/repositories/authenticated_user_data_sync_repository.dart';
 import '../datasources/user_data_sync_datasource_contracts.dart';
 
 class AuthenticatedUserDataSyncRepositoryImpl
@@ -134,8 +133,7 @@ class AuthenticatedUserDataSyncRepositoryImpl
       );
     }
 
-    if (cloudHasData &&
-        effectiveAction != GuestMergeAction.useExistingCloud) {
+    if (cloudHasData && effectiveAction != GuestMergeAction.useExistingCloud) {
       return UserDataSyncOutcome(
         userId: authUserId,
         reason: reason,
@@ -159,9 +157,7 @@ class AuthenticatedUserDataSyncRepositoryImpl
         cloudHasMeaningfulData: false,
         pulledTables: const [],
         pendingCount: await outbox.pendingCountForCurrentUser(),
-        warnings: const [
-          'Tài khoản mới cần xác nhận đồng bộ dữ liệu khách.',
-        ],
+        warnings: const ['Tài khoản mới cần xác nhận đồng bộ dữ liệu khách.'],
       );
     }
 
@@ -179,7 +175,8 @@ class AuthenticatedUserDataSyncRepositoryImpl
           userId: authUserId,
           reason: reason,
           pendingCount: await outbox.pendingCountForCurrentUser(),
-          message: 'Không tìm thấy dữ liệu khách để đồng bộ. Dữ liệu chưa bị xóa.',
+          message:
+              'Không tìm thấy dữ liệu khách để đồng bộ. Dữ liệu chưa bị xóa.',
         );
       }
 
@@ -372,7 +369,8 @@ class AuthenticatedUserDataSyncRepositoryImpl
   bool _hasMeaningfulCloudData(UserDataSnapshot? snapshot) {
     if (snapshot == null || !snapshot.hasUser) return false;
     final onboardingStatus = snapshot.user?['onboarding_status']?.toString();
-    return onboardingStatus == 'completed' || snapshot.tablesWithRows.isNotEmpty;
+    return onboardingStatus == 'completed' ||
+        snapshot.tablesWithRows.isNotEmpty;
   }
 
   List<String> _pulledTables(UserDataSnapshot snapshot) {

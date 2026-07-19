@@ -1,8 +1,2 @@
-import '../entities/cloud_sync_result.dart';
-
-abstract interface class AuthenticatedUserDataSyncRepository {
-  Future<UserDataSyncOutcome> syncAfterAuthenticatedSession(
-    AuthSyncReason reason, {
-    GuestMergeAction? guestAction,
-  });
-}
+export 'package:nano_app/services/supabase/cloud_sync/authenticated_user_data_sync_contracts.dart'
+    show AuthenticatedUserDataSyncRepository;

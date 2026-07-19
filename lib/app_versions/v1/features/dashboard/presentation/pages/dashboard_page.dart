@@ -18,10 +18,10 @@ import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/app_versions/v1/shared/widgets/ai_chat_fab.dart';
-import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/core/membership/membership_display_info.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/nabi.dart';
+import 'package:nano_app/services/supabase/cloud_sync/cloud_sync.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   final bool showStandaloneChatButton;

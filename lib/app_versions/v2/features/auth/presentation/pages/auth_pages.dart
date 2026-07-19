@@ -8,8 +8,8 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_fail
 import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_validators.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
+import 'package:nano_app/core/referral/referral_code_validator.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/sale_referral/domain/services/sale_referral_code_validator.dart';
 import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 
 class V2LoginPage extends ConsumerStatefulWidget {
@@ -175,7 +175,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   final _password = TextEditingController();
   final _confirmPassword = TextEditingController();
   final _referralCode = TextEditingController();
-  final _referralCodeValidator = const SaleReferralCodeValidator();
+  final _referralCodeValidator = const ReferralCodeValidator();
 
   var _acceptedTerms = false;
   var _loading = false;

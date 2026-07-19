@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
-import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/cloud_sync_result.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 
 import 'authenticated_sync_trigger_registry.dart';
+import 'authenticated_user_data_sync_contracts.dart';
 import 'user_data_sync_outbox.dart';
 
 class UserDataSyncOutboxRefresher with WidgetsBindingObserver {
@@ -76,7 +76,6 @@ class UserDataSyncOutboxRefresher with WidgetsBindingObserver {
 
     unawaited(refreshIfDue(force: true));
   }
-
 
   Future<void> _refreshPendingIfNeeded() async {
     final hasPendingUpload = await outbox.pendingCountForCurrentUser() > 0;
