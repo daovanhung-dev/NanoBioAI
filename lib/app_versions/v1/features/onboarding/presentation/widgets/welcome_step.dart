@@ -44,9 +44,9 @@ class _WelcomeStepState extends ConsumerState<WelcomeStep>
     return OnboardingStepShell(
       stepIndex: 0,
       showBack: false,
-      title: 'Hành trình khỏe hơn,\nbắt đầu từ hôm nay.',
+      title: 'Khỏe hơn,\nbắt đầu hôm nay.',
       subtitle:
-          'NaBi sẽ tạo lộ trình phù hợp với nhịp sống, mục tiêu và những điều bạn thực sự cần.',
+          'Một lộ trình vừa sức, theo đúng nhịp sống của bạn.',
       nextLabel: 'Tạo lộ trình của tôi',
       onNext: controller.nextStep,
       child: AnimatedBuilder(
@@ -96,7 +96,7 @@ class _PremiumWelcomeHero extends StatelessWidget {
           final compact = constraints.maxWidth < 360;
 
           return Semantics(
-            label: 'Khởi đầu hành trình chăm sóc sức khỏe cùng NaBi',
+            label: 'Bắt đầu chăm sóc sức khỏe cùng NaBi',
             child: ClipRRect(
               borderRadius: BorderRadius.circular(28),
               child: Container(
@@ -292,7 +292,7 @@ class _HealthOrbit extends StatelessWidget {
 
     return SizedBox(
       width: 154,
-      height: 154,
+      height: 15,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -597,7 +597,7 @@ class _FeatureOverviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Mỗi gợi ý được xây dựng từ mục tiêu, thể trạng và nhịp sống riêng của bạn.',
+            'Gợi ý theo mục tiêu và thể trạng của bạn.',
             style: AppTextStyles.bodySmall.copyWith(
               color: NabiPalette.mutedInk,
               height: 1.42,
@@ -608,7 +608,7 @@ class _FeatureOverviewCard extends StatelessWidget {
             icon: Icons.restaurant_menu_rounded,
             color: NabiPalette.cyan,
             title: 'Ăn uống vừa sức',
-            description: 'Gợi ý bữa ăn dễ theo, phù hợp với mục tiêu của bạn.',
+            description: 'Bữa ăn dễ theo, đúng mục tiêu.',
           ),
           const _SoftDivider(),
           const _FeatureRow(
@@ -624,7 +624,7 @@ class _FeatureOverviewCard extends StatelessWidget {
             color: NabiPalette.amber,
             title: 'Linh hoạt khi bạn thay đổi',
             description:
-                'Lộ trình được điều chỉnh theo thói quen và tiến độ thực tế.',
+                'Điều chỉnh theo tiến độ thực tế.',
           ),
         ],
       ),
@@ -881,7 +881,7 @@ class _CommitmentHint extends StatelessWidget {
           const SizedBox(width: 9),
           Expanded(
             child: Text(
-              'Mất khoảng 2–3 phút. Bạn luôn có thể điều chỉnh hồ sơ và lộ trình sau này.',
+              'Khoảng 2–3 phút. Có thể chỉnh lại sau.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.32,
@@ -910,7 +910,7 @@ class _AiCheckCard extends StatelessWidget {
       error: (_, __) => const _StatusCard(
         icon: Icons.warning_amber_rounded,
         color: NabiPalette.amber,
-        text: 'Hiện chưa thể kiểm tra kết nối trợ lý. Bạn vẫn có thể tiếp tục.',
+        text: 'Chưa kiểm tra được trợ lý. Bạn vẫn có thể tiếp tục.',
       ),
       data: (result) {
         if (result == null) return const SizedBox.shrink();

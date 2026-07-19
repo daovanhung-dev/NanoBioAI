@@ -101,7 +101,7 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
                   icon: Icons.help_outline_rounded,
                   onPressed: _loading
                       ? null
-                      : () => context.go(V2RoutePaths.forgotPassword),
+                      : () => context.push(V2RoutePaths.forgotPassword),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -128,7 +128,7 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
                 actionLabel: 'Tạo tài khoản',
                 onPressed: _loading
                     ? null
-                    : () => context.go(V2RoutePaths.register),
+                    : () => context.push(V2RoutePaths.register),
               ),
             ],
           ),
@@ -197,6 +197,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   Widget build(BuildContext context) {
     return _AuthScaffold(
       eyebrow: 'BẮT ĐẦU CÙNG NABI',
+      fallbackRoute: V2RoutePaths.login,
       heroIcon: Icons.auto_awesome_rounded,
       title: 'Tạo tài khoản NanoBio',
       subtitle: 'Bảo vệ hồ sơ để Nabi đồng hành lâu dài.',
@@ -324,7 +325,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
                 actionLabel: 'Đăng nhập',
                 onPressed: _loading
                     ? null
-                    : () => context.go(V2RoutePaths.login),
+                    : () => _returnToLogin(context),
               ),
             ],
           ),
@@ -408,6 +409,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
 
     return _AuthScaffold(
       eyebrow: 'XÁC THỰC TÀI KHOẢN',
+      fallbackRoute: V2RoutePaths.login,
       heroIcon: Icons.mark_email_read_rounded,
       title: 'Kiểm tra email nhé',
       subtitle: 'Mở liên kết xác thực gửi tới $email rồi quay lại.',
@@ -441,7 +443,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
           _RoutePrompt(
             prompt: 'Muốn dùng email khác?',
             actionLabel: 'Quay lại đăng nhập',
-            onPressed: _loading ? null : () => context.go(V2RoutePaths.login),
+            onPressed: _loading ? null : () => _returnToLogin(context),
           ),
         ],
       ),
@@ -519,6 +521,7 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
   Widget build(BuildContext context) {
     return _AuthScaffold(
       eyebrow: 'KHÔI PHỤC TÀI KHOẢN',
+      fallbackRoute: V2RoutePaths.login,
       heroIcon: Icons.key_rounded,
       title: 'Lấy lại mật khẩu',
       subtitle:
@@ -563,7 +566,7 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
             _RoutePrompt(
               prompt: 'Bạn đã nhớ mật khẩu?',
               actionLabel: 'Quay lại đăng nhập',
-              onPressed: _loading ? null : () => context.go(V2RoutePaths.login),
+              onPressed: _loading ? null : () => _returnToLogin(context),
             ),
           ],
         ),
@@ -619,6 +622,7 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
   Widget build(BuildContext context) {
     return _AuthScaffold(
       eyebrow: 'CẬP NHẬT BẢO MẬT',
+      fallbackRoute: V2RoutePaths.login,
       heroIcon: Icons.lock_reset_rounded,
       title: 'Đặt mật khẩu mới',
       subtitle:
@@ -735,6 +739,7 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
   Widget build(BuildContext context) {
     return _AuthScaffold(
       eyebrow: _error == null ? 'ĐANG XÁC THỰC' : 'CẦN THỬ LẠI',
+      fallbackRoute: V2RoutePaths.login,
       heroIcon: _error == null
           ? Icons.verified_user_rounded
           : Icons.support_agent_rounded,
@@ -767,7 +772,7 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
                   icon: Icons.login_rounded,
                   onPressed: _loading
                       ? null
-                      : () => context.go(V2RoutePaths.login),
+                      : () => _returnToLogin(context),
                 ),
               ],
             ),
@@ -805,12 +810,21 @@ String _safeErrorMessage(Object error) {
   return 'Nabi chưa thể xử lý yêu cầu này. Bạn hãy thử lại sau một chút.';
 }
 
+void _returnToLogin(BuildContext context) {
+  if (context.canPop()) {
+    context.pop();
+    return;
+  }
+  context.go(V2RoutePaths.login);
+}
+
 class _AuthScaffold extends StatelessWidget {
   final String eyebrow;
   final IconData heroIcon;
   final String title;
   final String subtitle;
   final Widget child;
+  final String? fallbackRoute;
 
   const _AuthScaffold({
     required this.eyebrow,
@@ -818,99 +832,108 @@ class _AuthScaffold extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.child,
+    this.fallbackRoute,
   });
 
   @override
   Widget build(BuildContext context) {
     final keyboardBottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final hasHistory = context.canPop();
 
-    return MedicalPageScaffold(
-      resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 860;
-            final pagePadding = constraints.maxWidth >= 560
-                ? AppSpacing.xl
-                : AppSpacing.md;
+    return PopScope(
+      canPop: fallbackRoute == null || hasHistory,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop || fallbackRoute == null) return;
+        context.go(fallbackRoute!);
+      },
+      child: MedicalPageScaffold(
+        resizeToAvoidBottomInset: true,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 860;
+              final pagePadding = constraints.maxWidth >= 560
+                  ? AppSpacing.xl
+                  : AppSpacing.md;
 
-            return Center(
-              child: SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: EdgeInsets.fromLTRB(
-                  pagePadding,
-                  AppSpacing.md,
-                  pagePadding,
-                  AppSpacing.xl + keyboardBottomInset,
-                ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: isWide ? 980 : 560),
-                  child: Material(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(AppRadius.xxl),
-                    clipBehavior: Clip.antiAlias,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppRadius.xxl),
-                        border: Border.all(color: AppColors.borderLight),
-                        boxShadow: AppShadows.soft,
-                      ),
-                      child: isWide
-                          ? IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  SizedBox(
-                                    width: 350,
-                                    child: _AuthBrandPanel(
+              return Center(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: EdgeInsets.fromLTRB(
+                    pagePadding,
+                    AppSpacing.md,
+                    pagePadding,
+                    AppSpacing.xl + keyboardBottomInset,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: isWide ? 980 : 560),
+                    child: Material(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.xxl),
+                      clipBehavior: Clip.antiAlias,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(AppRadius.xxl),
+                          border: Border.all(color: AppColors.borderLight),
+                          boxShadow: AppShadows.soft,
+                        ),
+                        child: isWide
+                            ? IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    SizedBox(
+                                      width: 350,
+                                      child: _AuthBrandPanel(
+                                        eyebrow: eyebrow,
+                                        icon: heroIcon,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(
+                                          AppSpacing.xl,
+                                        ),
+                                        child: _AuthFormContent(
+                                          title: title,
+                                          subtitle: subtitle,
+                                          child: child,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Padding(
+                                padding: EdgeInsets.all(
+                                  constraints.maxWidth < 380
+                                      ? AppSpacing.md
+                                      : AppSpacing.lg,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    _AuthHero(
                                       eyebrow: eyebrow,
                                       icon: heroIcon,
+                                      title: title,
+                                      subtitle: subtitle,
                                     ),
-                                  ),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(
-                                        AppSpacing.xl,
-                                      ),
-                                      child: _AuthFormContent(
-                                        title: title,
-                                        subtitle: subtitle,
-                                        child: child,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                    const SizedBox(height: AppSpacing.xl),
+                                    child,
+                                    const SizedBox(height: AppSpacing.lg),
+                                    const _AuthTrustNote(),
+                                  ],
+                                ),
                               ),
-                            )
-                          : Padding(
-                              padding: EdgeInsets.all(
-                                constraints.maxWidth < 380
-                                    ? AppSpacing.md
-                                    : AppSpacing.lg,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  _AuthHero(
-                                    eyebrow: eyebrow,
-                                    icon: heroIcon,
-                                    title: title,
-                                    subtitle: subtitle,
-                                  ),
-                                  const SizedBox(height: AppSpacing.xl),
-                                  child,
-                                  const SizedBox(height: AppSpacing.lg),
-                                  const _AuthTrustNote(),
-                                ],
-                              ),
-                            ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/core/theme/medical_ui.dart';
@@ -30,11 +32,17 @@ class OnboardingPage extends ConsumerWidget {
       'Rendering step ${state.currentStep + 1}/${OnboardingCatalog.totalSteps}',
     );
 
+    final hasHistory = context.canPop();
+
     return PopScope(
-      canPop: false,
+      canPop: state.currentStep <= 0 && !state.isSaving && hasHistory,
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop || state.currentStep <= 0) return;
-        ref.read(onboardingProvider.notifier).previousStep();
+        if (didPop || state.isSaving) return;
+        if (state.currentStep > 0) {
+          ref.read(onboardingProvider.notifier).previousStep();
+          return;
+        }
+        context.go(V1RoutePaths.onboardingEntry);
       },
       child: MedicalPageScaffold(
         ambientBackground: false,

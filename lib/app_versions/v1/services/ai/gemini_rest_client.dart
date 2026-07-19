@@ -78,6 +78,28 @@ class GeminiApiException implements Exception {
     this.status,
   });
 
+  bool get isAuthenticationFailure {
+    final normalizedStatus = _cleanText(status)?.toLowerCase();
+    return statusCode == 401 ||
+        statusCode == 403 ||
+        normalizedStatus == 'unauthenticated' ||
+        normalizedStatus == 'permission_denied';
+  }
+
+  bool get isModelUnavailable {
+    final normalizedStatus = _cleanText(status)?.toLowerCase();
+    return statusCode == 404 || normalizedStatus == 'not_found';
+  }
+
+  bool get isNetworkFailure {
+    final normalizedStatus = _cleanText(status)?.toLowerCase();
+    return normalizedStatus == 'network_error' ||
+        normalizedStatus == 'connection_timeout' ||
+        normalizedStatus == 'send_timeout' ||
+        normalizedStatus == 'receive_timeout' ||
+        normalizedStatus == 'tls_error';
+  }
+
   /// Xác định lỗi có thể thử lại hay không.
   bool get isTransient {
     final code = statusCode;
@@ -92,7 +114,8 @@ class GeminiApiException implements Exception {
 
     final normalizedStatus = _cleanText(status)?.toLowerCase();
 
-    return normalizedStatus == 'resource_exhausted' ||
+    return isNetworkFailure ||
+        normalizedStatus == 'resource_exhausted' ||
         normalizedStatus == 'unavailable' ||
         normalizedStatus == 'deadline_exceeded' ||
         normalizedStatus == 'internal';
@@ -224,6 +247,7 @@ class GeminiRestClient {
         final exception = _exceptionFromPayload(
           response?.data,
           statusCode: response?.statusCode,
+          fallbackStatus: _safeDioStatus(error),
           fallbackMessage: _safeDioMessage(error),
         );
 
@@ -242,12 +266,15 @@ class GeminiRestClient {
   static GeminiApiException _exceptionFromPayload(
     Object? payload, {
     int? statusCode,
+    String? fallbackStatus,
     String? fallbackMessage,
   }) {
     final rootMap = _asObjectMap(payload);
     final errorMap = _asObjectMap(rootMap?['error']);
 
-    final status = _cleanText(errorMap?['status']?.toString());
+    final status =
+        _cleanText(errorMap?['status']?.toString()) ??
+        _cleanText(fallbackStatus);
 
     final message =
         _cleanText(errorMap?['message']?.toString()) ??
@@ -338,6 +365,19 @@ class GeminiRestClient {
     }
 
     return null;
+  }
+
+  static String _safeDioStatus(DioException error) {
+    return switch (error.type) {
+      DioExceptionType.connectionTimeout => 'connection_timeout',
+      DioExceptionType.sendTimeout => 'send_timeout',
+      DioExceptionType.receiveTimeout => 'receive_timeout',
+      DioExceptionType.connectionError => 'network_error',
+      DioExceptionType.badCertificate => 'tls_error',
+      DioExceptionType.cancel => 'cancelled',
+      DioExceptionType.badResponse => 'bad_response',
+      DioExceptionType.unknown => 'network_error',
+    };
   }
 
   /// Chuyển lỗi Dio thành thông báo không chứa dữ liệu nhạy cảm.

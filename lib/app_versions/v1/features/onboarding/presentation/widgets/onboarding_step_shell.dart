@@ -343,7 +343,7 @@ class _TopBarLabel extends StatelessWidget {
         const SizedBox(width: 6),
         Expanded(
           child: Text(
-            'HỒ SƠ CÙNG NaBi · đang cá nhân hoá',
+            'HỒ SƠ CÁ NHÂN',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.labelSmall.copyWith(
@@ -465,7 +465,7 @@ class _BottomAction extends StatelessWidget {
         footer ??
         NabiPrimaryButton(
           onPressed: onNext,
-          label: nextLabel ?? 'Tiếp tục cùng NaBi',
+          label: nextLabel ?? 'Tiếp tục',
         );
 
     return AnimatedPadding(
@@ -543,16 +543,16 @@ class _OnboardingLayout {
       topBarTopPadding: shortScreen ? 6 : 11,
       topBarBottomPadding: shortScreen ? 1 : 3,
       bodyTopPadding: compact ? 8 : 10,
-      bodyBottomPadding: shortScreen ? 18 : 28,
-      bottomActionPadding: compact ? 10 : 14,
+      bodyBottomPadding: shortScreen ? 14 : 22,
+      bottomActionPadding: compact ? 8 : 12,
       titleFontSize: compact
-          ? 22
+          ? 21
           : wideScreen
-          ? 28
-          : 25,
-      subtitleFontSize: compact ? 13 : 14,
+          ? 26
+          : 23,
+      subtitleFontSize: compact ? 12.5 : 13.5,
       subtitleSpacing: compact ? 5 : 6,
-      contentSpacing: compact ? 12 : 15,
+      contentSpacing: compact ? 10 : 12,
     );
   }
 }

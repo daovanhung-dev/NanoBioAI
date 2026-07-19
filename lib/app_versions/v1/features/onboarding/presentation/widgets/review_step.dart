@@ -83,16 +83,16 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
 
     return OnboardingStepShell(
       stepIndex: 8,
-      title: 'Mọi thứ đã sẵn sàng,\nđể bắt đầu hành trình.',
+      title: 'Sẵn sàng tạo lộ trình',
       subtitle:
-          'Kiểm tra nhanh lần cuối. Bạn có thể quay lại chỉnh sửa bất kỳ phần nào trước khi tạo lịch trình.',
+          'Kiểm tra nhanh trước khi tạo lộ trình.',
       onBack: controller.previousStep,
       footer: NabiPrimaryButton(
         onPressed: state.isSaving
             ? null
             : () => _submit(context, state, controller),
         label: state.isSaving
-            ? 'NaBi đang chuẩn bị lịch trình...'
+            ? 'NaBi đang tạo lộ trình...'
             : 'Tạo lộ trình của tôi',
         icon: Icons.auto_awesome_rounded,
         isLoading: state.isSaving,
@@ -193,7 +193,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
                 accent: NabiPalette.violet,
                 title: 'Mục tiêu của bạn',
                 subtitle:
-                    'NaBi sẽ ưu tiên các gợi ý phù hợp với những điều bạn muốn đạt được.',
+                    'NaBi sẽ ưu tiên các mục tiêu này.',
                 values: _labels(OnboardingCatalog.goals, state.goals),
                 fallback: _value(
                   state.otherGoal,
@@ -208,7 +208,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
                 accent: NabiPalette.amber,
                 title: 'Điều cần lưu ý',
                 subtitle:
-                    'Các thông tin này giúp lộ trình thận trọng và phù hợp hơn.',
+                    'Giúp lộ trình phù hợp và thận trọng hơn.',
                 values: _labels(OnboardingCatalog.conditions, state.conditions),
                 fallback: _value(
                   state.otherCondition,
@@ -227,7 +227,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
                       accent: NabiPalette.cyan,
                       title: 'Thói quen & nhịp sinh hoạt',
                       subtitle:
-                          'Những tín hiệu quan trọng để lịch trình gần hơn với đời sống thực tế.',
+                          'Giúp lịch trình sát với sinh hoạt thực tế.',
                       onEdit: () => controller.goToStep(4),
                     ),
                     const SizedBox(height: 15),
@@ -257,7 +257,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
                       accent: NabiPalette.rose,
                       title: 'Thông tin chăm sóc thêm',
                       subtitle:
-                          'Các dữ liệu tùy chọn giúp NaBi tránh những gợi ý không phù hợp.',
+                          'Giúp NaBi tránh gợi ý không phù hợp.',
                       onEdit: () => controller.goToStep(5),
                     ),
                     const SizedBox(height: 16),
@@ -725,11 +725,11 @@ class _ReadinessNotice extends StatelessWidget {
         : Icons.edit_note_rounded;
 
     final message = isReady
-        ? 'Hồ sơ đã sẵn sàng. NaBi sẽ dùng những thông tin này để tạo lịch trình phù hợp với bạn.'
+        ? 'Hồ sơ đã sẵn sàng để tạo lộ trình.'
         : !agreed
-        ? 'Bạn cần xác nhận phần lưu ý an toàn trước khi tạo lịch trình.'
+        ? 'Hãy xác nhận lưu ý an toàn trước.'
         : !canSave
-        ? 'Một vài thông tin cơ bản vẫn cần được hoàn thiện trước khi tiếp tục.'
+        ? 'Cần hoàn thiện một vài thông tin cơ bản.'
         : 'Bạn có thể rà soát lại hồ sơ trước khi tạo lịch trình.';
 
     return AnimatedContainer(
@@ -1329,8 +1329,8 @@ class _ConsentReviewCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   agreed
-                      ? 'NaBi là công cụ hỗ trợ chăm sóc hằng ngày, không thay thế chẩn đoán hoặc điều trị y tế.'
-                      : 'Bạn cần xác nhận ở bước trước trước khi tạo lịch trình.',
+                      ? 'NaBi hỗ trợ chăm sóc, không thay thế chuyên gia y tế.'
+                      : 'Hãy xác nhận ở bước trước.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: NabiPalette.mutedInk,
                     height: 1.32,
@@ -1378,7 +1378,7 @@ class _ReviewFootnote extends StatelessWidget {
           const SizedBox(width: 9),
           Expanded(
             child: Text(
-              'Sau khi tạo lịch trình, bạn vẫn có thể cập nhật hồ sơ để NaBi điều chỉnh gợi ý phù hợp hơn.',
+              'Bạn vẫn có thể cập nhật hồ sơ sau.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.3,

@@ -1,109 +1,25 @@
-# Auth Login Runtime Config Fix
+# NanoBio AI Chat Fix — Patch Manifest
 
-## Mục tiêu
+## Runtime source
 
-Sửa trạng thái **Đăng nhập chưa sẵn sàng** khi ứng dụng được chạy hoặc build
-bằng lệnh Flutter thông thường.
+- `lib/app_versions/v1/services/ai/ai_exceptions.dart`
+- `lib/app_versions/v1/services/ai/gemini_rest_client.dart`
+- `lib/app_versions/v1/services/ai/ai_chat_service.dart`
+- `lib/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository_impl.dart`
+- `lib/app_versions/v1/features/ai_chat/presentation/controllers/ai_chat_controller.dart`
 
-## Nguyên nhân
+## Secure launch/build tooling
 
-`main.dart` cần Supabase URL và anon key trước khi khởi tạo auth. `.env` đầy đủ
-không được đóng gói vào app, còn bản chạy/build trực tiếp không truyền
-`--dart-define-from-file`, nên auth bị đánh dấu thiếu cấu hình và nút đăng nhập
-bị khóa.
+- `tools/prepare_dart_defines.ps1`
+- `tools/run_ai_chat.ps1`
+- `tools/build_ai_chat_apk.ps1`
+- `tools/test_gemini_connection.ps1`
+- `.env.example`
 
-## Thay đổi chính
+## Tests and documentation
 
-- Thêm `assets/config/auth.env` chỉ chứa public Supabase client config.
-- `AppEnv` tự nạp fallback này từ assets.
-- Giữ thứ tự ưu tiên: dart-define -> dotenv local -> public auth asset.
-- Whitelist key để không đóng gói Gemini key hoặc service-role key.
-- Loại bỏ UTF-8 BOM khỏi `.env` local.
-- Thêm test cho config fallback và whitelist.
+- `test/app_versions/v1/services/ai/gemini_rest_client_test.dart`
+- `test/app_versions/v1/services/ai/ai_chat_service_test.dart`
+- `docs/AI_CHAT_API_FIX.md`
 
-## Chạy và build
-
-```powershell
-flutter run -t lib/main.dart
-flutter build apk --release -t lib/main.dart
-```
-
-Có thể tiếp tục dùng `tools/run_v2.ps1` và `tools/build_authenticated.ps1` để
-validate hoặc ghi đè cấu hình theo môi trường.
-
-## Kiểm tra đề xuất
-
-```powershell
-dart format lib/core/config/app_env.dart test/core/config/app_env_test.dart test/core/config/bundled_auth_config_contract_test.dart
-flutter analyze lib/core/config/app_env.dart test/core/config/app_env_test.dart test/core/config/bundled_auth_config_contract_test.dart
-flutter test test/core/config/app_env_test.dart test/core/config/bundled_auth_config_contract_test.dart test/app_versions/v2/features/auth/auth_pages_smoke_test.dart
-```
-
----
-
-# Medical UI/UX Refresh toàn dự án
-
-## Mục tiêu
-
-Nâng cấp view của V1, V2, V3, Sale và Admin theo một hệ thống UI y tế hiện đại,
-chuyên nghiệp, dễ đọc và nhất quán mà không thay đổi nghiệp vụ.
-
-## Thay đổi chính
-
-- Medical palette mới: clinical blue, wellness teal, navy và màu trạng thái ngữ nghĩa.
-- Material 3 component theme cho input, button, card, navigation, dialog, sheet,
-  picker, chip, focus và feedback.
-- `AppExperience.builder` dùng chung cho mọi app surface.
-- Bộ primitive mới trong `lib/core/theme/medical_ui.dart`.
-- Tất cả view production dùng `MedicalPageScaffold`; onboarding, splash và màn
-  loading giữ nền chuyên biệt bằng chế độ không chèn ambient background.
-- Auth V2 hỗ trợ bố cục mobile/desktop, Dashboard/Hub/Settings/Home và trạng thái
-  chưa có dữ liệu được nâng cấp.
-- Thêm contract test và tài liệu triển khai tại
-  `docs/features/medical-ui-refresh/` và `docs/test/medical-ui-refresh/`.
-
-## Kiểm tra đề xuất
-
-```powershell
-dart format lib test
-flutter analyze
-flutter test
-flutter run -t lib/main.dart
-```
-
----
-
-# Unified App Entrypoint và phân quyền giao diện
-
-## Mục tiêu
-
-- Chỉ chạy `lib/main.dart` cho toàn bộ V1/V2/V3/Admin.
-- Một Supabase session tự chọn giao diện theo quyền tài khoản.
-
-## Quy tắc
-
-- User-only: giao diện người dùng.
-- Admin-only: giao diện quản trị ngay sau đăng nhập.
-- User + Admin: mặc định giao diện người dùng, có nút chuyển Admin trong Cài đặt
-  và nút quay lại giao diện người dùng ở Admin top bar.
-
-## Backend cần áp dụng
-
-Chạy `docs/supabase/17-unified-app-role-surface.sql` trên Supabase sandbox để bổ sung `public.users.app_access_mode` và output
-`can_use_user_app` của `get_my_admin_session()`. Không chạy destructive
-`docs/supabase/config.sql` trên production.
-
-## Chạy ứng dụng
-
-```powershell
-flutter run -t lib/main.dart
-```
-
-## Kiểm tra đề xuất
-
-```powershell
-dart format lib test integration_test
-flutter analyze
-flutter test
-flutter build apk --debug -t lib/main.dart
-```
+`.env` thật không nằm trong gói bàn giao.

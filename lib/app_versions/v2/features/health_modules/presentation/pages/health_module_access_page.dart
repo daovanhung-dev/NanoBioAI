@@ -84,7 +84,7 @@ class _HealthModuleRouteForwarderState
     if (_scheduled) return;
     _scheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.go(widget.location);
+      if (mounted) context.pushReplacement(widget.location);
     });
   }
 

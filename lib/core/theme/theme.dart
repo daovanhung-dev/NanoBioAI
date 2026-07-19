@@ -6,6 +6,7 @@ export 'app_radius.dart';
 export 'app_shadows.dart';
 export 'app_gradients.dart';
 export 'app_animations.dart';
+export 'app_motion.dart';
 export 'app_duration.dart';
 export 'app_icons.dart';
 export 'app_decoration.dart';

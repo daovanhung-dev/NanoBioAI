@@ -42,7 +42,7 @@ class HealthScoreHabitsPage extends ConsumerWidget {
                   fallback: 'Đăng nhập để tiếp tục.',
                 ),
                 actionLabel: 'Đăng nhập',
-                onAction: () => context.go(V2RoutePaths.login),
+                onAction: () => context.push(V2RoutePaths.login),
               ),
             HealthScoreHabitsViewStatus.empty => _HealthScoreSupportState(
               icon: Icons.history_toggle_off_rounded,

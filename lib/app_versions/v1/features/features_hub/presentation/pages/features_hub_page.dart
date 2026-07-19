@@ -33,24 +33,18 @@ class FeaturesHubPage extends StatelessWidget {
                     eyebrow: 'TRUNG TÂM CHĂM SÓC',
                     title: 'Chăm sức khỏe theo cách dễ hiểu',
                     subtitle: 'Chọn công cụ theo mục tiêu chăm sóc của bạn.',
-                    icon: Icons.health_and_safety_rounded,
+                    icon: Icons.favorite_rounded,
                     actions: [
                       MedicalStatusPill(
                         label: '$totalFeatureCount công cụ',
                         icon: Icons.widgets_outlined,
-                        foregroundColor: AppColors.textInverse,
-                        backgroundColor: Colors.white.withValues(alpha: .14),
-                        borderColor: Colors.white.withValues(alpha: .22),
+                        foregroundColor: AppColors.danger,
+                        backgroundColor: Colors.pink.withValues(alpha: .14),
+                        borderColor: Colors.pink.withValues(alpha: .22),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  const MedicalSectionHeader(
-                    key: Key('current-features-section'),
-                    title: 'Công cụ chăm sóc hiện tại',
-                    subtitle: 'Chọn mục bạn muốn dùng hôm nay.',
-                    icon: Icons.dashboard_customize_outlined,
-                  ),
                   const SizedBox(height: AppSpacing.md),
                   _FeatureGrid(
                     itemCount: currentFeatures.length,
@@ -101,7 +95,7 @@ class FeaturesHubPage extends StatelessWidget {
         title: 'Nhiệm vụ hôm nay',
         subtitle: 'Hoàn thành từng việc nhỏ.',
         icon: Icons.favorite_rounded,
-        color: AppColors.success,
+        color: AppColors.danger,
         onTap: () => context.push(V1RoutePaths.healthTracking),
       ),
       _FeatureAction(

@@ -612,60 +612,64 @@ class NabiPrimaryButton extends StatelessWidget {
       button: true,
       enabled: enabled,
       label: label,
-      child: Opacity(
-        opacity: enabled ? 1 : 0.52,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: NabiPalette.button,
-            borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-            boxShadow: [
-              BoxShadow(
-                color: NabiPalette.royalBlue.withValues(alpha: 0.30),
-                blurRadius: 20,
-                offset: const Offset(0, 9),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-            child: InkWell(
-              onTap: enabled ? onPressed : null,
+      child: AppPressScale(
+        enabled: enabled,
+        pressedScale: 0.98,
+        child: Opacity(
+          opacity: enabled ? 1 : 0.52,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: NabiPalette.button,
               borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-              splashColor: Colors.white.withValues(alpha: 0.20),
-              highlightColor: Colors.white.withValues(alpha: 0.10),
-              child: SizedBox(
-                height: 52,
-                child: Center(
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.buttonSmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0,
+              boxShadow: [
+                BoxShadow(
+                  color: NabiPalette.royalBlue.withValues(alpha: 0.30),
+                  blurRadius: 20,
+                  offset: const Offset(0, 9),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
+              child: InkWell(
+                onTap: enabled ? onPressed : null,
+                borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
+                splashColor: Colors.white.withValues(alpha: 0.20),
+                highlightColor: Colors.white.withValues(alpha: 0.10),
+                child: SizedBox(
+                  height: 48,
+                  child: Center(
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.buttonSmall.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(icon, color: Colors.white, size: 20),
-                          ],
-                        ),
+                              const SizedBox(width: 8),
+                              Icon(icon, color: Colors.white, size: 20),
+                            ],
+                          ),
+                  ),
                 ),
               ),
             ),
@@ -690,38 +694,42 @@ class NabiSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.72),
-      borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-      child: InkWell(
-        onTap: onPressed,
+    return AppPressScale(
+      enabled: onPressed != null,
+      pressedScale: 0.98,
+      child: Material(
+        color: Colors.white.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-        child: Container(
-          height: 50,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-            border: Border.all(color: NabiPalette.line),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: NabiPalette.royalBlue, size: 19),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.buttonSmall.copyWith(
-                    color: NabiPalette.deepBlue,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
+          child: Container(
+            height: 50,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
+              border: Border.all(color: NabiPalette.line),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: NabiPalette.royalBlue, size: 19),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.buttonSmall.copyWith(
+                      color: NabiPalette.deepBlue,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

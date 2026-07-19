@@ -118,92 +118,102 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
             .where(data.session.canAccessSection)
             .toList(growable: false);
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final isCompact = constraints.maxWidth < _desktopBreakpoint;
-            final isWide = constraints.maxWidth >= _wideBreakpoint;
+        final hasHistory = context.canPop();
+        final isDashboard = data.section == AdminPanelSection.dashboard;
 
-            return MedicalPageScaffold(
-              backgroundColor: AppColors.scaffold,
-              drawer: isCompact
-                  ? _AdminDrawer(
-                      selected: data.section,
-                      sections: sections,
-                      onSelected: _goToSection,
-                      onShowGuide: _showGuide,
-                      onSignOut: _signOut,
-                    )
-                  : null,
-              body: Stack(
-                children: [
-                  const Positioned.fill(
-                    child: RepaintBoundary(child: _AdminAmbientBackdrop()),
-                  ),
-                  Builder(
-                    builder: (scaffoldContext) {
-                      return Row(
-                        children: [
-                          if (!isCompact)
-                            _AdminSideBar(
-                              selected: data.section,
-                              sections: sections,
-                              extended: isWide,
-                              onSelected: _goToSection,
-                              onShowGuide: _showGuide,
-                              onSignOut: _signOut,
-                            ),
-                          Expanded(
-                            child: Column(
-                              children: [
-                                _TopBar(
-                                  state: data,
-                                  search: _search,
-                                  isCompact: isCompact,
-                                  onMenuPressed: isCompact
-                                      ? () => Scaffold.of(
-                                          scaffoldContext,
-                                        ).openDrawer()
-                                      : null,
-                                  onSearch: (value) {
-                                    ref
-                                        .read(adminControllerProvider.notifier)
-                                        .search(value);
-                                  },
-                                  onRefresh: () {
-                                    ref
-                                        .read(adminControllerProvider.notifier)
-                                        .refresh();
-                                  },
-                                  onShowGuide: _showGuide,
-                                  onShowUserApp: data.session.canUseUserApp
-                                      ? _showUserApp
-                                      : null,
-                                  onSignOut: _signOut,
-                                ),
-                                Expanded(
-                                  child: _AdminContent(
-                                    state: data,
-                                    onAction: _runAction,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
+        return PopScope(
+          canPop: isDashboard || hasHistory,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop || isDashboard) return;
+            context.go(AdminRoutePaths.dashboard);
           },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < _desktopBreakpoint;
+              final isWide = constraints.maxWidth >= _wideBreakpoint;
+
+              return MedicalPageScaffold(
+                backgroundColor: AppColors.scaffold,
+                drawer: isCompact
+                    ? _AdminDrawer(
+                        selected: data.section,
+                        sections: sections,
+                        onSelected: _goToSection,
+                        onShowGuide: _showGuide,
+                        onSignOut: _signOut,
+                      )
+                    : null,
+                body: Stack(
+                  children: [
+                    const Positioned.fill(
+                      child: RepaintBoundary(child: _AdminAmbientBackdrop()),
+                    ),
+                    Builder(
+                      builder: (scaffoldContext) {
+                        return Row(
+                          children: [
+                            if (!isCompact)
+                              _AdminSideBar(
+                                selected: data.section,
+                                sections: sections,
+                                extended: isWide,
+                                onSelected: _goToSection,
+                                onShowGuide: _showGuide,
+                                onSignOut: _signOut,
+                              ),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  _TopBar(
+                                    state: data,
+                                    search: _search,
+                                    isCompact: isCompact,
+                                    onMenuPressed: isCompact
+                                        ? () => Scaffold.of(
+                                            scaffoldContext,
+                                          ).openDrawer()
+                                        : null,
+                                    onSearch: (value) {
+                                      ref
+                                          .read(adminControllerProvider.notifier)
+                                          .search(value);
+                                    },
+                                    onRefresh: () {
+                                      ref
+                                          .read(adminControllerProvider.notifier)
+                                          .refresh();
+                                    },
+                                    onShowGuide: _showGuide,
+                                    onShowUserApp: data.session.canUseUserApp
+                                        ? _showUserApp
+                                        : null,
+                                    onSignOut: _signOut,
+                                  ),
+                                  Expanded(
+                                    child: _AdminContent(
+                                      state: data,
+                                      onAction: _runAction,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         );
       },
     );
   }
 
   void _goToSection(AdminPanelSection section) {
-    context.go(section.routePath);
+    context.push(section.routePath);
   }
 
   void _showGuide() {
@@ -1811,7 +1821,7 @@ class _MetricCard extends StatelessWidget {
 
     return _InteractivePanel(
       accent: color,
-      onTap: target == null ? null : () => context.go(target.routePath),
+      onTap: target == null ? null : () => context.push(target.routePath),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -1887,7 +1897,7 @@ class _ShortcutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return _InteractivePanel(
       accent: AppColors.primary,
-      onTap: () => context.go(section.routePath),
+      onTap: () => context.push(section.routePath),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Row(

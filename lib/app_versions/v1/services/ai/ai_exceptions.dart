@@ -29,15 +29,36 @@ class AIAuthenticationException implements Exception {
   const AIAuthenticationException();
 
   static bool matches(Object error) {
-    if (error is! GeminiApiException) {
-      return false;
-    }
+    return error is GeminiApiException && error.isAuthenticationFailure;
+  }
 
-    final status = error.status?.toLowerCase();
-    return error.statusCode == 401 ||
-        error.statusCode == 403 ||
-        status == 'unauthenticated' ||
-        status == 'permission_denied';
+  @override
+  String toString() => userMessage;
+}
+
+class AINetworkException implements Exception {
+  static const userMessage =
+      'Không thể kết nối với AI. Bạn kiểm tra mạng rồi thử lại nhé.';
+
+  const AINetworkException();
+
+  static bool matches(Object error) {
+    if (error is TimeoutException) return true;
+    return error is GeminiApiException && error.isNetworkFailure;
+  }
+
+  @override
+  String toString() => userMessage;
+}
+
+class AIModelUnavailableException implements Exception {
+  static const userMessage =
+      'Mô hình AI hiện chưa khả dụng. Bạn thử lại sau một chút nhé.';
+
+  const AIModelUnavailableException();
+
+  static bool matches(Object error) {
+    return error is GeminiApiException && error.isModelUnavailable;
   }
 
   @override

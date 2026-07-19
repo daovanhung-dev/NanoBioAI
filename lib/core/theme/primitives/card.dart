@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app_motion.dart';
 import '../tokens/color_tokens.dart';
 import '../tokens/spacing_tokens.dart';
 import '../tokens/component_tokens.dart';
@@ -128,22 +129,25 @@ class AppCard extends StatelessWidget {
     final effectivePadding =
         padding ?? EdgeInsets.all(AppSpacingTokens.cardPadding);
 
-    return AnimatedContainer(
-      duration: AppMotionTokens.card,
-      curve: AppMotionTokens.defaultCurve,
-      decoration: BoxDecoration(
-        color: _getBackgroundColor(isDark),
-        borderRadius: BorderRadius.circular(AppRadiusTokens.card),
-        border: _getBorder(isDark),
-        boxShadow: _getShadow(isDark),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadiusTokens.card),
-        child: InkWell(
-          onTap: onTap,
+    return AppPressScale(
+      enabled: onTap != null,
+      child: AnimatedContainer(
+        duration: AppMotionTokens.card,
+        curve: AppMotionTokens.defaultCurve,
+        decoration: BoxDecoration(
+          color: _getBackgroundColor(isDark),
           borderRadius: BorderRadius.circular(AppRadiusTokens.card),
-          child: Padding(padding: effectivePadding, child: child),
+          border: _getBorder(isDark),
+          boxShadow: _getShadow(isDark),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadiusTokens.card),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadiusTokens.card),
+            child: Padding(padding: effectivePadding, child: child),
+          ),
         ),
       ),
     );

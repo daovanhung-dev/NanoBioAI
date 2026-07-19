@@ -73,7 +73,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
     final authenticated = currentSupabaseUserIdOrNull() != null;
     if (!authenticated) {
       if (!mounted) return;
-      context.go(V2RoutePaths.login);
+      context.push(V2RoutePaths.login);
       return;
     }
     if (!_accepted || _submitting) return;
@@ -92,7 +92,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
 
       if (!mounted) return;
       if (updatedState.isActive) {
-        context.go(V2RoutePaths.sale);
+        context.pushReplacement(V2RoutePaths.sale);
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(

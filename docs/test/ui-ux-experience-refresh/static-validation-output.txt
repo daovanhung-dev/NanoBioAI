@@ -1,0 +1,27 @@
+NanoBio UI/UX Experience Refresh - Static Validation
+Timestamp: 2026-07-19T17:35:29+07:00
+
+Changed Dart files: 34
+Delimiter lexical check: PASS
+Package import resolution: PASS
+Relative import resolution: PASS
+View/theme scope guard: PASS
+GoRouter import contract: PASS
+Five AppExperience surfaces: PASS
+Onboarding PopScope fallback: PASS
+Auth auxiliary PopScope fallback: PASS
+Admin section PopScope fallback: PASS
+Onboarding literal words: 2218 -> 1717 (reduced 501, 22.6%)
+Onboarding literal chars: 10595 -> 8377 (reduced 2218, 20.9%)
+
+AppExperience surfaces:
+- app/bio_ai_app.dart
+- app_versions/admin/app/bio_ai_admin_app.dart
+- app_versions/v1/app/bio_ai_v1_app.dart
+- app_versions/v2/app/bio_ai_v2_app.dart
+- app_versions/v3/app/bio_ai_v3_app.dart
+
+PopScope surfaces:
+- app_versions/admin/features/admin_panel/presentation/pages/admin_shell_page.dart
+- app_versions/v1/features/onboarding/presentation/pages/onboarding_page.dart
+- app_versions/v2/features/auth/presentation/pages/auth_pages.dart

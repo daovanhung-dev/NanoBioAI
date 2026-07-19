@@ -20,9 +20,9 @@ class ConditionsStep extends ConsumerWidget {
 
     return OnboardingStepShell(
       stepIndex: 3,
-      title: 'Cơ thể bạn đang cần lưu ý gì?',
+      title: 'Điều cần lưu ý',
       subtitle:
-          'Chọn gần đúng để NaBi thận trọng hơn khi gợi ý. Đây không phải chẩn đoán y khoa.',
+          'Chọn để NaBi gợi ý thận trọng hơn.',
       onBack: controller.previousStep,
       onNext: controller.nextStep,
       child: LayoutBuilder(
@@ -45,8 +45,8 @@ class ConditionsStep extends ConsumerWidget {
                     accentColor: NabiPalette.rose,
                     icon: Icons.health_and_safety_outlined,
                     eyebrow: 'TÌNH TRẠNG CẦN LƯU Ý',
-                    title: 'Triệu chứng hoặc tình trạng hiện tại',
-                    subtitle: 'Chọn điều NaBi cần cân nhắc khi gợi ý.',
+                    title: 'Tình trạng hiện tại',
+                    subtitle: 'Chọn điều NaBi cần cân nhắc.',
                     compact: layout.isCompact,
                     trailing: _SelectedCountBadge(
                       count: state.conditions.length,
@@ -84,9 +84,9 @@ class ConditionsStep extends ConsumerWidget {
                     accentColor: NabiPalette.violet,
                     icon: Icons.edit_note_rounded,
                     eyebrow: 'GHI CHÚ BỔ SUNG',
-                    title: 'Có điều gì bạn muốn NaBi biết thêm?',
+                    title: 'Ghi chú thêm',
                     subtitle:
-                        'Bạn có thể bỏ qua phần này và bổ sung sau bất cứ lúc nào.',
+                        'Có thể bỏ qua và bổ sung sau.',
                     compact: layout.isCompact,
                     child: Column(
                       children: [
@@ -465,7 +465,7 @@ class _ChoiceGuidance extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Có thể chọn nhiều mục. “Không có vấn đề” sẽ thay các mục khác.',
+              'Có thể chọn nhiều mục.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.34,

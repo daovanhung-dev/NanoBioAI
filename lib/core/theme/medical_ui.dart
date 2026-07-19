@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 import 'app_gradients.dart';
+import 'app_motion.dart';
 import 'app_radius.dart';
 import 'app_shadows.dart';
 import 'app_spacing.dart';
@@ -50,7 +51,7 @@ class MedicalPageScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor ?? AppColors.background,
       appBar: appBar,
-      body: content,
+      body: AppViewMotion(child: content),
       drawer: drawer,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
@@ -132,7 +133,18 @@ class MedicalScrollPage extends StatelessWidget {
                               actions: actions,
                             ),
                             const SizedBox(height: AppSpacing.lg),
-                            ..._withSectionSpacing(children),
+                            ..._withSectionSpacing(
+                              children.indexed
+                                  .map(
+                                    (entry) => AppViewMotion(
+                                      delay: Duration(
+                                        milliseconds: 45 * entry.$1,
+                                      ),
+                                      child: entry.$2,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
                           ],
                         ),
                       ),
@@ -435,11 +447,15 @@ class MedicalSurfaceCard extends StatelessWidget {
             ),
           );
 
-    if (semanticLabel == null) return content;
+    final responsiveContent = onTap == null
+        ? content
+        : AppPressScale(child: content);
+
+    if (semanticLabel == null) return responsiveContent;
     return Semantics(
       button: onTap != null,
       label: semanticLabel,
-      child: content,
+      child: responsiveContent,
     );
   }
 }

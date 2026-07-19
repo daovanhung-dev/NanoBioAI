@@ -319,6 +319,13 @@ class AIChatService {
             location: StackTrace.current,
           );
 
+          if (AIAuthenticationException.matches(error)) {
+            Error.throwWithStackTrace(
+              const AIAuthenticationException(),
+              stackTrace,
+            );
+          }
+
           if (!transient) {
             break;
           }
@@ -468,12 +475,20 @@ class AIChatService {
   Never _throwTypedFailure(Object error, StackTrace stackTrace) {
     if (error is AIConfigurationUnavailableException ||
         error is AIAuthenticationException ||
+        error is AINetworkException ||
+        error is AIModelUnavailableException ||
         error is AIOverloadedException ||
         error is AIResponseInvalidException) {
       Error.throwWithStackTrace(error, stackTrace);
     }
     if (AIAuthenticationException.matches(error)) {
       Error.throwWithStackTrace(const AIAuthenticationException(), stackTrace);
+    }
+    if (AINetworkException.matches(error)) {
+      Error.throwWithStackTrace(const AINetworkException(), stackTrace);
+    }
+    if (AIModelUnavailableException.matches(error)) {
+      Error.throwWithStackTrace(const AIModelUnavailableException(), stackTrace);
     }
     if (AIOverloadedException.matches(error)) {
       Error.throwWithStackTrace(const AIOverloadedException(), stackTrace);
@@ -545,7 +560,7 @@ class AIChatModelCandidates {
   // candidate, so chat can recover without pretending a local reply is AI.
   static const defaultFallbackModels = [
     'gemini-3.5-flash',
-    'gemini-2.5-flash-lite',
+    'gemini-3.1-flash-lite',
   ];
 
   const AIChatModelCandidates._();

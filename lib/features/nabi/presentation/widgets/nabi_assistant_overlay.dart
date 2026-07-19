@@ -178,7 +178,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
 
     controller.setChatThinking();
     if (!mounted) return;
-    context.go(widget.config.chatRoute);
+    context.push(widget.config.chatRoute);
   }
 }
 

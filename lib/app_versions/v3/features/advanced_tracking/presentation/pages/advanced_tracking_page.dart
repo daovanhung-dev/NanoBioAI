@@ -40,7 +40,7 @@ class AdvancedTrackingPage extends ConsumerWidget {
               message:
                   viewModel.message ?? 'Bạn cần đăng nhập để xem lộ trình.',
               actionLabel: 'Đăng nhập',
-              onAction: () async => context.go(V2RoutePaths.login),
+              onAction: () async => context.push(V2RoutePaths.login),
             ),
             AdvancedTrackingViewStatus.locked => _SupportState(
               icon: Icons.workspace_premium_rounded,

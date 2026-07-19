@@ -8,11 +8,11 @@ class AppRadius {
   static const double xxs = 2;
   static const double xs = 6;
   static const double sm = 10;
-  static const double md = 14;
-  static const double lg = 18;
-  static const double xl = 24;
-  static const double xxl = 30;
-  static const double xxxl = 38;
+  static const double md = 12;
+  static const double lg = 16;
+  static const double xl = 22;
+  static const double xxl = 28;
+  static const double xxxl = 34;
   static const double circular = 9999;
 
   static const double chip = circular;

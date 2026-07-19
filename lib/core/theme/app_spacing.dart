@@ -12,12 +12,12 @@ class AppSpacing {
   static const double xxs = 2;
   static const double xs = 4;
   static const double sm = 8;
-  static const double md = 16;
-  static const double lg = 24;
-  static const double xl = 32;
-  static const double xxl = 48;
-  static const double xxxl = 64;
-  static const double xxxxl = 96;
+  static const double md = 14;
+  static const double lg = 20;
+  static const double xl = 28;
+  static const double xxl = 40;
+  static const double xxxl = 56;
+  static const double xxxxl = 80;
 
   // ============================================================
   // MICRO SPACING
@@ -87,7 +87,7 @@ class AppSpacing {
 
   static const double touchTargetMin = 48;
   static const double buttonMinHeight = 48;
-  static const double inputMinHeight = 56;
+  static const double inputMinHeight = 52;
   static const double iconButtonSize = 40;
   static const double avatarSizeSmall = 32;
   static const double avatarSizeMedium = 40;

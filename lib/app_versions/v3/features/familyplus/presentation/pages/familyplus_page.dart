@@ -58,7 +58,7 @@ class _FamilyPlusBody extends ConsumerWidget {
             fallback: 'Bạn thử lại sau ít phút.',
           ),
           actionLabel: 'Đăng nhập',
-          onAction: () => context.go(V2RoutePaths.login),
+          onAction: () => context.push(V2RoutePaths.login),
         );
       case FamilyPlusViewStatus.locked:
         return _SupportState(

@@ -28,8 +28,8 @@ class BasicInfoStep extends ConsumerWidget {
 
     return OnboardingStepShell(
       stepIndex: 1,
-      title: 'Một vài thông tin cơ bản',
-      subtitle: 'Chọn gần đúng để NaBi gợi ý phù hợp hơn.',
+      title: 'Thông tin cơ bản',
+      subtitle: 'Thông tin gần đúng là đủ.',
       onBack: controller.previousStep,
       onNext: controller.nextStep,
       child: LayoutBuilder(
@@ -42,7 +42,7 @@ class BasicInfoStep extends ConsumerWidget {
             eyebrow: 'THỂ TRẠNG HIỆN TẠI',
             title: 'Cơ thể bạn đang ở đâu?',
             subtitle:
-                'Bạn có thể nhập gần đúng. BMI chỉ là chỉ số tham khảo ban đầu.',
+                'Nhập gần đúng. BMI chỉ để tham khảo.',
             compact: layout.isCompact,
             child: Column(
               children: [
@@ -103,9 +103,9 @@ class BasicInfoStep extends ConsumerWidget {
             accentColor: NabiPalette.amber,
             icon: Icons.schedule_outlined,
             eyebrow: 'NHỊP SỐNG HẰNG NGÀY',
-            title: 'Một ngày của bạn thường diễn ra thế nào?',
+            title: 'Nhịp sinh hoạt thường ngày',
             subtitle:
-                'NaBi sẽ dùng thông tin này để sắp xếp gợi ý vào những thời điểm phù hợp.',
+                'Giúp NaBi chọn thời điểm phù hợp.',
             required: true,
             compact: layout.isCompact,
             child: Column(
@@ -136,9 +136,9 @@ class BasicInfoStep extends ConsumerWidget {
                     accentColor: NabiPalette.violet,
                     icon: Icons.person_outline_rounded,
                     eyebrow: 'HỒ SƠ CƠ BẢN',
-                    title: 'Cho NaBi biết một chút về bạn',
+                    title: 'Thông tin của bạn',
                     subtitle:
-                        'Các thông tin này giúp lộ trình được điều chỉnh sát hơn với thể trạng của bạn.',
+                        'Giúp lộ trình sát với thể trạng hơn.',
                     required: true,
                     compact: layout.isCompact,
                     child: Column(
@@ -648,7 +648,7 @@ class _LifestyleHint extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Không cần chọn hoàn toàn chính xác. Hãy chọn nhóm gần nhất với lịch sinh hoạt của bạn.',
+              'Chọn nhóm gần nhất với sinh hoạt của bạn.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.34,

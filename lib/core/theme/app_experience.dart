@@ -13,6 +13,9 @@ class AppExperience {
   const AppExperience._();
 
   static Widget builder(BuildContext context, Widget? child) {
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
     return ColoredBox(
       color: AppColors.background,
       child: Stack(
@@ -21,9 +24,16 @@ class AppExperience {
           const MedicalAmbientBackground(),
           ScrollConfiguration(
             behavior: const _NanoBioScrollBehavior(),
-            child: FocusTraversalGroup(
-              policy: ReadingOrderTraversalPolicy(),
-              child: child ?? const SizedBox.shrink(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: TickerMode(
+                enabled: !reduceMotion,
+                child: FocusTraversalGroup(
+                  policy: ReadingOrderTraversalPolicy(),
+                  child: child ?? const SizedBox.shrink(),
+                ),
+              ),
             ),
           ),
         ],

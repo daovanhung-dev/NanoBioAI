@@ -16,7 +16,7 @@ class V2HomePage extends StatelessWidget {
       icon: Icons.health_and_safety_rounded,
       actions: [
         FilledButton.icon(
-          onPressed: () => context.go(V2RoutePaths.healthScore),
+          onPressed: () => context.push(V2RoutePaths.healthScore),
           icon: const Icon(Icons.monitor_heart_rounded),
           label: const Text('Xem điểm sức khỏe'),
           style: FilledButton.styleFrom(
@@ -49,7 +49,7 @@ class V2HomePage extends StatelessWidget {
                     helper: 'Tổng hợp từ những thói quen bạn đã hoàn thành.',
                     icon: Icons.favorite_rounded,
                     color: AppColors.error,
-                    onTap: () => context.go(V2RoutePaths.healthScore),
+                    onTap: () => context.push(V2RoutePaths.healthScore),
                   ),
                 ),
                 SizedBox(
@@ -61,7 +61,7 @@ class V2HomePage extends StatelessWidget {
                         'Nhận điểm từ nhiệm vụ đúng giờ và đổi voucher phù hợp.',
                     icon: Icons.redeem_rounded,
                     color: AppColors.tertiary,
-                    onTap: () => context.go(V2RoutePaths.wellnessRewards),
+                    onTap: () => context.push(V2RoutePaths.wellnessRewards),
                   ),
                 ),
                 SizedBox(

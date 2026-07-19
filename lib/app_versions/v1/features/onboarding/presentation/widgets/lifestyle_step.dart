@@ -45,9 +45,9 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep>
 
     return OnboardingStepShell(
       stepIndex: 4,
-      title: 'Nhịp sống của bạn,\nđược tạo từ những điều nhỏ.',
+      title: 'Nhịp sống của bạn',
       subtitle:
-          'Chọn những điều gần nhất với hiện tại. Không có đáp án đúng hay sai.',
+          'Chọn điều gần với bạn nhất.',
       onBack: controller.previousStep,
       onNext: controller.nextStep,
       child: AnimatedBuilder(
@@ -68,9 +68,9 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep>
                     _SectionHeader(
                       icon: Icons.restaurant_menu_rounded,
                       accent: NabiPalette.cyan,
-                      title: 'Thói quen ăn uống & sinh hoạt',
+                      title: 'Thói quen hằng ngày',
                       subtitle:
-                          'Chọn tất cả các điều đang diễn ra trong nhịp sống của bạn.',
+                          'Chọn các thói quen hiện tại.',
                       trailing: _SelectedCountBadge(
                         count: state.habits.length,
                       ),
@@ -99,7 +99,7 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep>
                     const _SectionHeader(
                       icon: Icons.monitor_heart_outlined,
                       accent: NabiPalette.violet,
-                      title: 'Ba tín hiệu hằng ngày',
+                      title: 'Ba chỉ số chính',
                       subtitle:
                           'Một vài ước lượng đơn giản để lộ trình phù hợp hơn.',
                     ),
@@ -778,7 +778,7 @@ class _PrivacyHint extends StatelessWidget {
           const SizedBox(width: 9),
           Expanded(
             child: Text(
-              'Thông tin của bạn chỉ được dùng để tạo gợi ý phù hợp hơn.',
+              'Dùng để cá nhân hóa gợi ý.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.3,

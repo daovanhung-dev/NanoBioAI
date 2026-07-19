@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app_motion.dart';
 import '../tokens/color_tokens.dart';
 import '../tokens/spacing_tokens.dart';
 import '../tokens/component_tokens.dart';
@@ -149,13 +150,15 @@ class AppButton extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Handle icon variant separately
-    if (variant == ButtonVariant.icon) {
-      return _buildIconButton(isDark);
-    }
+    final button = variant == ButtonVariant.icon
+        ? _buildIconButton(isDark)
+        : _buildStandardButton(isDark);
 
-    // Build standard button variants
-    return _buildStandardButton(isDark);
+    return AppPressScale(
+      enabled: !_isDisabled,
+      pressedScale: 0.98,
+      child: button,
+    );
   }
 
   /// Builds standard button variants (primary, secondary, text, outlined).

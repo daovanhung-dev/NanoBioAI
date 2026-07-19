@@ -121,6 +121,13 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
             if (error != null)
               _ChatErrorBanner(
                 message: error,
+                onRetry: state.canRetry
+                    ? () {
+                        ref
+                            .read(aiChatControllerProvider.notifier)
+                            .retryLastMessage();
+                      }
+                    : null,
                 onDismiss: () {
                   ref.read(aiChatControllerProvider.notifier).dismissError();
                 },
@@ -183,9 +190,14 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
 
 class _ChatErrorBanner extends StatelessWidget {
   final String message;
+  final VoidCallback? onRetry;
   final VoidCallback onDismiss;
 
-  const _ChatErrorBanner({required this.message, required this.onDismiss});
+  const _ChatErrorBanner({
+    required this.message,
+    required this.onDismiss,
+    this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -217,6 +229,11 @@ class _ChatErrorBanner extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onRetry != null)
+                TextButton(
+                  onPressed: onRetry,
+                  child: const Text('Thử lại'),
+                ),
               IconButton(
                 onPressed: onDismiss,
                 icon: const Icon(Icons.close_rounded),

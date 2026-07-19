@@ -226,8 +226,18 @@ class AppEnv {
   }
 
   static String? _clean(String? value) {
-    final cleaned = value?.trim();
+    var cleaned = value?.replaceFirst('\uFEFF', '').trim();
     if (cleaned == null || cleaned.isEmpty) return null;
-    return cleaned;
+
+    if (cleaned.length >= 2) {
+      final first = cleaned[0];
+      final last = cleaned[cleaned.length - 1];
+      if ((first == '"' && last == '"') ||
+          (first == "'" && last == "'")) {
+        cleaned = cleaned.substring(1, cleaned.length - 1).trim();
+      }
+    }
+
+    return cleaned.isEmpty ? null : cleaned;
   }
 }

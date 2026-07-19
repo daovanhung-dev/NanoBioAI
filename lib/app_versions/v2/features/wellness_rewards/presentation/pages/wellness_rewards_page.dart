@@ -55,7 +55,7 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
                 ? error.safeMessage
                 : 'Nabi chưa tải được Điểm chăm sóc. Bạn vui lòng thử lại.',
             onRetry: _refresh,
-            onSignIn: () => context.go(V2RoutePaths.login),
+            onSignIn: () => context.push(V2RoutePaths.login),
             showSignIn:
                 error is WellnessRewardException &&
                 error.code == 'auth_required',

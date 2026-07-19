@@ -15,14 +15,14 @@ class DailyRoutineStep extends ConsumerWidget {
     final errors = state.routinePreferences.validate();
     return OnboardingStepShell(
       stepIndex: 6,
-      title: 'Nhịp sinh hoạt của bạn',
+      title: 'Khung giờ thường ngày',
       subtitle:
-          'Chọn giờ cho ngày thường và cuối tuần để Nabi sắp bữa ăn, vận động và nghỉ ngơi phù hợp.',
+          'Chọn giờ để NaBi sắp lịch phù hợp.',
       onBack: controller.previousStep,
       footer: FilledButton.icon(
         onPressed: errors.isEmpty ? controller.confirmRoutineAndContinue : null,
         icon: const Icon(Icons.check_rounded),
-        label: const Text('Xác nhận lịch cá nhân'),
+        label: const Text('Xác nhận khung giờ'),
       ),
       child: Column(
         children: [

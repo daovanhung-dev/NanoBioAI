@@ -78,8 +78,8 @@ class SettingsView extends ConsumerWidget {
                       if (!isAuthenticated) ...[
                         const SizedBox(height: AppSpacing.lg),
                         GuestAccountAccessCard(
-                          onLogin: () => context.go(AuthRoutePaths.login),
-                          onRegister: () => context.go(AuthRoutePaths.register),
+                          onLogin: () => context.push(AuthRoutePaths.login),
+                          onRegister: () => context.push(AuthRoutePaths.register),
                         ),
                       ],
                       const SizedBox(height: AppSpacing.xl),
@@ -278,7 +278,7 @@ class SettingsView extends ConsumerWidget {
                                 : 'Đăng nhập để đồng bộ dữ liệu khi đổi thiết bị',
                             onTap: isAuthenticated
                                 ? () => _showDataSyncSheet(context, ref)
-                                : () => context.go(AuthRoutePaths.login),
+                                : () => context.push(AuthRoutePaths.login),
                           ),
                         ],
                       ),

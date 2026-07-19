@@ -224,9 +224,9 @@ class _EntryContent extends StatelessWidget {
               accent: NabiPalette.violet,
               icon: Icons.cloud_sync_outlined,
               eyebrow: 'ĐỒNG BỘ & MỞ RỘNG',
-              title: 'Đăng nhập để đồng hành dài lâu',
+              title: 'Đăng nhập để đồng bộ',
               description:
-                  'Lưu hành trình an toàn, đồng bộ khi đổi thiết bị và mở thêm các tính năng chăm sóc nâng cao.',
+                  'Đồng bộ hành trình và tiếp tục trên thiết bị khác.',
               badge: 'Khuyên dùng',
               benefits: const [
                 _PathBenefit(
@@ -244,8 +244,8 @@ class _EntryContent extends StatelessWidget {
               ],
               action: NabiPrimaryButton(
                 key: const Key('onboarding_entry_login_cta'),
-                onPressed: () => context.go(AuthRoutePaths.login),
-                label: 'Đăng nhập hoặc tạo tài khoản',
+                onPressed: () => context.push(AuthRoutePaths.login),
+                label: 'Đăng nhập / Tạo tài khoản',
                 icon: Icons.login_rounded,
               ),
             );
@@ -255,9 +255,9 @@ class _EntryContent extends StatelessWidget {
               accent: NabiPalette.cyan,
               icon: Icons.rocket_launch_outlined,
               eyebrow: 'BẮT ĐẦU NGAY',
-              title: 'Khám phá NaBi không cần tài khoản',
+              title: 'Bắt đầu không cần tài khoản',
               description:
-                  'Trả lời vài câu hỏi ngắn để nhận lộ trình đầu tiên phù hợp với nhịp sống hiện tại của bạn.',
+                  'Trả lời vài câu hỏi để nhận lộ trình đầu tiên.',
               badge: 'Nhanh chóng',
               benefits: const [
                 _PathBenefit(
@@ -272,8 +272,8 @@ class _EntryContent extends StatelessWidget {
               ],
               action: NabiSecondaryButton(
                 key: const Key('onboarding_entry_guest_cta'),
-                onPressed: () => context.go(V1RoutePaths.onboarding),
-                label: 'Bắt đầu trải nghiệm ngay',
+                onPressed: () => context.push(V1RoutePaths.onboarding),
+                label: 'Bắt đầu ngay',
                 icon: Icons.arrow_forward_rounded,
               ),
             );
@@ -739,7 +739,7 @@ class _EntryHero extends StatelessWidget {
                           SizedBox(height: compact ? 10 : 13),
                           Text(
                             'Một hành trình khỏe hơn,\nbắt đầu thật nhẹ nhàng.',
-                            maxLines: 3,
+                            maxLines: 4,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.white,
@@ -1025,7 +1025,7 @@ class _EntryPurposeNotice extends StatelessWidget {
             child: _NoticeText(
               title: 'Bạn có quyền chọn cách bắt đầu',
               description:
-                  'Không cần tài khoản để tạo lộ trình đầu tiên. Bạn luôn có thể đăng nhập sau để đồng bộ hành trình.',
+                  'Tạo lộ trình trước, đăng nhập sau khi cần đồng bộ.',
             ),
           ),
         ],

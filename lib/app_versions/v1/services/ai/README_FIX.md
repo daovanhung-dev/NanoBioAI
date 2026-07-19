@@ -1,51 +1,42 @@
-# NanoBio AI connection
+# NanoBio AI Chat — runtime configuration
 
-## Cấu hình
+## Root cause
 
-Giữ khóa thật trong `.env` tại root dự án. Không thêm `.env` vào assets hoặc
-commit lên Git. Các biến tối thiểu:
+`.env` tại root dự án không tự được đóng gói vào APK. Khi ứng dụng được chạy
+hoặc build mà không truyền Dart define, `AppEnv` không nhận được
+`GEMINI_API_KEY` và AI Chat trả về trạng thái cấu hình chưa sẵn sàng.
 
-```env
-SUPABASE_URL=https://...
-SUPABASE_ANON_KEY=...
-AUTH_EMAIL_REDIRECT_URL=nanobio://auth/callback
-GEMINI_API_KEY=...
-GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
-GEMINI_MODEL=gemini-3.5-flash
-ONBOARDING_AI_DEV_CHECK_ENABLED=true
-```
-
-Lớp AI dùng Gemini REST `generateContent` và gửi khóa bằng header
-`x-goog-api-key`; không dùng query string và không ghi khóa ra log.
-
-## Kiểm tra trên Windows
+## Chạy trên Windows
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -ValidateOnly
 powershell -ExecutionPolicy Bypass -File tools/test_gemini_connection.ps1
-powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1
+powershell -ExecutionPolicy Bypass -File tools/run_ai_chat.ps1
 ```
 
-Trong VS Code, dùng các profile `NanoBio - App (Auth + AI)`,
-`NanoBio - V2 App (Auth + AI)` hoặc `NanoBio - Admin (Auth + AI)`. CodeLens
-Run/Debug tại từng entrypoint cũng dùng cùng profile qua `templateFor`. Mỗi lần
-chạy, pre-launch task tạo `.dart_tool/nanobio_defines.json` từ `.env`; cả hai
-file đều nằm ngoài Git và script không in giá trị bí mật.
-
-Nếu runtime vẫn thiếu Gemini config, AI Chat ném typed failure và hiển thị
-banner để người dùng biết dịch vụ chưa sẵn sàng. Trường hợp này không retry,
-không trả fallback local và không commit quota.
-
-## Build
+Chạy trên thiết bị cụ thể:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File tools/build_authenticated.ps1
+powershell -ExecutionPolicy Bypass -File tools/run_ai_chat.ps1 -DeviceId 220333QPG
 ```
 
-Launcher terminal chuẩn là `tools/run_v2.ps1`. Khi cần chạy Flutter trực tiếp
-để chẩn đoán, hãy tạo defines trước rồi dùng file tạm:
+Build APK:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File tools/prepare_dart_defines.ps1
-flutter run -t lib/main.dart --dart-define-from-file=.dart_tool/nanobio_defines.json
+powershell -ExecutionPolicy Bypass -File tools/build_ai_chat_apk.ps1 -Mode debug
 ```
+
+Các script đọc `.env`, tạo file tạm
+`.dart_tool/nanobio_defines.json`, rồi truyền file này bằng
+`--dart-define-from-file`. Giá trị bí mật không được in ra terminal và không
+được đưa vào ZIP bàn giao.
+
+## Gemini transport
+
+- Endpoint: Gemini REST `models/{model}:generateContent`.
+- Authentication: header `x-goog-api-key`.
+- Model chính: `GEMINI_CHAT_MODEL`, fallback tương thích là `GEMINI_MODEL`.
+- Fallback mặc định: `gemini-3.5-flash`, `gemini-3.1-flash-lite`.
+- Chat history: tối đa 16 message đã xác nhận.
+- Không thêm response vào context nếu request/quota commit thất bại.
+
+Xem `docs/AI_CHAT_API_FIX.md` để biết ma trận lỗi và hướng dẫn chi tiết.

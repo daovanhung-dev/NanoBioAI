@@ -23,8 +23,8 @@ class GoalsStep extends ConsumerWidget {
 
     return OnboardingStepShell(
       stepIndex: 2,
-      title: 'Bạn muốn tiến gần điều gì?',
-      subtitle: 'Chọn những ưu tiên quan trọng lúc này.',
+      title: 'Mục tiêu của bạn',
+      subtitle: 'Chọn điều quan trọng nhất lúc này.',
       onBack: controller.previousStep,
       onNext: controller.nextStep,
       child: LayoutBuilder(
@@ -214,8 +214,8 @@ class _GoalProgressBanner extends StatelessWidget {
                       duration: const Duration(milliseconds: 220),
                       child: Text(
                         hasSelection
-                            ? '$selectedCount mục tiêu đã được ưu tiên. Bạn có thể chọn thêm bất cứ lúc nào.'
-                            : 'Chọn điều bạn muốn thay đổi trước tiên. Không cần hoàn hảo.',
+                            ? 'Đã chọn $selectedCount mục tiêu.'
+                            : 'Chọn điều bạn muốn cải thiện trước.',
                         key: ValueKey(selectedCount),
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.84),
@@ -585,8 +585,8 @@ class _SelectionStatus extends StatelessWidget {
               duration: const Duration(milliseconds: 180),
               child: Text(
                 hasSelection
-                    ? 'Tốt lắm. Các lựa chọn này sẽ được ưu tiên trong gợi ý đầu tiên của bạn.'
-                    : 'Không cần chọn hết. Hãy bắt đầu với điều bạn muốn thay đổi nhiều nhất.',
+                    ? 'NaBi sẽ ưu tiên các mục tiêu này.'
+                    : 'Bắt đầu với điều quan trọng nhất.',
                 key: ValueKey(selectedCount > 0),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: NabiPalette.mutedInk,
@@ -684,7 +684,7 @@ class _OtherGoalCard extends StatelessWidget {
           ),
           SizedBox(height: compact ? 10 : 12),
           Text(
-            'Bạn có thể ghi thêm một mục tiêu riêng. Phần này hoàn toàn tùy chọn.',
+            'Thêm mục tiêu riêng nếu cần.',
             style: AppTextStyles.bodySmall.copyWith(
               color: NabiPalette.mutedInk,
               fontSize: compact ? 11.5 : null,
@@ -756,8 +756,8 @@ class _GoalGuidanceCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 hasSelection
-                    ? 'Ưu tiên 1–3 mục tiêu chính giúp lịch trình dễ duy trì hơn và ít tạo áp lực.'
-                    : 'Hãy ưu tiên điều ảnh hưởng nhiều nhất đến sức khỏe và cuộc sống hằng ngày của bạn.',
+                    ? 'Ưu tiên 1–3 mục tiêu để dễ duy trì.'
+                    : 'Ưu tiên điều ảnh hưởng nhiều nhất mỗi ngày.',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: NabiPalette.mutedInk,
                   height: 1.4,

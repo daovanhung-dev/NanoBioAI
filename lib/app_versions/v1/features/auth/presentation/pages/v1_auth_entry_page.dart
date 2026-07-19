@@ -68,7 +68,7 @@ class V1AuthEntryPage extends StatelessWidget {
         : AuthRoutePaths.login;
 
     try {
-      context.go(destination);
+      context.push(destination);
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

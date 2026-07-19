@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_colors.dart';
+import 'app_duration.dart';
+import 'app_motion.dart';
 import 'app_radius.dart';
 import 'app_spacing.dart';
 import 'app_text_styles.dart';
@@ -57,7 +59,7 @@ class AppTheme {
       highlightColor: AppColors.pressed,
       splashFactory: InkSparkle.splashFactory,
       materialTapTargetSize: MaterialTapTargetSize.padded,
-      visualDensity: VisualDensity.standard,
+      visualDensity: const VisualDensity(horizontal: -0.35, vertical: -0.35),
     );
 
     final textTheme = base.textTheme.copyWith(
@@ -96,7 +98,7 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        toolbarHeight: 64,
+        toolbarHeight: 60,
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
@@ -179,8 +181,9 @@ class AppTheme {
       ),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-          iconSize: const WidgetStatePropertyAll(22),
+          animationDuration: AppDuration.button,
+          minimumSize: const WidgetStatePropertyAll(Size(44, 44)),
+          iconSize: const WidgetStatePropertyAll(21),
           foregroundColor: const WidgetStatePropertyAll(AppColors.icon),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.pressed)) return AppColors.pressed;
@@ -193,7 +196,7 @@ class AppTheme {
       ),
       listTileTheme: ListTileThemeData(
         minLeadingWidth: 36,
-        minTileHeight: 56,
+        minTileHeight: 52,
         iconColor: AppColors.icon,
         textColor: AppColors.textPrimary,
         subtitleTextStyle: AppTextStyles.bodySmall.copyWith(
@@ -242,7 +245,7 @@ class AppTheme {
         isDense: false,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: 17,
+          vertical: 14,
         ),
         hintStyle: AppTextStyles.inputHint,
         labelStyle: AppTextStyles.inputLabel,
@@ -275,9 +278,10 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(Size(48, 52)),
+          animationDuration: AppDuration.button,
+          minimumSize: const WidgetStatePropertyAll(Size(48, 50)),
           padding: const WidgetStatePropertyAll(
-            EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 14),
+            EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 12),
           ),
           foregroundColor: const WidgetStatePropertyAll(AppColors.primaryDark),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
@@ -298,6 +302,7 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
+          animationDuration: AppDuration.button,
           minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
           padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
@@ -332,7 +337,7 @@ class AppTheme {
         insetPadding: const EdgeInsets.all(AppSpacing.md),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        height: 72,
+        height: 68,
         elevation: 0,
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
@@ -496,12 +501,12 @@ class AppTheme {
       ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.windows: ZoomPageTransitionsBuilder(),
-          TargetPlatform.linux: ZoomPageTransitionsBuilder(),
-          TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.android: AppPageTransitionsBuilder(),
+          TargetPlatform.iOS: AppPageTransitionsBuilder(),
+          TargetPlatform.macOS: AppPageTransitionsBuilder(),
+          TargetPlatform.windows: AppPageTransitionsBuilder(),
+          TargetPlatform.linux: AppPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: AppPageTransitionsBuilder(),
         },
       ),
     );
@@ -512,9 +517,10 @@ class AppTheme {
     required Color foreground,
   }) {
     return ButtonStyle(
-      minimumSize: const WidgetStatePropertyAll(Size(48, 52)),
+      animationDuration: AppDuration.button,
+      minimumSize: const WidgetStatePropertyAll(Size(48, 50)),
       padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 14),
+        EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 12),
       ),
       backgroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) return AppColors.disabled;

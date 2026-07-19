@@ -61,9 +61,9 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
 
     return OnboardingStepShell(
       stepIndex: 5,
-      title: 'Chăm sóc kỹ hơn,\ntheo cách bạn muốn.',
+      title: 'Thông tin bổ sung',
       subtitle:
-          'Mọi thông tin ở đây đều không bắt buộc. Bạn chỉ cần chia sẻ điều khiến bạn cảm thấy thoải mái.',
+          'Chỉ thêm những điều bạn thấy cần.',
       onBack: controller.previousStep,
       onNext: controller.nextStep,
       child: AnimatedBuilder(
@@ -89,7 +89,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                     _ExtrasSectionHeader(
                       icon: Icons.no_food_outlined,
                       accent: NabiPalette.cyan,
-                      title: 'Dị ứng hoặc thực phẩm cần tránh',
+                      title: 'Dị ứng / thực phẩm cần tránh',
                       subtitle:
                           'Giúp NaBi hạn chế những gợi ý không phù hợp với bạn.',
                       trailing: _CareStatusTag(
@@ -104,7 +104,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                       icon: Icons.info_outline_rounded,
                       accent: NabiPalette.cyan,
                       text:
-                          'Bạn có thể để trống nếu chưa chắc chắn hoặc chưa từng gặp phản ứng.',
+                          'Có thể để trống nếu chưa chắc.',
                     ),
                     const SizedBox(height: 13),
                     _OptionalFieldFrame(
@@ -146,9 +146,9 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                     _ExtrasSectionHeader(
                       icon: Icons.monitor_heart_outlined,
                       accent: NabiPalette.violet,
-                      title: 'Theo dõi sức khỏe & thuốc',
+                      title: 'Sức khỏe & thuốc',
                       subtitle:
-                          'Dùng để điều chỉnh gợi ý phù hợp hơn, không thay thế tư vấn y tế.',
+                          'Giúp điều chỉnh gợi ý phù hợp hơn.',
                       trailing: _CareStatusTag(
                         active: hasTreatment,
                         activeText: 'Đã thêm',
@@ -161,7 +161,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                       icon: Icons.health_and_safety_outlined,
                       accent: NabiPalette.violet,
                       text:
-                          'NaBi không chẩn đoán bệnh hoặc đưa ra chỉ định điều trị.',
+                          'NaBi không thay thế tư vấn y tế.',
                     ),
                     const SizedBox(height: 13),
                     _OptionalFieldFrame(
@@ -217,7 +217,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep>
                     _ExtrasSectionHeader(
                       icon: Icons.favorite_outline_rounded,
                       accent: NabiPalette.rose,
-                      title: 'Điều bạn đang quan tâm',
+                      title: 'Mối quan tâm',
                       subtitle:
                           'NaBi sẽ ưu tiên điều này trong những gợi ý đầu tiên.',
                       trailing: _CareStatusTag(
@@ -619,7 +619,7 @@ class _PrivacyNotice extends StatelessWidget {
           Expanded(
             child: Text(
               started
-                  ? 'Bạn có thể thay đổi hoặc xóa các thông tin này bất cứ lúc nào.'
+                  ? 'Có thể thay đổi hoặc xóa sau.'
                   : 'Bạn có thể bỏ qua toàn bộ phần này và cập nhật sau.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
@@ -922,7 +922,7 @@ class _FinalPrivacyCard extends StatelessWidget {
           const SizedBox(width: 9),
           Expanded(
             child: Text(
-              'Bạn kiểm soát những gì mình chia sẻ. Hãy chỉ thêm thông tin thật sự cần thiết.',
+              'Chỉ chia sẻ thông tin thật sự cần thiết.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.3,

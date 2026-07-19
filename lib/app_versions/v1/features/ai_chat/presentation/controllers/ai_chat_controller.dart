@@ -11,27 +11,33 @@ class AIChatState {
   final List<ChatMessageEntity> messages;
   final bool isLoading;
   final String? error;
+  final bool canRetry;
 
   const AIChatState({
     this.messages = const [],
     this.isLoading = false,
     this.error,
+    this.canRetry = false,
   });
 
   AIChatState copyWith({
     List<ChatMessageEntity>? messages,
     bool? isLoading,
     String? error,
+    bool? canRetry,
   }) {
     return AIChatState(
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      canRetry: canRetry ?? this.canRetry,
     );
   }
 }
 
 class AIChatController extends Notifier<AIChatState> {
+  String? _failedMessage;
+
   @override
   AIChatState build() {
     _loadHistory();
@@ -45,14 +51,18 @@ class AIChatController extends Notifier<AIChatState> {
       final history = await _repository.getChatHistory();
       state = state.copyWith(messages: history);
     } catch (e) {
-      state = state.copyWith(error: 'Không thể tải lịch sử trò chuyện');
+      state = state.copyWith(
+        error: 'Không thể tải lịch sử trò chuyện',
+        canRetry: false,
+      );
     }
   }
 
   Future<void> sendMessage(String message) async {
-    if (message.trim().isEmpty) return;
+    if (state.isLoading || message.trim().isEmpty) return;
 
     final trimmed = message.trim();
+    _failedMessage = null;
 
     final userMessage = ChatMessageEntity(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -65,6 +75,7 @@ class AIChatController extends Notifier<AIChatState> {
       messages: [...state.messages, userMessage],
       isLoading: true,
       error: null,
+      canRetry: false,
     );
     ref.read(nabiContextProvider.notifier).setChatTyping(typing: true);
 
@@ -74,10 +85,43 @@ class AIChatController extends Notifier<AIChatState> {
       state = state.copyWith(
         messages: [...state.messages, aiMessage],
         isLoading: false,
+        canRetry: false,
       );
       ref.read(nabiContextProvider.notifier).setChatAnswerReady();
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _messageForSendError(e));
+      _failedMessage = trimmed;
+      state = state.copyWith(
+        isLoading: false,
+        error: _messageForSendError(e),
+        canRetry: true,
+      );
+      ref.read(nabiContextProvider.notifier).setChatFailed();
+    }
+  }
+
+  Future<void> retryLastMessage() async {
+    final message = _failedMessage;
+    if (state.isLoading || message == null || message.isEmpty) return;
+
+    state = state.copyWith(isLoading: true, error: null, canRetry: false);
+    ref.read(nabiContextProvider.notifier).setChatTyping(typing: true);
+
+    try {
+      final aiMessage = await _repository.sendMessage(message);
+      _failedMessage = null;
+      state = state.copyWith(
+        messages: [...state.messages, aiMessage],
+        isLoading: false,
+        canRetry: false,
+      );
+      ref.read(nabiContextProvider.notifier).setChatAnswerReady();
+    } catch (error) {
+      _failedMessage = message;
+      state = state.copyWith(
+        isLoading: false,
+        error: _messageForSendError(error),
+        canRetry: true,
+      );
       ref.read(nabiContextProvider.notifier).setChatFailed();
     }
   }
@@ -85,15 +129,20 @@ class AIChatController extends Notifier<AIChatState> {
   Future<void> clearChat() async {
     try {
       await _repository.clearHistory();
+      _failedMessage = null;
       state = const AIChatState();
       ref.read(nabiContextProvider.notifier).clearTransientState();
     } catch (e) {
-      state = state.copyWith(error: 'Không thể xóa lịch sử trò chuyện');
+      state = state.copyWith(
+        error: 'Không thể xóa lịch sử trò chuyện',
+        canRetry: false,
+      );
     }
   }
 
   void dismissError() {
-    state = state.copyWith(error: null);
+    _failedMessage = null;
+    state = state.copyWith(error: null, canRetry: false);
   }
 }
 
@@ -104,6 +153,10 @@ String _messageForSendError(Object error) {
   }
   if (error is AIAuthenticationException) {
     return AIAuthenticationException.userMessage;
+  }
+  if (error is AINetworkException) return AINetworkException.userMessage;
+  if (error is AIModelUnavailableException) {
+    return AIModelUnavailableException.userMessage;
   }
   if (error is AIOverloadedException) return AIOverloadedException.userMessage;
   if (error is AIResponseInvalidException) {

@@ -44,7 +44,7 @@ class _ConsentStepState extends ConsumerState<ConsentStep>
       stepIndex: 7,
       title: 'Một xác nhận nhỏ,\nđể chăm sóc đúng cách.',
       subtitle:
-          'NaBi đưa ra gợi ý chăm sóc hằng ngày, không thay thế chẩn đoán hoặc điều trị y tế.',
+          'NaBi hỗ trợ chăm sóc hằng ngày, không thay thế chuyên gia y tế.',
       onBack: controller.previousStep,
       nextLabel: state.agreed ? 'Tiếp tục tạo lộ trình' : 'Tôi hiểu và đồng ý',
       onNext: () {
@@ -86,7 +86,7 @@ class _ConsentStepState extends ConsumerState<ConsentStep>
                       accent: NabiPalette.violet,
                       title: 'NaBi cam kết với bạn',
                       subtitle:
-                          'Mọi gợi ý đều được xây dựng để hỗ trợ bạn chăm sóc bản thân chủ động hơn.',
+                          'Gợi ý giúp bạn chủ động chăm sóc bản thân.',
                     ),
                     SizedBox(height: 16),
                     _ConsentCommitmentRow(
@@ -94,7 +94,7 @@ class _ConsentStepState extends ConsumerState<ConsentStep>
                       accent: NabiPalette.cyan,
                       title: 'Tôn trọng dữ liệu của bạn',
                       description:
-                          'Thông tin hồ sơ chỉ được dùng để cá nhân hóa trải nghiệm chăm sóc.',
+                          'Thông tin chỉ dùng để cá nhân hóa.',
                     ),
                     _ConsentSoftDivider(),
                     _ConsentCommitmentRow(
@@ -102,7 +102,7 @@ class _ConsentStepState extends ConsumerState<ConsentStep>
                       accent: NabiPalette.violet,
                       title: 'Gợi ý theo nhịp sống riêng',
                       description:
-                          'Thực đơn, vận động và lời nhắc được điều chỉnh theo những gì bạn đã chia sẻ.',
+                          'Lộ trình dựa trên thông tin bạn chia sẻ.',
                     ),
                     _ConsentSoftDivider(),
                     _ConsentCommitmentRow(
@@ -110,7 +110,7 @@ class _ConsentStepState extends ConsumerState<ConsentStep>
                       accent: NabiPalette.amber,
                       title: 'Ưu tiên an toàn',
                       description:
-                          'NaBi khuyến khích bạn gặp chuyên gia khi có dấu hiệu cần được theo dõi.',
+                          'Hãy gặp chuyên gia khi có dấu hiệu bất thường.',
                     ),
                   ],
                 ),
@@ -456,8 +456,8 @@ class _ConsentStatusNotice extends StatelessWidget {
           Expanded(
             child: Text(
               agreed
-                  ? 'Bạn đã xác nhận. Lộ trình sẽ được tạo ở bước tiếp theo.'
-                  : 'Bạn luôn kiểm soát thông tin của mình và có thể thay đổi hồ sơ sau này.',
+                  ? 'Đã xác nhận. Bạn có thể tiếp tục.'
+                  : 'Bạn có thể thay đổi hồ sơ bất cứ lúc nào.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.3,
@@ -675,7 +675,7 @@ class _MedicalBoundaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'Khi có triệu chứng kéo dài, diễn biến bất thường hoặc bạn đang cần chẩn đoán và điều trị.',
+                  'Khi triệu chứng kéo dài hoặc bất thường.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: NabiPalette.mutedInk,
                     height: 1.35,
@@ -816,7 +816,7 @@ class _AfterOnboardingHint extends StatelessWidget {
           const SizedBox(width: 9),
           Expanded(
             child: Text(
-              'Bạn có thể thay đổi hồ sơ, sở thích và thông tin chăm sóc sau khi hoàn tất.',
+              'Có thể chỉnh hồ sơ sau khi hoàn tất.',
               style: AppTextStyles.bodySmall.copyWith(
                 color: NabiPalette.mutedInk,
                 height: 1.3,

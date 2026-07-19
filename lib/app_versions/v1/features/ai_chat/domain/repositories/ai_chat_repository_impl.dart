@@ -40,15 +40,15 @@ class AIChatRepositoryImpl implements AIChatRepository {
       timestamp: timestamp,
     );
 
-    _history.add(userMessage);
-
-    // Get AI response
+    // Get AI response. Failed requests are not committed to repository history.
     final AIChatPreparedResponse preparedResponse;
     try {
       preparedResponse = await _aiChatService.prepareMessage(message);
     } catch (error, stackTrace) {
       if (error is AIConfigurationUnavailableException ||
           error is AIAuthenticationException ||
+          error is AINetworkException ||
+          error is AIModelUnavailableException ||
           error is AIOverloadedException ||
           error is AIResponseInvalidException) {
         Error.throwWithStackTrace(error, stackTrace);
@@ -58,6 +58,7 @@ class AIChatRepositoryImpl implements AIChatRepository {
 
     await _commitQuotaWithRetry(requestId: requestId);
     preparedResponse.accept();
+    _history.add(userMessage);
 
     // Create AI message
     final aiMessage = ChatMessageModel(
