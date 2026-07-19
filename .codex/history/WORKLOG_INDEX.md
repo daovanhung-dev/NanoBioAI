@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 85
+- Total worklogs: 87
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -94,3 +94,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-13 | coding/test/docs | coding | unknown | [Worklog - Hợp nhất phiên bản và phân giao diện theo quyền](../../docs/worklog/2026-07-13/009-worklog-unified-role-app.md) |
 | 2026-07-15 | unknown | docs-context | unknown | [Worklog — triển khai logbug 14-7-26](../../docs/worklog/2026-07-15/001-worklog-logbug-14-7-26.md) |
 | 2026-07-18 | unknown | docs-context | unknown | [Worklog — rút gọn copy hiển thị toàn dự án](../../docs/worklog/2026-07-18/001-worklog-short-ui-copy.md) |
+| 2026-07-19. | test. | test | P0 preflight Android thiet bi that. | [Worklog - Full project real-device P0](../../docs/worklog/2026-07-19/001-worklog-full-project-real-device-p0.md) |
+| 2026-07-19. | test. | test | full-project real-device campaign P0-P7. | [Worklog - Full project real-device baseline](../../docs/worklog/2026-07-19/002-worklog-full-project-real-device-baseline.md) |
