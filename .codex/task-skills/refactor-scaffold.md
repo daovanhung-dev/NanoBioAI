@@ -2,14 +2,16 @@
 
 - Canonical key: refactor-scaffold
 - Workflow: .codex/workflows/refactor-scaffold.md
-- Generated from 1 worklog(s).
+- Generated from 2 worklog(s).
 
 ## When To Read
 
+- Historical task type: coding/docs/static-validation (1)
 - Historical task type: coding/refactor (1)
 
 ## Common Modules
 
+- UI/Theme/NabiCopy xuyên V1, V2, V3, Admin và Sale: 1
 - project structure, access version boundary, sale/referral scaffold: 1
 
 ## Work Pattern
@@ -29,3 +31,4 @@
 ## Source Worklogs
 
 - [Worklog - Scaffold cau truc du an](../../docs/worklog/2026-06-21/001-worklog-project-scaffold.md) - project structure, access version boundary, sale/referral scaffold
+- [Worklog - UI/UX Experience Refresh toàn dự án](../../docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md) - UI/Theme/NabiCopy xuyên V1, V2, V3, Admin và Sale

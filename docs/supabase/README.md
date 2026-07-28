@@ -32,16 +32,37 @@ schema `public`, sau do tao lai schema/RLS/RPC/seed/dev users/Admin bootstrap.
 
 - Khong chay `config.sql` tren production.
 - Can quyen SQL Editor/postgres co the thao tac `auth.*` va `public`.
-- Dev users mac dinh dung password `NanoBio@123456`:
-  `dev.free@nanobio.local`, `dev.plus@nanobio.local`,
-  `dev.family@nanobio.local`, `dev.admin@nanobio.local`.
-- `dev.admin@nanobio.local` duoc bootstrap role `super_admin`.
+- Cac persona email/password cua fixture dung password local/sandbox
+  `NanoBio@123456`. Danh sach day du persona, lien ket FamilyPlus/Sale va tai
+  khoan Admin nam tai `19-dev-sandbox-accounts.md`.
+- Toan bo email, so dien thoai, CCCD, tai khoan ngan hang va ma voucher trong
+  fixture phai la gia lap, chi dung cho local/sandbox. `dev.admin@nanobio.local`
+  duoc bootstrap role `super_admin`.
 - SQL khong deploy duoc Edge Function `delete-account`, Auth redirect URL hay
-  payment webhook/provider. Migration 16 tạo bucket private
-  `schedule-completion-proofs` và policy tương ứng; vẫn phải smoke test Storage
-  trong sandbox theo `16-schedule-proof-storage.md`. Bucket private
-  `sale-payout-proofs` cho minh chứng chi trả Sale vẫn được hướng dẫn riêng
-  trong `13-sale-payout-storage.md`.
+  payment webhook/provider. Rebuild tao contract private cho hai bucket
+  `schedule-completion-proofs` va `sale-payout-proofs` cung policy tuong ung,
+  nhung khong chen `storage.objects`; van phai smoke test Storage bang mot
+  phien Auth thuc sau khi rollout duoc bat. Runbook payout nam tai
+  `13-sale-payout-storage.md`.
+
+### Hai giai doan cho fixture va Storage
+
+1. Chay `config.sql` trong local/sandbox de rebuild database va nap bo fixture
+   canonical. File nay khong duoc dung de xac nhan da co anh, voucher that, hay
+   object Storage hop le.
+2. Kiem tra policy da rebuild va smoke test Storage trong cung local/sandbox:
+   upload object gia lap moi qua dung RPC/session, kiem tra RLS bang it nhat
+   hai tai khoan. Evidence fixture la immutable; de chay lai runner hay dung
+   destructive rebuild thay vi xoa/ghi de object qua client. Khong copy object,
+   duong dan hay du lieu chi tra sang staging dung chung hoac production.
+
+Flag rollout mac dinh van tat sau rebuild. Chi bat bang config/Admin workflow
+trong sandbox tach rieng khi dang thuc hien acceptance cho tinh nang do.
+Profile opt-in `20-dev-sandbox-demo-profile.sql` bat tam Wellness, Sale
+conversion va Nabi demo sau rebuild; sau do moi chay
+`tools/supabase/Seed-StorageFixtures.ps1` tren cung local/sandbox. Runner nay
+la one-shot, can chay ngay trong cua so fixture sau rebuild/profile; retry can
+rebuild lai thay vi ap dung rieng module 19.
 
 ## File module tham chieu
 
@@ -74,9 +95,8 @@ doi:
 11. `13-sale-payout-storage.md` - runbook bucket private cho anh minh chung
    chi tra Sale.
 12. `07-seed-reference-data.sql` - seed du lieu tham chieu ban dau.
-13. `09-dev-seed-membership-test-accounts.sql` - dev/sandbox only, tao account
-   test Free/Plus/FamilyPlus co dinh; `config.sql` co dev seed rieng va them
-   `dev.admin@nanobio.local`.
+13. `09-dev-seed-membership-test-accounts.sql` - legacy no-op chi de chuyen
+   huong; khong chay file nay. Dung fixture 19 hoac `config.sql`.
 14. `14_mobile_sync_hotfix.sql` - hotfix snapshot sync khong insert NULL vao
    cot co default; logic nay da duoc fold vao `config.sql`.
 15. `15-auth-sync-completion.sql` - migration khong pha huy cho atomic Auth V2 signup/referral; phai chay sandbox truoc va khong thay the bang `config.sql` tren remote/production.
@@ -93,6 +113,13 @@ doi:
    và device acceptance pass.
 20. `06-rls-policy-matrix.md` va `08-acceptance-checks.md` - kiem tra bao mat
    va nghiem thu.
+21. `19-dev-sandbox-comprehensive-seed.sql` - fixture canonical chi cho
+   local/sandbox; bao phu persona, lien ket va trang thai nghiep vu de review
+   RLS/RPC. Noi dung nay duoc fold vao `config.sql` cho rebuild mot file.
+22. `19-dev-sandbox-accounts.md` - danh sach tai khoan/persona gia lap cua
+   fixture 19 va gioi han su dung local/sandbox.
+23. `20-dev-sandbox-demo-profile.sql` - profile opt-in rieng de bat tam cac
+   rollout demo; khong duoc fold vao rebuild mac dinh.
 
 Moi thay doi Supabase schema/RLS/RPC/seed/docs phai cap nhat `config.sql` cung
 luc. Neu khong cap nhat duoc, ghi blocker trong worklog va khong claim rebuild

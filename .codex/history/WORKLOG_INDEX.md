@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 88
+- Total worklogs: 90
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -97,3 +97,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-19 | coding/bugfix/test/docs | supabase-schema | M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M09 SCHEDULE_NOTIFICATIONS, M15 ADMIN_DASHBOARD | [Worklog - Ưu tiên Admin, khôi phục luồng AI và harden thông báo](../../docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md) |
 | 2026-07-19 | bugfix/test/docs | test | M02 PERSONAL_SCHEDULE_AI, M07 AI_CHAT | [Worklog - Fix Gemini Android runtime va chat fallback](../../docs/worklog/2026-07-19/002-worklog-gemini-android-runtime-and-chat-fallback.md) |
 | 2026-07-19 | bugfix/test/docs | test | M07 AI_CHAT, M05 runtime configuration | [Worklog - Fix Chat AI native debug runtime](../../docs/worklog/2026-07-19/003-worklog-chat-ai-native-debug-runtime.md) |
+| 2026-07-19 | coding/docs/static-validation | refactor-scaffold | UI/Theme/NabiCopy xuyên V1, V2, V3, Admin và Sale | [Worklog - UI/UX Experience Refresh toàn dự án](../../docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md) |
+| 2026-07-28 | Mo rong fixture Supabase local/sandbox, tai lieu va contract test. | supabase-schema | Auth, subscription/quota, FamilyPlus, Sale, Admin, Wellness/reward, Nabi va Storage proof. | [Worklog - Supabase comprehensive sandbox fixture](../../docs/worklog/2026-07-28/001-worklog-supabase-comprehensive-sandbox-fixture.md) |

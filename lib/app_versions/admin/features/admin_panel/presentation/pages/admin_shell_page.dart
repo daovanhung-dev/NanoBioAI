@@ -175,12 +175,16 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
                                         : null,
                                     onSearch: (value) {
                                       ref
-                                          .read(adminControllerProvider.notifier)
+                                          .read(
+                                            adminControllerProvider.notifier,
+                                          )
                                           .search(value);
                                     },
                                     onRefresh: () {
                                       ref
-                                          .read(adminControllerProvider.notifier)
+                                          .read(
+                                            adminControllerProvider.notifier,
+                                          )
                                           .refresh();
                                     },
                                     onShowGuide: _showGuide,
@@ -280,7 +284,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
           .uploadBinary(
             path,
             bytes,
-            fileOptions: FileOptions(contentType: contentType, upsert: true),
+            fileOptions: FileOptions(contentType: contentType, upsert: false),
           );
 
       return path;

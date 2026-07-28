@@ -33,6 +33,45 @@ Migration tham chiếu: `16-wellness-rewards.sql`.
    `wellness_rewards_rollout` bằng Admin config RPC với `enabled = true`.
    Không sửa trực tiếp version cũ.
 
+## Hai giai doan local/sandbox
+
+1. `config.sql` fold migration 16 va fixture canonical 19 de tao database/RLS
+   review. Du lieu seed khong phai la anh da upload va khong thay the
+   `storage.objects`; rollout mac dinh van tat.
+2. Tren local/sandbox tach rieng, xac nhan case rollout tat truoc, sau do tao
+   version rollout bat qua Admin workflow de smoke test begin/upload/finalize
+   bang JPEG gia lap moi. Kiem tra RLS bang it nhat hai tai khoan; reset
+   disposable environment de don dep evidence immutable, va khong dua
+   object/path sang staging dung chung hay production.
+
+## Runner fixture canonical
+
+Voi fixture 19, dung `20-dev-sandbox-demo-profile.sql` de bat rollout demo,
+sau do chay `tools/supabase/Seed-StorageFixtures.ps1` **ngay sau destructive
+rebuild**. Runner dang nhap persona Wellness/Admin that, dung RPC
+begin/upload/finalize/undo va Storage API; khong chen `storage.objects` bang
+SQL.
+
+- Runner la **one-shot cho moi rebuild**: proof va allocation la evidence bat
+  bien. Neu runner bi loi hoac can chay lai, chay lai `config.sql`, ap dung
+  profile demo, roi chay runner tu dau; khong ap dung rieng module 19 de reset
+  trang thai da co proof.
+- Hai eligibility mo chi co cua so 30 phut theo schema. Runner giu lai toi
+  thieu hai phut de finalize/undo, vi vay hay chay trong khoang 27 phut sau
+  rebuild/profile; neu qua han no se tu choi thay vi tao evidence khong hop le.
+- Cung cap `NANOBIO_SUPABASE_URL`, `NANOBIO_SUPABASE_ANON_KEY` va
+  `NANOBIO_SUPABASE_SERVICE_ROLE_KEY` qua environment. Runner chi tu dong
+  chap nhan loopback, `.local` hoac hostname co nhan `sandbox`; staging can
+  `-AllowNonLocal` ro rang va chi duoc dung neu da xac nhan moi truong
+  disposable, khong phai shared staging.
+- Khi muon truyen `SecureString`, goi script trong **cung PowerShell session**;
+  hoac bo tham so de script prompt password. Khong truyen `SecureString` qua
+  mot process `powershell -File` moi.
+
+Khong chen truc tiep metadata proof hay object gia lap de coi nhu bang chung.
+Chi path do `begin_my_schedule_completion` cap va object upload dung session
+moi co the duoc dung cho `finalize_my_schedule_completion`.
+
 ## Contract client
 
 ```text

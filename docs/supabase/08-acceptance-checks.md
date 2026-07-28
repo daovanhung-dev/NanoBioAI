@@ -4,11 +4,18 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 
 ## Chuan bi
 
-- Tao moi truong Supabase sandbox/staging, khong chay truc tiep production.
+- Tao moi truong Supabase local/sandbox rieng, khong chay truc tiep production
+  hoac dung fixture tren staging dung chung.
 - Chay SQL theo thu tu trong `README.md`.
 - Chuan bi user test A, B, C va mot Admin test co role phu hop.
 - Dung SQL Editor/Admin/backend test co service role cho seed/payment gia lap.
   Khong dua service role key vao Flutter.
+- Dung `config.sql` chi trong local/sandbox rieng. Khi review seed ngoai
+  entrypoint, dung `19-dev-sandbox-comprehensive-seed.sql` sau khi schema/RLS/
+  RPC da day du; `09-dev-seed-membership-test-accounts.sql` la legacy no-op.
+- Dung `19-dev-sandbox-accounts.md` de chon persona gia lap cho A, B, C va
+  Admin. Khong thay email, so dien thoai, CCCD, tai khoan ngan hang hay voucher
+  gia lap bang du lieu that; khong dung fixture tren staging dung chung.
 
 ## Auth va health
 
@@ -30,6 +37,10 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 
 ## Nhiệm vụ, bằng chứng và Điểm chăm sóc
 
+- [ ] Giai doan 1: fixture SQL khong duoc coi la object Storage da upload.
+  Giai doan 2: tren local/sandbox tach rieng, dung RPC begin/upload/finalize
+  voi anh JPEG gia lap moi, kiem tra RLS bang hai tai khoan va don dep object
+  test sau smoke test.
 - [ ] Bật rollout bằng một config version mới trong sandbox; khi flag còn tắt,
   RPC mutation trả `wellness_rewards_disabled` và không tạo dữ liệu.
 - [ ] Register chỉ chấp nhận member đã có schedule request `succeeded`, quota
@@ -90,6 +101,27 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 - [ ] Permission `wellness_rewards.read/write` được kiểm tra ở từng Admin RPC;
   mọi upsert/import/cancel đều có `admin_audit_events`.
 
+## Fixture local/sandbox canonical
+
+- [ ] Sau khi rebuild va ap dung profile demo opt-in, chay rollback-only
+  `test/docs/fixtures/supabase_comprehensive_seed_smoke.sql` sau
+  `tools/supabase/Seed-StorageFixtures.ps1` tren cung database disposable.
+- [ ] Fixture 19 nap duoc sau rebuild va co the chay lai ma khong nhan ban
+  quan he, ledger hay row idempotency. Storage runner la one-shot sau moi
+  destructive rebuild; neu can retry evidence thi rebuild va ap dung profile
+  demo lai, khong chay rieng module 19 tren proof/attempt da ton tai.
+- [ ] Kiem tra bo fixture co persona Free, Plus, FamilyPlus va Sale doc lap voi
+  membership; FamilyPlus co lien ket member/subject phuc vu kiem tra RLS; Sale
+  co lien ket khach truc tiep, payment/commission va Admin review gia lap.
+- [ ] Kiem tra cac trang thai mau chi la du lieu review local/sandbox. Chay RPC
+  va acceptance rieng de xac nhan transition, khong suy ra transition hop le
+  chi tu viec row fixture ton tai.
+- [ ] Kiem tra persona Admin/user surface theo `app_access_mode` va role phu
+  hop. Khong cap quyen client ghi truc tiep vao bang server-owned de tao data
+  test.
+- [ ] Giu cac rollout mac dinh tat sau rebuild. Chi tao version config bat
+  trong sandbox tach rieng neu case acceptance can goi mutation RPC.
+
 ## Membership va quota
 
 - [ ] Seed co du plan `free`, `plus`, `family_plus`.
@@ -114,6 +146,11 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 
 ## Sale direct-only
 
+- [ ] Giai doan 1: fixture co the co state quy doi/payout de review database,
+  nhung khong co `sale-payout-proofs` object nao duoc coi la da upload. Giai
+  doan 2: cau hinh bucket private, upload anh gia lap moi bang Admin co
+  `sales.write`, sau do luu dung path tra ve qua Admin workflow va kiem tra
+  khong co public read.
 - [ ] User Free bi chan dang ky Sale; user Plus/FamilyPlus active gui yeu cau
   Sale thi trang thai la `pending`; chi sau khi Admin approve moi thanh
   `active` va co referral code.
@@ -171,6 +208,8 @@ Commit de xuat: docs(supabase): cap nhat checklist nghiem thu Supabase
 - Bang server-only khong ghi duoc tu client.
 - Trigger signup khong lam loi tao account trong sandbox.
 - SQL seed chay lai duoc ma khong nhan ban du lieu.
+- Fixture SQL va Storage smoke test deu chi duoc xac nhan trong local/sandbox;
+  khong claim rollout, bucket hoac payment flow da san sang production.
 - Khong claim production-ready neu chua co sandbox/staging verification.
 
 ## Auth V2 / M05 completion acceptance (2026-07-12)

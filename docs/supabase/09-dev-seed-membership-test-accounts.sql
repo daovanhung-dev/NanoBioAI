@@ -1,3 +1,20 @@
+-- DEPRECATED / NO-OP REDIRECT.
+--
+-- This legacy membership-only fixture is intentionally disabled. Do not run it.
+-- Use docs/supabase/19-dev-sandbox-comprehensive-seed.sql for a standalone
+-- local/sandbox fixture review, or docs/supabase/config.sql for the canonical
+-- destructive local/sandbox rebuild. See
+-- docs/supabase/19-dev-sandbox-accounts.md for fictional account personas.
+-- Legacy config-owned Admin binding (review-only, never executable):
+-- ('10000000-0000-4000-8000-000000000104'::uuid, '20000000-0000-4000-8000-000000000104'::uuid, '30000000-0000-4000-8000-000000000104'::uuid, 'dev.admin@nanobio.local')
+-- ('10000000-0000-4000-8000-000000000104'::uuid,
+--  '20000000-0000-4000-8000-000000000104'::uuid,
+--  '30000000-0000-4000-8000-000000000104'::uuid,
+--  'dev.admin@nanobio.local').
+--
+-- Never run fixture SQL on production or shared staging. The historical body
+-- below is block-commented only to preserve review context; it has no effect.
+/*
 -- DEV/SANDBOX ONLY.
 -- Creates fixed membership test accounts for local Supabase review.
 -- Do not run this file against production or a shared staging environment.
@@ -220,24 +237,9 @@ set
   identity_data = excluded.identity_data,
   updated_at = now();
 
-insert into public.membership_plans (
-  code,
-  display_name,
-  access_version,
-  sort_order,
-  is_active
-)
-values
-  ('free', 'Free', 'v2', 10, true),
-  ('plus', 'Plus', 'v2', 20, true),
-  ('family_plus', 'FamilyPlus', 'v3', 30, true)
-on conflict (code) do update
-set
-  display_name = excluded.display_name,
-  access_version = excluded.access_version,
-  sort_order = excluded.sort_order,
-  is_active = excluded.is_active,
-  updated_at = now();
+-- Historical membership-plan version rows intentionally omitted. Their old
+-- version contract is not retained; fixture 19/config.sql are the sole
+-- canonical source for plan access versions.
 
 with seed_subscriptions as (
   select *
@@ -329,3 +331,4 @@ where email in (
 order by email;
 
 commit;
+*/

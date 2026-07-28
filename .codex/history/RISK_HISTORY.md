@@ -531,3 +531,14 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-19/002-worklog-gemini-android-runtime-and-chat-fallback.md :: - Can kiem tra tiep: smoke UI Chat va tao lich tren account con quota; Supabase
 - docs/worklog/2026-07-19/003-worklog-chat-ai-native-debug-runtime.md :: ## Loi/Rui ro
 - docs/worklog/2026-07-19/003-worklog-chat-ai-native-debug-runtime.md :: - Can kiem tra tiep: tao lich UI smoke theo account/quota; Supabase sandbox quota
+- docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md :: - `dart format`: SKIPPED - không có Dart SDK trong môi trường.
+- docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md :: - `flutter analyze`: SKIPPED - không có Flutter SDK trong môi trường.
+- docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md :: - `flutter test`: SKIPPED - không có Flutter SDK trong môi trường.
+- docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md :: - `flutter build apk --debug`: SKIPPED - không có Flutter/Android toolchain.
+- docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED - không có PowerShell.
+- docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md :: - Chua fix: không phát hiện bug nghiệp vụ vì task không cho phép đổi logic; không sửa baseline ngoài phạm vi UI.
+- docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md :: - Can kiem tra tiep: Dart format/analyze, targeted tests, APK build, screenshot matrix, TalkBack, text scale, reduce motion và hardware Back trên điện thoại thật.
+- docs/worklog/2026-07-28/001-worklog-supabase-comprehensive-sandbox-fixture.md :: - Rebuild Supabase va Storage smoke: SKIPPED - khong co Supabase disposable/local-sandbox da duoc xac nhan de chay thao tac destructive an toan.
+- docs/worklog/2026-07-28/001-worklog-supabase-comprehensive-sandbox-fixture.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-28/001-worklog-supabase-comprehensive-sandbox-fixture.md :: - Can kiem tra tiep: Khi co URL/CLI/Docker Supabase disposable, chay rebuild, profile demo, Storage runner va smoke SQL rollback-only.
