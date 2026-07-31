@@ -183,6 +183,76 @@ class AdminDashboardMetric {
   }
 }
 
+/// The small, permission-scoped summary shown to payment-capable Admins.
+///
+/// It intentionally counts only customer-confirmed transfers that are ready
+/// for review. Legacy `pending` payments remain reviewable in the queue, but
+/// do not create a new-payment alert.
+class AdminPaymentReviewAlert {
+  final int pendingReviewCount;
+
+  const AdminPaymentReviewAlert({required this.pendingReviewCount});
+
+  static const empty = AdminPaymentReviewAlert(pendingReviewCount: 0);
+
+  bool get hasPendingReviews => pendingReviewCount > 0;
+
+  factory AdminPaymentReviewAlert.fromMap(Map<String, Object?> map) {
+    final count = _readInt(map['pending_review_count']);
+    return AdminPaymentReviewAlert(pendingReviewCount: count < 0 ? 0 : count);
+  }
+}
+
+/// Server-provided details an Admin uses to reconcile an inbound VietQR
+/// transfer in the Vietcombank application before making a decision.
+///
+/// This is deliberately read-only. The client never generates or amends the
+/// transfer reference, memo, amount, or confirmation timestamp.
+class AdminPaymentReconciliationDetails {
+  final String? transferReference;
+  final String? transferMemo;
+  final String? payerFullName;
+  final int? amountCents;
+  final String? currency;
+  final DateTime? transferConfirmedAt;
+
+  const AdminPaymentReconciliationDetails({
+    this.transferReference,
+    this.transferMemo,
+    this.payerFullName,
+    this.amountCents,
+    this.currency,
+    this.transferConfirmedAt,
+  });
+
+  bool get hasDetails {
+    return transferReference != null ||
+        transferMemo != null ||
+        payerFullName != null ||
+        amountCents != null ||
+        transferConfirmedAt != null;
+  }
+
+  factory AdminPaymentReconciliationDetails.fromMap(Map<String, Object?> map) {
+    final rawAmount = map['amount_cents'];
+    return AdminPaymentReconciliationDetails(
+      transferReference: _readString(map['transfer_reference']),
+      transferMemo: _readString(map['transfer_memo']),
+      payerFullName: _readString(map['payer_full_name']),
+      amountCents: rawAmount == null ? null : _readInt(rawAmount),
+      currency: _readString(map['currency']),
+      transferConfirmedAt: _readDate(map['transfer_confirmed_at']),
+    );
+  }
+}
+
+bool adminPaymentStatusCanBeReviewed(String status) {
+  return switch (status.trim().toLowerCase()) {
+    'pending_review' || 'pending' => true,
+    _ => false,
+  };
+}
+
 class AdminWorkItem {
   final String id;
   final String title;
@@ -191,6 +261,7 @@ class AdminWorkItem {
   final String section;
   final DateTime? createdAt;
   final Map<String, Object?> metadata;
+  final AdminPaymentReconciliationDetails? paymentReconciliation;
 
   const AdminWorkItem({
     required this.id,
@@ -200,9 +271,15 @@ class AdminWorkItem {
     required this.section,
     this.createdAt,
     this.metadata = const {},
+    this.paymentReconciliation,
   });
 
   factory AdminWorkItem.fromMap(Map<String, Object?> map) {
+    final metadata = _readMap(map['metadata']);
+    final reconciliation = AdminPaymentReconciliationDetails.fromMap({
+      ...metadata,
+      ...map,
+    });
     return AdminWorkItem(
       id: _readString(map['id']) ?? '',
       title: _readString(map['title']) ?? 'Ban ghi',
@@ -210,7 +287,8 @@ class AdminWorkItem {
       status: _readString(map['status']) ?? 'ready',
       section: _readString(map['section']) ?? '',
       createdAt: _readDate(map['created_at']),
-      metadata: _readMap(map['metadata']),
+      metadata: metadata,
+      paymentReconciliation: reconciliation.hasDetails ? reconciliation : null,
     );
   }
 }

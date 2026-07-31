@@ -4,12 +4,19 @@ $ErrorActionPreference = "Stop"
 $script:RegressionRepoRoot = [System.IO.Path]::GetFullPath(
   (Join-Path $PSScriptRoot "../..")
 )
+$script:RegressionTestRoot = [System.IO.Path]::GetFullPath(
+  (Join-Path $script:RegressionRepoRoot "docs/test")
+)
+$script:RegressionDefaultCampaignRoot = 'docs/test/v2-admin-regression'
+$script:RegressionDefaultMatrixFile = '001-test-v2-admin-regression.md'
 $script:RegressionEvidenceRoot = [System.IO.Path]::GetFullPath(
-  (Join-Path $script:RegressionRepoRoot "docs/test/v2-admin-regression")
+  (Join-Path $script:RegressionRepoRoot $script:RegressionDefaultCampaignRoot)
 )
 $script:RegressionMatrixPath = Join-Path $script:RegressionEvidenceRoot `
-  "001-test-v2-admin-regression.md"
+  $script:RegressionDefaultMatrixFile
 $script:RegressionPackageName = "com.example.nano_app"
+$script:RegressionCaseIdPattern = '^(?:PRE|V2|ADM|ADMIN|AUT|PF|AH|WR|NBI)-[A-Z0-9-]+$'
+$script:RegressionCaseRowPattern = '^\|\s*((?:PRE|V2|ADM|ADMIN|AUT|PF|AH|WR|NBI)-[A-Z0-9-]+)\s*\|'
 
 function Assert-RegressionPathInsideRoot {
   param(
@@ -36,6 +43,168 @@ function Assert-RegressionPathInsideRoot {
     throw "Path is outside the allowed root."
   }
   return $resolvedPath
+}
+
+function Resolve-RegressionCampaignRoot {
+  param(
+    [AllowEmptyString()][string]$CampaignRoot = '',
+    [switch]$RequireExisting
+  )
+
+  $requestedRoot = if ([string]::IsNullOrWhiteSpace($CampaignRoot)) {
+    $script:RegressionDefaultCampaignRoot
+  } else {
+    $CampaignRoot
+  }
+  $candidate = if ([System.IO.Path]::IsPathRooted($requestedRoot)) {
+    $requestedRoot
+  } else {
+    Join-Path $script:RegressionRepoRoot $requestedRoot
+  }
+  $resolved = Assert-RegressionPathInsideRoot `
+    -Path $candidate `
+    -Root $script:RegressionTestRoot
+  if ($resolved.Equals($script:RegressionTestRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Campaign root must be a directory below docs/test.'
+  }
+  if ($RequireExisting -and -not (Test-Path -LiteralPath $resolved -PathType Container)) {
+    throw 'Campaign root was not found.'
+  }
+  return $resolved
+}
+
+function Resolve-RegressionCampaignMatrix {
+  param(
+    [Parameter(Mandatory = $true)][string]$CampaignRoot,
+    [AllowEmptyString()][string]$MatrixPath = '',
+    [switch]$RequireExisting
+  )
+
+  $candidate = $null
+  if ([string]::IsNullOrWhiteSpace($MatrixPath)) {
+    $legacyCandidate = Join-Path $CampaignRoot $script:RegressionDefaultMatrixFile
+    if (Test-Path -LiteralPath $legacyCandidate -PathType Leaf) {
+      $candidate = $legacyCandidate
+    } elseif ($RequireExisting) {
+      $matrices = @(
+        Get-ChildItem -LiteralPath $CampaignRoot -File -Filter '001-test-*.md' |
+          Sort-Object FullName
+      )
+      if ($matrices.Count -ne 1) {
+        throw 'Campaign matrix was not found uniquely. Pass -MatrixPath explicitly.'
+      }
+      $candidate = $matrices[0].FullName
+    } else {
+      $candidate = $legacyCandidate
+    }
+  } elseif ([System.IO.Path]::IsPathRooted($MatrixPath)) {
+    $candidate = $MatrixPath
+  } else {
+    $candidate = Join-Path $CampaignRoot $MatrixPath
+  }
+
+  $resolved = Assert-RegressionPathInsideRoot -Path $candidate -Root $CampaignRoot
+  if ($RequireExisting -and -not (Test-Path -LiteralPath $resolved -PathType Leaf)) {
+    throw 'Campaign matrix was not found.'
+  }
+  return $resolved
+}
+
+function Initialize-RegressionCampaign {
+  param(
+    [AllowEmptyString()][string]$CampaignRoot = '',
+    [AllowEmptyString()][string]$MatrixPath = '',
+    [switch]$RequireExisting
+  )
+
+  $root = Resolve-RegressionCampaignRoot `
+    -CampaignRoot $CampaignRoot `
+    -RequireExisting:$RequireExisting
+  $matrix = Resolve-RegressionCampaignMatrix `
+    -CampaignRoot $root `
+    -MatrixPath $MatrixPath `
+    -RequireExisting:$RequireExisting
+
+  $script:RegressionEvidenceRoot = $root
+  $script:RegressionMatrixPath = $matrix
+  return [pscustomobject]@{
+    CampaignRoot = $root
+    MatrixPath = $matrix
+  }
+}
+
+function Resolve-RegressionCampaignFile {
+  param(
+    [Parameter(Mandatory = $true)][string]$Path,
+    [Parameter(Mandatory = $true)][string]$Label,
+    [switch]$RequireExisting
+  )
+
+  if ([string]::IsNullOrWhiteSpace($Path)) {
+    throw "$Label path is required."
+  }
+  $candidate = if ([System.IO.Path]::IsPathRooted($Path)) {
+    $Path
+  } else {
+    Join-Path $script:RegressionEvidenceRoot $Path
+  }
+  $resolved = Assert-RegressionPathInsideRoot `
+    -Path $candidate `
+    -Root $script:RegressionEvidenceRoot
+  if ($RequireExisting -and -not (Test-Path -LiteralPath $resolved -PathType Leaf)) {
+    throw "$Label file was not found."
+  }
+  return $resolved
+}
+
+function Test-RegressionPngFile {
+  param([Parameter(Mandatory = $true)][string]$Path)
+
+  if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+    return $false
+  }
+  $bytes = [System.IO.File]::ReadAllBytes($Path)
+  $pngSignature = @(137, 80, 78, 71, 13, 10, 26, 10)
+  if ($bytes.Length -lt $pngSignature.Length) {
+    return $false
+  }
+  for ($index = 0; $index -lt $pngSignature.Length; $index++) {
+    if ($bytes[$index] -ne $pngSignature[$index]) {
+      return $false
+    }
+  }
+  return $true
+}
+
+function Test-RegressionIsLegacyCampaign {
+  $legacyRoot = Resolve-RegressionCampaignRoot
+  return $script:RegressionEvidenceRoot.Equals(
+    $legacyRoot,
+    [System.StringComparison]::OrdinalIgnoreCase
+  )
+}
+
+function Get-RegressionCaseEvidenceRelativePath {
+  param([Parameter(Mandatory = $true)]$Case)
+
+  $configured = [string]$Case.EvidencePath
+  if ($configured -match '(?i)\.md$') {
+    return $configured
+  }
+  if (Test-RegressionIsLegacyCampaign) {
+    return "evidence/$($Case.CaseId).md"
+  }
+  return "cases/$($Case.CaseId).md"
+}
+
+function Get-RegressionCaseAssetRelativePath {
+  param([Parameter(Mandatory = $true)]$Case)
+
+  $configured = [string]$Case.AssetPath
+  if ($configured -match '(?i)\.png$') {
+    return $configured
+  }
+  return "assets/$($Case.CaseId)-pass.png"
 }
 
 function Resolve-RegressionRepoFile {
@@ -65,7 +234,7 @@ function Get-RegressionCases {
 
   $cases = New-Object System.Collections.Generic.List[object]
   foreach ($line in [System.IO.File]::ReadAllLines($script:RegressionMatrixPath)) {
-    if ($line -notmatch '^\|\s*((PRE|V2|ADM|AUT)-[A-Z0-9-]+)\s*\|') {
+    if ($line -notmatch $script:RegressionCaseRowPattern) {
       continue
     }
     $cells = @($line.Split('|') | ForEach-Object { $_.Trim() })
@@ -93,7 +262,7 @@ function Get-RegressionCases {
 function Get-RegressionCase {
   param([Parameter(Mandatory = $true)][string]$CaseId)
 
-  if ($CaseId -notmatch '^(PRE|V2|ADM|AUT)-[A-Z0-9-]+$') {
+  if ($CaseId -notmatch $script:RegressionCaseIdPattern) {
     throw "Invalid regression case ID."
   }
   $matches = @(Get-RegressionCases | Where-Object { $_.CaseId -eq $CaseId })

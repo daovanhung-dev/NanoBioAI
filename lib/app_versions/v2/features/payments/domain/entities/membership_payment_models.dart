@@ -2,11 +2,13 @@ class CreateMembershipPaymentRequestCommand {
   final String planCode;
   final String billingCycle;
   final String idempotencyKey;
+  final String payerFullName;
 
   const CreateMembershipPaymentRequestCommand({
     required this.planCode,
     required this.billingCycle,
     required this.idempotencyKey,
+    required this.payerFullName,
   });
 }
 
@@ -17,6 +19,16 @@ class MembershipPaymentRequest {
   final String status;
   final int amountCents;
   final String currency;
+  final String? transferReference;
+  final String? transferMemo;
+  final String? bankCode;
+  final String? bankName;
+  final String? bankBin;
+  final String? bankAccountNumber;
+  final String? bankAccountName;
+  final String? bankAccountDisplayName;
+  final DateTime? transferConfirmedAt;
+  final String? reviewReason;
   final DateTime? createdAt;
 
   const MembershipPaymentRequest({
@@ -26,6 +38,16 @@ class MembershipPaymentRequest {
     required this.status,
     required this.amountCents,
     required this.currency,
+    this.transferReference,
+    this.transferMemo,
+    this.bankCode,
+    this.bankName,
+    this.bankBin,
+    this.bankAccountNumber,
+    this.bankAccountName,
+    this.bankAccountDisplayName,
+    this.transferConfirmedAt,
+    this.reviewReason,
     this.createdAt,
   });
 
@@ -37,9 +59,48 @@ class MembershipPaymentRequest {
       status: _readString(map['status']) ?? 'pending',
       amountCents: _readInt(map['amount_cents']),
       currency: _readString(map['currency']) ?? 'VND',
+      transferReference: _readString(map['transfer_reference']),
+      transferMemo: _readString(map['transfer_memo']),
+      bankCode: _readString(map['bank_code']),
+      bankName: _readString(map['bank_name']),
+      bankBin: _readString(map['bank_bin']),
+      bankAccountNumber: _readString(map['bank_account_number']),
+      bankAccountName: _readString(map['bank_account_name']),
+      bankAccountDisplayName: _readString(map['bank_account_display_name']),
+      transferConfirmedAt: _readDate(map['transfer_confirmed_at']),
+      reviewReason: _readString(map['review_reason']),
       createdAt: _readDate(map['created_at']),
     );
   }
+
+  String get normalizedStatus => status.trim().toLowerCase();
+
+  bool get isAwaitingTransfer => normalizedStatus == 'awaiting_transfer';
+
+  bool get isPendingReview => normalizedStatus == 'pending_review';
+
+  bool get isSucceeded => normalizedStatus == 'succeeded';
+
+  bool get isTerminal => const {
+    'succeeded',
+    'failed',
+    'rejected',
+    'cancelled',
+    'canceled',
+    'refunded',
+    'paid',
+  }.contains(normalizedStatus);
+
+  bool get isActive => !isTerminal;
+
+  bool get canConfirmTransfer => isAwaitingTransfer && id.trim().isNotEmpty;
+
+  bool get hasTransferDetails =>
+      amountCents > 0 &&
+      bankBin?.trim().isNotEmpty == true &&
+      bankAccountNumber?.trim().isNotEmpty == true &&
+      bankAccountName?.trim().isNotEmpty == true &&
+      transferMemo?.trim().isNotEmpty == true;
 }
 
 class MembershipPaymentException implements Exception {
@@ -53,6 +114,18 @@ class MembershipPaymentException implements Exception {
 
   const MembershipPaymentException.authRequired()
     : this('AUTH_REQUIRED', 'Cần đăng nhập để tạo yêu cầu thanh toán.');
+
+  const MembershipPaymentException.missingPayerName()
+    : this(
+        'MISSING_PAYER_NAME',
+        'Bạn cần cập nhật họ và tên trong hồ sơ trước khi tạo mã thanh toán.',
+      );
+
+  const MembershipPaymentException.invalidTransferConfirmation()
+    : this(
+        'INVALID_TRANSFER_CONFIRMATION',
+        'Yêu cầu thanh toán này chưa sẵn sàng để xác nhận chuyển khoản.',
+      );
 
   @override
   String toString() => '$code: $safeMessage';

@@ -11,13 +11,13 @@ class FeaturesHubPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentFeatures = _currentFeatures(context);
-    final totalFeatureCount =
-        currentFeatures.length + advancedHealthFeatureCatalog.length;
+    final plannedFeatures = _plannedFeatures(context);
 
     return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: CustomScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverPadding(
@@ -29,38 +29,42 @@ class FeaturesHubPage extends StatelessWidget {
               ),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  MedicalPageHero(
-                    eyebrow: 'TRUNG TÂM CHĂM SÓC',
-                    title: 'Chăm sức khỏe theo cách dễ hiểu',
-                    subtitle: 'Chọn công cụ theo mục tiêu chăm sóc của bạn.',
-                    icon: Icons.favorite_rounded,
-                    actions: [
-                      MedicalStatusPill(
-                        label: '$totalFeatureCount công cụ',
-                        icon: Icons.widgets_outlined,
-                        foregroundColor: AppColors.danger,
-                        backgroundColor: Colors.pink.withValues(alpha: .14),
-                        borderColor: Colors.pink.withValues(alpha: .22),
-                      ),
-                    ],
-                  ),
+                  const _CareJourneyHero(),
                   const SizedBox(height: AppSpacing.xl),
+                  const MedicalSectionHeader(
+                    title: 'Chăm sóc hôm nay',
+                    subtitle: 'Chọn một mục để bắt đầu.',
+                    icon: Icons.favorite_outline_rounded,
+                  ),
                   const SizedBox(height: AppSpacing.md),
-                  _FeatureGrid(
+                  _ResponsiveFeatureList(
                     itemCount: currentFeatures.length,
                     itemBuilder: (context, index) =>
                         _FeatureTile(action: currentFeatures[index]),
-                    mainAxisExtent: 178,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  const MedicalSectionHeader(
+                    title: 'Sắp ra mắt',
+                    subtitle: 'Các mục này đang được hoàn thiện.',
+                    icon: Icons.schedule_rounded,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _ResponsiveFeatureList(
+                    itemCount: plannedFeatures.length,
+                    itemBuilder: (context, index) => _FeatureTile(
+                      action: plannedFeatures[index],
+                      statusLabel: 'Sắp ra mắt',
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   const MedicalSectionHeader(
                     key: Key('advanced-health-features-section'),
-                    title: 'Theo dõi chuyên sâu đang phát triển',
-                    subtitle: 'Các mục mới đang được hoàn thiện.',
+                    title: 'Theo dõi chuyên sâu',
+                    subtitle: 'Các công cụ mới đang được phát triển.',
                     icon: Icons.health_and_safety_outlined,
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  _FeatureGrid(
+                  _ResponsiveFeatureList(
                     itemCount: advancedHealthFeatureCatalog.length,
                     itemBuilder: (context, index) {
                       final item = advancedHealthFeatureCatalog[index];
@@ -71,7 +75,6 @@ class FeaturesHubPage extends StatelessWidget {
                         ),
                       );
                     },
-                    mainAxisExtent: 252,
                   ),
                 ]),
               ),
@@ -89,92 +92,175 @@ class FeaturesHubPage extends StatelessWidget {
         subtitle: 'Xem nhịp sống trong tuần.',
         icon: Icons.event_note_rounded,
         color: AppColors.primary,
+        backgroundColor: AppColors.pastelBlue,
         onTap: () => context.push(V1RoutePaths.lifestyleSchedule),
       ),
       _FeatureAction(
         title: 'Nhiệm vụ hôm nay',
         subtitle: 'Hoàn thành từng việc nhỏ.',
         icon: Icons.favorite_rounded,
-        color: AppColors.danger,
+        color: AppColors.error,
+        backgroundColor: AppColors.pastelRose,
         onTap: () => context.push(V1RoutePaths.healthTracking),
       ),
       _FeatureAction(
         title: 'Thực đơn theo tuần',
-        subtitle: 'Xem bữa ăn đã chuẩn bị.',
+        subtitle: 'Xem bữa ăn Nabi đã chuẩn bị.',
         icon: Icons.restaurant_rounded,
         color: AppColors.secondary,
+        backgroundColor: AppColors.pastelMint,
         onTap: () => context.push(V1RoutePaths.mealPlan),
       ),
       _FeatureAction(
         title: 'Dinh dưỡng',
-        subtitle: 'Theo dõi năng lượng và thói quen ăn uống của bạn.',
+        subtitle: 'Theo dõi năng lượng và thói quen ăn uống.',
         icon: Icons.pie_chart_rounded,
         color: AppColors.warning,
+        backgroundColor: AppColors.pastelAmber,
         onTap: () => context.push(V1RoutePaths.nutrition),
       ),
       _FeatureAction(
         title: 'Chỉ số cơ thể',
-        subtitle: 'Tính BMI, BMR/RMR, TDEE và gợi ý cơ bản.',
+        subtitle: 'Xem các chỉ số cơ bản, dễ hiểu.',
         icon: Icons.monitor_weight_rounded,
         color: AppColors.info,
+        backgroundColor: AppColors.pastelSky,
         onTap: () => context.push(V1RoutePaths.bodyMetrics),
-      ),
-      _FeatureAction(
-        title: 'Giấc ngủ',
-        subtitle: 'Ghi nhận giấc ngủ để cơ thể được nghỉ ngơi tốt hơn.',
-        icon: Icons.bedtime_rounded,
-        color: AppColors.primary,
-        onTap: () => context.push(V1RoutePaths.sleepTracking),
-      ),
-      _FeatureAction(
-        title: 'Cảm xúc & stress',
-        subtitle: 'Một nơi nhỏ để bạn lắng nghe cảm xúc của mình.',
-        icon: Icons.psychology_rounded,
-        color: AppColors.info,
-        onTap: () => context.push(V1RoutePaths.stressTracking),
-      ),
-      _FeatureAction(
-        title: 'Cộng đồng chăm sóc',
-        subtitle: 'Kết nối cùng người quan tâm sức khỏe.',
-        icon: Icons.groups_rounded,
-        color: AppColors.error,
-        onTap: () => context.push(V1RoutePaths.community),
       ),
       _FeatureAction(
         title: 'Trò chuyện với Nabi',
         subtitle: 'Hỏi điều bạn đang băn khoăn.',
         icon: Icons.auto_awesome_rounded,
-        color: AppColors.secondary,
+        color: AppColors.tertiary,
+        backgroundColor: AppColors.pastelLavender,
         onTap: () => context.push(V1RoutePaths.aiChat),
+      ),
+    ];
+  }
+
+  List<_FeatureAction> _plannedFeatures(BuildContext context) {
+    return [
+      _FeatureAction(
+        title: 'Giấc ngủ',
+        subtitle: 'Ghi nhận nhịp nghỉ ngơi mỗi ngày.',
+        icon: Icons.bedtime_rounded,
+        color: AppColors.tertiary,
+        backgroundColor: AppColors.pastelLavender,
+        onTap: () => context.push(V1RoutePaths.sleepTracking),
+      ),
+      _FeatureAction(
+        title: 'Cảm xúc & stress',
+        subtitle: 'Một nơi riêng tư để lắng nghe cảm xúc.',
+        icon: Icons.psychology_rounded,
+        color: AppColors.secondary,
+        backgroundColor: AppColors.pastelMint,
+        onTap: () => context.push(V1RoutePaths.stressTracking),
+      ),
+      _FeatureAction(
+        title: 'Cộng đồng chăm sóc',
+        subtitle: 'Kết nối trong một không gian tích cực.',
+        icon: Icons.groups_rounded,
+        color: AppColors.error,
+        backgroundColor: AppColors.pastelRose,
+        onTap: () => context.push(V1RoutePaths.community),
       ),
     ];
   }
 }
 
-class _FeatureGrid extends StatelessWidget {
+class _CareJourneyHero extends StatelessWidget {
+  const _CareJourneyHero();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      header: true,
+      label:
+          'Trung tâm chăm sóc. Bảng Theo dõi Hành Trình Sống Khỏe.',
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: AppGradients.hero,
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
+          boxShadow: AppShadows.primary,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'TRUNG TÂM CHĂM SÓC',
+              style: AppTextStyles.overline.copyWith(
+                color: AppColors.textInverse.withValues(alpha: .88),
+                fontWeight: AppTypography.bold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .16),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: .24),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.favorite_rounded,
+                    color: AppColors.textInverse,
+                    size: 27,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    'Bảng Theo dõi Hành Trình Sống Khỏe',
+                    style: AppTextStyles.heading2.copyWith(
+                      color: AppColors.textInverse,
+                      fontWeight: AppTypography.bold,
+                      height: 1.24,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ResponsiveFeatureList extends StatelessWidget {
   final int itemCount;
   final IndexedWidgetBuilder itemBuilder;
-  final double mainAxisExtent;
 
-  const _FeatureGrid({
+  const _ResponsiveFeatureList({
     required this.itemCount,
     required this.itemBuilder,
-    required this.mainAxisExtent,
   });
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final crossAxisCount = width >= 900
-            ? 4
-            : width >= 620
-            ? 3
-            : width >= 440
-            ? 2
-            : 1;
+        if (constraints.maxWidth < 720) {
+          return Column(
+            children: [
+              for (var index = 0; index < itemCount; index++) ...[
+                itemBuilder(context, index),
+                if (index != itemCount - 1)
+                  const SizedBox(height: AppSpacing.md),
+              ],
+            ],
+          );
+        }
 
+        final crossAxisCount = constraints.maxWidth >= 1080 ? 3 : 2;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -183,7 +269,7 @@ class _FeatureGrid extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: AppSpacing.md,
             crossAxisSpacing: AppSpacing.md,
-            mainAxisExtent: mainAxisExtent,
+            mainAxisExtent: 210,
           ),
           itemBuilder: itemBuilder,
         );
@@ -194,62 +280,92 @@ class _FeatureGrid extends StatelessWidget {
 
 class _FeatureTile extends StatelessWidget {
   final _FeatureAction action;
+  final String? statusLabel;
 
-  const _FeatureTile({required this.action});
+  const _FeatureTile({required this.action, this.statusLabel});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.card,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        onTap: action.onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: AppColors.borderLight),
-            boxShadow: AppShadows.sm,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    _FeatureIcon(icon: action.icon, color: action.color),
-                    const Spacer(),
-                    Icon(
-                      Icons.arrow_outward_rounded,
-                      color: AppColors.textMuted.withValues(alpha: .7),
-                      size: 18,
+    return Semantics(
+      button: true,
+      label: statusLabel == null
+          ? '${action.title}. ${action.subtitle}'
+          : '${action.title}. $statusLabel. ${action.subtitle}',
+      child: Material(
+        color: action.backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          onTap: action.onTap,
+          child: Ink(
+            decoration: BoxDecoration(
+              color: action.backgroundColor,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(color: action.color.withValues(alpha: .18)),
+              boxShadow: AppShadows.card,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          action.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.heading4.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: AppTypography.bold,
+                          ),
+                        ),
+                      ),
+                      if (statusLabel != null) ...[
+                        const SizedBox(width: AppSpacing.sm),
+                        _FeatureBadge(
+                          label: statusLabel!,
+                          icon: Icons.schedule_rounded,
+                          foregroundColor: action.color,
+                          backgroundColor: Colors.white.withValues(alpha: .68),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    action.subtitle,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.45,
                     ),
-                  ],
-                ),
-                const Spacer(),
-                Text(
-                  action.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: AppTypography.bold,
-                    height: 1.25,
                   ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  action.subtitle,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.35,
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    children: [
+                      _FeatureIcon(icon: action.icon, color: action.color),
+                      const Spacer(),
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: .72),
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                        ),
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          color: action.color,
+                          size: 22,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -267,76 +383,96 @@ class _AdvancedHealthFeatureTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isFree = item.minimumAccess == HealthFeatureMinimumAccess.free;
+    final backgroundColor = _pastelFor(item.color);
 
-    return Material(
-      key: Key('advanced-health-feature-${item.moduleId}'),
-      color: AppColors.card,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        onTap: onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: item.color.withValues(alpha: .22)),
-            boxShadow: AppShadows.sm,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    _FeatureIcon(icon: item.icon, color: item.color),
-                    const Spacer(),
-                    _FeatureBadge(
-                      key: Key('access-badge-${item.moduleId}'),
-                      label: isFree ? 'Miễn phí' : 'Plus',
-                      foregroundColor: isFree
-                          ? AppColors.success
-                          : AppColors.tertiary,
-                      backgroundColor: isFree
-                          ? AppColors.successSoft
-                          : AppColors.tertiarySoft,
+    return Semantics(
+      button: true,
+      label: '${item.title}. Đang phát triển. ${item.description}',
+      child: Material(
+        key: Key('advanced-health-feature-${item.moduleId}'),
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          onTap: onTap,
+          child: Ink(
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(color: item.color.withValues(alpha: .18)),
+              boxShadow: AppShadows.card,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.heading4.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: AppTypography.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      _FeatureBadge(
+                        key: Key('access-badge-${item.moduleId}'),
+                        label: isFree ? 'Miễn phí' : 'Plus',
+                        foregroundColor: isFree
+                            ? AppColors.success
+                            : AppColors.tertiary,
+                        backgroundColor: Colors.white.withValues(alpha: .72),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    item.description,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.45,
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  item.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: AppTypography.bold,
-                    height: 1.25,
                   ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  item.description,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.35,
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    children: [
+                      _FeatureIcon(icon: item.icon, color: item.color),
+                      const Spacer(),
+                      const _FeatureBadge(
+                        label: 'Đang phát triển',
+                        icon: Icons.schedule_rounded,
+                        foregroundColor: AppColors.info,
+                        backgroundColor: Colors.white70,
+                      ),
+                    ],
                   ),
-                ),
-                const Spacer(),
-                const _FeatureBadge(
-                  label: 'Đang phát triển',
-                  icon: Icons.schedule_rounded,
-                  foregroundColor: AppColors.info,
-                  backgroundColor: AppColors.infoSoft,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  static Color _pastelFor(Color color) {
+    if (color == AppColors.secondary || color == AppColors.success) {
+      return AppColors.pastelMint;
+    }
+    if (color == AppColors.warning) return AppColors.pastelAmber;
+    if (color == AppColors.error || color == AppColors.danger) {
+      return AppColors.pastelRose;
+    }
+    if (color == AppColors.tertiary) return AppColors.pastelLavender;
+    return AppColors.pastelSky;
   }
 }
 
@@ -349,13 +485,14 @@ class _FeatureIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 44,
-      height: 44,
+      width: 52,
+      height: 52,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .12),
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        color: Colors.white.withValues(alpha: .78),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: color.withValues(alpha: .14)),
       ),
-      child: Icon(icon, color: color, size: 23),
+      child: Icon(icon, color: color, size: 26),
     );
   }
 }
@@ -377,7 +514,8 @@ class _FeatureBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      constraints: const BoxConstraints(minHeight: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -386,7 +524,7 @@ class _FeatureBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 14, color: foregroundColor),
+            Icon(icon, size: 15, color: foregroundColor),
             const SizedBox(width: 5),
           ],
           Flexible(
@@ -394,7 +532,7 @@ class _FeatureBadge extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.labelSmall.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: foregroundColor,
                 fontWeight: AppTypography.semiBold,
               ),
@@ -411,6 +549,7 @@ class _FeatureAction {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final Color backgroundColor;
   final VoidCallback onTap;
 
   const _FeatureAction({
@@ -418,6 +557,7 @@ class _FeatureAction {
     required this.subtitle,
     required this.icon,
     required this.color,
+    required this.backgroundColor,
     required this.onTap,
   });
 }

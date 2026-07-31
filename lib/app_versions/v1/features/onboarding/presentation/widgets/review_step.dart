@@ -382,7 +382,7 @@ class _ReviewStepState extends ConsumerState<ReviewStep>
           ..showSnackBar(
             const SnackBar(
               content: Text(
-                'Nabi đã tạo lịch gợi ý cơ bản đầu tiên. Khi AI sẵn sàng, bạn có thể tạo lại để nhận gợi ý cá nhân hơn nhé.',
+                'Nabi đã tạo lịch gợi ý cơ bản đầu tiên. Khi dịch vụ sẵn sàng, bạn có thể tạo lại để nhận gợi ý cá nhân hơn nhé.',
               ),
             ),
           );

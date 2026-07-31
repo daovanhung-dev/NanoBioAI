@@ -30,6 +30,7 @@ class AdminPanelState {
   final List<AdminWorkItem> items;
   final List<AdminAuditEvent> auditEvents;
   final String query;
+  final AdminPaymentReviewAlert paymentReviewAlert;
   final String? deniedPermission;
   final String? lastMessage;
 
@@ -40,6 +41,7 @@ class AdminPanelState {
     required this.items,
     required this.auditEvents,
     required this.query,
+    this.paymentReviewAlert = AdminPaymentReviewAlert.empty,
     this.deniedPermission,
     this.lastMessage,
   });
@@ -53,6 +55,7 @@ class AdminPanelState {
     List<AdminWorkItem>? items,
     List<AdminAuditEvent>? auditEvents,
     String? query,
+    AdminPaymentReviewAlert? paymentReviewAlert,
     String? deniedPermission,
     String? lastMessage,
   }) {
@@ -63,6 +66,7 @@ class AdminPanelState {
       items: items ?? this.items,
       auditEvents: auditEvents ?? this.auditEvents,
       query: query ?? this.query,
+      paymentReviewAlert: paymentReviewAlert ?? this.paymentReviewAlert,
       deniedPermission: deniedPermission ?? this.deniedPermission,
       lastMessage: lastMessage,
     );
@@ -132,6 +136,29 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     );
   }
 
+  /// Refreshes only the payment-review badge without replacing the current
+  /// section or showing a blocking loading state. It is safe for periodic and
+  /// lifecycle-triggered refreshes.
+  Future<void> refreshPaymentReviewAlert() async {
+    final current = state.asData?.value;
+    if (current == null ||
+        !current.session.hasPermission(AdminPermissions.paymentsWrite)) {
+      return;
+    }
+
+    try {
+      final alert = await _repository.fetchPaymentReviewAlert();
+      final latest = state.asData?.value;
+      if (latest == null ||
+          !latest.session.hasPermission(AdminPermissions.paymentsWrite)) {
+        return;
+      }
+      state = AsyncData(latest.copyWith(paymentReviewAlert: alert));
+    } catch (_) {
+      // A background alert refresh must not replace usable Admin content.
+    }
+  }
+
   Future<void> runMutation({
     required AdminPanelSection section,
     required String action,
@@ -161,6 +188,8 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
         section: current?.section ?? section,
         query: current?.query ?? '',
         permission: adminPermissionForMutation(command),
+        paymentReviewAlert:
+            current?.paymentReviewAlert ?? AdminPaymentReviewAlert.empty,
         lastMessage: _permissionDeniedMessage(
           adminPermissionForMutation(command),
         ),
@@ -197,6 +226,8 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       );
     }
 
+    final paymentReviewAlert = await _loadPaymentReviewAlert(session);
+
     final requiredPermission = adminPermissionForSection(section);
     if (!session.canAccessSection(section)) {
       return _permissionDeniedState(
@@ -204,6 +235,7 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
         section: section,
         query: query,
         permission: requiredPermission,
+        paymentReviewAlert: paymentReviewAlert,
       );
     }
 
@@ -226,7 +258,24 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       items: items,
       auditEvents: auditEvents,
       query: query,
+      paymentReviewAlert: paymentReviewAlert,
     );
+  }
+
+  Future<AdminPaymentReviewAlert> _loadPaymentReviewAlert(
+    AdminSession session,
+  ) async {
+    if (!session.hasPermission(AdminPermissions.paymentsWrite)) {
+      return AdminPaymentReviewAlert.empty;
+    }
+
+    try {
+      return await _repository.fetchPaymentReviewAlert();
+    } catch (_) {
+      // The alert is additive. Keep the established Admin section usable if a
+      // deployment has not yet exposed the new summary RPC.
+      return AdminPaymentReviewAlert.empty;
+    }
   }
 
   Future<List<AdminDashboardMetric>> _fetchDashboardMetrics() {
@@ -245,6 +294,7 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     required AdminPanelSection section,
     required String query,
     required String permission,
+    AdminPaymentReviewAlert paymentReviewAlert = AdminPaymentReviewAlert.empty,
     String? lastMessage,
   }) {
     return AdminPanelState(
@@ -254,6 +304,7 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       items: const [],
       auditEvents: const [],
       query: query,
+      paymentReviewAlert: paymentReviewAlert,
       deniedPermission: permission,
       lastMessage: lastMessage,
     );

@@ -5,6 +5,13 @@ abstract class MembershipPaymentRemoteDatasource {
     required String planCode,
     required String billingCycle,
     required String idempotencyKey,
+    required String payerFullName,
+  });
+
+  Future<Object?> getMyMembershipPaymentRequest();
+
+  Future<Object?> confirmMyMembershipPaymentTransfer({
+    required String paymentEventId,
   });
 }
 
@@ -19,6 +26,7 @@ class SupabaseMembershipPaymentRemoteDatasource
     required String planCode,
     required String billingCycle,
     required String idempotencyKey,
+    required String payerFullName,
   }) {
     final client = _client();
     return client.rpc(
@@ -27,7 +35,23 @@ class SupabaseMembershipPaymentRemoteDatasource
         'p_plan_code': planCode,
         'p_billing_cycle': billingCycle,
         'p_idempotency_key': idempotencyKey,
+        'p_payer_full_name': payerFullName,
       },
+    );
+  }
+
+  @override
+  Future<Object?> getMyMembershipPaymentRequest() {
+    return _client().rpc('get_my_membership_payment_request');
+  }
+
+  @override
+  Future<Object?> confirmMyMembershipPaymentTransfer({
+    required String paymentEventId,
+  }) {
+    return _client().rpc(
+      'confirm_my_membership_payment_transfer',
+      params: {'p_payment_event_id': paymentEventId},
     );
   }
 

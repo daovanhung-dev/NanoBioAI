@@ -17,6 +17,7 @@ class OnboardingStepShell extends StatelessWidget {
   final VoidCallback? onNext;
   final String? nextLabel;
   final bool showBack;
+  final bool showNextAction;
   final bool isScrollable;
   final bool safeArea;
 
@@ -32,6 +33,7 @@ class OnboardingStepShell extends StatelessWidget {
     this.onNext,
     this.nextLabel,
     this.showBack = true,
+    this.showNextAction = true,
     this.isScrollable = true,
     this.safeArea = true,
   });
@@ -69,7 +71,7 @@ class OnboardingStepShell extends StatelessWidget {
                 child: child,
               ),
             ),
-            if (footer != null || onNext != null)
+            if (footer != null || showNextAction)
               _BottomAction(
                 footer: footer,
                 onNext: onNext,

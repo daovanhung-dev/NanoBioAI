@@ -1,9 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
+import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
 
+import '../application/confirm_membership_payment_transfer.dart';
 import '../application/create_membership_payment_request.dart';
+import '../application/load_current_membership_payment_request.dart';
+import '../application/read_membership_payment_payer_name.dart';
+import '../data/datasources/membership_payment_payer_profile_local_datasource.dart';
 import '../data/datasources/membership_payment_remote_datasource.dart';
+import '../data/repositories/sqlite_membership_payment_payer_profile_repository.dart';
 import '../data/repositories/supabase_membership_payment_repository.dart';
+import '../domain/entities/membership_payment_models.dart';
+import '../domain/repositories/membership_payment_payer_profile_repository.dart';
 import '../domain/repositories/membership_payment_repository.dart';
+
+final membershipPaymentCurrentUserIdProvider = Provider<String?>((ref) {
+  return ref.watch(currentAuthUserIdProvider);
+});
 
 final membershipPaymentRemoteDatasourceProvider =
     Provider<MembershipPaymentRemoteDatasource>((ref) {
@@ -17,9 +30,201 @@ final membershipPaymentRepositoryProvider =
       );
     });
 
+final membershipPaymentPayerProfileLocalDatasourceProvider =
+    Provider<MembershipPaymentPayerProfileLocalDatasource>((ref) {
+      return const SqliteMembershipPaymentPayerProfileLocalDatasource();
+    });
+
+final membershipPaymentPayerProfileRepositoryProvider =
+    Provider<MembershipPaymentPayerProfileRepository>((ref) {
+      return SqliteMembershipPaymentPayerProfileRepository(
+        datasource: ref.watch(
+          membershipPaymentPayerProfileLocalDatasourceProvider,
+        ),
+      );
+    });
+
 final createMembershipPaymentRequestProvider =
     Provider<CreateMembershipPaymentRequest>((ref) {
       return CreateMembershipPaymentRequest(
         repository: ref.watch(membershipPaymentRepositoryProvider),
       );
     });
+
+final loadCurrentMembershipPaymentRequestProvider =
+    Provider<LoadCurrentMembershipPaymentRequest>((ref) {
+      return LoadCurrentMembershipPaymentRequest(
+        repository: ref.watch(membershipPaymentRepositoryProvider),
+      );
+    });
+
+final confirmMembershipPaymentTransferProvider =
+    Provider<ConfirmMembershipPaymentTransfer>((ref) {
+      return ConfirmMembershipPaymentTransfer(
+        repository: ref.watch(membershipPaymentRepositoryProvider),
+      );
+    });
+
+final readMembershipPaymentPayerNameProvider =
+    Provider<ReadMembershipPaymentPayerName>((ref) {
+      return ReadMembershipPaymentPayerName(
+        repository: ref.watch(membershipPaymentPayerProfileRepositoryProvider),
+      );
+    });
+
+final membershipPaymentIdempotencyKeyFactoryProvider =
+    Provider<String Function(String planCode, String billingCycle)>((ref) {
+      return (planCode, billingCycle) =>
+          'membership-${planCode.trim()}-${billingCycle.trim()}-'
+          '${DateTime.now().microsecondsSinceEpoch}';
+    });
+
+class MembershipPaymentViewState {
+  final MembershipPaymentRequest? request;
+  final String? payerFullName;
+
+  const MembershipPaymentViewState({this.request, this.payerFullName});
+
+  bool get hasPayerFullName => payerFullName?.trim().isNotEmpty == true;
+}
+
+final membershipPaymentControllerProvider =
+    AsyncNotifierProvider<
+      MembershipPaymentController,
+      MembershipPaymentViewState
+    >(MembershipPaymentController.new);
+
+class MembershipPaymentController
+    extends AsyncNotifier<MembershipPaymentViewState> {
+  String? _idempotencyKey;
+  String? _idempotencyPlanCode;
+  String? _idempotencyBillingCycle;
+
+  @override
+  Future<MembershipPaymentViewState> build() {
+    return _load(ref.watch(membershipPaymentCurrentUserIdProvider));
+  }
+
+  Future<void> refresh() async {
+    final userId = ref.read(membershipPaymentCurrentUserIdProvider);
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => _load(userId));
+  }
+
+  Future<MembershipPaymentRequest> createRequest({
+    required String planCode,
+    required String billingCycle,
+  }) async {
+    final existingRequest = state.value?.request;
+    if (existingRequest != null && existingRequest.isActive) {
+      return existingRequest;
+    }
+    if (existingRequest?.isTerminal == true) {
+      _clearIdempotencyKey();
+    }
+
+    final userId = ref.read(membershipPaymentCurrentUserIdProvider)?.trim();
+    if (userId == null || userId.isEmpty) {
+      throw const MembershipPaymentException.authRequired();
+    }
+
+    final payerFullName = await ref
+        .read(readMembershipPaymentPayerNameProvider)
+        .execute(userId);
+    if (payerFullName == null || payerFullName.trim().isEmpty) {
+      throw const MembershipPaymentException.missingPayerName();
+    }
+
+    final idempotencyKey = _idempotencyKeyFor(planCode, billingCycle);
+    final request = await ref
+        .read(createMembershipPaymentRequestProvider)
+        .execute(
+          CreateMembershipPaymentRequestCommand(
+            planCode: planCode,
+            billingCycle: billingCycle,
+            idempotencyKey: idempotencyKey,
+            payerFullName: payerFullName,
+          ),
+        );
+    state = AsyncData(
+      MembershipPaymentViewState(
+        request: request,
+        payerFullName: payerFullName,
+      ),
+    );
+    _invalidateEffectiveAccessIfSucceeded(request);
+    return request;
+  }
+
+  Future<MembershipPaymentRequest> confirmTransfer() async {
+    final current = state.value?.request;
+    if (current == null || !current.canConfirmTransfer) {
+      throw const MembershipPaymentException.invalidTransferConfirmation();
+    }
+
+    final request = await ref
+        .read(confirmMembershipPaymentTransferProvider)
+        .execute(current.id);
+    state = AsyncData(
+      MembershipPaymentViewState(
+        request: request,
+        payerFullName: state.value?.payerFullName,
+      ),
+    );
+    _invalidateEffectiveAccessIfSucceeded(request);
+    return request;
+  }
+
+  Future<MembershipPaymentViewState> _load(String? userId) async {
+    final normalizedUserId = userId?.trim();
+    if (normalizedUserId == null || normalizedUserId.isEmpty) {
+      _clearIdempotencyKey();
+      return const MembershipPaymentViewState();
+    }
+
+    final payerFullName = await ref
+        .read(readMembershipPaymentPayerNameProvider)
+        .execute(normalizedUserId);
+    final request = await ref
+        .read(loadCurrentMembershipPaymentRequestProvider)
+        .execute();
+    if (request?.isTerminal == true) {
+      _clearIdempotencyKey();
+    }
+    _invalidateEffectiveAccessIfSucceeded(request);
+    return MembershipPaymentViewState(
+      request: request,
+      payerFullName: payerFullName,
+    );
+  }
+
+  String _idempotencyKeyFor(String planCode, String billingCycle) {
+    final normalizedPlanCode = planCode.trim();
+    final normalizedBillingCycle = billingCycle.trim();
+    final canReuse =
+        _idempotencyKey != null &&
+        _idempotencyPlanCode == normalizedPlanCode &&
+        _idempotencyBillingCycle == normalizedBillingCycle;
+    if (canReuse) return _idempotencyKey!;
+
+    _idempotencyPlanCode = normalizedPlanCode;
+    _idempotencyBillingCycle = normalizedBillingCycle;
+    return _idempotencyKey = ref.read(
+      membershipPaymentIdempotencyKeyFactoryProvider,
+    )(normalizedPlanCode, normalizedBillingCycle);
+  }
+
+  void _clearIdempotencyKey() {
+    _idempotencyKey = null;
+    _idempotencyPlanCode = null;
+    _idempotencyBillingCycle = null;
+  }
+
+  void _invalidateEffectiveAccessIfSucceeded(
+    MembershipPaymentRequest? request,
+  ) {
+    if (request?.isSucceeded == true) {
+      ref.invalidate(effectiveAccessProvider);
+    }
+  }
+}

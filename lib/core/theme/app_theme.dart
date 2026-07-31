@@ -59,7 +59,7 @@ class AppTheme {
       highlightColor: AppColors.pressed,
       splashFactory: InkSparkle.splashFactory,
       materialTapTargetSize: MaterialTapTargetSize.padded,
-      visualDensity: const VisualDensity(horizontal: -0.35, vertical: -0.35),
+      visualDensity: VisualDensity.standard,
     );
 
     final textTheme = base.textTheme.copyWith(
@@ -182,7 +182,7 @@ class AppTheme {
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
           animationDuration: AppDuration.button,
-          minimumSize: const WidgetStatePropertyAll(Size(44, 44)),
+          minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
           iconSize: const WidgetStatePropertyAll(21),
           foregroundColor: const WidgetStatePropertyAll(AppColors.icon),
           backgroundColor: WidgetStateProperty.resolveWith((states) {

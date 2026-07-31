@@ -45,7 +45,7 @@ class InsightCard extends StatelessWidget {
   String get _typeLabel {
     switch (data.type) {
       case InsightType.recommendation:
-        return 'AI';
+        return 'Nabi';
       case InsightType.warning:
         return 'Lưu ý';
       case InsightType.tip:

@@ -4,11 +4,11 @@
 |---|---|
 | Module Code | PAYMENT_MEMBERSHIP |
 | BD Module | M13 |
-| Version | v1.0 |
+| Version | v1.3 |
 | Status | Approved - DD docs complete |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-06-30 |
+| Last Updated | 2026-07-31 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16 |
 
 ## Purpose
@@ -42,6 +42,7 @@ Ghi nhận giao dịch mua/gia hạn, xác minh qua Admin và chỉ kích hoạt
 | Q-05 | How are refund, cancel, and chargeback handled after points are credited? | Refund/cancel is allowed only within 24 hours after purchase. Points are reversed immediately in that window. Because conversion is also locked for 24 hours, there is no converted-then-reversed case. | Answered - User decision 2026-06-30 |
 | Q-11 | How is FamilyPlus commission calculated? | FamilyPlus commission is calculated only on the package owner portion. | Answered - User decision 2026-06-30 |
 | Q-17 | Can webhook/trusted recorder approve payments automatically? | All payments and transfers are manually reviewed and manually approved by Admin. Trusted recorder may only create pending evidence; only Admin approval creates payment_approved. | Answered - User decision 2026-06-30 |
+| Q-18 | What is the VietQR payment and approval flow? | The member receives a Vietcombank QR, confirms “Đã chuyển khoản”, then an Admin with payment permission compares the reference and amount in the VCB app before approving or rejecting. There is no receipt upload, bank API, webhook, or in-app balance. | Answered - User decision 2026-07-31 |
 
 ## Approval Status
 | Role | Approver | Status | Date |

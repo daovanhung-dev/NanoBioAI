@@ -935,21 +935,26 @@ class _MealPlanCardState extends State<_MealPlanCard> {
 
                             SizedBox(height: ui.cardGap),
 
-                            // Time & calories inline row
-                            Row(
+                            // Meal metadata. Keep it compact and wrap-safe.
+                            Wrap(
+                              spacing: ui.cardGap,
+                              runSpacing: ui.smallGap,
                               children: [
+                                _InlineTag(
+                                  icon: Icons.person_outline_rounded,
+                                  label: 'Khẩu phần 1 người',
+                                  color: AppColors.secondary,
+                                ),
                                 _InlineTag(
                                   icon: Icons.schedule_rounded,
                                   label: time,
                                   color: AppColors.textSecondary,
                                 ),
-                                SizedBox(width: ui.cardGap),
                                 _InlineTag(
                                   icon: Icons.local_fire_department_rounded,
                                   label: '${meal.calories} kcal',
                                   color: AppColors.warning,
                                 ),
-                                SizedBox(width: ui.cardGap),
                                 _InlineTag(
                                   icon: Icons.water_drop_rounded,
                                   label: '${meal.waterMl} ml',
@@ -974,20 +979,6 @@ class _MealPlanCardState extends State<_MealPlanCard> {
                               SizedBox(height: ui.cardGap),
                               _CookingInstructionsBox(ui: ui, meal: meal),
                             ],
-
-                            SizedBox(height: ui.cardGap),
-
-                            // Divider
-                            Divider(
-                              height: 1,
-                              thickness: 1,
-                              color: AppColors.textHint.withValues(alpha: 0.12),
-                            ),
-
-                            SizedBox(height: ui.cardGap),
-
-                            // Nutrition row
-                            _NutritionRow(ui: ui, meal: meal),
 
                             SizedBox(height: ui.cardGap),
 
@@ -1017,7 +1008,7 @@ class _MealPlanCardState extends State<_MealPlanCard> {
                                       ? Icons.auto_awesome_rounded
                                       : Icons.edit_rounded,
                                   label: meal.aiGenerated
-                                      ? 'AI tạo'
+                                      ? 'Nabi tạo'
                                       : 'Thủ công',
                                   backgroundColor: AppColors.primarySoft,
                                   textColor: AppColors.primary,
@@ -1051,45 +1042,137 @@ class _CookingInstructionsBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final steps = _RecipeInstructionParser.parse(meal.cookingInstructions);
+
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(ui.smallPadding + 2),
+      padding: EdgeInsets.all(ui.smallPadding + 4),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft.withValues(alpha: .55),
+        color: AppColors.pastelMint,
         borderRadius: BorderRadius.circular(ui.radiusMd),
-        border: Border.all(color: AppColors.primary.withValues(alpha: .12)),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: .14)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.soup_kitchen_rounded,
-                size: 17,
-                color: AppColors.primary,
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .78),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: const Icon(
+                  Icons.soup_kitchen_rounded,
+                  size: 21,
+                  color: AppColors.secondary,
+                ),
               ),
-              SizedBox(width: ui.xsGap),
-              Text(
-                'Cách chế biến',
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
+              SizedBox(width: ui.smallGap),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cách chế biến',
+                      style: AppTextStyles.heading5.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      'Khẩu phần dành cho 1 người',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: ui.xsGap),
-          Text(
-            meal.cookingInstructions.trim(),
-            style: AppTextStyles.bodySmall.copyWith(
-              height: 1.45,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          SizedBox(height: ui.cardGap),
+          for (var index = 0; index < steps.length; index++) ...[
+            _RecipeStep(number: index + 1, text: steps[index]),
+            if (index != steps.length - 1) SizedBox(height: ui.smallGap),
+          ],
         ],
       ),
     );
+  }
+}
+
+class _RecipeStep extends StatelessWidget {
+  final int number;
+  final String text;
+
+  const _RecipeStep({required this.number, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: AppColors.secondary,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            '$number',
+            style: AppTextStyles.labelMedium.copyWith(
+              color: AppColors.textInverse,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              text,
+              style: AppTextStyles.bodyMedium.copyWith(
+                height: 1.48,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+abstract final class _RecipeInstructionParser {
+  static List<String> parse(String value) {
+    final normalized = value
+        .replaceAll('\r', '\n')
+        .replaceAll(RegExp(r'\n{2,}'), '\n')
+        .trim();
+    if (normalized.isEmpty) return const [];
+
+    final lines = normalized
+        .split('\n')
+        .expand((line) => line.split(RegExp(r'\s*[;•]\s*')))
+        .map(_removeStepPrefix)
+        .where((line) => line.isNotEmpty)
+        .toList(growable: false);
+
+    return lines.isEmpty ? [normalized] : lines;
+  }
+
+  static String _removeStepPrefix(String value) {
+    return value
+        .trim()
+        .replaceFirst(RegExp(r'^(?:bước\s*)?\d+[\.)\-:]?\s*', caseSensitive: false), '')
+        .replaceFirst(RegExp(r'^[-–—]\s*'), '')
+        .trim();
   }
 }
 
@@ -1105,123 +1188,28 @@ class _InlineTag extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(icon, size: 13, color: color),
-      const SizedBox(width: 3),
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: color,
+  Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(minHeight: 34),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: .08),
+      borderRadius: BorderRadius.circular(AppRadius.pill),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 17, color: color),
+        const SizedBox(width: AppSpacing.xs),
+        Text(
+          label,
+          style: AppTextStyles.labelMedium.copyWith(
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
         ),
-      ),
-    ],
+      ],
+    ),
   );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// NUTRITION ROW  (horizontal compact — replaces 2-column grid)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _NutritionRow extends StatelessWidget {
-  final _MealPlanResponsiveUi ui;
-  final MealPlanEntity meal;
-
-  const _NutritionRow({required this.ui, required this.meal});
-
-  @override
-  Widget build(BuildContext context) {
-    final items = [
-      _NutrientDot(
-        label: 'Đạm',
-        value: '${meal.protein}g',
-        color: AppColors.success,
-      ),
-      _NutrientDot(
-        label: 'Tinh bột',
-        value: '${meal.carbs}g',
-        color: AppColors.primary,
-      ),
-      _NutrientDot(
-        label: 'Chất béo',
-        value: '${meal.fat}g',
-        color: AppColors.warning,
-      ),
-      _NutrientDot(
-        label: 'Chất xơ',
-        value: '${meal.fiber}g',
-        color: AppColors.info,
-      ),
-    ];
-
-    return Row(
-      children: items
-          .asMap()
-          .entries
-          .map(
-            (e) => Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    e.value.value,
-                    style: TextStyle(
-                      fontSize: ui.nutritionValueFontSize,
-                      fontWeight: FontWeight.w800,
-                      color: e.value.color,
-                    ),
-                  ),
-                  SizedBox(height: ui.tinyGap),
-                  Text(
-                    e.value.label,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: ui.bodySmallFontSize - 1,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  Container(
-                    height: 3,
-                    margin: EdgeInsets.only(
-                      right: e.key < items.length - 1 ? ui.smallGap : 0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: e.value.color.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(ui.circularRadius),
-                    ),
-                    child: FractionallySizedBox(
-                      widthFactor: 0.6,
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: e.value.color,
-                          borderRadius: BorderRadius.circular(
-                            ui.circularRadius,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class _NutrientDot {
-  final String label, value;
-  final Color color;
-  const _NutrientDot({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -104,9 +104,17 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 | 2 | M06/M07/M02 Quota + AI | Run Supabase sandbox quota acceptance: Free 3/day AI chat, Free 3/month schedule, Plus/FamilyPlus bypass, idempotent commit, RLS/client write rejection. | Code/SQL gateway/tests da 100%; sandbox evidence la production acceptance backlog. |
 | 3 | M05/M12 Auth sync + Referral | Verify cross-device profile/schedule AI request sync and registration-only referral attach anti-fraud cases in Supabase sandbox. | SQLite/cloud-sync/static referral contracts da 100%; live RLS/RPC smoke con lai. |
 | 4 | M11 FamilyPlus | Verify FamilyPlus member lifecycle, selected subject context, owner-only writes, max-5 guard, and two-family RLS isolation in Supabase sandbox. | Runtime slice/SQL/contracts/tests da 100%; sandbox isolation evidence con lai. |
-| 5 | M13/M14 Payment/Sale | Verify selected payment/Sale policy in sandbox/provider flow: manual approval, entitlement activation, 24h hold, conversion payout, suspended Sale, and audit rows. | Runtime/SQL/tests da 100%; provider/staging evidence van thieu. |
+| 5 | M13/M14 Payment/Sale | Apply/test VietQR manual payment in Supabase sandbox: customer ownership/idempotency, pending_review alert, payments.write review/audit, approval entitlement, rejection and bank-app QR scan/VCB reconciliation; retain M14 conversion checks. | Runtime/SQL/tests da 100%; no bank API/webhook/balance integration; sandbox/provider/UAT evidence van thieu. |
 
 ## Notes tu phien coding gan nhat
+
+- 2026-07-31: M13 VietQR Vietcombank cho duyet thu cong da tich hop: backend sinh
+  ma NB + 12 hex, memo ASCII toi da 25 ky tu, recipient VCB server-owned, SQLite
+  full_name dung cho memo display, QR/confirm flow, pending_review banner/Admin
+  queue 30 giay/resume, approval/rejection audit va chi succeeded moi refresh
+  quyen. Targeted analyze sach, 100 focused Flutter/SQL-contract tests pass va
+  diff check pass. Con backlog: apply migration/RLS sandbox va UAT quet QR,
+  doi chieu VCB thu cong; khong co bien lai, webhook, API hay so du ngan hang.
 
 - 2026-07-13: Daily proof + Điểm chăm sóc/voucher + Việt hóa source đã tích hợp
   cho M03/M08/M09/M15/M16. Targeted evidence: daily/proof analyze sạch, 59 + 50

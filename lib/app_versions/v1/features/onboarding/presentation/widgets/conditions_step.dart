@@ -24,7 +24,7 @@ class ConditionsStep extends ConsumerWidget {
       subtitle:
           'Chọn để NaBi gợi ý thận trọng hơn.',
       onBack: controller.previousStep,
-      onNext: controller.nextStep,
+      onNext: state.canContinueConditions ? controller.nextStep : null,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final layout = _ConditionsLayout.fromWidth(constraints.maxWidth);

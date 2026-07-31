@@ -2,7 +2,7 @@ import '../entities/chat_message_entity.dart';
 
 class AIChatUnavailableException implements Exception {
   static const message =
-      'Nabi chưa thể kết nối với trợ lý AI lúc này. Bạn thử lại sau một chút nhé.';
+      'Nabi chưa thể kết nối lúc này. Bạn thử lại sau một chút nhé.';
 
   const AIChatUnavailableException();
 

@@ -13,6 +13,10 @@ param(
   [ValidateNotNullOrEmpty()]
   [string]$EnvFile = '.env',
 
+  [string]$CampaignRoot = '',
+
+  [string]$MatrixPath = '',
+
   [Parameter(Mandatory = $true)]
   [ValidateNotNullOrEmpty()]
   [string]$ExpectedSandboxProjectRef,
@@ -27,6 +31,10 @@ param(
 
 . (Join-Path $PSScriptRoot 'Regression.Common.ps1')
 
+$null = Initialize-RegressionCampaign `
+  -CampaignRoot $CampaignRoot `
+  -MatrixPath $MatrixPath `
+  -RequireExisting
 $case = Get-RegressionCase -CaseId $CaseId
 if ($case.CaseId -ne 'PRE-02') {
   throw 'The current smoke targets certify PRE-02 only.'

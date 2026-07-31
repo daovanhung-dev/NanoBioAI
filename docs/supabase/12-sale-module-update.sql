@@ -626,7 +626,7 @@ begin
           and available_at <= now()
       ), 0)::integer as approved_cents,
       coalesce(sum(amount_cents) filter (where status = 'paid'), 0)::integer as paid_cents,
-      coalesce(max(currency), 'VND') as result_currency
+      coalesce(max(public.commission_records.currency), 'VND') as result_currency
     from public.commission_records
     where receiver_user_id = v_user_id
   ), adjustment_summary as (
@@ -697,7 +697,7 @@ begin
         where status in ('pending', 'approved')
           and available_at <= now()
       ), 0)::integer as approved_cents,
-      coalesce(max(currency), 'VND') as result_currency
+      coalesce(max(public.commission_records.currency), 'VND') as result_currency
     from public.commission_records
     where receiver_user_id = v_user_id
     group by payer_user_id
@@ -1129,6 +1129,7 @@ revoke all on function public.get_my_sale_payout_profile()
 from public, anon;
 revoke all on function public.upsert_my_sale_payout_profile(text, text, text, text, text)
 from public, anon;
+revoke all on function public.get_my_sale_dashboard() from public, anon;
 revoke all on function public.get_my_sale_direct_customers() from public, anon;
 revoke all on function public.get_my_sale_point_ledger() from public, anon;
 revoke all on function public.get_my_sale_conversions() from public, anon;
@@ -1148,6 +1149,7 @@ grant execute on function public.get_my_sale_payout_profile()
 to authenticated;
 grant execute on function public.upsert_my_sale_payout_profile(text, text, text, text, text)
 to authenticated;
+grant execute on function public.get_my_sale_dashboard() to authenticated;
 grant execute on function public.get_my_sale_direct_customers() to authenticated;
 grant execute on function public.get_my_sale_point_ledger() to authenticated;
 grant execute on function public.get_my_sale_conversions() to authenticated;

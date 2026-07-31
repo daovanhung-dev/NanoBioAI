@@ -2,9 +2,9 @@
 param(
   [Parameter(Mandatory = $true)][string]$CaseId,
   [Parameter(Mandatory = $true)]
-  [ValidateSet('PENDING', 'PASS', 'FAIL', 'BLOCKED', 'N/A')]
+  [ValidateSet('PENDING', 'PASS', 'FAIL', 'BLOCKED', 'N/A', 'GAP')]
   [string]$Status,
-  [ValidateSet('preflight', 'v2', 'admin', 'automation')]
+  [ValidateSet('preflight', 'v2', 'admin', 'automation', 'sale', 'advanced-health', 'wellness', 'nabi', 'manual', 'backend')]
   [string]$Surface = 'preflight',
   [ValidateSet('e2e', 'integration', 'contract', 'report')]
   [string]$CaseType = 'e2e',
@@ -12,28 +12,38 @@ param(
   [string[]]$Personas = @(),
   [string[]]$DdRefs = @(),
   [string]$RouteOrSurface = '',
-  [string]$EntryPoint = '',
+  [string]$EntryPoint = 'lib/main.dart',
   [string]$RunId = '',
   [string]$CommandId = '',
   [string]$DeviceId = '',
   [string[]]$Steps = @(),
   [string]$ActualResult = '',
+  [string]$Rationale = '',
+  [string]$TechnicalEvidence = '',
   [string[]]$Artifacts = @(),
   [string]$DefectId = '',
   [string]$FixRef = '',
   [string[]]$RegressionTests = @(),
   [string]$RetestRunId = '',
   [ValidateSet('', 'YES')][string]$RedactionConfirmed = '',
+  [string]$CampaignRoot = '',
+  [string]$MatrixPath = '',
   [switch]$UpdateMatrix,
   [switch]$Force
 )
 
 . (Join-Path $PSScriptRoot 'Regression.Common.ps1')
 
+$null = Initialize-RegressionCampaign `
+  -CampaignRoot $CampaignRoot `
+  -MatrixPath $MatrixPath `
+  -RequireExisting
 $case = Get-RegressionCase -CaseId $CaseId
-$notePath = Assert-RegressionPathInsideRoot `
-  -Path (Join-Path $script:RegressionEvidenceRoot "evidence/$CaseId.md") `
-  -Root $script:RegressionEvidenceRoot
+$noteRelativePath = Get-RegressionCaseEvidenceRelativePath -Case $case
+$mainAssetRelativePath = Get-RegressionCaseAssetRelativePath -Case $case
+$notePath = Resolve-RegressionCampaignFile `
+  -Path $noteRelativePath `
+  -Label 'Evidence note'
 if ((Test-Path -LiteralPath $notePath -PathType Leaf) -and -not $Force) {
   throw 'Evidence note already exists; use -Force only for an explicit update.'
 }
@@ -54,20 +64,39 @@ if ($Status -in @('PASS', 'FAIL', 'BLOCKED')) {
     throw "$Status requires a command ID."
   }
 }
+if ($Status -in @('N/A', 'GAP')) {
+  if ([string]::IsNullOrWhiteSpace($Rationale)) {
+    $Rationale = $ActualResult
+  }
+  if ([string]::IsNullOrWhiteSpace($Rationale)) {
+    throw "$Status requires a documented rationale."
+  }
+}
 if ($Status -eq 'PASS') {
   if ($RedactionConfirmed -ne 'YES') {
     throw 'PASS requires explicit redaction confirmation.'
   }
-  if ($CaseId -notlike 'PRE-*' -and $DdRefs.Count -eq 0) {
+  $isLegacyCampaign = Test-RegressionIsLegacyCampaign
+  if ($isLegacyCampaign -and $CaseId -notlike 'PRE-*' -and $DdRefs.Count -eq 0) {
     throw 'Business PASS requires at least one DD reference.'
   }
-  $canonicalAsset = Join-Path $script:RegressionEvidenceRoot "assets/$CaseId-pass.png"
-  if (-not (Test-Path -LiteralPath $canonicalAsset -PathType Leaf)) {
+  $canonicalArtifact = $mainAssetRelativePath
+  $canonicalAsset = Resolve-RegressionCampaignFile `
+    -Path $canonicalArtifact `
+    -Label 'PASS main PNG' `
+    -RequireExisting
+  if (-not (Test-RegressionPngFile -Path $canonicalAsset)) {
     throw 'PASS requires the canonical main PNG.'
   }
-  if ($Artifacts -notcontains "assets/$CaseId-pass.png") {
-    $Artifacts = @("assets/$CaseId-pass.png") + $Artifacts
+  if ($Artifacts -notcontains $canonicalArtifact) {
+    $Artifacts = @($canonicalArtifact) + $Artifacts
   }
+}
+if ($Artifacts.Count -gt 0 -and $RedactionConfirmed -ne 'YES') {
+  throw 'Artifacts require explicit redaction confirmation.'
+}
+if ($Status -in @('FAIL', 'BLOCKED') -and $Artifacts.Count -eq 0 -and [string]::IsNullOrWhiteSpace($TechnicalEvidence)) {
+  throw "$Status requires an artifact or safe technical evidence reference."
 }
 
 $device = if ([string]::IsNullOrWhiteSpace($DeviceId)) {
@@ -78,14 +107,12 @@ $device = if ([string]::IsNullOrWhiteSpace($DeviceId)) {
 $git = Get-RegressionGitMetadata
 $artifactYaml = New-Object System.Collections.Generic.List[string]
 foreach ($artifact in $Artifacts) {
-  $artifactPath = Assert-RegressionPathInsideRoot `
-    -Path (Join-Path $script:RegressionEvidenceRoot $artifact) `
-    -Root $script:RegressionEvidenceRoot
-  if (-not (Test-Path -LiteralPath $artifactPath -PathType Leaf)) {
-    throw "Artifact does not exist: $artifact"
-  }
+  $artifactPath = Resolve-RegressionCampaignFile `
+    -Path $artifact `
+    -Label 'Artifact' `
+    -RequireExisting
   $sha = (Get-FileHash -Algorithm SHA256 -LiteralPath $artifactPath).Hash.ToLowerInvariant()
-  $kind = if ($artifact -eq "assets/$CaseId-pass.png") { 'pass_main' } `
+  $kind = if ($artifact -eq $mainAssetRelativePath) { 'pass_main' } `
     elseif ($artifact -match 'fail-before-fix') { 'fail_before' } `
     else { 'supporting' }
   $artifactYaml.Add("  - path: $(ConvertTo-RegressionJsonScalar $artifact)") | Out-Null
@@ -102,10 +129,11 @@ $yamlArray = {
 }
 $startedAt = (Get-Date).ToUniversalTime().ToString('o')
 $bodySteps = ($Steps | ForEach-Object { "1. $_" }) -join "`n"
-$module = if ($CaseId -like 'PRE-*') {
-  'PRE'
+$moduleMatch = [regex]::Match($CaseId, '(?<![A-Z0-9])M\d{2}(?!\d)')
+$module = if ($moduleMatch.Success) {
+  $moduleMatch.Value
 } else {
-  ($CaseId -split '-')[1]
+  ($CaseId -split '-')[0]
 }
 $content = @"
 ---
@@ -122,6 +150,9 @@ route_or_surface: $(ConvertTo-RegressionJsonScalar $RouteOrSurface)
 entrypoint: $(ConvertTo-RegressionJsonScalar $EntryPoint)
 run_id: $(ConvertTo-RegressionJsonScalar $RunId)
 command_id: $(ConvertTo-RegressionJsonScalar $CommandId)
+actual_result: $(ConvertTo-RegressionJsonScalar $ActualResult)
+rationale: $(ConvertTo-RegressionJsonScalar $Rationale)
+technical_evidence: $(ConvertTo-RegressionJsonScalar $TechnicalEvidence)
 device:
   alias: $(ConvertTo-RegressionJsonScalar $device.DeviceId)
   android_api: $(ConvertTo-RegressionJsonScalar $device.AndroidApi)
@@ -177,9 +208,20 @@ if ($UpdateMatrix) {
   $updated = 0
   for ($index = 0; $index -lt $lines.Length; $index++) {
     if ($lines[$index] -match "^\|\s*$([regex]::Escape($CaseId))\s*\|") {
-      $lines[$index] = $lines[$index] -replace `
-        '\|\s*(PENDING|PASS|FAIL|BLOCKED|N/A)\s*\|\s*$', `
-        "| $Status |"
+      $cells = @($lines[$index].Split('|') | ForEach-Object { $_.Trim() })
+      if ($cells.Count -lt 9) {
+        throw "Malformed matrix row: $CaseId"
+      }
+      $matrixAsset = if ($Status -eq 'PASS') {
+        $mainAssetRelativePath
+      } else {
+        $pngArtifact = @($Artifacts | Where-Object { $_ -match '(?i)\.png$' } | Select-Object -First 1)
+        if ($pngArtifact.Count -gt 0) { $pngArtifact[0] } else { '-' }
+      }
+      $cells[5] = $matrixAsset
+      $cells[6] = $noteRelativePath
+      $cells[7] = $Status
+      $lines[$index] = '| ' + (($cells[1..7]) -join ' | ') + ' |'
       $updated++
     }
   }
@@ -189,4 +231,4 @@ if ($UpdateMatrix) {
     -Content (($lines -join "`r`n") + "`r`n")
 }
 
-Write-Host "Evidence note written: evidence/$CaseId.md"
+Write-Host "Evidence note written: $noteRelativePath"

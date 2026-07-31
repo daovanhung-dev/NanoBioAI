@@ -27,29 +27,39 @@ void main() {
       expect(repository.signOutCalls, 0);
     });
 
-    test('rejects a restored non-Admin session without ending the user session', () async {
-      final repository = _AccessRepository(session: AdminSession.anonymous);
-      final container = _container(repository);
-      addTearDown(container.dispose);
+    test(
+      'rejects a restored non-Admin session without ending the user session',
+      () async {
+        final repository = _AccessRepository(session: AdminSession.anonymous);
+        final container = _container(repository);
+        addTearDown(container.dispose);
 
-      final state = await container.read(adminAccessControllerProvider.future);
+        final state = await container.read(
+          adminAccessControllerProvider.future,
+        );
 
-      expect(state.status, AdminAccessStatus.unauthorized);
-      expect(repository.signOutCalls, 0);
-    });
+        expect(state.status, AdminAccessStatus.unauthorized);
+        expect(repository.signOutCalls, 0);
+      },
+    );
 
-    test('rejects a revoked Admin role without ending the user session', () async {
-      final repository = _AccessRepository(
-        fetchFailure: const AdminAccessRevokedException(),
-      );
-      final container = _container(repository);
-      addTearDown(container.dispose);
+    test(
+      'rejects a revoked Admin role without ending the user session',
+      () async {
+        final repository = _AccessRepository(
+          fetchFailure: const AdminAccessRevokedException(),
+        );
+        final container = _container(repository);
+        addTearDown(container.dispose);
 
-      final state = await container.read(adminAccessControllerProvider.future);
+        final state = await container.read(
+          adminAccessControllerProvider.future,
+        );
 
-      expect(state.status, AdminAccessStatus.unauthorized);
-      expect(repository.signOutCalls, 0);
-    });
+        expect(state.status, AdminAccessStatus.unauthorized);
+        expect(repository.signOutCalls, 0);
+      },
+    );
 
     test('does not call the Admin session RPC when auth is expired', () async {
       final repository = _AccessRepository(hasValidSession: false);
@@ -121,6 +131,11 @@ class _AccessRepository implements AdminRepository {
   }) async => const [];
 
   @override
+  Future<AdminPaymentReviewAlert> fetchPaymentReviewAlert() async {
+    return AdminPaymentReviewAlert.empty;
+  }
+
+  @override
   Future<List<AdminWorkItem>> fetchSectionItems({
     required AdminPanelSection section,
     required String query,
@@ -132,9 +147,7 @@ class _AccessRepository implements AdminRepository {
   }) async => const [];
 
   @override
-  Future<AdminMutationResult> runMutation(
-    AdminMutationCommand command,
-  ) async {
+  Future<AdminMutationResult> runMutation(AdminMutationCommand command) async {
     return const AdminMutationResult(success: true, message: 'ok');
   }
 }

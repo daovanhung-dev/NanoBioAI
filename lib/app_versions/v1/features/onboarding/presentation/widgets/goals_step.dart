@@ -26,7 +26,7 @@ class GoalsStep extends ConsumerWidget {
       title: 'Mục tiêu của bạn',
       subtitle: 'Chọn điều quan trọng nhất lúc này.',
       onBack: controller.previousStep,
-      onNext: controller.nextStep,
+      onNext: state.canContinueGoals ? controller.nextStep : null,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final layout = _GoalsLayout.fromWidth(constraints.maxWidth);

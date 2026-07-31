@@ -19,8 +19,9 @@ View / Presentation
 
 | ID | Function / Use Case | Feature | Layer | Planned File | Trigger | Input | Output | Side Effect | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| PAYMENT_MEMBERSHIP-FN01 | createMembershipPayment | PAYMENT_MEMBERSHIP-F01 | Use case / Service | planned:lib/app_versions/v2/features/payments/application/payment_membership_fn01.dart | Chọn mua/gia hạn gói | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
-| PAYMENT_MEMBERSHIP-FN02 | reviewMembershipPayment | PAYMENT_MEMBERSHIP-F02 | Use case / Service | planned:lib/app_versions/v2/features/payments/application/payment_membership_fn02.dart | Admin review payment queue | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| PAYMENT_MEMBERSHIP-FN01 | createMembershipPayment | PAYMENT_MEMBERSHIP-F01 | Use case / Service | lib/app_versions/v2/features/payments | Chọn gói/chu kỳ và yêu cầu thanh toán | plan, cycle, idempotency key, tên hiển thị SQLite | Mã NB, memo, số tiền, cấu hình nhận tiền | Tạo hoặc trả lại yêu cầu awaiting_transfer, không cấp quyền | Implemented - VietQR manual review |
+| PAYMENT_MEMBERSHIP-FN03 | confirmMembershipTransfer | PAYMENT_MEMBERSHIP-F01 | Use case / Service | lib/app_versions/v2/features/payments | Khách bấm “Đã chuyển khoản” | payment event ID của chính khách | Yêu cầu pending_review | Lưu thời điểm xác nhận, không cấp quyền | Implemented - VietQR manual review |
+| PAYMENT_MEMBERSHIP-FN02 | reviewMembershipPayment | PAYMENT_MEMBERSHIP-F02 | Use case / Service | lib/app_versions/admin/features/admin_panel | Admin đối chiếu VCB và duyệt/từ chối | payment ID, quyết định, lý do khi từ chối | succeeded hoặc failed | Audit; chỉ succeeded kích hoạt quyền | Implemented - VietQR manual review |
 
 ---
 
@@ -36,11 +37,11 @@ View / Presentation
 | Loại thực thi | Sync for validation and state read; async/job only when BD requires background processing |
 | File dự kiến | planned:lib/app_versions/v2/features/payments/application/payment_membership_fn01.dart |
 | Hàm export / endpoint | execute(command, actorContext) hoặc API contract tương ứng |
-| Mục tiêu duy nhất | Member tạo payment pending có dữ liệu đối soát. |
+| Mục tiêu duy nhất | Member tạo hoặc khôi phục yêu cầu awaiting_transfer có mã đối soát và dữ liệu QR an toàn. |
 | Không chịu trách nhiệm | Không tự chốt product questions; không truy cập trực tiếp UI hoặc storage ngoài layer được phép. |
 | Được gọi bởi | PAYMENT_MEMBERSHIP-V01 hoặc event/API source trong BD sections 8.2, UC-15 |
 | Gọi tiếp | Repository/datasource/service planned trong Import_File.md |
-| Rule áp dụng | PAYMENT_MEMBERSHIP-BR01 |
+| Rule áp dụng | PAYMENT_MEMBERSHIP-BR01, PAYMENT_MEMBERSHIP-BR03 |
 
 ## B. Hợp đồng input/output
 
@@ -67,6 +68,13 @@ View / Presentation
 5. Thực thi transaction/idempotency: Yes - write operations that affect quyền, tiền, điểm, quota, family scope, or audit must commit atomically.
 6. Ghi audit nếu có tác động quyền, tiền, điểm, cấu hình, dữ liệu gia đình hoặc export.
 7. Trả Result chuẩn hóa, không trả raw stack trace, raw payment evidence, secret, hoặc health PII không cần thiết.
+
+### VietQR-specific contract
+
+- Backend dùng auth.uid() làm người thanh toán và tự tính số tiền theo gói/chu kỳ; client không thể ghi đè giá, tài khoản nhận hoặc mã giao dịch.
+- Backend sinh mã duy nhất NB + 12 ký tự hex, snapshot memo và thông tin nhận tiền: Vietcombank, BIN 970436, tài khoản 1026806174, tên QR LE PHU THACH.
+- Tên từ SQLite chỉ dùng để tạo phần tên của memo; thiếu tên thì UI không gọi tạo yêu cầu.
+- Retry cùng idempotency key trả lại cùng yêu cầu/mã, không tạo giao dịch hoặc quyền trùng.
 
 ## D. Transaction, side effect và độ tin cậy
 
@@ -102,11 +110,11 @@ View / Presentation
 | Loại thực thi | Sync for validation and state read; async/job only when BD requires background processing |
 | File dự kiến | planned:lib/app_versions/v2/features/payments/application/payment_membership_fn02.dart |
 | Hàm export / endpoint | execute(command, actorContext) hoặc API contract tương ứng |
-| Mục tiêu duy nhất | Kích hoạt quyền hoặc từ chối payment có lý do/audit. |
+| Mục tiêu duy nhất | Sau khi tự đối chiếu VCB, kích hoạt quyền hoặc từ chối payment có lý do/audit. |
 | Không chịu trách nhiệm | Không tự chốt product questions; không truy cập trực tiếp UI hoặc storage ngoài layer được phép. |
 | Được gọi bởi | PAYMENT_MEMBERSHIP-V02 hoặc event/API source trong BD sections 8.4, AC-07/AC-08/AC-20/AC-21, UC-16 |
 | Gọi tiếp | Repository/datasource/service planned trong Import_File.md |
-| Rule áp dụng | PAYMENT_MEMBERSHIP-BR02 |
+| Rule áp dụng | PAYMENT_MEMBERSHIP-BR02, PAYMENT_MEMBERSHIP-BR05 |
 
 ## B. Hợp đồng input/output
 
@@ -153,3 +161,34 @@ View / Presentation
 | PAYMENT_MEMBERSHIP-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
 | PAYMENT_MEMBERSHIP-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
 | PAYMENT_MEMBERSHIP-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
+---
+
+<a id="payment_membership-fn03"></a>
+# PAYMENT_MEMBERSHIP-FN03 — confirmMembershipTransfer
+
+## A. Định danh và trách nhiệm
+
+| Trường | Nội dung |
+|---|---|
+| Feature cha | PAYMENT_MEMBERSHIP-F01 |
+| Layer | Use case / Service, called by member payment screen |
+| Hàm export / endpoint | confirm_my_membership_payment_transfer(payment_event_id) |
+| Mục tiêu duy nhất | Chuyển yêu cầu awaiting_transfer của chính khách sang pending_review sau khi khách bấm “Đã chuyển khoản”. |
+| Không chịu trách nhiệm | Không kiểm tra tài khoản ngân hàng, không nhận biên lai, không kích hoạt quyền. |
+| Rule áp dụng | PAYMENT_MEMBERSHIP-BR01, PAYMENT_MEMBERSHIP-BR04 |
+
+## B. Hợp đồng và kiểm soát
+
+- Chỉ auth.uid() trùng người tạo yêu cầu mới có thể xác nhận.
+- Chỉ trạng thái awaiting_transfer được chuyển sang pending_review; yêu cầu pending cũ không được member sửa.
+- Backend snapshot thời điểm khách xác nhận vào metadata; Admin queue/banner chỉ đếm pending_review.
+- Nếu backend trả succeeded trong lần làm mới sau đó, ứng dụng mới làm mới quyền gói.
+
+## C. Documented Function Test Requirements
+
+| ID | Requirement | DD docs status | Implementation evidence |
+|---|---|---|---|
+| PAYMENT_MEMBERSHIP-FN-EV03-01 | Khách chỉ xác nhận được yêu cầu của chính mình. | Documented | Required in implementation/test phase |
+| PAYMENT_MEMBERSHIP-FN-EV03-02 | Xác nhận chỉ đưa yêu cầu vào pending_review, không kích hoạt quyền. | Documented | Required in implementation/test phase |
+| PAYMENT_MEMBERSHIP-FN-EV03-03 | Admin chỉ duyệt/từ chối pending_review hoặc pending cũ theo quyền payments.write. | Documented | Required in implementation/test phase |

@@ -1,20 +1,34 @@
 [CmdletBinding()]
-param([switch]$RequireComplete)
+param(
+  [switch]$RequireComplete,
+  [string]$CampaignRoot = '',
+  [string]$MatrixPath = ''
+)
 
 . (Join-Path $PSScriptRoot 'Regression.Common.ps1')
 
+$campaign = Initialize-RegressionCampaign `
+  -CampaignRoot $CampaignRoot `
+  -MatrixPath $MatrixPath `
+  -RequireExisting
+$isLegacyCampaign = $campaign.CampaignRoot.Equals(
+  (Resolve-RegressionCampaignRoot),
+  [System.StringComparison]::OrdinalIgnoreCase
+)
 $cases = @(Get-RegressionCases)
 $errors = New-Object System.Collections.Generic.List[string]
-$allowedStatuses = @('PENDING', 'PASS', 'FAIL', 'BLOCKED', 'N/A')
+$allowedStatuses = @('PENDING', 'PASS', 'FAIL', 'BLOCKED', 'N/A', 'GAP')
 
-if ($cases.Count -lt 111) {
+if ($isLegacyCampaign -and $cases.Count -lt 111) {
   $errors.Add("Expected at least 111 cases, found $($cases.Count).") | Out-Null
 }
 $expectedAutomatedCounts = @{ M10 = 5; M11 = 5 }
-foreach ($module in $expectedAutomatedCounts.Keys) {
-  $count = @($cases | Where-Object { $_.CaseId -like "AUT-$module-*" }).Count
-  if ($count -lt $expectedAutomatedCounts[$module]) {
-    $errors.Add("Expected at least $($expectedAutomatedCounts[$module]) automated cases for $module, found $count.") | Out-Null
+if ($isLegacyCampaign) {
+  foreach ($module in $expectedAutomatedCounts.Keys) {
+    $count = @($cases | Where-Object { $_.CaseId -like "AUT-$module-*" }).Count
+    if ($count -lt $expectedAutomatedCounts[$module]) {
+      $errors.Add("Expected at least $($expectedAutomatedCounts[$module]) automated cases for $module, found $count.") | Out-Null
+    }
   }
 }
 $duplicates = @($cases | Group-Object CaseId | Where-Object { $_.Count -ne 1 })
@@ -23,7 +37,7 @@ foreach ($duplicate in $duplicates) {
 }
 
 $matrixText = [System.IO.File]::ReadAllText($script:RegressionMatrixPath)
-if ($matrixText -match '`AV`|View Admin') {
+if ($isLegacyCampaign -and $matrixText -match '`AV`|View Admin') {
   $errors.Add('Deprecated View Admin persona remains in the matrix.') | Out-Null
 }
 
@@ -56,7 +70,7 @@ foreach ($case in $cases) {
       if ($note -notmatch '(?m)^\s+redacted:\s*true\s*$') {
         $errors.Add("PASS note lacks redaction confirmation: $($case.CaseId)") | Out-Null
       }
-      if ($case.CaseId -notlike 'PRE-*' -and $note -match '(?m)^dd_refs:\s*\[\]\s*$') {
+      if ($isLegacyCampaign -and $case.CaseId -notlike 'PRE-*' -and $note -match '(?m)^dd_refs:\s*\[\]\s*$') {
         $errors.Add("PASS note lacks DD reference: $($case.CaseId)") | Out-Null
       }
     }

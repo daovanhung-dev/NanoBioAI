@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 90
+- Total worklogs: 93
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -99,3 +99,6 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-19 | bugfix/test/docs | test | M07 AI_CHAT, M05 runtime configuration | [Worklog - Fix Chat AI native debug runtime](../../docs/worklog/2026-07-19/003-worklog-chat-ai-native-debug-runtime.md) |
 | 2026-07-19 | coding/docs/static-validation | refactor-scaffold | UI/Theme/NabiCopy xuyên V1, V2, V3, Admin và Sale | [Worklog - UI/UX Experience Refresh toàn dự án](../../docs/worklog/2026-07-19/004-worklog-ui-ux-experience-refresh.md) |
 | 2026-07-28 | Mo rong fixture Supabase local/sandbox, tai lieu va contract test. | supabase-schema | Auth, subscription/quota, FamilyPlus, Sale, Admin, Wellness/reward, Nabi va Storage proof. | [Worklog - Supabase comprehensive sandbox fixture](../../docs/worklog/2026-07-28/001-worklog-supabase-comprehensive-sandbox-fixture.md) |
+| 2026-07-28 | Supabase schema/seed fixture va smoke test | supabase-schema | Sale/referral, M12 va M14 | [Worklog - Sale A sandbox seed](../../docs/worklog/2026-07-28/002-worklog-sale-a-sandbox-seed.md) |
+| 2026-07-28 | bugfix + test | supabase-schema | Sale/referral dashboard va direct customers | [Worklog - Sale dashboard RPC permission](../../docs/worklog/2026-07-28/003-worklog-sale-dashboard-rpc-permission.md) |
+| 2026-07-31 | coding + Supabase contract + test + DD/docs. | supabase-schema | M13 PAYMENT_MEMBERSHIP và Admin payment queue. | [Worklog - VietQR Vietcombank chờ duyệt thủ công](../../docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md) |

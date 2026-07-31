@@ -1,5 +1,15 @@
 # CHANGELOG — PAYMENT_MEMBERSHIP / Thanh toán, xác minh và quyền gói
 
+## [v1.3] - 2026-07-31
+### Changed
+- Documented the implemented VietQR Vietcombank flow: server-generated immutable NB reference, client QR presentation, member transfer confirmation, and manual VCB reconciliation by an Admin with payments.write.
+- Added the awaiting_transfer → pending_review → succeeded/failed state contract and retained legacy pending records for Admin review.
+- Added the explicit boundary: no receipt upload, bank API, bank-balance display, or webhook; only Admin approval activates a package.
+- Recorded Q-18 and actual member/Admin routes, UI states, and function contracts.
+
+### Validation
+- Implementation validation is recorded in the feature worklog for this change; Supabase sandbox and bank-app UAT remain production-acceptance evidence.
+
 ## [v1.2] - 2026-06-30
 ### Changed
 - Marked PAYMENT_MEMBERSHIP DD docs as `Approved - DD docs complete`.

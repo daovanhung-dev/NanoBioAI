@@ -59,6 +59,11 @@ class AdminSupabaseDatasource {
     return _maps(response).map(AdminDashboardMetric.fromMap).toList();
   }
 
+  Future<AdminPaymentReviewAlert> fetchPaymentReviewAlert() async {
+    final response = await _client().rpc('admin_get_payment_review_alert');
+    return AdminPaymentReviewAlert.fromMap(_firstMap(response));
+  }
+
   Future<List<AdminWorkItem>> fetchSectionItems({
     required AdminPanelSection section,
     required String query,

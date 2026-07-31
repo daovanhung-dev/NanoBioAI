@@ -88,6 +88,34 @@ void main() {
       }
     });
 
+    test(
+      'overlays the VietQR manual-review queue after the Admin base module',
+      () {
+        final paymentModule = File(
+          'docs/supabase/13-membership-payment-request.sql',
+        ).readAsStringSync();
+        final config = File('docs/supabase/config.sql').readAsStringSync();
+
+        for (final token in [
+          'admin_get_payment_review_alert',
+          'pending_review_count integer',
+          "where pe.status = 'pending_review';",
+          "public.admin_assert_permission('payments.write')",
+          'drop function if exists public.admin_list_payments(text, integer);',
+          'transfer_reference text',
+          'transfer_memo text',
+          'payer_full_name text',
+          'transfer_confirmed_at timestamptz',
+          "v_payment.status not in ('pending_review', 'pending')",
+          "when pe.status = 'pending_review' then 0",
+          "when pe.status = 'pending' then 1",
+        ]) {
+          expect(paymentModule, contains(token), reason: 'M13: $token');
+          expect(config, contains(token), reason: 'config.sql: $token');
+        }
+      },
+    );
+
     test('declares non-destructive unified role-surface migration', () {
       final migration = File(
         'docs/supabase/17-unified-app-role-surface.sql',

@@ -49,7 +49,7 @@ class _LifestyleStepState extends ConsumerState<LifestyleStep>
       subtitle:
           'Chọn điều gần với bạn nhất.',
       onBack: controller.previousStep,
-      onNext: controller.nextStep,
+      onNext: state.canContinueLifestyle ? controller.nextStep : null,
       child: AnimatedBuilder(
         animation: _ambientController,
         builder: (context, _) {

@@ -46,23 +46,8 @@ class _ConsentStepState extends ConsumerState<ConsentStep>
       subtitle:
           'NaBi hỗ trợ chăm sóc hằng ngày, không thay thế chuyên gia y tế.',
       onBack: controller.previousStep,
-      nextLabel: state.agreed ? 'Tiếp tục tạo lộ trình' : 'Tôi hiểu và đồng ý',
-      onNext: () {
-        if (!state.agreed) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Bạn hãy xác nhận đã hiểu trước khi tiếp tục nhé.',
-                ),
-              ),
-            );
-          return;
-        }
-
-        controller.nextStep();
-      },
+      nextLabel: 'Tiếp tục tạo lộ trình',
+      onNext: state.agreed ? controller.nextStep : null,
       child: AnimatedBuilder(
         animation: _ambientController,
         builder: (context, _) {

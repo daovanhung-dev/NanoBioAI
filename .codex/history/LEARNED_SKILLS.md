@@ -7,7 +7,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - coding - Coding: 24 worklog(s)
 - docs-context - Context and docs update: 21 worklog(s)
 - bugfix - Direct bugfix: 19 worklog(s)
-- supabase-schema - Supabase schema and RLS: 10 worklog(s)
+- supabase-schema - Supabase schema and RLS: 13 worklog(s)
 - test - Test and verification: 5 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - refactor-scaffold - Scaffold refactor: 2 worklog(s)
@@ -18,17 +18,17 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Frequent Modules
 
 - unknown: 10
-- M05 AI / AI Chat / runtime configuration: 2
 - docs/issues, docs/todo: 2
 - authentication: 2
 - docs/DD M01-M19: 2
+- M05 AI / AI Chat / runtime configuration: 2
 - M05 AI / runtime configuration / onboarding: 2
-- .codex: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
-- docs/checklist, technical debt audit summary: 1
-- Admin dashboard / Supabase RPC: 1
-- v2 authentication: 1
+- .codex: 2
 - v2 authentication, admin login, Supabase dev seed: 1
+- v1 lifestyle schedule, dashboard, localdb, cloud sync, Supabase docs: 1
+- lib/app_versions/v1/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1: 1
+- v1 onboarding, AppLogger: 1
 
 ## Reusable Project Skills
 

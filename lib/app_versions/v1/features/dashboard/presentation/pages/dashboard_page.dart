@@ -110,7 +110,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         PlanGenerationSource.ai =>
           'Nabi đã thêm kế hoạch 7 ngày tiếp theo rồi nhé.',
         PlanGenerationSource.localFallback || PlanGenerationSource.unknown =>
-          'Nabi đã thêm lịch gợi ý cơ bản 7 ngày. Khi AI sẵn sàng, bạn có thể tạo lại để nhận gợi ý cá nhân hơn nhé.',
+          'Nabi đã thêm lịch gợi ý cơ bản 7 ngày. Khi dịch vụ sẵn sàng, bạn có thể tạo lại để nhận gợi ý cá nhân hơn nhé.',
       };
       ScaffoldMessenger.of(
         context,
@@ -359,6 +359,7 @@ class _DashboardContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = _safeText(dashboard.fullName, fallback: 'bạn');
+    final gender = _safeText(dashboard.gender, fallback: '');
     final bmi = _asDouble(dashboard.bmi);
     final weightKg = _asDouble(dashboard.weightKg);
     final heightCm = _asDouble(dashboard.heightCm);
@@ -400,6 +401,7 @@ class _DashboardContent extends StatelessWidget {
         SliverToBoxAdapter(
           child: _HeroPanel(
             name: name,
+            gender: gender,
             membershipInfo: membershipInfo,
             bmi: bmi,
             unreadNotifications: dynamicData.unreadNotificationCount,
@@ -568,6 +570,7 @@ class _DashboardContent extends StatelessWidget {
 
 class _HeroPanel extends StatelessWidget {
   final String name;
+  final String gender;
   final MembershipDisplayInfo membershipInfo;
   final double bmi;
   final int unreadNotifications;
@@ -578,6 +581,7 @@ class _HeroPanel extends StatelessWidget {
 
   const _HeroPanel({
     required this.name,
+    required this.gender,
     required this.membershipInfo,
     required this.bmi,
     required this.unreadNotifications,
@@ -590,6 +594,11 @@ class _HeroPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shortName = name.trim().isEmpty ? 'bạn' : name.trim().split(' ').last;
+    final addressedName = _addressedName(shortName: shortName, gender: gender);
+    final greeting =
+        'Chào $shortName,\n'
+        'Nabi yêu $addressedName và luôn đồng hành cùng $addressedName,\n'
+        'hãy cùng nhau chia sẻ vui vẻ hơn mỗi ngày nhé!';
     final membershipLabel = _membershipLabel(
       membershipInfo.code,
       fallback: membershipInfo.label,
@@ -649,19 +658,16 @@ class _HeroPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Chào $shortName,',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Nabi đã cập nhật những ghi nhận mới nhất để cùng bạn nhìn lại hôm nay.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.88),
-              height: 1.45,
+          Semantics(
+            header: true,
+            label: greeting.replaceAll('\n', ' '),
+            child: Text(
+              greeting,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                height: 1.38,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -1063,12 +1069,16 @@ class _TodayMetricsGrid extends StatelessWidget {
         icon: Icons.monitor_weight_rounded,
         title: 'Cân nặng',
         value: weightKg > 0 ? '${weightKg.toStringAsFixed(1)} kg' : 'Chưa có',
+        color: AppColors.primary,
+        backgroundColor: AppColors.pastelBlue,
         onTap: onWeightTap,
       ),
       _MetricData(
         icon: Icons.height_rounded,
         title: 'Chiều cao',
         value: heightCm > 0 ? '${heightCm.toStringAsFixed(0)} cm' : 'Chưa có',
+        color: AppColors.info,
+        backgroundColor: AppColors.pastelSky,
       ),
       _MetricData(
         icon: Icons.local_fire_department_rounded,
@@ -1078,11 +1088,15 @@ class _TodayMetricsGrid extends StatelessWidget {
             : metrics.caloriesPlanned > 0
             ? '${metrics.caloriesPlanned} kcal dự kiến'
             : 'Chưa có',
+        color: AppColors.warning,
+        backgroundColor: AppColors.pastelAmber,
       ),
       _MetricData(
         icon: Icons.water_drop_rounded,
         title: 'Nước',
         value: metrics.waterMl > 0 ? '${metrics.waterMl} ml' : 'Chưa có',
+        color: AppColors.secondary,
+        backgroundColor: AppColors.pastelMint,
         onTap: onWaterTap,
       ),
       _MetricData(
@@ -1091,11 +1105,15 @@ class _TodayMetricsGrid extends StatelessWidget {
         value: metrics.totalTasks > 0
             ? '${metrics.completedTasks}/${metrics.totalTasks}'
             : 'Chưa có',
+        color: AppColors.success,
+        backgroundColor: AppColors.successSoft,
       ),
       _MetricData(
         icon: Icons.directions_walk_rounded,
         title: 'Bước chân',
         value: metrics.stepsCount > 0 ? '${metrics.stepsCount}' : 'Chưa có',
+        color: AppColors.tertiary,
+        backgroundColor: AppColors.pastelLavender,
       ),
     ];
 
@@ -1104,14 +1122,18 @@ class _TodayMetricsGrid extends StatelessWidget {
       children: [
         const _SectionTitle(
           title: 'Dữ liệu hôm nay',
-          subtitle: 'Nabi gom lại những tín hiệu chính của hôm nay',
+          subtitle: 'Các tín hiệu chính, trình bày ngắn gọn',
           icon: Icons.query_stats_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
         LayoutBuilder(
           builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 620 ? 3 : 2;
-            final spacing = 12.0;
+            final columns = constraints.maxWidth >= 1000
+                ? 3
+                : constraints.maxWidth >= 720
+                ? 2
+                : 1;
+            final spacing = AppSpacing.md;
             final width =
                 (constraints.maxWidth - spacing * (columns - 1)) / columns;
             return Wrap(
@@ -1137,12 +1159,16 @@ class _MetricData {
   final IconData icon;
   final String title;
   final String value;
+  final Color color;
+  final Color backgroundColor;
   final VoidCallback? onTap;
 
   const _MetricData({
     required this.icon,
     required this.title,
     required this.value,
+    required this.color,
+    required this.backgroundColor,
     this.onTap,
   });
 }
@@ -1155,40 +1181,64 @@ class _MetricTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final content = _DashboardCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      color: data.backgroundColor,
+      borderColor: data.color.withValues(alpha: .14),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(data.icon, color: AppColors.primary, size: 22),
-              const Spacer(),
-              if (data.onTap != null)
-                Icon(
-                  Icons.edit_rounded,
-                  color: AppColors.primary.withValues(alpha: 0.65),
-                  size: 16,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data.title,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-            ],
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  data.value,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.heading4.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            data.value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          const SizedBox(width: AppSpacing.md),
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .72),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: Icon(data.icon, color: data.color, size: 25),
           ),
-          const SizedBox(height: 2),
-          Text(data.title, style: Theme.of(context).textTheme.bodySmall),
+          if (data.onTap != null) ...[
+            const SizedBox(width: AppSpacing.sm),
+            Icon(Icons.edit_rounded, color: data.color, size: 20),
+          ],
         ],
       ),
     );
 
     final onTap = data.onTap;
     if (onTap == null) return content;
-    return GestureDetector(onTap: onTap, child: content);
+    return Semantics(
+      button: true,
+      label: 'Cập nhật ${data.title.toLowerCase()}',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: content,
+      ),
+    );
   }
 }
 
@@ -1782,10 +1832,14 @@ class _SectionTitle extends StatelessWidget {
 class _DashboardCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
+  final Color? color;
+  final Color? borderColor;
 
   const _DashboardCard({
     required this.child,
     this.padding = const EdgeInsets.all(AppSpacing.md),
+    this.color,
+    this.borderColor,
   });
 
   @override
@@ -1794,16 +1848,10 @@ class _DashboardCard extends StatelessWidget {
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
+        color: color ?? Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: borderColor ?? AppColors.borderLight),
+        boxShadow: AppShadows.card,
       ),
       child: child,
     );
@@ -2156,6 +2204,24 @@ List<String> _asStringList(Object? value) {
   final text = value.toString().trim();
   if (text.isEmpty) return const [];
   return [text];
+}
+
+String _addressedName({required String shortName, required String gender}) {
+  final normalizedGender = gender.trim().toLowerCase();
+  final normalizedName = shortName.trim();
+  if (normalizedGender == 'female' || normalizedGender == 'nữ') {
+    return normalizedName.isEmpty || normalizedName == 'bạn'
+        ? 'chị'
+        : 'chị $normalizedName';
+  }
+  if (normalizedGender == 'male' || normalizedGender == 'nam') {
+    return normalizedName.isEmpty || normalizedName == 'bạn'
+        ? 'anh'
+        : 'anh $normalizedName';
+  }
+  return normalizedName.isEmpty || normalizedName == 'bạn'
+      ? 'bạn'
+      : 'bạn $normalizedName';
 }
 
 String _membershipLabel(String code, {required String fallback}) {

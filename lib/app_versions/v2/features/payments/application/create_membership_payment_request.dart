@@ -12,6 +12,7 @@ class CreateMembershipPaymentRequest {
     final planCode = command.planCode.trim();
     final billingCycle = command.billingCycle.trim();
     final idempotencyKey = command.idempotencyKey.trim();
+    final payerFullName = command.payerFullName.trim();
     if (planCode.isEmpty ||
         billingCycle.isEmpty ||
         idempotencyKey.isEmpty ||
@@ -19,11 +20,15 @@ class CreateMembershipPaymentRequest {
         !const {'monthly', 'yearly'}.contains(billingCycle)) {
       throw const MembershipPaymentException.invalidCommand();
     }
+    if (payerFullName.isEmpty) {
+      throw const MembershipPaymentException.missingPayerName();
+    }
     return repository.createRequest(
       CreateMembershipPaymentRequestCommand(
         planCode: planCode,
         billingCycle: billingCycle,
         idempotencyKey: idempotencyKey,
+        payerFullName: payerFullName,
       ),
     );
   }

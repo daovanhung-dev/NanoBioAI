@@ -39,6 +39,16 @@ class AppColors {
   static const Color danger = error;
   static const Color dangerSoft = errorSoft;
 
+  // Accessible pastel surfaces for content grouping. These colors are intended
+  // as card backgrounds and must be paired with the normal text hierarchy.
+  static const Color pastelBlue = Color(0xFFEAF3FF);
+  static const Color pastelSky = Color(0xFFEAF6FC);
+  static const Color pastelMint = Color(0xFFE8F7F2);
+  static const Color pastelLavender = Color(0xFFF2EDFC);
+  static const Color pastelRose = Color(0xFFFCECEF);
+  static const Color pastelAmber = Color(0xFFFFF3D8);
+  static const Color pastelPeach = Color(0xFFFFEEE6);
+
   // Light surfaces.
   static const Color background = Color(0xFFF4F8FB);
   static const Color scaffold = Color(0xFFF1F6FA);

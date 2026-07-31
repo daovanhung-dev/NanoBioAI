@@ -14,6 +14,7 @@
 |---|---|---|---|---|---|---|
 | PAYMENT_MEMBERSHIP-DEP01 | Supabase / trusted backend | Planned contract | BD sections 13, 14, 17 | Auth, entitlement, RLS, Admin/Sale/payment data as applicable | Backend/Tech Lead | No service-role key in Flutter. |
 | PAYMENT_MEMBERSHIP-DEP02 | Flutter/Riverpod/GoRouter | Existing stack | .codex/AGENTS.md | Presentation, state, navigation | App team | Keep layer boundaries. |
+| PAYMENT_MEMBERSHIP-DEP03 | qr_flutter | Existing package | pubspec.yaml | Render shared pure VietQR payload as QR | App team | Payload has no bank credential or secret. |
 
 ## 2. File Map and Internal Contract
 
@@ -24,6 +25,16 @@
 | planned:lib/app_versions/v2/features/payments/domain/ | Domain | Entity and policy contracts | Pure Dart/value objects | UI, persistence implementation | Entities/policies | PAYMENT_MEMBERSHIP-E-* |
 | planned:lib/app_versions/v2/features/payments/data/ | Repository/Datasource | Persist/integrate with local/trusted backend | Datasource/API/DAO contracts, mappers | UI widgets/controllers | Repository implementation | PAYMENT_MEMBERSHIP-FNxx |
 | planned:test/ | Test | Unit/integration/widget tests | Public contracts and fakes at correct layer | Production secrets or real payment/webhook payloads | Test fixtures | PAYMENT_MEMBERSHIP-TCxx |
+
+### Implemented VietQR File Map
+
+| File Path | Responsibility |
+|---|---|
+| lib/app_versions/v2/features/payments/application/ | Create request, restore current request, confirm transfer and read payer name behind repository boundaries. |
+| lib/app_versions/v2/features/payments/data/ | Read SQLite users.full_name by authenticated ID and call trusted membership-payment RPCs. |
+| lib/app_versions/v2/features/payments/presentation/pages/membership_payment_page.dart | Render package selection, QR, recipient detail, copy action and transfer-confirmation states. |
+| lib/core/payments/viet_qr_payload_builder.dart | Pure VietQR EMV payload and CRC16 builder reused by Member and Admin presentation. |
+| lib/app_versions/admin/features/admin_panel/ | Permission-scoped payment alert, reconciliation detail and review actions. |
 
 ## 3. API / Datasource Dependencies
 
@@ -57,3 +68,10 @@
 | PAYMENT_MEMBERSHIP-IMP-EV03 | No secrets or production payloads in source/tests/docs. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
 | PAYMENT_MEMBERSHIP-IMP-EV04 | API/schema/RLS contracts are documented before coding. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
 | PAYMENT_MEMBERSHIP-IMP-EV05 | Tests cover permission, business rule, duplicate/retry, and dependency failure. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
+## 7. Implemented VietQR Contract
+
+- Supabase RPCs: create_membership_payment_request, get_my_membership_payment_request, confirm_my_membership_payment_transfer, admin_list_payments, admin_get_payment_review_alert, and admin_review_payment.
+- SQLite full_name is read behind the payment repository boundary only to form the memo display; Supabase auth.uid() remains the payment identity.
+- The pure shared VietQR payload/CRC builder is reused by payment presentation and Admin rather than copied.
+- Recipient values and transaction reference are server-owned. No service-role key, bank credential, receipt, or balance data is stored in Flutter.

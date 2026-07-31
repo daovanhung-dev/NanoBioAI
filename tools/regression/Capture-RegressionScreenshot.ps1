@@ -4,6 +4,8 @@ param(
   [ValidateNotNullOrEmpty()][string]$DeviceId = '12b304f9',
   [ValidateSet('pass', 'fail-before-fix')][string]$Kind = 'pass',
   [ValidatePattern('^[a-z0-9-]*$')][string]$Variant = '',
+  [string]$CampaignRoot = '',
+  [string]$MatrixPath = '',
   [Parameter(Mandatory = $true)][ValidateSet('YES')]
   [string]$RedactionConfirmed,
   [switch]$Force
@@ -11,6 +13,10 @@ param(
 
 . (Join-Path $PSScriptRoot 'Regression.Common.ps1')
 
+$null = Initialize-RegressionCampaign `
+  -CampaignRoot $CampaignRoot `
+  -MatrixPath $MatrixPath `
+  -RequireExisting
 $null = Get-RegressionCase -CaseId $CaseId
 $null = Get-RegressionDeviceMetadata -DeviceId $DeviceId
 $suffix = if ([string]::IsNullOrWhiteSpace($Variant)) {
@@ -22,6 +28,7 @@ $fileName = "$CaseId-$suffix.png"
 $target = Assert-RegressionPathInsideRoot `
   -Path (Join-Path $script:RegressionEvidenceRoot "assets/$fileName") `
   -Root $script:RegressionEvidenceRoot
+[System.IO.Directory]::CreateDirectory((Split-Path -Parent $target)) | Out-Null
 if ((Test-Path -LiteralPath $target -PathType Leaf) -and -not $Force) {
   throw 'Evidence image already exists; use -Force only for an explicit retest.'
 }
@@ -37,13 +44,8 @@ try {
   & adb -s $DeviceId shell rm -f $remotePath 2>$null
 }
 
-$bytes = [System.IO.File]::ReadAllBytes($target)
-$pngSignature = @(137, 80, 78, 71, 13, 10, 26, 10)
-if ($bytes.Length -lt 8) { throw 'Captured PNG is empty.' }
-for ($index = 0; $index -lt 8; $index++) {
-  if ($bytes[$index] -ne $pngSignature[$index]) {
-    throw 'Captured file does not have a valid PNG signature.'
-  }
+if (-not (Test-RegressionPngFile -Path $target)) {
+  throw 'Captured file does not have a valid PNG signature.'
 }
 
 $commandId = New-RegressionCommandId -Surface 'manual' -CaseId $CaseId

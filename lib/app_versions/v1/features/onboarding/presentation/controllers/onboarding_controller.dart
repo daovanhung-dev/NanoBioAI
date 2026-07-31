@@ -89,13 +89,35 @@ class OnboardingState {
     return weightKg / (heightMeter * heightMeter);
   }
 
-  bool get canSave =>
+  bool get canContinueBasicInfo =>
       fullName.trim().isNotEmpty &&
       gender.trim().isNotEmpty &&
       birthYear > 1900 &&
-      occupation.trim().isNotEmpty &&
-      routineConfirmed &&
-      agreed;
+      occupation.trim().isNotEmpty;
+
+  // These sections are optional in the current persisted business contract.
+  bool get canContinueGoals => true;
+  bool get canContinueConditions => true;
+  bool get canContinueLifestyle => true;
+
+  bool canContinueStep(int step) {
+    return switch (step) {
+      0 => true,
+      1 => canContinueBasicInfo,
+      2 => canContinueGoals,
+      3 => canContinueConditions,
+      4 => canContinueLifestyle,
+      5 => true,
+      6 => routinePreferences.validate().isEmpty,
+      7 => agreed,
+      _ => canSave,
+    };
+  }
+
+  bool get canContinueCurrentStep => canContinueStep(currentStep);
+
+  bool get canSave =>
+      canContinueBasicInfo && routineConfirmed && agreed;
 
   OnboardingEntity toEntity() {
     return OnboardingEntity(
@@ -206,6 +228,14 @@ class OnboardingController extends Notifier<OnboardingState> {
       ref.read(onboardingRepositoryProvider);
 
   void nextStep() {
+    if (!state.canContinueCurrentStep) {
+      AppLogger.warning(
+        _tag,
+        'Next Button Blocked - Current step is incomplete',
+      );
+      return;
+    }
+
     if (state.currentStep >= OnboardingCatalog.totalSteps - 1) {
       AppLogger.warning(_tag, 'Next Button Clicked - Already at final step');
       return;
@@ -606,7 +636,7 @@ class OnboardingController extends Notifier<OnboardingState> {
       AppLogger.success(_tag, 'Onboarding completed flag set');
 
       final savedLog = generationSource.isBasicSuggestion
-          ? 'Mình đã lưu hồ sơ sức khỏe và lịch gợi ý cơ bản đầu tiên của bạn. Khi AI sẵn sàng, bạn có thể tạo lại lịch để nhận gợi ý cá nhân hơn nhé.'
+          ? 'Mình đã lưu hồ sơ sức khỏe và lịch gợi ý cơ bản đầu tiên của bạn. Khi dịch vụ sẵn sàng, bạn có thể tạo lại lịch để nhận gợi ý cá nhân hơn nhé.'
           : 'Mình đã lưu hồ sơ sức khỏe của bạn thành công.';
       state = state.copyWith(
         isSaving: false,

@@ -2169,12 +2169,24 @@ create table if not exists public.payment_events (
   plan_code public.nb_membership_plan not null,
   provider text not null,
   provider_event_id text not null,
+  transfer_reference text,
+  transfer_memo text,
   amount_cents integer not null check (amount_cents >= 0),
   list_price_cents integer check (list_price_cents is null or list_price_cents >= 0),
   commission_base_cents integer check (commission_base_cents is null or commission_base_cents >= 0),
   currency text not null default 'VND',
   status text not null
-    check (status in ('pending', 'succeeded', 'refunded', 'chargeback', 'failed')),
+    check (
+      status in (
+        'awaiting_transfer',
+        'pending_review',
+        'pending',
+        'succeeded',
+        'refunded',
+        'chargeback',
+        'failed'
+      )
+    ),
   paid_at timestamptz,
   reviewed_by uuid references public.users(id) on delete set null,
   reviewed_at timestamptz,
@@ -2183,6 +2195,16 @@ create table if not exists public.payment_events (
   raw_event_hash text,
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
+  constraint payment_events_transfer_reference_format_check
+    check (
+      transfer_reference is null
+      or transfer_reference ~ '^NB[0-9A-F]{12}$'
+    ),
+  constraint payment_events_transfer_memo_format_check
+    check (
+      transfer_memo is null
+      or transfer_memo ~ '^[A-Z0-9 ]{1,25}$'
+    ),
   unique (provider, provider_event_id)
 );
 
@@ -2192,6 +2214,9 @@ create index if not exists idx_payment_events_status_created
   on public.payment_events (status, created_at desc);
 create index if not exists idx_payment_events_status_paid
   on public.payment_events (status, paid_at desc);
+create unique index if not exists uq_payment_events_transfer_reference
+  on public.payment_events (transfer_reference)
+  where transfer_reference is not null;
 create index if not exists idx_sale_profiles_status_created
   on public.sale_profiles (status, created_at desc);
 
@@ -2946,10 +2971,17 @@ create table if not exists public.system_config_versions (
   unique (config_key, created_at)
 );
 
+drop function if exists public.create_membership_payment_request(
+  public.nb_membership_plan,
+  text,
+  text
+);
+
 create or replace function public.create_membership_payment_request(
   p_plan_code public.nb_membership_plan,
   p_billing_cycle text,
-  p_idempotency_key text
+  p_idempotency_key text,
+  p_payer_full_name text
 )
 returns table (
   payment_event_id uuid,
@@ -2958,6 +2990,16 @@ returns table (
   status text,
   amount_cents integer,
   currency text,
+  transfer_reference text,
+  transfer_memo text,
+  bank_code text,
+  bank_name text,
+  bank_bin text,
+  bank_account_number text,
+  bank_account_name text,
+  bank_account_display_name text,
+  transfer_confirmed_at timestamptz,
+  review_reason text,
   created_at timestamptz
 )
 language plpgsql
@@ -2966,11 +3008,24 @@ set search_path = public, pg_temp
 as $$
 declare
   v_user_id uuid := auth.uid();
-  v_config jsonb;
+  v_price_config jsonb;
+  v_bank_config jsonb;
+  v_billing_cycle text;
   v_amount_cents integer;
   v_currency text;
   v_provider text := 'manual_membership_request';
   v_provider_event_id text;
+  v_payer_full_name text;
+  v_payer_name_ascii text;
+  v_bank_code text;
+  v_bank_name text;
+  v_bank_bin text;
+  v_bank_account_number text;
+  v_bank_account_name text;
+  v_bank_account_display_name text;
+  v_transfer_reference text;
+  v_transfer_memo text;
+  v_attempt integer := 0;
   v_payment public.payment_events%rowtype;
 begin
   if v_user_id is null then
@@ -2981,7 +3036,8 @@ begin
     raise exception 'INVALID_MEMBERSHIP_PLAN' using errcode = '22023';
   end if;
 
-  if btrim(coalesce(p_billing_cycle, '')) not in ('monthly', 'yearly') then
+  v_billing_cycle := lower(btrim(coalesce(p_billing_cycle, '')));
+  if v_billing_cycle not in ('monthly', 'yearly') then
     raise exception 'INVALID_BILLING_CYCLE' using errcode = '22023';
   end if;
 
@@ -2989,8 +3045,69 @@ begin
     raise exception 'IDEMPOTENCY_KEY_REQUIRED' using errcode = '22023';
   end if;
 
+  v_payer_full_name := btrim(coalesce(p_payer_full_name, ''));
+  if v_payer_full_name = '' then
+    raise exception 'PAYER_FULL_NAME_REQUIRED' using errcode = '22023';
+  end if;
+
+  v_payer_name_ascii := upper(v_payer_full_name);
+  v_payer_name_ascii := regexp_replace(
+    v_payer_name_ascii,
+    '[ÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴàáạảãâầấậẩẫăằắặẳẵ]',
+    'A',
+    'g'
+  );
+  v_payer_name_ascii := regexp_replace(
+    v_payer_name_ascii,
+    '[ÈÉẸẺẼÊỀẾỆỂỄèéẹẻẽêềếệểễ]',
+    'E',
+    'g'
+  );
+  v_payer_name_ascii := regexp_replace(
+    v_payer_name_ascii,
+    '[ÌÍỊỈĨìíịỉĩ]',
+    'I',
+    'g'
+  );
+  v_payer_name_ascii := regexp_replace(
+    v_payer_name_ascii,
+    '[ÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠòóọỏõôồốộổỗơờớợởỡ]',
+    'O',
+    'g'
+  );
+  v_payer_name_ascii := regexp_replace(
+    v_payer_name_ascii,
+    '[ÙÚỤỦŨƯỪỨỰỬỮùúụủũưừứựửữ]',
+    'U',
+    'g'
+  );
+  v_payer_name_ascii := regexp_replace(
+    v_payer_name_ascii,
+    '[ỲÝỴỶỸỳýỵỷỹ]',
+    'Y',
+    'g'
+  );
+  v_payer_name_ascii := replace(
+    replace(v_payer_name_ascii, 'Đ', 'D'),
+    'đ',
+    'D'
+  );
+  v_payer_name_ascii := regexp_replace(
+    v_payer_name_ascii,
+    '[^A-Z0-9 ]+',
+    ' ',
+    'g'
+  );
+  v_payer_name_ascii := btrim(
+    regexp_replace(v_payer_name_ascii, '[[:space:]]+', ' ', 'g')
+  );
+
+  if v_payer_name_ascii = '' then
+    raise exception 'PAYER_FULL_NAME_INVALID' using errcode = '22023';
+  end if;
+
   select scv.config_value
-  into v_config
+  into v_price_config
   from public.system_config_versions scv
   where scv.config_key = 'membership_payment_prices'
     and scv.status = 'active'
@@ -2998,65 +3115,345 @@ begin
   limit 1;
 
   v_amount_cents := nullif(
-    v_config #>> array['prices', p_plan_code::text, btrim(p_billing_cycle)],
+    v_price_config #>> array['prices', p_plan_code::text, v_billing_cycle],
     ''
   )::integer;
-  v_currency := coalesce(nullif(v_config ->> 'currency', ''), 'VND');
+  v_currency := upper(coalesce(nullif(v_price_config ->> 'currency', ''), ''));
 
-  if v_amount_cents is null or v_amount_cents <= 0 then
+  if v_amount_cents is null or v_amount_cents <= 0 or v_currency <> 'VND' then
     raise exception 'MEMBERSHIP_PAYMENT_PRICE_NOT_CONFIGURED'
+      using errcode = '22023';
+  end if;
+
+  select scv.config_value
+  into v_bank_config
+  from public.system_config_versions scv
+  where scv.config_key = 'membership_payment_bank'
+    and scv.status = 'active'
+  order by scv.created_at desc
+  limit 1;
+
+  v_bank_code := upper(btrim(coalesce(v_bank_config ->> 'bank_code', '')));
+  v_bank_name := btrim(coalesce(v_bank_config ->> 'bank_name', ''));
+  v_bank_bin := btrim(coalesce(v_bank_config ->> 'bank_bin', ''));
+  v_bank_account_number := btrim(
+    coalesce(v_bank_config ->> 'bank_account_number', '')
+  );
+  v_bank_account_name := btrim(
+    coalesce(v_bank_config ->> 'bank_account_name', '')
+  );
+  v_bank_account_display_name := btrim(
+    coalesce(v_bank_config ->> 'bank_account_display_name', '')
+  );
+
+  if v_bank_code = ''
+    or v_bank_name = ''
+    or v_bank_bin !~ '^[0-9]{6}$'
+    or v_bank_account_number !~ '^[0-9]{4,32}$'
+    or v_bank_account_name = ''
+    or v_bank_account_display_name = '' then
+    raise exception 'MEMBERSHIP_PAYMENT_BANK_NOT_CONFIGURED'
       using errcode = '22023';
   end if;
 
   v_provider_event_id := concat(v_user_id::text, ':', btrim(p_idempotency_key));
 
-  insert into public.payment_events (
-    payer_user_id,
-    plan_code,
-    provider,
-    provider_event_id,
-    amount_cents,
-    list_price_cents,
-    commission_base_cents,
-    currency,
-    status,
-    idempotency_key,
-    metadata
-  )
-  values (
-    v_user_id,
-    p_plan_code,
-    v_provider,
-    v_provider_event_id,
-    v_amount_cents,
-    v_amount_cents,
-    v_amount_cents,
-    v_currency,
-    'pending',
-    btrim(p_idempotency_key),
-    jsonb_build_object(
-      'billing_cycle',
-      btrim(p_billing_cycle),
-      'manual_approval_required',
-      true,
-      'grants_access_before_approval',
-      false
+  select *
+  into v_payment
+  from public.payment_events
+  where provider = v_provider
+    and provider_event_id = v_provider_event_id
+  for update;
+
+  if found then
+    update public.payment_events
+    set metadata = metadata || jsonb_build_object(
+      'idempotent_replay',
+      true
     )
-  )
-  on conflict (provider, provider_event_id) do update
-  set metadata = public.payment_events.metadata || jsonb_build_object(
-    'idempotent_replay',
-    true
-  )
-  returning * into v_payment;
+    where id = v_payment.id
+    returning * into v_payment;
+  else
+    loop
+      v_attempt := v_attempt + 1;
+      v_transfer_reference := concat(
+        'NB',
+        upper(encode(gen_random_bytes(6), 'hex'))
+      );
+      v_transfer_memo := concat(
+        v_transfer_reference,
+        ' ',
+        left(v_payer_name_ascii, 25 - length(v_transfer_reference) - 1)
+      );
+
+      begin
+        insert into public.payment_events (
+          payer_user_id,
+          plan_code,
+          provider,
+          provider_event_id,
+          amount_cents,
+          list_price_cents,
+          commission_base_cents,
+          currency,
+          status,
+          transfer_reference,
+          transfer_memo,
+          idempotency_key,
+          metadata
+        )
+        values (
+          v_user_id,
+          p_plan_code,
+          v_provider,
+          v_provider_event_id,
+          v_amount_cents,
+          v_amount_cents,
+          v_amount_cents,
+          v_currency,
+          'awaiting_transfer',
+          v_transfer_reference,
+          v_transfer_memo,
+          btrim(p_idempotency_key),
+          jsonb_build_object(
+            'billing_cycle',
+            v_billing_cycle,
+            'payer_full_name',
+            v_payer_full_name,
+            'manual_approval_required',
+            true,
+            'grants_access_before_approval',
+            false,
+            'transfer_reference',
+            v_transfer_reference,
+            'transfer_memo',
+            v_transfer_memo,
+            'bank',
+            jsonb_build_object(
+              'bank_code', v_bank_code,
+              'bank_name', v_bank_name,
+              'bank_bin', v_bank_bin,
+              'bank_account_number', v_bank_account_number,
+              'bank_account_name', v_bank_account_name,
+              'bank_account_display_name', v_bank_account_display_name
+            )
+          )
+        )
+        returning * into v_payment;
+        exit;
+      exception
+        when unique_violation then
+          select *
+          into v_payment
+          from public.payment_events
+          where provider = v_provider
+            and provider_event_id = v_provider_event_id
+          for update;
+
+          if found then
+            update public.payment_events
+            set metadata = metadata || jsonb_build_object(
+              'idempotent_replay',
+              true
+            )
+            where id = v_payment.id
+            returning * into v_payment;
+            exit;
+          end if;
+
+          if v_attempt >= 5 then
+            raise;
+          end if;
+      end;
+    end loop;
+  end if;
 
   return query select
     v_payment.id,
     v_payment.plan_code::text,
-    coalesce(v_payment.metadata ->> 'billing_cycle', btrim(p_billing_cycle)),
+    coalesce(v_payment.metadata ->> 'billing_cycle', v_billing_cycle),
     v_payment.status,
     v_payment.amount_cents,
     v_payment.currency,
+    v_payment.transfer_reference,
+    v_payment.transfer_memo,
+    nullif(v_payment.metadata #>> '{bank,bank_code}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_name}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_bin}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_account_number}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_account_name}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_account_display_name}', ''),
+    nullif(v_payment.metadata ->> 'transfer_confirmed_at', '')::timestamptz,
+    nullif(v_payment.review_reason, ''),
+    v_payment.created_at;
+end;
+$$;
+
+create or replace function public.confirm_my_membership_payment_transfer(
+  p_payment_event_id uuid
+)
+returns table (
+  payment_event_id uuid,
+  plan_code text,
+  billing_cycle text,
+  status text,
+  amount_cents integer,
+  currency text,
+  transfer_reference text,
+  transfer_memo text,
+  bank_code text,
+  bank_name text,
+  bank_bin text,
+  bank_account_number text,
+  bank_account_name text,
+  bank_account_display_name text,
+  transfer_confirmed_at timestamptz,
+  review_reason text,
+  created_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_provider text := 'manual_membership_request';
+  v_confirmed_at timestamptz;
+  v_payment public.payment_events%rowtype;
+begin
+  if v_user_id is null then
+    raise exception 'AUTH_REQUIRED' using errcode = '28000';
+  end if;
+
+  select *
+  into v_payment
+  from public.payment_events
+  where id = p_payment_event_id
+    and payer_user_id = v_user_id
+    and provider = v_provider
+  for update;
+
+  if not found then
+    raise exception 'PAYMENT_NOT_FOUND' using errcode = '22023';
+  end if;
+
+  if v_payment.status = 'awaiting_transfer' then
+    if v_payment.transfer_reference is null or v_payment.transfer_memo is null then
+      raise exception 'PAYMENT_TRANSFER_DETAILS_MISSING' using errcode = '22023';
+    end if;
+
+    v_confirmed_at := now();
+    update public.payment_events
+    set
+      status = 'pending_review',
+      metadata = metadata || jsonb_build_object(
+        'transfer_confirmed_at',
+        v_confirmed_at,
+        'transfer_confirmation',
+        jsonb_build_object(
+          'confirmed_at', v_confirmed_at,
+          'confirmed_by_user_id', v_user_id,
+          'transfer_reference', transfer_reference,
+          'transfer_memo', transfer_memo,
+          'bank', metadata -> 'bank'
+        )
+      )
+    where id = v_payment.id
+    returning * into v_payment;
+  elsif v_payment.status <> 'pending_review' then
+    raise exception 'PAYMENT_TRANSFER_NOT_AWAITING_CONFIRMATION'
+      using errcode = '22023';
+  end if;
+
+  return query select
+    v_payment.id,
+    v_payment.plan_code::text,
+    v_payment.metadata ->> 'billing_cycle',
+    v_payment.status,
+    v_payment.amount_cents,
+    v_payment.currency,
+    v_payment.transfer_reference,
+    v_payment.transfer_memo,
+    nullif(v_payment.metadata #>> '{bank,bank_code}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_name}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_bin}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_account_number}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_account_name}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_account_display_name}', ''),
+    nullif(v_payment.metadata ->> 'transfer_confirmed_at', '')::timestamptz,
+    nullif(v_payment.review_reason, ''),
+    v_payment.created_at;
+end;
+$$;
+
+create or replace function public.get_my_membership_payment_request()
+returns table (
+  payment_event_id uuid,
+  plan_code text,
+  billing_cycle text,
+  status text,
+  amount_cents integer,
+  currency text,
+  transfer_reference text,
+  transfer_memo text,
+  bank_code text,
+  bank_name text,
+  bank_bin text,
+  bank_account_number text,
+  bank_account_name text,
+  bank_account_display_name text,
+  transfer_confirmed_at timestamptz,
+  review_reason text,
+  created_at timestamptz
+)
+language plpgsql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_provider text := 'manual_membership_request';
+  v_payment public.payment_events%rowtype;
+begin
+  if v_user_id is null then
+    raise exception 'AUTH_REQUIRED' using errcode = '28000';
+  end if;
+
+  select *
+  into v_payment
+  from public.payment_events pe
+  where pe.payer_user_id = v_user_id
+    and pe.provider = v_provider
+  order by
+    case
+      when pe.status in ('awaiting_transfer', 'pending_review', 'pending') then 0
+      else 1
+    end,
+    pe.created_at desc
+  limit 1;
+
+  if not found then
+    return;
+  end if;
+
+  return query select
+    v_payment.id,
+    v_payment.plan_code::text,
+    v_payment.metadata ->> 'billing_cycle',
+    v_payment.status,
+    v_payment.amount_cents,
+    v_payment.currency,
+    v_payment.transfer_reference,
+    v_payment.transfer_memo,
+    nullif(v_payment.metadata #>> '{bank,bank_code}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_name}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_bin}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_account_number}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_account_name}', ''),
+    nullif(v_payment.metadata #>> '{bank,bank_account_display_name}', ''),
+    nullif(v_payment.metadata ->> 'transfer_confirmed_at', '')::timestamptz,
+    nullif(v_payment.review_reason, ''),
     v_payment.created_at;
 end;
 $$;
@@ -3484,6 +3881,25 @@ begin
 end;
 $$;
 
+create or replace function public.admin_get_payment_review_alert()
+returns table (pending_review_count integer)
+language plpgsql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  perform public.admin_assert_permission('payments.write');
+
+  return query
+  select count(*)::integer
+  from public.payment_events pe
+  where pe.status = 'pending_review';
+end;
+$$;
+
+drop function if exists public.admin_list_payments(text, integer);
+
 create or replace function public.admin_list_payments(
   p_query text default '',
   p_limit integer default 50
@@ -3494,7 +3910,14 @@ returns table (
   subtitle text,
   status text,
   section text,
-  created_at timestamptz
+  created_at timestamptz,
+  transfer_reference text,
+  transfer_memo text,
+  payer_full_name text,
+  amount_cents integer,
+  currency text,
+  transfer_confirmed_at timestamptz,
+  review_reason text
 )
 language plpgsql
 stable
@@ -3508,16 +3931,48 @@ begin
   select
     pe.id::text,
     concat(pe.plan_code::text, ' - ', pe.amount_cents::text, ' ', pe.currency),
-    concat_ws(' - ', coalesce(nullif(u.full_name, ''), u.email), pe.provider, pe.plan_code::text),
+    concat_ws(
+      ' - ',
+      coalesce(
+        nullif(pe.metadata ->> 'payer_full_name', ''),
+        nullif(u.full_name, ''),
+        u.email,
+        pe.payer_user_id::text
+      ),
+      pe.provider,
+      pe.transfer_reference
+    ),
     pe.status,
     'payments',
-    pe.created_at
+    pe.created_at,
+    pe.transfer_reference,
+    pe.transfer_memo,
+    coalesce(
+      nullif(pe.metadata ->> 'payer_full_name', ''),
+      nullif(u.full_name, ''),
+      u.email,
+      pe.payer_user_id::text
+    ),
+    pe.amount_cents,
+    pe.currency,
+    nullif(pe.metadata ->> 'transfer_confirmed_at', '')::timestamptz,
+    nullif(pe.review_reason, '')
   from public.payment_events pe
   join public.users u on u.id = pe.payer_user_id
   where coalesce(p_query, '') = ''
      or u.email ilike '%' || p_query || '%'
+     or u.full_name ilike '%' || p_query || '%'
      or pe.provider_event_id ilike '%' || p_query || '%'
-  order by pe.created_at desc
+     or pe.transfer_reference ilike '%' || p_query || '%'
+     or pe.transfer_memo ilike '%' || p_query || '%'
+     or coalesce(pe.metadata ->> 'payer_full_name', '') ilike '%' || p_query || '%'
+  order by
+    case
+      when pe.status = 'pending_review' then 0
+      when pe.status = 'pending' then 1
+      else 2
+    end,
+    pe.created_at desc
   limit greatest(1, least(coalesce(p_limit, 50), 100));
 end;
 $$;
@@ -3544,6 +3999,11 @@ begin
     raise exception 'INVALID_PAYMENT_DECISION' using errcode = '22023';
   end if;
 
+  if p_decision = 'reject'
+    and nullif(btrim(coalesce(p_reason, '')), '') is null then
+    raise exception 'PAYMENT_REJECTION_REASON_REQUIRED' using errcode = '22023';
+  end if;
+
   select * into v_payment
   from public.payment_events
   where id = p_payment_event_id
@@ -3553,8 +4013,8 @@ begin
     raise exception 'PAYMENT_NOT_FOUND' using errcode = '22023';
   end if;
 
-  if v_payment.status <> 'pending' then
-    raise exception 'PAYMENT_ALREADY_REVIEWED' using errcode = '22023';
+  if v_payment.status not in ('pending_review', 'pending') then
+    raise exception 'PAYMENT_NOT_READY_FOR_REVIEW' using errcode = '22023';
   end if;
 
   v_status := case when p_decision = 'approve' then 'succeeded' else 'failed' end;
@@ -3565,13 +4025,19 @@ begin
     paid_at = case when p_decision = 'approve' then coalesce(paid_at, now()) else paid_at end,
     reviewed_by = auth.uid(),
     reviewed_at = now(),
-    review_reason = btrim(p_reason),
+    review_reason = nullif(btrim(p_reason), ''),
     idempotency_key = nullif(btrim(p_idempotency_key), ''),
     metadata = metadata || jsonb_build_object(
       'admin_decision',
       p_decision,
       'manual_approval_required',
-      true
+      true,
+      'transfer_reference',
+      transfer_reference,
+      'transfer_memo',
+      transfer_memo,
+      'transfer_confirmed_at',
+      metadata ->> 'transfer_confirmed_at'
     )
   where id = p_payment_event_id
   returning * into v_payment;
@@ -3610,7 +4076,12 @@ begin
     p_payment_event_id::text,
     p_reason,
     p_idempotency_key,
-    jsonb_build_object('decision', p_decision)
+    jsonb_build_object(
+      'decision', p_decision,
+      'transfer_reference', v_payment.transfer_reference,
+      'transfer_memo', v_payment.transfer_memo,
+      'transfer_confirmed_at', v_payment.metadata ->> 'transfer_confirmed_at'
+    )
   );
 
   return query select true, 'Da xu ly payment.';
@@ -4634,13 +5105,37 @@ revoke insert, update, delete on
   public.admin_reconciliation_discrepancies
 from anon, authenticated;
 
+revoke all on function public.create_membership_payment_request(
+  public.nb_membership_plan,
+  text,
+  text,
+  text
+) from public, anon;
+revoke all on function public.confirm_my_membership_payment_transfer(uuid)
+  from public, anon;
+revoke all on function public.get_my_membership_payment_request()
+  from public, anon;
+revoke all on function public.admin_get_payment_review_alert()
+  from public, anon;
+revoke all on function public.admin_list_payments(text, integer)
+  from public, anon;
+revoke all on function public.admin_review_payment(uuid, text, text, text)
+  from public, anon;
+
 grant execute on function public.get_my_admin_session() to authenticated;
 grant execute on function public.get_admin_dashboard_summary(timestamptz, timestamptz, text, text) to authenticated;
 grant execute on function public.create_membership_payment_request(
   public.nb_membership_plan,
   text,
+  text,
   text
 ) to authenticated;
+grant execute on function public.confirm_my_membership_payment_transfer(uuid)
+  to authenticated;
+grant execute on function public.get_my_membership_payment_request()
+  to authenticated;
+grant execute on function public.admin_get_payment_review_alert()
+  to authenticated;
 grant execute on function public.admin_search_users(text, integer) to authenticated;
 grant execute on function public.admin_update_user_status(uuid, text, text, text) to authenticated;
 grant execute on function public.admin_list_payments(text, integer) to authenticated;
@@ -4801,6 +5296,33 @@ where not exists (
   select 1
   from public.system_config_versions
   where config_key = 'membership_payment_prices'
+    and status = 'active'
+);
+
+insert into public.system_config_versions (
+  config_key,
+  config_value,
+  status,
+  reason,
+  created_by
+)
+select
+  'membership_payment_bank',
+  '{
+    "bank_code": "VCB",
+    "bank_name": "Vietcombank",
+    "bank_bin": "970436",
+    "bank_account_number": "1026806174",
+    "bank_account_name": "LE PHU THACH",
+    "bank_account_display_name": "Lê Phú Thạch"
+  }'::jsonb,
+  'active',
+  'Server-owned VietQR receiving account for manually reviewed membership payments.',
+  null
+where not exists (
+  select 1
+  from public.system_config_versions
+  where config_key = 'membership_payment_bank'
     and status = 'active'
 );
 
@@ -5239,7 +5761,7 @@ begin
           and available_at <= now()
       ), 0)::integer as approved_cents,
       coalesce(sum(amount_cents) filter (where status = 'paid'), 0)::integer as paid_cents,
-      coalesce(max(currency), 'VND') as result_currency
+      coalesce(max(public.commission_records.currency), 'VND') as result_currency
     from public.commission_records
     where receiver_user_id = v_user_id
   ), adjustment_summary as (
@@ -5310,7 +5832,7 @@ begin
         where status in ('pending', 'approved')
           and available_at <= now()
       ), 0)::integer as approved_cents,
-      coalesce(max(currency), 'VND') as result_currency
+      coalesce(max(public.commission_records.currency), 'VND') as result_currency
     from public.commission_records
     where receiver_user_id = v_user_id
     group by payer_user_id
@@ -5742,6 +6264,7 @@ revoke all on function public.get_my_sale_payout_profile()
 from public, anon;
 revoke all on function public.upsert_my_sale_payout_profile(text, text, text, text, text)
 from public, anon;
+revoke all on function public.get_my_sale_dashboard() from public, anon;
 revoke all on function public.get_my_sale_direct_customers() from public, anon;
 revoke all on function public.get_my_sale_point_ledger() from public, anon;
 revoke all on function public.get_my_sale_conversions() from public, anon;
@@ -5761,6 +6284,7 @@ grant execute on function public.get_my_sale_payout_profile()
 to authenticated;
 grant execute on function public.upsert_my_sale_payout_profile(text, text, text, text, text)
 to authenticated;
+grant execute on function public.get_my_sale_dashboard() to authenticated;
 grant execute on function public.get_my_sale_direct_customers() to authenticated;
 grant execute on function public.get_my_sale_point_ledger() to authenticated;
 grant execute on function public.get_my_sale_conversions() to authenticated;
@@ -10734,7 +11258,10 @@ with fixture_users as (
       ('11000000-0000-4000-8000-000000000027'::uuid, '21000000-0000-4000-8000-000000000027'::uuid, 'dev.fixture.admin.content@nanobio.local', 'Fixture Content Admin', 'email', false),
       ('11000000-0000-4000-8000-000000000028'::uuid, '21000000-0000-4000-8000-000000000028'::uuid, 'dev.fixture.admin.operations@nanobio.local', 'Fixture Operations Admin', 'email', false),
       ('11000000-0000-4000-8000-000000000029'::uuid, '21000000-0000-4000-8000-000000000029'::uuid, 'dev.fixture.admin.only@nanobio.local', 'Fixture Admin Only', 'email', false),
-      ('11000000-0000-4000-8000-000000000030'::uuid, '21000000-0000-4000-8000-000000000030'::uuid, 'dev.fixture.admin.revoked@nanobio.local', 'Fixture Revoked Admin', 'email', false)
+      ('11000000-0000-4000-8000-000000000030'::uuid, '21000000-0000-4000-8000-000000000030'::uuid, 'dev.fixture.admin.revoked@nanobio.local', 'Fixture Revoked Admin', 'email', false),
+      ('11000000-0000-4000-8000-000000000031'::uuid, '21000000-0000-4000-8000-000000000031'::uuid, 'dev.fixture.sale.a.ready@nanobio.local', 'Fixture Sale A Customer Ready', 'email', false),
+      ('11000000-0000-4000-8000-000000000032'::uuid, '21000000-0000-4000-8000-000000000032'::uuid, 'dev.fixture.sale.a.pending@nanobio.local', 'Fixture Sale A Customer Pending', 'email', false),
+      ('11000000-0000-4000-8000-000000000033'::uuid, '21000000-0000-4000-8000-000000000033'::uuid, 'dev.fixture.sale.a.prospect@nanobio.local', 'Fixture Sale A Customer Prospect', 'email', false)
   ) as t(user_id, identity_id, email, full_name, provider, is_anonymous)
 )
 insert into auth.users (
@@ -10812,7 +11339,10 @@ with fixture_users as (
       ('11000000-0000-4000-8000-000000000027'::uuid, '21000000-0000-4000-8000-000000000027'::uuid, 'dev.fixture.admin.content@nanobio.local', 'Fixture Content Admin', 'email'),
       ('11000000-0000-4000-8000-000000000028'::uuid, '21000000-0000-4000-8000-000000000028'::uuid, 'dev.fixture.admin.operations@nanobio.local', 'Fixture Operations Admin', 'email'),
       ('11000000-0000-4000-8000-000000000029'::uuid, '21000000-0000-4000-8000-000000000029'::uuid, 'dev.fixture.admin.only@nanobio.local', 'Fixture Admin Only', 'email'),
-      ('11000000-0000-4000-8000-000000000030'::uuid, '21000000-0000-4000-8000-000000000030'::uuid, 'dev.fixture.admin.revoked@nanobio.local', 'Fixture Revoked Admin', 'email')
+      ('11000000-0000-4000-8000-000000000030'::uuid, '21000000-0000-4000-8000-000000000030'::uuid, 'dev.fixture.admin.revoked@nanobio.local', 'Fixture Revoked Admin', 'email'),
+      ('11000000-0000-4000-8000-000000000031'::uuid, '21000000-0000-4000-8000-000000000031'::uuid, 'dev.fixture.sale.a.ready@nanobio.local', 'Fixture Sale A Customer Ready', 'email'),
+      ('11000000-0000-4000-8000-000000000032'::uuid, '21000000-0000-4000-8000-000000000032'::uuid, 'dev.fixture.sale.a.pending@nanobio.local', 'Fixture Sale A Customer Pending', 'email'),
+      ('11000000-0000-4000-8000-000000000033'::uuid, '21000000-0000-4000-8000-000000000033'::uuid, 'dev.fixture.sale.a.prospect@nanobio.local', 'Fixture Sale A Customer Prospect', 'email')
   ) as t(user_id, identity_id, email, full_name, provider)
 )
 insert into auth.identities (
@@ -10848,7 +11378,16 @@ set
     when '11000000-0000-4000-8000-000000000018'::uuid then '+84900000018'
     when '11000000-0000-4000-8000-000000000019'::uuid then '+84900000019'
     when '11000000-0000-4000-8000-000000000020'::uuid then '+84900000020'
+    when '11000000-0000-4000-8000-000000000031'::uuid then '+84900000031'
+    when '11000000-0000-4000-8000-000000000032'::uuid then '+84900000032'
+    when '11000000-0000-4000-8000-000000000033'::uuid then '+84900000033'
     else phone
+  end,
+  birth_year = case id
+    when '11000000-0000-4000-8000-000000000031'::uuid then 1990
+    when '11000000-0000-4000-8000-000000000032'::uuid then 1987
+    when '11000000-0000-4000-8000-000000000033'::uuid then 1995
+    else birth_year
   end,
   onboarding_status = case id
     when '11000000-0000-4000-8000-000000000002'::uuid then 'not_started'::public.nb_onboarding_status
@@ -10880,7 +11419,7 @@ set
   updated_at = now()
 where id between
   '11000000-0000-4000-8000-000000000001'::uuid and
-  '11000000-0000-4000-8000-000000000030'::uuid;
+  '11000000-0000-4000-8000-000000000033'::uuid;
 
 -- Make the historical Admin a dual-surface account; its super_admin role is
 -- created by the legacy bootstrap and remains the stable Storage uploader.
@@ -10911,6 +11450,9 @@ values
   ('31000000-0000-4000-8000-000000000018'::uuid, '11000000-0000-4000-8000-000000000018'::uuid, 'plus', 'active', 'manual', now() - interval '7 days', now() + interval '30 days', now() - interval '7 days', now() + interval '30 days', 'fixture', 'sale-a-v1', '{"fixture":true,"scenario":"sale-a"}'::jsonb),
   ('31000000-0000-4000-8000-000000000019'::uuid, '11000000-0000-4000-8000-000000000019'::uuid, 'plus', 'active', 'manual', now() - interval '7 days', now() + interval '30 days', now() - interval '7 days', now() + interval '30 days', 'fixture', 'sale-b-v1', '{"fixture":true,"scenario":"sale-b"}'::jsonb),
   ('31000000-0000-4000-8000-000000000020'::uuid, '11000000-0000-4000-8000-000000000020'::uuid, 'plus', 'active', 'manual', now() - interval '7 days', now() + interval '30 days', now() - interval '7 days', now() + interval '30 days', 'fixture', 'sale-c-v1', '{"fixture":true,"scenario":"sale-c"}'::jsonb),
+  ('31000000-0000-4000-8000-000000000031'::uuid, '11000000-0000-4000-8000-000000000031'::uuid, 'plus', 'active', 'payment_provider', now() - interval '90 days', now() + interval '30 days', now() - interval '30 days', now() + interval '30 days', 'fixture', 'sale-a-customer-ready-v1', '{"fixture":true,"scenario":"sale-a-customer-ready"}'::jsonb),
+  ('31000000-0000-4000-8000-000000000032'::uuid, '11000000-0000-4000-8000-000000000032'::uuid, 'plus', 'active', 'payment_provider', now() - interval '3 days', now() + interval '27 days', now() - interval '3 days', now() + interval '27 days', 'fixture', 'sale-a-customer-pending-v1', '{"fixture":true,"scenario":"sale-a-customer-pending"}'::jsonb),
+  ('31000000-0000-4000-8000-000000000033'::uuid, '11000000-0000-4000-8000-000000000033'::uuid, 'free', 'active', 'manual', now() - interval '1 day', now() + interval '30 days', now() - interval '1 day', now() + interval '30 days', 'fixture', 'sale-a-customer-prospect-v1', '{"fixture":true,"scenario":"sale-a-customer-prospect"}'::jsonb),
   ('31000000-0000-4000-8000-000000000024'::uuid, '11000000-0000-4000-8000-000000000024'::uuid, 'free', 'active', 'manual', now() - interval '7 days', now() + interval '30 days', now() - interval '7 days', now() + interval '30 days', 'fixture', 'wellness-v1', '{"fixture":true,"scenario":"wellness"}'::jsonb)
 on conflict (id) do update
 set
@@ -11605,8 +12147,9 @@ set
 
 
 -- ---------------------------------------------------------------------------
--- Sale: A -> B -> Customer C. C's succeeded payment produces the only
--- direct 10% commission for B; no seed creates an upstream commission.
+-- Sale A has direct customer fixtures for its dashboard, customer list and
+-- point ledger. The independent A -> B -> Customer C chain remains direct-only:
+-- C's succeeded payment produces the only 10% commission for B, never A.
 -- ---------------------------------------------------------------------------
 
 insert into public.sale_profiles (
@@ -11663,6 +12206,27 @@ values
     '11000000-0000-4000-8000-000000000021'::uuid,
     'FIXTURE-A', now() - interval '1 day', 'manual_admin', 'voided',
     'fixture-referral-voided', '{"fixture":true,"scenario":"voided"}'::jsonb
+  ),
+  (
+    '62000000-0000-4000-8000-000000000004'::uuid,
+    '11000000-0000-4000-8000-000000000018'::uuid,
+    '11000000-0000-4000-8000-000000000031'::uuid,
+    'FIXTURE-A', now() - interval '90 days', 'signup', 'active',
+    'fixture-referral-a-ready', '{"fixture":true,"scenario":"sale-a-ready-customer","direct_only":true}'::jsonb
+  ),
+  (
+    '62000000-0000-4000-8000-000000000005'::uuid,
+    '11000000-0000-4000-8000-000000000018'::uuid,
+    '11000000-0000-4000-8000-000000000032'::uuid,
+    'FIXTURE-A', now() - interval '3 days', 'signup', 'active',
+    'fixture-referral-a-pending', '{"fixture":true,"scenario":"sale-a-pending-customer","direct_only":true}'::jsonb
+  ),
+  (
+    '62000000-0000-4000-8000-000000000006'::uuid,
+    '11000000-0000-4000-8000-000000000018'::uuid,
+    '11000000-0000-4000-8000-000000000033'::uuid,
+    'FIXTURE-A', now() - interval '1 day', 'signup', 'active',
+    'fixture-referral-a-prospect', '{"fixture":true,"scenario":"sale-a-prospect-customer","direct_only":true}'::jsonb
   )
 on conflict (id) do update
 set
@@ -11728,6 +12292,46 @@ values
     'VND', 'failed', null, null, null, 'Fixture payment failed',
     'fixture-payment-failed-v1', 'fixture-payment-hash-failed',
     '{"fixture":true}'::jsonb
+  ),
+  (
+    '63000000-0000-4000-8000-000000000006'::uuid,
+    '11000000-0000-4000-8000-000000000031'::uuid,
+    '31000000-0000-4000-8000-000000000031'::uuid,
+    'plus', 'fixture', 'payment-a-ready-1-v1', 3990000, 3990000, 3990000,
+    'VND', 'succeeded', now() - interval '70 days',
+    '10000000-0000-4000-8000-000000000104'::uuid, now() - interval '70 days',
+    'Fixture Sale A customer renewal 1', 'fixture-payment-a-ready-1-v1',
+    'fixture-payment-hash-a-ready-1', '{"fixture":true,"sale":"A","scenario":"ready"}'::jsonb
+  ),
+  (
+    '63000000-0000-4000-8000-000000000007'::uuid,
+    '11000000-0000-4000-8000-000000000031'::uuid,
+    '31000000-0000-4000-8000-000000000031'::uuid,
+    'plus', 'fixture', 'payment-a-ready-2-v1', 3990000, 3990000, 3990000,
+    'VND', 'succeeded', now() - interval '40 days',
+    '10000000-0000-4000-8000-000000000104'::uuid, now() - interval '40 days',
+    'Fixture Sale A customer renewal 2', 'fixture-payment-a-ready-2-v1',
+    'fixture-payment-hash-a-ready-2', '{"fixture":true,"sale":"A","scenario":"ready"}'::jsonb
+  ),
+  (
+    '63000000-0000-4000-8000-000000000008'::uuid,
+    '11000000-0000-4000-8000-000000000031'::uuid,
+    '31000000-0000-4000-8000-000000000031'::uuid,
+    'plus', 'fixture', 'payment-a-ready-3-v1', 3990000, 3990000, 3990000,
+    'VND', 'succeeded', now() - interval '10 days',
+    '10000000-0000-4000-8000-000000000104'::uuid, now() - interval '10 days',
+    'Fixture Sale A customer renewal 3', 'fixture-payment-a-ready-3-v1',
+    'fixture-payment-hash-a-ready-3', '{"fixture":true,"sale":"A","scenario":"ready"}'::jsonb
+  ),
+  (
+    '63000000-0000-4000-8000-000000000009'::uuid,
+    '11000000-0000-4000-8000-000000000032'::uuid,
+    '31000000-0000-4000-8000-000000000032'::uuid,
+    'plus', 'fixture', 'payment-a-pending-v1', 1990000, 1990000, 1990000,
+    'VND', 'succeeded', now() - interval '1 hour',
+    '10000000-0000-4000-8000-000000000104'::uuid, now() - interval '1 hour',
+    'Fixture Sale A customer recent payment', 'fixture-payment-a-pending-v1',
+    'fixture-payment-hash-a-pending', '{"fixture":true,"sale":"A","scenario":"pending"}'::jsonb
   )
 on conflict (provider, provider_event_id) do update
 set
@@ -11737,7 +12341,9 @@ set
 
 -- This direct insert supplies historical lifecycle rows for non-succeeded
 -- payments. The succeeded C event receives its pending B commission through
--- the database trigger above and is never assigned to Sale A.
+-- the database trigger above and is never assigned to Sale A. Sale A's ready
+-- customer commission rows are also created by that trigger, then promoted to
+-- available fixture history below.
 insert into public.commission_records (
   id, payment_event_id, receiver_user_id, payer_user_id, source_referral_id,
   rate, amount_cents, currency, status, available_at
@@ -11770,6 +12376,15 @@ on conflict (payment_event_id, receiver_user_id) do update
 set status = excluded.status, available_at = excluded.available_at,
     amount_cents = excluded.amount_cents, updated_at = now();
 
+update public.commission_records
+set status = 'approved', available_at = now() - interval '1 day', updated_at = now()
+where receiver_user_id = '11000000-0000-4000-8000-000000000018'::uuid
+  and payment_event_id in (
+    '63000000-0000-4000-8000-000000000006'::uuid,
+    '63000000-0000-4000-8000-000000000007'::uuid,
+    '63000000-0000-4000-8000-000000000008'::uuid
+  );
+
 insert into public.sale_payout_profiles (
   sale_user_id, citizen_id, bank_bin, bank_name, bank_account_number,
   bank_account_name, updated_by, metadata
@@ -11794,7 +12409,7 @@ values
   (
     '65000000-0000-4000-8000-000000000001'::uuid,
     '11000000-0000-4000-8000-000000000018'::uuid,
-    2000000, 'VND', 'approved', 'Fixture point credit',
+    1900000, 'VND', 'approved', 'Fixture point credit',
     '10000000-0000-4000-8000-000000000104'::uuid,
     'fixture-sale-point-credit-v1', '{"fixture":true}'::jsonb
   ),

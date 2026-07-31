@@ -62,6 +62,8 @@ void main() {
         'get_my_sale_conversions',
         'request_sale_point_conversion',
         'create_membership_payment_request',
+        'confirm_my_membership_payment_transfer',
+        'get_my_membership_payment_request',
         'get_my_admin_session',
         'app_access_mode',
         'can_use_user_app',
@@ -70,6 +72,7 @@ void main() {
 
         'get_admin_dashboard_summary',
         'admin_search_users',
+        'admin_get_payment_review_alert',
         'admin_review_payment',
         'admin_refund_or_cancel_payment',
         'admin_review_sale_profile',
@@ -98,6 +101,47 @@ void main() {
       expect(sql, contains('SALE_REQUIRES_ACTIVE_PAID_PLAN'));
       expect(sql, contains('payout_profile_complete'));
     });
+
+    test('grants the Sale dashboard RPC to authenticated clients only', () {
+      expect(
+        sql,
+        contains(
+          'revoke all on function public.get_my_sale_dashboard() from public, anon;',
+        ),
+      );
+      expect(
+        sql,
+        contains(
+          'grant execute on function public.get_my_sale_dashboard() to authenticated;',
+        ),
+      );
+    });
+
+    test(
+      'qualifies Sale commission currency in dashboard and customer RPCs',
+      () {
+        const dashboardStart =
+            'create or replace function public.get_my_sale_dashboard';
+        const customersStart =
+            'create or replace function public.get_my_sale_direct_customers';
+        const ledgerStart =
+            'create or replace function public.get_my_sale_point_ledger';
+        final dashboardIndex = sql.indexOf(dashboardStart);
+        final customersIndex = sql.indexOf(customersStart);
+        final ledgerIndex = sql.indexOf(ledgerStart);
+
+        expect(dashboardIndex, greaterThanOrEqualTo(0));
+        expect(customersIndex, greaterThan(dashboardIndex));
+        expect(ledgerIndex, greaterThan(customersIndex));
+
+        final dashboard = sql.substring(dashboardIndex, customersIndex);
+        final customers = sql.substring(customersIndex, ledgerIndex);
+        for (final rpc in [dashboard, customers]) {
+          expect(rpc, contains('max(public.commission_records.currency)'));
+          expect(rpc, isNot(contains('max(currency)')));
+        }
+      },
+    );
 
     test('seeds reference data, dev users and super admin bootstrap', () {
       for (final token in [
@@ -141,6 +185,80 @@ void main() {
         sql,
         contains('from public, anon, authenticated'),
         reason: 'Trusted payment recorder must not be granted to Flutter.',
+      );
+    });
+
+    test('keeps VietQR membership requests server-owned and manually reviewed', () {
+      final module = File(
+        'docs/supabase/13-membership-payment-request.sql',
+      ).readAsStringSync();
+      final create = _functionBlock(sql, 'create_membership_payment_request');
+      final confirm = _functionBlock(
+        sql,
+        'confirm_my_membership_payment_transfer',
+      );
+      final current = _functionBlock(sql, 'get_my_membership_payment_request');
+      final alert = _functionBlock(sql, 'admin_get_payment_review_alert');
+      final review = _functionBlock(sql, 'admin_review_payment');
+
+      for (final token in [
+        'transfer_reference text',
+        'transfer_memo text',
+        'uq_payment_events_transfer_reference',
+        r"'^NB[0-9A-F]{12}$'",
+        r"'^[A-Z0-9 ]{1,25}$'",
+        "upper(encode(gen_random_bytes(6), 'hex'))",
+        'p_payer_full_name text',
+        "'membership_payment_bank'",
+        '"bank_bin": "970436"',
+        '"bank_account_number": "1026806174"',
+        '"bank_account_name": "LE PHU THACH"',
+        '"bank_account_display_name": "Lê Phú Thạch"',
+        'confirm_my_membership_payment_transfer',
+        'get_my_membership_payment_request',
+        'admin_get_payment_review_alert',
+        "'awaiting_transfer'",
+        "'pending_review'",
+      ]) {
+        expect(module, contains(token), reason: 'module: $token');
+        expect(sql, contains(token), reason: 'config.sql: $token');
+      }
+
+      expect(create, contains('25 - length(v_transfer_reference) - 1'));
+      for (final clientControlledField in [
+        'p_amount_cents',
+        'p_bank_bin',
+        'p_bank_account_number',
+        'p_transfer_reference',
+      ]) {
+        expect(create, isNot(contains(clientControlledField)));
+      }
+
+      expect(confirm, contains('payer_user_id = v_user_id'));
+      expect(confirm, contains("status = 'pending_review'"));
+      expect(current, contains('pe.payer_user_id = v_user_id'));
+      expect(alert, contains("where pe.status = 'pending_review';"));
+      expect(
+        alert,
+        contains("public.admin_assert_permission('payments.write')"),
+      );
+      expect(
+        review,
+        contains("v_payment.status not in ('pending_review', 'pending')"),
+      );
+      expect(review, contains('membership_subscriptions'));
+      expect(review, contains('public.admin_write_audit'));
+      expect(
+        sql,
+        contains(
+          'revoke all on function public.confirm_my_membership_payment_transfer(uuid)',
+        ),
+      );
+      expect(
+        sql,
+        contains(
+          'grant execute on function public.get_my_membership_payment_request()',
+        ),
       );
     });
 
@@ -339,4 +457,16 @@ bool _hasUnqualifiedDashboardStatusFilter(String block) {
     r'(\bwhere|\band|\bfilter\s*\(\s*where)\s+status\b',
     caseSensitive: false,
   ).hasMatch(withoutLineComments);
+}
+
+String _functionBlock(String sql, String functionName) {
+  final start = sql.indexOf('create or replace function public.$functionName');
+  if (start < 0) {
+    throw StateError('Cannot locate SQL function: $functionName');
+  }
+  final end = sql.indexOf('\n\$\$;', start);
+  if (end < 0) {
+    throw StateError('Cannot locate SQL function end: $functionName');
+  }
+  return sql.substring(start, end);
 }

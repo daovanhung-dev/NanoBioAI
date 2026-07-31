@@ -19,7 +19,7 @@ if (-not (Test-Path -LiteralPath $matrix -PathType Leaf)) {
 
 $cases = @()
 foreach ($line in [IO.File]::ReadAllLines($matrix)) {
-  if ($line -notmatch '^\|\s*((PRE|V2|ADM|AUT)-[A-Z0-9-]+)\s*\|') { continue }
+  if ($line -notmatch '^\|\s*((?:PRE|V2|ADM|ADMIN|AUT|PF|AH|WR|NBI)-[A-Z0-9-]+)\s*\|') { continue }
   $cells = @($line.Split('|') | ForEach-Object { $_.Trim() })
   if ($cells.Count -lt 8) { throw "Malformed matrix row: $($Matches[1])" }
   $cases += [pscustomobject]@{
@@ -46,6 +46,7 @@ Commit de xuat: test(real-device): ghi nhan case $($case.Id)
 - Trạng thái: PENDING
 - Persona/tiền điều kiện: $($case.Persona)
 - BD/DD/AC: $($case.Refs)
+- Entry point: ``lib/main.dart``
 - Thiết bị bắt buộc: Xiaomi 220333QPG, Android 11/API 30, 720x1650
 
 ## Kịch bản và kết quả mong đợi
@@ -88,6 +89,7 @@ Commit de xuat: test(real-device): kiem thu toan bo NanoBio 15-07-2026
 
 - Thiết bị: Xiaomi 220333QPG (``12b304f9``).
 - Android: 11/API 30.
+- Unified entry point: ``lib/main.dart``.
 - Độ phân giải vật lý: 720x1650.
 - Supabase: cấu hình có trong ``assets/config/auth.env``; không ghi giá trị vào báo cáo.
 - AI: BLOCKED ở preflight vì ``GEMINI_API_KEY`` là placeholder.

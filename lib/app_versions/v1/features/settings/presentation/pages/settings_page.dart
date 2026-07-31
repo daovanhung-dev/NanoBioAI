@@ -245,13 +245,13 @@ class SettingsView extends ConsumerWidget {
                         ),
                       ],
                       const SizedBox(height: AppSpacing.xl),
-                      _SectionTitle('AI & Sức khỏe'),
+                      _SectionTitle('Nabi & Sức khỏe'),
                       const SizedBox(height: AppSpacing.md),
                       _MenuCard(
                         children: [
                           _MenuItem(
                             icon: Icons.auto_awesome_rounded,
-                            title: 'Phong cách AI',
+                            title: 'Phong cách Nabi',
                             subtitle: _aiPersonalityLabel(
                               preferences.aiPersonality,
                             ),

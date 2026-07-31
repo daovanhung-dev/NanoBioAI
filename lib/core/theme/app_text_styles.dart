@@ -85,125 +85,125 @@ class AppTextStyles {
   );
 
   static TextStyle get bodyLarge => _base(
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: FontWeight.w400,
     height: 1.55,
     color: AppColors.textPrimary,
   );
   static TextStyle get bodyMedium => _base(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
-    height: 1.52,
+    height: 1.5,
     color: AppColors.textSecondary,
   );
   static TextStyle get bodySmall => _base(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.48,
     color: AppColors.textMuted,
   );
   static TextStyle get bodyEmphasis => _base(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w600,
-    height: 1.5,
+    height: 1.48,
     color: AppColors.textPrimary,
   );
 
   static TextStyle get labelLarge => _base(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w700,
-    height: 1.25,
-    letterSpacing: .05,
+    height: 1.28,
+    letterSpacing: .02,
     color: AppColors.textPrimary,
   );
   static TextStyle get labelMedium => _base(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.w700,
-    height: 1.25,
-    letterSpacing: .15,
+    height: 1.28,
+    letterSpacing: .08,
     color: AppColors.textSecondary,
   );
   static TextStyle get labelSmall => _base(
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: FontWeight.w600,
-    height: 1.25,
-    letterSpacing: .25,
+    height: 1.28,
+    letterSpacing: .12,
     color: AppColors.textMuted,
   );
   static TextStyle get overline => _base(
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: FontWeight.w700,
-    height: 1.2,
-    letterSpacing: .75,
+    height: 1.25,
+    letterSpacing: .65,
     color: AppColors.textMuted,
   );
 
   static TextStyle get button => _base(
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: FontWeight.w700,
     height: 1.2,
     letterSpacing: .05,
     color: Colors.white,
   );
   static TextStyle get buttonSmall => _base(
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: FontWeight.w700,
     height: 1.2,
     color: Colors.white,
   );
   static TextStyle get buttonText => _base(
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: FontWeight.w700,
     height: 1.2,
     color: AppColors.primary,
   );
 
   static TextStyle get caption => _base(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.w400,
-    height: 1.42,
+    height: 1.45,
     color: AppColors.textMuted,
   );
   static TextStyle get helper => _base(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.w400,
-    height: 1.42,
+    height: 1.45,
     color: AppColors.textSecondary,
   );
   static TextStyle get chipLabel => _base(
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.w700,
-    height: 1.25,
+    height: 1.28,
     color: AppColors.textPrimary,
   );
   static TextStyle get inputLabel => _base(
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: FontWeight.w600,
     height: 1.25,
     color: AppColors.textSecondary,
   );
   static TextStyle get inputHint => _base(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.5,
     color: AppColors.textHint,
   );
   static TextStyle get appBarTitle => _base(
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: FontWeight.w700,
     height: 1.25,
     letterSpacing: -.1,
     color: AppColors.textPrimary,
   );
   static TextStyle get sectionTitle => _base(
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: FontWeight.w800,
     height: 1.3,
     letterSpacing: -.08,
     color: AppColors.textPrimary,
   );
   static TextStyle get sectionSubtitle => _base(
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.5,
     color: AppColors.textSecondary,

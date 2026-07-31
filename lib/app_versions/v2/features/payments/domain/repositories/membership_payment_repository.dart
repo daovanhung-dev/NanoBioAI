@@ -4,4 +4,8 @@ abstract class MembershipPaymentRepository {
   Future<MembershipPaymentRequest> createRequest(
     CreateMembershipPaymentRequestCommand command,
   );
+
+  Future<MembershipPaymentRequest?> fetchCurrentRequest();
+
+  Future<MembershipPaymentRequest> confirmTransfer(String paymentEventId);
 }

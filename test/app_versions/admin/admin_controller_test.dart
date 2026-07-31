@@ -60,6 +60,50 @@ void main() {
     });
 
     test(
+      'loads the payment-review alert for an Admin with payments access',
+      () async {
+        final repository = _FakeAdminRepository(
+          session: _operationsSession(),
+          paymentReviewAlert: const AdminPaymentReviewAlert(
+            pendingReviewCount: 2,
+          ),
+        );
+        final container = _container(repository);
+        addTearDown(container.dispose);
+
+        await container.read(adminControllerProvider.future);
+
+        final state = container.read(adminControllerProvider).requireValue;
+        expect(state.paymentReviewAlert.pendingReviewCount, 2);
+        expect(repository.paymentReviewAlertCalls, 1);
+
+        await container
+            .read(adminControllerProvider.notifier)
+            .refreshPaymentReviewAlert();
+
+        expect(repository.paymentReviewAlertCalls, 2);
+      },
+    );
+
+    test(
+      'does not request the payment alert without payments permission',
+      () async {
+        final repository = _FakeAdminRepository(session: _limitedSession());
+        final container = _container(repository);
+        addTearDown(container.dispose);
+
+        await container.read(adminControllerProvider.future);
+        await container
+            .read(adminControllerProvider.notifier)
+            .refreshPaymentReviewAlert();
+
+        final state = container.read(adminControllerProvider).requireValue;
+        expect(state.paymentReviewAlert, AdminPaymentReviewAlert.empty);
+        expect(repository.paymentReviewAlertCalls, 0);
+      },
+    );
+
+    test(
       'rejects admin login when Auth succeeds but role is missing',
       () async {
         final repository = _FakeAdminRepository(
@@ -140,14 +184,19 @@ AdminSession _limitedSession() {
 
 class _FakeAdminRepository implements AdminRepository {
   final AdminSession session;
+  final AdminPaymentReviewAlert paymentReviewAlert;
   final sectionItemCalls = <AdminPanelSection>[];
   final mutationCalls = <AdminMutationCommand>[];
   final dashboardTimeZones = <String>[];
   int dashboardSummaryCalls = 0;
+  int paymentReviewAlertCalls = 0;
   int auditEventCalls = 0;
   int signOutCalls = 0;
 
-  _FakeAdminRepository({required this.session});
+  _FakeAdminRepository({
+    required this.session,
+    this.paymentReviewAlert = AdminPaymentReviewAlert.empty,
+  });
 
   @override
   Stream<void> watchAuthChanges() => const Stream<void>.empty();
@@ -187,6 +236,12 @@ class _FakeAdminRepository implements AdminRepository {
         targetSection: 'users',
       ),
     ];
+  }
+
+  @override
+  Future<AdminPaymentReviewAlert> fetchPaymentReviewAlert() async {
+    paymentReviewAlertCalls++;
+    return paymentReviewAlert;
   }
 
   @override

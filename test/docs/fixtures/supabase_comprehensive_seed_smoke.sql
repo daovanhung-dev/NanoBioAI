@@ -526,14 +526,23 @@ begin
 end
 $$;
 
--- The A -> B -> C fixture is direct-only: a succeeded payment by C pays B at
--- 10%, never A or any other upstream Sale account.
+-- Sale A has a complete direct-customer fixture while A -> B -> C remains
+-- direct-only: a succeeded payment by C pays B at 10%, never A.
 do $$
 declare
   v_sale_a uuid;
   v_sale_b uuid;
   v_customer_c uuid;
   v_direct_commissions integer;
+  v_sale_state record;
+  v_payout record;
+  v_dashboard record;
+  v_customer_count integer;
+  v_ready_payments integer;
+  v_pending_payments integer;
+  v_prospect_payments integer;
+  v_ready_ledger_count integer;
+  v_conversion_count integer;
   v_status text;
 begin
   foreach v_status in array array['pending', 'active', 'suspended', 'closed']
@@ -635,6 +644,54 @@ begin
        )
   ) then
     raise exception 'COMPREHENSIVE_SEED_REFERRAL_FRAUD_STATE';
+  end if;
+
+  perform set_config('request.jwt.claim.sub', v_sale_a::text, true);
+  execute 'set local role authenticated';
+
+  select * into v_sale_state from public.get_my_sale_state() limit 1;
+  select * into v_payout from public.get_my_sale_payout_profile() limit 1;
+  select * into v_dashboard from public.get_my_sale_dashboard() limit 1;
+  select count(*) into v_customer_count from public.get_my_sale_direct_customers();
+  select successful_payments into v_ready_payments
+  from public.get_my_sale_direct_customers()
+  where display_name = 'Fixture Sale A Customer Ready';
+  select successful_payments into v_pending_payments
+  from public.get_my_sale_direct_customers()
+  where display_name = 'Fixture Sale A Customer Pending';
+  select successful_payments into v_prospect_payments
+  from public.get_my_sale_direct_customers()
+  where display_name = 'Fixture Sale A Customer Prospect';
+  select count(*) into v_ready_ledger_count
+  from public.get_my_sale_point_ledger()
+  where customer_name = 'Fixture Sale A Customer Ready'
+    and status = 'approved';
+  select count(*) into v_conversion_count from public.get_my_sale_conversions();
+
+  execute 'reset role';
+
+  if v_sale_state.sale_status <> 'active'
+     or v_sale_state.referral_code <> 'FIXTURE-A'
+     or v_sale_state.payout_profile_complete is not true
+     or v_payout.bank_account_name <> 'FIXTURE SALE A' then
+    raise exception 'COMPREHENSIVE_SEED_SALE_A_STATE_OR_PAYOUT_MISSING';
+  end if;
+  if v_dashboard.direct_customers <> 4
+     or v_dashboard.successful_payments <> 4
+     or v_dashboard.pending_point_cents <> 199000
+     or v_dashboard.approved_point_cents <> 3097000
+     or v_dashboard.converted_point_cents <> 2500000
+     or v_dashboard.available_point_cents <> 597000 then
+    raise exception 'COMPREHENSIVE_SEED_SALE_A_DASHBOARD_MISMATCH';
+  end if;
+  if v_customer_count <> 4
+     or v_ready_payments <> 3
+     or v_pending_payments <> 1
+     or v_prospect_payments <> 0 then
+    raise exception 'COMPREHENSIVE_SEED_SALE_A_CUSTOMERS_MISMATCH';
+  end if;
+  if v_ready_ledger_count <> 3 or v_conversion_count < 6 then
+    raise exception 'COMPREHENSIVE_SEED_SALE_A_LEDGER_OR_CONVERSIONS_MISSING';
   end if;
 end
 $$;

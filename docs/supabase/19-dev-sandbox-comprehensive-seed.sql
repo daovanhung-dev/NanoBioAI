@@ -111,7 +111,10 @@ with fixture_users as (
       ('11000000-0000-4000-8000-000000000027'::uuid, '21000000-0000-4000-8000-000000000027'::uuid, 'dev.fixture.admin.content@nanobio.local', 'Fixture Content Admin', 'email', false),
       ('11000000-0000-4000-8000-000000000028'::uuid, '21000000-0000-4000-8000-000000000028'::uuid, 'dev.fixture.admin.operations@nanobio.local', 'Fixture Operations Admin', 'email', false),
       ('11000000-0000-4000-8000-000000000029'::uuid, '21000000-0000-4000-8000-000000000029'::uuid, 'dev.fixture.admin.only@nanobio.local', 'Fixture Admin Only', 'email', false),
-      ('11000000-0000-4000-8000-000000000030'::uuid, '21000000-0000-4000-8000-000000000030'::uuid, 'dev.fixture.admin.revoked@nanobio.local', 'Fixture Revoked Admin', 'email', false)
+      ('11000000-0000-4000-8000-000000000030'::uuid, '21000000-0000-4000-8000-000000000030'::uuid, 'dev.fixture.admin.revoked@nanobio.local', 'Fixture Revoked Admin', 'email', false),
+      ('11000000-0000-4000-8000-000000000031'::uuid, '21000000-0000-4000-8000-000000000031'::uuid, 'dev.fixture.sale.a.ready@nanobio.local', 'Fixture Sale A Customer Ready', 'email', false),
+      ('11000000-0000-4000-8000-000000000032'::uuid, '21000000-0000-4000-8000-000000000032'::uuid, 'dev.fixture.sale.a.pending@nanobio.local', 'Fixture Sale A Customer Pending', 'email', false),
+      ('11000000-0000-4000-8000-000000000033'::uuid, '21000000-0000-4000-8000-000000000033'::uuid, 'dev.fixture.sale.a.prospect@nanobio.local', 'Fixture Sale A Customer Prospect', 'email', false)
   ) as t(user_id, identity_id, email, full_name, provider, is_anonymous)
 )
 insert into auth.users (
@@ -189,7 +192,10 @@ with fixture_users as (
       ('11000000-0000-4000-8000-000000000027'::uuid, '21000000-0000-4000-8000-000000000027'::uuid, 'dev.fixture.admin.content@nanobio.local', 'Fixture Content Admin', 'email'),
       ('11000000-0000-4000-8000-000000000028'::uuid, '21000000-0000-4000-8000-000000000028'::uuid, 'dev.fixture.admin.operations@nanobio.local', 'Fixture Operations Admin', 'email'),
       ('11000000-0000-4000-8000-000000000029'::uuid, '21000000-0000-4000-8000-000000000029'::uuid, 'dev.fixture.admin.only@nanobio.local', 'Fixture Admin Only', 'email'),
-      ('11000000-0000-4000-8000-000000000030'::uuid, '21000000-0000-4000-8000-000000000030'::uuid, 'dev.fixture.admin.revoked@nanobio.local', 'Fixture Revoked Admin', 'email')
+      ('11000000-0000-4000-8000-000000000030'::uuid, '21000000-0000-4000-8000-000000000030'::uuid, 'dev.fixture.admin.revoked@nanobio.local', 'Fixture Revoked Admin', 'email'),
+      ('11000000-0000-4000-8000-000000000031'::uuid, '21000000-0000-4000-8000-000000000031'::uuid, 'dev.fixture.sale.a.ready@nanobio.local', 'Fixture Sale A Customer Ready', 'email'),
+      ('11000000-0000-4000-8000-000000000032'::uuid, '21000000-0000-4000-8000-000000000032'::uuid, 'dev.fixture.sale.a.pending@nanobio.local', 'Fixture Sale A Customer Pending', 'email'),
+      ('11000000-0000-4000-8000-000000000033'::uuid, '21000000-0000-4000-8000-000000000033'::uuid, 'dev.fixture.sale.a.prospect@nanobio.local', 'Fixture Sale A Customer Prospect', 'email')
   ) as t(user_id, identity_id, email, full_name, provider)
 )
 insert into auth.identities (
@@ -225,7 +231,16 @@ set
     when '11000000-0000-4000-8000-000000000018'::uuid then '+84900000018'
     when '11000000-0000-4000-8000-000000000019'::uuid then '+84900000019'
     when '11000000-0000-4000-8000-000000000020'::uuid then '+84900000020'
+    when '11000000-0000-4000-8000-000000000031'::uuid then '+84900000031'
+    when '11000000-0000-4000-8000-000000000032'::uuid then '+84900000032'
+    when '11000000-0000-4000-8000-000000000033'::uuid then '+84900000033'
     else phone
+  end,
+  birth_year = case id
+    when '11000000-0000-4000-8000-000000000031'::uuid then 1990
+    when '11000000-0000-4000-8000-000000000032'::uuid then 1987
+    when '11000000-0000-4000-8000-000000000033'::uuid then 1995
+    else birth_year
   end,
   onboarding_status = case id
     when '11000000-0000-4000-8000-000000000002'::uuid then 'not_started'::public.nb_onboarding_status
@@ -257,7 +272,7 @@ set
   updated_at = now()
 where id between
   '11000000-0000-4000-8000-000000000001'::uuid and
-  '11000000-0000-4000-8000-000000000030'::uuid;
+  '11000000-0000-4000-8000-000000000033'::uuid;
 
 -- Make the historical Admin a dual-surface account; its super_admin role is
 -- created by the legacy bootstrap and remains the stable Storage uploader.
@@ -288,6 +303,9 @@ values
   ('31000000-0000-4000-8000-000000000018'::uuid, '11000000-0000-4000-8000-000000000018'::uuid, 'plus', 'active', 'manual', now() - interval '7 days', now() + interval '30 days', now() - interval '7 days', now() + interval '30 days', 'fixture', 'sale-a-v1', '{"fixture":true,"scenario":"sale-a"}'::jsonb),
   ('31000000-0000-4000-8000-000000000019'::uuid, '11000000-0000-4000-8000-000000000019'::uuid, 'plus', 'active', 'manual', now() - interval '7 days', now() + interval '30 days', now() - interval '7 days', now() + interval '30 days', 'fixture', 'sale-b-v1', '{"fixture":true,"scenario":"sale-b"}'::jsonb),
   ('31000000-0000-4000-8000-000000000020'::uuid, '11000000-0000-4000-8000-000000000020'::uuid, 'plus', 'active', 'manual', now() - interval '7 days', now() + interval '30 days', now() - interval '7 days', now() + interval '30 days', 'fixture', 'sale-c-v1', '{"fixture":true,"scenario":"sale-c"}'::jsonb),
+  ('31000000-0000-4000-8000-000000000031'::uuid, '11000000-0000-4000-8000-000000000031'::uuid, 'plus', 'active', 'payment_provider', now() - interval '90 days', now() + interval '30 days', now() - interval '30 days', now() + interval '30 days', 'fixture', 'sale-a-customer-ready-v1', '{"fixture":true,"scenario":"sale-a-customer-ready"}'::jsonb),
+  ('31000000-0000-4000-8000-000000000032'::uuid, '11000000-0000-4000-8000-000000000032'::uuid, 'plus', 'active', 'payment_provider', now() - interval '3 days', now() + interval '27 days', now() - interval '3 days', now() + interval '27 days', 'fixture', 'sale-a-customer-pending-v1', '{"fixture":true,"scenario":"sale-a-customer-pending"}'::jsonb),
+  ('31000000-0000-4000-8000-000000000033'::uuid, '11000000-0000-4000-8000-000000000033'::uuid, 'free', 'active', 'manual', now() - interval '1 day', now() + interval '30 days', now() - interval '1 day', now() + interval '30 days', 'fixture', 'sale-a-customer-prospect-v1', '{"fixture":true,"scenario":"sale-a-customer-prospect"}'::jsonb),
   ('31000000-0000-4000-8000-000000000024'::uuid, '11000000-0000-4000-8000-000000000024'::uuid, 'free', 'active', 'manual', now() - interval '7 days', now() + interval '30 days', now() - interval '7 days', now() + interval '30 days', 'fixture', 'wellness-v1', '{"fixture":true,"scenario":"wellness"}'::jsonb)
 on conflict (id) do update
 set
@@ -982,8 +1000,9 @@ set
 
 
 -- ---------------------------------------------------------------------------
--- Sale: A -> B -> Customer C. C's succeeded payment produces the only
--- direct 10% commission for B; no seed creates an upstream commission.
+-- Sale A has direct customer fixtures for its dashboard, customer list and
+-- point ledger. The independent A -> B -> Customer C chain remains direct-only:
+-- C's succeeded payment produces the only 10% commission for B, never A.
 -- ---------------------------------------------------------------------------
 
 insert into public.sale_profiles (
@@ -1040,6 +1059,27 @@ values
     '11000000-0000-4000-8000-000000000021'::uuid,
     'FIXTURE-A', now() - interval '1 day', 'manual_admin', 'voided',
     'fixture-referral-voided', '{"fixture":true,"scenario":"voided"}'::jsonb
+  ),
+  (
+    '62000000-0000-4000-8000-000000000004'::uuid,
+    '11000000-0000-4000-8000-000000000018'::uuid,
+    '11000000-0000-4000-8000-000000000031'::uuid,
+    'FIXTURE-A', now() - interval '90 days', 'signup', 'active',
+    'fixture-referral-a-ready', '{"fixture":true,"scenario":"sale-a-ready-customer","direct_only":true}'::jsonb
+  ),
+  (
+    '62000000-0000-4000-8000-000000000005'::uuid,
+    '11000000-0000-4000-8000-000000000018'::uuid,
+    '11000000-0000-4000-8000-000000000032'::uuid,
+    'FIXTURE-A', now() - interval '3 days', 'signup', 'active',
+    'fixture-referral-a-pending', '{"fixture":true,"scenario":"sale-a-pending-customer","direct_only":true}'::jsonb
+  ),
+  (
+    '62000000-0000-4000-8000-000000000006'::uuid,
+    '11000000-0000-4000-8000-000000000018'::uuid,
+    '11000000-0000-4000-8000-000000000033'::uuid,
+    'FIXTURE-A', now() - interval '1 day', 'signup', 'active',
+    'fixture-referral-a-prospect', '{"fixture":true,"scenario":"sale-a-prospect-customer","direct_only":true}'::jsonb
   )
 on conflict (id) do update
 set
@@ -1105,6 +1145,46 @@ values
     'VND', 'failed', null, null, null, 'Fixture payment failed',
     'fixture-payment-failed-v1', 'fixture-payment-hash-failed',
     '{"fixture":true}'::jsonb
+  ),
+  (
+    '63000000-0000-4000-8000-000000000006'::uuid,
+    '11000000-0000-4000-8000-000000000031'::uuid,
+    '31000000-0000-4000-8000-000000000031'::uuid,
+    'plus', 'fixture', 'payment-a-ready-1-v1', 3990000, 3990000, 3990000,
+    'VND', 'succeeded', now() - interval '70 days',
+    '10000000-0000-4000-8000-000000000104'::uuid, now() - interval '70 days',
+    'Fixture Sale A customer renewal 1', 'fixture-payment-a-ready-1-v1',
+    'fixture-payment-hash-a-ready-1', '{"fixture":true,"sale":"A","scenario":"ready"}'::jsonb
+  ),
+  (
+    '63000000-0000-4000-8000-000000000007'::uuid,
+    '11000000-0000-4000-8000-000000000031'::uuid,
+    '31000000-0000-4000-8000-000000000031'::uuid,
+    'plus', 'fixture', 'payment-a-ready-2-v1', 3990000, 3990000, 3990000,
+    'VND', 'succeeded', now() - interval '40 days',
+    '10000000-0000-4000-8000-000000000104'::uuid, now() - interval '40 days',
+    'Fixture Sale A customer renewal 2', 'fixture-payment-a-ready-2-v1',
+    'fixture-payment-hash-a-ready-2', '{"fixture":true,"sale":"A","scenario":"ready"}'::jsonb
+  ),
+  (
+    '63000000-0000-4000-8000-000000000008'::uuid,
+    '11000000-0000-4000-8000-000000000031'::uuid,
+    '31000000-0000-4000-8000-000000000031'::uuid,
+    'plus', 'fixture', 'payment-a-ready-3-v1', 3990000, 3990000, 3990000,
+    'VND', 'succeeded', now() - interval '10 days',
+    '10000000-0000-4000-8000-000000000104'::uuid, now() - interval '10 days',
+    'Fixture Sale A customer renewal 3', 'fixture-payment-a-ready-3-v1',
+    'fixture-payment-hash-a-ready-3', '{"fixture":true,"sale":"A","scenario":"ready"}'::jsonb
+  ),
+  (
+    '63000000-0000-4000-8000-000000000009'::uuid,
+    '11000000-0000-4000-8000-000000000032'::uuid,
+    '31000000-0000-4000-8000-000000000032'::uuid,
+    'plus', 'fixture', 'payment-a-pending-v1', 1990000, 1990000, 1990000,
+    'VND', 'succeeded', now() - interval '1 hour',
+    '10000000-0000-4000-8000-000000000104'::uuid, now() - interval '1 hour',
+    'Fixture Sale A customer recent payment', 'fixture-payment-a-pending-v1',
+    'fixture-payment-hash-a-pending', '{"fixture":true,"sale":"A","scenario":"pending"}'::jsonb
   )
 on conflict (provider, provider_event_id) do update
 set
@@ -1114,7 +1194,9 @@ set
 
 -- This direct insert supplies historical lifecycle rows for non-succeeded
 -- payments. The succeeded C event receives its pending B commission through
--- the database trigger above and is never assigned to Sale A.
+-- the database trigger above and is never assigned to Sale A. Sale A's ready
+-- customer commission rows are also created by that trigger, then promoted to
+-- available fixture history below.
 insert into public.commission_records (
   id, payment_event_id, receiver_user_id, payer_user_id, source_referral_id,
   rate, amount_cents, currency, status, available_at
@@ -1147,6 +1229,15 @@ on conflict (payment_event_id, receiver_user_id) do update
 set status = excluded.status, available_at = excluded.available_at,
     amount_cents = excluded.amount_cents, updated_at = now();
 
+update public.commission_records
+set status = 'approved', available_at = now() - interval '1 day', updated_at = now()
+where receiver_user_id = '11000000-0000-4000-8000-000000000018'::uuid
+  and payment_event_id in (
+    '63000000-0000-4000-8000-000000000006'::uuid,
+    '63000000-0000-4000-8000-000000000007'::uuid,
+    '63000000-0000-4000-8000-000000000008'::uuid
+  );
+
 insert into public.sale_payout_profiles (
   sale_user_id, citizen_id, bank_bin, bank_name, bank_account_number,
   bank_account_name, updated_by, metadata
@@ -1171,7 +1262,7 @@ values
   (
     '65000000-0000-4000-8000-000000000001'::uuid,
     '11000000-0000-4000-8000-000000000018'::uuid,
-    2000000, 'VND', 'approved', 'Fixture point credit',
+    1900000, 'VND', 'approved', 'Fixture point credit',
     '10000000-0000-4000-8000-000000000104'::uuid,
     'fixture-sale-point-credit-v1', '{"fixture":true}'::jsonb
   ),

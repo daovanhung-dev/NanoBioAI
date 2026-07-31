@@ -400,6 +400,60 @@ void main() {
       expect(() => adminRpcParamsFor(command), throwsUnsupportedError);
     });
   });
+
+  group('payment review contracts', () {
+    test(
+      'maps server-owned transfer details from the payment list response',
+      () {
+        final item = AdminWorkItem.fromMap({
+          'id': 'payment-1',
+          'title': 'Plus',
+          'subtitle': 'Nguyen Van A',
+          'status': 'pending_review',
+          'section': 'payments',
+          'created_at': '2026-07-31T08:00:00Z',
+          'transfer_reference': 'NB12AB34CD56EF',
+          'transfer_memo': 'NB12AB34CD56EF NGUYEN VAN A',
+          'payer_full_name': 'Nguyễn Văn A',
+          'amount_cents': 99000,
+          'currency': 'VND',
+          'transfer_confirmed_at': '2026-07-31T08:12:00Z',
+        });
+
+        final details = item.paymentReconciliation;
+        expect(details, isNotNull);
+        expect(details!.transferReference, 'NB12AB34CD56EF');
+        expect(details.transferMemo, 'NB12AB34CD56EF NGUYEN VAN A');
+        expect(details.payerFullName, 'Nguyễn Văn A');
+        expect(details.amountCents, 99000);
+        expect(details.currency, 'VND');
+        expect(
+          details.transferConfirmedAt,
+          DateTime.parse('2026-07-31T08:12:00Z'),
+        );
+      },
+    );
+
+    test(
+      'allows a payment review only after customer confirmation or legacy pending',
+      () {
+        expect(adminPaymentStatusCanBeReviewed('pending_review'), isTrue);
+        expect(adminPaymentStatusCanBeReviewed(' pending '), isTrue);
+        expect(adminPaymentStatusCanBeReviewed('awaiting_transfer'), isFalse);
+        expect(adminPaymentStatusCanBeReviewed('succeeded'), isFalse);
+        expect(adminPaymentStatusCanBeReviewed('pending_reversal'), isFalse);
+      },
+    );
+
+    test('normalizes an invalid negative payment alert count to zero', () {
+      final alert = AdminPaymentReviewAlert.fromMap({
+        'pending_review_count': -1,
+      });
+
+      expect(alert.pendingReviewCount, 0);
+      expect(alert.hasPendingReviews, isFalse);
+    });
+  });
 }
 
 AdminSession _session({

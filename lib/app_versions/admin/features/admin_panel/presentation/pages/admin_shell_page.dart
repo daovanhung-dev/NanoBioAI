@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,8 +10,9 @@ import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/co
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'package:nano_app/app_versions/admin/features/wellness_rewards/wellness_rewards_admin.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
-import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/core/localization/vietnam_time.dart';
+import 'package:nano_app/core/payments/viet_qr_payload_builder.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -35,23 +38,55 @@ class AdminShellPage extends ConsumerStatefulWidget {
   ConsumerState<AdminShellPage> createState() => _AdminShellPageState();
 }
 
-class _AdminShellPageState extends ConsumerState<AdminShellPage> {
+class _AdminShellPageState extends ConsumerState<AdminShellPage>
+    with WidgetsBindingObserver {
   final _search = TextEditingController();
+  Timer? _paymentReviewRefreshTimer;
+  var _paymentReviewRefreshInFlight = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref
           .read(adminControllerProvider.notifier)
           .selectSection(widget.initialSection);
+      _refreshPaymentReviewAlert();
     });
+    _paymentReviewRefreshTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _refreshPaymentReviewAlert(),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshPaymentReviewAlert();
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _paymentReviewRefreshTimer?.cancel();
     _search.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshPaymentReviewAlert() async {
+    if (!mounted || _paymentReviewRefreshInFlight) return;
+
+    _paymentReviewRefreshInFlight = true;
+    try {
+      await ref
+          .read(adminControllerProvider.notifier)
+          .refreshPaymentReviewAlert();
+    } finally {
+      _paymentReviewRefreshInFlight = false;
+    }
   }
 
   @override
@@ -193,6 +228,17 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage> {
                                         : null,
                                     onSignOut: _signOut,
                                   ),
+                                  if (data.session.hasPermission(
+                                        AdminPermissions.paymentsWrite,
+                                      ) &&
+                                      data.paymentReviewAlert.hasPendingReviews)
+                                    _PaymentReviewAlertBanner(
+                                      pendingReviewCount: data
+                                          .paymentReviewAlert
+                                          .pendingReviewCount,
+                                      onOpenPayments: () =>
+                                          context.go(AdminRoutePaths.payments),
+                                    ),
                                   Expanded(
                                     child: _AdminContent(
                                       state: data,
@@ -1475,6 +1521,106 @@ class _TopBarIconAction extends StatelessWidget {
   }
 }
 
+class _PaymentReviewAlertBanner extends StatelessWidget {
+  final int pendingReviewCount;
+  final VoidCallback onOpenPayments;
+
+  const _PaymentReviewAlertBanner({
+    required this.pendingReviewCount,
+    required this.onOpenPayments,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final countLabel = '$pendingReviewCount yêu cầu thanh toán đang chờ duyệt';
+
+    return Semantics(
+      button: true,
+      label: countLabel,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onOpenPayments,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xl,
+              vertical: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.warningSoft,
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.warning.withValues(alpha: .28),
+                ),
+              ),
+            ),
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSpacing.md,
+              runSpacing: AppSpacing.sm,
+              children: [
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    Container(
+                      width: 30,
+                      height: 30,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: AppColors.warning,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        pendingReviewCount.toString(),
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.textInverse,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 620),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            countLabel,
+                            style: AppTextStyles.labelLarge.copyWith(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            'Khách đã báo đã chuyển khoản. Mở hàng chờ để đối chiếu mã giao dịch trong ứng dụng VCB.',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                TextButton.icon(
+                  onPressed: onOpenPayments,
+                  icon: const Icon(Icons.payments_rounded, size: 18),
+                  label: const Text('Mở thanh toán'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AdminContent extends StatelessWidget {
   final AdminPanelState state;
   final void Function(
@@ -2117,6 +2263,11 @@ class _WorkItemRow extends StatelessWidget {
                 item: item,
                 onAction: onAction,
               );
+              final paymentDetail =
+                  section == AdminPanelSection.payments &&
+                      item.paymentReconciliation != null
+                  ? _PaymentReconciliationDetail(item: item)
+                  : null;
               final payoutDetail = section == AdminPanelSection.saleConversions
                   ? _SaleConversionPayoutDetail(item: item)
                   : null;
@@ -2126,6 +2277,10 @@ class _WorkItemRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     header,
+                    if (paymentDetail != null) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      paymentDetail,
+                    ],
                     if (payoutDetail != null) ...[
                       const SizedBox(height: AppSpacing.md),
                       payoutDetail,
@@ -2151,6 +2306,10 @@ class _WorkItemRow extends StatelessWidget {
                       ],
                     ],
                   ),
+                  if (paymentDetail != null) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    paymentDetail,
+                  ],
                   if (payoutDetail != null) ...[
                     const SizedBox(height: AppSpacing.md),
                     payoutDetail,
@@ -2160,6 +2319,72 @@ class _WorkItemRow extends StatelessWidget {
             },
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PaymentReconciliationDetail extends StatelessWidget {
+  final AdminWorkItem item;
+
+  const _PaymentReconciliationDetail({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final details = item.paymentReconciliation;
+    if (details == null) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.warningSoft,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.warning.withValues(alpha: .24)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.account_balance_rounded,
+                size: 18,
+                color: AppColors.warning,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text('Đối chiếu chuyển khoản', style: AppTextStyles.labelLarge),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Kiểm tra giao dịch trong ứng dụng VCB trước khi duyệt hoặc từ chối.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _PayoutLine(label: 'Mã giao dịch', value: details.transferReference),
+          _PayoutLine(
+            label: 'Nội dung chuyển khoản',
+            value: details.transferMemo,
+          ),
+          _PayoutLine(label: 'Khách hàng', value: details.payerFullName),
+          if (details.amountCents != null)
+            _PayoutLine(
+              label: 'Số tiền',
+              value: _formatMoney(
+                details.amountCents!,
+                details.currency ?? 'VND',
+              ),
+            ),
+          if (details.transferConfirmedAt != null)
+            _PayoutLine(
+              label: 'Khách xác nhận lúc',
+              value: _formatDateTime(details.transferConfirmedAt),
+            ),
+        ],
       ),
     );
   }
@@ -2187,22 +2412,14 @@ class _SaleConversionPayoutDetail extends StatelessWidget {
     final currency = _metadataString(metadata, 'currency') ?? 'VND';
     final amount = _metadataInt(metadata, 'money_amount_cents');
     final qrPayload =
-        _buildVietQrPayload(
+        VietQrPayloadBuilder.build(
           bankBin: bankBin,
           accountNumber: accountNumber,
           accountName: accountName,
           amount: amount,
-          content: content,
+          transferMemo: content,
         ) ??
-        _metadataString(metadata, 'vietqr_payload') ??
-        _buildFallbackQrPayload(
-          bankBin: bankBin,
-          accountNumber: accountNumber,
-          accountName: accountName,
-          amount: amount,
-          currency: currency,
-          content: content,
-        );
+        _metadataString(metadata, 'vietqr_payload');
 
     if (bankBin == null &&
         bankName == null &&
@@ -3443,8 +3660,7 @@ extension _AdminPanelSectionUi on AdminPanelSection {
       AdminPanelSection.users when normalized.contains('suspended') =>
         all.where((action) => action.key == 'active').toList(growable: false),
       AdminPanelSection.payments
-          when !normalized.contains('pending') &&
-              !normalized.contains('review') =>
+          when !adminPaymentStatusCanBeReviewed(normalized) =>
         const [],
       AdminPanelSection.sales when normalized.contains('closed') => const [],
       AdminPanelSection.sales when normalized.contains('pending') =>
@@ -3499,6 +3715,9 @@ String _metricLabel(AdminDashboardMetric metric) {
 
 String _statusLabel(String status) {
   final normalized = status.toLowerCase();
+  if (normalized.contains('awaiting_transfer')) {
+    return 'Chờ khách chuyển khoản';
+  }
   if (normalized.contains('pending_review')) return 'Đang chờ duyệt';
   if (normalized.contains('needs_follow_up')) return 'Cần theo dõi';
   if (normalized.contains('requested')) return 'Đã yêu cầu';
@@ -3583,78 +3802,6 @@ int _metadataInt(Map<String, Object?> metadata, String key) {
   if (value is int) return value;
   if (value is num) return value.toInt();
   return int.tryParse(value?.toString() ?? '') ?? 0;
-}
-
-String? _buildVietQrPayload({
-  required String? bankBin,
-  required String? accountNumber,
-  required String? accountName,
-  required int amount,
-  required String content,
-}) {
-  if (bankBin == null ||
-      accountNumber == null ||
-      accountName == null ||
-      amount <= 0) {
-    return null;
-  }
-
-  final beneficiary = _emv('00', bankBin) + _emv('01', accountNumber);
-  final merchantAccount =
-      "${_emv('00', 'A000000727')}${_emv('01', beneficiary)}${_emv('02', 'QRIBFTTA')}";
-  final additionalData = _emv('08', _qrAscii(content, maxLength: 40));
-  final raw =
-      "${_emv('00', '01')}${_emv('01', '12')}${_emv('38', merchantAccount)}${_emv('53', '704')}${_emv('54', amount.toString())}${_emv('58', 'VN')}${_emv('59', _qrAscii(accountName, maxLength: 25))}${_emv('62', additionalData)}6304";
-  return '$raw${_crc16Ccitt(raw)}';
-}
-
-String _emv(String id, String value) {
-  final length = value.length.toString().padLeft(2, '0');
-  return '$id$length$value';
-}
-
-String _qrAscii(String value, {required int maxLength}) {
-  final ascii = value
-      .toUpperCase()
-      .replaceAll(RegExp(r'[^A-Z0-9 ]'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-  if (ascii.isEmpty) return 'NANOBIO';
-  return ascii.length <= maxLength ? ascii : ascii.substring(0, maxLength);
-}
-
-String _crc16Ccitt(String input) {
-  var crc = 0xFFFF;
-  for (final unit in input.codeUnits) {
-    crc ^= unit << 8;
-    for (var i = 0; i < 8; i++) {
-      crc = (crc & 0x8000) != 0 ? (crc << 1) ^ 0x1021 : crc << 1;
-      crc &= 0xFFFF;
-    }
-  }
-  return crc.toRadixString(16).toUpperCase().padLeft(4, '0');
-}
-
-String? _buildFallbackQrPayload({
-  required String? bankBin,
-  required String? accountNumber,
-  required String? accountName,
-  required int amount,
-  required String currency,
-  required String content,
-}) {
-  if (bankBin == null || accountNumber == null || accountName == null) {
-    return null;
-  }
-  return [
-    'VIETQR',
-    bankBin,
-    accountNumber,
-    accountName,
-    amount.toString(),
-    currency,
-    content,
-  ].join('|');
 }
 
 String _formatMoney(int amount, String currency) {

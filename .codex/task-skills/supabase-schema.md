@@ -2,30 +2,33 @@
 
 - Canonical key: supabase-schema
 - Workflow: .codex/workflows/supabase-schema.md
-- Generated from 10 worklog(s).
+- Generated from 13 worklog(s).
 
 ## When To Read
 
-- Historical task type: coding + Supabase schema draft + tests + DD/checklist docs (1)
-- Historical task type: coding + test + docs-context (1)
-- Historical task type: coding + Supabase schema draft + Admin UI + tests + docs (1)
 - Historical task type: Mo rong fixture Supabase local/sandbox, tai lieu va contract test. (1)
 - Historical task type: coding/bugfix/test/docs (1)
+- Historical task type: coding + Supabase schema draft + Admin UI + tests + docs (1)
+- Historical task type: coding + Supabase contract + test + DD/docs. (1)
+- Historical task type: bugfix + test (1)
+- Historical task type: Supabase schema/seed fixture va smoke test (1)
+- Historical task type: coding + Supabase schema draft + tests + DD/checklist docs (1)
+- Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)
 - Historical task type: docs-context / audit checklist (1)
 - Historical task type: docs/coding (1)
-- Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)
+- Historical task type: coding + test + docs-context (1)
 - Historical task type: coding + Supabase schema draft + test/docs. (1)
 - Historical task type: coding + Supabase schema draft + test/docs (1)
 
 ## Common Modules
 
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
-- M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
-- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
 - Auth, subscription/quota, FamilyPlus, Sale, Admin, Wellness/reward, Nabi va Storage proof.: 1
 - M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M09 SCHEDULE_NOTIFICATIONS, M15 ADMIN_DASHBOARD: 1
-- DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
-- Supabase database, membership, quota, FamilyPlus, Sale/referral: 1
+- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
+- M13 PAYMENT_MEMBERSHIP và Admin payment queue.: 1
+- Sale/referral dashboard va direct customers: 1
+- Sale/referral, M12 va M14: 1
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
 - unknown: 1
 
 ## Work Pattern
@@ -54,3 +57,5 @@
 - [Worklog - Sale Module Production Policy](../../docs/worklog/2026-06-29/008-worklog-sale-module-production-policy.md) - M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue
 - [Worklog - Ưu tiên Admin, khôi phục luồng AI và harden thông báo](../../docs/worklog/2026-07-19/001-worklog-admin-ai-notification-reliability.md) - M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M09 SCHEDULE_NOTIFICATIONS, M15 ADMIN_DASHBOARD
 - [Worklog - Supabase comprehensive sandbox fixture](../../docs/worklog/2026-07-28/001-worklog-supabase-comprehensive-sandbox-fixture.md) - Auth, subscription/quota, FamilyPlus, Sale, Admin, Wellness/reward, Nabi va Storage proof.
+- [Worklog - Sale A sandbox seed](../../docs/worklog/2026-07-28/002-worklog-sale-a-sandbox-seed.md) - Sale/referral, M12 va M14
+- [Worklog - Sale dashboard RPC permission](../../docs/worklog/2026-07-28/003-worklog-sale-dashboard-rpc-permission.md) - Sale/referral dashboard va direct customers

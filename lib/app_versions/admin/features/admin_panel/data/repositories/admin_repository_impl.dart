@@ -47,6 +47,11 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
+  Future<AdminPaymentReviewAlert> fetchPaymentReviewAlert() {
+    return datasource.fetchPaymentReviewAlert();
+  }
+
+  @override
   Future<List<AdminWorkItem>> fetchSectionItems({
     required AdminPanelSection section,
     required String query,

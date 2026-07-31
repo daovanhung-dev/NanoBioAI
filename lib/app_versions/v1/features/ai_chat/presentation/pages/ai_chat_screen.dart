@@ -554,7 +554,7 @@ class _ChatGptEmptyState extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Hỏi về ăn uống, ngủ, vận động, cảm xúc hoặc điều bạn bận tâm.',
+                'Hỏi ngắn gọn về điều bạn đang quan tâm.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textSecondary,
@@ -579,8 +579,8 @@ class _NamiHeroMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 82,
-      height: 82,
+      width: 72,
+      height: 72,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -604,7 +604,7 @@ class _NamiHeroMark extends StatelessWidget {
             gradient: AppGradients.ai,
             shape: BoxShape.circle,
           ),
-          child: const Icon(AppIcons.aiChat, color: Colors.white, size: 34),
+          child: const Icon(AppIcons.aiChat, color: Colors.white, size: 30),
         ),
       ),
     );
@@ -937,7 +937,7 @@ class _ChatComposerState extends State<_ChatComposer> {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    'Nabi có thể chưa luôn chính xác. Bạn hãy kiểm tra lại những thông tin quan trọng nhé.',
+                    'Kiểm tra lại thông tin quan trọng trước khi áp dụng.',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.textMuted,
@@ -980,8 +980,8 @@ class _SendButton extends StatelessWidget {
         child: AnimatedContainer(
           duration: AppDuration.fast,
           curve: Curves.easeOutCubic,
-          width: 40,
-          height: 40,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: background,
             shape: BoxShape.circle,

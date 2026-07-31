@@ -21,6 +21,8 @@ abstract class AdminRepository {
     required String timeZone,
   });
 
+  Future<AdminPaymentReviewAlert> fetchPaymentReviewAlert();
+
   Future<List<AdminWorkItem>> fetchSectionItems({
     required AdminPanelSection section,
     required String query,

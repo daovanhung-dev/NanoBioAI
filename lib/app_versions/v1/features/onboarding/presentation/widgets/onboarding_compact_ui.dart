@@ -106,11 +106,11 @@ class OnboardingChoiceGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final crossAxisCount = width >= 760
-            ? 4
-            : width >= 520
+        final crossAxisCount = width >= 900
             ? 3
-            : 2;
+            : width >= 600
+            ? 2
+            : 1;
 
         return GridView.builder(
           itemCount: options.length,
@@ -121,7 +121,7 @@ class OnboardingChoiceGrid extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
-            mainAxisExtent: dense ? 58 : 66,
+            mainAxisExtent: dense ? 66 : 76,
           ),
           itemBuilder: (context, index) {
             final option = options[index];
@@ -221,8 +221,8 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
                   child: Row(
                     children: [
                       Container(
-                        width: 29,
-                        height: 29,
+                        width: 36,
+                        height: 36,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: iconBackground,
@@ -230,7 +230,7 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
                         ),
                         child: Text(
                           widget.option.emoji,
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 19),
                         ),
                       ),
                       const SizedBox(width: 7),
@@ -250,8 +250,8 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
                       const SizedBox(width: 4),
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 160),
-                        width: 18,
-                        height: 18,
+                        width: 24,
+                        height: 24,
                         decoration: BoxDecoration(
                           color: widget.selected
                               ? Colors.white
@@ -262,7 +262,7 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
                           widget.selected
                               ? Icons.check_rounded
                               : Icons.add_rounded,
-                          size: 13,
+                          size: 17,
                           color: widget.selected
                               ? NabiPalette.royalBlue
                               : NabiPalette.royalBlue,

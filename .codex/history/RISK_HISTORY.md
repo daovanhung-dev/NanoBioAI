@@ -542,3 +542,18 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-28/001-worklog-supabase-comprehensive-sandbox-fixture.md :: - Rebuild Supabase va Storage smoke: SKIPPED - khong co Supabase disposable/local-sandbox da duoc xac nhan de chay thao tac destructive an toan.
 - docs/worklog/2026-07-28/001-worklog-supabase-comprehensive-sandbox-fixture.md :: ## Loi/Rui ro
 - docs/worklog/2026-07-28/001-worklog-supabase-comprehensive-sandbox-fixture.md :: - Can kiem tra tiep: Khi co URL/CLI/Docker Supabase disposable, chay rebuild, profile demo, Storage runner va smoke SQL rollback-only.
+- docs/worklog/2026-07-28/002-worklog-sale-a-sandbox-seed.md :: - `docker ps --format '{{.Names}}'`: SKIPPED - Docker daemon khong chay, nen chua the rebuild Supabase va chay smoke SQL thuc te.
+- docs/worklog/2026-07-28/002-worklog-sale-a-sandbox-seed.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-28/002-worklog-sale-a-sandbox-seed.md :: - Chua fix: Khong co bang chung runtime Supabase trong phien do Docker daemon khong san sang.
+- docs/worklog/2026-07-28/002-worklog-sale-a-sandbox-seed.md :: - Can kiem tra tiep: Rebuild local/sandbox bang `config.sql`, sau do chay smoke SQL va demo profile neu can kiem thu nut quy doi.
+- docs/worklog/2026-07-28/003-worklog-sale-dashboard-rpc-permission.md :: - Fixture Sale A REST RPC smoke: FAIL nhu ky vong truoc deploy, hai RPC tra
+- docs/worklog/2026-07-28/003-worklog-sale-dashboard-rpc-permission.md :: - Fixture Sale A app smoke tren may that `12b304f9`: FAIL nhu ky vong, ca Tong
+- docs/worklog/2026-07-28/003-worklog-sale-dashboard-rpc-permission.md :: - SQL Editor/CLI/Postgres rollout trong workspace: BLOCKED truoc khi nguoi dung
+- docs/worklog/2026-07-28/003-worklog-sale-dashboard-rpc-permission.md :: ## Loi/Rui ro
+- docs/worklog/2026-07-28/003-worklog-sale-dashboard-rpc-permission.md :: - Can kiem tra tiep: khong co blocker cho pham vi loi nay; rollout moi truong
+- docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md :: - Thêm trạng thái awaiting_transfer, pending_review, succeeded, failed; giữ pending cũ để Admin xử lý.
+- docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md :: - docs/features/payment_membership/001-feature-vietqr-manual-payment-review.md
+- docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md :: - docs/test/payment_membership/001-test-vietqr-manual-payment-review.md
+- docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md :: - Chưa fix: chưa có bằng chứng sandbox/RLS hoặc UAT ngân hàng vì không có môi trường/quyền rollout trong phiên này.
+- docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md :: - Cần kiểm tra tiếp: apply migration vào sandbox, quét QR, kiểm tra người nhận/số tiền/memo, xác nhận ownership và Admin payments.write, duyệt/từ chối rồi kiểm tra entitlement/audit.

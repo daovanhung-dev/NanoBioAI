@@ -31,7 +31,7 @@ class BasicInfoStep extends ConsumerWidget {
       title: 'Thông tin cơ bản',
       subtitle: 'Thông tin gần đúng là đủ.',
       onBack: controller.previousStep,
-      onNext: controller.nextStep,
+      onNext: state.canContinueBasicInfo ? controller.nextStep : null,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final layout = _BasicInfoLayout.fromWidth(constraints.maxWidth);

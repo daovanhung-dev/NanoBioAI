@@ -77,6 +77,14 @@ commission upstream.
 | `dev.fixture.sale.suspended@nanobio.local` | Email/password | Sale `suspended`, `admin_status=suspended` | Sale bị tạm ngưng; đồng thời là fixture trạng thái người dùng Admin `suspended` để kiểm thử quyền/referral bị hạn chế. |
 | `dev.fixture.sale.closed@nanobio.local` | Email/password | Sale `closed` | Sale đã đóng; kiểm thử trạng thái cuối vòng đời và dữ liệu lịch sử. |
 
+### Khach hang truc tiep Sale A
+
+| Email | Xac thuc | Goi | Kich ban fixture |
+| --- | --- | --- | --- |
+| `dev.fixture.sale.a.ready@nanobio.local` | Email/password | Plus active | Ba payment thanh cong, tao 1.197.000 diem kha dung cho Sale A. |
+| `dev.fixture.sale.a.pending@nanobio.local` | Email/password | Plus active | Payment thanh cong moi nhat, tao 199.000 diem dang cho kha dung cho Sale A. |
+| `dev.fixture.sale.a.prospect@nanobio.local` | Email/password | Free active | Da gan ma Sale A nhung chua co payment, de kiem thu khach chua chuyen doi. |
+
 ## Admin
 
 | Email | Xác thực | Vai trò Admin | Bề mặt truy cập / kịch bản |

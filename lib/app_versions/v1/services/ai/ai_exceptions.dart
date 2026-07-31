@@ -4,7 +4,7 @@ import 'gemini_rest_client.dart';
 
 class AIConfigurationUnavailableException implements Exception {
   static const userMessage =
-      'Nabi chưa sẵn sàng trò chuyện AI lúc này. Bạn thử lại sau một chút nhé.';
+      'Nabi chưa sẵn sàng trò chuyện lúc này. Bạn thử lại sau một chút nhé.';
 
   const AIConfigurationUnavailableException();
 
@@ -24,7 +24,7 @@ class AIResponseInvalidException implements Exception {
 
 class AIAuthenticationException implements Exception {
   static const userMessage =
-      'Khóa AI chưa hợp lệ. Cập nhật cấu hình rồi mở lại ứng dụng.';
+      'Nabi chưa thể khởi động dịch vụ lúc này. Bạn thử mở lại ứng dụng nhé.';
 
   const AIAuthenticationException();
 
@@ -38,7 +38,7 @@ class AIAuthenticationException implements Exception {
 
 class AINetworkException implements Exception {
   static const userMessage =
-      'Không thể kết nối với AI. Bạn kiểm tra mạng rồi thử lại nhé.';
+      'Nabi chưa thể kết nối. Bạn kiểm tra mạng rồi thử lại nhé.';
 
   const AINetworkException();
 
@@ -53,7 +53,7 @@ class AINetworkException implements Exception {
 
 class AIModelUnavailableException implements Exception {
   static const userMessage =
-      'Mô hình AI hiện chưa khả dụng. Bạn thử lại sau một chút nhé.';
+      'Nabi hiện chưa sẵn sàng. Bạn thử lại sau một chút nhé.';
 
   const AIModelUnavailableException();
 
@@ -66,7 +66,7 @@ class AIModelUnavailableException implements Exception {
 }
 
 class AIOverloadedException implements Exception {
-  static const userMessage = 'AI đang quá tải. Bạn thử lại sau nhé.';
+  static const userMessage = 'Nabi đang bận. Bạn thử lại sau nhé.';
 
   const AIOverloadedException();
 
