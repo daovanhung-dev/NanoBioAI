@@ -290,12 +290,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required String userId,
     required DateTime startDate,
     int days = 7,
+    AiCatalogBundle? catalogOverride,
   }) async {
     final result = await generateMealPlanWithSource(
       healthData: healthData,
       userId: userId,
       startDate: startDate,
       days: days,
+      catalogOverride: catalogOverride,
     );
     return result.value;
   }
@@ -305,6 +307,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required String userId,
     required DateTime startDate,
     int days = 7,
+    AiCatalogBundle? catalogOverride,
   }) async {
     final traceId = AITraceLogger.nextTraceId('meal-plan');
     const method = 'generateMealPlan';
@@ -316,7 +319,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       location: StackTrace.current,
     );
 
-    final catalog = await _catalogLoader();
+    final catalog = catalogOverride ?? await _catalogLoader();
     AITraceLogger.info(
       _tag,
       traceId,

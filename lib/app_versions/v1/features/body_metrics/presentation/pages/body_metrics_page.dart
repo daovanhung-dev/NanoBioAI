@@ -126,10 +126,10 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
           ),
         ],
         if (_report != null) ...[
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           _ReportCard(report: _report!),
         ],
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         const NamiCareEmptyState(
           icon: Icons.medical_information_rounded,
           color: AppColors.primary,

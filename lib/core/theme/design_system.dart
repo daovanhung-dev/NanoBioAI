@@ -1,7 +1,7 @@
-/// BioAI Design System - Layer 3 Export
+/// NaBi Blue Wellness Design System - Layer 3 Export
 ///
 /// This file exports the complete three-layer token architecture and primitive
-/// component library for the BioAI application design system.
+/// component library for the NanoBio application experience.
 ///
 /// ## Token Architecture (3 Layers)
 ///
@@ -125,5 +125,5 @@ export 'primitives/states/error_state.dart' show ErrorState;
 // THEME CONFIGURATION
 // ============================================================================
 
-// The main AppThemeData class will be exported here once created
-// export 'app_theme_data.dart' show AppThemeData;
+/// Material 3 theme assembled from the same canonical tokens.
+export 'app_theme.dart' show AppTheme;

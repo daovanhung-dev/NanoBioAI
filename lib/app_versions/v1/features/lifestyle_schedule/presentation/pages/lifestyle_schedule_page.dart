@@ -205,7 +205,7 @@ class _ScheduleContent extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: () => context.push(V1RoutePaths.dailyRoutinePreferences),
             icon: const Icon(Icons.tune_rounded),
-            label: const Text('Tùy chỉnh lịch cá nhân'),
+            label: const Text('Tùy chỉnh'),
           ),
         ),
         const SizedBox(height: AppSpacingTokens.sectionSpacing),
@@ -353,8 +353,8 @@ class _NamiHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = _progressValue(state);
     final title = state.isSelectedToday
-        ? 'Nabi ở đây, mình cùng chăm sóc hôm nay nhé'
-        : 'Nabi đã chuẩn bị lịch trình cho ngày này';
+        ? 'Lịch chăm sóc hôm nay'
+        : 'Lịch chăm sóc đã chọn';
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadiusTokens.dialog),
@@ -392,7 +392,7 @@ class _NamiHero extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: AppTextStyles.heading1.copyWith(
+                          style: AppTextStyles.heading3.copyWith(
                             color: AppColorTokens.textInverse,
                           ),
                         ),
@@ -1776,41 +1776,41 @@ class _ScheduleUi {
   const _ScheduleUi._();
 
   static const double maxContentWidth = 680;
-  static const double bottomSafeSpace = 128;
+  static const double bottomSafeSpace = 96;
 
-  static const double namiAvatarOuterSize = 72;
-  static const double namiAvatarInnerSize = 58;
-  static const double heroIconSize = 30;
-  static const double pillIconSize = 16;
-  static const double metricIconSize = 20;
-  static const double iconSize = 22;
-  static const double inlineIconSize = 14;
-  static const double checkIconSize = 22;
+  static const double namiAvatarOuterSize = 60;
+  static const double namiAvatarInnerSize = 48;
+  static const double heroIconSize = 26;
+  static const double pillIconSize = 14;
+  static const double metricIconSize = 18;
+  static const double iconSize = 20;
+  static const double inlineIconSize = 13;
+  static const double checkIconSize = 20;
 
-  static const double dateSelectorHeight = 104;
-  static const double dateChipWidth = 74;
-  static const double todayDotSize = 6;
+  static const double dateSelectorHeight = 84;
+  static const double dateChipWidth = 64;
+  static const double todayDotSize = 5;
 
-  static const double railWidth = 48;
-  static const double railDotSize = 42;
-  static const double railIconSize = 20;
-  static const double railLineWidth = 3;
-  static const double railGlowBlur = 16;
+  static const double railWidth = 40;
+  static const double railDotSize = 36;
+  static const double railIconSize = 18;
+  static const double railLineWidth = 2;
+  static const double railGlowBlur = 12;
 
-  static const double timeBlockWidth = 68;
-  static const double progressStroke = 4;
-  static const double progressBarHeight = 12;
+  static const double timeBlockWidth = 60;
+  static const double progressStroke = 3;
+  static const double progressBarHeight = 8;
   static const double completeProgress = .96;
 
-  static const double glassBlur = 16;
-  static const double orbBlur = 34;
-  static const double orbLargeSize = 240;
-  static const double orbMediumSize = 180;
-  static const double orbLargeOffset = 88;
-  static const double orbMediumOffset = 56;
-  static const double orbSmallOffset = 64;
-  static const double orbTopOffset = 180;
-  static const double orbBottomOffset = 96;
+  static const double glassBlur = 12;
+  static const double orbBlur = 24;
+  static const double orbLargeSize = 180;
+  static const double orbMediumSize = 132;
+  static const double orbLargeOffset = 72;
+  static const double orbMediumOffset = 44;
+  static const double orbSmallOffset = 48;
+  static const double orbTopOffset = 144;
+  static const double orbBottomOffset = 72;
 
   static const double selectedScale = 1.02;
   static const double normalScale = 1;
@@ -1828,8 +1828,8 @@ class _ScheduleUi {
   static const double softBorderOpacity = .18;
   static const double shadowOpacity = .28;
 
-  static const double normalLineHeight = 1.45;
-  static const double relaxedLineHeight = 1.55;
+  static const double normalLineHeight = 1.35;
+  static const double relaxedLineHeight = 1.45;
 }
 
 double _progressValue(LifestyleScheduleState state) {

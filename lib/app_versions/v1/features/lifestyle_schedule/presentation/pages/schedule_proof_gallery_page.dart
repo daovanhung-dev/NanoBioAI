@@ -11,6 +11,7 @@ import '../../application/schedule_reward_online_gateway.dart';
 import '../../domain/entities/schedule_completion_proof_entity.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
 
+import 'package:nano_app/core/theme/app_colors.dart';
 class ScheduleProofPreviewSection extends ConsumerWidget {
   final List<ScheduleCompletionProofEntity> proofs;
 
@@ -275,7 +276,7 @@ class _ProofImage extends StatelessWidget {
         final file = snapshot.data;
         if (file == null) {
           return const ColoredBox(
-            color: Color(0xFFE8F1EF),
+            color: AppColors.borderLight,
             child: Center(child: CircularProgressIndicator()),
           );
         }
@@ -284,7 +285,7 @@ class _ProofImage extends StatelessWidget {
           builder: (context, existsSnapshot) {
             if (existsSnapshot.data != true) {
               return ColoredBox(
-                color: Color(0xFFE8F1EF),
+                color: AppColors.borderLight,
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacingTokens.itemSpacing),
@@ -310,7 +311,7 @@ class _ProofImage extends StatelessWidget {
               file,
               fit: BoxFit.cover,
               errorBuilder: (_, _, _) => const ColoredBox(
-                color: Color(0xFFE8F1EF),
+                color: AppColors.borderLight,
                 child: Center(child: Icon(Icons.image_not_supported_outlined)),
               ),
             );
@@ -331,10 +332,10 @@ class _ScheduleProofViewerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MedicalPageScaffold(
       ambientBackground: false,
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.textPrimary,
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.black,
+        foregroundColor: AppColors.surface,
+        backgroundColor: AppColors.textPrimary,
         title: Text(_proofTitle(proof)),
       ),
       body: Center(

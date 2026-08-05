@@ -797,10 +797,11 @@ class _RecordingAIService extends AIService {
 
   @override
   Future<List<MealPlanModel>> generateMealPlan({
-    required HealthDataInterface healthData,
-    required String userId,
-    required DateTime startDate,
+    AiCatalogBundle? catalogOverride,
     int days = 7,
+    required HealthDataInterface healthData,
+    required DateTime startDate,
+    required String userId,
   }) async {
     mealCalls++;
     return _mealPlans(userId: userId, startDate: startDate);
@@ -841,13 +842,15 @@ class _RecordingAIService extends AIService {
 
   @override
   Future<AIGenerationResult<List<MealPlanModel>>> generateMealPlanWithSource({
-    required HealthDataInterface healthData,
-    required String userId,
-    required DateTime startDate,
+    AiCatalogBundle? catalogOverride,
     int days = 7,
+    required HealthDataInterface healthData,
+    required DateTime startDate,
+    required String userId,
   }) async {
     return AIGenerationResult(
       value: await generateMealPlan(
+        catalogOverride: catalogOverride,
         healthData: healthData,
         userId: userId,
         startDate: startDate,
@@ -893,10 +896,11 @@ class _BlockingAIService extends _RecordingAIService {
 
   @override
   Future<List<MealPlanModel>> generateMealPlan({
-    required HealthDataInterface healthData,
-    required String userId,
-    required DateTime startDate,
+    AiCatalogBundle? catalogOverride,
     int days = 7,
+    required HealthDataInterface healthData,
+    required DateTime startDate,
+    required String userId,
   }) async {
     mealCalls++;
     if (!started.isCompleted) started.complete();
@@ -1085,10 +1089,11 @@ class _GuardedAIService extends AIService {
 
   @override
   Future<List<MealPlanModel>> generateMealPlan({
-    required HealthDataInterface healthData,
-    required String userId,
-    required DateTime startDate,
+    AiCatalogBundle? catalogOverride,
     int days = 7,
+    required HealthDataInterface healthData,
+    required DateTime startDate,
+    required String userId,
   }) async {
     mealCalls++;
     throw StateError('generateMealPlan should not be called without auth');
@@ -1106,13 +1111,15 @@ class _GuardedAIService extends AIService {
 
   @override
   Future<AIGenerationResult<List<MealPlanModel>>> generateMealPlanWithSource({
-    required HealthDataInterface healthData,
-    required String userId,
-    required DateTime startDate,
+    AiCatalogBundle? catalogOverride,
     int days = 7,
+    required HealthDataInterface healthData,
+    required DateTime startDate,
+    required String userId,
   }) async {
     return AIGenerationResult(
       value: await generateMealPlan(
+        catalogOverride: catalogOverride,
         healthData: healthData,
         userId: userId,
         startDate: startDate,

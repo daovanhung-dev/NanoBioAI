@@ -27,7 +27,7 @@ class DashboardError extends StatelessWidget {
                 size: 36,
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             Text(
               'Có lỗi xảy ra',
               style: AppTextStyles.heading3.copyWith(color: AppColors.error),

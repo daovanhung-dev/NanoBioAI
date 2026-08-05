@@ -9,7 +9,7 @@ class ConditionsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -26,7 +26,7 @@ class ConditionsCard extends StatelessWidget {
                 color: AppColors.error,
                 size: 16,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppSpacing.tiny),
               Text(
                 'Tình trạng cần theo dõi',
                 style: AppTextStyles.labelLarge.copyWith(
@@ -39,7 +39,7 @@ class ConditionsCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           ...conditions.map(
             (condition) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.only(bottom: AppSpacing.tiny),
               child: Row(
                 children: [
                   Container(

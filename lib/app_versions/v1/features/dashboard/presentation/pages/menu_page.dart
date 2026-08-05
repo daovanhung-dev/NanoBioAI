@@ -192,17 +192,17 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
 
     final glassColors = isDark
         ? [
-            Colors.white.withValues(alpha: .12),
-            Colors.white.withValues(alpha: .07),
+            AppColors.surface.withValues(alpha: .12),
+            AppColors.surface.withValues(alpha: .07),
           ]
         : [
-            Colors.white.withValues(alpha: .84),
-            Colors.white.withValues(alpha: .66),
+            AppColors.surface.withValues(alpha: .84),
+            AppColors.surface.withValues(alpha: .66),
           ];
 
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: .14)
-        : Colors.white.withValues(alpha: .58);
+        ? AppColors.surface.withValues(alpha: .14)
+        : AppColors.surface.withValues(alpha: .58);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.xxl),
@@ -285,7 +285,7 @@ class _AnimatedNavItem extends StatelessWidget {
               curve: Curves.easeOutCubic,
               child: Container(
                 height: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                 ),
@@ -329,7 +329,7 @@ class _AnimatedNavItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppRadius.xl),
                         border: Border.all(
                           color: isActive
-                              ? Colors.white.withValues(alpha: .24)
+                              ? AppColors.surface.withValues(alpha: .24)
                               : Colors.transparent,
                         ),
                       ),
@@ -345,19 +345,19 @@ class _AnimatedNavItem extends StatelessWidget {
                                 child: Icon(
                                   isActive ? item.activeIcon : item.icon,
                                   color: isActive
-                                      ? Colors.white
+                                      ? AppColors.surface
                                       : inactiveColor,
                                   size: lerpDouble(23, 28, value)!,
                                 ),
                               ),
                               if (!isCompact) ...[
-                                const SizedBox(height: 3),
+                                const SizedBox(height: AppSpacing.xs),
                                 AnimatedDefaultTextStyle(
                                   duration: AppDuration.normal,
                                   curve: Curves.easeOutCubic,
                                   style: AppTextStyles.labelSmall.copyWith(
                                     color: isActive
-                                        ? Colors.white
+                                        ? AppColors.surface
                                         : inactiveColor,
                                     fontWeight: isActive
                                         ? FontWeight.w800
@@ -379,18 +379,18 @@ class _AnimatedNavItem extends StatelessWidget {
                     ),
                     if (isActive)
                       Positioned(
-                        top: 7,
+                        top: AppSpacing.sm,
                         child: Container(
                           width: 22,
                           height: 3,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: .92),
+                            color: AppColors.surface.withValues(alpha: .92),
                             borderRadius: BorderRadius.circular(
                               AppRadius.circular,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.white.withValues(alpha: .62),
+                                color: AppColors.surface.withValues(alpha: .62),
                                 blurRadius: 10,
                                 spreadRadius: 1,
                               ),
@@ -476,7 +476,7 @@ class _AnimatedBackground extends StatelessWidget {
                       center: const Alignment(.15, -.55),
                       radius: 1.1,
                       colors: [
-                        Colors.white.withValues(alpha: isDark ? .02 : .28),
+                        AppColors.surface.withValues(alpha: isDark ? .02 : .28),
                         Colors.transparent,
                       ],
                     ),

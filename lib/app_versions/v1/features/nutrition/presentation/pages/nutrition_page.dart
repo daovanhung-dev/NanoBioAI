@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/core/storage/localdb/models/nutrition_log_model.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/providers/nutrition_provider.dart';
 
@@ -44,15 +46,17 @@ class NutritionPage extends ConsumerWidget {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _Header(summary: summary),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _NamiNoteCard(summary: summary),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
+                      const _NutritionProfileEntryCard(),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _SummaryGrid(summary: summary),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _MealPlanSection(meals: summary.todayMeals),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _NutritionLogSection(logs: summary.todayLogs),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _NutritionLogSection(
                         title: 'Những bữa Nabi đã ghi nhớ',
                         subtitle:
@@ -100,7 +104,7 @@ class _NutritionLoadingState extends StatelessWidget {
                 fontWeight: AppTypography.bold,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.tiny),
             Text(
               'Chờ Nabi một nhịp nhỏ để gom lại những bữa ăn hôm nay cho bạn nhé.',
               textAlign: TextAlign.center,
@@ -132,7 +136,7 @@ class _Header extends StatelessWidget {
         : (loggedCalories / plannedCalories).clamp(0.0, 1.0);
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: AppDecoration.gradient(
         colors: AppGradients.health.colors,
         radius: AppRadius.xxl,
@@ -147,12 +151,12 @@ class _Header extends StatelessWidget {
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .18),
+                  color: AppColors.surface.withValues(alpha: .18),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 child: const Icon(
                   Icons.restaurant_rounded,
-                  color: Colors.white,
+                  color: AppColors.surface,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -163,15 +167,15 @@ class _Header extends StatelessWidget {
                     Text(
                       'Dinh dưỡng hôm nay',
                       style: AppTextStyles.heading2.copyWith(
-                        color: Colors.white,
+                        color: AppColors.surface,
                         fontWeight: AppTypography.bold,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: AppSpacing.tiny),
                     Text(
                       'Nabi đang cùng $displayName chăm từng bữa ăn nhỏ trong ngày.',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white.withValues(alpha: .92),
+                        color: AppColors.surface.withValues(alpha: .92),
                         height: 1.45,
                       ),
                     ),
@@ -180,13 +184,13 @@ class _Header extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.cardPadding),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .16),
+              color: AppColors.surface.withValues(alpha: .16),
               borderRadius: BorderRadius.circular(AppRadius.xl),
-              border: Border.all(color: Colors.white.withValues(alpha: .22)),
+              border: Border.all(color: AppColors.surface.withValues(alpha: .22)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +200,7 @@ class _Header extends StatelessWidget {
                     Text(
                       'Nhịp năng lượng',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white,
+                        color: AppColors.surface,
                         fontWeight: AppTypography.semiBold,
                       ),
                     ),
@@ -206,7 +210,7 @@ class _Header extends StatelessWidget {
                           ? '$loggedCalories / $plannedCalories kcal'
                           : '$loggedCalories kcal',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withValues(alpha: .92),
+                        color: AppColors.surface.withValues(alpha: .92),
                         fontWeight: AppTypography.semiBold,
                       ),
                     ),
@@ -218,9 +222,9 @@ class _Header extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 8,
-                    backgroundColor: Colors.white.withValues(alpha: .22),
+                    backgroundColor: AppColors.surface.withValues(alpha: .22),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.white.withValues(alpha: .92),
+                      AppColors.surface.withValues(alpha: .92),
                     ),
                   ),
                 ),
@@ -228,7 +232,7 @@ class _Header extends StatelessWidget {
                 Text(
                   _energyMessage(summary),
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: .9),
+                    color: AppColors.surface.withValues(alpha: .9),
                     height: 1.45,
                   ),
                 ),
@@ -300,7 +304,7 @@ class _NamiNoteCard extends StatelessWidget {
                     fontWeight: AppTypography.bold,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.tiny),
                 Text(
                   _message,
                   style: AppTextStyles.bodyMedium.copyWith(
@@ -334,6 +338,52 @@ class _NamiNoteCard extends StatelessWidget {
     }
 
     return 'Những ghi nhận nhỏ đang giúp Nabi hiểu bạn hơn.';
+  }
+}
+
+
+class _NutritionProfileEntryCard extends StatelessWidget {
+  const _NutritionProfileEntryCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
+      child: Row(
+        children: [
+          const _SoftIcon(
+            icon: Icons.assignment_ind_rounded,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hồ sơ dinh dưỡng cá nhân',
+                  style: AppTextStyles.heading4.copyWith(
+                    fontWeight: AppTypography.bold,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Cập nhật dị ứng, triệu chứng, mục tiêu và sở thích để Nabi lọc gợi ý phù hợp hơn.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Mở hồ sơ dinh dưỡng',
+            onPressed: () => context.push(V1RoutePaths.nutritionProfile),
+            icon: const Icon(Icons.chevron_right_rounded),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -448,7 +498,7 @@ class _MetricCard extends StatelessWidget {
               fontWeight: AppTypography.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             metric.title,
             maxLines: 1,
@@ -458,7 +508,7 @@ class _MetricCard extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             metric.hint,
             maxLines: 2,
@@ -510,7 +560,7 @@ class _MealPlanSection extends StatelessWidget {
                         fontWeight: AppTypography.bold,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: AppSpacing.tiny),
                     Wrap(
                       spacing: AppSpacing.xs,
                       runSpacing: AppSpacing.xs,
@@ -590,7 +640,7 @@ class _NutritionLogSection extends StatelessWidget {
                         fontWeight: AppTypography.bold,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: AppSpacing.tiny),
                     Wrap(
                       spacing: AppSpacing.xs,
                       runSpacing: AppSpacing.xs,
@@ -665,7 +715,7 @@ class _Section extends StatelessWidget {
           ),
         ),
         if (sectionSubtitle.isNotEmpty) ...[
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.tiny),
           Text(
             sectionSubtitle,
             style: AppTextStyles.bodyMedium.copyWith(
@@ -722,7 +772,7 @@ class _TinyPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
-        vertical: 6,
+        vertical: AppSpacing.tiny,
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: .1),
@@ -733,7 +783,7 @@ class _TinyPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: color),
-          const SizedBox(width: 5),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(
@@ -756,7 +806,7 @@ class _SurfaceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: AppDecoration.card(
         radius: AppRadius.xl,
         shadows: AppShadows.sm,
@@ -800,7 +850,7 @@ class _StateCard extends StatelessWidget {
                     fontWeight: AppTypography.bold,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.tiny),
                 Text(
                   message,
                   style: AppTextStyles.bodyMedium.copyWith(

@@ -4,7 +4,6 @@ import 'package:nano_app/core/theme/theme.dart';
 
 import 'nabi_onboarding_experience.dart';
 
-/// Compact health option tile retained for older view call sites.
 class HealthChip extends StatelessWidget {
   final String label;
   final bool selected;
@@ -39,94 +38,79 @@ class HealthChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = activeColor ?? NabiPalette.royalBlue;
-    return SizedBox(
-      width: width,
-      height: height ?? 56,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        child: InkWell(
-          onTap: enabled ? onTap : null,
+    final color = activeColor ?? NabiPalette.greenPrimary;
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: enabled,
+      label: label,
+      child: SizedBox(
+        width: width,
+        height: height ?? 54,
+        child: Material(
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          splashColor: Colors.white.withValues(alpha: 0.18),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 170),
-            padding:
-                padding ??
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: selected
-                  ? (gradient ?? NabiPalette.selection)
-                  : NabiPalette.card,
-              color: selected && gradient == null && activeColor != null
-                  ? color
-                  : null,
-              border: Border.all(
-                color: selected ? color : NabiPalette.line,
-                width: selected ? 1.3 : 1,
+          child: InkWell(
+            onTap: enabled ? onTap : null,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: AnimatedContainer(
+              duration: AppDuration.ripple,
+              padding: padding ??
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+              decoration: BoxDecoration(
+                gradient: selected
+                    ? (gradient ??
+                        (activeColor == null
+                            ? NabiPalette.selection
+                            : LinearGradient(colors: [color, color])))
+                    : NabiPalette.card,
+                border: Border.all(
+                  color: selected ? color : NabiPalette.line,
+                  width: selected ? 1.3 : 1,
+                ),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.20),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : const [],
               ),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.20),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : const [],
-            ),
-            child: Opacity(
-              opacity: enabled ? 1 : 0.45,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (emoji != null || icon != null) ...[
-                    Container(
-                      width: 30,
-                      height: 30,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? Colors.white.withValues(alpha: 0.16)
-                            : color.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: emoji != null
-                          ? Text(emoji!, style: const TextStyle(fontSize: 18))
-                          : Icon(
-                              icon,
-                              size: 17,
-                              color: selected ? Colors.white : color,
-                            ),
-                    ),
-                    const SizedBox(width: 7),
-                  ],
-                  Flexible(
-                    child: Text(
-                      label,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: selected ? Colors.white : NabiPalette.ink,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0,
+              child: Opacity(
+                opacity: enabled ? 1 : 0.45,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (emoji != null)
+                      Text(emoji!, style: const TextStyle(fontSize: 18))
+                    else if (icon != null)
+                      Icon(icon, size: 18, color: selected ? AppColors.surface : color),
+                    if (emoji != null || icon != null) const SizedBox(width: AppSpacing.sm),
+                    Flexible(
+                      child: Text(
+                        label,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: selected ? AppColors.surface : NabiPalette.ink,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0,
+                        ),
                       ),
                     ),
-                  ),
-                  if (badge != null) ...[const SizedBox(width: 5), badge!],
-                  if (trailing != null) ...[
-                    const SizedBox(width: 5),
-                    trailing!,
+                    if (badge != null) ...[const SizedBox(width: AppSpacing.xs), badge!],
+                    if (trailing != null) ...[const SizedBox(width: AppSpacing.xs), trailing!],
+                    const SizedBox(width: AppSpacing.tiny),
+                    Icon(
+                      selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                      size: 19,
+                      color: selected ? AppColors.surface : color,
+                    ),
                   ],
-                  const SizedBox(width: 5),
-                  Icon(
-                    selected ? Icons.check_rounded : Icons.add_rounded,
-                    size: 18,
-                    color: selected ? Colors.white : NabiPalette.royalBlue,
-                  ),
-                ],
+                ),
               ),
             ),
           ),

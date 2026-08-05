@@ -30,7 +30,7 @@ class FeaturesHubPage extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   const _CareJourneyHero(),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   const MedicalSectionHeader(
                     title: 'Chăm sóc hôm nay',
                     subtitle: 'Chọn một mục để bắt đầu.',
@@ -42,7 +42,7 @@ class FeaturesHubPage extends StatelessWidget {
                     itemBuilder: (context, index) =>
                         _FeatureTile(action: currentFeatures[index]),
                   ),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   const MedicalSectionHeader(
                     title: 'Sắp ra mắt',
                     subtitle: 'Các mục này đang được hoàn thiện.',
@@ -56,7 +56,7 @@ class FeaturesHubPage extends StatelessWidget {
                       statusLabel: 'Sắp ra mắt',
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   const MedicalSectionHeader(
                     key: Key('advanced-health-features-section'),
                     title: 'Theo dõi chuyên sâu',
@@ -179,7 +179,7 @@ class _CareJourneyHero extends StatelessWidget {
           'Trung tâm chăm sóc. Bảng Theo dõi Hành Trình Sống Khỏe.',
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         decoration: BoxDecoration(
           gradient: AppGradients.hero,
           borderRadius: BorderRadius.circular(AppRadius.xxl),
@@ -203,10 +203,10 @@ class _CareJourneyHero extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .16),
+                    color: AppColors.surface.withValues(alpha: .16),
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: .24),
+                      color: AppColors.surface.withValues(alpha: .24),
                     ),
                   ),
                   child: const Icon(
@@ -305,7 +305,7 @@ class _FeatureTile extends StatelessWidget {
               boxShadow: AppShadows.card,
             ),
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -329,7 +329,7 @@ class _FeatureTile extends StatelessWidget {
                           label: statusLabel!,
                           icon: Icons.schedule_rounded,
                           foregroundColor: action.color,
-                          backgroundColor: Colors.white.withValues(alpha: .68),
+                          backgroundColor: AppColors.surface.withValues(alpha: .68),
                         ),
                       ],
                     ],
@@ -344,7 +344,7 @@ class _FeatureTile extends StatelessWidget {
                       height: 1.45,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   Row(
                     children: [
                       _FeatureIcon(icon: action.icon, color: action.color),
@@ -353,7 +353,7 @@ class _FeatureTile extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: .72),
+                          color: AppColors.surface.withValues(alpha: .72),
                           borderRadius: BorderRadius.circular(AppRadius.lg),
                         ),
                         child: Icon(
@@ -403,7 +403,7 @@ class _AdvancedHealthFeatureTile extends StatelessWidget {
               boxShadow: AppShadows.card,
             ),
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -427,7 +427,7 @@ class _AdvancedHealthFeatureTile extends StatelessWidget {
                         foregroundColor: isFree
                             ? AppColors.success
                             : AppColors.tertiary,
-                        backgroundColor: Colors.white.withValues(alpha: .72),
+                        backgroundColor: AppColors.surface.withValues(alpha: .72),
                       ),
                     ],
                   ),
@@ -441,7 +441,7 @@ class _AdvancedHealthFeatureTile extends StatelessWidget {
                       height: 1.45,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   Row(
                     children: [
                       _FeatureIcon(icon: item.icon, color: item.color),
@@ -488,7 +488,7 @@ class _FeatureIcon extends StatelessWidget {
       width: 52,
       height: 52,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .78),
+        color: AppColors.surface.withValues(alpha: .78),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: color.withValues(alpha: .14)),
       ),
@@ -515,7 +515,7 @@ class _FeatureBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(minHeight: 32),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -525,7 +525,7 @@ class _FeatureBadge extends StatelessWidget {
         children: [
           if (icon != null) ...[
             Icon(icon, size: 15, color: foregroundColor),
-            const SizedBox(width: 5),
+            const SizedBox(width: AppSpacing.xs),
           ],
           Flexible(
             child: Text(

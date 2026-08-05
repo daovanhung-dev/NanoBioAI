@@ -20,7 +20,7 @@ class ScoreMetricRow extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, color: color, size: 14),
-        const SizedBox(width: 6),
+        const SizedBox(width: AppSpacing.tiny),
         Expanded(
           child: Text(
             label,
@@ -30,7 +30,7 @@ class ScoreMetricRow extends StatelessWidget {
         Text(
           value,
           style: AppTextStyles.labelMedium.copyWith(
-            color: Colors.white,
+            color: AppColors.surface,
             fontWeight: AppTypography.semiBold,
           ),
         ),

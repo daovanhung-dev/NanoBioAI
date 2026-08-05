@@ -59,7 +59,7 @@ class QuickCarePage extends StatelessWidget {
           message:
               'Bạn có thể chọn bất kỳ gợi ý nào bên dưới. Không cần làm nhiều, chỉ cần một khoảng nghỉ nhỏ là đủ.',
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         const NamiCareSectionTitle(
           title: 'Gợi ý nhanh từ Nabi',
           subtitle: 'Những việc rất nhỏ, nhẹ nhàng và dễ bắt đầu ngay lúc này.',

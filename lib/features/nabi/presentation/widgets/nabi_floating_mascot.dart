@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:flutter/services.dart';
 
 import '../../data/nabi_assets.dart';
 import '../../domain/nabi_animation_type.dart';
 import 'nabi_animation_player.dart';
 
+import 'package:nano_app/core/theme/app_colors.dart';
+import 'package:nano_app/core/theme/app_duration.dart';
 class NaBiFloatingMascot extends StatefulWidget {
   const NaBiFloatingMascot({
     super.key,
@@ -94,7 +97,7 @@ class _NaBiFloatingMascotState extends State<NaBiFloatingMascot> {
       label: widget.semanticLabel,
       child: Tooltip(
         message: widget.semanticLabel,
-        waitDuration: const Duration(milliseconds: 450),
+        waitDuration: AppDuration.progress,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: widget.enabled
@@ -127,7 +130,7 @@ class _NaBiFloatingMascotState extends State<NaBiFloatingMascot> {
                     offset: const Offset(0, 10),
                   ),
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
+                    color: AppColors.textPrimary.withValues(alpha: 0.12),
                     blurRadius: 16,
                     offset: const Offset(0, 7),
                   ),
@@ -156,7 +159,7 @@ class _NaBiFloatingMascotState extends State<NaBiFloatingMascot> {
       mainAxisSize: MainAxisSize.min,
       children: [
         mascot,
-        const SizedBox(height: 5),
+        const SizedBox(height: AppSpacing.xs),
         _MascotLabel(text: widget.label ?? 'Hỏi Nabi'),
       ],
     );
@@ -183,20 +186,20 @@ class _MascotLabel extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
           color: theme.colorScheme.primary.withValues(alpha: 0.14),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: AppColors.textPrimary.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
         child: Text(
           text,
           maxLines: 1,

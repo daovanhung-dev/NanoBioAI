@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/app_versions/v1/features/nabi/providers/nabi_provider.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
@@ -146,13 +147,13 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      toolbarHeight: 64,
+      toolbarHeight: 56,
       elevation: 0,
       scrolledUnderElevation: 0,
       backgroundColor: AppColors.background.withValues(alpha: .92),
       surfaceTintColor: Colors.transparent,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
-      leadingWidth: 58,
+      leadingWidth: 52,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSpacing.sm),
         child: _MinimalIconButton(
@@ -165,6 +166,14 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
       title: const _ChatHeaderTitle(),
       centerTitle: false,
       actions: [
+        _MinimalIconButton(
+          icon: Icons.mic_rounded,
+          semanticLabel: 'Trò chuyện bằng giọng nói',
+          onTap: () {
+            HapticFeedback.selectionClick();
+            context.push(V1RoutePaths.aiVoice);
+          },
+        ),
         Padding(
           padding: const EdgeInsets.only(right: AppSpacing.sm),
           child: _MinimalIconButton(
@@ -272,7 +281,7 @@ class _ChatHeaderTitle extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: AppSpacing.xxs),
               Row(
                 children: [
                   Container(
@@ -333,9 +342,9 @@ class _MessageList extends StatelessWidget {
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pagePadding,
-        AppSpacing.lg,
+        AppSpacing.sm,
         AppSpacing.pagePadding,
-        AppSpacing.xl,
+        AppSpacing.lg,
       ),
       itemCount: messages.length + (isLoading ? 1 : 0),
       itemBuilder: (context, index) {
@@ -367,7 +376,7 @@ class _MessageRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Row(
         mainAxisAlignment: isUser
             ? MainAxisAlignment.end
@@ -376,7 +385,7 @@ class _MessageRow extends StatelessWidget {
         children: [
           if (!isUser) ...[
             const _NamiAvatar(size: 34, iconSize: 17),
-            const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.sm),
           ],
           Flexible(
             child: ConstrainedBox(
@@ -415,7 +424,7 @@ class _AssistantMessage extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.only(top: 3),
+        padding: const EdgeInsets.only(top: AppSpacing.xs),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -423,7 +432,7 @@ class _AssistantMessage extends StatelessWidget {
               message.content,
               style: AppTextStyles.bodyLarge.copyWith(
                 color: AppColors.textPrimary,
-                height: 1.72,
+                height: 1.52,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -471,8 +480,8 @@ class _UserMessageBubble extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: AppColors.primary.withValues(alpha: .16),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -483,8 +492,8 @@ class _UserMessageBubble extends StatelessWidget {
               message.content,
               textAlign: TextAlign.left,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: Colors.white,
-                height: 1.56,
+                color: AppColors.surface,
+                height: 1.45,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -511,7 +520,7 @@ class _MessageTime extends StatelessWidget {
       '$hour:$minute',
       style: AppTextStyles.caption.copyWith(
         color: isUser
-            ? Colors.white.withValues(alpha: .72)
+            ? AppColors.surface.withValues(alpha: .72)
             : AppColors.textMuted,
         fontWeight: FontWeight.w500,
       ),
@@ -533,20 +542,20 @@ class _ChatGptEmptyState extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.pagePadding,
-          AppSpacing.xl,
+          AppSpacing.lg,
           AppSpacing.pagePadding,
-          AppSpacing.xl,
+          AppSpacing.lg,
         ),
         child: _CenteredContent(
           maxWidth: _maxContentWidth,
           child: Column(
             children: [
               const _NamiHeroMark(),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               Text(
                 'Hôm nay bạn muốn Nabi giúp gì?',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.heading1.copyWith(
+                style: AppTextStyles.heading2.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.3,
@@ -558,12 +567,12 @@ class _ChatGptEmptyState extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textSecondary,
-                  height: 1.62,
+                  height: 1.4,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               _PromptGrid(onQuestionTap: onQuestionTap),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               _CareNote(),
             ],
           ),
@@ -579,32 +588,32 @@ class _NamiHeroMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 72,
-      height: 72,
-      padding: const EdgeInsets.all(4),
+      width: 56,
+      height: 56,
+      padding: const EdgeInsets.all(AppSpacing.xs),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(colors: AppGradients.ai.colors),
         boxShadow: [
           BoxShadow(
             color: AppColors.primary.withValues(alpha: .18),
-            blurRadius: 30,
-            offset: const Offset(0, 12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           shape: BoxShape.circle,
         ),
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(AppSpacing.tiny),
         child: Container(
           decoration: AppDecoration.base(
             gradient: AppGradients.ai,
             shape: BoxShape.circle,
           ),
-          child: const Icon(AppIcons.aiChat, color: Colors.white, size: 30),
+          child: const Icon(AppIcons.aiChat, color: AppColors.surface, size: 24),
         ),
       ),
     );
@@ -684,7 +693,7 @@ class _PromptCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.lg),
           onTap: onTap,
           child: Ink(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.cardPadding),
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -717,7 +726,7 @@ class _PromptCard extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
                         item.subtitle,
                         maxLines: 2,
@@ -847,7 +856,7 @@ class _ChatComposerState extends State<_ChatComposer> {
     return ClipRRect(
       borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Container(
           color: AppColors.background.withValues(alpha: .92),
           padding: const EdgeInsets.fromLTRB(
@@ -867,10 +876,10 @@ class _ChatComposerState extends State<_ChatComposer> {
                     duration: AppDuration.fast,
                     curve: Curves.easeOutCubic,
                     padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.md,
                       AppSpacing.sm,
-                      AppSpacing.sm,
-                      AppSpacing.sm,
+                      AppSpacing.xs,
+                      AppSpacing.xs,
+                      AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
@@ -896,7 +905,7 @@ class _ChatComposerState extends State<_ChatComposer> {
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(
                               minHeight: 30,
-                              maxHeight: 140,
+                              maxHeight: 112,
                             ),
                             child: TextField(
                               controller: widget.controller,
@@ -920,7 +929,7 @@ class _ChatComposerState extends State<_ChatComposer> {
                                 border: InputBorder.none,
                                 isDense: true,
                                 contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 8,
+                                  vertical: AppSpacing.sm,
                                 ),
                               ),
                             ),
@@ -968,7 +977,7 @@ class _SendButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final background = canSend ? AppColors.primary : AppColors.border;
-    final foreground = canSend ? Colors.white : AppColors.textMuted;
+    final foreground = canSend ? AppColors.surface : AppColors.textMuted;
 
     return Semantics(
       label: 'Gửi tin nhắn',
@@ -980,8 +989,8 @@ class _SendButton extends StatelessWidget {
         child: AnimatedContainer(
           duration: AppDuration.fast,
           curve: Curves.easeOutCubic,
-          width: 48,
-          height: 48,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             color: background,
             shape: BoxShape.circle,
@@ -989,8 +998,8 @@ class _SendButton extends StatelessWidget {
                 ? [
                     BoxShadow(
                       color: AppColors.primary.withValues(alpha: .22),
-                      blurRadius: 16,
-                      offset: const Offset(0, 7),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ]
                 : null,
@@ -1008,7 +1017,7 @@ class _SendButton extends StatelessWidget {
                         height: 17,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.surface,
                         ),
                       ),
                     ),
@@ -1056,14 +1065,14 @@ class _TypingIndicatorState extends State<_TypingIndicator>
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const _NamiAvatar(size: 34, iconSize: 17),
           const SizedBox(width: AppSpacing.md),
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: AppSpacing.sm),
             child: AnimatedBuilder(
               animation: _controller,
               builder: (context, _) {
@@ -1078,7 +1087,7 @@ class _TypingIndicatorState extends State<_TypingIndicator>
                       child: Container(
                         width: 7,
                         height: 7,
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(
                             alpha: .35 + scale * .45,
@@ -1137,23 +1146,23 @@ class _NamiAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      padding: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(AppSpacing.xxs),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(colors: AppGradients.ai.colors),
       ),
       child: Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           shape: BoxShape.circle,
         ),
-        padding: const EdgeInsets.all(3),
+        padding: const EdgeInsets.all(AppSpacing.xs),
         child: Container(
           decoration: AppDecoration.base(
             gradient: AppGradients.ai,
             shape: BoxShape.circle,
           ),
-          child: Icon(AppIcons.aiChat, color: Colors.white, size: iconSize),
+          child: Icon(AppIcons.aiChat, color: AppColors.surface, size: iconSize),
         ),
       ),
     );

@@ -22,9 +22,9 @@ class DashboardLoading extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               const SkeletonBox(height: 200),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               const Row(
                 children: [
                   Expanded(child: SkeletonBox(height: 80)),
@@ -36,9 +36,9 @@ class DashboardLoading extends StatelessWidget {
                   Expanded(child: SkeletonBox(height: 80)),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               const SkeletonBox(height: 160),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               const SkeletonBox(height: 240),
             ]),
           ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_duration.dart';
 
-/// Motion primitives shared by every NanoBio surface.
+/// Motion primitives shared by every NaBi Blue Wellness surface.
 ///
 /// Motion is intentionally subtle, uses the same timing curve across the app,
 /// and automatically falls back to a static presentation when the operating

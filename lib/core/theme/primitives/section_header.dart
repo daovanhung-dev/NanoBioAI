@@ -97,7 +97,7 @@ class SectionHeader extends StatelessWidget {
     final hasAction = actionLabel != null && onAction != null;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: AppSpacingTokens.sectionSpacing),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
           // Title and subtitle column
@@ -108,7 +108,7 @@ class SectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.heading2.copyWith(
+                  style: AppTextStyles.sectionTitle.copyWith(
                     color: isDark
                         ? AppColorTokens.darkTextPrimary
                         : AppColorTokens.textPrimary,
@@ -118,7 +118,9 @@ class SectionHeader extends StatelessWidget {
                   SizedBox(height: AppSpacingTokens.itemSpacing / 2),
                   Text(
                     subtitle!,
-                    style: AppTextStyles.bodyMedium.copyWith(
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodySmall.copyWith(
                       color: isDark
                           ? AppColorTokens.darkTextSecondary
                           : AppColorTokens.textSecondary,

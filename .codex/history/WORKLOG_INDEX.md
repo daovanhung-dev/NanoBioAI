@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 93
+- Total worklogs: 94
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -102,3 +102,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-28 | Supabase schema/seed fixture va smoke test | supabase-schema | Sale/referral, M12 va M14 | [Worklog - Sale A sandbox seed](../../docs/worklog/2026-07-28/002-worklog-sale-a-sandbox-seed.md) |
 | 2026-07-28 | bugfix + test | supabase-schema | Sale/referral dashboard va direct customers | [Worklog - Sale dashboard RPC permission](../../docs/worklog/2026-07-28/003-worklog-sale-dashboard-rpc-permission.md) |
 | 2026-07-31 | coding + Supabase contract + test + DD/docs. | supabase-schema | M13 PAYMENT_MEMBERSHIP và Admin payment queue. | [Worklog - VietQR Vietcombank chờ duyệt thủ công](../../docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md) |
+| 2026-08-02 | coding/supabase-schema/test | coding | onboarding, nutrition profile, meal catalog, AI meal plan, voice AI, SQLite V17 | [Worklog - Hồ sơ dinh dưỡng, catalog món ăn và Voice AI V17](../../docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md) |

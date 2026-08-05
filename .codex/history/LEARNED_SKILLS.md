@@ -52,3 +52,10 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - End every substantial session with a worklog self-review: output quality, task completion, verification strength, token efficiency, and next-session optimization.
 - After writing the worklog, run the history refresh script so `.codex/history/` and `.codex/task-skills/` learn from the new session.
 - Before starting a task, read the matching canonical `.codex/task-skills/<task-key>.md` after selecting the workflow.
+
+## Learned 2026-08-02 - Nutrition, meal catalog and voice
+
+- Source recipe imports must preserve provenance and keep records ineligible until nutrition/allergen/condition metadata is explicitly approved; never infer clinical fields from prose.
+- AI generation, deterministic fallback and single-meal replacement must share one filtered candidate pool so safety constraints cannot diverge.
+- App-wide accessibility settings need one persisted source-of-truth applied at every MaterialApp surface and combined with system accessibility scaling.
+- Voice AI should reuse the existing AI Chat repository/quota/history boundary, stop native resources on lifecycle changes and discard stale async responses with an operation token.

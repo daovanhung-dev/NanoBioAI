@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:nano_app/core/theme/app_colors.dart';
 String formatSteps(int steps) {
   if (steps >= 1000) {
     return '${(steps / 1000).toStringAsFixed(1)}k';
@@ -28,15 +29,15 @@ String bmiStatus(double bmi) {
 }
 
 Color bmiStatusColor(double bmi) {
-  if (bmi < 18.5) return const Color(0xFFF59E0B);
-  if (bmi < 25.0) return const Color(0xFF22C55E);
-  if (bmi < 30.0) return const Color(0xFFF97316);
-  return const Color(0xFFEF4444);
+  if (bmi < 18.5) return AppColors.warning;
+  if (bmi < 25.0) return AppColors.success;
+  if (bmi < 30.0) return AppColors.careCoral;
+  return AppColors.error;
 }
 
 Color bmiMetricColor(double bmi) {
-  if (bmi < 18.5) return const Color(0xFFFBBF24);
-  if (bmi < 25.0) return const Color(0xFF4ADE80);
-  if (bmi < 30.0) return const Color(0xFFFB923C);
-  return const Color(0xFFF87171);
+  if (bmi < 18.5) return AppColors.energyYellow;
+  if (bmi < 25.0) return AppColors.primaryLight;
+  if (bmi < 30.0) return AppColors.careCoral;
+  return AppColors.careCoral;
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/app_text_styles.dart';
 
 import '../../domain/entities/daily_routine_preferences.dart';
 
+import 'package:nano_app/core/theme/app_spacing.dart';
 class DailyRoutinePreferencesEditor extends StatelessWidget {
   final DailyRoutinePreferences value;
   final ValueChanged<DailyRoutinePreferences> onChanged;
@@ -21,7 +23,7 @@ class DailyRoutinePreferencesEditor extends StatelessWidget {
           value: value.weekday,
           onChanged: (template) => onChanged(value.copyWith(weekday: template)),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         _TemplateEditor(
           title: 'Cuối tuần · Thứ Bảy–Chủ Nhật',
           value: value.weekend,
@@ -57,7 +59,7 @@ class _TemplateEditor extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
         initiallyExpanded: true,
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+        title: Text(title, style: AppTextStyles.heading5),
         subtitle: Text('Thức ${value.wakeTime} · Ngủ ${value.sleepTime}'),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
@@ -158,10 +160,10 @@ class _RangeEditor extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.only(top: AppSpacing.sm),
           child: Text(
             label,
-            style: const TextStyle(fontWeight: FontWeight.w700),
+            style: AppTextStyles.labelLarge,
           ),
         ),
         Row(
@@ -173,7 +175,7 @@ class _RangeEditor extends StatelessWidget {
                 onChanged: (time) => onChanged(value.copyWith(start: time)),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: _TimeRow(
                 label: 'Kết thúc',

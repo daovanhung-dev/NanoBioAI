@@ -10,6 +10,7 @@ import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_
 import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_rewards_cache_tables.dart';
 import 'package:nano_app/core/storage/localdb/tables/nabi_notification_tables.dart';
+import 'package:nano_app/core/storage/localdb/tables/nutrition_profile_tables.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -141,11 +142,14 @@ class DatabaseService {
     await db.execute(SurveyAnswersTable.createTable);
 
     await db.execute(MealPlansTable.createTable);
+    await NutritionProfileTables.create(db);
     await db.execute(PersonalScheduleAiRequestsTable.createTable);
     await db.execute(PersonalScheduleAiRequestsTable.createUserModeIndex);
 
     await db.execute(MealCatalogTable.createTable);
     await db.execute(MealCatalogTable.createTypeIndex);
+    await db.execute(MealCatalogTable.createTopicIndex);
+    await db.execute(MealCatalogTable.createSourceHashIndex);
     await db.execute(ExerciseCatalogTable.createTable);
     await db.execute(ExerciseCatalogTable.createCategoryIndex);
     await db.execute(ScheduleTaskCatalogTable.createTable);

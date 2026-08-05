@@ -11,6 +11,8 @@ import '../tables/schedule_completion_proofs_table.dart';
 import '../tables/wellness_point_ledgers_table.dart';
 import '../tables/wellness_rewards_cache_tables.dart';
 import '../tables/nabi_notification_tables.dart';
+import '../tables/meal_plans_table.dart';
+import '../tables/nutrition_profile_tables.dart';
 import '../seeders/ai_catalog_seeder.dart';
 import '../sync/sync_outbox_schema.dart';
 
@@ -64,6 +66,9 @@ class MigrationManager {
     }
     if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 16)) {
       await _migrateToV16(db);
+    }
+    if (_shouldRunMigration(oldVersion, newVersion, targetVersion: 17)) {
+      await _migrateToV17(db);
     }
   }
 
@@ -431,6 +436,75 @@ class MigrationManager {
       columnName: 'generation_source',
       definition: "TEXT NOT NULL DEFAULT 'unknown'",
     );
+  }
+
+  static Future<void> _migrateToV17(Database db) async {
+    await NutritionProfileTables.create(db);
+
+    final catalogColumns = <String, String>{
+      'health_topic_code': 'TEXT',
+      'health_topic_name': 'TEXT',
+      'health_topic_description': 'TEXT',
+      'chapter_number': 'INTEGER',
+      'chapter_name': 'TEXT',
+      'ingredients_json': "TEXT NOT NULL DEFAULT '[]'",
+      'cooking_steps_json': "TEXT NOT NULL DEFAULT '[]'",
+      'benefits': 'TEXT',
+      'serving_size': 'TEXT',
+      'allergen_tags_json': "TEXT NOT NULL DEFAULT '[]'",
+      'avoid_condition_tags_json': "TEXT NOT NULL DEFAULT '[]'",
+      'nutrition_status': "TEXT NOT NULL DEFAULT 'approved'",
+      'constraint_metadata_status': "TEXT NOT NULL DEFAULT 'approved'",
+      'metadata_status': "TEXT NOT NULL DEFAULT 'approved'",
+      'is_plan_eligible': 'INTEGER NOT NULL DEFAULT 1',
+      'source_name': 'TEXT',
+      'source_page': 'INTEGER',
+      'source_chapter': 'TEXT',
+      'source_topic': 'TEXT',
+      'source_recipe_order': 'INTEGER',
+      'source_hash': 'TEXT',
+      'version': 'INTEGER NOT NULL DEFAULT 1',
+    };
+    for (final entry in catalogColumns.entries) {
+      await _addColumnIfMissing(
+        db,
+        tableName: MealCatalogTable.tableName,
+        columnName: entry.key,
+        definition: entry.value,
+      );
+    }
+    await db.execute(MealCatalogTable.createTypeIndex);
+    await db.execute(MealCatalogTable.createTopicIndex);
+    await db.execute(MealCatalogTable.createSourceHashIndex);
+
+    final mealPlanColumns = <String, String>{
+      'catalog_code': 'TEXT',
+      'serving_size': 'TEXT',
+      'health_topic_code': 'TEXT',
+      'health_topic_name': 'TEXT',
+      'ingredients_json': "TEXT NOT NULL DEFAULT '[]'",
+      'cooking_steps_json': "TEXT NOT NULL DEFAULT '[]'",
+      'benefits': 'TEXT',
+      'allergen_tags_json': "TEXT NOT NULL DEFAULT '[]'",
+      'avoid_condition_tags_json': "TEXT NOT NULL DEFAULT '[]'",
+      'source_name': 'TEXT',
+      'source_hash': 'TEXT',
+      'source_page': 'INTEGER',
+      'snapshot_schema_version': 'INTEGER NOT NULL DEFAULT 1',
+      'replacement_count': 'INTEGER NOT NULL DEFAULT 0',
+    };
+    for (final entry in mealPlanColumns.entries) {
+      await _addColumnIfMissing(
+        db,
+        tableName: MealPlansTable.tableName,
+        columnName: entry.key,
+        definition: entry.value,
+      );
+    }
+
+    await AiCatalogSeeder.seed(db);
+    await SyncOutboxSchema.create(db);
+    await SyncOutboxSchema.recreateTriggers(db);
   }
 
   static Future<void> _addColumnIfMissing(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../app_motion.dart';
 import '../tokens/color_tokens.dart';
 import '../tokens/spacing_tokens.dart';
@@ -102,6 +103,7 @@ class AppCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.padding,
+    this.selected = false,
   });
 
   /// The visual style variant for this card.
@@ -121,32 +123,49 @@ class AppCard extends StatelessWidget {
   /// Set to [EdgeInsets.zero] for no padding.
   final EdgeInsets? padding;
 
+  /// Whether this card represents the current selected choice.
+  final bool selected;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     final effectivePadding =
-        padding ?? EdgeInsets.all(AppSpacingTokens.cardPadding);
+        padding ?? EdgeInsets.all(AppSpacingTokens.cardPaddingCompact);
 
-    return AppPressScale(
-      enabled: onTap != null,
-      child: AnimatedContainer(
-        duration: AppMotionTokens.card,
-        curve: AppMotionTokens.defaultCurve,
-        decoration: BoxDecoration(
-          color: _getBackgroundColor(isDark),
-          borderRadius: BorderRadius.circular(AppRadiusTokens.card),
-          border: _getBorder(isDark),
-          boxShadow: _getShadow(isDark),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(AppRadiusTokens.card),
-          child: InkWell(
-            onTap: onTap,
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    return Semantics(
+      button: onTap != null,
+      selected: selected,
+      child: AppPressScale(
+        enabled: onTap != null && !reduceMotion,
+        child: AnimatedContainer(
+          duration: reduceMotion ? Duration.zero : AppMotionTokens.card,
+          curve: AppMotionTokens.defaultCurve,
+          decoration: BoxDecoration(
+            color: selected
+                ? (isDark
+                    ? AppColorTokens.primary.withValues(alpha: 0.18)
+                    : AppColorTokens.primaryLight)
+                : _getBackgroundColor(isDark),
             borderRadius: BorderRadius.circular(AppRadiusTokens.card),
-            child: Padding(padding: effectivePadding, child: child),
+            border: selected
+                ? Border.all(color: AppColorTokens.primary, width: 1.5)
+                : _getBorder(isDark),
+            boxShadow: selected
+                ? AppShadowTokens.cardElevated
+                : _getShadow(isDark),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadiusTokens.card),
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppRadiusTokens.card),
+              child: Padding(padding: effectivePadding, child: child),
+            ),
           ),
         ),
       ),
@@ -176,13 +195,10 @@ class AppCard extends StatelessWidget {
 
   /// Gets the border based on variant and theme mode.
   Border? _getBorder(bool isDark) {
-    if (variant == CardVariant.outlined) {
-      return Border.all(
-        color: isDark ? AppColorTokens.darkBorder : AppColorTokens.border,
-        width: 1,
-      );
-    }
-    return null;
+    return Border.all(
+      color: isDark ? AppColorTokens.darkBorder : AppColorTokens.border,
+      width: variant == CardVariant.outlined ? 1.2 : 1,
+    );
   }
 
   /// Gets the shadow based on variant and theme mode.
@@ -195,7 +211,7 @@ class AppCard extends StatelessWidget {
     // Use appropriate shadow based on theme mode
     switch (variant) {
       case CardVariant.defaultCard:
-        return isDark ? AppShadowTokens.cardDark : AppShadowTokens.card;
+        return null;
       case CardVariant.elevated:
         return isDark
             ? AppShadowTokens.cardElevatedDark

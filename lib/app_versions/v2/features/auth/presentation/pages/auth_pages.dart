@@ -58,7 +58,7 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
                 subtitle:
                     'Dùng email đã liên kết với tài khoản NanoBio của bạn.',
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               _AuthTextField(
                 controller: _email,
                 label: 'Địa chỉ email',
@@ -212,7 +212,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
                 subtitle:
                     'Bạn có thể cập nhật thêm thông tin cá nhân bất cứ lúc nào.',
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               _AuthTextField(
                 controller: _fullName,
                 label: 'Họ và tên',
@@ -312,7 +312,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
                   setState(() => _acceptedTerms = value ?? false);
                 },
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               _PrimaryAuthButton(
                 label: 'Tạo tài khoản',
                 icon: Icons.person_add_alt_1_rounded,
@@ -422,7 +422,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
             message:
                 'Hãy kiểm tra cả mục Thư rác hoặc Quảng cáo nếu bạn chưa thấy email sau vài phút.',
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           _PrimaryAuthButton(
             label: 'Tôi đã xác thực email',
             icon: Icons.check_circle_outline_rounded,
@@ -464,7 +464,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(AppSpacing.md),
+            margin: const EdgeInsets.all(AppSpacing.cardPadding),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
@@ -538,7 +538,7 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
                 message:
                     'Nếu email phù hợp với tài khoản, bạn sẽ nhận được liên kết đặt lại mật khẩu.',
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
             ],
             _AuthTextField(
               controller: _email,
@@ -555,7 +555,7 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
                   _authValidationText(AuthValidators.email(value ?? '')),
               onFieldSubmitted: (_) => _submit(),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             _PrimaryAuthButton(
               label: _sent ? 'Gửi lại liên kết' : 'Gửi liên kết',
               icon: Icons.send_rounded,
@@ -638,7 +638,7 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
               message:
                   'Nên dùng mật khẩu riêng, đủ dài và không chia sẻ với bất kỳ ai.',
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             _AuthTextField(
               controller: _password,
               label: 'Mật khẩu mới',
@@ -678,7 +678,7 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
               ),
               onFieldSubmitted: (_) => _submit(),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             _PrimaryAuthButton(
               label: 'Cập nhật mật khẩu',
               icon: Icons.check_circle_outline_rounded,
@@ -759,7 +759,7 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
                   title: 'Chưa thể xác thực',
                   message: _safeErrorMessage(_error!),
                 ),
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sectionSpacing),
                 _PrimaryAuthButton(
                   label: 'Thử lại',
                   icon: Icons.refresh_rounded,
@@ -853,8 +853,8 @@ class _AuthScaffold extends StatelessWidget {
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= 860;
               final pagePadding = constraints.maxWidth >= 560
-                  ? AppSpacing.xl
-                  : AppSpacing.md;
+                  ? AppSpacing.pagePaddingLarge
+                  : AppSpacing.pagePadding;
 
               return Center(
                 child: SingleChildScrollView(
@@ -862,19 +862,19 @@ class _AuthScaffold extends StatelessWidget {
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: EdgeInsets.fromLTRB(
                     pagePadding,
-                    AppSpacing.md,
+                    AppSpacing.sm,
                     pagePadding,
-                    AppSpacing.xl + keyboardBottomInset,
+                    AppSpacing.lg + keyboardBottomInset,
                   ),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: isWide ? 980 : 560),
+                    constraints: BoxConstraints(maxWidth: isWide ? 920 : 520),
                     child: Material(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.xxl),
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
                       clipBehavior: Clip.antiAlias,
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(AppRadius.xxl),
+                          borderRadius: BorderRadius.circular(AppRadius.xl),
                           border: Border.all(color: AppColors.borderLight),
                           boxShadow: AppShadows.soft,
                         ),
@@ -884,7 +884,7 @@ class _AuthScaffold extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
                                     SizedBox(
-                                      width: 350,
+                                      width: 310,
                                       child: _AuthBrandPanel(
                                         eyebrow: eyebrow,
                                         icon: heroIcon,
@@ -893,7 +893,7 @@ class _AuthScaffold extends StatelessWidget {
                                     Expanded(
                                       child: Padding(
                                         padding: const EdgeInsets.all(
-                                          AppSpacing.xl,
+                                          AppSpacing.pagePaddingLarge,
                                         ),
                                         child: _AuthFormContent(
                                           title: title,
@@ -908,8 +908,8 @@ class _AuthScaffold extends StatelessWidget {
                             : Padding(
                                 padding: EdgeInsets.all(
                                   constraints.maxWidth < 380
-                                      ? AppSpacing.md
-                                      : AppSpacing.lg,
+                                      ? AppSpacing.compactPagePadding
+                                      : AppSpacing.pagePadding,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -920,9 +920,9 @@ class _AuthScaffold extends StatelessWidget {
                                       title: title,
                                       subtitle: subtitle,
                                     ),
-                                    const SizedBox(height: AppSpacing.xl),
+                                    const SizedBox(height: AppSpacing.sectionSpacing),
                                     child,
-                                    const SizedBox(height: AppSpacing.lg),
+                                    const SizedBox(height: AppSpacing.sectionSpacing),
                                     const _AuthTrustNote(),
                                   ],
                                 ),
@@ -958,10 +958,15 @@ class _AuthFormContent extends StatelessWidget {
       children: [
         Text(title, style: AppTextStyles.heading1),
         const SizedBox(height: AppSpacing.sm),
-        Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(height: 1.55)),
-        const SizedBox(height: AppSpacing.xl),
+        Text(
+          subtitle,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextStyles.bodyMedium.copyWith(height: 1.4),
+        ),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         child,
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         const _AuthTrustNote(),
       ],
     );
@@ -989,7 +994,7 @@ class _AuthBrandPanel extends StatelessWidget {
         children: [
           const _AuthPanelPattern(),
           Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
+            padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -997,19 +1002,19 @@ class _AuthBrandPanel extends StatelessWidget {
                   label: eyebrow,
                   icon: Icons.verified_user_outlined,
                   foregroundColor: AppColors.textInverse,
-                  backgroundColor: Colors.white.withValues(alpha: .14),
-                  borderColor: Colors.white.withValues(alpha: .22),
+                  backgroundColor: AppColors.surface.withValues(alpha: .14),
+                  borderColor: AppColors.surface.withValues(alpha: .22),
                 ),
                 const Spacer(),
                 MedicalIconBadge(
                   icon: icon,
                   color: AppColors.textInverse,
-                  backgroundColor: Colors.white.withValues(alpha: .14),
-                  size: 72,
+                  backgroundColor: AppColors.surface.withValues(alpha: .14),
+                  size: 60,
                 ),
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sectionSpacing),
                 Text(
-                  'Nabi đồng hành\ncùng bạn mỗi ngày',
+                  'Nabi đồng hành\ncùng bạn',
                   style: AppTextStyles.heading1.copyWith(
                     color: AppColors.textInverse,
                     height: 1.25,
@@ -1068,7 +1073,7 @@ class _AuthPanelPattern extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: .10),
+                  color: AppColors.surface.withValues(alpha: .10),
                   width: 32,
                 ),
               ),
@@ -1082,7 +1087,7 @@ class _AuthPanelPattern extends StatelessWidget {
               height: 220,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: .05),
+                color: AppColors.surface.withValues(alpha: .05),
               ),
             ),
           ),
@@ -1126,15 +1131,14 @@ class _AuthHero extends StatelessWidget {
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.primaryDark,
               fontWeight: FontWeight.w700,
-              fontSize: 11,
               letterSpacing: 0.7,
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         Container(
-          width: 76,
-          height: 76,
+          width: 60,
+          height: 60,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             gradient: AppGradients.primary,
@@ -1147,9 +1151,9 @@ class _AuthHero extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(icon, color: AppColors.textInverse, size: 34),
+          child: Icon(icon, color: AppColors.textInverse, size: 28),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         Text(
           title,
           textAlign: TextAlign.center,
@@ -1256,15 +1260,15 @@ class _AuthTextField extends StatelessWidget {
         filled: true,
         fillColor: AppColors.inputBackground,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
+          horizontal: AppSpacing.inputPaddingHorizontal,
+          vertical: AppSpacing.inputPaddingVertical,
         ),
         prefixIcon: prefixIcon == null
             ? null
             : Icon(prefixIcon, color: AppColors.primary, size: 21),
-        prefixIconConstraints: const BoxConstraints(minWidth: 52),
+        prefixIconConstraints: const BoxConstraints(minWidth: 46),
         suffixIcon: suffixIcon,
-        suffixIconConstraints: const BoxConstraints(minWidth: 52),
+        suffixIconConstraints: const BoxConstraints(minWidth: 46),
         labelStyle: AppTextStyles.bodyMedium.copyWith(
           color: AppColors.textSecondary,
           fontWeight: FontWeight.w600,
@@ -1275,7 +1279,6 @@ class _AuthTextField extends StatelessWidget {
         ),
         errorStyle: AppTextStyles.bodyMedium.copyWith(
           color: AppColors.error,
-          fontSize: 12,
           height: 1.3,
         ),
         errorMaxLines: 2,
@@ -1394,7 +1397,7 @@ class _PrimaryAuthButton extends StatelessWidget {
       label: label,
       child: SizedBox(
         width: double.infinity,
-        height: 56,
+        height: 48,
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: disabled
@@ -1406,8 +1409,8 @@ class _PrimaryAuthButton extends StatelessWidget {
                 : [
                     BoxShadow(
                       color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
           ),
@@ -1468,7 +1471,7 @@ class _SecondaryAuthButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 52,
+      height: 46,
       child: OutlinedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, size: 19),
@@ -1574,7 +1577,6 @@ class _AuthDivider extends StatelessWidget {
             label,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textMuted,
-              fontSize: 12,
             ),
           ),
         ),
@@ -1598,7 +1600,7 @@ class _InfoBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -1666,7 +1668,6 @@ class _AuthTrustNote extends StatelessWidget {
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textMuted,
-              fontSize: 12,
             ),
           ),
         ),
@@ -1681,7 +1682,7 @@ class _AuthCallbackLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: BoxDecoration(
         color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -1717,7 +1718,7 @@ void _showError(BuildContext context, Object error) {
       SnackBar(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.error,
-        margin: const EdgeInsets.all(AppSpacing.md),
+        margin: const EdgeInsets.all(AppSpacing.cardPadding),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),

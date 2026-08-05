@@ -6,6 +6,7 @@ import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin
 import 'package:nano_app/app_versions/v2/app/bio_ai_v2_app.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/core/theme/app_text_scale.dart';
 
 class BioAIApp extends ConsumerWidget {
   const BioAIApp({super.key});
@@ -24,8 +25,14 @@ class BioAIApp extends ConsumerWidget {
 
     if (ref.watch(authBackendAvailabilityProvider).isReady &&
         authIdentity.isLoading) {
-      return const _AccessResolvingApp(
-        key: ValueKey('auth-identity-resolving'),
+      return _AccessResolvingApp(
+        key: const ValueKey('auth-identity-resolving'),
+        textScaleFactor: ref
+                .watch(appTextScaleControllerProvider)
+                .value
+                ?.preset
+                .factor ??
+            AppTextScalePreset.standard.factor,
       );
     }
 
@@ -35,7 +42,14 @@ class BioAIApp extends ConsumerWidget {
 
     final adminAccess = ref.watch(adminAccessControllerProvider);
     if (adminAccess.isLoading) {
-      return const _AccessResolvingApp();
+      return _AccessResolvingApp(
+        textScaleFactor: ref
+                .watch(appTextScaleControllerProvider)
+                .value
+                ?.preset
+                .factor ??
+            AppTextScalePreset.standard.factor,
+      );
     }
 
     final access = adminAccess.asData?.value;
@@ -56,14 +70,23 @@ class BioAIApp extends ConsumerWidget {
 }
 
 class _AccessResolvingApp extends StatelessWidget {
-  const _AccessResolvingApp({super.key});
+  const _AccessResolvingApp({
+    super.key,
+    required this.textScaleFactor,
+  });
+
+  final double textScaleFactor;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      builder: AppExperience.builder,
+      builder: (context, child) => AppExperience.builderWithTextScale(
+        context,
+        child,
+        presetFactor: textScaleFactor,
+      ),
       home: const MedicalPageScaffold(
         body: Center(
           child: Column(

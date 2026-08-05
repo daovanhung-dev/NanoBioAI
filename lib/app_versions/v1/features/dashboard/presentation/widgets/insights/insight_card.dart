@@ -16,7 +16,7 @@ class InsightCard extends StatelessWidget {
       case InsightType.warning:
         return AppColors.warning;
       case InsightType.tip:
-        return const Color(0xFF8B5CF6);
+        return AppColors.tertiary;
     }
   }
 
@@ -27,18 +27,18 @@ class InsightCard extends StatelessWidget {
       case InsightType.warning:
         return AppColors.warningSoft;
       case InsightType.tip:
-        return const Color(0xFFF5F3FF);
+        return AppColors.tertiarySoft;
     }
   }
 
   List<Color> get _gradientColors {
     switch (data.type) {
       case InsightType.recommendation:
-        return const [Color(0xFF1D4ED8), Color(0xFF2563EB)];
+        return const [AppColors.primaryDark, AppColors.primary];
       case InsightType.warning:
-        return const [Color(0xFFB45309), Color(0xFFD97706)];
+        return const [AppColors.error, AppColors.warning];
       case InsightType.tip:
-        return const [Color(0xFF6D28D9), Color(0xFF7C3AED)];
+        return const [AppColors.tertiary, AppColors.tertiary];
     }
   }
 
@@ -56,7 +56,7 @@ class InsightCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -84,7 +84,7 @@ class InsightCard extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(data.icon, color: Colors.white, size: 20),
+            child: Icon(data.icon, color: AppColors.surface, size: 20),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -103,8 +103,8 @@ class InsightCard extends StatelessWidget {
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 2,
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xxs,
                       ),
                       decoration: BoxDecoration(
                         color: _bgColor,
@@ -120,7 +120,7 @@ class InsightCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   data.body,
                   style: AppTextStyles.bodySmall.copyWith(

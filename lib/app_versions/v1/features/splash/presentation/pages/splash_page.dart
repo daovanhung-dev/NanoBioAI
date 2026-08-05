@@ -183,7 +183,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 
   Future<void> _advanceToProfileCheckStage() async {
-    await Future<void>.delayed(const Duration(milliseconds: 280));
+    await Future<void>.delayed(AppDuration.navigation);
 
     if (!mounted || _hasNavigated) return;
     _setStage(_BootStage.checkingProfile);
@@ -484,7 +484,7 @@ class _SplashAtmospherePainter extends CustomPainter {
     canvas.drawPath(upperWave, linePaint);
     canvas.drawPath(lowerWave, linePaint);
 
-    final particlePaint = Paint()..color = Colors.white.withValues(alpha: 0.50);
+    final particlePaint = Paint()..color = AppColors.surface.withValues(alpha: 0.50);
 
     for (var index = 0; index < 8; index++) {
       final fraction = index / 8;
@@ -530,17 +530,16 @@ class _SplashTopBar extends StatelessWidget {
         ),
         if (!compact)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.42),
-              borderRadius: BorderRadius.circular(99),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.76)),
+              color: AppColors.surface.withValues(alpha: 0.42),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border.all(color: AppColors.surface.withValues(alpha: 0.76)),
             ),
             child: Text(
               'CHĂM SÓC CÁ NHÂN',
               style: AppTextStyles.overline.copyWith(
                 color: NabiPalette.mutedInk,
-                fontSize: 8.4,
                 height: 1,
                 letterSpacing: 1.05,
                 fontWeight: FontWeight.w900,
@@ -579,9 +578,9 @@ class _LaunchStatusPill extends StatelessWidget {
               vertical: compact ? 7 : 8,
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.50),
-              borderRadius: BorderRadius.circular(99),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.78)),
+              color: AppColors.surface.withValues(alpha: 0.50),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border.all(color: AppColors.surface.withValues(alpha: 0.78)),
               boxShadow: [
                 BoxShadow(
                   color: stage.accent.withValues(alpha: 0.08),
@@ -611,7 +610,7 @@ class _LaunchStatusPill extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 7),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   stage.statusLabel,
                   style: AppTextStyles.overline.copyWith(
@@ -680,7 +679,7 @@ class _SplashExperience extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.displayMedium.copyWith(
-                color: Colors.white,
+                color: AppColors.surface,
                 fontSize: layout.isCompact ? 34 : 42,
                 height: 1,
                 fontWeight: FontWeight.w900,
@@ -704,7 +703,7 @@ class _SplashExperience extends StatelessWidget {
             ),
           ),
           if (layout.showWellnessTags) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             const _WellnessTags(),
           ],
           SizedBox(height: layout.isCompact ? 20 : 25),
@@ -782,14 +781,14 @@ class _BrandMark extends StatelessWidget {
                       margin: EdgeInsets.all(size * 0.08),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.16),
+                        color: AppColors.surface.withValues(alpha: 0.16),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.36),
+                          color: AppColors.surface.withValues(alpha: 0.36),
                         ),
                       ),
                       child: Icon(
                         Icons.favorite_rounded,
-                        color: Colors.white,
+                        color: AppColors.surface,
                         size: size * 0.28,
                       ),
                     ),
@@ -877,7 +876,7 @@ class _EyebrowLabel extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: NabiPalette.violet.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(99),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(color: NabiPalette.violet.withValues(alpha: 0.14)),
       ),
       child: Text(
@@ -938,22 +937,21 @@ class _WellnessTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.50),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.80)),
+        color: AppColors.surface.withValues(alpha: 0.50),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: AppColors.surface.withValues(alpha: 0.80)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: 15),
-          const SizedBox(width: 6),
+          const SizedBox(width: AppSpacing.tiny),
           Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(
               color: NabiPalette.ink,
-              fontSize: 11,
               height: 1,
               fontWeight: FontWeight.w800,
             ),
@@ -992,7 +990,7 @@ class _ReadinessPanel extends StatelessWidget {
             vertical: compact ? 12 : 14,
           ),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.53),
+            color: AppColors.surface.withValues(alpha: 0.53),
             borderRadius: BorderRadius.circular(compact ? 18 : 21),
             border: Border.all(
               color: stage.accent.withValues(alpha: glowOpacity),
@@ -1011,7 +1009,7 @@ class _ReadinessPanel extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 260),
+                    duration: AppDuration.dialog,
                     width: compact ? 36 : 41,
                     height: compact ? 36 : 41,
                     decoration: BoxDecoration(
@@ -1038,7 +1036,7 @@ class _ReadinessPanel extends StatelessWidget {
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: AppSpacing.xs),
                         Text(
                           stage.description,
                           maxLines: compact ? 2 : 3,
@@ -1143,7 +1141,7 @@ class _TimelineStep extends StatelessWidget {
     return Column(
       children: [
         AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+          duration: AppDuration.card,
           width: compact ? 25 : 29,
           height: compact ? 25 : 29,
           decoration: BoxDecoration(
@@ -1164,14 +1162,13 @@ class _TimelineStep extends StatelessWidget {
           ),
         ),
         if (!compact) ...[
-          const SizedBox(height: 5),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             item.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.labelSmall.copyWith(
               color: active ? NabiPalette.ink : NabiPalette.mutedInk,
-              fontSize: 9.5,
               height: 1,
               fontWeight: active ? FontWeight.w800 : FontWeight.w600,
             ),
@@ -1190,11 +1187,11 @@ class _TimelineConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
+      duration: AppDuration.card,
       height: 1.5,
-      margin: const EdgeInsets.only(bottom: 18),
+      margin: const EdgeInsets.only(bottom: AppSpacing.large),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(99),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         color: active
             ? NabiPalette.cyan.withValues(alpha: 0.62)
             : NabiPalette.ink.withValues(alpha: 0.09),
@@ -1212,14 +1209,13 @@ class _PrivacyCaption extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(Icons.lock_outline_rounded, size: 13, color: NabiPalette.mutedInk),
-        const SizedBox(width: 6),
+        const SizedBox(width: AppSpacing.tiny),
         Flexible(
           child: Text(
             'Bạn luôn kiểm soát những thông tin mình chia sẻ.',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall.copyWith(
               color: NabiPalette.mutedInk,
-              fontSize: 10.5,
               height: 1.2,
             ),
           ),
@@ -1260,7 +1256,7 @@ class _LoadingFooter extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _BreathingDots(accent: stage.accent, controller: controller),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Flexible(
                   child: Text(
                     stage == _BootStage.checkingProfile
@@ -1302,7 +1298,7 @@ class _ShimmerLoadingTrack extends StatelessWidget {
         return Container(
           constraints: const BoxConstraints(maxWidth: 360),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(99),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             child: SizedBox(
               height: compact ? 4 : 5,
               child: LayoutBuilder(
@@ -1370,7 +1366,7 @@ class _BreathingDots extends StatelessWidget {
             return Container(
               width: size,
               height: size,
-              margin: const EdgeInsets.symmetric(horizontal: 1.5),
+              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
               decoration: BoxDecoration(
                 color: index == 1 ? accent : NabiPalette.violet,
                 shape: BoxShape.circle,

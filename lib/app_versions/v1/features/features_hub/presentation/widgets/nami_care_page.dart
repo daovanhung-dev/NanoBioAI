@@ -55,7 +55,7 @@ class NamiCareScaffold extends StatelessWidget {
                               icon: icon,
                               gradient: gradient,
                             ),
-                            const SizedBox(height: AppSpacing.lg),
+                            const SizedBox(height: AppSpacing.sectionSpacing),
                             ...children,
                           ],
                         ),
@@ -87,7 +87,7 @@ class NamiCareSurfaceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MedicalSurfaceCard(
-      padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
+      padding: padding ?? const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       borderColor: borderColor,
       child: child,
     );
@@ -131,7 +131,7 @@ class NamiCareInfoTile extends StatelessWidget {
     final tile = AnimatedContainer(
       duration: AppDuration.fast,
       curve: Curves.easeOut,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: selected ? color.withValues(alpha: .08) : AppColors.card,
         borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -316,11 +316,11 @@ class _NamiCareHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(AppRadius.xxl),
-        border: Border.all(color: Colors.white.withValues(alpha: .12)),
+        border: Border.all(color: AppColors.surface.withValues(alpha: .12)),
         boxShadow: AppShadows.primary,
       ),
       child: Column(
@@ -329,7 +329,7 @@ class _NamiCareHeader extends StatelessWidget {
           Row(
             children: [
               Material(
-                color: Colors.white.withValues(alpha: .16),
+                color: AppColors.surface.withValues(alpha: .16),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -337,7 +337,7 @@ class _NamiCareHeader extends StatelessWidget {
                   child: const SizedBox(
                     width: 46,
                     height: 46,
-                    child: Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    child: Icon(Icons.arrow_back_rounded, color: AppColors.surface),
                   ),
                 ),
               ),
@@ -346,13 +346,13 @@ class _NamiCareHeader extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .16),
+                  color: AppColors.surface.withValues(alpha: .16),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: .18),
+                    color: AppColors.surface.withValues(alpha: .18),
                   ),
                 ),
-                child: Icon(icon, color: Colors.white, size: 24),
+                child: Icon(icon, color: AppColors.surface, size: 24),
               ),
               const Spacer(),
               Container(
@@ -361,24 +361,24 @@ class _NamiCareHeader extends StatelessWidget {
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .18),
+                  color: AppColors.surface.withValues(alpha: .18),
                   borderRadius: BorderRadius.circular(AppRadius.circular),
                 ),
                 child: Text(
                   badge,
                   style: AppTextStyles.caption.copyWith(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     fontWeight: AppTypography.bold,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           Text(
             title,
             style: AppTextStyles.heading2.copyWith(
-              color: Colors.white,
+              color: AppColors.surface,
               fontWeight: AppTypography.bold,
               height: 1.22,
             ),
@@ -387,7 +387,7 @@ class _NamiCareHeader extends StatelessWidget {
           Text(
             subtitle,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: Colors.white.withValues(alpha: .92),
+              color: AppColors.surface.withValues(alpha: .92),
               height: 1.45,
             ),
           ),

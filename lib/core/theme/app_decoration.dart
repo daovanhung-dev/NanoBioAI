@@ -196,7 +196,7 @@ class AppDecoration {
     List<BoxShadow>? shadows,
   }) {
     return base(
-      color: Colors.white.withValues(alpha: opacity),
+      color: AppColors.surface.withValues(alpha: opacity),
       borderRadius: BorderRadius.circular(radius ?? AppRadius.lg),
       border: Border.all(color: borderColor),
       shadows: shadows ?? AppShadows.glass,
@@ -205,7 +205,7 @@ class AppDecoration {
 
   static BoxDecoration glassDark({double opacity = 0.12, double? radius}) {
     return base(
-      color: Colors.black.withValues(alpha: opacity),
+      color: AppColors.textPrimary.withValues(alpha: opacity),
       borderRadius: BorderRadius.circular(radius ?? AppRadius.lg),
       border: Border.all(color: const Color(0x22FFFFFF)),
       shadows: AppShadows.darkMd,

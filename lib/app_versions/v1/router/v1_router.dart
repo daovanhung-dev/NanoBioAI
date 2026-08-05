@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/app_versions/v1/features/ai_voice/presentation/pages/ai_voice_page.dart';
 import 'package:nano_app/app_versions/v1/features/auth/presentation/pages/v1_auth_entry_page.dart';
 import 'package:nano_app/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/dashboard.dart';
@@ -8,7 +9,9 @@ import 'package:nano_app/app_versions/v1/features/daily_routine/presentation/pag
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/presentation/pages/nutrition_page.dart';
+import 'package:nano_app/app_versions/v1/features/nutrition/presentation/pages/nutrition_profile_editor_page.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/onboarding.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/presentation/pages/onboarding_text_scale_page.dart';
 import 'package:nano_app/app_versions/v1/features/profile/presentation/pages/profile_page.dart';
 import 'package:nano_app/app_versions/v1/features/splash/splash.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart';
@@ -63,7 +66,9 @@ final v1Routes = <RouteBase>[
   GoRoute(
     path: V1RoutePaths.onboarding,
     name: V1RoutePaths.onboarding,
-    builder: (context, state) => const OnboardingPage(),
+    builder: (context, state) => const OnboardingTextScaleGate(
+      child: OnboardingPage(),
+    ),
   ),
 
   /// Menu
@@ -129,12 +134,29 @@ final v1Routes = <RouteBase>[
     builder: (context, state) => const AIChatScreen(),
   ),
 
+
+  /// AI Voice
+  GoRoute(
+    path: V1RoutePaths.aiVoice,
+    name: V1RoutePaths.aiVoice,
+    redirect: V1RouteGuards.authGuard,
+    builder: (context, state) => const AiVoicePage(),
+  ),
+
   /// Nutrition
   GoRoute(
     path: V1RoutePaths.nutrition,
     name: V1RoutePaths.nutrition,
     redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const NutritionPage(),
+  ),
+
+
+  GoRoute(
+    path: V1RoutePaths.nutritionProfile,
+    name: V1RoutePaths.nutritionProfile,
+    redirect: V1RouteGuards.authGuard,
+    builder: (context, state) => const NutritionProfileEditorPage(),
   ),
 
   /// Profile

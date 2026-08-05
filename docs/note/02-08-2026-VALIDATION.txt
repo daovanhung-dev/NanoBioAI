@@ -1,0 +1,102 @@
+NanoBio 02-08-2026 Implementation Validation
+================================================
+Root: packaged NanoBio project
+Changed files vs targeted baseline: 84
+Changed Dart files: 64
+Added/changed Dart tests: 8
+PASS=89 FAIL=0 SKIPPED=2
+
+[SKIPPED] Flutter SDK availability — flutter executable not installed
+[SKIPPED] Dart SDK availability — dart executable not installed
+[PASS] Recipe count
+[PASS] Recipe topic count
+[PASS] Recipe chapter count
+[PASS] Recipe codes unique
+[PASS] Recipe source SHA
+[PASS] Recipe required fields
+[PASS] Source recipes remain ineligible
+[PASS] Source recipe metadata not inferred
+[PASS] Source recipe nutrition null in JSON
+[PASS] Source hashes unique
+[PASS] Seed insert count
+[PASS] Seed code parity
+[PASS] Seed transaction markers
+[PASS] Seed approval guard
+[PASS] config marker 21-nutrition-profile-meal-catalog-v17.sql
+[PASS] config marker 22-meal-catalog-source-seed.sql
+[PASS] config seed count
+[PASS] Supabase creates nutrition_profiles
+[PASS] Supabase RLS nutrition_profiles
+[PASS] Supabase creates health_symptoms
+[PASS] Supabase RLS health_symptoms
+[PASS] Supabase creates medication_records
+[PASS] Supabase RLS medication_records
+[PASS] Supabase creates food_restrictions
+[PASS] Supabase RLS food_restrictions
+[PASS] Supabase creates lab_results
+[PASS] Supabase RLS lab_results
+[PASS] Supabase creates nutrition_goals
+[PASS] Supabase RLS nutrition_goals
+[PASS] Supabase creates meal_schedule_preferences
+[PASS] Supabase RLS meal_schedule_preferences
+[PASS] Supabase creates nutrition_preference_rules
+[PASS] Supabase RLS nutrition_preference_rules
+[PASS] Supabase catalog client write denied
+[PASS] Supabase catalog active read policy
+[PASS] Supabase snapshot includes nutrition tables
+[PASS] SQLite nutrition table creation
+[PASS] SQLite nutrition_profiles unique columns
+[PASS] SQLite health_symptoms unique columns
+[PASS] SQLite medication_records unique columns
+[PASS] SQLite food_restrictions unique columns
+[PASS] SQLite lab_results unique columns
+[PASS] SQLite nutrition_goals unique columns
+[PASS] SQLite meal_schedule_preferences unique columns
+[PASS] SQLite nutrition_preference_rules unique columns
+[PASS] SQLite version V17
+[PASS] V17 migration routed
+[PASS] V17 onCreate tables
+[PASS] V17 outbox tables
+[PASS] V17 cloud mappings
+[PASS] Meal plan snapshot column catalog_code
+[PASS] Meal plan snapshot column ingredients_json
+[PASS] Meal plan snapshot column cooking_steps_json
+[PASS] Meal plan snapshot column benefits
+[PASS] Meal plan snapshot column source_name
+[PASS] Meal plan snapshot column source_hash
+[PASS] Meal plan snapshot column source_page
+[PASS] Meal plan snapshot column replacement_count
+[PASS] Candidate selector approval gate
+[PASS] Candidate selector current meal exclusion
+[PASS] Meal normalizer catalog lookup
+[PASS] Meal replacement transaction
+[PASS] speech_to_text dependency
+[PASS] flutter_tts dependency
+[PASS] Android microphone permission
+[PASS] iOS microphone description
+[PASS] iOS speech description
+[PASS] Voice reuses AIChatRepository
+[PASS] Voice stale-response guard
+[PASS] Voice exact greeting
+[PASS] Voice auth route guard
+[PASS] Four text scale presets
+[PASS] Text scale persisted
+[PASS] App-wide text scale lib/app/bio_ai_app.dart
+[PASS] App-wide text scale lib/app_versions/v1/app/bio_ai_v1_app.dart
+[PASS] App-wide text scale lib/app_versions/v2/app/bio_ai_v2_app.dart
+[PASS] App-wide text scale lib/app_versions/v3/app/bio_ai_v3_app.dart
+[PASS] App-wide text scale lib/app_versions/admin/app/bio_ai_admin_app.dart
+[PASS] Pubspec catalog asset reachable
+[PASS] All declared asset paths exist
+[PASS] Structured file parsers
+[PASS] No new presentation boundary import violation
+[PASS] Changed text trailing whitespace
+[PASS] Changed text final newline
+[PASS] No sensitive config/key files in working delivery
+[PASS] No embedded private keys
+[PASS] Agent SQLite context V17
+[PASS] Worklog exists
+[PASS] Implementation report exists
+
+Runtime commands not executed: dart format, flutter analyze, flutter test, flutter build APK, device tests, Supabase sandbox/RLS tests.
+

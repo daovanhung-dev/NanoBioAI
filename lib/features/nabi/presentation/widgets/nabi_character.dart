@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/entities/nabi_expression.dart';
 
+import 'package:nano_app/core/theme/app_colors.dart';
 /// Nhân vật Nabi dạng vector Canvas, nền trong suốt.
 ///
 /// Canvas giúp biểu cảm thực sự thay đổi theo state, không phụ thuộc bộ ảnh
@@ -138,7 +139,7 @@ class _NabiCharacterPainter extends CustomPainter {
         width: 50 * unit,
         height: 9 * unit,
       ),
-      Paint()..color = Colors.black.withValues(alpha: 0.13),
+      Paint()..color = AppColors.textPrimary.withValues(alpha: 0.13),
     );
 
     _drawBody(canvas, unit, sway);
@@ -183,7 +184,7 @@ class _NabiCharacterPainter extends CustomPainter {
 
   void _drawHead(Canvas canvas, double u, double sway) {
     final headCenter = Offset(50 * u + sway, 39 * u);
-    final skin = Color.lerp(surfaceColor, const Color(0xFFFFD7C6), 0.78)!;
+    final skin = Color.lerp(surfaceColor, AppColors.errorSoft, 0.78)!;
 
     // Tóc phía sau.
     canvas.drawOval(
@@ -231,7 +232,7 @@ class _NabiCharacterPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(69.2 * u + sway, 22.3 * u),
       1.4 * u,
-      Paint()..color = Colors.white.withValues(alpha: 0.85),
+      Paint()..color = AppColors.surface.withValues(alpha: 0.85),
     );
   }
 
@@ -351,7 +352,7 @@ class _NabiCharacterPainter extends CustomPainter {
         (emotion == NabiEmotion.listening ? 10.5 : 8.2) * u * eyeScale;
     final eyePaint = Paint()..color = outlineColor;
     final highlightPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.92);
+      ..color = AppColors.surface.withValues(alpha: 0.92);
 
     final leftRect = Rect.fromCenter(
       center: left,

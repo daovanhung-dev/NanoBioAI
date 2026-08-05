@@ -3,47 +3,40 @@ class MealPlansTable {
 
   static const createTable = '''
   CREATE TABLE meal_plans (
-
-  id TEXT PRIMARY KEY,
-
-  user_id TEXT,
-
-  plan_date TEXT,
-
-  meal_type TEXT,
-
-  meal_name TEXT,
-
-  description TEXT,
-
-  calories INTEGER,
-
-  protein REAL,
-
-  carbs REAL,
-
-  fat REAL,
-
-  fiber REAL,
-
-  water_ml INTEGER,
-
-  meal_order INTEGER,
-
-  start_time TEXT,
-
-  end_time TEXT,
-
-  cooking_instructions TEXT,
-
-  is_completed INTEGER,
-
-  ai_generated INTEGER,
-
-  created_at TEXT,
-
-  updated_at TEXT
-
-)
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    plan_date TEXT,
+    meal_type TEXT,
+    meal_name TEXT,
+    description TEXT,
+    calories INTEGER,
+    protein REAL,
+    carbs REAL,
+    fat REAL,
+    fiber REAL,
+    water_ml INTEGER,
+    meal_order INTEGER,
+    start_time TEXT,
+    end_time TEXT,
+    cooking_instructions TEXT,
+    catalog_code TEXT,
+    serving_size TEXT,
+    health_topic_code TEXT,
+    health_topic_name TEXT,
+    ingredients_json TEXT NOT NULL DEFAULT '[]',
+    cooking_steps_json TEXT NOT NULL DEFAULT '[]',
+    benefits TEXT,
+    allergen_tags_json TEXT NOT NULL DEFAULT '[]',
+    avoid_condition_tags_json TEXT NOT NULL DEFAULT '[]',
+    source_name TEXT,
+    source_hash TEXT,
+    source_page INTEGER,
+    snapshot_schema_version INTEGER NOT NULL DEFAULT 1,
+    replacement_count INTEGER NOT NULL DEFAULT 0,
+    is_completed INTEGER,
+    ai_generated INTEGER,
+    created_at TEXT,
+    updated_at TEXT
+  )
   ''';
 }

@@ -31,11 +31,20 @@ class RadiusFoundation {
   /// Medium radius for buttons and inputs (12px)
   static const double radius12 = 12;
 
+  /// Compact control/input radius (14px)
+  static const double radius14 = 14;
+
   /// Large radius for cards (16px)
   static const double radius16 = 16;
 
+  /// Standard card and selection radius (20px)
+  static const double radius20 = 20;
+
   /// Extra large radius for dialogs and modals (24px)
   static const double radius24 = 24;
+
+  /// Featured panel and bottom-sheet radius (28px)
+  static const double radius28 = 28;
 
   /// Full radius for circular elements like pills, avatars, and badges (9999px)
   static const double radiusFull = 9999;

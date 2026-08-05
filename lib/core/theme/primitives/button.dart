@@ -150,21 +150,27 @@ class AppButton extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final button = variant == ButtonVariant.icon
-        ? _buildIconButton(isDark)
-        : _buildStandardButton(isDark);
+        ? _buildIconButton(isDark, reduceMotion)
+        : _buildStandardButton(isDark, reduceMotion);
 
-    return AppPressScale(
+    return Semantics(
+      button: true,
       enabled: !_isDisabled,
-      pressedScale: 0.98,
-      child: button,
+      child: AppPressScale(
+        enabled: !_isDisabled && !reduceMotion,
+        pressedScale: 0.98,
+        child: button,
+      ),
     );
   }
 
   /// Builds standard button variants (primary, secondary, text, outlined).
-  Widget _buildStandardButton(bool isDark) {
+  Widget _buildStandardButton(bool isDark, bool reduceMotion) {
     return AnimatedContainer(
-      duration: AppMotionTokens.button,
+      duration: reduceMotion ? Duration.zero : AppMotionTokens.button,
       curve: AppMotionTokens.defaultCurve,
       constraints: const BoxConstraints(
         minHeight: AppSpacingTokens.buttonMinHeight,
@@ -216,9 +222,9 @@ class AppButton extends StatelessWidget {
   }
 
   /// Builds icon button variant.
-  Widget _buildIconButton(bool isDark) {
+  Widget _buildIconButton(bool isDark, bool reduceMotion) {
     return AnimatedContainer(
-      duration: AppMotionTokens.button,
+      duration: reduceMotion ? Duration.zero : AppMotionTokens.button,
       curve: AppMotionTokens.defaultCurve,
       constraints: const BoxConstraints(
         minWidth: AppSpacingTokens.touchTargetMin,

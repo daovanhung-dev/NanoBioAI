@@ -15,9 +15,9 @@ class GuestAccountAccessCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: AppDecoration.gradient(
-        colors: const [Color(0xFFEFF6FF), Color(0xFFECFEFF)],
+        colors: const [AppColors.primarySubtle, AppColors.primarySubtle],
         radius: AppRadius.xxl,
         shadows: AppShadows.soft,
       ),
@@ -33,7 +33,7 @@ class GuestAccountAccessCard extends StatelessWidget {
             ),
             child: const Icon(
               Icons.login_rounded,
-              color: Colors.white,
+              color: AppColors.surface,
               size: 30,
             ),
           ),
@@ -54,7 +54,7 @@ class GuestAccountAccessCard extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(

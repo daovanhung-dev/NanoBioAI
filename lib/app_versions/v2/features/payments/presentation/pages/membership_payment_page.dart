@@ -46,7 +46,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         children: [
           Text('Nâng cấp gói của bạn', style: AppTextStyles.heading2),
           const SizedBox(height: AppSpacing.sm),
@@ -74,7 +74,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
             ),
           ],
           if (!hasActiveRequest) ...[
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             _PlanSelector(
               planCode: _planCode,
               billingCycle: _billingCycle,
@@ -86,7 +86,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
                 setState(() => _billingCycle = value ?? _billingCycle);
               },
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             FilledButton.icon(
               onPressed: _submitting || isInitialLoading || !hasPayerName
                   ? null
@@ -105,7 +105,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
             _FeedbackCard(message: _message!, isError: false),
           ],
           if (request != null) ...[
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             _PaymentRequestPanel(
               request: request,
               isSubmitting: _submitting,
@@ -293,7 +293,7 @@ class _PaymentRequestPanel extends StatelessWidget {
     final bankName = _bankLabel(request);
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -356,12 +356,12 @@ class _PaymentRequestPanel extends StatelessWidget {
             ),
           ],
           if (qrPayload != null) ...[
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             Center(
               child: Semantics(
                 label: 'Mã QR thanh toán',
                 child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.all(AppSpacing.cardPadding),
                   color: AppColors.surface,
                   child: QrImageView(
                     data: qrPayload,
@@ -371,7 +371,7 @@ class _PaymentRequestPanel extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             if (bankName != null)
               _DetailRow(label: 'Ngân hàng', value: bankName),
             if (request.bankAccountNumber != null)
@@ -405,7 +405,7 @@ class _PaymentRequestPanel extends StatelessWidget {
             ),
           ],
           if (request.canConfirmTransfer && qrPayload != null) ...[
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(

@@ -95,15 +95,15 @@ class _EditorBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       children: [
         Text(
           'Nabi dùng các mốc này cho những ngày được tạo mới. Lịch hiện tại sẽ không bị thay đổi.',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         DailyRoutinePreferencesEditor(value: preferences, onChanged: onChanged),
-        const SizedBox(height: 20),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         FilledButton.icon(
           onPressed: saving ? null : onSave,
           icon: saving
@@ -114,7 +114,7 @@ class _EditorBody extends StatelessWidget {
               : const Icon(Icons.save_rounded),
           label: const Text('Lưu nhịp sinh hoạt'),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.sectionSpacing),
       ],
     );
   }

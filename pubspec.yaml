@@ -48,6 +48,8 @@ dependencies:
   image_picker: ^1.0.7
   image: ^4.8.0
   permission_handler: ^11.2.0
+  speech_to_text: ^7.4.0
+  flutter_tts: ^4.2.5
   flutter_local_notifications: 19.5.0
   timezone: 0.10.1
   flutter_timezone: 5.1.0
@@ -74,16 +76,17 @@ flutter:
 
   assets:
     - assets/
+    - assets/data/
     - assets/images/
-    - assets/images/Nabi/
-    - assets/images/Nabi/chat/
-    - assets/images/Nabi/core/
-    - assets/images/Nabi/daily/
-    - assets/images/Nabi/engagement/
-    - assets/images/Nabi/future/
-    - assets/images/Nabi/onboarding/
-    - assets/images/Nabi/progress/
-    - assets/images/Nabi/system/
+    - assets/images/nabi/
+    - assets/images/nabi/chat/
+    - assets/images/nabi/core/
+    - assets/images/nabi/daily/
+    - assets/images/nabi/engagement/
+    - assets/images/nabi/future/
+    - assets/images/nabi/onboarding/
+    - assets/images/nabi/progress/
+    - assets/images/nabi/system/
     - assets/icons/
     - assets/icons/custom/
     - assets/icons/filled/
@@ -91,7 +94,7 @@ flutter:
     - assets/icons/nutrition/
     - assets/icons/outlined/
     - assets/config/
-    - assets/config/Nabi/
+    - assets/config/nabi/
     - assets/nabi/
     - assets/nabi/01_character/01_static_expressions/
     - assets/nabi/01_character/02_30fps_frames/

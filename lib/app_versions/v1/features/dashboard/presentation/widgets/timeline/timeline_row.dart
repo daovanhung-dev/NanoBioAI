@@ -18,13 +18,12 @@ class TimelineRow extends StatelessWidget {
           SizedBox(
             width: 46,
             child: Padding(
-              padding: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.only(top: AppSpacing.xxs),
               child: Text(
                 event.time,
                 style: AppTextStyles.labelSmall.copyWith(
                   color: AppColors.textHint,
                   fontWeight: AppTypography.medium,
-                  fontSize: 10,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -55,7 +54,7 @@ class TimelineRow extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: EdgeInsets.only(
-                top: 4,
+                top: AppSpacing.xs,
                 bottom: isLast ? 0 : AppSpacing.md,
               ),
               child: Column(
@@ -67,7 +66,7 @@ class TimelineRow extends StatelessWidget {
                       fontWeight: AppTypography.semiBold,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppSpacing.xxs),
                   Text(
                     event.detail,
                     style: AppTextStyles.bodySmall.copyWith(

@@ -14,12 +14,14 @@ abstract class V1RoutePaths {
   static const lifestyleSchedule = '/lifestyle-schedule';
   static const dailyRoutinePreferences = '/daily-routine-preferences';
   static const nutrition = '/nutrition';
+  static const nutritionProfile = '/nutrition-profile';
   static const sleepTracking = '/sleep-tracking';
   static const stressTracking = '/stress-tracking';
   static const menu = '/menu';
   static const mealPlan = '/meal-plan';
 
   static const aiChat = '/ai-chat';
+  static const aiVoice = '/ai-voice';
   static const aiAnalysis = '/ai-analysis';
 
   static const foodScanner = '/food-scanner';

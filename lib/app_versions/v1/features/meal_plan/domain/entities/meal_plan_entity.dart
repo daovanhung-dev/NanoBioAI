@@ -1,25 +1,4 @@
 class MealPlanEntity {
-  final String id;
-  final String? userId;
-  final String planDate;
-  final String mealType;
-  final String mealName;
-  final String description;
-  final int calories;
-  final double protein;
-  final double carbs;
-  final double fat;
-  final double fiber;
-  final int waterMl;
-  final int mealOrder;
-  final String startTime;
-  final String endTime;
-  final String cookingInstructions;
-  final bool isCompleted;
-  final bool aiGenerated;
-  final String createdAt;
-  final String updatedAt;
-
   const MealPlanEntity({
     required this.id,
     this.userId,
@@ -37,11 +16,63 @@ class MealPlanEntity {
     this.startTime = '',
     this.endTime = '',
     this.cookingInstructions = '',
+    this.catalogCode = '',
+    this.servingSize = '',
+    this.topicCode = '',
+    this.topicName = '',
+    this.ingredients = const [],
+    this.cookingSteps = const [],
+    this.benefits = '',
+    this.allergenTags = const [],
+    this.conditionTags = const [],
+    this.provenanceSource = '',
+    this.sourceHash = '',
+    this.catalogSchemaVersion = 1,
+    this.replacementCount = 0,
     required this.isCompleted,
     required this.aiGenerated,
     required this.createdAt,
     required this.updatedAt,
   });
+
+  final String id;
+  final String? userId;
+  final String planDate;
+  final String mealType;
+  final String mealName;
+  final String description;
+  final int calories;
+  final double protein;
+  final double carbs;
+  final double fat;
+  final double fiber;
+  final int waterMl;
+  final int mealOrder;
+  final String startTime;
+  final String endTime;
+  final String cookingInstructions;
+  final String catalogCode;
+  final String servingSize;
+  final String topicCode;
+  final String topicName;
+  final List<String> ingredients;
+  final List<String> cookingSteps;
+  final String benefits;
+  final List<String> allergenTags;
+  final List<String> conditionTags;
+  final String provenanceSource;
+  final String sourceHash;
+  final int catalogSchemaVersion;
+  final int replacementCount;
+  final bool isCompleted;
+  final bool aiGenerated;
+  final String createdAt;
+  final String updatedAt;
+
+  bool get hasRecipeDetails =>
+      ingredients.isNotEmpty ||
+      cookingSteps.isNotEmpty ||
+      cookingInstructions.trim().isNotEmpty;
 
   MealPlanEntity copyWith({
     String? id,
@@ -60,6 +91,19 @@ class MealPlanEntity {
     String? startTime,
     String? endTime,
     String? cookingInstructions,
+    String? catalogCode,
+    String? servingSize,
+    String? topicCode,
+    String? topicName,
+    List<String>? ingredients,
+    List<String>? cookingSteps,
+    String? benefits,
+    List<String>? allergenTags,
+    List<String>? conditionTags,
+    String? provenanceSource,
+    String? sourceHash,
+    int? catalogSchemaVersion,
+    int? replacementCount,
     bool? isCompleted,
     bool? aiGenerated,
     String? createdAt,
@@ -82,6 +126,20 @@ class MealPlanEntity {
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       cookingInstructions: cookingInstructions ?? this.cookingInstructions,
+      catalogCode: catalogCode ?? this.catalogCode,
+      servingSize: servingSize ?? this.servingSize,
+      topicCode: topicCode ?? this.topicCode,
+      topicName: topicName ?? this.topicName,
+      ingredients: ingredients ?? this.ingredients,
+      cookingSteps: cookingSteps ?? this.cookingSteps,
+      benefits: benefits ?? this.benefits,
+      allergenTags: allergenTags ?? this.allergenTags,
+      conditionTags: conditionTags ?? this.conditionTags,
+      provenanceSource: provenanceSource ?? this.provenanceSource,
+      sourceHash: sourceHash ?? this.sourceHash,
+      catalogSchemaVersion:
+          catalogSchemaVersion ?? this.catalogSchemaVersion,
+      replacementCount: replacementCount ?? this.replacementCount,
       isCompleted: isCompleted ?? this.isCompleted,
       aiGenerated: aiGenerated ?? this.aiGenerated,
       createdAt: createdAt ?? this.createdAt,

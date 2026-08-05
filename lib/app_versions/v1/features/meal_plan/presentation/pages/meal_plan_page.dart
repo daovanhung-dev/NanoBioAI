@@ -290,7 +290,7 @@ class _MealPlanHeader extends StatelessWidget {
               right: -ui.pagePadding * 1.5,
               child: _DecorativeCircle(
                 size: ui.headerDecorSize,
-                color: Colors.white.withValues(alpha: 0.07),
+                color: AppColors.surface.withValues(alpha: 0.07),
               ),
             ),
             Positioned(
@@ -298,7 +298,7 @@ class _MealPlanHeader extends StatelessWidget {
               left: -ui.pagePadding,
               child: _DecorativeCircle(
                 size: ui.headerDecorSize * 0.55,
-                color: Colors.white.withValues(alpha: 0.05),
+                color: AppColors.surface.withValues(alpha: 0.05),
               ),
             ),
             // Content
@@ -321,19 +321,19 @@ class _MealPlanHeader extends StatelessWidget {
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xs,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(6),
+                                color: AppColors.surface.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(AppRadius.xs),
                               ),
                               child: Text(
                                 _todayLabel(),
-                                style: TextStyle(
+                                style: AppTextStyles.bodyMedium.copyWith(
                                   fontSize: ui.headerDateFontSize,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white.withValues(alpha: 0.9),
+                                  color: AppColors.surface.withValues(alpha: 0.9),
                                   letterSpacing: 0.2,
                                 ),
                               ),
@@ -346,17 +346,17 @@ class _MealPlanHeader extends StatelessWidget {
                           style: AppTextStyles.heading1.copyWith(
                             fontSize: ui.titleFontSize,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: AppColors.surface,
                             height: 1.05,
                             letterSpacing: -0.5,
                           ),
                         ),
                         SizedBox(height: ui.xsGap),
                         Text(
-                          'Theo dõi dinh dưỡng theo từng ngày',
+                          'Dinh dưỡng theo ngày',
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontSize: ui.headerSubtitleFontSize,
-                            color: Colors.white.withValues(alpha: 0.72),
+                            color: AppColors.surface.withValues(alpha: 0.72),
                             height: 1.3,
                           ),
                         ),
@@ -373,16 +373,16 @@ class _MealPlanHeader extends StatelessWidget {
                         height: ui.actionButtonSize,
                         width: ui.actionButtonSize,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
+                          color: AppColors.surface.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(ui.radiusLg),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.25),
+                            color: AppColors.surface.withValues(alpha: 0.25),
                             width: 1,
                           ),
                         ),
                         child: Icon(
                           Icons.refresh_rounded,
-                          color: Colors.white,
+                          color: AppColors.surface,
                           size: ui.actionIconSize,
                         ),
                       ),
@@ -524,11 +524,11 @@ class _DateChip extends StatelessWidget {
           children: [
             Text(
               dayAbbr,
-              style: TextStyle(
+              style: AppTextStyles.labelSmall.copyWith(
                 fontSize: ui.chipDayFontSize,
                 fontWeight: FontWeight.w700,
                 color: isSelected
-                    ? Colors.white.withValues(alpha: 0.85)
+                    ? AppColors.surface.withValues(alpha: 0.85)
                     : AppColors.textSecondary,
                 letterSpacing: 0.3,
               ),
@@ -536,10 +536,10 @@ class _DateChip extends StatelessWidget {
             SizedBox(height: ui.tinyGap),
             Text(
               '${date.day}',
-              style: TextStyle(
+              style: AppTextStyles.heading4.copyWith(
                 fontSize: ui.chipDateFontSize,
                 fontWeight: FontWeight.w900,
-                color: isSelected ? Colors.white : AppColors.textPrimary,
+                color: isSelected ? AppColors.surface : AppColors.textPrimary,
               ),
             ),
             if (isToday) ...[
@@ -549,7 +549,7 @@ class _DateChip extends StatelessWidget {
                 height: 5,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isSelected ? Colors.white : AppColors.primary,
+                  color: isSelected ? AppColors.surface : AppColors.primary,
                 ),
               ),
             ],
@@ -692,17 +692,17 @@ class _AnimatedMealCard extends StatelessWidget {
 // MEAL PLAN CARD
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _MealPlanCard extends StatefulWidget {
+class _MealPlanCard extends ConsumerStatefulWidget {
   final _MealPlanResponsiveUi ui;
   final MealPlanEntity meal;
 
   const _MealPlanCard({required this.ui, required this.meal});
 
   @override
-  State<_MealPlanCard> createState() => _MealPlanCardState();
+  ConsumerState<_MealPlanCard> createState() => _MealPlanCardState();
 }
 
-class _MealPlanCardState extends State<_MealPlanCard> {
+class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
   bool _isPressed = false;
 
   static String _mealLabel(String type, int order) {
@@ -773,27 +773,27 @@ class _MealPlanCardState extends State<_MealPlanCard> {
   static Color _accentColor(String type, int order) {
     switch (type.toLowerCase().trim()) {
       case 'breakfast':
-        return const Color(0xFFF59E0B); // amber
+        return AppColors.warning; // amber
       case 'morning_snack':
-        return const Color(0xFFEC4899); // pink
+        return AppColors.error; // pink
       case 'lunch':
-        return const Color(0xFF10B981); // emerald
+        return AppColors.primary; // emerald
       case 'afternoon_snack':
-        return const Color(0xFF06B6D4); // cyan
+        return AppColors.secondary; // cyan
       case 'dinner':
-        return const Color(0xFF6366F1); // indigo
+        return AppColors.tertiary; // indigo
       case 'snack':
-        return const Color(0xFFEC4899); // pink
+        return AppColors.error; // pink
       default:
         switch (order) {
           case 1:
-            return const Color(0xFFF59E0B);
+            return AppColors.warning;
           case 2:
-            return const Color(0xFF10B981);
+            return AppColors.primary;
           case 3:
-            return const Color(0xFF6366F1);
+            return AppColors.tertiary;
           default:
-            return const Color(0xFFEC4899);
+            return AppColors.error;
         }
     }
   }
@@ -817,6 +817,45 @@ class _MealPlanCardState extends State<_MealPlanCard> {
     }
   }
 
+  Future<void> _showMealDetails() async {
+    setState(() => _isPressed = false);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => _MealDetailSheet(
+        meal: widget.meal,
+        onReplace: widget.meal.isCompleted
+            ? null
+            : () async {
+                try {
+                  await ref
+                      .read(mealPlanControllerProvider.notifier)
+                      .replaceMealById(widget.meal.id);
+                  if (!sheetContext.mounted) return;
+                  Navigator.of(sheetContext).pop();
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Nabi đã đổi sang món phù hợp khác.'),
+                    ),
+                  );
+                } catch (_) {
+                  if (!sheetContext.mounted) return;
+                  ScaffoldMessenger.of(sheetContext).showSnackBar(
+                    SnackBar(
+                      content: const Text(
+                        'NaBi chưa thể đổi món lúc này. Bạn thử lại sau một chút nhé.',
+                      ),
+                    ),
+                  );
+                }
+              },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ui = widget.ui;
@@ -833,6 +872,7 @@ class _MealPlanCardState extends State<_MealPlanCard> {
         onTapDown: (_) => setState(() => _isPressed = true),
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
+        onTap: _showMealDetails,
         child: AnimatedScale(
           duration: AppDuration.fast,
           scale: _isPressed ? 0.985 : 1.0,
@@ -896,8 +936,8 @@ class _MealPlanCardState extends State<_MealPlanCard> {
                                     children: [
                                       Container(
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: 7,
-                                          vertical: 2,
+                                          horizontal: AppSpacing.sm,
+                                          vertical: AppSpacing.xxs,
                                         ),
                                         decoration: BoxDecoration(
                                           color: accent.withValues(alpha: 0.1),
@@ -907,7 +947,7 @@ class _MealPlanCardState extends State<_MealPlanCard> {
                                         ),
                                         child: Text(
                                           label.toUpperCase(),
-                                          style: TextStyle(
+                                          style: AppTextStyles.labelSmall.copyWith(
                                             fontSize: ui.chipDayFontSize,
                                             fontWeight: FontWeight.w800,
                                             color: accent,
@@ -942,7 +982,9 @@ class _MealPlanCardState extends State<_MealPlanCard> {
                               children: [
                                 _InlineTag(
                                   icon: Icons.person_outline_rounded,
-                                  label: 'Khẩu phần 1 người',
+                                  label: meal.servingSize.trim().isEmpty
+                                      ? 'Khẩu phần 1 người'
+                                      : meal.servingSize,
                                   color: AppColors.secondary,
                                 ),
                                 _InlineTag(
@@ -968,6 +1010,8 @@ class _MealPlanCardState extends State<_MealPlanCard> {
                             // Description
                             Text(
                               meal.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.bodyLarge.copyWith(
                                 fontSize: ui.mealDescriptionFontSize,
                                 height: 1.55,
@@ -975,10 +1019,26 @@ class _MealPlanCardState extends State<_MealPlanCard> {
                               ),
                             ),
 
-                            if (meal.cookingInstructions.trim().isNotEmpty) ...[
-                              SizedBox(height: ui.cardGap),
-                              _CookingInstructionsBox(ui: ui, meal: meal),
-                            ],
+                            SizedBox(height: ui.cardGap),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    meal.hasRecipeDetails
+                                        ? 'Chạm để xem nguyên liệu và cách chế biến'
+                                        : 'Chạm để xem thông tin chi tiết',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: AppColors.primary,
+                                ),
+                              ],
+                            ),
 
                             SizedBox(height: ui.cardGap),
 
@@ -1034,70 +1094,268 @@ class _MealPlanCardState extends State<_MealPlanCard> {
 // INLINE TAG  (time / calories / water — replaces MealTimeHighlight banner)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _CookingInstructionsBox extends StatelessWidget {
-  final _MealPlanResponsiveUi ui;
-  final MealPlanEntity meal;
 
-  const _CookingInstructionsBox({required this.ui, required this.meal});
+class _MealDetailSheet extends StatefulWidget {
+  const _MealDetailSheet({required this.meal, required this.onReplace});
+
+  final MealPlanEntity meal;
+  final Future<void> Function()? onReplace;
+
+  @override
+  State<_MealDetailSheet> createState() => _MealDetailSheetState();
+}
+
+class _MealDetailSheetState extends State<_MealDetailSheet> {
+  bool _replacing = false;
 
   @override
   Widget build(BuildContext context) {
-    final steps = _RecipeInstructionParser.parse(meal.cookingInstructions);
+    final meal = widget.meal;
+    final steps = meal.cookingSteps.isNotEmpty
+        ? meal.cookingSteps
+        : _RecipeInstructionParser.parse(meal.cookingInstructions);
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(ui.smallPadding + 4),
-      decoration: BoxDecoration(
-        color: AppColors.pastelMint,
-        borderRadius: BorderRadius.circular(ui.radiusMd),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: .14)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .78),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: const Icon(
-                  Icons.soup_kitchen_rounded,
-                  size: 21,
-                  color: AppColors.secondary,
-                ),
+    return DraggableScrollableSheet(
+      initialChildSize: .82,
+      minChildSize: .55,
+      maxChildSize: .95,
+      builder: (context, scrollController) => Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xxl),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 42,
+              height: 4,
+              margin: const EdgeInsets.only(top: AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(AppRadius.circular),
               ),
-              SizedBox(width: ui.smallGap),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cách chế biến',
-                      style: AppTextStyles.heading5.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800,
+            ),
+            Expanded(
+              child: ListView(
+                controller: scrollController,
+                padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(meal.mealName, style: AppTextStyles.heading2),
+                            if (meal.topicName.trim().isNotEmpty) ...[
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                meal.topicName,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: [
+                      _DetailPill('${meal.calories} kcal'),
+                      if (meal.servingSize.trim().isNotEmpty)
+                        _DetailPill(meal.servingSize),
+                      if (meal.startTime.trim().isNotEmpty)
+                        _DetailPill(meal.startTime),
+                    ],
+                  ),
+                  if (meal.description.trim().isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+                    Text(meal.description, style: AppTextStyles.bodyLarge),
+                  ],
+                  if (meal.ingredients.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+                    const _DetailHeading(
+                      icon: Icons.shopping_basket_rounded,
+                      title: 'Nguyên liệu',
                     ),
-                    Text(
-                      'Khẩu phần dành cho 1 người',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                    const SizedBox(height: AppSpacing.sm),
+                    ...meal.ingredients.map(
+                      (ingredient) => _BulletLine(text: ingredient),
+                    ),
+                  ],
+                  if (steps.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+                    const _DetailHeading(
+                      icon: Icons.soup_kitchen_rounded,
+                      title: 'Cách chế biến',
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    for (var index = 0; index < steps.length; index++)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                        child: _RecipeStep(
+                          number: index + 1,
+                          text: steps[index],
+                        ),
+                      ),
+                  ],
+                  if (meal.benefits.trim().isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+                    const _DetailHeading(
+                      icon: Icons.spa_rounded,
+                      title: 'Công dụng theo tài liệu tham khảo',
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(meal.benefits, style: AppTextStyles.bodyMedium),
+                  ],
+                  if (meal.provenanceSource.trim().isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withValues(alpha: .08),
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                      ),
+                      child: Text(
+                        'Nguồn tham khảo: ${meal.provenanceSource}. Nội dung công dụng chỉ mang tính tham khảo, không thay thế tư vấn y tế.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.45,
+                        ),
                       ),
                     ),
                   ],
-                ),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
+                  if (widget.onReplace != null)
+                    FilledButton.icon(
+                      onPressed: _replacing ? null : _replace,
+                      icon: _replacing
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.surface,
+                              ),
+                            )
+                          : const Icon(Icons.swap_horiz_rounded),
+                      label: Text(
+                        _replacing ? 'Nabi đang chọn món...' : 'Đổi món khác',
+                      ),
+                    )
+                  else
+                    const Text(
+                      'Bữa đã hoàn thành nên không thể đổi món.',
+                      textAlign: TextAlign.center,
+                    ),
+                ],
               ),
-            ],
-          ),
-          SizedBox(height: ui.cardGap),
-          for (var index = 0; index < steps.length; index++) ...[
-            _RecipeStep(number: index + 1, text: steps[index]),
-            if (index != steps.length - 1) SizedBox(height: ui.smallGap),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _replace() async {
+    final callback = widget.onReplace;
+    if (callback == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Đổi sang món khác?'),
+        content: const Text(
+          'NaBi sẽ chọn một món khác phù hợp với hồ sơ dinh dưỡng của bạn.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Giữ món này'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Đổi món'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _replacing = true);
+    try {
+      await callback();
+    } finally {
+      if (mounted) setState(() => _replacing = false);
+    }
+  }
+}
+
+class _DetailPill extends StatelessWidget {
+  const _DetailPill(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(AppRadius.circular),
+      ),
+      child: Text(text, style: AppTextStyles.bodySmall),
+    );
+  }
+}
+
+class _DetailHeading extends StatelessWidget {
+  const _DetailHeading({required this.icon, required this.title});
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.primary),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(child: Text(title, style: AppTextStyles.heading4)),
+      ],
+    );
+  }
+}
+
+class _BulletLine extends StatelessWidget {
+  const _BulletLine({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: AppSpacing.sm),
+            child: CircleAvatar(radius: 3, backgroundColor: AppColors.primary),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(child: Text(text, style: AppTextStyles.bodyMedium)),
         ],
       ),
     );
@@ -1134,7 +1392,7 @@ class _RecipeStep extends StatelessWidget {
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(top: 3),
+            padding: const EdgeInsets.only(top: AppSpacing.xs),
             child: Text(
               text,
               style: AppTextStyles.bodyMedium.copyWith(
@@ -1190,7 +1448,7 @@ class _InlineTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     constraints: const BoxConstraints(minHeight: 34),
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
     decoration: BoxDecoration(
       color: color.withValues(alpha: .08),
       borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -1247,7 +1505,7 @@ class _MealStatusBadge extends StatelessWidget {
         children: [
           if (icon != null) ...[
             Icon(icon, size: 12, color: textColor),
-            const SizedBox(width: 4),
+            const SizedBox(width: AppSpacing.xs),
           ],
           Text(
             label,
@@ -1467,7 +1725,7 @@ class _ShimmerBar extends StatelessWidget {
     height: height,
     decoration: BoxDecoration(
       color: color,
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(AppRadius.xs),
     ),
   );
 }
@@ -1542,7 +1800,7 @@ class _MealErrorView extends StatelessWidget {
                   icon: const Icon(Icons.refresh_rounded),
                   label: Text(
                     'Thử lại',
-                    style: TextStyle(
+                    style: AppTextStyles.button.copyWith(
                       fontSize: ui.buttonFontSize,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1576,65 +1834,65 @@ class _MealPlanResponsiveUi {
       isLarge ? 920 : (isTablet ? 760 : double.infinity);
 
   // ── Spacing ──────────────────────────────────────────────────────────────
-  double get pagePadding => isCompact ? 12 : (isTablet ? 24 : 16);
-  double get cardPadding => isCompact ? 14 : (isTablet ? 20 : 16);
-  double get smallPadding => isCompact ? 8 : 10;
-  double get smallGap => isCompact ? 8 : 10;
+  double get pagePadding => isCompact ? 10 : (isTablet ? 20 : 14);
+  double get cardPadding => isCompact ? 10 : (isTablet ? 16 : 12);
+  double get smallPadding => isCompact ? 6 : 8;
+  double get smallGap => isCompact ? 6 : 8;
   double get xsGap => 4.0;
   double get tinyGap => 2.0;
-  double get cardGap => isCompact ? 12 : 16;
-  double get sectionSpacing => isCompact ? 12 : 16;
+  double get cardGap => isCompact ? 8 : 10;
+  double get sectionSpacing => isCompact ? 10 : 14;
 
   // ── Radius ───────────────────────────────────────────────────────────────
-  double get radiusMd => isCompact ? 10 : 12;
-  double get radiusLg => isCompact ? 14 : 16;
-  double get radiusXl => isCompact ? 18 : 22;
+  double get radiusMd => isCompact ? 8 : 10;
+  double get radiusLg => isCompact ? 12 : 14;
+  double get radiusXl => isCompact ? 14 : 16;
   double get circularRadius => 999;
 
   // ── Header ───────────────────────────────────────────────────────────────
-  double get headerTopPadding => isCompact ? 12 : 16;
-  double get headerBottomPadding => isCompact ? 18 : 22;
-  double get headerDecorSize => isCompact ? 160 : 200;
-  double get headerDateFontSize => isCompact ? 11 : 12;
-  double get headerSubtitleFontSize => isCompact ? 13 : 14;
+  double get headerTopPadding => isCompact ? 8 : 10;
+  double get headerBottomPadding => isCompact ? 12 : 14;
+  double get headerDecorSize => isCompact ? 120 : 150;
+  double get headerDateFontSize => isCompact ? 10 : 11;
+  double get headerSubtitleFontSize => isCompact ? 12 : 13;
 
   // ── Typography ───────────────────────────────────────────────────────────
-  double get titleFontSize => isCompact ? 28 : (isTablet ? 36 : 32);
-  double get summaryTitleFontSize => isCompact ? 22 : 26;
-  double get sectionTitleFontSize => isCompact ? 17 : 18;
-  double get bodyFontSize => isCompact ? 15 : 16;
-  double get bodySmallFontSize => isCompact ? 13 : 14;
-  double get mealTitleFontSize => isCompact ? 18 : 20;
-  double get mealLabelFontSize => isCompact ? 15 : 16;
-  double get mealDescriptionFontSize => isCompact ? 14 : 15;
+  double get titleFontSize => isCompact ? 24 : (isTablet ? 30 : 27);
+  double get summaryTitleFontSize => isCompact ? 18 : 20;
+  double get sectionTitleFontSize => isCompact ? 16 : 17;
+  double get bodyFontSize => isCompact ? 14 : 15;
+  double get bodySmallFontSize => isCompact ? 12 : 13;
+  double get mealTitleFontSize => isCompact ? 16 : 18;
+  double get mealLabelFontSize => isCompact ? 14 : 15;
+  double get mealDescriptionFontSize => isCompact ? 13 : 14;
   double get badgeTitleFontSize => isCompact ? 11 : 12;
   double get badgeFontSize => isCompact ? 12 : 13;
-  double get nutritionValueFontSize => isCompact ? 16 : 17;
-  double get emptyTitleFontSize => isCompact ? 20 : 22;
-  double get emptySubtitleFontSize => isCompact ? 14 : 15;
-  double get buttonFontSize => isCompact ? 15 : 16;
+  double get nutritionValueFontSize => isCompact ? 15 : 16;
+  double get emptyTitleFontSize => isCompact ? 18 : 20;
+  double get emptySubtitleFontSize => isCompact ? 13 : 14;
+  double get buttonFontSize => isCompact ? 14 : 15;
 
   // ── Icons ────────────────────────────────────────────────────────────────
-  double get actionButtonSize => isCompact ? 44 : 48;
-  double get actionIconSize => isCompact ? 22 : 24;
-  double get filterIconSize => isCompact ? 16 : 18;
-  double get mealIconSize => isCompact ? 22 : 24;
-  double get errorIconSize => isCompact ? 32 : 36;
-  double get emptyIconSize => isCompact ? 50 : 56;
-  double get emptyIconPadding => isCompact ? 18 : 22;
+  double get actionButtonSize => 44;
+  double get actionIconSize => isCompact ? 20 : 22;
+  double get filterIconSize => isCompact ? 15 : 16;
+  double get mealIconSize => isCompact ? 20 : 22;
+  double get errorIconSize => isCompact ? 28 : 32;
+  double get emptyIconSize => isCompact ? 42 : 48;
+  double get emptyIconPadding => isCompact ? 14 : 16;
 
   // ── Date chips ───────────────────────────────────────────────────────────
-  double get chipHeight => isCompact ? 68 : 76;
-  double get chipWidth => isCompact ? 52 : 60;
-  double get chipGap => isCompact ? 8 : 10;
-  double get chipSectionVertical => isCompact ? 12 : 14;
-  double get chipDayFontSize => isCompact ? 11 : 12;
-  double get chipDateFontSize => isCompact ? 17 : 19;
+  double get chipHeight => isCompact ? 58 : 64;
+  double get chipWidth => isCompact ? 48 : 54;
+  double get chipGap => isCompact ? 6 : 8;
+  double get chipSectionVertical => isCompact ? 8 : 10;
+  double get chipDayFontSize => isCompact ? 10 : 11;
+  double get chipDateFontSize => isCompact ? 15 : 17;
 
   // ── Card details ─────────────────────────────────────────────────────────
-  double get accentBarWidth => isCompact ? 4 : 5;
-  double get loadingCardHeight => isCompact ? 160 : 180;
-  double get primaryButtonHeight => isCompact ? 48 : 52;
+  double get accentBarWidth => 4;
+  double get loadingCardHeight => isCompact ? 132 : 148;
+  double get primaryButtonHeight => 44;
 
   // ── Nutrition ────────────────────────────────────────────────────────────
   int get nutritionCrossAxisCount => isTablet ? 4 : 2;

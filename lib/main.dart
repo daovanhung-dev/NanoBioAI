@@ -13,6 +13,7 @@ import 'core/storage/localdb/app_prefs.dart';
 import 'core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox_refresher.dart';
+import 'services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart';
 import 'app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
 import 'app_versions/v1/services/notifications/notification_bootstrap.dart';
@@ -100,9 +101,23 @@ Future<void> _startPostLaunchServices(
 ) async {
   if (authBackendAvailability.isReady) {
     _startCloudSync();
+    await _refreshMealCatalogSafely();
   }
 
   await _startNotificationsSafely();
+}
+
+Future<void> _refreshMealCatalogSafely() async {
+  try {
+    final refreshed =
+        await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
+    debugPrint('$_bootstrapTag: meal catalog cache refreshed: $refreshed');
+  } catch (error) {
+    debugPrint(
+      '$_bootstrapTag: meal catalog refresh skipped; '
+      'errorType=${error.runtimeType}',
+    );
+  }
 }
 
 void _startCloudSync() {

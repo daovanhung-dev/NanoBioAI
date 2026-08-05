@@ -163,14 +163,14 @@ class _BuildTermsBody extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.volunteer_activism_rounded,
-                  color: Colors.white,
+                  color: AppColors.surface,
                   size: 34,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   _saleTermsTitle,
                   style: AppTextStyles.heading2.copyWith(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -178,14 +178,14 @@ class _BuildTermsBody extends StatelessWidget {
                 Text(
                   _saleTermsIntroduction,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withValues(alpha: .92),
+                    color: AppColors.surface.withValues(alpha: .92),
                     height: 1.5,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           MedicalSurfaceCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,7 +258,7 @@ class _BuildTermsBody extends StatelessWidget {
                         width: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.surface,
                         ),
                       )
                     : Icon(
@@ -345,7 +345,7 @@ class _StatusNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),

@@ -1,67 +1,164 @@
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
-/// Visual language dedicated to NaBi onboarding.
-///
-/// Blue remains the product anchor; cyan, violet and warm amber are only used
-/// as supporting accents to add energy without reducing readability.
+/// Visual foundation for the NaBi Green Wellness onboarding experience.
 class NabiPalette {
   const NabiPalette._();
 
-  static const Color deepBlue = Color(0xFF103B8C);
-  static const Color royalBlue = Color(0xFF246BFD);
-  static const Color skyBlue = Color(0xFF66C8FF);
-  static const Color cyan = Color(0xFF39D6C5);
-  static const Color violet = Color(0xFF8E7CFF);
-  static const Color amber = Color(0xFFFFB14A);
-  static const Color rose = Color(0xFFFF7A9E);
+  static const Color greenPrimary = AppColors.primary;
+  static const Color greenDeep = AppColors.primaryDark;
+  static const Color greenBright = AppColors.primaryLight;
+  static const Color greenSoft = AppColors.primarySoft;
+  static const Color mintSurface = AppColors.primarySubtle;
+  static const Color pageBackground = AppColors.background;
+  static const Color surface = AppColors.surface;
+  static const Color ink = AppColors.textPrimary;
+  static const Color mutedInk = AppColors.textSecondary;
+  static const Color subtleInk = AppColors.textMuted;
+  static const Color line = AppColors.border;
+  static const Color focusRing = AppColors.primaryLight;
 
-  static const Color canvas = Color(0xFFF3F8FF);
-  static const Color canvasDeep = Color(0xFFE7F1FF);
-  static const Color ink = Color(0xFF102044);
-  static const Color mutedInk = Color(0xFF5B6C8D);
-  static const Color line = Color(0xFFD9E7FF);
+  static const Color energyYellow = AppColors.energyYellow;
+  static const Color calmBlue = AppColors.secondary;
+  static const Color careCoral = AppColors.careCoral;
+  static const Color personalPurple = AppColors.tertiary;
+
+  static const Color success = AppColors.success;
+  static const Color successSoft = AppColors.successSoft;
+  static const Color warning = AppColors.warning;
+  static const Color warningSoft = AppColors.warningSoft;
+  static const Color error = AppColors.error;
+  static const Color errorSoft = AppColors.errorSoft;
+  static const Color info = AppColors.secondaryDark;
+  static const Color infoSoft = AppColors.secondarySoft;
+
+  // Compatibility aliases for the existing presentation package.
+  static const Color deepBlue = greenDeep;
+  static const Color royalBlue = greenPrimary;
+  static const Color skyBlue = calmBlue;
+  static const Color cyan = greenBright;
+  static const Color violet = personalPurple;
+  static const Color amber = energyYellow;
+  static const Color rose = careCoral;
+  static const Color canvas = pageBackground;
+  static const Color canvasDeep = mintSurface;
 
   static const LinearGradient hero = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [deepBlue, royalBlue, skyBlue],
+    colors: [greenDeep, greenPrimary, AppColors.primaryLight],
+    stops: [0, 0.55, 1],
   );
 
   static const LinearGradient button = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [deepBlue, royalBlue, cyan],
+    colors: [AppColors.success, AppColors.primaryLight],
   );
 
   static const LinearGradient selection = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [royalBlue, Color(0xFF3A8DFF), cyan],
+    colors: [greenDeep, greenPrimary],
   );
 
   static const LinearGradient card = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFEFFFFFF), Color(0xFFF6FAFF)],
+    colors: [AppColors.surface, AppColors.inputBackground],
   );
 
   static const LinearGradient softBlue = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFEAF4FF), Color(0xFFF8FBFF)],
+    colors: [mintSurface, AppColors.cardAlt],
+  );
+
+  static const LinearGradient mintWash = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [AppColors.cardAlt, mintSurface, pageBackground],
+    stops: [0, 0.48, 1],
   );
 }
 
-/// A lightweight animated ambient canvas used behind all onboarding screens.
-/// It does not require image assets and remains usable on small devices.
+enum NabiOnboardingMood {
+  welcome,
+  guide,
+  goal,
+  care,
+  lifestyle,
+  thinking,
+  routine,
+  consent,
+  review,
+  celebrate,
+}
+
+extension NabiOnboardingMoodVisual on NabiOnboardingMood {
+  String get assetPath => switch (this) {
+        NabiOnboardingMood.welcome =>
+          'assets/images/nabi/onboarding/nabi_onboarding_intro.png',
+        NabiOnboardingMood.guide =>
+          'assets/images/nabi/onboarding/nabi_onboarding_basic_info.png',
+        NabiOnboardingMood.goal =>
+          'assets/images/nabi/onboarding/nabi_onboarding_goal.png',
+        NabiOnboardingMood.care =>
+          'assets/images/nabi/onboarding/nabi_onboarding_health_check.png',
+        NabiOnboardingMood.lifestyle =>
+          'assets/images/nabi/onboarding/nabi_onboarding_lifestyle.png',
+        NabiOnboardingMood.thinking =>
+          'assets/images/nabi/core/nabi_think.png',
+        NabiOnboardingMood.routine =>
+          'assets/images/nabi/daily/nabi_view_schedule.png',
+        NabiOnboardingMood.consent =>
+          'assets/images/nabi/core/nabi_idle_happy.png',
+        NabiOnboardingMood.review =>
+          'assets/images/nabi/onboarding/nabi_onboarding_review.png',
+        NabiOnboardingMood.celebrate =>
+          'assets/images/nabi/onboarding/nabi_plan_ready.png',
+      };
+
+  String get message => switch (this) {
+        NabiOnboardingMood.welcome => 'Bắt đầu nhé?',
+        NabiOnboardingMood.guide => 'Mình ghi lại nhé',
+        NabiOnboardingMood.goal => 'Chọn điều quan trọng',
+        NabiOnboardingMood.care => 'Mình đang lắng nghe',
+        NabiOnboardingMood.lifestyle => 'Nhịp sống của bạn',
+        NabiOnboardingMood.thinking => 'Chọn những gì đúng',
+        NabiOnboardingMood.routine => 'Sắp xếp một ngày',
+        NabiOnboardingMood.consent => 'Bạn luôn có quyền chọn',
+        NabiOnboardingMood.review => 'Xem lại lần cuối',
+        NabiOnboardingMood.celebrate => 'Lộ trình đã sẵn sàng',
+      };
+
+  Color get accent => switch (this) {
+        NabiOnboardingMood.goal => NabiPalette.energyYellow,
+        NabiOnboardingMood.care => NabiPalette.careCoral,
+        NabiOnboardingMood.lifestyle => NabiPalette.calmBlue,
+        NabiOnboardingMood.thinking => NabiPalette.personalPurple,
+        NabiOnboardingMood.routine => NabiPalette.energyYellow,
+        _ => NabiPalette.greenBright,
+      };
+}
+
+bool nabiReducedMotion(BuildContext context) =>
+    MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
+/// Mint atmosphere with slow ambient drift. It automatically becomes static
+/// when the platform requests reduced motion.
 class NabiAmbientBackground extends StatefulWidget {
   final Widget child;
+  final bool strong;
 
-  const NabiAmbientBackground({super.key, required this.child});
+  const NabiAmbientBackground({
+    super.key,
+    required this.child,
+    this.strong = false,
+  });
 
   @override
   State<NabiAmbientBackground> createState() => _NabiAmbientBackgroundState();
@@ -76,8 +173,19 @@ class _NabiAmbientBackgroundState extends State<NabiAmbientBackground>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 8600),
-    )..repeat(reverse: true);
+      duration: const Duration(seconds: 8),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (nabiReducedMotion(context)) {
+      _controller.stop();
+      _controller.value = 0.5;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
   }
 
   @override
@@ -89,23 +197,16 @@ class _NabiAmbientBackgroundState extends State<NabiAmbientBackground>
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFF1F7FF), NabiPalette.canvas, Color(0xFFF9FBFF)],
-        ),
-      ),
+      decoration: const BoxDecoration(gradient: NabiPalette.mintWash),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          IgnorePointer(
-            child: RepaintBoundary(
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (_, __) => CustomPaint(
-                  painter: _NabiAmbientPainter(_controller.value),
-                ),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) => CustomPaint(
+              painter: _WellnessAtmospherePainter(
+                progress: _controller.value,
+                strong: widget.strong,
               ),
             ),
           ),
@@ -116,114 +217,95 @@ class _NabiAmbientBackgroundState extends State<NabiAmbientBackground>
   }
 }
 
-class _NabiAmbientPainter extends CustomPainter {
+class _WellnessAtmospherePainter extends CustomPainter {
   final double progress;
+  final bool strong;
 
-  const _NabiAmbientPainter(this.progress);
+  const _WellnessAtmospherePainter({
+    required this.progress,
+    required this.strong,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    void drawGlow({
-      required Offset center,
-      required double radius,
-      required Color color,
-      double opacity = 0.16,
-    }) {
-      final rect = Rect.fromCircle(center: center, radius: radius);
-      final paint = Paint()
-        ..shader = RadialGradient(
-          colors: [
-            color.withValues(alpha: opacity),
-            color.withValues(alpha: 0),
-          ],
-        ).createShader(rect);
-      canvas.drawCircle(center, radius, paint);
-    }
+    final drift = math.sin(progress * math.pi * 2) * 7;
+    final green = Paint()
+      ..color = NabiPalette.greenBright.withValues(alpha: strong ? 0.14 : 0.08);
+    final yellow = Paint()
+      ..color = NabiPalette.energyYellow.withValues(alpha: strong ? 0.11 : 0.06);
+    final blue = Paint()
+      ..color = NabiPalette.calmBlue.withValues(alpha: strong ? 0.09 : 0.045);
 
-    final wave = math.sin(progress * math.pi * 2);
-    final drift = math.cos(progress * math.pi * 2);
-
-    drawGlow(
-      center: Offset(size.width * 0.02, size.height * (0.06 + wave * 0.022)),
-      radius: size.width * 0.54,
-      color: NabiPalette.skyBlue,
-      opacity: 0.18,
+    canvas.drawCircle(Offset(size.width * 0.88 + drift, 90), 92, green);
+    canvas.drawCircle(
+      Offset(size.width * 0.08 - drift * 0.7, size.height * 0.42),
+      64,
+      yellow,
     );
-    drawGlow(
-      center: Offset(size.width * 0.98, size.height * (0.20 + drift * 0.03)),
-      radius: size.width * 0.42,
-      color: NabiPalette.violet,
-      opacity: 0.10,
-    );
-    drawGlow(
-      center: Offset(size.width * (0.68 + wave * 0.03), size.height * 0.90),
-      radius: size.width * 0.50,
-      color: NabiPalette.cyan,
-      opacity: 0.10,
+    canvas.drawCircle(
+      Offset(size.width * 0.83 - drift, size.height * 0.78),
+      78,
+      blue,
     );
 
-    final sparklePaint = Paint()
-      ..color = NabiPalette.skyBlue.withValues(alpha: 0.36);
-    final sparkles = <Offset>[
-      Offset(size.width * 0.13, size.height * 0.17),
-      Offset(size.width * 0.89, size.height * 0.32),
-      Offset(size.width * 0.78, size.height * 0.72),
-      Offset(size.width * 0.19, size.height * 0.80),
-    ];
-    for (var index = 0; index < sparkles.length; index++) {
-      final point = sparkles[index];
-      final pulse = 1 + math.sin(progress * math.pi * 2 + index) * 0.22;
-      canvas.drawCircle(point, 2.2 * pulse, sparklePaint);
+    final dot = Paint()
+      ..color = NabiPalette.greenPrimary.withValues(alpha: 0.055);
+    for (var row = 0; row < 5; row++) {
+      for (var column = 0; column < 4; column++) {
+        canvas.drawCircle(
+          Offset(22 + column * 16, size.height - 92 + row * 14),
+          1.8,
+          dot,
+        );
+      }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _NabiAmbientPainter oldDelegate) =>
-      oldDelegate.progress != progress;
+  bool shouldRepaint(covariant _WellnessAtmospherePainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.strong != strong;
 }
 
-/// Glass-like container that keeps cards readable over the ambient canvas.
 class NabiGlassPanel extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final BorderRadius borderRadius;
   final Gradient? gradient;
   final bool elevated;
+  final Color? borderColor;
+  final Color? shadowColor;
 
   const NabiGlassPanel({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(14),
+    this.padding = const EdgeInsets.all(AppSpacing.cardPadding),
     this.borderRadius = const BorderRadius.all(Radius.circular(20)),
     this.gradient,
     this.elevated = true,
+    this.borderColor,
+    this.shadowColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            gradient: gradient ?? NabiPalette.card,
-            borderRadius: borderRadius,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.86)),
-            boxShadow: elevated
-                ? [
-                    BoxShadow(
-                      color: NabiPalette.deepBlue.withValues(alpha: 0.10),
-                      blurRadius: 24,
-                      offset: const Offset(0, 10),
-                    ),
-                  ]
-                : const [],
-          ),
-          child: child,
-        ),
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        gradient: gradient ?? NabiPalette.card,
+        borderRadius: borderRadius,
+        border: Border.all(color: borderColor ?? NabiPalette.line),
+        boxShadow: elevated
+            ? [
+                BoxShadow(
+                  color: (shadowColor ?? NabiPalette.greenDeep)
+                      .withValues(alpha: 0.08),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : const [],
       ),
+      child: child,
     );
   }
 }
@@ -242,25 +324,29 @@ class NabiMoodPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = color ?? NabiPalette.royalBlue;
+    final accent = color ?? NabiPalette.greenPrimary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppRadius.circular),
-        border: Border.all(color: accent.withValues(alpha: 0.18)),
+        color: accent.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: accent.withValues(alpha: 0.16)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: accent),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: NabiPalette.ink,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0,
+          Icon(icon, size: 15, color: accent),
+          const SizedBox(width: AppSpacing.tiny),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: NabiPalette.ink,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0,
+              ),
             ),
           ),
         ],
@@ -272,11 +358,17 @@ class NabiMoodPill extends StatelessWidget {
 class NabiCompanionAvatar extends StatefulWidget {
   final double size;
   final bool showStatus;
+  final NabiOnboardingMood mood;
+  final String? statusLabel;
+  final bool hero;
 
   const NabiCompanionAvatar({
     super.key,
     this.size = 116,
     this.showStatus = true,
+    this.mood = NabiOnboardingMood.welcome,
+    this.statusLabel,
+    this.hero = false,
   });
 
   @override
@@ -292,8 +384,21 @@ class _NabiCompanionAvatarState extends State<NabiCompanionAvatar>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200),
-    )..repeat();
+      duration: const Duration(milliseconds: 1800),
+      lowerBound: 0,
+      upperBound: 1,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (nabiReducedMotion(context)) {
+      _controller.stop();
+      _controller.value = 0.5;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
   }
 
   @override
@@ -304,261 +409,138 @@ class _NabiCompanionAvatarState extends State<NabiCompanionAvatar>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final wave = math.sin(_controller.value * math.pi * 2);
-        final lift = wave * widget.size * 0.028;
-        final haloScale = 1 + (wave + 1) * 0.018;
-        return Transform.translate(
-          offset: Offset(0, lift),
-          child: SizedBox(
-            width: widget.size * 1.36,
-            height: widget.size * 1.36,
-            child: Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
-                Transform.scale(
-                  scale: haloScale,
-                  child: Container(
-                    width: widget.size * 1.24,
-                    height: widget.size * 1.24,
+    final accent = widget.mood.accent;
+    return Semantics(
+      image: true,
+      label: 'NaBi: ${widget.statusLabel ?? widget.mood.message}',
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final lift = nabiReducedMotion(context)
+              ? 0.0
+              : math.sin(_controller.value * math.pi) * -4;
+          final scale = nabiReducedMotion(context)
+              ? 1.0
+              : 1 + math.sin(_controller.value * math.pi) * 0.018;
+          return Transform.translate(
+            offset: Offset(0, lift),
+            child: Transform.scale(scale: scale, child: child),
+          );
+        },
+        child: SizedBox(
+          width: widget.size * 1.5,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: widget.size * (widget.hero ? 1.15 : 1.05),
+                    height: widget.size * (widget.hero ? 1.15 : 1.05),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: NabiPalette.skyBlue.withValues(alpha: 0.16),
+                      gradient: RadialGradient(
+                        colors: [
+                          accent.withValues(alpha: 0.28),
+                          accent.withValues(alpha: 0.08),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  width: widget.size,
-                  height: widget.size,
-                  padding: EdgeInsets.all(widget.size * 0.06),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: NabiPalette.hero,
-                    boxShadow: [
-                      BoxShadow(
-                        color: NabiPalette.royalBlue.withValues(alpha: 0.32),
-                        blurRadius: 26,
-                        offset: const Offset(0, 11),
-                      ),
-                    ],
-                  ),
-                  child: Container(
+                  Container(
+                    width: widget.size,
+                    height: widget.size,
+                    padding: EdgeInsets.all(widget.size * 0.07),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.14),
+                      color: AppColors.surface.withValues(alpha: 0.96),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.32),
+                        color: accent.withValues(alpha: 0.22),
+                        width: 2,
                       ),
-                    ),
-                    child: CustomPaint(
-                      painter: _NabiFacePainter(
-                        blink: _blinkValue(_controller.value),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: widget.size * 0.06,
-                  right: widget.size * 0.04,
-                  child: Transform.rotate(
-                    angle: wave * 0.18,
-                    child: Container(
-                      width: widget.size * 0.26,
-                      height: widget.size * 0.26,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [NabiPalette.amber, Color(0xFFFFD479)],
+                      boxShadow: [
+                        BoxShadow(
+                          color: accent.withValues(alpha: 0.22),
+                          blurRadius: widget.hero ? 34 : 24,
+                          offset: const Offset(0, 12),
                         ),
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: Icon(
-                        Icons.auto_awesome_rounded,
-                        color: Colors.white,
-                        size: widget.size * 0.15,
+                      ],
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: nabiReducedMotion(context)
+                          ? Duration.zero
+                          : AppDuration.bottomSheet,
+                      child: Image.asset(
+                        widget.mood.assetPath,
+                        key: ValueKey(widget.mood),
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.favorite_rounded,
+                          color: NabiPalette.greenPrimary,
+                          size: widget.size * 0.42,
+                        ),
                       ),
                     ),
                   ),
+                ],
+              ),
+              if (widget.showStatus) ...[
+                const SizedBox(height: AppSpacing.sm),
+                NabiMoodPill(
+                  icon: Icons.auto_awesome_rounded,
+                  label: widget.statusLabel ?? widget.mood.message,
+                  color: accent,
                 ),
-                if (widget.showStatus)
-                  Positioned(
-                    bottom: widget.size * 0.01,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: widget.size * 0.11,
-                        vertical: widget.size * 0.045,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppRadius.circular),
-                        boxShadow: [
-                          BoxShadow(
-                            color: NabiPalette.deepBlue.withValues(alpha: 0.12),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: widget.size * 0.07,
-                            height: widget.size * 0.07,
-                            decoration: const BoxDecoration(
-                              color: NabiPalette.cyan,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          SizedBox(width: widget.size * 0.045),
-                          Text(
-                            'NaBi đang lắng nghe',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: NabiPalette.ink,
-                              fontWeight: FontWeight.w800,
-                              fontSize: widget.size * 0.092,
-                              letterSpacing: 0,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
               ],
-            ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
-
-  double _blinkValue(double value) {
-    final phase = (value * 3.1) % 1;
-    if (phase > 0.83 && phase < 0.94) {
-      return 0.12;
-    }
-    return 1;
-  }
-}
-
-class _NabiFacePainter extends CustomPainter {
-  final double blink;
-
-  const _NabiFacePainter({required this.blink});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final white = Paint()..color = Colors.white;
-    final blue = Paint()..color = NabiPalette.deepBlue;
-    final blush = Paint()..color = NabiPalette.rose.withValues(alpha: 0.54);
-
-    final eyeY = size.height * 0.43;
-    final eyeX = size.width * 0.31;
-    final eyeWidth = size.width * 0.075;
-    final eyeHeight = size.height * 0.098 * blink;
-
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(eyeX, eyeY),
-        width: eyeWidth,
-        height: eyeHeight,
-      ),
-      white,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width - eyeX, eyeY),
-        width: eyeWidth,
-        height: eyeHeight,
-      ),
-      white,
-    );
-
-    if (blink > 0.2) {
-      canvas.drawCircle(Offset(eyeX, eyeY), size.width * 0.022, blue);
-      canvas.drawCircle(
-        Offset(size.width - eyeX, eyeY),
-        size.width * 0.022,
-        blue,
-      );
-    }
-
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.22, size.height * 0.61),
-        width: size.width * 0.13,
-        height: size.height * 0.055,
-      ),
-      blush,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.78, size.height * 0.61),
-        width: size.width * 0.13,
-        height: size.height * 0.055,
-      ),
-      blush,
-    );
-
-    final mouth = Path()
-      ..moveTo(size.width * 0.39, size.height * 0.61)
-      ..quadraticBezierTo(
-        center.dx,
-        size.height * 0.71,
-        size.width * 0.61,
-        size.height * 0.61,
-      );
-    canvas.drawPath(
-      mouth,
-      Paint()
-        ..color = Colors.white
-        ..strokeWidth = size.width * 0.035
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _NabiFacePainter oldDelegate) =>
-      oldDelegate.blink != blink;
 }
 
 class NabiAssistantMessage extends StatelessWidget {
   final String message;
   final String? subtitle;
   final IconData icon;
+  final Color accent;
 
   const NabiAssistantMessage({
     super.key,
     required this.message,
     this.subtitle,
     this.icon = Icons.waving_hand_rounded,
+    this.accent = NabiPalette.greenPrimary,
   });
 
   @override
   Widget build(BuildContext context) {
     return NabiGlassPanel(
       elevated: false,
-      padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      gradient: NabiPalette.softBlue,
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      gradient: LinearGradient(
+        colors: [
+          accent.withValues(alpha: 0.11),
+          AppColors.surface.withValues(alpha: 0.92),
+        ],
+      ),
+      borderColor: accent.withValues(alpha: 0.18),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 34,
-            height: 34,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: NabiPalette.royalBlue.withValues(alpha: 0.12),
+              color: accent.withValues(alpha: 0.14),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: NabiPalette.royalBlue, size: 18),
+            child: Icon(icon, color: accent, size: 19),
           ),
-          const SizedBox(width: 9),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -572,13 +554,13 @@ class NabiAssistantMessage extends StatelessWidget {
                     letterSpacing: 0,
                   ),
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 3),
+                if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     subtitle!,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: NabiPalette.mutedInk,
-                      height: 1.34,
+                      height: 1.35,
                     ),
                   ),
                 ],
@@ -608,68 +590,75 @@ class NabiPrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null && !isLoading;
-    return Semantics(
-      button: true,
+    return _NabiPressScale(
       enabled: enabled,
-      label: label,
-      child: AppPressScale(
+      onTap: enabled
+          ? () {
+              HapticFeedback.lightImpact();
+              onPressed?.call();
+            }
+          : null,
+      child: Semantics(
+        button: true,
         enabled: enabled,
-        pressedScale: 0.98,
-        child: Opacity(
-          opacity: enabled ? 1 : 0.52,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: NabiPalette.button,
-              borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-              boxShadow: [
-                BoxShadow(
-                  color: NabiPalette.royalBlue.withValues(alpha: 0.30),
-                  blurRadius: 20,
-                  offset: const Offset(0, 9),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-              child: InkWell(
-                onTap: enabled ? onPressed : null,
-                borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-                splashColor: Colors.white.withValues(alpha: 0.20),
-                highlightColor: Colors.white.withValues(alpha: 0.10),
-                child: SizedBox(
-                  height: 48,
-                  child: Center(
-                    child: isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  label,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: AppTextStyles.buttonSmall.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0,
-                                  ),
+        label: label,
+        child: AnimatedContainer(
+          duration: AppDuration.button,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: enabled
+                ? NabiPalette.button
+                : const LinearGradient(
+                    colors: [AppColors.textDisabled, AppColors.textHint],
+                  ),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: NabiPalette.greenPrimary.withValues(alpha: 0.28),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : const [],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: InkWell(
+              onTap: null,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Center(
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 21,
+                          height: 21,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.3,
+                            color: AppColors.surface,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.buttonSmall.copyWith(
+                                  color: AppColors.surface,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Icon(icon, color: Colors.white, size: 20),
-                            ],
-                          ),
-                  ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Icon(icon, color: AppColors.surface, size: 21),
+                          ],
+                        ),
                 ),
               ),
             ),
@@ -694,44 +683,242 @@ class NabiSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppPressScale(
+    return _NabiPressScale(
       enabled: onPressed != null,
-      pressedScale: 0.98,
-      child: Material(
-        color: Colors.white.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-          child: Container(
-            height: 50,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.buttonLarge),
-              border: Border.all(color: NabiPalette.line),
+      onTap: onPressed,
+      child: Container(
+        height: 46,
+        decoration: BoxDecoration(
+          color: AppColors.surface.withValues(alpha: 0.86),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: NabiPalette.greenPrimary.withValues(alpha: 0.24),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 19, color: NabiPalette.greenDeep),
+            const SizedBox(width: AppSpacing.sm),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.buttonSmall.copyWith(
+                  color: NabiPalette.greenDeep,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0,
+                ),
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NabiStepHero extends StatelessWidget {
+  final NabiOnboardingMood mood;
+  final String? message;
+  final Color? accent;
+  final bool compact;
+
+  const NabiStepHero({
+    super.key,
+    required this.mood,
+    this.message,
+    this.accent,
+    this.compact = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = accent ?? mood.accent;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 12 : 16,
+        vertical: compact ? 10 : 14,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            color.withValues(alpha: 0.13),
+            NabiPalette.mintSurface.withValues(alpha: 0.86),
+            AppColors.surface.withValues(alpha: 0.94),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          NabiCompanionAvatar(
+            size: compact ? 58 : 72,
+            mood: mood,
+            showStatus: false,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, color: NabiPalette.royalBlue, size: 19),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.buttonSmall.copyWith(
-                      color: NabiPalette.deepBlue,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0,
-                    ),
+                Text(
+                  message ?? mood.message,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.heading5.copyWith(
+                    color: NabiPalette.ink,
+                    fontWeight: FontWeight.w900,
+                    height: 1.18,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
                   ),
                 ),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class NabiCelebrationBurst extends StatefulWidget {
+  final Widget child;
+
+  const NabiCelebrationBurst({super.key, required this.child});
+
+  @override
+  State<NabiCelebrationBurst> createState() => _NabiCelebrationBurstState();
+}
+
+class _NabiCelebrationBurstState extends State<NabiCelebrationBurst>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1050),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !nabiReducedMotion(context)) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) => CustomPaint(
+        painter: _CelebrationPainter(progress: _controller.value),
+        child: child,
+      ),
+      child: widget.child,
+    );
+  }
+}
+
+class _CelebrationPainter extends CustomPainter {
+  final double progress;
+
+  const _CelebrationPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const colors = [
+      NabiPalette.greenBright,
+      NabiPalette.energyYellow,
+      NabiPalette.careCoral,
+      NabiPalette.calmBlue,
+      NabiPalette.personalPurple,
+    ];
+    final eased = Curves.easeOutCubic.transform(progress);
+    for (var index = 0; index < 18; index++) {
+      final angle = (math.pi * 2 / 18) * index - math.pi / 2;
+      final radius = eased * math.min(size.width, size.height) * 0.44;
+      final center = Offset(size.width / 2, size.height * 0.31);
+      final point = center + Offset(math.cos(angle), math.sin(angle)) * radius;
+      final paint = Paint()
+        ..color = colors[index % colors.length]
+            .withValues(
+              alpha: (1 - progress).clamp(0.0, 1.0).toDouble(),
+            );
+      canvas.save();
+      canvas.translate(point.dx, point.dy);
+      canvas.rotate(angle + progress * 2);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          const Rect.fromLTWH(-3, -6, 6, 12),
+          const Radius.circular(2),
         ),
+        paint,
+      );
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CelebrationPainter oldDelegate) =>
+      oldDelegate.progress != progress;
+}
+
+class _NabiPressScale extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final bool enabled;
+
+  const _NabiPressScale({
+    required this.child,
+    required this.onTap,
+    required this.enabled,
+  });
+
+  @override
+  State<_NabiPressScale> createState() => _NabiPressScaleState();
+}
+
+class _NabiPressScaleState extends State<_NabiPressScale> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (!widget.enabled || _pressed == value) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.enabled ? widget.onTap : null,
+      onTapDown: widget.enabled ? (_) => _setPressed(true) : null,
+      onTapUp: widget.enabled ? (_) => _setPressed(false) : null,
+      onTapCancel: widget.enabled ? () => _setPressed(false) : null,
+      child: AnimatedScale(
+        scale: _pressed && !nabiReducedMotion(context) ? 0.975 : 1,
+        duration: AppDuration.tap,
+        curve: Curves.easeOutCubic,
+        child: widget.child,
       ),
     );
   }

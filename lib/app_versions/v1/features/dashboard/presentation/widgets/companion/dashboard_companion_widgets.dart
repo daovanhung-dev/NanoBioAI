@@ -31,7 +31,7 @@ class DashboardDailySummaryCard extends StatelessWidget {
                     context,
                   ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.tiny),
                 Text(
                   vietnameseUiText(summary),
                   style: Theme.of(
@@ -133,13 +133,13 @@ class DashboardNextActionSection extends StatelessWidget {
               ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
             ),
             if (action.subtitle.trim().isNotEmpty) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 vietnameseUiText(action.subtitle),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               vietnameseUiText(
                 DashboardCompanionService.nextActionMessage(action),
@@ -234,7 +234,7 @@ class DashboardDailyCheckInCard extends StatelessWidget {
                 ),
                 onSelected: (_) => onSelectMood(mood),
                 selectedColor: AppColors.primary.withValues(alpha: 0.14),
-                labelStyle: TextStyle(
+                labelStyle: AppTextStyles.labelMedium.copyWith(
                   color: selected ? AppColors.primary : AppColors.textPrimary,
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                 ),
@@ -282,7 +282,7 @@ class DashboardPlanStatusCard extends StatelessWidget {
                     context,
                   ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.tiny),
                 Text(
                   message,
                   style: Theme.of(
@@ -336,7 +336,7 @@ class DashboardSelfCareStreakCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.tiny),
           Text(
             message,
             style: Theme.of(
@@ -389,7 +389,7 @@ class DashboardHealthScoreBreakdownSheet extends StatelessWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.textHint.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
               ),
             ),
@@ -455,7 +455,7 @@ class _DashboardWaterUpdateSheetState extends State<DashboardWaterUpdateSheet> {
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.tiny),
             Text(
               widget.currentWaterMl > 0
                   ? 'Hiện tại bạn đã ghi nhận ${widget.currentWaterMl} ml.'
@@ -571,7 +571,7 @@ class _DashboardWeightUpdateSheetState
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.tiny),
             Text(
               'Nabi sẽ dùng ghi nhận hôm nay để bảng điều khiển phản ánh sát hơn.',
               style: Theme.of(context).textTheme.bodyMedium,
@@ -631,16 +631,16 @@ class _BreakdownRow extends StatelessWidget {
                     context,
                   ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   item.message,
                   style: Theme.of(
                     context,
                   ).textTheme.bodySmall?.copyWith(height: 1.35),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                   child: LinearProgressIndicator(
                     minHeight: 7,
                     value: item.progress.clamp(0, 1).toDouble(),
@@ -683,10 +683,10 @@ class _StreakDot extends StatelessWidget {
             ),
           ),
           child: active
-              ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+              ? const Icon(Icons.check_rounded, color: AppColors.surface, size: 16)
               : null,
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Text(day, style: Theme.of(context).textTheme.labelSmall),
       ],
     );
@@ -703,16 +703,16 @@ class _InlineHint extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: AppColors.primary, size: 18),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               label,
@@ -741,7 +741,7 @@ class _SoftIcon extends StatelessWidget {
       height: 38,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Icon(icon, color: color, size: 20),
     );
@@ -759,16 +759,16 @@ class _CompanionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: color ?? Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: borderColor ?? Colors.black.withValues(alpha: 0.05),
+          color: borderColor ?? AppColors.textPrimary.withValues(alpha: 0.05),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
+            color: AppColors.textPrimary.withValues(alpha: 0.035),
             blurRadius: 22,
             offset: const Offset(0, 12),
           ),

@@ -32,6 +32,14 @@ class SyncOutboxSchema {
     'nutrition_logs',
     'ai_insights',
     'ai_recommendations',
+    'nutrition_profiles',
+    'health_symptoms',
+    'medication_records',
+    'food_restrictions',
+    'lab_results',
+    'nutrition_goals',
+    'meal_schedule_preferences',
+    'nutrition_preference_rules',
   ];
 
   /// Full snapshot contract. The request ledger uses `request_id` instead of

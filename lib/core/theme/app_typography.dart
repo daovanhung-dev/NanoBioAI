@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_colors.dart';
+
 @immutable
 class AppTypography {
   const AppTypography._();
@@ -8,7 +10,7 @@ class AppTypography {
   // FONT FAMILY
   // =========================================================
 
-  static const String fontFamily = 'Poppins';
+  static const String fontFamily = 'Roboto';
 
   /// Optional fallback fonts
   static const List<String> fallbackFonts = ['Roboto', 'Arial', 'sans-serif'];
@@ -53,26 +55,26 @@ class AppTypography {
   // FONT SIZES
   // =========================================================
 
-  static const double displayXL = 48;
-  static const double displayLG = 40;
-  static const double displayMD = 36;
-  static const double displaySM = 32;
+  static const double displayXL = 40;
+  static const double displayLG = 34;
+  static const double displayMD = 30;
+  static const double displaySM = 26;
 
-  static const double headingXL = 28;
-  static const double headingLG = 24;
-  static const double headingMD = 20;
-  static const double headingSM = 18;
+  static const double headingXL = 24;
+  static const double headingLG = 20;
+  static const double headingMD = 18;
+  static const double headingSM = 16;
 
-  static const double bodyXL = 18;
-  static const double bodyLG = 16;
+  static const double bodyXL = 16;
+  static const double bodyLG = 15;
   static const double bodyMD = 14;
-  static const double bodySM = 12;
+  static const double bodySM = 13;
 
   static const double labelLG = 14;
-  static const double labelMD = 12;
-  static const double labelSM = 11;
+  static const double labelMD = 13;
+  static const double labelSM = 12;
 
-  static const double caption = 10;
+  static const double caption = 12;
 
   // =========================================================
   // RESPONSIVE BREAKPOINTS
@@ -88,7 +90,7 @@ class AppTypography {
   static TextStyle style({
     double fontSize = bodyMD,
     FontWeight fontWeight = regular,
-    Color color = Colors.black,
+    Color color = AppColors.textPrimary,
     double height = normal,
     double letterSpacing = normalSpacing,
     FontStyle fontStyle = FontStyle.normal,

@@ -9,6 +9,10 @@ import '../../application/nabi_controller.dart';
 import '../../application/nabi_state.dart';
 import 'nabi_character.dart';
 
+import 'package:nano_app/core/theme/app_colors.dart';
+import 'package:nano_app/core/theme/app_spacing.dart';
+import 'package:nano_app/core/theme/app_radius.dart';
+import 'package:nano_app/core/theme/app_duration.dart';
 /// Callback để app có thể mở chat theo chính sách điều hướng sẵn có.
 typedef NabiOpenChat = FutureOr<void> Function(BuildContext context);
 
@@ -224,13 +228,13 @@ class _NabiFloatingControl extends StatelessWidget {
         onPanEnd: onPanEnd,
         child: AnimatedScale(
           scale: isDragging ? 0.94 : 1,
-          duration: const Duration(milliseconds: 120),
+          duration: AppDuration.tap,
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(characterSize),
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.16),
+                  color: AppColors.textPrimary.withValues(alpha: 0.16),
                   blurRadius: 14,
                   offset: const Offset(0, 7),
                 ),
@@ -256,7 +260,7 @@ class _NabiFloatingControl extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         textDirection: isRightSide ? TextDirection.rtl : TextDirection.ltr,
-        children: <Widget>[avatar, const SizedBox(width: 4), bubble],
+        children: <Widget>[avatar, const SizedBox(width: AppSpacing.xs), bubble],
       ),
     );
   }
@@ -271,25 +275,25 @@ class _NabiSpeechBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return AnimatedSize(
-      duration: const Duration(milliseconds: 180),
+      duration: AppDuration.button,
       alignment: Alignment.bottomCenter,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface.withValues(alpha: 0.98),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: theme.colorScheme.primary.withValues(alpha: 0.12),
           ),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: AppColors.textPrimary.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
           child: Text(
             text,
             maxLines: 3,

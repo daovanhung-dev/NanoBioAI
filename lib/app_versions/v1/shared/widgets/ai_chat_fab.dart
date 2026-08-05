@@ -112,7 +112,7 @@ class _AIChatFABState extends State<AIChatFAB> with TickerProviderStateMixin {
     return RepaintBoundary(
       child: Tooltip(
         message: widget.tooltip,
-        waitDuration: const Duration(milliseconds: 450),
+        waitDuration: AppDuration.progress,
         child: Semantics(
           label:
               'Mở trò chuyện với Nabi, nơi Nabi có thể lắng nghe và đồng hành cùng bạn.',
@@ -254,15 +254,15 @@ class _DraggableAIChatButtonState extends State<DraggableAIChatButton> {
                         children: [
                           AIChatFAB(onPressed: widget.onPressed),
                           if (widget.showLabel) ...[
-                            const SizedBox(height: 6),
+                            const SizedBox(height: AppSpacing.tiny),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xs,
                               ),
                               decoration: BoxDecoration(
                                 color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(999),
+                                borderRadius: BorderRadius.circular(AppRadius.pill),
                                 boxShadow: AppShadows.md,
                               ),
                               child: Text(
@@ -355,13 +355,13 @@ class _NamiChatBubble extends StatelessWidget {
                 center: const Alignment(-.35, -.45),
                 radius: .9,
                 colors: [
-                  Colors.white.withValues(alpha: .32),
-                  Colors.white.withValues(alpha: .08),
+                  AppColors.surface.withValues(alpha: .32),
+                  AppColors.surface.withValues(alpha: .08),
                   Colors.transparent,
                 ],
               ),
               border: Border.all(
-                color: Colors.white.withValues(alpha: .22),
+                color: AppColors.surface.withValues(alpha: .22),
                 width: 1,
               ),
             ),
@@ -373,7 +373,7 @@ class _NamiChatBubble extends StatelessWidget {
             curve: Curves.easeOutCubic,
             child: Icon(
               AppIcons.aiChat,
-              color: Colors.white,
+              color: AppColors.surface,
               size: iconSize,
               shadows: [
                 Shadow(
@@ -398,7 +398,7 @@ class _NamiChatBubble extends StatelessWidget {
               width: size * .22,
               height: 3,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .72),
+                color: AppColors.surface.withValues(alpha: .72),
                 borderRadius: BorderRadius.circular(AppRadius.circular),
               ),
             ),
@@ -421,14 +421,14 @@ class _NamiStatusDot extends StatelessWidget {
       height: 11,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white,
+        color: AppColors.surface,
         border: Border.all(
           color: AppColors.secondary.withValues(alpha: .42),
           width: 1.4,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.white.withValues(alpha: .78),
+            color: AppColors.surface.withValues(alpha: .78),
             blurRadius: 8 * glow,
             spreadRadius: 1.5,
           ),
@@ -459,7 +459,7 @@ class _NamiOrbitPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round
-      ..color = Colors.white.withValues(alpha: .18 * opacity);
+      ..color = AppColors.surface.withValues(alpha: .18 * opacity);
 
     final sparkPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -468,10 +468,10 @@ class _NamiOrbitPainter extends CustomPainter {
       ..shader = SweepGradient(
         transform: GradientRotation(progress * math.pi * 2),
         colors: [
-          Colors.white.withValues(alpha: 0),
-          Colors.white.withValues(alpha: .92 * opacity),
-          Colors.white.withValues(alpha: .18 * opacity),
-          Colors.white.withValues(alpha: 0),
+          AppColors.surface.withValues(alpha: 0),
+          AppColors.surface.withValues(alpha: .92 * opacity),
+          AppColors.surface.withValues(alpha: .18 * opacity),
+          AppColors.surface.withValues(alpha: 0),
         ],
         stops: const [0, .38, .72, 1],
       ).createShader(rect);

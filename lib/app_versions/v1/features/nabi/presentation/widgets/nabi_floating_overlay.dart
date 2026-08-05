@@ -220,7 +220,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
 
                             // Label phía dưới
                             if (widget.showLabel) ...[
-                              const SizedBox(height: 5),
+                              const SizedBox(height: AppSpacing.xs),
                               _NabiLabel(isDragging: _isDragging),
                             ],
                           ],
@@ -280,7 +280,7 @@ class _NabiLabel extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm + 2,
-          vertical: 4,
+          vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
@@ -298,7 +298,6 @@ class _NabiLabel extends ConsumerWidget {
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w800,
-              fontSize: 10,
             ),
           ),
         ),

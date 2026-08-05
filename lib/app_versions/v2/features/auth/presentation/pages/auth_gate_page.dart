@@ -198,7 +198,7 @@ class _GuestConsentState extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 500),
               child: Card(
@@ -209,7 +209,7 @@ class _GuestConsentState extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Icon(Icons.cloud_sync_rounded, size: 56),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       Text(
                         title,
                         textAlign: TextAlign.center,
@@ -221,7 +221,7 @@ class _GuestConsentState extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                       ),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       if (cloudHasData && isEstablishedWarning)
                         FilledButton(
                           onPressed: loading ? null : onContinueWarning,
@@ -292,7 +292,7 @@ class _AuthSupportState extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),
               child: Column(
@@ -306,11 +306,11 @@ class _AuthSupportState extends StatelessWidget {
                     ),
                     child: const Icon(
                       Icons.health_and_safety_rounded,
-                      color: Colors.white,
+                      color: AppColors.surface,
                       size: 34,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   Text(
                     title,
                     textAlign: TextAlign.center,
@@ -322,7 +322,7 @@ class _AuthSupportState extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   FilledButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh_rounded),

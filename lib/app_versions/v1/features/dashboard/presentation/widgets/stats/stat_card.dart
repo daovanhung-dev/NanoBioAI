@@ -28,18 +28,17 @@ class StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(AppSpacing.tiny),
             decoration: BoxDecoration(
               color: stat.bgColor,
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Icon(stat.icon, color: stat.color, size: 16),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.tiny),
           Text(
             stat.value,
             style: AppTextStyles.heading4.copyWith(
-              fontSize: 15,
               fontWeight: AppTypography.bold,
               letterSpacing: -0.2,
             ),
@@ -48,10 +47,9 @@ class StatCard extends StatelessWidget {
             stat.unit,
             style: AppTextStyles.labelSmall.copyWith(
               color: AppColors.textHint,
-              fontSize: 9,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.circular),
             child: LinearProgressIndicator(
@@ -61,11 +59,10 @@ class StatCard extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(stat.color),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             stat.label,
             style: AppTextStyles.overline.copyWith(
-              fontSize: 9,
               color: AppColors.textHint,
               letterSpacing: 0,
             ),

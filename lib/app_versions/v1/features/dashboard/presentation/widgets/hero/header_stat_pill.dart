@@ -18,24 +18,24 @@ class HeaderStatPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
-        vertical: 6,
+        vertical: AppSpacing.tiny,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: active ? 0.2 : 0.12),
+        color: AppColors.surface.withValues(alpha: active ? 0.2 : 0.12),
         borderRadius: BorderRadius.circular(AppRadius.circular),
         border: Border.all(
-          color: Colors.white.withValues(alpha: active ? 0.4 : 0.2),
+          color: AppColors.surface.withValues(alpha: active ? 0.4 : 0.2),
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 13),
-          const SizedBox(width: 4),
+          Icon(icon, color: AppColors.surface, size: 13),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: Colors.white,
+              color: AppColors.surface,
               fontWeight: AppTypography.semiBold,
             ),
           ),

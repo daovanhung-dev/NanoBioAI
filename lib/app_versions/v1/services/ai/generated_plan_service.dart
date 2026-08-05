@@ -14,6 +14,10 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/enti
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/repositories/schedule_horizon_reader.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/lifestyle_schedule_window_policy.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_timeline_builder.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/domain/services/meal_candidate_selector.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
+import 'package:nano_app/app_versions/v1/features/nutrition/data/datasources/nutrition_profile_local_datasource.dart';
+import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application/schedule_reward_online_gateway.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application/schedule_reward_eligibility_projection_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
@@ -83,6 +87,8 @@ class GeneratedPlanService {
   final LifestyleScheduleLocalDatasource scheduleDatasource;
   final AIService aiService;
   final AiCatalogLocalDatasource catalogDatasource;
+  final NutritionProfileLocalDatasource nutritionProfileDatasource;
+  final MealCandidateSelector mealCandidateSelector;
   final PersonalScheduleAiRequestStore requestStore;
   final PersonalScheduleQuotaGateway quotaGateway;
   final ScheduleHorizonReader scheduleHorizonReader;
@@ -100,6 +106,8 @@ class GeneratedPlanService {
     required this.scheduleDatasource,
     required this.aiService,
     this.catalogDatasource = const AiCatalogLocalDatasource(),
+    this.nutritionProfileDatasource = const NutritionProfileLocalDatasource(),
+    this.mealCandidateSelector = const MealCandidateSelector(),
     PersonalScheduleAiRequestStore? requestStore,
     PersonalScheduleQuotaGateway? quotaGateway,
     ScheduleHorizonReader? scheduleHorizonReader,
@@ -336,11 +344,25 @@ class GeneratedPlanService {
     AppLogger.info(_tag, 'Resolved generated-plan range for $days days');
 
     try {
+      final fullCatalog = await catalogDatasource.loadActiveBundle();
+      final nutritionProfile = await nutritionProfileDatasource.load(userId);
+      final eligibleMeals = mealCandidateSelector.eligibleMeals(
+        catalog: fullCatalog.meals,
+        profile: nutritionProfile,
+      );
+      final filteredCatalog = AiCatalogBundle(
+        meals: eligibleMeals,
+        exercises: fullCatalog.exercises,
+        scheduleTasks: fullCatalog.scheduleTasks,
+      );
+      _ensureMealSlotsAvailable(filteredCatalog);
+
       final generatedMeals = await aiService.generateMealPlanWithSource(
         healthData: dashboardData,
         userId: userId,
         startDate: resolvedStartDate,
         days: days,
+        catalogOverride: filteredCatalog,
       );
       final meals = generatedMeals.value
           .map((meal) {
@@ -378,7 +400,7 @@ class GeneratedPlanService {
           .toList(growable: false);
       AppLogger.info(_tag, 'Generated ${exercises.length} exercise records');
 
-      final catalog = await catalogDatasource.loadActiveBundle();
+      final catalog = filteredCatalog;
       final createdAt = now().toIso8601String();
       final schedule = const LifestyleScheduleTimelineBuilder().generate(
         profile: profile,
@@ -459,6 +481,16 @@ class GeneratedPlanService {
         errorCode: _errorCode(error),
       );
       rethrow;
+    }
+  }
+
+  void _ensureMealSlotsAvailable(AiCatalogBundle catalog) {
+    for (final slot in MealPlanAiNormalizer.mealSlots) {
+      if (catalog.mealsForType(slot.type).isEmpty) {
+        throw StateError(
+          'No approved meal candidate remains for ${slot.type}.',
+        );
+      }
     }
   }
 

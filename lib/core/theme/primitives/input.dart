@@ -158,7 +158,7 @@ class AppInput extends StatelessWidget {
                   : AppColorTokens.textPrimary,
             ),
           ),
-          SizedBox(height: AppSpacingTokens.itemSpacing),
+          const SizedBox(height: 6),
         ],
         TextField(
           controller: controller,
@@ -197,7 +197,8 @@ class AppInput extends StatelessWidget {
             fillColor: isDark
                 ? AppColorTokens.darkSurface
                 : AppColorTokens.surface,
-            contentPadding: EdgeInsets.symmetric(
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacingTokens.inputPaddingH,
               vertical: AppSpacingTokens.inputPaddingV,
             ),

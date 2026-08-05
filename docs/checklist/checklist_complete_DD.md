@@ -9,7 +9,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, va Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001` |
 | Pham vi | BioAI / NanoBio: approved DD M01-M19 and M30, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, va planned DD backlog M20-M29 |
 | Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
-| Ngay cap nhat | 2026-07-15 |
+| Ngay cap nhat | 2026-08-04 |
 | Muc dich | Theo doi DD docs completeness rieng voi coding progress va implementation evidence backlog; khong tron UI discovery shell voi nghiep vu module. |
 
 ## Rubric phan tram
@@ -160,3 +160,12 @@ acceptance đạt trên một dự án Supabase sandbox thật.
 - M15 `ADMIN_DASHBOARD`: quyền vẫn do `get_my_admin_session` quyết định; thêm `app_access_mode`/`can_use_user_app` để phân biệt Admin-only và dual-role.
 - Existing active Admin được migration thành `both`; role revoke chuyển về user surface, không sign-out nhầm phiên người dùng.
 - Source/unit/static contract đã bổ sung; Flutter analyze/test/build và Supabase sandbox smoke ba loại account còn là production evidence backlog.
+
+### Cập nhật implementation evidence 2026-08-04 — M03 Dashboard Blue Wellness
+
+- M03 `DASHBOARD_SCHEDULE` giữ nguyên `Approved - DD docs complete`, DD completeness 100% và coding progress 100%; thay đổi này không thêm business rule, schema, API hoặc quyền truy cập.
+- Dashboard presentation đã được tách khỏi orchestration: `dashboard_page.dart` giảm từ 2.241 xuống 284 dòng; các khối header, snapshot, quick actions, metrics, timeline, progress, insight, health details và state được tách thành widget chuyên trách.
+- Information architecture mới ưu tiên điểm hôm nay + việc tiếp theo, ba ghi nhận nhanh, lưới 2×2, timeline tối đa ba mục, progress gộp và health details mở rộng; callback/provider/repository hiện có được giữ nguyên.
+- Canonical theme chuyển sang NaBi Blue Wellness bằng semantic token; xanh lá tiếp tục chỉ biểu đạt success. Dashboard không thêm raw color, raw numeric radius, DAO/datasource import hoặc production mock data.
+- Evidence tĩnh: `python3 tools/validate_nabi_green_wellness.py` PASS với 740 Dart files và 0 blocking findings; 57 missing-asset warnings thuộc snapshot đầu vào không có thư mục assets.
+- Targeted Flutter format/analyze/test/build chưa chạy vì môi trường bàn giao không có Flutter/Dart executable; cần chạy các lệnh trong feature doc trên máy phát triển trước khi merge/release.

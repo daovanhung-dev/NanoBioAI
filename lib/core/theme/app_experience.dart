@@ -13,8 +13,30 @@ class AppExperience {
   const AppExperience._();
 
   static Widget builder(BuildContext context, Widget? child) {
-    final reduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    return builderWithTextScale(context, child, presetFactor: 1);
+  }
+
+  static Widget builderWithTextScale(
+    BuildContext context,
+    Widget? child, {
+    required double presetFactor,
+  }) {
+    final mediaQuery = MediaQuery.maybeOf(context);
+    final reduceMotion = mediaQuery?.disableAnimations ?? false;
+    final systemScale = mediaQuery == null
+        ? 1.0
+        : mediaQuery.textScaler.scale(16) / 16;
+    final effectiveScale = (systemScale * presetFactor)
+        .clamp(0.90, 1.60)
+        .toDouble();
+    final scaledChild = mediaQuery == null
+        ? child
+        : MediaQuery(
+            data: mediaQuery.copyWith(
+              textScaler: TextScaler.linear(effectiveScale),
+            ),
+            child: child ?? const SizedBox.shrink(),
+          );
 
     return ColoredBox(
       color: AppColors.background,
@@ -31,7 +53,7 @@ class AppExperience {
                 enabled: !reduceMotion,
                 child: FocusTraversalGroup(
                   policy: ReadingOrderTraversalPolicy(),
-                  child: child ?? const SizedBox.shrink(),
+                  child: scaledChild ?? const SizedBox.shrink(),
                 ),
               ),
             ),

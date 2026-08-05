@@ -148,7 +148,7 @@ class _ReadyFamilyState extends ConsumerWidget {
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           for (final member in members)
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -256,7 +256,7 @@ class _SupportState extends StatelessWidget {
             ),
           ),
           if (actionLabel != null && onAction != null) ...[
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             FilledButton(onPressed: onAction, child: Text(actionLabel!)),
           ],
         ],

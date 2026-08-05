@@ -47,7 +47,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
           backgroundColor: AppColors.background,
           appBar: AppBar(
             title: const Text('NanoBio Cộng tác viên'),
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.surface,
             foregroundColor: AppColors.textPrimary,
             elevation: 0,
             actions: [
@@ -161,7 +161,7 @@ class _SalePayoutProfileGateState
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Hồ sơ chi trả cộng tác viên'),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         actions: [
@@ -177,7 +177,7 @@ class _SalePayoutProfileGateState
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
             child: Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.cardPadding),
               decoration: _panelDecoration(),
               child: Form(
                 key: _formKey,
@@ -193,7 +193,7 @@ class _SalePayoutProfileGateState
                       'Hoàn tất trước khi dùng dashboard hoặc rút tiền.',
                       style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                     ),
-                    const SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.sectionSpacing),
                     TextFormField(
                       controller: _citizenId,
                       keyboardType: TextInputType.number,
@@ -246,7 +246,7 @@ class _SalePayoutProfileGateState
                       ),
                       validator: _required,
                     ),
-                    const SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.sectionSpacing),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
@@ -339,14 +339,14 @@ class _OverviewTab extends ConsumerWidget {
                     ? 'Mã giới thiệu sẽ hiển thị sau khi quản trị viên duyệt.'
                     : 'Mã giới thiệu: ${state.referralCode}',
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               GridView.count(
                 crossAxisCount: MediaQuery.sizeOf(context).width > 760 ? 4 : 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: AppSpacing.md,
-                crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 1.22,
+                mainAxisSpacing: AppSpacing.sm,
+                crossAxisSpacing: AppSpacing.sm,
+                childAspectRatio: 1.55,
                 children: [
                   _MetricTile(
                     label: 'Khách hàng trực tiếp',
@@ -370,7 +370,7 @@ class _OverviewTab extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               _ListTilePanel(
                 icon: data.conversionPolicy.enabled
                     ? Icons.published_with_changes_rounded
@@ -420,7 +420,7 @@ class _DirectCustomersTab extends ConsumerWidget {
                 title: 'Khách hàng trực tiếp',
                 subtitle: 'Chỉ hiển thị khách đã gắn trực tiếp với bạn.',
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               ...items.map(
                 (item) => _ListTilePanel(
                   icon: Icons.person_rounded,
@@ -471,7 +471,7 @@ class _PointLedgerTab extends ConsumerWidget {
                 title: 'Sổ điểm cộng tác viên',
                 subtitle: 'Mỗi dòng gắn với một thanh toán hợp lệ.',
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               ...items.map(
                 (item) => _ListTilePanel(
                   icon: Icons.receipt_long_rounded,
@@ -523,7 +523,7 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _ReferralCodePanel(referralCode: widget.state.referralCode),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           dashboard.when(
             loading: () => const _CenteredProgress(),
             error: (_, __) => const _EmptySaleState(
@@ -538,13 +538,13 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
               onSubmit: _submitConversion,
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           conversions.when(
             loading: () => const _CenteredProgress(),
             error: (_, __) => const SizedBox.shrink(),
             data: (items) => _ConversionHistory(items: items),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           _ListTilePanel(
             icon: Icons.policy_rounded,
             title: 'Điều lệ phiên bản ${SaleTerms.currentVersion}',
@@ -617,7 +617,7 @@ class _ReferralCodePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,7 +626,7 @@ class _ReferralCodePanel extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             referralCode ?? 'Chưa có mã đang hoạt động',
-            style: AppTextStyles.heading2.copyWith(color: AppColors.primary),
+            style: AppTextStyles.heading3.copyWith(color: AppColors.primary),
           ),
           const SizedBox(height: AppSpacing.md),
           FilledButton.icon(
@@ -668,7 +668,7 @@ class _ConversionRequestPanel extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -775,7 +775,7 @@ class _SaleScroll extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       child: child,
     );
   }
@@ -791,7 +791,7 @@ class _HeroPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -802,7 +802,7 @@ class _HeroPanel extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.heading2.copyWith(
-              color: Colors.white,
+              color: AppColors.surface,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -810,8 +810,8 @@ class _HeroPanel extends StatelessWidget {
           Text(
             subtitle,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: Colors.white.withValues(alpha: .9),
-              height: 1.5,
+              color: AppColors.surface.withValues(alpha: .9),
+              height: 1.4,
             ),
           ),
         ],
@@ -834,7 +834,7 @@ class _MetricTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -847,7 +847,7 @@ class _MetricTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.heading3,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(label, style: AppTextStyles.bodySmall),
         ],
       ),
@@ -869,19 +869,19 @@ class _ListTilePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: _panelDecoration(),
       child: Row(
         children: [
           Icon(icon, color: AppColors.primary),
-          const SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: AppTextStyles.labelLarge),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(subtitle, style: AppTextStyles.bodySmall),
               ],
             ),
@@ -902,7 +902,7 @@ class _EmptySaleState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -936,7 +936,7 @@ class _CenteredProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SizedBox(
-      height: 320,
+      height: 220,
       child: Center(child: CircularProgressIndicator()),
     );
   }
@@ -972,25 +972,25 @@ class _SaleSupportPage extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.all(AppSpacing.cardPadding),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 76,
-                    height: 76,
+                    width: 60,
+                    height: 60,
                     decoration: AppDecoration.circle(
                       color: AppColors.primarySoft,
                     ),
                     child: const Icon(
                       Icons.support_agent_rounded,
                       color: AppColors.primary,
-                      size: 36,
+                      size: 28,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   Text(
                     title,
                     textAlign: TextAlign.center,
@@ -1002,7 +1002,7 @@ class _SaleSupportPage extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   FilledButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh_rounded),
@@ -1020,7 +1020,7 @@ class _SaleSupportPage extends StatelessWidget {
 
 BoxDecoration _panelDecoration() {
   return BoxDecoration(
-    color: Colors.white,
+    color: AppColors.surface,
     borderRadius: BorderRadius.circular(AppRadius.sm),
     border: Border.all(color: AppColors.borderLight),
   );

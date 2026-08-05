@@ -4,7 +4,6 @@ import 'package:nano_app/core/theme/theme.dart';
 
 import 'nabi_onboarding_experience.dart';
 
-/// Legacy-compatible selectable chip aligned with the NaBi visual language.
 class OnboardingChip extends StatelessWidget {
   final String label;
   final String emoji;
@@ -39,94 +38,81 @@ class OnboardingChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = selectedColor ?? NabiPalette.royalBlue;
-    final foreground = selected ? Colors.white : NabiPalette.ink;
-
-    return SizedBox(
-      width: width,
-      height: height ?? 54,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        child: InkWell(
+    final active = selectedColor ?? NabiPalette.greenPrimary;
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: enabled,
+      label: label,
+      child: SizedBox(
+        width: width,
+        height: height ?? 52,
+        child: Material(
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          onTap: enabled ? onTap : null,
-          splashColor: Colors.white.withValues(alpha: 0.18),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 170),
-            padding:
-                padding ??
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-            decoration: BoxDecoration(
-              gradient: selected
-                  ? (selectedGradient ?? NabiPalette.selection)
-                  : NabiPalette.card,
-              color:
-                  selected && selectedGradient == null && selectedColor != null
-                  ? activeColor
-                  : null,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(
-                color: selected ? activeColor : NabiPalette.line,
-                width: selected ? 1.4 : 1,
+          child: InkWell(
+            onTap: enabled ? onTap : null,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: AnimatedContainer(
+              duration: AppDuration.ripple,
+              padding: padding ??
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+              decoration: BoxDecoration(
+                gradient: selected
+                    ? (selectedGradient ??
+                        (selectedColor == null
+                            ? NabiPalette.selection
+                            : LinearGradient(colors: [active, active])))
+                    : NabiPalette.card,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(
+                  color: selected ? active : NabiPalette.line,
+                  width: selected ? 1.3 : 1,
+                ),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: active.withValues(alpha: 0.20),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : const [],
               ),
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color: activeColor.withValues(alpha: 0.20),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : const [],
-            ),
-            child: Opacity(
-              opacity: enabled ? 1 : 0.45,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 29,
-                    height: 29,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? Colors.white.withValues(alpha: 0.16)
-                          : NabiPalette.royalBlue.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: icon != null
-                        ? Icon(
-                            icon,
-                            size: 17,
-                            color: selected ? Colors.white : activeColor,
-                          )
-                        : Text(emoji, style: const TextStyle(fontSize: 17)),
-                  ),
-                  const SizedBox(width: 7),
-                  Flexible(
-                    child: Text(
-                      label,
-                      maxLines: description == null ? 2 : 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: foreground,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0,
+              child: Opacity(
+                opacity: enabled ? 1 : 0.45,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null)
+                      Icon(icon, size: 18, color: selected ? AppColors.surface : active)
+                    else
+                      Text(emoji, style: const TextStyle(fontSize: 18)),
+                    const SizedBox(width: AppSpacing.sm),
+                    Flexible(
+                      child: Text(
+                        label,
+                        maxLines: description == null ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: selected ? AppColors.surface : NabiPalette.ink,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0,
+                        ),
                       ),
                     ),
-                  ),
-                  if (trailing != null) ...[
-                    const SizedBox(width: 6),
-                    trailing!,
+                    if (trailing != null) ...[
+                      const SizedBox(width: AppSpacing.tiny),
+                      trailing!,
+                    ],
+                    const SizedBox(width: AppSpacing.tiny),
+                    Icon(
+                      selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                      size: 19,
+                      color: selected ? AppColors.surface : active,
+                    ),
                   ],
-                  const SizedBox(width: 5),
-                  Icon(
-                    selected ? Icons.check_rounded : Icons.add_rounded,
-                    size: 18,
-                    color: selected ? Colors.white : NabiPalette.royalBlue,
-                  ),
-                ],
+                ),
               ),
             ),
           ),

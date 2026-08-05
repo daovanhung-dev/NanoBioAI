@@ -8,7 +8,7 @@ import 'app_shadows.dart';
 import 'app_spacing.dart';
 import 'app_text_styles.dart';
 
-/// Shared visual shell for a calm, trustworthy healthcare experience.
+/// Shared visual shell for the calm, trustworthy NaBi Blue Wellness experience.
 class MedicalPageScaffold extends StatelessWidget {
   final Widget body;
   final PreferredSizeWidget? appBar;
@@ -286,8 +286,8 @@ class MedicalPageHero extends StatelessWidget {
                           label: eyebrow!,
                           icon: Icons.verified_user_outlined,
                           foregroundColor: AppColors.textInverse,
-                          backgroundColor: Colors.white.withValues(alpha: .14),
-                          borderColor: Colors.white.withValues(alpha: .22),
+                          backgroundColor: AppColors.textInverse.withValues(alpha: .14),
+                          borderColor: AppColors.textInverse.withValues(alpha: .22),
                         ),
                         const SizedBox(height: AppSpacing.md),
                       ],
@@ -324,7 +324,7 @@ class MedicalPageHero extends StatelessWidget {
                         MedicalIconBadge(
                           icon: icon,
                           color: AppColors.textInverse,
-                          backgroundColor: Colors.white.withValues(alpha: .15),
+                          backgroundColor: AppColors.textInverse.withValues(alpha: .15),
                           size: 58,
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -341,7 +341,7 @@ class MedicalPageHero extends StatelessWidget {
                       MedicalIconBadge(
                         icon: icon,
                         color: AppColors.textInverse,
-                        backgroundColor: Colors.white.withValues(alpha: .15),
+                        backgroundColor: AppColors.textInverse.withValues(alpha: .15),
                         size: 74,
                       ),
                     ],
@@ -373,7 +373,7 @@ class _HeroPattern extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: .10),
+                  color: AppColors.textInverse.withValues(alpha: .10),
                   width: 24,
                 ),
               ),
@@ -387,7 +387,7 @@ class _HeroPattern extends StatelessWidget {
               height: 124,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: .055),
+                color: AppColors.textInverse.withValues(alpha: .055),
               ),
             ),
           ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/data/datasources/settings_local_datasource.dart';
@@ -54,9 +56,11 @@ class ProfilePage extends ConsumerWidget {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _ProfileHeader(dashboard: dashboard),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _MetricGrid(dashboard: dashboard),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
+                      const _NutritionProfileLinkCard(),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _InfoSection(
                         title: 'Thông tin cá nhân',
                         rows: [
@@ -72,14 +76,14 @@ class ProfilePage extends ConsumerWidget {
                           _InfoRow('Nghề nghiệp', dashboard.occupation),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _ChipSection(
                         title: 'Mục tiêu',
                         emptyMessage: 'Nabi chưa thấy mục tiêu nào được chọn.',
                         items: dashboard.goals,
                         icon: Icons.flag_rounded,
                       ),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _ChipSection(
                         title: 'Tình trạng cần lưu ý',
                         emptyMessage:
@@ -87,7 +91,7 @@ class ProfilePage extends ConsumerWidget {
                         items: dashboard.conditions,
                         icon: Icons.health_and_safety_rounded,
                       ),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _ChipSection(
                         title: 'Thói quen',
                         emptyMessage:
@@ -198,7 +202,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 'Email đăng nhập không đổi tại đây.',
                 style: AppTextStyles.bodyMedium,
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               _ProfileField(
                 controller: _fullName,
                 label: 'Họ và tên',
@@ -250,7 +254,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -375,7 +379,7 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final name = _displayText(dashboard.fullName, fallback: 'Chưa có tên');
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: AppDecoration.gradient(
         colors: const [AppColors.primary, AppColors.secondary],
         radius: AppRadius.xxl,
@@ -387,12 +391,12 @@ class _ProfileHeader extends StatelessWidget {
             width: 76,
             height: 76,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .18),
+              color: AppColors.surface.withValues(alpha: .18),
               borderRadius: BorderRadius.circular(AppRadius.circular),
             ),
             child: const Icon(
               Icons.person_rounded,
-              color: Colors.white,
+              color: AppColors.surface,
               size: 40,
             ),
           ),
@@ -406,22 +410,22 @@ class _ProfileHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.heading2.copyWith(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     fontWeight: AppTypography.bold,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.tiny),
                 Text(
                   _subscriptionLabel(dashboard.subscriptionTier),
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withValues(alpha: .9),
+                    color: AppColors.surface.withValues(alpha: .9),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Nabi sẽ dùng những thông tin này để chăm sóc bạn gần gũi hơn mỗi ngày.',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.white.withValues(alpha: .78),
+                    color: AppColors.surface.withValues(alpha: .78),
                     height: 1.35,
                   ),
                 ),
@@ -429,6 +433,38 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+class _NutritionProfileLinkCard extends StatelessWidget {
+  const _NutritionProfileLinkCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: .1),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          child: const Icon(
+            Icons.restaurant_menu_rounded,
+            color: AppColors.primary,
+          ),
+        ),
+        title: const Text('Hồ sơ dinh dưỡng'),
+        subtitle: const Text(
+          'Dị ứng, triệu chứng, mục tiêu và sở thích ăn uống',
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: () => context.push(V1RoutePaths.nutritionProfile),
       ),
     );
   }
@@ -517,7 +553,7 @@ class _MetricCard extends StatelessWidget {
               fontWeight: AppTypography.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(metric.label, style: AppTextStyles.bodySmall),
         ],
       ),
@@ -628,7 +664,7 @@ class _SurfaceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: AppDecoration.card(
         radius: AppRadius.xl,
         shadows: AppShadows.sm,
@@ -648,7 +684,7 @@ class _EmptyProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

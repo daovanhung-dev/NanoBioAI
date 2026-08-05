@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tra
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-07-19 |
+| Ngay cap nhat | 2026-08-04 |
 | Muc dich | Ghi lai trang thai coding M01-M19/M30 va coding gate rieng cho planned M20-M29. |
 
 ## DD Progress Next Tasks
@@ -154,3 +154,13 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [x] Cập nhật unit/static contracts, launch config, integration/regression entrypoint và context docs.
 - [ ] Chạy `dart format`, `flutter analyze`, full `flutter test` và Android smoke trong máy có Flutter SDK.
 - [ ] Apply migration trên Supabase sandbox; smoke user-only/admin-only/both, restore session và revoke role.
+
+### M03 Dashboard Blue Wellness — 2026-08-04
+
+- [x] Chuyển canonical semantic palette từ xanh lá sang xanh dương; giữ success/warning/error đúng ngữ nghĩa.
+- [x] Tối giản Dashboard: header ngắn, snapshot gộp điểm + next action, quick actions, metrics 2×2, timeline preview, progress gộp, insight ưu tiên và health details mở rộng.
+- [x] Giảm `dashboard_page.dart` từ 2.241 xuống 284 dòng, không thay provider/controller/repository/data flow.
+- [x] Thêm contract/widget test source cho màn hẹp, text scale 130%, copy header và orchestration boundary.
+- [x] Static validation: 740 Dart files, 0 blocking findings.
+- [ ] Chạy `dart format`, targeted `flutter analyze`, targeted `flutter test` và `flutter build apk --debug` trên máy có Flutter SDK.
+- [ ] Visual smoke trên thiết bị 320/360/412 px, text scale 90/100/115/130%, xác nhận Nabi overlay không che CTA cuối trang.

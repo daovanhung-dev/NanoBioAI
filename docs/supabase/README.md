@@ -140,3 +140,7 @@ sandbox/staging.
 - Supabase user management: https://supabase.com/docs/guides/auth/managing-user-data
 - Supabase Row Level Security: https://supabase.com/docs/guides/database/postgres/row-level-security
 - Supabase database migrations: https://supabase.com/docs/guides/deployment/database-migrations
+
+## V17 nutrition profile and meal catalog
+
+Run `21-nutrition-profile-meal-catalog-v17.sql` after the wellness migration, then `22-meal-catalog-source-seed.sql`. The migration adds owner-scoped nutrition tables, meal snapshot provenance, read-only active catalog access for guest/authenticated clients, and extends `sync_my_mobile_snapshot`. The source seed contains 163 reference recipes; imported rows remain `is_plan_eligible = false` until professional metadata review approves them.

@@ -1,8 +1,12 @@
-# Design.md — NanoBio / NamiAI UI Engineering Context
+# Design.md — NanoBio / NamiAI UI Engineering Context — NaBi Green Wellness
 
 > **Purpose:** This is the UI implementation context for an Agent that must design, refactor, or fix Flutter interfaces in this repository without breaking product flows, version boundaries, data architecture, or the Nabi persona.
 >
+> **Canonical visual direction:** **NaBi Green Wellness** — a green-first, expressive wellness interface with concise Vietnamese copy, clear content hierarchy, responsive motion, friendly Nabi guidance and accessible multi-select interactions.
+>
 > **Use with:** root `AGENTS.md` and the selected `.codex` workflow/domain. This document concentrates all UI-relevant knowledge discovered in the current project snapshot; it does **not** replace BD/DD when a change affects a business rule, data contract, permission, quota, payment, referral, notification, or consent.
+>
+> **Status note:** source inventories and architecture notes describe the audited snapshot. NaBi Green Wellness sections describe the **target design contract** for new or refactored consumer UI. Do not claim that existing theme token values or screens already implement this direction until the corresponding code is changed and validated.
 
 ## 0. Audit scope and reliability
 
@@ -153,38 +157,254 @@ Presentation (page/widget)
 - Use `mounted` before UI effects after awaited actions; show generic Vietnamese `SnackBar` feedback, not raw errors.
 - Invalidate / reload the providers that own a changed read model. The dashboard controller already centralizes cross-feature invalidation after timeline, mood, water or weight writes.
 
-## 4. UI persona and visual language
+## 4. UI persona and visual language — NaBi Green Wellness
 
-### 4.1 Nabi tone
+### 4.1 Nabi tone and copy discipline
 
 - User-facing language is Vietnamese, warm, calm, concrete and non-judgmental.
-- Nabi is a companion, not a clinician. Use gentle invitations such as “Mình cùng xem nhé”, “Bạn có thể thử lại sau một chút nhé”; do not shame, diagnose, overpromise or claim certainty.
-- Health data UI must distinguish a wellness suggestion from medical diagnosis. Preserve consent/disclaimer flow, especially onboarding and health calculations.
-- Use the current product label consistently **within the touched screen**. The repository contains both `Nabi` and `Nabi` legacy text/identifiers; do not do broad branding renames as part of a UI task.
+- Nabi is a companion, not a clinician. Use gentle invitations such as “Mình cùng xem nhé” or “Thử lại sau một chút nhé”; do not shame, diagnose, overpromise or claim certainty.
+- Health data UI must distinguish a wellness suggestion from medical diagnosis. Preserve consent and disclaimer flows, especially onboarding and health calculations.
+- Use the current product label consistently **within the touched screen**. Do not perform broad branding renames as part of an isolated UI task.
+- Prefer **one title + one short supporting sentence + one primary action** per screen.
+- Remove repeated explanations, decorative labels, duplicated banners and text that merely restates the selected state.
+- Default copy budget for onboarding:
+  - title: maximum 7 words;
+  - subtitle: maximum 18 words;
+  - choice label: maximum 5 words where possible;
+  - Nabi speech bubble: 3–7 words;
+  - one medical or privacy explanation per relevant step, not repeated throughout the flow.
+- Use progressive disclosure for optional detail. Show more text only after the user asks, expands a section or reaches a legally required consent surface.
 
-### 4.2 Core visual grammar
+### 4.2 Design intent
 
-| Element  | Existing direction                                                                                                                                          |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Brand    | blue `#3B82F6`, cyan `#06B6D4`, purple `#8B5CF6`; healthcare/wellness rather than clinical sterile UI                                                       |
-| Surface  | pale slate/blue background, white cards, thin soft borders, restrained elevation                                                                            |
-| Emphasis | blue/cyan/purple gradients on hero, AI and premium/supporting surfaces; colored soft panels for success/warning/error/info                                  |
-| Shape    | medium inputs/buttons (`12`), cards (`16`), larger hero containers (`24`), full pill badges/chips                                                           |
-| Type     | Roboto-based system; strong hierarchy through `AppTextStyles`/`AppTypography` rather than arbitrary sizes                                                   |
-| Icons    | rounded Material icons, `AppIcons` for common semantics; avoid emoji as an icon substitute outside data/options that already use emoji                      |
-| Motion   | short and purposeful: entrance fade/slide/scale, selected control transitions, progress pulses, loading/typing; never block use or overload a health screen |
-| Nabi     | use image/expression/overlay components; do not construct a second visual mascot ad hoc                                                                     |
+NaBi Green Wellness must feel:
 
-### 4.3 Layout and responsive rules observed in source
+- **Healthy, not clinical:** green, mint, warm white and natural accent colors replace sterile blue-heavy form styling.
+- **Expressive, not noisy:** motion and color communicate hierarchy and feedback; they do not compete with the task.
+- **Friendly, not childish:** Nabi adds warmth and response, while typography and spacing remain professional.
+- **Minimal, not empty:** fewer elements, stronger composition, meaningful imagery and controlled depth.
+- **Personal, not generic:** selected goals, conditions and routines visibly affect the screen state and Nabi response.
+- **Trustworthy, not authoritative:** UI clearly separates suggestions from medical advice and avoids false certainty.
 
-- Mobile-first: page padding normally `AppSpacing.md` (16), section rhythm `AppSpacing.lg` (24), card padding 16–24.
-- Use `SafeArea`; use a scrollable body when content can exceed height. `CustomScrollView`/slivers are common for rich long pages; `SingleChildScrollView` for short forms; embedded `GridView` must be `shrinkWrap: true` + non-scrollable.
-- Prevent overflows with `Expanded`, `Flexible`, `ConstrainedBox`, `Wrap`, `maxLines`, `TextOverflow.ellipsis` and responsive grids.
-- Existing breakpoints are feature-specific: 420–560 content widths for compact screens/forms, profile grid 620, admin internal 720, sale grid 760, desktop admin around 960, large care grid 900. Reuse the nearest feature’s breakpoint rather than inventing a global behavior in an isolated page.
-- Admin is responsive desktop-first (sidebar/drawer/content max width); user surfaces are touch-first with 48dp minimum interactive targets.
-- The floating chat control reserves bottom navigation space and is draggable. Never overlay a CTA, system navigation or keyboard with it.
+### 4.3 Reference principles from well-known apps
+
+These products are references for interaction principles only. Do not copy proprietary layouts, illustrations, wording or branded assets.
+
+| Reference | Principle to adapt | NaBi application |
+|---|---|---|
+| Duolingo | one task per screen, strong selection feedback, mascot response, visible progress | compact onboarding steps, spring selection cards, Nabi reaction, clear completion state |
+| Finch | companion-led self-care and emotionally supportive micro-interactions | Nabi remains present as a gentle guide and celebrates small completed actions |
+| Headspace | low-copy storytelling, simple illustrations, breathing room | large visual focal point, short copy, quiet surfaces and calm pacing |
+| Apple Health | trustworthy hierarchy and data-first presentation | primary metric first, supporting context second, clear status semantics |
+| Material 3 Expressive | role-based color, purposeful motion and shape hierarchy | semantic green system, expressive capsules/cards and consistent transition direction |
+
+### 4.4 Canonical color system
+
+Green is the dominant product color for consumer wellness surfaces. Accent colors are supporting roles, not competing brand colors.
+
+| Role | Token name for local implementation | Hex | Usage |
+|---|---|---:|---|
+| Primary | `greenPrimary` | `#14A36F` | CTA, selected state, active progress, main icon |
+| Primary deep | `greenDeep` | `#075E45` | high-contrast text/icon on light green, pressed CTA |
+| Primary bright | `greenBright` | `#42D392` | highlight, success motion, active glow |
+| Primary soft | `greenSoft` | `#DDF6E9` | selected soft surface, tag background |
+| Mint surface | `mintSurface` | `#EAF9F1` | section background, low-emphasis panel |
+| Page background | `pageBackground` | `#F6FBF8` | default consumer scaffold |
+| Elevated surface | `surface` | `#FFFFFF` | card, sheet, field |
+| Main text | `textPrimary` | `#12352A` | title and important value |
+| Secondary text | `textSecondary` | `#60766E` | subtitle and supporting copy |
+| Muted text | `textMuted` | `#8A9B94` | hint, metadata |
+| Border | `borderSoft` | `#D9E9E1` | card/input separator |
+| Focus | `focusRing` | `#68D9A5` | keyboard/focus outline |
+| Energy accent | `energyYellow` | `#FFC857` | routine/energy highlight |
+| Calm accent | `calmBlue` | `#58B9E8` | sleep, calm or informational context |
+| Care accent | `careCoral` | `#FF7D75` | emotional care and gentle attention |
+| Personal accent | `personalPurple` | `#8B7CF6` | personalization or premium-supporting detail |
+
+Semantic status colors must remain distinguishable:
+
+| Status | Foreground | Soft surface |
+|---|---:|---:|
+| Success | `#14885F` | `#E0F6EB` |
+| Warning | `#B7791F` | `#FFF3D6` |
+| Error | `#C64A4A` | `#FDE8E7` |
+| Information | `#247CA8` | `#E3F3FB` |
+
+Rules:
+
+- Green should occupy roughly 65–75% of branded emphasis across a consumer screen.
+- White and warm mint provide space; do not fill every card with a gradient.
+- Accent colors are limited to icons, illustrations, small surfaces and categorical distinction.
+- Red is reserved for destructive/error states. Do not use it merely to make health content look important.
+- Never rely on color alone: selected/error/completed states also need icon, text, shape or motion.
+- Maintain readable contrast for text, icons and controls; do not place muted green text on mint without verifying contrast.
+
+### 4.5 Gradient recipes
+
+Use gradients only on hero, primary CTA, celebration, progress emphasis or one featured surface.
+
+```text
+Primary CTA:
+  #0F8E62 → #32C789
+
+Hero:
+  #075E45 → #14A36F → #55DBA1
+
+Mint wash:
+  #F8FDFB → #EAF9F1
+
+Celebration:
+  #14A36F → #42D392 with small #FFC857 highlights
+```
+
+Rules:
+
+- Maximum one dominant gradient region above the fold.
+- Routine data cards remain solid surfaces.
+- Avoid rainbow gradients, neon saturation and unrelated blue/purple glows.
+- Glass effects are allowed only over a stable, low-noise background with verified text contrast.
+
+### 4.6 Shape, depth and component hierarchy
+
+| Component | Radius | Depth |
+|---|---:|---|
+| Compact control/input | 12–14 | flat or subtle border |
+| Selection card | 18–20 | soft green-tinted shadow when selected |
+| Standard card | 20 | restrained elevation |
+| Hero/featured panel | 24–28 | layered shadow or glow |
+| Bottom sheet | 28 top corners | sheet shadow |
+| Pill/chip/progress marker | full capsule | flat |
+
+- Default card should not look like a generic white rectangle with a border only. Use hierarchy through icon container, typography, selected state and spacing.
+- Keep no more than two visible card nesting levels.
+- Selected choice cards may use a green gradient, check icon, 1–2 px outline and a short scale response.
+- Shadows must be soft and tinted by the nearby surface. Avoid black drop shadows and heavy blur on every element.
+- Pressed state should visibly compress to roughly `0.97–0.99` scale or reduce elevation.
+
+### 4.7 Typography
+
+- Continue using the repository’s Roboto/system typography and semantic `AppTextStyles`/`AppTypography`.
+- Visual hierarchy:
+  - display/hero: 28–34, bold, compact line height;
+  - screen title: 24–28, bold;
+  - section title: 18–20, semi-bold;
+  - body: 14–16, regular/medium;
+  - label/chip: 12–14, medium/semi-bold;
+  - CTA: 15–17, semi-bold.
+- Prefer sentence case. Avoid repeated uppercase eyebrows and labels.
+- Limit title blocks to two lines and body descriptions to two lines by default.
+- Numeric health values may be larger, but the unit and explanation remain secondary.
+- Dynamic text must wrap or scroll safely. Do not fix container height around unbounded text.
+
+### 4.8 Motion language
+
+Motion is a core part of NaBi Green Wellness, but every animation must explain state, direction or relationship.
+
+| Interaction | Duration | Curve/behavior |
+|---|---:|---|
+| Tap/press | 110–160 ms | quick ease-out |
+| Selection change | 180–240 ms | soft spring or emphasized curve |
+| Card/section entrance | 240–360 ms | fade + 12–24 px slide |
+| Wizard step transition | 320–420 ms | directional slide + fade |
+| Bottom sheet | project token | decelerate into place |
+| Progress update | 350–550 ms | spring with stable end |
+| Nabi reaction | 450–900 ms | one-shot expression or short loop |
+| Celebration | 700–1200 ms | one-shot; never blocks navigation |
+
+Rules:
+
+- Forward wizard movement enters from the right and exits left; back navigation reverses the direction.
+- Stagger only the first 4–6 visible elements; delay should remain subtle.
+- Continuous ambient movement is limited to small 4–8 px drift, breathing, glow or particle motion.
+- Do not animate large lists continuously, rotate backgrounds indefinitely or run multiple heavy painters simultaneously.
+- Respect `MediaQuery.disableAnimations` and platform reduced-motion preferences. Reduced mode uses immediate state changes or simple opacity transitions.
+- Every `AnimationController` must be disposed. Avoid controllers when an implicit animation is sufficient.
+- Haptic feedback is optional and light; do not trigger it for passive animation.
+
+### 4.9 Nabi character contract
+
+- Use the existing global/V1 Nabi character system and declared assets. Do not create an unrelated painted mascot inside a feature.
+- Nabi has a functional role: guide, acknowledge, listen, think, celebrate or surface recovery.
+- Onboarding expression map:
+
+| Step | Nabi state | Micro-copy example |
+|---|---|---|
+| Entry | welcoming/wave | “Bắt đầu nhé?” |
+| Basic information | guide/point | “Mình ghi lại nhé” |
+| Goals | excited/happy | “Chọn điều quan trọng” |
+| Conditions | listening/care | “Mình đang lắng nghe” |
+| Lifestyle | thoughtful | “Nhịp sống của bạn” |
+| Extras/medication | careful/thinking | “Chọn những gì đúng” |
+| Routine | reminder/guide | “Sắp xếp một ngày” |
+| Consent | calm/nod | “Bạn luôn có quyền chọn” |
+| Review | proud/confirm | “Xem lại lần cuối” |
+| Result | celebration | “Lộ trình đã sẵn sàng” |
+
+- Nabi speech bubble is short and optional. Never place a paragraph inside the bubble.
+- Use one primary Nabi focal point per screen. Avoid a large hero mascot plus an unrelated floating mascot overlay at the same time.
+- Nabi animation should react to meaningful state transitions, not loop aggressively throughout form entry.
+
+### 4.10 Layout and responsive rules
+
+- Mobile-first: page padding normally 16; section rhythm 20–24; card padding 16–20.
+- Use `SafeArea`; use a scrollable body when content can exceed height.
+- Onboarding CTA may be visually anchored at the bottom, but it must move above the keyboard and system navigation.
+- Use `Expanded`, `Flexible`, `ConstrainedBox`, `Wrap`, `maxLines`, `TextOverflow.ellipsis` and responsive grids to prevent overflow.
+- Embedded `GridView` must be `shrinkWrap: true` and non-scrollable when inside another scroll view.
+- Selection grids:
+  - under 360 px: one column or compact two-column layout only when labels remain readable;
+  - 360–599 px: two columns for short labels;
+  - 600 px and above: two to three columns with bounded content width.
+- Consumer forms should normally cap content width around 520–600 px.
+- Minimum interactive target is 48 dp. Icon-only controls require tooltip/semantic label.
+- The floating chat control reserves bottom-navigation space and must not cover CTA, system navigation or keyboard.
+
+### 4.11 Copy and visual density gate
+
+Before accepting a consumer screen:
+
+- [ ] A new user can identify the primary task in under three seconds.
+- [ ] The dominant content is visible without reading a paragraph.
+- [ ] No explanatory sentence appears twice.
+- [ ] Decorative elements do not outnumber actionable or informative elements.
+- [ ] There is one primary CTA.
+- [ ] At least 60% of the visible surface remains quiet background or low-emphasis content.
+- [ ] Motion supports the current task and has a reduced-motion fallback.
+- [ ] Green is dominant, but status and category distinctions remain accessible.
 
 ## 5. Theme and Design System — canonical usage
+
+### 5.0 NaBi Green Wellness implementation boundary
+
+NaBi Green Wellness is the target visual contract. The audited snapshot still contains blue/cyan/purple values in parts of `AppColors`, `AppGradients` and older feature-local styling.
+
+Implementation rules:
+
+1. Do not state that the global theme is green until `lib/core/theme/` is explicitly migrated and validated.
+2. For the onboarding-only redesign, define one feature-local palette in `presentation/widgets/nabi_onboarding_experience.dart` or an equivalent presentation-owned file. All onboarding widgets must consume that single palette; do not duplicate hex values across pages.
+3. Prefer existing spacing, radius, typography, motion and semantic status tokens from `theme.dart`.
+4. Map the feature-local green palette to semantic roles such as primary, surface, selected, focus and text. Do not name colors by a specific screen.
+5. A later global theme migration must be a separate coherent task because it affects dashboard, authentication, settings, Admin/Sale boundaries and tests.
+6. Admin and Sale surfaces are not automatically recolored by the consumer wellness style. Their information density, permission and financial semantics remain separate.
+7. Do not import both compatibility and three-layer barrels unqualified in the same compact widget.
+
+The canonical local palette API should expose semantic names similar to:
+
+```dart
+abstract final class NabiGreenWellnessPalette {
+  static const Color primary = Color(0xFF14A36F);
+  static const Color primaryDeep = Color(0xFF075E45);
+  static const Color primaryBright = Color(0xFF42D392);
+  static const Color primarySoft = Color(0xFFDDF6E9);
+  static const Color mintSurface = Color(0xFFEAF9F1);
+  static const Color pageBackground = Color(0xFFF6FBF8);
+  static const Color textPrimary = Color(0xFF12352A);
+  static const Color textSecondary = Color(0xFF60766E);
+  static const Color borderSoft = Color(0xFFD9E9E1);
+}
+```
+
+This example defines the intended roles; reuse project tokens instead where they already resolve to the same semantic result.
 
 ### 5.1 Which import to use
 
@@ -319,14 +539,81 @@ New primitive code should normally import `design_system.dart` and use `AppColor
 
 ## 6. Feature UI contracts and action APIs
 
-### 6.1 Onboarding
+### 6.1 Onboarding — NaBi Green Wellness canonical flow
 
 - Feature root: `lib/app_versions/v1/features/onboarding/`.
 - Main UI: `OnboardingEntryPage` → `OnboardingPage` → welcome/basic info/goals/conditions/lifestyle/extras/consent/review/result step widgets.
-- Input design: use choice cards/chips/pickers before free text; `OnboardingTextField` only where a value genuinely requires input. Keep choices compact and readable.
-- `OnboardingController` action contract: `nextStep`, `previousStep`, `goToStep`, all `update*` setters, `toggleGoal`, `toggleCondition`, `toggleHabit`, `setAgreed`, and `saveOnboarding`.
-- Consent is a required separate step; UI cannot silently mark agreement. Completion persists onboarding state, marks local onboarding complete and invokes the configured completion callback/plan handoff.
-- Do not log sensitive onboarding values to user UI or documentation.
+- Input design: prefer visual choice cards, chips, segmented controls, sliders and searchable multi-select sheets before free text. Use `OnboardingTextField` only where a value genuinely requires input.
+- `OnboardingController` action contract remains authoritative: `nextStep`, `previousStep`, `goToStep`, all `update*` setters, `toggleGoal`, `toggleCondition`, `toggleHabit`, `setAgreed`, and `saveOnboarding`.
+- Consent remains a required separate step; UI cannot silently mark agreement.
+- Completion persists onboarding state, marks local onboarding complete and invokes the configured completion callback/plan handoff.
+- Do not log sensitive onboarding values to UI, documentation or analytics output.
+
+#### Visual composition
+
+Every step should normally contain:
+
+1. compact progress header;
+2. one Nabi visual or contextual illustration;
+3. one title and one short subtitle;
+4. the primary input/choice surface;
+5. one primary CTA;
+6. optional inline validation or one legal/medical note when required.
+
+Do not place a hero, summary banner, orbit, status notice and multiple nested cards on the same step. One visual focal point is enough.
+
+#### Progress
+
+- Use a capsule progress track or discrete leaf/dot markers.
+- Show `current / total`; do not show percentage and step count simultaneously.
+- Completed markers become check icons.
+- Progress animates after state changes, not continuously.
+- Back navigation reverses the page transition direction and never clears entered values.
+
+#### Selection behavior
+
+- Goals, conditions and habits remain multi-select through existing controller methods.
+- Allergy, treatment, medication and concern pickers may support multiple visible selections at presentation level only when the existing state contract can serialize them safely without changing repository/schema behavior.
+- Searchable sheets remain open during multi-selection and close through an explicit `Xong` action.
+- Selected values appear as removable chips above the list or in the field summary.
+- Provide `Bỏ chọn tất cả` only when at least one value is selected.
+- Exclusive choices such as `Không có`, `Không dùng` or `Chưa rõ` clear conflicting choices and visually explain their exclusive state.
+- Every selected state uses color + check icon + semantics; not color alone.
+
+#### Step-specific target
+
+| Step | Primary visual/task | Accent |
+|---|---|---|
+| Entry | green hero, Nabi wave, `Bắt đầu` and account handoff | primary green |
+| Welcome | Nabi with three compact benefits | green + yellow |
+| Basic information | compact profile and body cards; BMI as a small insight | green + calm blue |
+| Goals | expressive selectable goal cards and count | green + mixed soft accents |
+| Conditions | searchable, calm multi-select; one medical boundary note | green + care coral |
+| Lifestyle | sleep, movement and water visual groups | green + blue/yellow |
+| Extras | four concise picker cards with selected counts | green + purple/coral |
+| Routine | vertical day timeline and time pickers | green + yellow |
+| Consent | privacy card, one medical note and animated checkbox | green + warning soft |
+| Review | compact editable summary; selected data as chips | deep green |
+| Result | one-shot Nabi celebration and primary handoff | green + yellow |
+
+#### Motion
+
+- Page content uses directional slide + fade.
+- Selected cards compress on press, then spring into selected state.
+- Check icons scale/fade in.
+- Nabi reacts once when the first meaningful selection is made or a step becomes valid.
+- Result celebration runs once and cannot block navigation.
+- Reduced-motion mode removes ambient motion and uses opacity-only transitions.
+
+#### UX and accessibility
+
+- Keep CTA above keyboard/system navigation.
+- Scroll to the first invalid field after submission.
+- Do not show errors before the user interacts unless submission is attempted.
+- Preserve data when opening/closing sheets and moving backward.
+- Search fields should autofocus only when the user explicitly opens search.
+- Maintain 48 dp targets and readable text at system scaling.
+- Use concise, sanitized Vietnamese messages; no raw exceptions or implementation terms.
 
 ### 6.2 Dashboard and daily companion
 
@@ -379,9 +666,9 @@ New primitive code should normally import `design_system.dart` and use `AppColor
 - Admin `AdminShellPage` is a large responsive operating console. It owns nav/sidebar/drawer, permission-aware sections, filtering, forms, lists, mutation feedback and loading/denied/error states. `AdminController` actions: `signInWithEmail`, `signOut`, `selectSection`, `search`, `refresh`, `runMutation`.
 - Sale `SaleShellPage` covers overview, direct customers, points ledger, conversion tools/history; `SaleParticipationPage` manages enrollment/terms/status. Financial, commission, payment, referral and conversion UI are **not** authoritative—show trusted server/RPC state only.
 
-## 7. Page construction patterns
+## 7. Page construction patterns — NaBi Green Wellness
 
-### 7.1 Stateful feature page with Riverpod and motion
+### 7.1 Stateful feature page with Riverpod, reduced motion and green surface
 
 ```dart
 class ExamplePage extends ConsumerStatefulWidget {
@@ -413,32 +700,39 @@ class _ExamplePageState extends ConsumerState<ExamplePage>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(exampleProvider);
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: NabiGreenWellnessPalette.pageBackground,
       body: SafeArea(
         child: state.when(
           loading: () => const LoadingState(
             variant: LoadingVariant.spinner,
-            message: 'Nabi đang chuẩn bị cho bạn nhé.',
+            message: 'Nabi đang chuẩn bị nhé.',
           ),
           error: (_, __) => ErrorState(
-            message: 'Nabi chưa thể mở mục này lúc này.',
+            message: 'Chưa thể mở mục này.',
             onRetry: () => ref.invalidate(exampleProvider),
           ),
           data: (data) => RefreshIndicator(
-            onRefresh: () => ref.read(exampleControllerProvider.notifier).refresh(),
+            color: NabiGreenWellnessPalette.primary,
+            onRefresh: () =>
+                ref.read(exampleControllerProvider.notifier).refresh(),
             child: CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               slivers: [
                 SliverPadding(
                   padding: const EdgeInsets.all(AppSpacing.pagePadding),
                   sliver: SliverToBoxAdapter(
-                    child: FadeTransition(
-                      opacity: CurvedAnimation(
-                        parent: _entryController,
-                        curve: AppAnimations.decelerateCurve,
-                      ),
-                      child: _ExampleContent(data: data),
-                    ),
+                    child: reduceMotion
+                        ? _ExampleContent(data: data)
+                        : FadeTransition(
+                            opacity: CurvedAnimation(
+                              parent: _entryController,
+                              curve: AppAnimations.decelerateCurve,
+                            ),
+                            child: _ExampleContent(data: data),
+                          ),
                   ),
                 ),
               ],
@@ -451,50 +745,195 @@ class _ExamplePageState extends ConsumerState<ExamplePage>
 }
 ```
 
-### 7.2 Stateless card / selector pattern
+### 7.2 Expressive selectable card
 
 ```dart
-class _ExampleMetricCard extends StatelessWidget {
-  const _ExampleMetricCard({required this.title, required this.value});
+class WellnessChoiceCard extends StatelessWidget {
+  const WellnessChoiceCard({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
 
-  final String title;
-  final String value;
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: AppDecoration.card(
-        border: AppDecoration.border(color: AppColors.borderLight),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: AppTextStyles.labelMedium.copyWith(
-            color: AppColors.textSecondary,
-          )),
-          const SizedBox(height: AppSpacing.xs),
-          Text(value, style: AppTextStyles.heading2.copyWith(
-            color: AppColors.textPrimary,
-          )),
-        ],
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final duration = reduceMotion ? Duration.zero : AppDuration.card;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: AnimatedScale(
+        scale: selected ? 1 : 0.995,
+        duration: duration,
+        curve: AppAnimations.emphasizedCurve,
+        child: AnimatedContainer(
+          duration: duration,
+          curve: AppAnimations.emphasizedCurve,
+          decoration: BoxDecoration(
+            color: selected
+                ? NabiGreenWellnessPalette.primarySoft
+                : NabiGreenWellnessPalette.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected
+                  ? NabiGreenWellnessPalette.primary
+                  : NabiGreenWellnessPalette.borderSoft,
+              width: selected ? 1.5 : 1,
+            ),
+            boxShadow: selected
+                ? AppShadows.opacity(
+                    NabiGreenWellnessPalette.primary,
+                    0.16,
+                    20,
+                    0,
+                    const Offset(0, 8),
+                  )
+                : AppShadows.soft,
+          ),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 72),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  children: [
+                    Icon(
+                      icon,
+                      color: selected
+                          ? NabiGreenWellnessPalette.primaryDeep
+                          : NabiGreenWellnessPalette.textSecondary,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: NabiGreenWellnessPalette.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    AnimatedSwitcher(
+                      duration: duration,
+                      child: selected
+                          ? const Icon(
+                              Icons.check_circle_rounded,
+                              key: ValueKey('selected'),
+                              color: NabiGreenWellnessPalette.primary,
+                            )
+                          : const SizedBox(
+                              key: ValueKey('not-selected'),
+                              width: 24,
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 ```
 
-### 7.3 Required UI state checklist
+### 7.3 Wizard step transition
+
+The host page should derive transition direction from previous/current step rather than using the same animation for forward and back navigation.
+
+```dart
+AnimatedSwitcher(
+  duration: reduceMotion ? Duration.zero : AppDuration.pageTransition,
+  switchInCurve: AppAnimations.decelerateCurve,
+  switchOutCurve: AppAnimations.accelerateCurve,
+  transitionBuilder: (child, animation) {
+    if (reduceMotion) {
+      return child;
+    }
+
+    final offset = Tween<Offset>(
+      begin: Offset(isForward ? 0.08 : -0.08, 0),
+      end: Offset.zero,
+    ).animate(animation);
+
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(position: offset, child: child),
+    );
+  },
+  child: KeyedSubtree(
+    key: ValueKey(currentStep),
+    child: currentStepWidget,
+  ),
+)
+```
+
+Do not infer business validation inside the transition widget. Navigation remains controller-owned.
+
+### 7.4 Multi-select bottom sheet structure
+
+A searchable multi-select sheet should use this visual order:
+
+```text
+drag handle
+title + selected count
+selected chips (only when non-empty)
+search field
+scrollable choice list
+clear action + fixed primary “Xong” CTA
+```
+
+Requirements:
+
+- sheet height is bounded and keyboard-safe;
+- list remains usable with system text scaling;
+- search filters presentation options only;
+- selection state remains owned by the existing onboarding state/controller or a temporary draft that is committed through existing setters;
+- closing the sheet through system back must have a defined commit/cancel behavior;
+- exclusive options clear conflicting values;
+- no raw comma-separated string is shown directly to users when chips are appropriate.
+
+### 7.5 Ambient background pattern
+
+A Green Wellness background may contain a gradient wash and at most three low-opacity shapes.
+
+```text
+base: pageBackground
+top-left: primarySoft radial glow
+bottom-right: mintSurface oval
+optional: small energyYellow highlight behind Nabi
+```
+
+- Keep shapes outside interactive hit testing.
+- Prefer a static painter or one slow animation controller shared by the background.
+- Stop ambient animation in reduced-motion mode and when the route is not active.
+- Do not run blur filters over the entire screen on every frame.
+
+### 7.6 Required UI state checklist
 
 For every async screen/action decide and implement:
 
 - **Initial/loading:** skeleton/spinner or a designed page state; never a blank white page.
 - **Ready:** real provider data with null/empty-safe rendering.
-- **Empty:** specific gentle explanation + action if one is valid.
+- **Empty:** specific gentle explanation + valid action if one exists.
 - **Error:** sanitized Vietnamese message + retry or return action; no internal details.
 - **Working CTA:** disable/relabel action and prevent duplicate submission.
 - **Success:** visible confirmation, provider refresh/invalidation where needed, then navigate only after state is durable.
-- **Accessibility:** 48dp targets, readable contrast, labels/tooltips for icon-only controls, no color-only status meaning, text can wrap/scroll.
+- **Accessibility:** 48 dp targets, readable contrast, semantic labels, no color-only status meaning, text can wrap/scroll.
+- **Reduced motion:** no continuous ambience or celebration dependency.
+- **Visual hierarchy:** primary content and CTA remain dominant over decoration.
 
 ## 8. UI safety and business constraints
 
@@ -515,32 +954,51 @@ For every async screen/action decide and implement:
 - [ ] Read the nearest page/widget plus controller/provider/domain entity.
 - [ ] Search for the existing route, callback and state contract with `rg`.
 - [ ] Decide whether the change is visual-only or alters data/permission/business behavior.
+- [ ] Confirm whether NaBi Green Wellness is applied feature-locally or through an approved core-theme migration.
+- [ ] Identify the existing Nabi rendering/state integration; do not add an independent mascot.
+- [ ] Define the screen’s one primary task, one primary CTA and copy budget.
 - [ ] Reuse the local theme family and existing reusable widget before adding a new abstraction.
 
 ### During code
 
 - [ ] Keep `Presentation → Provider/Controller → Repository → Datasource → DAO/API`.
-- [ ] Use project tokens and `const` where valid.
-- [ ] Implement all states and disable repeated writes.
-- [ ] Keep Vietnamese Nabi copy, safeguards and consent visible where needed.
+- [ ] Use one shared semantic Green Wellness palette; do not scatter hex values.
+- [ ] Use project spacing, radius, typography and motion tokens and `const` where valid.
+- [ ] Keep green dominant; use supporting accents by semantic role.
+- [ ] Implement loading, ready, empty, error, disabled, working and success states.
+- [ ] Disable repeated writes and preserve controller-owned validation.
+- [ ] Keep Vietnamese Nabi copy concise, safeguards and consent visible where needed.
 - [ ] Preserve version boundaries and global Nabi integration.
-- [ ] Use responsive constraints and touch target rules.
+- [ ] Use responsive constraints, keyboard-safe CTA and 48 dp touch targets.
+- [ ] Add purposeful selection/page/Nabi motion with a reduced-motion fallback.
+- [ ] Ensure selected/error/completed states do not rely on color alone.
+- [ ] Limit card nesting, hero count and simultaneous animated effects.
 
 ### After code
 
-- [ ] Run `dart format` on changed Dart files (or record a tool blocker).
-- [ ] Run targeted `flutter test` for feature/widget behavior and architecture constraints where appropriate.
-- [ ] Run targeted `flutter analyze` if environment supports it; do not claim a global pass if unrelated legacy failures remain.
-- [ ] Verify route reachability, back navigation, keyboard behavior, loading/error/empty/disabled states and a narrow/wide layout.
-- [ ] Update worklog/DD/checklist only if user task includes project documentation workflow.
+- [ ] Run `dart format` on changed Dart files or record a tool blocker.
+- [ ] Run targeted `flutter test` for feature/widget behavior and architecture constraints.
+- [ ] Run targeted `flutter analyze` if the environment supports it; do not claim a global pass if unrelated legacy failures remain.
+- [ ] Verify route reachability, back navigation and state retention.
+- [ ] Verify keyboard behavior, system text scaling and 320–390 px narrow layouts.
+- [ ] Verify loading/error/empty/disabled/working/success states.
+- [ ] Verify selection semantics, exclusive options and multi-select sheet commit behavior.
+- [ ] Verify reduced-motion mode and that animation controllers are disposed.
+- [ ] Verify no CTA, Nabi overlay or sheet is covered by navigation/keyboard.
+- [ ] Review copy: no duplicated explanation, no internal terms, no unsupported medical claim.
+- [ ] Update worklog/DD/checklist only if the user task includes project documentation workflow.
 
 ## 10. Current design cautions / known implementation context
 
-- The app contains a polished high-animation onboarding/splash/dashboard path and several lightweight care pages. Preserve visual consistency but do not pretend session-only care-page interactions are persisted until their feature has a data contract.
-- `design_system.dart` documents a clean semantic-token + primitive direction; most complex existing feature pages still use `theme.dart` compatibility APIs. Gradual component-boundary migration is safer than a page-wide token rewrite.
+- NaBi Green Wellness is now the canonical **target direction** for consumer UI, beginning with onboarding. The audited snapshot is not proof that all screens or global theme tokens already match this specification.
+- The existing application contains both polished high-animation paths and lightweight care pages. Do not copy visual complexity blindly; use the Green Wellness density and motion gates in this document.
+- Current `AppColors` and gradients may still be blue/cyan/purple. For onboarding, use one feature-local semantic palette until a separate core-theme migration is approved.
+- `design_system.dart` documents a clean semantic-token + primitive direction; most complex existing feature pages still use `theme.dart` compatibility APIs. Gradual component-boundary migration is safer than mixing both systems in one widget.
+- Nabi already has global and V1 compatibility implementations. New onboarding work must use the existing character/expression contract rather than building a second mascot.
 - The root entrypoint selects the user/Admin surface through `BioAIApp`; the user router begins at V1 splash and includes V1/V2/V3 routes. Changes around splash/onboarding/auth/role switching must test the full handoff.
 - V3 mostly consists of planned feature scaffolds; do not copy V1 presentation/controllers into V3.
-- Admin and Sale UI may be visually richer/wider but need stronger permission, audit and trusted-data behavior than consumer health UI.
+- Admin and Sale UI are not automatically Green Wellness consumer surfaces. They may share foundations, but permission, audit, financial and high-density information needs take precedence.
+- More color and motion do not justify more text, more banners or more nested cards. The target is expressive minimalism.
 - This archive includes build/cache artifacts and historical docs. Treat source files and current DD/checklists as authority; do not edit generated/cache directories.
 
 ## 11. Curated source tree
@@ -1364,4 +1822,4 @@ Snapshot 2026-06-30. Use declared assets only after checking `pubspec.yaml` and 
 
 ### Final instruction to an implementation Agent
 
-For a UI request: identify **surface → feature → page → provider/controller → DD → nearest theme family**; then make the smallest coherent change that preserves data direction, route behavior, accessibility, Vietnamese Nabi tone and version boundaries. When uncertain, search the source contract rather than introducing a new UI convention.
+For a UI request: identify **surface → feature → page → provider/controller → DD → nearest theme family**; then apply **NaBi Green Wellness** through one coherent semantic palette, concise copy, strong content hierarchy, purposeful motion, existing Nabi integration and accessible interaction states. Preserve data direction, route behavior, consent, medical boundaries and version boundaries. When uncertain, search the source contract rather than inventing business behavior or a new visual convention.

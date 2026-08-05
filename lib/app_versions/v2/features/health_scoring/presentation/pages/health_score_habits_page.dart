@@ -136,7 +136,7 @@ class _ScoreHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +154,7 @@ class _ScoreHeader extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.xs),
               Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: Text('/100', style: AppTextStyles.bodyLarge),
               ),
             ],
@@ -189,7 +189,7 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,16 +271,16 @@ class _ProgressRow extends StatelessWidget {
               Text(trailing, style: AppTextStyles.bodyMedium),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             subtitle,
             style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.tiny),
           LinearProgressIndicator(
             value: value,
             minHeight: 6,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
         ],
       ),
@@ -322,7 +322,7 @@ class _HealthScoreSupportState extends StatelessWidget {
     return SafeArea(
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Column(
@@ -341,7 +341,7 @@ class _HealthScoreSupportState extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
                 ),
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sectionSpacing),
                 FilledButton(onPressed: onAction, child: Text(actionLabel)),
               ],
             ),
@@ -355,7 +355,7 @@ class _HealthScoreSupportState extends StatelessWidget {
 BoxDecoration _cardDecoration() {
   return BoxDecoration(
     color: AppColors.surface,
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(AppRadius.sm),
     border: Border.all(color: AppColors.border),
   );
 }

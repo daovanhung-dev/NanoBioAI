@@ -69,9 +69,9 @@ class _AdminWellnessRewardsPanelState
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         _AdminRewardMetrics(snapshot: snapshot),
-        const SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         const MedicalSectionHeader(
           title: 'Danh mục ưu đãi',
           subtitle:
@@ -116,7 +116,7 @@ class _AdminWellnessRewardsPanelState
               );
             },
           ),
-        const SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         const MedicalSectionHeader(
           title: 'Giao dịch voucher',
           subtitle:
@@ -707,7 +707,7 @@ class _AdminRedemptionCard extends StatelessWidget {
     final isCancelled =
         normalizedStatus == 'cancelled' || normalizedStatus == 'canceled';
     return MedicalSurfaceCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       child: Row(
         children: [
           const MedicalIconBadge(

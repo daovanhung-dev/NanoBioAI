@@ -43,7 +43,8 @@ class NabiContextNotifier extends Notifier<NabiContext> {
       justSkippedTask: false,
       isPlanJustReady: false,
       syncJustSucceeded: false,
-      isChatOpen: routePath.contains('/ai-chat'),
+      isChatOpen:
+          routePath.contains('/ai-chat') || routePath.contains('/ai-voice'),
       isChatTyping: false,
       isChatAnswerReady: false,
     );

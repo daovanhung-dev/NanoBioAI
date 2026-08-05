@@ -18,7 +18,7 @@ class GoalProgressRow extends StatelessWidget {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(7),
+              padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
                 color: goal.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -54,7 +54,7 @@ class GoalProgressRow extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Stack(
           children: [
             Container(

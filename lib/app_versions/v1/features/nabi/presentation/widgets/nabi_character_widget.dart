@@ -186,7 +186,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
 
     _fadeCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 220),
+      duration: AppDuration.ripple,
     )..value = 1;
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
 
@@ -218,7 +218,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
 
     _swingCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: AppDuration.onboarding,
     );
     _swingAnim = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0, end: 0.28), weight: 20),
@@ -239,13 +239,13 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
 
     _celebCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: AppDuration.xSlow,
     );
     _celebAnim = CurvedAnimation(parent: _celebCtrl, curve: Curves.easeOut);
 
     _chatCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: AppDuration.slow,
     )..repeat(reverse: true);
     _chatAnim = Tween<double>(
       begin: 0.96,
@@ -254,7 +254,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
 
     _shineCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: AppDuration.shimmer,
     )..repeat();
 
     _spinCtrl = AnimationController(
@@ -278,7 +278,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
         _auraCtrl.repeat(reverse: true);
         _bounceCtrl.forward(from: 0).then((_) {
           if (mounted && _currentProfile == _NabiAnimProfile.happy) {
-            Future.delayed(const Duration(milliseconds: 600), () {
+            Future.delayed(AppDuration.slow, () {
               if (mounted && _currentProfile == _NabiAnimProfile.happy) {
                 _bounceCtrl.forward(from: 0);
               }
@@ -296,7 +296,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
         _auraCtrl.repeat(reverse: true);
         _swingCtrl.forward(from: 0).then((_) {
           if (mounted && _currentProfile == _NabiAnimProfile.wave) {
-            Future.delayed(const Duration(milliseconds: 400), () {
+            Future.delayed(AppDuration.readable, () {
               if (mounted && _currentProfile == _NabiAnimProfile.wave) {
                 _swingCtrl.forward(from: 0);
               }
@@ -307,7 +307,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
       case _NabiAnimProfile.celebrate:
         _celebCtrl.forward(from: 0).then((_) {
           if (mounted) {
-            Future.delayed(const Duration(milliseconds: 200), () {
+            Future.delayed(AppDuration.fast, () {
               if (mounted && _currentProfile == _NabiAnimProfile.celebrate) {
                 _celebCtrl.forward(from: 0);
               }
@@ -677,12 +677,12 @@ class _NabiFallbackIcon extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF60A5FA), Color(0xFF2563EB)],
+          colors: [AppColors.secondary, AppColors.primary],
         ),
       ),
       child: Icon(
         Icons.auto_awesome_rounded,
-        color: Colors.white,
+        color: AppColors.surface,
         size: size * 0.48,
       ),
     );
@@ -791,9 +791,9 @@ class _ShinePainter extends CustomPainter {
     final paint = Paint()
       ..shader = LinearGradient(
         colors: [
-          Colors.white.withValues(alpha: 0),
-          Colors.white.withValues(alpha: 0.28),
-          Colors.white.withValues(alpha: 0),
+          AppColors.surface.withValues(alpha: 0),
+          AppColors.surface.withValues(alpha: 0.28),
+          AppColors.surface.withValues(alpha: 0),
         ],
       ).createShader(rect)
       ..style = PaintingStyle.fill;

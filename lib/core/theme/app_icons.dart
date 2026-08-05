@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// ============================================================
 /// APP ICONS
 /// ------------------------------------------------------------
-/// Centralized scalable icon system for BioAI
+/// Centralized scalable icon system for NaBi Blue Wellness
 /// - Backward compatible
 /// - AI-first architecture ready
 /// - Modern semantic naming

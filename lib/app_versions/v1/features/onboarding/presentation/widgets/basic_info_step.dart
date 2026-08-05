@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/app_versions/v1/features/onboarding/presentation/constants/onboarding_options.dart'
-    as onboarding_catalog;
-import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/nabi_onboarding_experience.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
 
 import '../../providers/onboarding_provider.dart';
 import '../constants/onboarding_options.dart';
+import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
 import 'onboarding_step_shell.dart';
 import 'onboarding_text_field.dart';
@@ -20,422 +18,145 @@ class BasicInfoStep extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
-
-    final bmi = _BmiReading.from(
-      heightCm: state.heightCm,
-      weightKg: state.weightKg,
-    );
-
     return OnboardingStepShell(
       stepIndex: 1,
-      title: 'Thông tin cơ bản',
+      title: 'Để NaBi hiểu bạn',
       subtitle: 'Thông tin gần đúng là đủ.',
+      mood: NabiOnboardingMood.guide,
       onBack: controller.previousStep,
       onNext: state.canContinueBasicInfo ? controller.nextStep : null,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final layout = _BasicInfoLayout.fromWidth(constraints.maxWidth);
-
-          final bodyMetricsCard = _SectionCard(
-            accentColor: NabiPalette.cyan,
-            icon: Icons.monitor_heart_outlined,
-            eyebrow: 'THỂ TRẠNG HIỆN TẠI',
-            title: 'Cơ thể bạn đang ở đâu?',
-            subtitle:
-                'Nhập gần đúng. BMI chỉ để tham khảo.',
-            compact: layout.isCompact,
+      child: Column(
+        children: [
+          OnboardingSectionCard(
+            title: 'Thông tin chính',
+            icon: Icons.person_rounded,
+            accent: NabiPalette.greenPrimary,
             child: Column(
               children: [
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(layout.isCompact ? 10 : 12),
-                  decoration: BoxDecoration(
-                    color: NabiPalette.cyan.withValues(alpha: 0.045),
-                    borderRadius: BorderRadius.circular(
-                      layout.isCompact ? 16 : 18,
-                    ),
-                    border: Border.all(
-                      color: NabiPalette.cyan.withValues(alpha: 0.11),
-                    ),
-                  ),
-                  child: _AdaptivePair(
-                    minimumItemWidth: 170,
-                    gap: layout.fieldGap,
-                    first: OnboardingTextField(
-                      label: 'Chiều cao (cm)',
-                      hint: '170',
-                      initialValue: state.heightCm > 0
-                          ? state.heightCm.toStringAsFixed(0)
-                          : '',
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                      ],
-                      prefixIcon: const Icon(Icons.height_rounded),
-                      onChanged: controller.updateHeight,
-                    ),
-                    second: OnboardingTextField(
-                      label: 'Cân nặng (kg)',
-                      hint: '65',
-                      initialValue: state.weightKg > 0
-                          ? state.weightKg.toStringAsFixed(1)
-                          : '',
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                      ],
-                      prefixIcon: const Icon(Icons.monitor_weight_outlined),
-                      onChanged: controller.updateWeight,
-                    ),
-                  ),
+                OnboardingTextField(
+                  label: 'Họ và tên *',
+                  hint: 'Nguyễn Minh Anh',
+                  initialValue: state.fullName,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.next,
+                  prefixIcon: const Icon(Icons.person_outline_rounded),
+                  onChanged: controller.updateFullName,
                 ),
-                SizedBox(height: layout.innerGap),
-                _BmiInsightCard(reading: bmi),
-              ],
-            ),
-          );
-
-          final lifestyleCard = _SectionCard(
-            accentColor: NabiPalette.amber,
-            icon: Icons.schedule_outlined,
-            eyebrow: 'NHỊP SỐNG HẰNG NGÀY',
-            title: 'Nhịp sinh hoạt thường ngày',
-            subtitle:
-                'Giúp NaBi chọn thời điểm phù hợp.',
-            required: true,
-            compact: layout.isCompact,
-            child: Column(
-              children: [
-                OnboardingChoicePickerField(
-                  label: 'Nhóm công việc / sinh hoạt *',
-                  hint: 'Chọn nhóm gần đúng nhất',
-                  icon: Icons.work_outline_rounded,
-                  options: onboarding_catalog.occupations,
-                  selectedCode: state.occupation,
-                  onSelected: controller.updateOccupation,
-                ),
-                SizedBox(height: layout.innerGap),
-                const _LifestyleHint(),
-              ],
-            ),
-          );
-
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 880),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(height: layout.sectionGap),
-
-                  _SectionCard(
-                    accentColor: NabiPalette.violet,
-                    icon: Icons.person_outline_rounded,
-                    eyebrow: 'HỒ SƠ CƠ BẢN',
-                    title: 'Thông tin của bạn',
-                    subtitle:
-                        'Giúp lộ trình sát với thể trạng hơn.',
-                    required: true,
-                    compact: layout.isCompact,
-                    child: Column(
-                      children: [
-                        OnboardingTextField(
-                          label: 'Họ và tên *',
-                          hint: 'Ví dụ: Nguyễn Minh Anh',
-                          initialValue: state.fullName,
-                          textCapitalization: TextCapitalization.words,
-                          textInputAction: TextInputAction.next,
-                          prefixIcon: const Icon(Icons.person_outline_rounded),
-                          onChanged: controller.updateFullName,
-                        ),
-                        SizedBox(height: layout.innerGap),
-                        _AdaptivePair(
-                          minimumItemWidth: 170,
-                          gap: layout.fieldGap,
-                          first: _BirthYearField(
-                            value: state.birthYear,
-                            onChanged: (year) =>
-                                controller.updateBirthYear(year.toString()),
-                          ),
-                          second: OnboardingChoicePickerField(
-                            label: 'Giới tính *',
-                            hint: 'Chọn giới tính',
-                            icon: Icons.person_outline_rounded,
-                            options: onboarding_catalog.genders,
-                            selectedCode: state.gender,
-                            onSelected: controller.updateGender,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: layout.sectionGap),
-
-                  if (layout.showSideBySideCards)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 11, child: bodyMetricsCard),
-                        SizedBox(width: layout.desktopCardGap),
-                        Expanded(flex: 10, child: lifestyleCard),
-                      ],
-                    )
-                  else ...[
-                    bodyMetricsCard,
-                    SizedBox(height: layout.sectionGap),
-                    lifestyleCard,
-                  ],
-
-                  SizedBox(height: layout.sectionGap),
-
-                  const _PrivacyInfoCard(),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _BasicInfoLayout {
-  final bool isCompact;
-  final bool showSideBySideCards;
-  final double sectionGap;
-  final double innerGap;
-  final double fieldGap;
-  final double desktopCardGap;
-
-  const _BasicInfoLayout({
-    required this.isCompact,
-    required this.showSideBySideCards,
-    required this.sectionGap,
-    required this.innerGap,
-    required this.fieldGap,
-    required this.desktopCardGap,
-  });
-
-  factory _BasicInfoLayout.fromWidth(double width) {
-    final isCompact = width < 380;
-
-    return _BasicInfoLayout(
-      isCompact: isCompact,
-      showSideBySideCards: width >= 760,
-      sectionGap: isCompact ? 12 : 16,
-      innerGap: isCompact ? 12 : 14,
-      fieldGap: isCompact ? 10 : 12,
-      desktopCardGap: 16,
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  final Color accentColor;
-  final IconData icon;
-  final String eyebrow;
-  final String title;
-  final String subtitle;
-  final bool required;
-  final bool compact;
-  final Widget child;
-
-  const _SectionCard({
-    required this.accentColor,
-    required this.icon,
-    required this.eyebrow,
-    required this.title,
-    required this.subtitle,
-    required this.child,
-    required this.compact,
-    this.required = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final padding = compact ? 14.0 : 18.0;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(compact ? 20 : 24),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, accentColor.withValues(alpha: 0.028)],
-        ),
-        border: Border.all(color: accentColor.withValues(alpha: 0.11)),
-        boxShadow: [
-          BoxShadow(
-            color: NabiPalette.ink.withValues(alpha: 0.045),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(compact ? 20 : 24),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -54,
-              right: -48,
-              child: Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accentColor.withValues(alpha: 0.045),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(padding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: compact ? 40 : 44,
-                        height: compact ? 40 : 44,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(
-                            compact ? 13 : 15,
-                          ),
-                          color: accentColor.withValues(alpha: 0.11),
-                        ),
-                        child: Icon(
-                          icon,
-                          color: accentColor,
-                          size: compact ? 20 : 22,
-                        ),
-                      ),
-                      SizedBox(width: compact ? 10 : 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Wrap(
-                              spacing: 7,
-                              runSpacing: 6,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                Text(
-                                  eyebrow,
-                                  style: TextStyle(
-                                    color: accentColor,
-                                    fontSize: compact ? 8.5 : 9.5,
-                                    height: 1,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 1.05,
-                                  ),
-                                ),
-                                if (required) const _RequiredBadge(),
-                              ],
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              title,
-                              style: AppTextStyles.labelLarge.copyWith(
-                                color: NabiPalette.ink,
-                                fontSize: compact ? 14.5 : 15.5,
-                                height: 1.18,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: compact ? 9 : 11),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodySmall.copyWith(
+                const SizedBox(height: AppSpacing.md),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Giới tính *',
+                    style: AppTextStyles.labelMedium.copyWith(
                       color: NabiPalette.mutedInk,
-                      fontSize: compact ? 11.5 : null,
-                      height: 1.42,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: compact ? 14 : 17),
-                  child,
-                ],
-              ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                OnboardingChoiceGrid(
+                  options: genders,
+                  selectedCodes:
+                      state.gender.isEmpty ? const [] : [state.gender],
+                  onSelected: controller.updateGender,
+                  multiSelect: false,
+                  dense: true,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _ResponsivePair(
+                  first: _BirthYearField(
+                    value: state.birthYear,
+                    onChanged: (year) =>
+                        controller.updateBirthYear(year.toString()),
+                  ),
+                  second: OnboardingChoicePickerField(
+                    label: 'Công việc / sinh hoạt *',
+                    hint: 'Chọn nhóm gần đúng',
+                    icon: Icons.work_outline_rounded,
+                    options: occupations,
+                    selectedCode: state.occupation,
+                    onSelected: controller.updateOccupation,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          OnboardingSectionCard(
+            title: 'Thể trạng',
+            icon: Icons.monitor_heart_rounded,
+            accent: NabiPalette.calmBlue,
+            child: Column(
+              children: [
+                _ResponsivePair(
+                  first: OnboardingTextField(
+                    label: 'Chiều cao (cm)',
+                    hint: '170',
+                    initialValue: state.heightCm > 0
+                        ? state.heightCm.toStringAsFixed(0)
+                        : '',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    ],
+                    prefixIcon: const Icon(Icons.height_rounded),
+                    onChanged: controller.updateHeight,
+                  ),
+                  second: OnboardingTextField(
+                    label: 'Cân nặng (kg)',
+                    hint: '65',
+                    initialValue: state.weightKg > 0
+                        ? state.weightKg.toStringAsFixed(1)
+                        : '',
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    ],
+                    prefixIcon: const Icon(Icons.monitor_weight_outlined),
+                    onChanged: controller.updateWeight,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _BmiInsight(value: state.bmi),
+              ],
+            ),
+          ),
+          if (!state.canContinueBasicInfo) ...[
+            const SizedBox(height: AppSpacing.sm),
+            const OnboardingInlineInfo(
+              icon: Icons.info_outline_rounded,
+              text: 'Hoàn thành các mục có dấu * để tiếp tục.',
+              color: NabiPalette.warning,
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class _RequiredBadge extends StatelessWidget {
-  const _RequiredBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: NabiPalette.rose.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        'CẦN THIẾT',
-        style: TextStyle(
-          color: NabiPalette.rose,
-          fontSize: 7.5,
-          height: 1,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.55,
-        ),
-      ),
-    );
-  }
-}
-
-class _AdaptivePair extends StatelessWidget {
+class _ResponsivePair extends StatelessWidget {
   final Widget first;
   final Widget second;
-  final double gap;
-  final double minimumItemWidth;
 
-  const _AdaptivePair({
-    required this.first,
-    required this.second,
-    required this.gap,
-    required this.minimumItemWidth,
-  });
+  const _ResponsivePair({required this.first, required this.second});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final requiredWidth = minimumItemWidth * 2 + gap;
-        final useRow = constraints.maxWidth >= requiredWidth;
-
-        if (!useRow) {
-          return Column(
-            children: [
-              first,
-              SizedBox(height: gap),
-              second,
-            ],
-          );
+        if (constraints.maxWidth < 540) {
+          return Column(children: [first, const SizedBox(height: AppSpacing.sm), second]);
         }
-
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(child: first),
-            SizedBox(width: gap),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(child: second),
           ],
         );
@@ -453,48 +174,51 @@ class _BirthYearField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final years = OnboardingOptions.birthYears;
-    final effectiveValue = years.contains(value) ? value : years.first;
-
+    final effective = years.contains(value) ? value : years.first;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _FieldLabel(label: 'Năm sinh', required: true),
-        const SizedBox(height: 6),
+        Text(
+          'Năm sinh *',
+          style: AppTextStyles.labelMedium.copyWith(
+            color: NabiPalette.mutedInk,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
         DropdownButtonFormField<int>(
-          initialValue: effectiveValue,
+          initialValue: effective,
           isExpanded: true,
           icon: const Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: NabiPalette.mutedInk,
+            color: NabiPalette.greenPrimary,
           ),
           decoration: InputDecoration(
             isDense: true,
-            prefixIcon: const Icon(
-              Icons.cake_outlined,
-              size: 20,
-              color: NabiPalette.mutedInk,
-            ),
+            prefixIcon: const Icon(Icons.cake_outlined, size: 20),
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.92),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 13,
+            fillColor: AppColors.surface,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              borderSide: const BorderSide(color: NabiPalette.line),
             ),
-            border: _border(NabiPalette.line),
-            enabledBorder: _border(NabiPalette.line),
-            focusedBorder: _border(NabiPalette.royalBlue, width: 1.6),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              borderSide: const BorderSide(color: NabiPalette.line),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              borderSide: const BorderSide(
+                color: NabiPalette.greenPrimary,
+                width: 1.5,
+              ),
+            ),
           ),
           items: years
               .map(
                 (year) => DropdownMenuItem<int>(
                   value: year,
-                  child: Text(
-                    year.toString(),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: NabiPalette.ink,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: Text(year.toString()),
                 ),
               )
               .toList(growable: false),
@@ -505,292 +229,90 @@ class _BirthYearField extends StatelessWidget {
       ],
     );
   }
-
-  OutlineInputBorder _border(Color color, {double width = 1}) {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(color: color, width: width),
-    );
-  }
 }
 
-class _FieldLabel extends StatelessWidget {
-  final String label;
-  final bool required;
+class _BmiInsight extends StatelessWidget {
+  final double value;
 
-  const _FieldLabel({required this.label, this.required = false});
+  const _BmiInsight({required this.value});
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        style: AppTextStyles.labelMedium.copyWith(
-          color: NabiPalette.mutedInk,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0,
-        ),
-        children: [
-          TextSpan(text: label),
-          if (required)
-            TextSpan(
-              text: ' *',
-              style: TextStyle(
-                color: NabiPalette.rose,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BmiInsightCard extends StatelessWidget {
-  final _BmiReading reading;
-
-  const _BmiInsightCard({required this.reading});
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 260),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
-      child: Container(
-        key: ValueKey(reading.displayValue),
-        width: double.infinity,
-        padding: const EdgeInsets.all(13),
-        decoration: BoxDecoration(
-          color: reading.color.withValues(alpha: 0.075),
-          borderRadius: BorderRadius.circular(17),
-          border: Border.all(color: reading.color.withValues(alpha: 0.14)),
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final stacked = constraints.maxWidth < 285;
-
-            final icon = Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: reading.color.withValues(alpha: 0.13),
-              ),
-              child: Icon(reading.icon, color: reading.color, size: 20),
-            );
-
-            final content = Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  reading.hasValue
-                      ? 'BMI tham khảo: ${reading.displayValue}'
-                      : 'BMI tham khảo',
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: NabiPalette.ink,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  reading.message,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: NabiPalette.mutedInk,
-                    height: 1.34,
-                  ),
-                ),
-              ],
-            );
-
-            if (stacked) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [icon, const SizedBox(height: 10), content],
-              );
-            }
-
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                icon,
-                const SizedBox(width: 11),
-                Expanded(child: content),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _LifestyleHint extends StatelessWidget {
-  const _LifestyleHint();
-
-  @override
-  Widget build(BuildContext context) {
+    final label = value <= 0
+        ? 'Chưa đủ dữ liệu'
+        : value < 18.5
+            ? 'Hơi thấp'
+            : value < 25
+                ? 'Trong khoảng tham khảo'
+                : value < 30
+                    ? 'Hơi cao'
+                    : 'Cao';
+    final progress = value <= 0
+        ? 0.0
+        : (value / 40).clamp(0.0, 1.0).toDouble();
+    final color = value <= 0
+        ? NabiPalette.mutedInk
+        : value >= 18.5 && value < 25
+            ? NabiPalette.greenPrimary
+            : NabiPalette.warning;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: NabiPalette.amber.withValues(alpha: 0.075),
-        borderRadius: BorderRadius.circular(15),
+        gradient: LinearGradient(
+          colors: [color.withValues(alpha: 0.10), AppColors.surface],
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          Icon(
-            Icons.lightbulb_outline_rounded,
-            color: NabiPalette.amber,
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Chọn nhóm gần nhất với sinh hoạt của bạn.',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: NabiPalette.mutedInk,
-                height: 1.34,
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Icon(Icons.insights_rounded, size: 20, color: color),
               ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      value > 0 ? 'BMI ${value.toStringAsFixed(1)}' : 'BMI',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: NabiPalette.ink,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      label,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: NabiPalette.mutedInk,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: NabiPalette.mintSurface,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),
         ],
       ),
     );
-  }
-}
-
-class _PrivacyInfoCard extends StatelessWidget {
-  const _PrivacyInfoCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: NabiPalette.cyan.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: NabiPalette.cyan.withValues(alpha: 0.13)),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final stacked = constraints.maxWidth < 300;
-
-          final icon = Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: NabiPalette.cyan.withValues(alpha: 0.13),
-            ),
-            child: const Icon(
-              Icons.lock_outline_rounded,
-              color: NabiPalette.cyan,
-              size: 18,
-            ),
-          );
-
-          final content = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Thông tin của bạn luôn thuộc về bạn',
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: NabiPalette.ink,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Dữ liệu chỉ dùng để cá nhân hóa. Bạn có thể đổi sau.',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: NabiPalette.mutedInk,
-                  height: 1.35,
-                ),
-              ),
-            ],
-          );
-
-          if (stacked) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [icon, const SizedBox(height: 10), content],
-            );
-          }
-
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              icon,
-              const SizedBox(width: 10),
-              Expanded(child: content),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _BmiReading {
-  final double? value;
-
-  const _BmiReading._(this.value);
-
-  factory _BmiReading.from({
-    required double heightCm,
-    required double weightKg,
-  }) {
-    if (heightCm <= 0 || weightKg <= 0) {
-      return const _BmiReading._(null);
-    }
-
-    final heightMeters = heightCm / 100;
-
-    if (heightMeters <= 0) {
-      return const _BmiReading._(null);
-    }
-
-    return _BmiReading._(weightKg / (heightMeters * heightMeters));
-  }
-
-  bool get hasValue => value != null;
-
-  String get displayValue {
-    if (value == null) return '--';
-    return value!.toStringAsFixed(1);
-  }
-
-  Color get color {
-    if (value == null) return NabiPalette.mutedInk;
-    if (value! < 18.5) return NabiPalette.amber;
-    if (value! <= 24.9) return NabiPalette.cyan;
-    return NabiPalette.rose;
-  }
-
-  IconData get icon {
-    if (value == null) return Icons.analytics_outlined;
-    if (value! >= 18.5 && value! <= 24.9) {
-      return Icons.check_circle_outline_rounded;
-    }
-    return Icons.insights_outlined;
-  }
-
-  String get message {
-    if (value == null) {
-      return 'Điền chiều cao và cân nặng để xem chỉ số tham khảo.';
-    }
-
-    if (value! < 18.5) {
-      return 'Chỉ số hiện thấp hơn khoảng tham chiếu thông thường.';
-    }
-
-    if (value! <= 24.9) {
-      return 'Chỉ số hiện nằm trong khoảng tham chiếu thông thường.';
-    }
-
-    return 'Chỉ số hiện cao hơn khoảng tham chiếu thông thường.';
   }
 }

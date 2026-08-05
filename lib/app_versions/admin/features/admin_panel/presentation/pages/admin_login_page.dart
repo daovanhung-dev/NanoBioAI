@@ -64,19 +64,19 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
               builder: (context, constraints) {
                 final isWideLayout = constraints.maxWidth >= 940;
                 final horizontalPadding = isWideLayout
-                    ? AppSpacing.xl
-                    : AppSpacing.md;
+                    ? AppSpacing.pagePaddingLarge
+                    : AppSpacing.pagePadding;
 
                 return SingleChildScrollView(
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: EdgeInsets.symmetric(
                     horizontal: horizontalPadding,
-                    vertical: AppSpacing.xl,
+                    vertical: AppSpacing.sectionSpacing,
                   ),
                   child: Center(
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1120),
+                      constraints: const BoxConstraints(maxWidth: 1040),
                       child: AnimatedSwitcher(
                         duration: AppDuration.normal,
                         switchInCurve: Curves.easeOutCubic,
@@ -171,7 +171,7 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
       ..showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(AppSpacing.md),
+          margin: const EdgeInsets.all(AppSpacing.cardPadding),
           content: Text(message),
         ),
       );
@@ -189,8 +189,8 @@ class _WideLoginLayout extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Expanded(child: _LoginIntroPanel()),
-        const SizedBox(width: AppSpacing.xl),
-        SizedBox(width: 420, child: form),
+        const SizedBox(width: AppSpacing.sectionSpacing),
+        SizedBox(width: 390, child: form),
       ],
     );
   }
@@ -207,7 +207,7 @@ class _CompactLoginLayout extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const _LoginIntroPanel(compact: true),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         form,
       ],
     );
@@ -236,13 +236,15 @@ class _LoginIntroPanel extends StatelessWidget {
           boxShadow: AppShadows.darkLg,
         ),
         child: Padding(
-          padding: EdgeInsets.all(compact ? AppSpacing.lg : AppSpacing.xl),
+          padding: EdgeInsets.all(
+            compact ? AppSpacing.pagePadding : AppSpacing.pagePaddingLarge,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const _IntroBrandMark(),
-              SizedBox(height: compact ? AppSpacing.md : AppSpacing.xl),
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.sectionSpacing),
               Text(
                 'NanoBio Quản trị',
                 style: titleStyle.copyWith(color: AppColors.textInverse),
@@ -252,10 +254,10 @@ class _LoginIntroPanel extends StatelessWidget {
                 'Duyệt thanh toán, quản lý cộng tác viên và đối soát.',
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.darkTextSecondary,
-                  height: 1.55,
+                  height: 1.4,
                 ),
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               const Wrap(
                 spacing: AppSpacing.sm,
                 runSpacing: AppSpacing.sm,
@@ -294,7 +296,7 @@ class _IntroBrandMark extends StatelessWidget {
         boxShadow: AppShadows.info,
       ),
       child: const SizedBox.square(
-        dimension: 56,
+        dimension: 48,
         child: Icon(
           Icons.admin_panel_settings_rounded,
           color: AppColors.textInverse,
@@ -372,7 +374,9 @@ class _LoginFormCard extends StatelessWidget {
     return DecoratedBox(
       decoration: _panelDecoration(),
       child: Padding(
-        padding: EdgeInsets.all(compact ? AppSpacing.lg : AppSpacing.xl),
+        padding: EdgeInsets.all(
+            compact ? AppSpacing.pagePadding : AppSpacing.pagePaddingLarge,
+          ),
         child: AutofillGroup(
           child: Form(
             key: formKey,
@@ -382,7 +386,7 @@ class _LoginFormCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const _FormHeader(),
-                const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.sectionSpacing),
                 _EmailInput(
                   controller: emailController,
                   enabled: !isSubmitting,
@@ -397,7 +401,7 @@ class _LoginFormCard extends StatelessWidget {
                   onToggleVisibility: onTogglePasswordVisibility,
                   onSubmitted: onSubmit,
                 ),
-                const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.sectionSpacing),
                 _SubmitButton(isSubmitting: isSubmitting, onPressed: onSubmit),
                 const SizedBox(height: AppSpacing.md),
                 const _FormFooter(),
@@ -428,7 +432,7 @@ class _FormHeader extends StatelessWidget {
             child: Icon(Icons.lock_person_rounded, color: AppColors.primary),
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         Text('Đăng nhập quản trị', style: AppTextStyles.heading2),
         const SizedBox(height: AppSpacing.xs),
         Text(

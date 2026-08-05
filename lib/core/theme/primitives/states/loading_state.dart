@@ -1,154 +1,207 @@
 import 'package:flutter/material.dart';
+
 import '../../tokens/color_tokens.dart';
-import '../../tokens/spacing_tokens.dart';
 import '../../tokens/component_tokens.dart';
+import '../../tokens/spacing_tokens.dart';
 
 /// Loading state variants for different loading patterns.
-///
-/// Each variant serves a specific purpose:
-/// - **spinner**: Standard circular progress indicator
-/// - **skeleton**: Placeholder skeleton UI (future implementation)
-/// - **shimmer**: Animated shimmer effect (future implementation)
-///
-/// **Validates: Requirements 4.8, 8.1**
-enum LoadingVariant {
-  /// Standard circular progress indicator
-  spinner,
+enum LoadingVariant { spinner, skeleton, shimmer }
 
-  /// Placeholder skeleton UI (future implementation)
-  skeleton,
-
-  /// Animated shimmer effect (future implementation)
-  shimmer,
-}
-
-/// A primitive loading state component for displaying loading indicators.
-///
-/// `LoadingState` is a Layer 3 primitive component that provides consistent
-/// loading displays with optional message.
-///
-/// ## Basic Usage
-///
-/// ```dart
-/// LoadingState(
-///   variant: LoadingVariant.spinner,
-/// )
-/// ```
-///
-/// ## With Message
-///
-/// ```dart
-/// LoadingState(
-///   variant: LoadingVariant.spinner,
-///   message: 'Loading meal plan...',
-/// )
-/// ```
-///
-/// ## In Widget
-///
-/// ```dart
-/// if (isLoading)
-///   LoadingState(
-///     variant: LoadingVariant.spinner,
-///     message: 'Generating AI recommendations...',
-///   )
-/// else
-///   ContentWidget()
-/// ```
-///
-/// ## Token-Based Styling
-///
-/// All styling references semantic tokens:
-/// - Colors: [AppColorTokens]
-/// - Spacing: [AppSpacingTokens]
-/// - Text: [AppTextStyles]
-///
-/// **Validates: Requirements 4.8, 4.10, 4.11**
-class LoadingState extends StatelessWidget {
-  /// Creates a loading state with the specified variant and optional message.
-  ///
-  /// The [variant] determines the visual style.
-  /// The [message] provides optional context about what is loading.
+/// Consistent loading surface with reduced-motion support.
+class LoadingState extends StatefulWidget {
   const LoadingState({super.key, required this.variant, this.message});
 
-  /// The visual style variant for this loading state.
   final LoadingVariant variant;
-
-  /// Optional message describing what is loading.
   final String? message;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+  State<LoadingState> createState() => _LoadingStateState();
+}
 
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(AppSpacingTokens.pagePadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Loading indicator based on variant
-            _buildLoadingIndicator(isDark),
-            // Message
-            if (message != null) ...[
-              SizedBox(height: AppSpacingTokens.sectionSpacing),
-              Text(
-                message!,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: isDark
-                      ? AppColorTokens.darkTextSecondary
-                      : AppColorTokens.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ],
+class _LoadingStateState extends State<LoadingState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _reduceMotion = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: AppMotionTokens.shimmer,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (_reduceMotion == reduceMotion && _controller.isAnimating) {
+      return;
+    }
+    _reduceMotion = reduceMotion;
+    if (_reduceMotion || widget.variant != LoadingVariant.shimmer) {
+      _controller
+        ..stop()
+        ..value = 0.5;
+    } else {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant LoadingState oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.variant == widget.variant) {
+      return;
+    }
+    if (_reduceMotion || widget.variant != LoadingVariant.shimmer) {
+      _controller
+        ..stop()
+        ..value = 0.5;
+    } else {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final semanticMessage = widget.message ?? 'Nabi đang chuẩn bị nội dung';
+
+    return Semantics(
+      liveRegion: true,
+      label: semanticMessage,
+      child: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(AppSpacingTokens.pagePadding),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildIndicator(isDark),
+                if (widget.message != null) ...[
+                  SizedBox(height: AppSpacingTokens.sectionSpacing),
+                  Text(
+                    widget.message!,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: isDark
+                          ? AppColorTokens.darkTextSecondary
+                          : AppColorTokens.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  /// Builds the loading indicator based on variant.
-  Widget _buildLoadingIndicator(bool isDark) {
-    switch (variant) {
+  Widget _buildIndicator(bool isDark) {
+    switch (widget.variant) {
       case LoadingVariant.spinner:
-        return SizedBox(
-          width: 48,
-          height: 48,
+        return const SizedBox.square(
+          dimension: AppSpacingTokens.touchTargetMin,
           child: CircularProgressIndicator(
             strokeWidth: 4,
-            valueColor: AlwaysStoppedAnimation<Color>(AppColorTokens.primary),
+            color: AppColorTokens.primary,
           ),
         );
       case LoadingVariant.skeleton:
-        // TODO: Implement skeleton loading UI
-        return _buildPlaceholder(isDark, 'Đang tải khung nội dung');
+        return _SkeletonPanel(isDark: isDark);
       case LoadingVariant.shimmer:
-        // TODO: Implement shimmer loading effect
-        return _buildPlaceholder(isDark, 'Đang tải hiệu ứng chờ');
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            if (_reduceMotion) {
+              return child!;
+            }
+            final progress = _controller.value;
+            return ShaderMask(
+              blendMode: BlendMode.srcATop,
+              shaderCallback: (bounds) => LinearGradient(
+                begin: Alignment(-1.5 + (progress * 3), 0),
+                end: Alignment(-0.5 + (progress * 3), 0),
+                colors: [
+                  _skeletonColor(isDark),
+                  _highlightColor(isDark),
+                  _skeletonColor(isDark),
+                ],
+                stops: const [0, 0.5, 1],
+              ).createShader(bounds),
+              child: child,
+            );
+          },
+          child: _SkeletonPanel(isDark: isDark),
+        );
     }
   }
 
-  /// Builds a placeholder for unimplemented variants.
-  Widget _buildPlaceholder(bool isDark, String label) {
-    return Container(
-      width: 200,
-      height: 100,
-      decoration: BoxDecoration(
-        color: isDark ? AppColorTokens.darkSurface : AppColorTokens.surface,
-        borderRadius: BorderRadius.circular(AppRadiusTokens.card),
-      ),
-      child: Center(
-        child: Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            color: isDark
-                ? AppColorTokens.darkTextMuted
-                : AppColorTokens.textMuted,
-          ),
-          textAlign: TextAlign.center,
+  Color _skeletonColor(bool isDark) => isDark
+      ? AppColorTokens.darkSurfaceElevated
+      : AppColorTokens.surfaceElevated;
+
+  Color _highlightColor(bool isDark) => isDark
+      ? AppColorTokens.darkBorder
+      : AppColorTokens.primaryLight;
+}
+
+class _SkeletonPanel extends StatelessWidget {
+  const _SkeletonPanel({required this.isDark});
+
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final fill = isDark
+        ? AppColorTokens.darkSurfaceElevated
+        : AppColorTokens.surfaceElevated;
+
+    Widget block({required double height, double? width}) {
+      return Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: fill,
+          borderRadius: BorderRadius.circular(AppRadiusTokens.input),
+        ),
+      );
+    }
+
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: 360,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            block(height: 24, width: 220),
+            SizedBox(height: AppSpacingTokens.itemSpacing),
+            block(height: 16),
+            SizedBox(height: AppSpacingTokens.itemSpacing),
+            block(height: 16, width: 280),
+            SizedBox(height: AppSpacingTokens.sectionSpacing),
+            Row(
+              children: [
+                Expanded(child: block(height: 92)),
+                SizedBox(width: AppSpacingTokens.itemSpacingLarge),
+                Expanded(child: block(height: 92)),
+              ],
+            ),
+            SizedBox(height: AppSpacingTokens.itemSpacingLarge),
+            block(height: 72),
+          ],
         ),
       ),
     );

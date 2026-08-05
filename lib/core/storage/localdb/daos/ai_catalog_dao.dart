@@ -21,16 +21,50 @@ class AiCatalogDao {
     );
   }
 
-  Future<List<MealCatalogItemModel>> getActiveMeals({String? mealType}) async {
+  Future<List<MealCatalogItemModel>> getActiveMeals({
+    String? mealType,
+    bool planEligibleOnly = true,
+  }) async {
+    final clauses = <String>['is_active = ?'];
+    final arguments = <Object?>[1];
+    if (planEligibleOnly) {
+      clauses.add('is_plan_eligible = ?');
+      arguments.add(1);
+    }
+    if (mealType != null && mealType.trim().isNotEmpty) {
+      clauses.add('meal_type = ?');
+      arguments.add(mealType.trim().toLowerCase());
+    }
     final maps = await db.query(
       MealCatalogTable.tableName,
-      where: mealType == null
-          ? 'is_active = ?'
-          : 'is_active = ? AND meal_type = ?',
-      whereArgs: mealType == null ? const [1] : [1, mealType],
+      where: clauses.join(' AND '),
+      whereArgs: arguments,
       orderBy: 'meal_type ASC, code ASC',
     );
-    return maps.map(MealCatalogItemModel.fromMap).toList();
+    return maps.map(MealCatalogItemModel.fromMap).toList(growable: false);
+  }
+
+  Future<MealCatalogItemModel?> getMealByCode(String code) async {
+    final rows = await db.query(
+      MealCatalogTable.tableName,
+      where: 'code = ? AND is_active = ?',
+      whereArgs: [code, 1],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return MealCatalogItemModel.fromMap(rows.first);
+  }
+
+  Future<List<MealCatalogItemModel>> getSourceRecipesForTopic(
+    String topicCode,
+  ) async {
+    final rows = await db.query(
+      MealCatalogTable.tableName,
+      where: 'health_topic_code = ? AND is_active = ?',
+      whereArgs: [topicCode, 1],
+      orderBy: 'source_recipe_order ASC, code ASC',
+    );
+    return rows.map(MealCatalogItemModel.fromMap).toList(growable: false);
   }
 
   Future<List<ExerciseCatalogItemModel>> getActiveExercises() async {

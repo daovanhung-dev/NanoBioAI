@@ -54,7 +54,7 @@ class AppRadiusTokens {
   /// Border radius for chips (8px).
   ///
   /// Subtle rounding for compact, inline elements.
-  static const double chip = RadiusFoundation.radius8;
+  static const double chip = RadiusFoundation.radiusFull;
 
   /// Border radius for badges (9999px).
   ///
@@ -64,7 +64,7 @@ class AppRadiusTokens {
   /// Border radius for dialogs and modals (24px).
   ///
   /// Extra large rounding for prominent overlay surfaces.
-  static const double dialog = RadiusFoundation.radius24;
+  static const double dialog = RadiusFoundation.radius20;
 
   /// Border radius for avatars (9999px).
   ///
@@ -173,6 +173,18 @@ class AppMotionTokens {
   /// Slower timing for full-screen page navigation animations.
   static const Duration page = MotionFoundation.slow;
 
+  /// Loading indicator cycle.
+  static const Duration loading = Duration(milliseconds: 1000);
+
+  /// Skeleton pulse cycle.
+  static const Duration skeleton = Duration(milliseconds: 1200);
+
+  /// Shimmer sweep cycle.
+  static const Duration shimmer = Duration(milliseconds: 1400);
+
+  /// Ambient pulse cycle.
+  static const Duration pulse = Duration(milliseconds: 1500);
+
   /// Default animation curve for most component animations.
   ///
   /// Smooth ease-in-out provides natural motion for bidirectional transitions.
@@ -253,6 +265,25 @@ class AppTextStyles {
     height: TypographyFoundation.lineHeightNormal,
   );
 
+  /// Heading 3 text style (18px, bold, normal line height).
+  ///
+  /// Use for:
+  /// - Compact card titles
+  /// - Tertiary section headings
+  /// - Dialog and panel headings
+  static const TextStyle heading3 = TextStyle(
+    fontFamily: TypographyFoundation.fontFamily,
+    fontSize: TypographyFoundation.size18,
+    fontWeight: TypographyFoundation.bold,
+    height: TypographyFoundation.lineHeightNormal,
+  );
+
+  /// Semantic section title used by shared section-header primitives.
+  ///
+  /// Kept as an explicit token rather than a call-site alias so every
+  /// component importing the design-system barrel resolves the same style.
+  static const TextStyle sectionTitle = heading3;
+
   /// Body large text style (16px, regular, relaxed line height).
   ///
   /// Use for:
@@ -279,6 +310,19 @@ class AppTextStyles {
     fontSize: TypographyFoundation.size14,
     fontWeight: TypographyFoundation.regular,
     height: TypographyFoundation.lineHeightRelaxed,
+  );
+
+  /// Body small text style (12px, regular, normal line height).
+  ///
+  /// Use for:
+  /// - Compact supporting copy
+  /// - Secondary metadata
+  /// - Section subtitles in dense layouts
+  static const TextStyle bodySmall = TextStyle(
+    fontFamily: TypographyFoundation.fontFamily,
+    fontSize: TypographyFoundation.size12,
+    fontWeight: TypographyFoundation.regular,
+    height: TypographyFoundation.lineHeightNormal,
   );
 
   /// Label large text style (14px, semibold, tight line height).

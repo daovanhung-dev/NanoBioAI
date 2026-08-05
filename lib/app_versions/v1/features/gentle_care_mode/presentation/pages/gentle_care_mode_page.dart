@@ -113,7 +113,7 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
           );
         }),
         if (_selectedIndex != null) ...[
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           const NamiCareEmptyState(
             icon: Icons.favorite_rounded,
             color: AppColors.warning,
@@ -121,7 +121,7 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
             message:
                 'Mình chỉ cần không bỏ quên bản thân là được. Nabi sẽ gợi ý vài việc thật nhẹ để bạn dễ chịu hơn.',
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           const NamiCareSectionTitle(title: 'Gợi ý nhẹ cho bạn'),
           const SizedBox(height: AppSpacing.md),
           ..._suggestions.map(

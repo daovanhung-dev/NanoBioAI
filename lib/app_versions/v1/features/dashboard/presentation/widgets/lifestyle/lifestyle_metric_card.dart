@@ -22,7 +22,7 @@ class LifestyleMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         gradient: bgGradient,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -34,7 +34,7 @@ class LifestyleMetricCard extends StatelessWidget {
           Row(
             children: [
               Icon(icon, color: color, size: 18),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppSpacing.tiny),
               Text(
                 title,
                 style: AppTextStyles.labelSmall.copyWith(
@@ -52,7 +52,7 @@ class LifestyleMetricCard extends StatelessWidget {
               fontWeight: AppTypography.bold,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: AppSpacing.xxs),
           Text(
             detail,
             style: AppTextStyles.bodySmall.copyWith(

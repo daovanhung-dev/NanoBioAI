@@ -25,4 +25,10 @@ class MealPlanController extends AsyncNotifier<List<MealPlanEntity>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _fetchMealPlans());
   }
+
+  Future<MealPlanEntity> replaceMealById(String id) async {
+    final updated = await _repository.replaceMealById(id);
+    state = AsyncData(await _fetchMealPlans());
+    return updated;
+  }
 }

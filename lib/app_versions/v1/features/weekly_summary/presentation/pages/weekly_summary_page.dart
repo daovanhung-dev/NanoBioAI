@@ -54,7 +54,7 @@ class WeeklySummaryPage extends StatelessWidget {
           message:
               'Tuần này Nabi chưa có đủ thông tin để tổng kết thật trọn vẹn. Mình cứ bắt đầu từ hôm nay nhé.',
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         const NamiCareSectionTitle(
           title: 'Nabi sẽ nhìn lại những điều này',
           subtitle:

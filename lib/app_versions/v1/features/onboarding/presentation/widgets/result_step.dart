@@ -15,7 +15,7 @@ class ResultStep extends StatelessWidget {
     super.key,
     this.healthScore = 82,
     this.userName = 'Bạn',
-    this.message = 'Hồ sơ đã sẵn sàng để bắt đầu hành trình.',
+    this.message = 'Hồ sơ đã sẵn sàng.',
     this.onContinue,
     this.onRestart,
   });
@@ -26,92 +26,107 @@ class ResultStep extends StatelessWidget {
       ambientBackground: false,
       backgroundColor: Colors.transparent,
       body: NabiAmbientBackground(
+        strong: true,
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(18),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: NabiGlassPanel(
-                  padding: const EdgeInsets.all(18),
-                  borderRadius: BorderRadius.circular(28),
+          child: NabiCelebrationBurst(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.large),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const NabiCompanionAvatar(size: 112),
-                      const SizedBox(height: 14),
-                      Text(
-                        'NaBi đã sẵn sàng cùng bạn, $userName!',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.heading3.copyWith(
-                          color: NabiPalette.ink,
-                          fontWeight: FontWeight.w900,
-                          height: 1.18,
-                        ),
-                      ),
-                      const SizedBox(height: 7),
-                      Text(
-                        message,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: NabiPalette.mutedInk,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
                         decoration: BoxDecoration(
                           gradient: NabiPalette.hero,
-                          borderRadius: BorderRadius.circular(AppRadius.xl),
+                          borderRadius: BorderRadius.circular(AppRadius.xxl),
                           boxShadow: [
                             BoxShadow(
-                              color: NabiPalette.royalBlue.withValues(
-                                alpha: 0.25,
-                              ),
-                              blurRadius: 22,
-                              offset: const Offset(0, 8),
+                              color: NabiPalette.greenDeep
+                                  .withValues(alpha: 0.24),
+                              blurRadius: 30,
+                              offset: const Offset(0, 14),
                             ),
                           ],
                         ),
                         child: Column(
                           children: [
+                            const NabiCompanionAvatar(
+                              size: 144,
+                              mood: NabiOnboardingMood.celebrate,
+                              showStatus: false,
+                              hero: true,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
                             Text(
-                              healthScore.round().toString(),
-                              style: AppTextStyles.displaySmall.copyWith(
-                                color: Colors.white,
+                              'Sẵn sàng rồi, $userName!',
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.heading2.copyWith(
+                                color: AppColors.surface,
                                 fontWeight: FontWeight.w900,
+                                height: 1.08,
                               ),
                             ),
+                            const SizedBox(height: AppSpacing.tiny),
                             Text(
-                              'điểm khởi đầu hôm nay',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: Colors.white.withValues(alpha: 0.86),
-                                fontWeight: FontWeight.w700,
+                              message,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.surface.withValues(alpha: 0.86),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.md),
+                      NabiGlassPanel(
+                        padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                        child: Row(
+                          children: [
+                            _ScoreRing(score: healthScore),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Điểm khởi đầu',
+                                    style: AppTextStyles.heading5.copyWith(
+                                      color: NabiPalette.ink,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    'NaBi sẽ đồng hành và điều chỉnh theo tiến trình của bạn.',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: NabiPalette.mutedInk,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
                       SizedBox(
                         width: double.infinity,
                         child: NabiPrimaryButton(
                           onPressed: onContinue,
-                          label: 'Vào hành trình của tôi',
-                          icon: Icons.explore_rounded,
+                          label: 'Vào ứng dụng',
+                          icon: Icons.arrow_forward_rounded,
                         ),
                       ),
                       if (onRestart != null) ...[
-                        const SizedBox(height: 8),
-                        TextButton.icon(
+                        const SizedBox(height: AppSpacing.sm),
+                        NabiSecondaryButton(
                           onPressed: onRestart,
-                          icon: const Icon(Icons.edit_outlined, size: 18),
-                          label: const Text('Chỉnh lại hồ sơ'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: NabiPalette.deepBlue,
-                          ),
+                          label: 'Sửa hồ sơ',
+                          icon: Icons.edit_rounded,
                         ),
                       ],
                     ],
@@ -121,6 +136,48 @@ class ResultStep extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ScoreRing extends StatelessWidget {
+  final double score;
+
+  const _ScoreRing({required this.score});
+
+  @override
+  Widget build(BuildContext context) {
+    final normalized = (score / 100).clamp(0.0, 1.0).toDouble();
+    return SizedBox(
+      width: 88,
+      height: 88,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: normalized),
+            duration: nabiReducedMotion(context)
+                ? Duration.zero
+                : const Duration(milliseconds: 850),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, _) => CircularProgressIndicator(
+              value: value,
+              strokeWidth: 9,
+              backgroundColor: NabiPalette.greenSoft,
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                NabiPalette.greenPrimary,
+              ),
+            ),
+          ),
+          Text(
+            score.round().toString(),
+            style: AppTextStyles.heading3.copyWith(
+              color: NabiPalette.greenDeep,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
       ),
     );
   }

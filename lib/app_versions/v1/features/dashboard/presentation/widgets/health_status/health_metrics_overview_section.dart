@@ -16,18 +16,12 @@ class HealthMetricsOverviewSection extends StatelessWidget {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(AppRadius.card),
             border: Border.all(color: AppColors.border),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x120F172A),
-                blurRadius: 22,
-                offset: Offset(0, 10),
-              ),
-            ],
+            boxShadow: AppShadows.card,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +41,7 @@ class HealthMetricsOverviewSection extends StatelessWidget {
                                 fontWeight: FontWeight.w800,
                               ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: AppSpacing.tiny),
                         Text(
                           status.summaryMessage,
                           style: Theme.of(context).textTheme.bodyMedium
@@ -59,7 +53,7 @@ class HealthMetricsOverviewSection extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: AppSpacing.md),
                   _ScoreBadge(
                     score: status.healthScore,
                     label: status.riskLabel,
@@ -67,12 +61,12 @@ class HealthMetricsOverviewSection extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               _MetricGrid(metrics: status.metrics),
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: AppSpacing.md),
         _InsightList(insights: status.insights),
       ],
     );
@@ -107,10 +101,10 @@ class _ScoreBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 86,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Column(
@@ -123,7 +117,7 @@ class _ScoreBadge extends StatelessWidget {
               height: 1,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             label,
             textAlign: TextAlign.center,
@@ -179,10 +173,10 @@ class _MetricTile extends StatelessWidget {
     final color = _colorFor(metric.progress);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.inputBackground,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
@@ -195,11 +189,11 @@ class _MetricTile extends StatelessWidget {
                 height: 36,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.11),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Icon(_iconFor(metric.code), color: color, size: 19),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,7 +207,7 @@ class _MetricTile extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       metric.label,
                       maxLines: 1,
@@ -235,9 +229,9 @@ class _MetricTile extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
           ClipRRect(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             child: LinearProgressIndicator(
               minHeight: 7,
               value: metric.progress.clamp(0.0, 1.0).toDouble(),
@@ -245,7 +239,7 @@ class _MetricTile extends StatelessWidget {
               backgroundColor: color.withValues(alpha: 0.12),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             metric.message,
             maxLines: 2,
@@ -298,13 +292,13 @@ class _InsightList extends StatelessWidget {
       children: insights
           .map(
             (insight) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(AppSpacing.cardPadding),
                 decoration: BoxDecoration(
                   color: AppColors.primarySoft.withValues(alpha: 0.72),
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.08),
                   ),
@@ -317,7 +311,7 @@ class _InsightList extends StatelessWidget {
                       height: 32,
                       decoration: BoxDecoration(
                         color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(13),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
                       ),
                       child: const Icon(
                         Icons.tips_and_updates_rounded,
@@ -325,7 +319,7 @@ class _InsightList extends StatelessWidget {
                         size: 18,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,7 +332,7 @@ class _InsightList extends StatelessWidget {
                                   fontWeight: FontWeight.w800,
                                 ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppSpacing.xs),
                           Text(
                             insight.message,
                             style: Theme.of(context).textTheme.bodySmall

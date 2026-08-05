@@ -18,15 +18,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 const _desktopBreakpoint = 920.0;
 const _wideBreakpoint = 1180.0;
-const _contentMaxWidth = 1280.0;
+const _contentMaxWidth = 1180.0;
 
-const _sidebarCompactWidth = 96.0;
-const _sidebarWideWidth = 288.0;
-const _contentBottomPadding = 72.0;
-const _cardHoverOffset = -4.0;
-const _ambientOrbLarge = 360.0;
-const _ambientOrbMedium = 260.0;
-const _ambientOrbSmall = 180.0;
+const _sidebarCompactWidth = 80.0;
+const _sidebarWideWidth = 244.0;
+const _contentBottomPadding = 52.0;
+const _cardHoverOffset = -2.0;
+const _ambientOrbLarge = 260.0;
+const _ambientOrbMedium = 190.0;
+const _ambientOrbSmall = 132.0;
 const _ambientMotionDuration = Duration(seconds: 12);
 
 class AdminShellPage extends ConsumerStatefulWidget {
@@ -104,7 +104,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
         ..showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(AppSpacing.md),
+            margin: const EdgeInsets.all(AppSpacing.cardPadding),
             backgroundColor: AppColors.textPrimary,
             content: Row(
               children: [
@@ -408,7 +408,7 @@ class _AdminAmbientBackdropState extends State<_AdminAmbientBackdrop>
                   ),
                 ),
                 Positioned(
-                  right: 64 + shift * 20,
+                  right: AppSpacing.xxxl + shift * 20,
                   bottom: -_ambientOrbSmall * .48,
                   child: _AmbientOrb(
                     size: _ambientOrbSmall,
@@ -471,8 +471,8 @@ class _LoadingPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 284,
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      width: 248,
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: _panelDecoration(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -481,8 +481,8 @@ class _LoadingPanel extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               Container(
-                width: 82,
-                height: 82,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.primarySoft,
@@ -492,7 +492,7 @@ class _LoadingPanel extends StatelessWidget {
                 ),
               ),
               const SizedBox.square(
-                dimension: 52,
+                dimension: 42,
                 child: CircularProgressIndicator(strokeWidth: 3),
               ),
               const Icon(
@@ -502,7 +502,7 @@ class _LoadingPanel extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           Text(
             'Đang chuẩn bị khu quản trị',
             textAlign: TextAlign.center,
@@ -539,7 +539,7 @@ class _AdminStateScaffold extends StatelessWidget {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.cardPadding),
               child: child,
             ),
           ),
@@ -576,10 +576,10 @@ class _AdminSideBar extends StatelessWidget {
       width: width,
       margin: const EdgeInsets.only(right: AppSpacing.xs),
       padding: EdgeInsets.fromLTRB(
-        extended ? AppSpacing.md : AppSpacing.sm,
-        AppSpacing.lg,
-        extended ? AppSpacing.md : AppSpacing.sm,
-        AppSpacing.lg,
+        extended ? AppSpacing.sm : AppSpacing.xs,
+        AppSpacing.md,
+        extended ? AppSpacing.sm : AppSpacing.xs,
+        AppSpacing.md,
       ),
       decoration: BoxDecoration(
         gradient: AppGradients.dashboard,
@@ -597,7 +597,7 @@ class _AdminSideBar extends StatelessWidget {
       child: Column(
         children: [
           _AdminBrand(extended: extended),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           if (extended) ...[
             const _SideRailLabel('BẢNG ĐIỀU KHIỂN'),
             const SizedBox(height: AppSpacing.sm),
@@ -726,11 +726,11 @@ class _AdminDrawer extends StatelessWidget {
         decoration: const BoxDecoration(gradient: AppGradients.surfaceAlt),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.cardPadding),
             child: Column(
               children: [
                 const _DrawerBrand(),
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sectionSpacing),
                 Expanded(
                   child: ListView.separated(
                     padding: EdgeInsets.zero,
@@ -910,7 +910,7 @@ class _DrawerBrand extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         gradient: AppGradients.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -1001,7 +1001,7 @@ class _AdminNavButtonState extends State<_AdminNavButton> {
         ),
         padding: EdgeInsets.symmetric(
           horizontal: widget.extended ? AppSpacing.md : AppSpacing.sm,
-          vertical: AppSpacing.sm,
+          vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
           color: isActive ? null : background,
@@ -1164,8 +1164,8 @@ class _TopBar extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        horizontal: isCompact ? AppSpacing.md : AppSpacing.xl,
-        vertical: AppSpacing.md,
+        horizontal: isCompact ? AppSpacing.pagePadding : AppSpacing.pagePaddingLarge,
+        vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: .94),
@@ -1200,7 +1200,7 @@ class _TopBar extends StatelessWidget {
                   ],
                 ),
                 if (showSearch) ...[
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
                   _SearchField(
                     controller: search,
                     sectionLabel: state.section.label,
@@ -1222,8 +1222,8 @@ class _TopBar extends StatelessWidget {
                 const SizedBox(width: AppSpacing.md),
                 ConstrainedBox(
                   constraints: const BoxConstraints(
-                    minWidth: 240,
-                    maxWidth: 380,
+                    minWidth: 220,
+                    maxWidth: 340,
                   ),
                   child: _SearchField(
                     controller: search,
@@ -1653,13 +1653,13 @@ class _AdminContent extends StatelessWidget {
 
     final horizontalPadding =
         MediaQuery.sizeOf(context).width < _desktopBreakpoint
-        ? AppSpacing.md
-        : AppSpacing.xl;
+        ? AppSpacing.pagePadding
+        : AppSpacing.pagePaddingLarge;
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
         horizontalPadding,
-        AppSpacing.lg,
+        AppSpacing.sectionSpacing,
         horizontalPadding,
         _contentBottomPadding,
       ),
@@ -1710,7 +1710,7 @@ class _DashboardView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _AdminOverviewPanel(metricCount: state.metrics.length),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         if (state.metrics.isEmpty)
           const _EmptyPanel(
             title: 'Chưa có số liệu tổng quan',
@@ -1719,19 +1719,19 @@ class _DashboardView extends StatelessWidget {
           )
         else
           _ResponsiveGrid(
-            minItemWidth: 220,
-            itemHeight: 176,
+            minItemWidth: 200,
+            itemHeight: 146,
             children: state.metrics.map(_MetricCard.new).toList(),
           ),
-        const SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         const _SectionTitle(
           title: 'Lối tắt vận hành',
           subtitle: 'Mở nhanh các khu vực bạn được phân quyền xử lý.',
         ),
         const SizedBox(height: AppSpacing.md),
         _ResponsiveGrid(
-          minItemWidth: 236,
-          itemHeight: 116,
+          minItemWidth: 214,
+          itemHeight: 96,
           children: shortcuts
               .map((section) => _ShortcutCard(section: section))
               .toList(),
@@ -1778,7 +1778,7 @@ class _AdminOverviewPanel extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
+              padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
               child: Wrap(
                 alignment: WrapAlignment.spaceBetween,
                 crossAxisAlignment: WrapCrossAlignment.end,
@@ -1937,7 +1937,7 @@ class _ResponsiveGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final spacing = AppSpacing.md;
+        final spacing = AppSpacing.sm;
         final columns = ((width + spacing) / (minItemWidth + spacing))
             .floor()
             .clamp(1, 4)
@@ -1976,11 +1976,11 @@ class _MetricCard extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            top: -28,
-            right: -18,
+            top: -22,
+            right: -14,
             child: Container(
-              width: 98,
-              height: 98,
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: .08),
                 shape: BoxShape.circle,
@@ -1988,7 +1988,7 @@ class _MetricCard extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.all(AppSpacing.cardPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -2049,7 +2049,7 @@ class _ShortcutCard extends StatelessWidget {
       accent: AppColors.primary,
       onTap: () => context.push(section.routePath),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Row(
           children: [
             _IconBadge(icon: section.icon, color: AppColors.primary),
@@ -2158,7 +2158,7 @@ class _QueueSummaryBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.infoSoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -2243,7 +2243,7 @@ class _WorkItemRow extends StatelessWidget {
       child: _InteractivePanel(
         accent: statusColor,
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final narrow = constraints.maxWidth < 720;
@@ -2286,7 +2286,7 @@ class _WorkItemRow extends StatelessWidget {
                       payoutDetail,
                     ],
                     if (actions.isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       actionWrap,
                     ],
                   ],
@@ -2336,7 +2336,7 @@ class _PaymentReconciliationDetail extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.warningSoft,
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -2438,7 +2438,7 @@ class _SaleConversionPayoutDetail extends StatelessWidget {
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
           decoration: BoxDecoration(
             color: AppColors.cardAlt,
             borderRadius: BorderRadius.circular(AppRadius.md),
@@ -2458,7 +2458,7 @@ class _SaleConversionPayoutDetail extends StatelessWidget {
                       height: 132,
                       padding: const EdgeInsets.all(AppSpacing.xs),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(AppRadius.sm),
                         border: Border.all(color: AppColors.border),
                       ),
@@ -2719,7 +2719,7 @@ class _AuditNoticeBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.infoSoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -2759,7 +2759,7 @@ class _AuditRow extends StatelessWidget {
       child: _InteractivePanel(
         accent: AppColors.info,
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
           child: Wrap(
             spacing: AppSpacing.md,
             runSpacing: AppSpacing.sm,
@@ -2884,7 +2884,7 @@ class _AdminGuideDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      insetPadding: const EdgeInsets.all(AppSpacing.md),
+      insetPadding: const EdgeInsets.all(AppSpacing.cardPadding),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 760, maxHeight: 720),
         child: ClipRRect(
@@ -2892,7 +2892,7 @@ class _AdminGuideDialog extends StatelessWidget {
           child: DecoratedBox(
             decoration: const BoxDecoration(gradient: AppGradients.surfaceAlt),
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.cardPadding),
               child: Column(
                 children: [
                   Row(
@@ -2927,7 +2927,7 @@ class _AdminGuideDialog extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   const Expanded(
                     child: SingleChildScrollView(
                       child: Column(
@@ -3033,7 +3033,7 @@ class _GuideSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: .82),
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -3057,7 +3057,7 @@ class _GuideSection extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Padding(
-                          padding: EdgeInsets.only(top: 6),
+                          padding: EdgeInsets.only(top: AppSpacing.tiny),
                           child: Icon(
                             Icons.circle,
                             size: 5,
@@ -3211,7 +3211,7 @@ class _StatusChip extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
-          vertical: 6,
+          vertical: AppSpacing.tiny,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -3251,7 +3251,7 @@ class _MetaPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
-        vertical: 6,
+        vertical: AppSpacing.tiny,
       ),
       decoration: BoxDecoration(
         color: AppColors.cardAlt,
@@ -3289,8 +3289,8 @@ class _SectionTitle extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 4,
-          height: 42,
+          width: 3,
+          height: 34,
           decoration: BoxDecoration(
             gradient: AppGradients.futuristic,
             borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -3332,7 +3332,7 @@ class _EmptyPanel extends StatelessWidget {
         child: _InteractivePanel(
           accent: AppColors.info,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
+            padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -3378,7 +3378,7 @@ class _PermissionDeniedPanel extends StatelessWidget {
         child: _InteractivePanel(
           accent: AppColors.warning,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
+            padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -3470,7 +3470,7 @@ class _BlockingState extends StatelessWidget {
         child: _InteractivePanel(
           accent: AppColors.primary,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
+            padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -3487,7 +3487,7 @@ class _BlockingState extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
                 ),
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sectionSpacing),
                 FilledButton.icon(
                   onPressed: onAction,
                   icon: const Icon(Icons.arrow_forward_rounded),

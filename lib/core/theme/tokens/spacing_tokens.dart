@@ -41,7 +41,7 @@ class AppSpacingTokens {
   /// from screen edges.
   ///
   /// References: [SpacingFoundation.space16]
-  static const double pagePadding = SpacingFoundation.space16;
+  static const double pagePadding = 14;
 
   /// Spacing between major sections within a page.
   ///
@@ -50,7 +50,17 @@ class AppSpacingTokens {
   /// feature areas.
   ///
   /// References: [SpacingFoundation.space24]
-  static const double sectionSpacing = SpacingFoundation.space24;
+  static const double sectionSpacing = 16;
+
+
+  /// Dense page padding for data-heavy and dashboard surfaces.
+  static const double compactPagePadding = 12;
+
+  /// Dense spacing between related sections.
+  static const double compactSectionSpacing = 14;
+
+  /// Dense spacing between controls in forms and toolbars.
+  static const double compactControlSpacing = 10;
 
   // ============================================================================
   // Component-level Spacing
@@ -62,7 +72,7 @@ class AppSpacingTokens {
   /// adequate breathing room for card content.
   ///
   /// References: [SpacingFoundation.space16]
-  static const double cardPadding = SpacingFoundation.space16;
+  static const double cardPadding = 14;
 
   /// Compact padding for cards with dense content.
   ///
@@ -70,7 +80,7 @@ class AppSpacingTokens {
   /// while maintaining readability.
   ///
   /// References: [SpacingFoundation.space12]
-  static const double cardPaddingCompact = SpacingFoundation.space12;
+  static const double cardPaddingCompact = 10;
 
   /// Horizontal padding inside buttons.
   ///
@@ -78,7 +88,7 @@ class AppSpacingTokens {
   /// adequate touch target size and visual balance.
   ///
   /// References: [SpacingFoundation.space24]
-  static const double buttonPaddingH = SpacingFoundation.space24;
+  static const double buttonPaddingH = 16;
 
   /// Vertical padding inside buttons.
   ///
@@ -86,7 +96,7 @@ class AppSpacingTokens {
   /// the minimum touch target height of 48px.
   ///
   /// References: [SpacingFoundation.space12]
-  static const double buttonPaddingV = SpacingFoundation.space12;
+  static const double buttonPaddingV = 10;
 
   /// Padding inside input fields.
   ///
@@ -94,7 +104,7 @@ class AppSpacingTokens {
   /// search fields to create comfortable input areas.
   ///
   /// References: [SpacingFoundation.space16]
-  static const double inputPadding = SpacingFoundation.space16;
+  static const double inputPadding = 14;
 
   /// Horizontal padding inside input fields.
   ///
@@ -102,7 +112,7 @@ class AppSpacingTokens {
   /// adequate spacing for text entry.
   ///
   /// References: [SpacingFoundation.space16]
-  static const double inputPaddingH = SpacingFoundation.space16;
+  static const double inputPaddingH = 14;
 
   /// Vertical padding inside input fields.
   ///
@@ -110,7 +120,7 @@ class AppSpacingTokens {
   /// comfortable input height.
   ///
   /// References: [SpacingFoundation.space16]
-  static const double inputPaddingV = SpacingFoundation.space16;
+  static const double inputPaddingV = 12;
 
   /// Horizontal padding inside chips.
   ///
@@ -118,7 +128,7 @@ class AppSpacingTokens {
   /// compact but readable chip components.
   ///
   /// References: [SpacingFoundation.space12]
-  static const double chipPaddingH = SpacingFoundation.space12;
+  static const double chipPaddingH = 10;
 
   /// Vertical padding inside chips.
   ///
@@ -126,7 +136,7 @@ class AppSpacingTokens {
   /// appropriately sized chip components.
   ///
   /// References: [SpacingFoundation.space8]
-  static const double chipPaddingV = SpacingFoundation.space8;
+  static const double chipPaddingV = 6;
 
   // ============================================================================
   // Layout Spacing
@@ -146,7 +156,7 @@ class AppSpacingTokens {
   /// while maintaining their relationship.
   ///
   /// References: [SpacingFoundation.space16]
-  static const double itemSpacingLarge = SpacingFoundation.space16;
+  static const double itemSpacingLarge = 12;
 
   /// Spacing between an icon and adjacent text.
   ///
@@ -155,7 +165,7 @@ class AppSpacingTokens {
   /// with status indicators.
   ///
   /// References: [SpacingFoundation.space8]
-  static const double iconTextSpacing = SpacingFoundation.space8;
+  static const double iconTextSpacing = 6;
 
   // ============================================================================
   // Size Constants
@@ -178,5 +188,5 @@ class AppSpacingTokens {
   ///
   /// Ensures input fields are large enough for comfortable interaction
   /// and text entry, especially on mobile devices.
-  static const double inputMinHeight = 56;
+  static const double inputMinHeight = 48;
 }

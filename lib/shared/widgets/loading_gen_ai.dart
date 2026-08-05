@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:nano_app/core/constants/app/app_duration.dart';
-import 'package:nano_app/core/constants/app/app_radius.dart';
-import 'package:nano_app/core/constants/app/app_spacing.dart';
 import 'package:nano_app/core/theme/app_colors.dart';
+import 'package:nano_app/core/theme/app_radius.dart';
 import 'package:nano_app/core/theme/app_gradients.dart';
 import 'package:nano_app/core/theme/app_shadows.dart';
 import 'package:nano_app/core/theme/app_text_styles.dart';
 import 'package:nano_app/core/theme/medical_ui.dart';
+import 'package:nano_app/core/theme/app_spacing.dart';
+import 'package:nano_app/core/theme/app_duration.dart';
 
 class AIGeneratingPage extends StatefulWidget {
   const AIGeneratingPage({super.key});
@@ -390,7 +390,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                   ),
                   child: const Icon(
                     Icons.auto_awesome_rounded,
-                    color: Colors.white,
+                    color: AppColors.surface,
                     size: 36,
                   ),
                 ),
@@ -437,9 +437,9 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         final isActive = i == (_dotPhase % 3);
 
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: AppDuration.fast,
           curve: Curves.easeOut,
-          margin: const EdgeInsets.only(left: 4),
+          margin: const EdgeInsets.only(left: AppSpacing.xs),
           width: isActive ? 9 : 6,
           height: isActive ? 9 : 6,
           decoration: BoxDecoration(

@@ -84,7 +84,7 @@ class _AdminSupport extends StatelessWidget {
       backgroundColor: AppColors.scaffold,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 460),
             child: Column(
@@ -93,7 +93,7 @@ class _AdminSupport extends StatelessWidget {
                 const Icon(Icons.admin_panel_settings_outlined, size: 56),
                 const SizedBox(height: AppSpacing.md),
                 Text(message, textAlign: TextAlign.center),
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sectionSpacing),
                 FilledButton.icon(
                   onPressed: onRetry,
                   icon: const Icon(Icons.refresh_rounded),

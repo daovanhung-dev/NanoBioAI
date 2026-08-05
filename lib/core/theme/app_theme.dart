@@ -39,7 +39,7 @@ class AppTheme {
       outlineVariant: AppColors.borderLight,
       shadow: Color(0x24102A43),
       scrim: AppColors.scrim,
-      inverseSurface: AppColors.clinicalNavy,
+      inverseSurface: AppColors.primaryDark,
       onInverseSurface: AppColors.textInverse,
       inversePrimary: AppColors.primaryLight,
       surfaceTint: Colors.transparent,
@@ -59,7 +59,7 @@ class AppTheme {
       highlightColor: AppColors.pressed,
       splashFactory: InkSparkle.splashFactory,
       materialTapTargetSize: MaterialTapTargetSize.padded,
-      visualDensity: VisualDensity.standard,
+      visualDensity: const VisualDensity(horizontal: -0.5, vertical: -0.5),
     );
 
     final textTheme = base.textTheme.copyWith(
@@ -98,7 +98,7 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        toolbarHeight: 60,
+        toolbarHeight: 56,
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
@@ -112,11 +112,11 @@ class AppTheme {
         ),
         iconTheme: const IconThemeData(
           color: AppColors.textPrimary,
-          size: 23,
+          size: 22,
         ),
         actionsIconTheme: const IconThemeData(
           color: AppColors.textPrimary,
-          size: 23,
+          size: 22,
         ),
         titleTextStyle: AppTextStyles.appBarTitle,
       ),
@@ -124,7 +124,7 @@ class AppTheme {
         color: AppColors.card,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shadowColor: const Color(0x14102A43),
+        shadowColor: const Color(0x12102A43),
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.card),
@@ -135,7 +135,7 @@ class AppTheme {
         backgroundColor: AppColors.card,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.dialog),
           side: const BorderSide(color: AppColors.borderLight),
@@ -151,7 +151,7 @@ class AppTheme {
         modalElevation: 0,
         showDragHandle: true,
         dragHandleColor: AppColors.outline,
-        dragHandleSize: const Size(42, 4),
+        dragHandleSize: const Size(36, 4),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppRadius.bottomSheet),
@@ -174,16 +174,16 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
-      iconTheme: const IconThemeData(color: AppColors.icon, size: 23),
+      iconTheme: const IconThemeData(color: AppColors.icon, size: 22),
       primaryIconTheme: const IconThemeData(
         color: AppColors.textPrimary,
-        size: 23,
+        size: 22,
       ),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
           animationDuration: AppDuration.button,
           minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-          iconSize: const WidgetStatePropertyAll(21),
+          iconSize: const WidgetStatePropertyAll(20),
           foregroundColor: const WidgetStatePropertyAll(AppColors.icon),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.pressed)) return AppColors.pressed;
@@ -195,8 +195,8 @@ class AppTheme {
         ),
       ),
       listTileTheme: ListTileThemeData(
-        minLeadingWidth: 36,
-        minTileHeight: 52,
+        minLeadingWidth: 32,
+        minTileHeight: 48,
         iconColor: AppColors.icon,
         textColor: AppColors.textPrimary,
         subtitleTextStyle: AppTextStyles.bodySmall.copyWith(
@@ -207,8 +207,8 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
+          horizontal: AppSpacing.listTilePaddingHorizontal,
+          vertical: AppSpacing.listTilePaddingVertical,
         ),
         shape: defaultShape,
       ),
@@ -229,7 +229,7 @@ class AppTheme {
           color: AppColors.textInverse,
         ),
         decoration: BoxDecoration(
-          color: AppColors.clinicalNavy,
+          color: AppColors.primaryDark,
           borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
       ),
@@ -237,15 +237,15 @@ class AppTheme {
         color: AppColors.primary,
         linearTrackColor: AppColors.primarySoft,
         circularTrackColor: AppColors.primarySoft,
-        linearMinHeight: 7,
+        linearMinHeight: 5,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.inputBackground,
-        isDense: false,
+        isDense: true,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: 14,
+          horizontal: AppSpacing.inputPaddingHorizontal,
+          vertical: AppSpacing.inputPaddingVertical,
         ),
         hintStyle: AppTextStyles.inputHint,
         labelStyle: AppTextStyles.inputLabel,
@@ -279,9 +279,12 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: ButtonStyle(
           animationDuration: AppDuration.button,
-          minimumSize: const WidgetStatePropertyAll(Size(48, 50)),
+          minimumSize: const WidgetStatePropertyAll(Size(48, 44)),
           padding: const WidgetStatePropertyAll(
-            EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 12),
+            EdgeInsets.symmetric(
+              horizontal: AppSpacing.buttonPaddingHorizontal,
+              vertical: AppSpacing.buttonPaddingVertical,
+            ),
           ),
           foregroundColor: const WidgetStatePropertyAll(AppColors.primaryDark),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
@@ -305,7 +308,7 @@ class AppTheme {
           animationDuration: AppDuration.button,
           minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
           padding: const WidgetStatePropertyAll(
-            EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+            EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
           ),
           foregroundColor: const WidgetStatePropertyAll(AppColors.primaryDark),
           textStyle: WidgetStatePropertyAll(AppTextStyles.labelLarge),
@@ -334,10 +337,10 @@ class AppTheme {
         ),
         behavior: SnackBarBehavior.floating,
         elevation: 0,
-        insetPadding: const EdgeInsets.all(AppSpacing.md),
+        insetPadding: const EdgeInsets.all(AppSpacing.sm),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        height: 68,
+        height: 64,
         elevation: 0,
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
@@ -347,7 +350,7 @@ class AppTheme {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
             color: selected ? AppColors.primaryDark : AppColors.icon,
-            size: selected ? 25 : 23,
+            size: selected ? 23 : 21,
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
@@ -394,7 +397,7 @@ class AppTheme {
         disabledColor: AppColors.surfaceSoft,
         checkmarkColor: AppColors.primaryDark,
         side: const BorderSide(color: AppColors.borderLight),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
         labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
         labelStyle: AppTextStyles.chipLabel,
         secondaryLabelStyle: AppTextStyles.chipLabel.copyWith(
@@ -435,11 +438,11 @@ class AppTheme {
         inactiveTrackColor: AppColors.primarySoft,
         thumbColor: AppColors.primary,
         overlayColor: AppColors.focused,
-        valueIndicatorColor: AppColors.clinicalNavy,
+        valueIndicatorColor: AppColors.primaryDark,
         valueIndicatorTextStyle: AppTextStyles.labelMedium.copyWith(
           color: AppColors.textInverse,
         ),
-        trackHeight: 6,
+        trackHeight: 4,
       ),
       popupMenuTheme: PopupMenuThemeData(
         color: AppColors.surface,
@@ -518,9 +521,12 @@ class AppTheme {
   }) {
     return ButtonStyle(
       animationDuration: AppDuration.button,
-      minimumSize: const WidgetStatePropertyAll(Size(48, 50)),
+      minimumSize: const WidgetStatePropertyAll(Size(48, 44)),
       padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 12),
+        EdgeInsets.symmetric(
+          horizontal: AppSpacing.buttonPaddingHorizontal,
+          vertical: AppSpacing.buttonPaddingVertical,
+        ),
       ),
       backgroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) return AppColors.disabled;

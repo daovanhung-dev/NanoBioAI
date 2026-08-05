@@ -151,14 +151,14 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
                 padding: const EdgeInsets.all(AppSpacing.pagePadding),
                 children: [
                   _DatabaseSummaryCard(snapshot: data),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   _SearchField(
                     controller: _searchController,
                     onChanged: (value) {
                       setState(() => _searchQuery = value.trim());
                     },
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   _TableSelector(
                     tables: data.filteredTables(_searchQuery),
                     selectedTableName: selectedTable?.name,
@@ -166,7 +166,7 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
                       setState(() => _selectedTableName = tableName);
                     },
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
                   if (selectedTable != null)
                     _TableDetailSection(table: selectedTable)
                   else
@@ -275,7 +275,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: AppDecoration.gradient(
         colors: AppGradients.dashboard.colors,
         radius: AppRadius.xxl,
@@ -290,12 +290,12 @@ class _DatabaseSummaryCard extends StatelessWidget {
                 height: 52,
                 width: 52,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .14),
+                  color: AppColors.surface.withValues(alpha: .14),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 child: const Icon(
                   Icons.storage_rounded,
-                  color: Colors.white,
+                  color: AppColors.surface,
                   size: 28,
                 ),
               ),
@@ -307,7 +307,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
                     Text(
                       'Trình kiểm tra SQLite',
                       style: AppTextStyles.heading3.copyWith(
-                        color: Colors.white,
+                        color: AppColors.surface,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -315,7 +315,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
                     Text(
                       'Theo dõi toàn bộ dữ liệu cục bộ của ứng dụng.',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withValues(alpha: .82),
+                        color: AppColors.surface.withValues(alpha: .82),
                       ),
                     ),
                   ],
@@ -323,7 +323,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
@@ -373,17 +373,17 @@ class _SummaryPill extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .14),
+        color: AppColors.surface.withValues(alpha: .14),
         borderRadius: BorderRadius.circular(AppRadius.circular),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 16),
+          Icon(icon, color: AppColors.surface, size: 16),
           const SizedBox(width: AppSpacing.xs),
           Text(
             label,
-            style: AppTextStyles.labelMedium.copyWith(color: Colors.white),
+            style: AppTextStyles.labelMedium.copyWith(color: AppColors.surface),
           ),
         ],
       ),
@@ -450,7 +450,7 @@ class _TableSelector extends StatelessWidget {
         radius: AppRadius.xxl,
         shadows: AppShadows.soft,
       ),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -519,7 +519,7 @@ class _TableHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: AppDecoration.card(
         radius: AppRadius.xxl,
         shadows: AppShadows.soft,
@@ -748,7 +748,7 @@ class _NoTableSelectedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: AppDecoration.card(
         radius: AppRadius.xxl,
         shadows: AppShadows.soft,
@@ -788,7 +788,7 @@ class _MutedInfoBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.inputBackground,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -827,9 +827,9 @@ class _DatabaseErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
           decoration: AppDecoration.card(
             radius: AppRadius.xxl,
             shadows: AppShadows.soft,
@@ -850,7 +850,7 @@ class _DatabaseErrorState extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodySmall,
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded),
@@ -873,7 +873,7 @@ class _DatabaseEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -890,7 +890,7 @@ class _DatabaseEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium,
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),

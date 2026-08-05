@@ -131,38 +131,37 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
     final borderColor = _hasError
         ? AppColors.error
         : _isFocused
-        ? NabiPalette.royalBlue
+        ? NabiPalette.greenPrimary
         : NabiPalette.line;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 160),
+          duration: AppDuration.hover,
           style: AppTextStyles.labelMedium.copyWith(
             color: _hasError
                 ? AppColors.error
                 : _isFocused
-                ? NabiPalette.royalBlue
+                ? NabiPalette.greenPrimary
                 : NabiPalette.mutedInk,
             fontWeight: FontWeight.w800,
             letterSpacing: 0,
           ),
           child: Text(widget.label),
         ),
-        const SizedBox(height: 5),
+        const SizedBox(height: AppSpacing.xs),
         AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+          duration: AppDuration.button,
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            boxShadow: _isFocused
+            boxShadow: _isFocused && !_hasError
                 ? [
                     BoxShadow(
-                      color: NabiPalette.royalBlue.withValues(alpha: 0.16),
-                      blurRadius: 15,
+                      color: NabiPalette.focusRing.withValues(alpha: 0.22),
+                      blurRadius: 14,
                       spreadRadius: 1,
-                      offset: const Offset(0, 5),
                     ),
                   ]
                 : const [],
@@ -199,11 +198,11 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
               prefixIcon: widget.prefixIcon == null
                   ? null
                   : Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 8),
+                      padding: const EdgeInsets.only(left: AppSpacing.sm, right: AppSpacing.sm),
                       child: IconTheme(
                         data: IconThemeData(
                           color: _isFocused
-                              ? NabiPalette.royalBlue
+                              ? NabiPalette.greenPrimary
                               : NabiPalette.mutedInk,
                           size: 20,
                         ),
@@ -214,11 +213,11 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
               suffixIcon: _buildSuffix(),
               contentPadding:
                   widget.contentPadding ??
-                  EdgeInsets.symmetric(horizontal: 12, vertical: vertical),
+                  EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: vertical),
               filled: true,
               fillColor: widget.enabled
-                  ? Colors.white.withValues(alpha: 0.88)
-                  : NabiPalette.canvasDeep,
+                  ? AppColors.surface
+                  : NabiPalette.mintSurface,
               errorText: widget.errorText,
               errorStyle: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.error,
@@ -230,7 +229,7 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
               border: _border(borderColor),
               enabledBorder: _border(borderColor),
               focusedBorder: _border(
-                _hasError ? AppColors.error : NabiPalette.royalBlue,
+                _hasError ? AppColors.error : NabiPalette.greenPrimary,
                 width: 1.5,
               ),
               errorBorder: _border(AppColors.error, width: 1.4),

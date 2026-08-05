@@ -268,7 +268,7 @@ class _OffersTab extends StatelessWidget {
       onRefresh: onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         children: [
           const MedicalSectionHeader(
             title: 'Ưu đãi dành cho bạn',
@@ -276,7 +276,7 @@ class _OffersTab extends StatelessWidget {
                 'Điểm được dùng theo khoản sắp hết hạn trước. Mỗi mã chỉ được cấp một lần.',
             icon: Icons.card_giftcard_rounded,
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           if (offers.isEmpty)
             const MedicalEmptyState(
               icon: Icons.redeem_outlined,
@@ -379,7 +379,7 @@ class _OfferCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -412,7 +412,7 @@ class _PointHistoryTab extends StatelessWidget {
       onRefresh: onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         children: [
           const MedicalSectionHeader(
             title: 'Lịch sử Điểm chăm sóc',
@@ -420,7 +420,7 @@ class _PointHistoryTab extends StatelessWidget {
                 'Điểm cũ vẫn được lưu trong lịch sử nhưng không dùng để đổi voucher.',
             icon: Icons.history_rounded,
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           if (entries.isEmpty)
             const MedicalEmptyState(
               icon: Icons.favorite_border_rounded,
@@ -449,7 +449,7 @@ class _PointHistoryCard extends StatelessWidget {
     final positive = entry.pointsDelta >= 0;
     final color = positive ? AppColors.success : AppColors.error;
     return MedicalSurfaceCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       child: Row(
         children: [
           MedicalIconBadge(
@@ -501,7 +501,7 @@ class _RedemptionsTab extends StatelessWidget {
       onRefresh: onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         children: [
           const MedicalSectionHeader(
             title: 'Voucher của tôi',
@@ -509,7 +509,7 @@ class _RedemptionsTab extends StatelessWidget {
                 'Mã đã cấp có thể xem lại. Trạng thái không phản ánh việc sử dụng tại đối tác.',
             icon: Icons.confirmation_num_rounded,
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           if (entries.isEmpty)
             const MedicalEmptyState(
               icon: Icons.confirmation_num_outlined,
@@ -522,7 +522,7 @@ class _RedemptionsTab extends StatelessWidget {
               MedicalSurfaceCard(
                 onTap: () => onOpen(entry),
                 semanticLabel: 'Mở voucher ${_redemptionTitle(entry)}',
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.cardPadding),
                 child: Row(
                   children: [
                     MedicalIconBadge(
@@ -603,11 +603,11 @@ class _VoucherSheet extends StatelessWidget {
               _providerName(redemption.providerName),
               style: AppTextStyles.bodyMedium,
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             Semantics(
               label: 'Mã QR của voucher ${_redemptionTitle(redemption)}',
               child: Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.cardPadding),
                 color: AppColors.surface,
                 child: QrImageView(
                   data: code,
@@ -666,7 +666,7 @@ class _RewardsError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         child: MedicalEmptyState(
           icon: showSignIn ? Icons.login_rounded : Icons.cloud_off_rounded,
           title: showSignIn ? 'Cần đăng nhập' : 'Chưa tải được ưu đãi',

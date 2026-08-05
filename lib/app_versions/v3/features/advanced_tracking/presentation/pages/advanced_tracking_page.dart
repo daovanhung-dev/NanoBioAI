@@ -109,7 +109,7 @@ class _EmptyGoalState extends StatelessWidget {
             height: 1.45,
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         FilledButton.icon(
           onPressed: () async => onCreate(),
           icon: const Icon(Icons.water_drop_rounded),
@@ -160,7 +160,7 @@ class _HydrationIntro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,7 +197,7 @@ class _ProgressPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final percent = (result.progress * 100).round();
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,7 +212,7 @@ class _ProgressPanel extends StatelessWidget {
           LinearProgressIndicator(
             value: result.progress.clamp(0, 1).toDouble(),
             minHeight: 8,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             backgroundColor: AppColors.info.withValues(alpha: .12),
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.info),
           ),
@@ -238,7 +238,7 @@ class _RoadmapSteps extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,11 +287,11 @@ class _StepRow extends StatelessWidget {
                     fontWeight: AppTypography.semiBold,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppSpacing.xxs),
                 LinearProgressIndicator(
                   value: step.progress,
                   minHeight: 5,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   backgroundColor: color.withValues(alpha: .12),
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
@@ -329,7 +329,7 @@ class _SupportState extends StatelessWidget {
     return SafeArea(
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Column(
@@ -348,7 +348,7 @@ class _SupportState extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
                 ),
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sectionSpacing),
                 FilledButton(
                   onPressed: onAction == null ? null : () async => onAction!(),
                   child: Text(actionLabel),
@@ -365,7 +365,7 @@ class _SupportState extends StatelessWidget {
 BoxDecoration _panelDecoration() {
   return BoxDecoration(
     color: AppColors.surface,
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(AppRadius.sm),
     border: Border.all(color: AppColors.border),
   );
 }

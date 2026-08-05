@@ -11,11 +11,14 @@ import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/core/theme/app_text_scale.dart';
+import 'package:nano_app/core/theme/primitives/button.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/domain/entities/settings_preferences_entity.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/guest_account_access_card.dart';
+import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/font_scale_selector.dart';
 import 'package:nano_app/services/supabase/auth/account_security_provider.dart';
 import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_participation_page.dart';
@@ -30,6 +33,7 @@ class SettingsView extends ConsumerWidget {
     final dashboardAsync = ref.watch(dashboardProvider);
     final preferencesAsync = ref.watch(settingsPreferencesControllerProvider);
     final cacheSizeAsync = ref.watch(settingsCacheSizeProvider);
+    final textScale = ref.watch(appTextScaleControllerProvider).value;
     final preferences =
         preferencesAsync.value ?? SettingsPreferencesEntity.defaults();
     final dashboard = dashboardAsync.value;
@@ -73,16 +77,16 @@ class SettingsView extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _Header(isLoading: dashboardAsync.isLoading),
-                      const SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _ProfileCard(dashboard: dashboard),
                       if (!isAuthenticated) ...[
-                        const SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
                         GuestAccountAccessCard(
                           onLogin: () => context.push(AuthRoutePaths.login),
                           onRegister: () => context.push(AuthRoutePaths.register),
                         ),
                       ],
-                      const SizedBox(height: AppSpacing.xl),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _SectionTitle('Tài khoản'),
                       const SizedBox(height: AppSpacing.md),
                       _MenuCard(
@@ -138,7 +142,7 @@ class SettingsView extends ConsumerWidget {
                         ],
                       ),
                       if (canSwitchToAdmin) ...[
-                        const SizedBox(height: AppSpacing.xl),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
                         _SectionTitle('Chế độ làm việc'),
                         const SizedBox(height: AppSpacing.md),
                         _MenuCard(
@@ -157,7 +161,7 @@ class SettingsView extends ConsumerWidget {
                         ),
                       ],
                       if (isAuthenticated) ...[
-                        const SizedBox(height: AppSpacing.xl),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
                         _SectionTitle('Cùng Nabi phát triển'),
                         const SizedBox(height: AppSpacing.md),
                         _MenuCard(
@@ -168,7 +172,7 @@ class SettingsView extends ConsumerWidget {
                           ],
                         ),
                       ],
-                      const SizedBox(height: AppSpacing.xl),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _SectionTitle('Ứng dụng'),
                       const SizedBox(height: AppSpacing.md),
                       _MenuCard(
@@ -200,6 +204,14 @@ class SettingsView extends ConsumerWidget {
                           ),
                           const _DividerLine(),
                           _MenuItem(
+                            key: const Key('settings_text_scale'),
+                            icon: Icons.text_fields_rounded,
+                            title: 'Cỡ chữ',
+                            subtitle: textScale?.preset.label ?? 'Tiêu chuẩn',
+                            onTap: () => _showTextScaleSheet(context, ref),
+                          ),
+                          const _DividerLine(),
+                          _MenuItem(
                             icon: Icons.storage_rounded,
                             title: 'Dung lượng',
                             subtitle: cacheSizeAsync.when(
@@ -222,7 +234,7 @@ class SettingsView extends ConsumerWidget {
                         ],
                       ),
                       if (kDebugMode) ...[
-                        const SizedBox(height: AppSpacing.xl),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
                         _SectionTitle('Dev'),
                         const SizedBox(height: AppSpacing.md),
                         _MenuCard(
@@ -244,7 +256,7 @@ class SettingsView extends ConsumerWidget {
                           ],
                         ),
                       ],
-                      const SizedBox(height: AppSpacing.xl),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
                       _SectionTitle('Nabi & Sức khỏe'),
                       const SizedBox(height: AppSpacing.md),
                       _MenuCard(
@@ -283,7 +295,7 @@ class SettingsView extends ConsumerWidget {
                         ],
                       ),
                       if (isAuthenticated) ...[
-                        const SizedBox(height: AppSpacing.xl),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
                         _DangerCard(
                           email: dashboard?.email.trim().isEmpty == false
                               ? dashboard!.email
@@ -302,6 +314,63 @@ class SettingsView extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+
+  Future<void> _showTextScaleSheet(BuildContext context, WidgetRef ref) {
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return Consumer(
+          builder: (context, sheetRef, _) {
+            final state = sheetRef
+                    .watch(appTextScaleControllerProvider)
+                    .value ??
+                const AppTextScaleState(
+                  preset: AppTextScalePreset.standard,
+                  isConfigured: true,
+                );
+            return Padding(
+              padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Cỡ chữ hiển thị',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Chọn mức bạn thấy dễ đọc nhất.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                  ),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
+                  FontScaleSelector(
+                    value: state.preset,
+                    onChanged: (preset) => sheetRef
+                        .read(appTextScaleControllerProvider.notifier)
+                        .select(preset, markConfigured: true),
+                  ),
+                  const SizedBox(height: AppSpacing.sectionSpacing),
+                  AppButton(
+                    variant: ButtonVariant.primary,
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text('Xong'),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -500,7 +569,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
               'Mật khẩu mới cần có ít nhất 8 ký tự. Nabi sẽ không lưu mật khẩu trong hồ sơ công khai.',
               style: AppTextStyles.bodyMedium,
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             TextFormField(
               controller: _password,
               obscureText: true,
@@ -521,7 +590,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
                 return null;
               },
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -668,7 +737,7 @@ class _UserDataSyncSheet extends ConsumerWidget {
     };
 
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -683,7 +752,7 @@ class _UserDataSyncSheet extends ConsumerWidget {
               style: AppTextStyles.bodySmall,
             ),
           ],
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           FilledButton.icon(
             onPressed: isWorking
                 ? null
@@ -779,7 +848,7 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
               'Mã giới thiệu chỉ được gắn khi đăng ký tài khoản.',
               style: AppTextStyles.bodyMedium,
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             TextFormField(
               controller: _controller,
               textCapitalization: TextCapitalization.characters,
@@ -789,7 +858,7 @@ class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
               ),
               validator: (value) => _validator.validate(value ?? ''),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
@@ -857,7 +926,7 @@ class _ProfileCard extends StatelessWidget {
         : _subscriptionLabel(dashboard!.subscriptionTier);
 
     return MedicalSurfaceCard(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       gradient: AppGradients.hero,
       borderColor: Colors.transparent,
       elevated: true,
@@ -867,12 +936,12 @@ class _ProfileCard extends StatelessWidget {
             height: 72,
             width: 72,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .18),
+              color: AppColors.surface.withValues(alpha: .18),
               borderRadius: BorderRadius.circular(AppRadius.circular),
             ),
             child: const Icon(
               Icons.person_rounded,
-              color: Colors.white,
+              color: AppColors.surface,
               size: 36,
             ),
           ),
@@ -886,15 +955,15 @@ class _ProfileCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.heading3.copyWith(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.tiny),
                 Text(
                   subtitle,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withValues(alpha: .9),
+                    color: AppColors.surface.withValues(alpha: .9),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -904,7 +973,7 @@ class _ProfileCard extends StatelessWidget {
                     vertical: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .16),
+                    color: AppColors.surface.withValues(alpha: .16),
                     borderRadius: BorderRadius.circular(AppRadius.circular),
                   ),
                   child: Text(
@@ -912,7 +981,7 @@ class _ProfileCard extends StatelessWidget {
                         ? 'Nabi đang chờ hồ sơ'
                         : 'Nabi đã ghi nhớ hồ sơ này',
                     style: AppTextStyles.labelMedium.copyWith(
-                      color: Colors.white,
+                      color: AppColors.surface,
                     ),
                   ),
                 ),
@@ -981,7 +1050,7 @@ class _MenuItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadius.xl),
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Row(
           children: [
             MedicalIconBadge(
@@ -997,9 +1066,9 @@ class _MenuItem extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.labelLarge.copyWith(fontSize: 15),
+                    style: AppTextStyles.labelLarge,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     subtitle,
                     style: AppTextStyles.bodySmall.copyWith(height: 1.5),
@@ -1034,7 +1103,7 @@ class _DangerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: AppDecoration.card(
         radius: AppRadius.xxl,
         shadows: AppShadows.sm,
@@ -1067,7 +1136,7 @@ class _DangerCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium,
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sectionSpacing),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(

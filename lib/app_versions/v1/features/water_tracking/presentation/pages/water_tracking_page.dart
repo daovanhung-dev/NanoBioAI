@@ -71,7 +71,7 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         const NamiCareSectionTitle(
           title: 'Thêm một ly nhỏ',
           subtitle:
@@ -102,7 +102,7 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         NamiCareEmptyState(
           icon: Icons.notifications_active_rounded,
           color: AppColors.info,

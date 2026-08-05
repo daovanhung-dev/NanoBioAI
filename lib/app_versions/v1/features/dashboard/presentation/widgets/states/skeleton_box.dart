@@ -27,7 +27,7 @@ class _SkeletonBoxState extends State<SkeletonBox>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: AppDuration.skeleton,
     )..repeat(reverse: true);
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
   }
@@ -48,8 +48,8 @@ class _SkeletonBoxState extends State<SkeletonBox>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(widget.radius),
           color: Color.lerp(
-            const Color(0xFFE2E8F0),
-            const Color(0xFFF1F5F9),
+            AppColors.border,
+            AppColors.primarySubtle,
             _animation.value,
           ),
         ),

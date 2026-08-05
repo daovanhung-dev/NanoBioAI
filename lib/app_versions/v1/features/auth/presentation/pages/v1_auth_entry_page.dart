@@ -46,7 +46,7 @@ class V1AuthEntryPage extends StatelessWidget {
                   height: 1.45,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.sectionSpacing),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
