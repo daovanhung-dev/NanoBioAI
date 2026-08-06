@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/admin/router/admin_router.dart';
+import 'package:nano_app/app_versions/admin/theme/admin_workspace_theme.dart';
 import 'package:nano_app/core/localization/app_localization_config.dart';
-import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/l10n/app_localizations.dart';
 
 class BioAIAdminApp extends ConsumerWidget {
@@ -20,6 +21,7 @@ class BioAIAdminApp extends ConsumerWidget {
             ?.preset
             .factor ??
         AppTextScalePreset.standard.factor;
+
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).adminAppTitle,
       locale: AppLocalizationConfig.locale,
@@ -32,7 +34,7 @@ class BioAIAdminApp extends ConsumerWidget {
         presetFactor: textScaleFactor,
         preferences: experiencePreferences,
       ),
-      theme: AppTheme.lightTheme,
+      theme: AdminWorkspaceTheme.light(AppTheme.lightTheme),
       routerConfig: adminRouter,
     );
   }

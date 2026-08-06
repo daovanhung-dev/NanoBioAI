@@ -1,7 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/admin_login_page.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/admin_shell_page.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/widgets/admin_access_gate.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 
@@ -17,7 +18,10 @@ final adminRouter = GoRouter(
     GoRoute(
       path: AdminRoutePaths.login,
       name: AdminRoutePaths.login,
-      builder: (context, state) => const AdminLoginPage(),
+      pageBuilder: (context, state) => _adminPage(
+        state: state,
+        child: const AdminLoginPage(),
+      ),
     ),
     _protected(AdminRoutePaths.dashboard, AdminPanelSection.dashboard),
     _protected(AdminRoutePaths.users, AdminPanelSection.users),
@@ -46,8 +50,36 @@ GoRoute _protected(String path, AdminPanelSection section) {
   return GoRoute(
     path: path,
     name: path,
-    builder: (context, state) => AdminAccessGate(
-      child: AdminShellPage(initialSection: section),
+    pageBuilder: (context, state) => _adminPage(
+      state: state,
+      child: AdminAccessGate(
+        child: AdminWorkspacePage(initialSection: section),
+      ),
     ),
+  );
+}
+
+CustomTransitionPage<void> _adminPage({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    transitionDuration: const Duration(milliseconds: 220),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (MediaQuery.disableAnimationsOf(context)) return child;
+      final offset = Tween<Offset>(
+        begin: const Offset(0, .008),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+      );
+      return FadeTransition(
+        opacity: animation,
+        child: SlideTransition(position: offset, child: child),
+      );
+    },
   );
 }

@@ -10,14 +10,14 @@ class AdminLoginFailure implements Exception {
   const AdminLoginFailure._(this.message);
 
   const AdminLoginFailure.noActiveAdminRole()
-    : this._(
-        'Tài khoản đã đăng nhập nhưng chưa được cấp quyền quản trị đang hoạt động.',
-      );
+      : this._(
+          'Tài khoản đã đăng nhập nhưng chưa được cấp quyền quản trị đang hoạt động.',
+        );
 
   const AdminLoginFailure.sessionCheckFailed()
-    : this._(
-        'Nabi chưa thể kiểm tra quyền quản trị lúc này. Bạn thử lại sau nhé.',
-      );
+      : this._(
+          'Ứng dụng chưa thể kiểm tra quyền quản trị lúc này. Bạn thử lại sau nhé.',
+        );
 
   @override
   String toString() => message;
@@ -101,28 +101,41 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     }
   }
 
-  Future<void> signOut() {
-    return _repository.signOut();
-  }
+  Future<void> signOut() => _repository.signOut();
 
   Future<void> _signOutSilently() async {
     try {
       await _repository.signOut();
     } catch (_) {
-      // Keep the original login failure visible to the user.
+      // Giữ lỗi đăng nhập gốc làm thông báo chính.
     }
   }
 
   Future<void> selectSection(AdminPanelSection section) async {
-    final currentQuery = state.asData?.value.query ?? '';
+    final current = state.asData?.value;
+    if (current != null &&
+        current.section == section &&
+        current.query.isEmpty &&
+        !current.isPermissionDenied) {
+      return;
+    }
+
+    // Mỗi khu vực có ngữ cảnh tìm kiếm riêng. Không mang từ khóa của màn hình
+    // trước sang màn hình mới vì dễ tạo trạng thái trống khó hiểu.
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _load(section, query: currentQuery));
+    state = await AsyncValue.guard(() => _load(section, query: ''));
   }
 
   Future<void> search(String query) async {
-    final section = state.asData?.value.section ?? AdminPanelSection.dashboard;
+    final normalized = query.trim();
+    final current = state.asData?.value;
+    if (current != null && current.query == normalized) return;
+
+    final section = current?.section ?? AdminPanelSection.dashboard;
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _load(section, query: query));
+    state = await AsyncValue.guard(
+      () => _load(section, query: normalized),
+    );
   }
 
   Future<void> refresh() async {
@@ -136,9 +149,6 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     );
   }
 
-  /// Refreshes only the payment-review badge without replacing the current
-  /// section or showing a blocking loading state. It is safe for periodic and
-  /// lifecycle-triggered refreshes.
   Future<void> refreshPaymentReviewAlert() async {
     final current = state.asData?.value;
     if (current == null ||
@@ -155,7 +165,7 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
       }
       state = AsyncData(latest.copyWith(paymentReviewAlert: alert));
     } catch (_) {
-      // A background alert refresh must not replace usable Admin content.
+      // Badge là thông tin bổ sung; lỗi nền không được thay thế nội dung đang dùng.
     }
   }
 
@@ -183,23 +193,21 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
 
     final session = current?.session ?? await _repository.fetchSession();
     if (!session.canRunMutation(command)) {
-      final denied = _permissionDeniedState(
-        session: session,
-        section: current?.section ?? section,
-        query: current?.query ?? '',
-        permission: adminPermissionForMutation(command),
-        paymentReviewAlert:
-            current?.paymentReviewAlert ?? AdminPaymentReviewAlert.empty,
-        lastMessage: _permissionDeniedMessage(
-          adminPermissionForMutation(command),
+      state = AsyncData(
+        _permissionDeniedState(
+          session: session,
+          section: current?.section ?? section,
+          query: current?.query ?? '',
+          permission: adminPermissionForMutation(command),
+          paymentReviewAlert:
+              current?.paymentReviewAlert ?? AdminPaymentReviewAlert.empty,
+          lastMessage: _permissionDeniedMessage(),
         ),
       );
-      state = AsyncData(denied);
       return;
     }
 
     final result = await _repository.runMutation(command);
-
     final next = await _load(section, query: current?.query ?? '');
     state = AsyncData(
       next.copyWith(
@@ -227,7 +235,6 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     }
 
     final paymentReviewAlert = await _loadPaymentReviewAlert(session);
-
     final requiredPermission = adminPermissionForSection(section);
     if (!session.canAccessSection(section)) {
       return _permissionDeniedState(
@@ -272,17 +279,14 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     try {
       return await _repository.fetchPaymentReviewAlert();
     } catch (_) {
-      // The alert is additive. Keep the established Admin section usable if a
-      // deployment has not yet exposed the new summary RPC.
       return AdminPaymentReviewAlert.empty;
     }
   }
 
   Future<List<AdminDashboardMetric>> _fetchDashboardMetrics() {
     final now = DateTime.now();
-    final from = now.subtract(const Duration(days: 30));
     return _repository.fetchDashboardSummary(
-      from: from,
+      from: now.subtract(const Duration(days: 30)),
       to: now,
       scope: 'global',
       timeZone: AdminTimeDefaults.vietnamTimeZone,
@@ -310,7 +314,7 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     );
   }
 
-  String _permissionDeniedMessage(String _) {
+  String _permissionDeniedMessage() {
     return 'Tài khoản quản trị chưa được cấp quyền thực hiện thao tác này.';
   }
 
@@ -320,19 +324,20 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
         'Đã cập nhật trạng thái người dùng.',
       'Da xu ly payment.' => 'Đã xử lý thanh toán.',
       'Da xu ly hoan huy trong cua so 24 gio.' =>
-        'Đã xử lý hoàn/hủy trong cửa sổ 24 giờ.',
+        'Đã xử lý hoàn hoặc hủy thanh toán.',
       'Da cap nhat Sale.' => 'Đã cập nhật cộng tác viên.',
-      'Da luu phien ban cau hinh.' => 'Đã lưu phiên bản cấu hình.',
+      'Da luu phien ban cau hinh.' => 'Đã lưu thiết lập.',
       'Da tao yeu cau xuat bao cao.' => 'Đã tạo yêu cầu xuất báo cáo.',
-      'Da ghi dieu chinh diem Sale.' => 'Đã ghi điều chỉnh điểm cộng tác viên.',
-      'Da tao phien doi soat.' => 'Đã tạo phiên đối soát.',
-      'Da cap nhat doi soat.' => 'Đã cập nhật đối soát.',
+      'Da ghi dieu chinh diem Sale.' =>
+        'Đã ghi điều chỉnh điểm cộng tác viên.',
+      'Da tao phien doi soat.' => 'Đã bắt đầu đối soát.',
+      'Da cap nhat doi soat.' => 'Đã cập nhật kết quả đối soát.',
       'Da cap nhat yeu cau quy doi diem Sale.' =>
         'Đã cập nhật yêu cầu quy đổi điểm cộng tác viên.',
       _ => vietnameseSystemUiText(
-        message,
-        fallback: 'Thao tác chưa hoàn tất. Bạn thử lại sau nhé.',
-      ),
+          message,
+          fallback: 'Thao tác chưa hoàn tất. Bạn thử lại sau nhé.',
+        ),
     };
   }
 }

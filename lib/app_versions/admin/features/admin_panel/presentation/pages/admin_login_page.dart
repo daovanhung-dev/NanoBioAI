@@ -4,19 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_access_state.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
+import 'package:nano_app/app_versions/admin/theme/admin_workspace_theme.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
-/// Màn hình đăng nhập dành riêng cho khu vực quản trị.
-///
-/// Giữ nguyên luồng nghiệp vụ:
-/// [AdminLoginPage] -> [adminAccessControllerProvider] -> dashboard.
-///
-/// Phần UI tập trung vào:
-/// - responsive desktop/mobile;
-/// - thao tác bàn phím và autofill;
-/// - validation sớm, rõ ràng;
-/// - chống submit trùng;
-/// - phản hồi lỗi thân thiện, không lộ lỗi kỹ thuật.
 class AdminLoginPage extends ConsumerStatefulWidget {
   const AdminLoginPage({super.key});
 
@@ -30,8 +20,9 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
   final _passwordController = TextEditingController();
   final _passwordFocusNode = FocusNode();
 
-  var _isSubmitting = false;
-  var _isPasswordObscured = true;
+  bool _submitting = false;
+  bool _hidePassword = true;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -49,237 +40,189 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
         context.go(AdminRoutePaths.dashboard);
       }
     });
-    final viewInsets = MediaQuery.viewInsetsOf(context);
 
-    return MedicalPageScaffold(
-      backgroundColor: AppColors.scaffold,
-      body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: AppGradients.surfaceAlt),
-        child: SafeArea(
-          child: AnimatedPadding(
-            duration: AppDuration.normal,
-            curve: Curves.easeOutCubic,
-            padding: EdgeInsets.only(bottom: viewInsets.bottom),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isWideLayout = constraints.maxWidth >= 940;
-                final horizontalPadding = isWideLayout
-                    ? AppSpacing.pagePaddingLarge
-                    : AppSpacing.pagePadding;
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
-                return SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: horizontalPadding,
-                    vertical: AppSpacing.sectionSpacing,
+    return Scaffold(
+      backgroundColor: AdminWorkspaceTheme.canvas,
+      body: SafeArea(
+        child: AnimatedPadding(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOutCubic,
+          padding: EdgeInsets.only(bottom: bottomInset),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final wide = constraints.maxWidth >= 920;
+              return SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.symmetric(
+                  horizontal: wide ? 32 : 18,
+                  vertical: 24,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1040),
+                    child: wide
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Expanded(child: _LoginIntroduction()),
+                              const SizedBox(width: 28),
+                              SizedBox(width: 390, child: _buildForm()),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const _LoginIntroduction(compact: true),
+                              const SizedBox(height: 18),
+                              _buildForm(),
+                            ],
+                          ),
                   ),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 1040),
-                      child: AnimatedSwitcher(
-                        duration: AppDuration.normal,
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        transitionBuilder: (child, animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: ScaleTransition(
-                              alignment: Alignment.topCenter,
-                              scale: Tween<double>(
-                                begin: .985,
-                                end: 1,
-                              ).animate(animation),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: isWideLayout
-                            ? _WideLoginLayout(
-                                key: const ValueKey('wide-login'),
-                                form: _buildLoginForm(compact: false),
-                              )
-                            : _CompactLoginLayout(
-                                key: const ValueKey('compact-login'),
-                                form: _buildLoginForm(compact: true),
-                              ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),
     );
   }
 
-  Widget _buildLoginForm({required bool compact}) {
-    return _LoginFormCard(
-      formKey: _formKey,
-      emailController: _emailController,
-      passwordController: _passwordController,
-      passwordFocusNode: _passwordFocusNode,
-      compact: compact,
-      isSubmitting: _isSubmitting,
-      isPasswordObscured: _isPasswordObscured,
-      onEmailSubmitted: () => _passwordFocusNode.requestFocus(),
-      onTogglePasswordVisibility: () {
-        AppFeedbackService.instance.emit(AppFeedbackType.selection);
-        setState(() => _isPasswordObscured = !_isPasswordObscured);
-      },
-      onSubmit: _submit,
-    );
-  }
-
-  Future<void> _submit() async {
-    if (_isSubmitting) return;
-
-    final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid) {
-      AppFeedbackService.instance.emit(AppFeedbackType.warning);
-      return;
-    }
-
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    FocusScope.of(context).unfocus();
-    setState(() => _isSubmitting = true);
-
-    try {
-      await ref
-          .read(adminAccessControllerProvider.notifier)
-          .signInWithEmail(
-            email: _emailController.text.trim(),
-            // Không trim mật khẩu vì khoảng trắng có thể là một phần mật khẩu.
-            password: _passwordController.text,
-          );
-
-      if (!mounted) return;
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
-      context.go(AdminRoutePaths.dashboard);
-    } catch (error) {
-      if (!mounted) return;
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      _showLoginError(error);
-    } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
-    }
-  }
-
-  void _showLoginError(Object error) {
-    final message = error is AdminAccessFailure
-        ? error.message
-        : 'Chưa thể đăng nhập quản trị lúc này. Vui lòng thử lại.';
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(AppSpacing.cardPadding),
-          content: Text(message),
-        ),
-      );
-  }
-}
-
-class _WideLoginLayout extends StatelessWidget {
-  final Widget form;
-
-  const _WideLoginLayout({super.key, required this.form});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const Expanded(child: _LoginIntroPanel()),
-        const SizedBox(width: AppSpacing.sectionSpacing),
-        SizedBox(width: 390, child: form),
-      ],
-    );
-  }
-}
-
-class _CompactLoginLayout extends StatelessWidget {
-  final Widget form;
-
-  const _CompactLoginLayout({super.key, required this.form});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const _LoginIntroPanel(compact: true),
-        const SizedBox(height: AppSpacing.sectionSpacing),
-        form,
-      ],
-    );
-  }
-}
-
-class _LoginIntroPanel extends StatelessWidget {
-  final bool compact;
-
-  const _LoginIntroPanel({this.compact = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final titleStyle = compact
-        ? AppTextStyles.heading2
-        : AppTextStyles.heading1;
-
-    return Semantics(
-      container: true,
-      label: 'Giới thiệu khu vực quản trị NanoBio',
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: AppGradients.darkSurfaceElevated,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.darkBorder),
-          boxShadow: AppShadows.darkLg,
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(
-            compact ? AppSpacing.pagePadding : AppSpacing.pagePaddingLarge,
+  Widget _buildForm() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AdminWorkspaceTheme.panel,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AdminWorkspaceTheme.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1417324D),
+            blurRadius: 24,
+            offset: Offset(0, 8),
           ),
+        ],
+      ),
+      child: AutofillGroup(
+        child: Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const _IntroBrandMark(),
-              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.sectionSpacing),
               Text(
-                'NanoBio Quản trị',
-                style: titleStyle.copyWith(color: AppColors.textInverse),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Duyệt thanh toán, quản lý cộng tác viên và đối soát.',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.darkTextSecondary,
-                  height: 1.4,
+                'Đăng nhập quản trị',
+                style: AppTextStyles.heading3.copyWith(
+                  color: AdminWorkspaceTheme.text,
                 ),
               ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              const Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
+              const SizedBox(height: 6),
+              Text(
+                'Sử dụng tài khoản đã được cấp quyền quản trị.',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AdminWorkspaceTheme.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _emailController,
+                enabled: !_submitting,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [
+                  AutofillHints.username,
+                  AutofillHints.email,
+                ],
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  hintText: 'ten@congty.vn',
+                  prefixIcon: Icon(Icons.mail_outline_rounded),
+                ),
+                validator: _validateEmail,
+                onFieldSubmitted: (_) => _passwordFocusNode.requestFocus(),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _passwordController,
+                focusNode: _passwordFocusNode,
+                enabled: !_submitting,
+                obscureText: _hidePassword,
+                textInputAction: TextInputAction.done,
+                autofillHints: const [AutofillHints.password],
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: 'Mật khẩu',
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  suffixIcon: IconButton(
+                    tooltip: _hidePassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                    onPressed: _submitting
+                        ? null
+                        : () {
+                            AppFeedbackService.instance.emit(
+                              AppFeedbackType.selection,
+                            );
+                            setState(() => _hidePassword = !_hidePassword);
+                          },
+                    icon: Icon(
+                      _hidePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                  ),
+                ),
+                validator: _validatePassword,
+                onFieldSubmitted: (_) => _submit(),
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 160),
+                alignment: Alignment.topCenter,
+                child: _errorMessage == null
+                    ? const SizedBox(height: 18)
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 14, bottom: 4),
+                        child: _InlineError(message: _errorMessage!),
+                      ),
+              ),
+              SizedBox(
+                height: 46,
+                child: FilledButton.icon(
+                  onPressed: _submitting ? null : _submit,
+                  icon: _submitting
+                      ? const SizedBox.square(
+                          dimension: 17,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.login_rounded, size: 19),
+                  label: Text(
+                    _submitting ? 'Đang kiểm tra' : 'Đăng nhập',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 13),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _LoginFeatureChip(
-                    icon: Icons.verified_user_rounded,
-                    label: 'Phân quyền rõ ràng',
+                  const Icon(
+                    Icons.shield_outlined,
+                    size: 17,
+                    color: AdminWorkspaceTheme.textMuted,
                   ),
-                  _LoginFeatureChip(
-                    icon: Icons.fact_check_rounded,
-                    label: 'Theo dõi đầy đủ',
-                  ),
-                  _LoginFeatureChip(
-                    icon: Icons.bolt_rounded,
-                    label: 'Xử lý tập trung',
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      'Chỉ những khu vực được cấp quyền mới xuất hiện sau khi đăng nhập.',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AdminWorkspaceTheme.textMuted,
+                        height: 1.35,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -289,337 +232,190 @@ class _LoginIntroPanel extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _submit() async {
+    if (_submitting) return;
+    final valid = _formKey.currentState?.validate() ?? false;
+    if (!valid) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _submitting = true;
+      _errorMessage = null;
+    });
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+
+    try {
+      await ref
+          .read(adminAccessControllerProvider.notifier)
+          .signInWithEmail(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
+      if (mounted) AppFeedbackService.instance.emit(AppFeedbackType.success);
+      // Điều hướng chỉ được thực hiện bởi listener phía trên để tránh chuyển
+      // trang hai lần khi trạng thái quyền cập nhật.
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is AdminAccessFailure
+          ? error.message
+          : 'Chưa thể đăng nhập lúc này. Vui lòng kiểm tra thông tin và thử lại.';
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
+      setState(() => _errorMessage = message);
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  String? _validateEmail(String? value) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) return 'Vui lòng nhập email.';
+    final valid = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email);
+    return valid ? null : 'Email chưa đúng định dạng.';
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) return 'Vui lòng nhập mật khẩu.';
+    return null;
+  }
 }
 
-class _IntroBrandMark extends StatelessWidget {
-  const _IntroBrandMark();
+class _LoginIntroduction extends StatelessWidget {
+  final bool compact;
+
+  const _LoginIntroduction({this.compact = false});
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return Container(
+      padding: EdgeInsets.all(compact ? 22 : 32),
       decoration: BoxDecoration(
-        gradient: AppGradients.info,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        boxShadow: AppShadows.info,
+        color: AdminWorkspaceTheme.navy,
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: const SizedBox.square(
-        dimension: 48,
-        child: Icon(
-          Icons.admin_panel_settings_rounded,
-          color: AppColors.textInverse,
-          size: 30,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .12),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: const Icon(
+              Icons.admin_panel_settings_rounded,
+              color: Colors.white,
+              size: 27,
+            ),
+          ),
+          SizedBox(height: compact ? 15 : 26),
+          Text(
+            'NanoBio Quản trị',
+            style: (compact ? AppTextStyles.heading2 : AppTextStyles.heading1)
+                .copyWith(color: Colors.white),
+          ),
+          const SizedBox(height: 9),
+          Text(
+            'Một không gian tập trung để theo dõi, kiểm tra và xử lý công việc vận hành.',
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: const Color(0xFFC7D4E1),
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 22),
+          const Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _IntroFeature(
+                icon: Icons.verified_user_outlined,
+                label: 'Phân quyền rõ ràng',
+              ),
+              _IntroFeature(
+                icon: Icons.fact_check_outlined,
+                label: 'Dễ kiểm tra lại',
+              ),
+              _IntroFeature(
+                icon: Icons.speed_rounded,
+                label: 'Thao tác tập trung',
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class _LoginFeatureChip extends StatelessWidget {
+class _IntroFeature extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _LoginFeatureChip({required this.icon, required this.label});
+  const _IntroFeature({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.textInverse.withValues(alpha: .08),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.textInverse.withValues(alpha: .16)),
+        color: Colors.white.withValues(alpha: .09),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: .12)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: AppColors.secondaryLight, size: 18),
-            const SizedBox(width: AppSpacing.xs),
-            Text(
-              label,
-              style: AppTextStyles.labelMedium.copyWith(
-                color: AppColors.textInverse,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 17, color: const Color(0xFFB9D7FF)),
+          const SizedBox(width: 7),
+          Text(
+            label,
+            style: AppTextStyles.labelMedium.copyWith(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InlineError extends StatelessWidget {
+  final String message;
+
+  const _InlineError({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(11),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBEAEC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE7B7BB)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.error_outline_rounded,
+            size: 19,
+            color: AdminWorkspaceTheme.danger,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: const Color(0xFF8E2830),
+                height: 1.4,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class _LoginFormCard extends StatelessWidget {
-  final GlobalKey<FormState> formKey;
-  final TextEditingController emailController;
-  final TextEditingController passwordController;
-  final FocusNode passwordFocusNode;
-  final bool compact;
-  final bool isSubmitting;
-  final bool isPasswordObscured;
-  final VoidCallback onEmailSubmitted;
-  final VoidCallback onTogglePasswordVisibility;
-  final VoidCallback onSubmit;
-
-  const _LoginFormCard({
-    required this.formKey,
-    required this.emailController,
-    required this.passwordController,
-    required this.passwordFocusNode,
-    required this.compact,
-    required this.isSubmitting,
-    required this.isPasswordObscured,
-    required this.onEmailSubmitted,
-    required this.onTogglePasswordVisibility,
-    required this.onSubmit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: _panelDecoration(),
-      child: Padding(
-        padding: EdgeInsets.all(
-            compact ? AppSpacing.pagePadding : AppSpacing.pagePaddingLarge,
-          ),
-        child: AutofillGroup(
-          child: Form(
-            key: formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const _FormHeader(),
-                const SizedBox(height: AppSpacing.sectionSpacing),
-                _EmailInput(
-                  controller: emailController,
-                  enabled: !isSubmitting,
-                  onSubmitted: onEmailSubmitted,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _PasswordInput(
-                  controller: passwordController,
-                  focusNode: passwordFocusNode,
-                  enabled: !isSubmitting,
-                  obscureText: isPasswordObscured,
-                  onToggleVisibility: onTogglePasswordVisibility,
-                  onSubmitted: onSubmit,
-                ),
-                const SizedBox(height: AppSpacing.sectionSpacing),
-                _SubmitButton(isSubmitting: isSubmitting, onPressed: onSubmit),
-                const SizedBox(height: AppSpacing.md),
-                const _FormFooter(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FormHeader extends StatelessWidget {
-  const _FormHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppColors.primarySoft,
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
-          child: const SizedBox.square(
-            dimension: 48,
-            child: Icon(Icons.lock_person_rounded, color: AppColors.primary),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sectionSpacing),
-        Text('Đăng nhập quản trị', style: AppTextStyles.heading2),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          'Chỉ tài khoản có quyền phù hợp mới có thể tiếp tục.',
-          style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
-        ),
-      ],
-    );
-  }
-}
-
-class _EmailInput extends StatelessWidget {
-  final TextEditingController controller;
-  final bool enabled;
-  final VoidCallback onSubmitted;
-
-  const _EmailInput({
-    required this.controller,
-    required this.enabled,
-    required this.onSubmitted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      enabled: enabled,
-      keyboardType: TextInputType.emailAddress,
-      textInputAction: TextInputAction.next,
-      textCapitalization: TextCapitalization.none,
-      autocorrect: false,
-      enableSuggestions: false,
-      autofillHints: const [AutofillHints.username, AutofillHints.email],
-      onFieldSubmitted: (_) => onSubmitted(),
-      decoration: const InputDecoration(
-        labelText: 'Email quản trị',
-        hintText: 'admin@nanobio.vn',
-        prefixIcon: Icon(Icons.mail_outline_rounded),
-      ),
-      validator: _validateEmail,
-    );
-  }
-}
-
-class _PasswordInput extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final bool enabled;
-  final bool obscureText;
-  final VoidCallback onToggleVisibility;
-  final VoidCallback onSubmitted;
-
-  const _PasswordInput({
-    required this.controller,
-    required this.focusNode,
-    required this.enabled,
-    required this.obscureText,
-    required this.onToggleVisibility,
-    required this.onSubmitted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      enabled: enabled,
-      obscureText: obscureText,
-      keyboardType: TextInputType.visiblePassword,
-      textInputAction: TextInputAction.done,
-      autocorrect: false,
-      enableSuggestions: false,
-      autofillHints: const [AutofillHints.password],
-      onFieldSubmitted: (_) => onSubmitted(),
-      decoration: InputDecoration(
-        labelText: 'Mật khẩu',
-        prefixIcon: const Icon(Icons.lock_outline_rounded),
-        suffixIcon: IconButton(
-          tooltip: obscureText ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
-          onPressed: enabled ? onToggleVisibility : null,
-          icon: Icon(
-            obscureText
-                ? Icons.visibility_rounded
-                : Icons.visibility_off_rounded,
-          ),
-        ),
-      ),
-      validator: _validatePassword,
-    );
-  }
-}
-
-class _SubmitButton extends StatelessWidget {
-  final bool isSubmitting;
-  final VoidCallback onPressed;
-
-  const _SubmitButton({required this.isSubmitting, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton.icon(
-      onPressed: isSubmitting ? null : onPressed,
-      style: FilledButton.styleFrom(
-        minimumSize: const Size.fromHeight(AppSpacing.buttonMinHeight),
-      ),
-      icon: AnimatedSwitcher(
-        duration: AppDuration.fast,
-        transitionBuilder: (child, animation) =>
-            FadeTransition(opacity: animation, child: child),
-        child: isSubmitting
-            ? const SizedBox.square(
-                key: ValueKey('login-loading'),
-                dimension: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.login_rounded, key: ValueKey('login-icon')),
-      ),
-      label: Text(isSubmitting ? 'Đang xác thực...' : 'Vào khu quản trị'),
-    );
-  }
-}
-
-class _FormFooter extends StatelessWidget {
-  const _FormFooter();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Icon(
-          Icons.info_outline_rounded,
-          size: 16,
-          color: AppColors.textMuted,
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Expanded(
-          child: Text(
-            'Liên hệ quản trị hệ thống khi bạn chưa được cấp quyền.',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textMuted,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-String? _validateEmail(String? value) {
-  final email = value?.trim() ?? '';
-
-  if (email.isEmpty) {
-    return 'Nhập email quản trị';
-  }
-
-  final isValid = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email);
-
-  return isValid ? null : 'Nhập email hợp lệ';
-}
-
-String? _validatePassword(String? value) {
-  final password = value ?? '';
-
-  if (password.isEmpty) {
-    return 'Nhập mật khẩu';
-  }
-
-  if (password.length < 6) {
-    return 'Mật khẩu cần tối thiểu 6 ký tự';
-  }
-
-  return null;
-}
-
-BoxDecoration _panelDecoration() {
-  return BoxDecoration(
-    color: AppColors.surface,
-    borderRadius: BorderRadius.circular(AppRadius.lg),
-    border: Border.all(color: AppColors.border),
-    boxShadow: AppShadows.floating,
-  );
 }
