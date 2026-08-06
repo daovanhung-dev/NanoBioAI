@@ -23,6 +23,7 @@ project inventory. Use `rg --files` for the current truth.
 - `.codex/domains/`: one domain context when task touches code/product.
 - `.codex/task-skills/`: generated canonical task skills.
 - `.codex/history/`: generated memory from worklogs.
+- `.codex/design/`: canonical UI/motion/sound/haptic design and file-by-file migration matrix; not part of default read pack.
 - `.codex/skills/nanobio-project-agent/`: canonical project skill and references.
 - `.codex/skills/create-dd-from-bd/`: canonical DD-from-BD skill and reference.
 - `.codex/tools/`: context/history validation and refresh scripts.
@@ -95,6 +96,7 @@ Canonical task-skill files are: `coding.md`, `bugfix.md`, `fix-issues.md`,
 - Shared services/widgets: `lib/services/`, `lib/shared/widgets/`
 - Tests: `test/`
 - Product/design docs: `docs/BD/`, `docs/DD/`, `docs/supabase/`
+- UI design source: `.codex/design/`
 - Work tracking docs: `docs/issues/`, `docs/todo/`, `docs/worklog/`
 
 ## Inventory Commands

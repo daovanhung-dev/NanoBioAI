@@ -505,7 +505,7 @@ class _DateChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: AppDuration.fast,
+        duration: AppMotionScope.duration(context, AppDuration.fast),
         width: ui.chipWidth,
         decoration: BoxDecoration(
           gradient: isSelected ? AppGradients.primary : null,
@@ -672,16 +672,11 @@ class _AnimatedMealCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      duration: Duration(milliseconds: 350 + index * 60),
-      curve: Curves.easeOutCubic,
-      tween: Tween(begin: 0, end: 1),
-      builder: (context, value, child) => Opacity(
-        opacity: value,
-        child: Transform.translate(
-          offset: Offset(0, 20 * (1 - value)),
-          child: child,
-        ),
+    final staggerIndex = index.clamp(0, 5);
+    return AppViewMotion(
+      key: ValueKey(meal.id),
+      delay: Duration(
+        milliseconds: AppDuration.stagger.inMilliseconds * staggerIndex,
       ),
       child: _MealPlanCard(ui: ui, meal: meal),
     );
@@ -833,6 +828,7 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                   await ref
                       .read(mealPlanControllerProvider.notifier)
                       .replaceMealById(widget.meal.id);
+                  AppFeedbackService.instance.emit(AppFeedbackType.success);
                   if (!sheetContext.mounted) return;
                   Navigator.of(sheetContext).pop();
                   if (!mounted) return;
@@ -842,6 +838,7 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                     ),
                   );
                 } catch (_) {
+                  AppFeedbackService.instance.emit(AppFeedbackType.error);
                   if (!sheetContext.mounted) return;
                   ScaffoldMessenger.of(sheetContext).showSnackBar(
                     SnackBar(
@@ -872,12 +869,15 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
         onTapDown: (_) => setState(() => _isPressed = true),
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
-        onTap: _showMealDetails,
+        onTap: () {
+          AppFeedbackService.instance.emit(AppFeedbackType.selection);
+          _showMealDetails();
+        },
         child: AnimatedScale(
-          duration: AppDuration.fast,
+          duration: AppMotionScope.duration(context, AppDuration.fast),
           scale: _isPressed ? 0.985 : 1.0,
           child: AnimatedContainer(
-            duration: AppDuration.fast,
+            duration: AppMotionScope.duration(context, AppDuration.fast),
             decoration: AppDecoration.card(
               color: AppColors.surface,
               radius: ui.radiusXl,
@@ -1293,6 +1293,7 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
     );
     if (confirmed != true || !mounted) return;
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() => _replacing = true);
     try {
       await callback();
@@ -1604,9 +1605,21 @@ class _MealLoadingViewState extends State<_MealLoadingView>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat(reverse: true);
+      duration: AppDuration.loading,
+    );
     _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (AppMotionScope.reduceMotionOf(context)) {
+      _ctrl
+        ..stop()
+        ..value = .5;
+    } else if (!_ctrl.isAnimating) {
+      _ctrl.repeat(reverse: true);
+    }
   }
 
   @override

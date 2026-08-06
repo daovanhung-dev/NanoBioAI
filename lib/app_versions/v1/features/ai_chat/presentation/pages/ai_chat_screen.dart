@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -53,11 +53,16 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
 
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: AppDuration.normal,
-        curve: Curves.easeOutCubic,
-      );
+      final target = _scrollController.position.maxScrollExtent;
+      if (AppMotionScope.reduceMotionOf(context)) {
+        _scrollController.jumpTo(target);
+      } else {
+        _scrollController.animateTo(
+          target,
+          duration: AppDuration.normal,
+          curve: AppAnimations.emphasizedCurve,
+        );
+      }
     });
   }
 
@@ -77,7 +82,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
     final message = _textController.text.trim();
     if (message.isEmpty) return;
 
-    HapticFeedback.lightImpact();
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     ref.read(aiChatControllerProvider.notifier).sendMessage(message);
     _textController.clear();
     _scrollToBottom();
@@ -92,6 +97,19 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(aiChatControllerProvider);
     final error = state.error;
+
+    ref.listen<AIChatState>(aiChatControllerProvider, (previous, next) {
+      final responseArrived = previous?.isLoading == true &&
+          !next.isLoading &&
+          next.messages.length > (previous?.messages.length ?? 0) &&
+          next.messages.last.role == MessageRole.assistant;
+      if (responseArrived) {
+        AppFeedbackService.instance.emit(AppFeedbackType.answerReady);
+      }
+      if (next.error != null && next.error != previous?.error) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
+      }
+    });
 
     _syncAutoScroll(
       messageCount: state.messages.length,
@@ -111,33 +129,50 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
         body: Column(
           children: [
             Expanded(
-              child: state.messages.isEmpty
-                  ? _ChatGptEmptyState(onQuestionTap: _sendSuggestedQuestion)
-                  : _MessageList(
-                      controller: _scrollController,
-                      messages: state.messages,
-                      isLoading: state.isLoading,
-                    ),
+              child: AppStateSwitcher(
+                alignment: Alignment.topCenter,
+                child: state.messages.isEmpty
+                    ? _ChatGptEmptyState(
+                        key: const ValueKey('chat-empty'),
+                        onQuestionTap: _sendSuggestedQuestion,
+                      )
+                    : _MessageList(
+                        key: const ValueKey('chat-messages'),
+                        controller: _scrollController,
+                        messages: state.messages,
+                        isLoading: state.isLoading,
+                      ),
+              ),
             ),
-            if (error != null)
-              _ChatErrorBanner(
-                message: error,
-                onRetry: state.canRetry
-                    ? () {
+            AppStateSwitcher(
+              alignment: Alignment.bottomCenter,
+              child: error == null
+                  ? const SizedBox.shrink(key: ValueKey('chat-no-error'))
+                  : _ChatErrorBanner(
+                      key: ValueKey(error),
+                      message: error,
+                      onRetry: state.canRetry
+                          ? () {
+                              ref
+                                  .read(aiChatControllerProvider.notifier)
+                                  .retryLastMessage();
+                            }
+                          : null,
+                      onDismiss: () {
                         ref
                             .read(aiChatControllerProvider.notifier)
-                            .retryLastMessage();
-                      }
-                    : null,
-                onDismiss: () {
-                  ref.read(aiChatControllerProvider.notifier).dismissError();
-                },
+                            .dismissError();
+                      },
+                    ),
+            ),
+            SafeArea(
+              top: false,
+              child: _ChatComposer(
+                controller: _textController,
+                focusNode: _focusNode,
+                isLoading: state.isLoading,
+                onSend: _sendMessage,
               ),
-            _ChatComposer(
-              controller: _textController,
-              focusNode: _focusNode,
-              isLoading: state.isLoading,
-              onSend: _sendMessage,
             ),
           ],
         ),
@@ -170,7 +205,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
           icon: Icons.mic_rounded,
           semanticLabel: 'Trò chuyện bằng giọng nói',
           onTap: () {
-            HapticFeedback.selectionClick();
+            AppFeedbackService.instance.emit(AppFeedbackType.selection);
             context.push(V1RoutePaths.aiVoice);
           },
         ),
@@ -180,7 +215,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
             icon: Icons.refresh_rounded,
             semanticLabel: 'Làm mới cuộc trò chuyện',
             onTap: () {
-              HapticFeedback.selectionClick();
+              AppFeedbackService.instance.emit(AppFeedbackType.selection);
               ref.read(aiChatControllerProvider.notifier).clearChat();
             },
           ),
@@ -203,6 +238,7 @@ class _ChatErrorBanner extends StatelessWidget {
   final VoidCallback onDismiss;
 
   const _ChatErrorBanner({
+    super.key,
     required this.message,
     required this.onDismiss,
     this.onRetry,
@@ -329,6 +365,7 @@ class _MessageList extends StatelessWidget {
   final bool isLoading;
 
   const _MessageList({
+    super.key,
     required this.controller,
     required this.messages,
     required this.isLoading,
@@ -533,7 +570,7 @@ class _ChatGptEmptyState extends StatelessWidget {
 
   final ValueChanged<String> onQuestionTap;
 
-  const _ChatGptEmptyState({required this.onQuestionTap});
+  const _ChatGptEmptyState({super.key, required this.onQuestionTap});
 
   @override
   Widget build(BuildContext context) {

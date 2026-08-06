@@ -204,12 +204,17 @@ class NamiCareInfoTile extends StatelessWidget {
 
     if (onTap == null) return tile;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        onTap: onTap,
-        child: tile,
+    return AppPressScale(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          onTap: () {
+            AppFeedbackService.instance.emit(AppFeedbackType.selection);
+            onTap!();
+          },
+          child: tile,
+        ),
       ),
     );
   }
@@ -233,39 +238,47 @@ class NamiCareActionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.circular),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: AppDuration.fast,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: selected ? color.withValues(alpha: .14) : AppColors.card,
-            borderRadius: BorderRadius.circular(AppRadius.circular),
-            border: Border.all(
-              color: selected
-                  ? color.withValues(alpha: .32)
-                  : AppColors.borderLight,
+    return AppPressScale(
+      enabled: onTap != null,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.circular),
+          onTap: onTap == null
+              ? null
+              : () {
+                  AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                  onTap!();
+                },
+          child: AnimatedContainer(
+            duration: AppDuration.fast,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
             ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: color, size: 18),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                label,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: selected ? color : AppColors.textPrimary,
-                  fontWeight: AppTypography.bold,
-                ),
+            decoration: BoxDecoration(
+              color: selected ? color.withValues(alpha: .14) : AppColors.card,
+              borderRadius: BorderRadius.circular(AppRadius.circular),
+              border: Border.all(
+                color: selected
+                    ? color.withValues(alpha: .32)
+                    : AppColors.borderLight,
               ),
-            ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: color, size: 18),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  label,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: selected ? color : AppColors.textPrimary,
+                    fontWeight: AppTypography.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

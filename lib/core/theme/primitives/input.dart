@@ -1,93 +1,20 @@
 import 'package:flutter/material.dart';
+
+import '../../motion/app_motion_scope.dart';
+import '../app_text_styles.dart';
 import '../tokens/color_tokens.dart';
-import '../tokens/spacing_tokens.dart';
 import '../tokens/component_tokens.dart';
+import '../tokens/spacing_tokens.dart';
 
-/// Input variants for different input patterns.
-///
-/// Each variant serves a specific purpose:
-/// - **textField**: Standard text input field
-/// - **dropdown**: Dropdown selection input
-/// - **search**: Search input with search icon
-///
-/// **Validates: Requirements 4.4, 8.1**
-enum InputVariant {
-  /// Standard text input field
-  textField,
+enum InputVariant { textField, dropdown, search }
 
-  /// Dropdown selection input
-  dropdown,
-
-  /// Search input with search icon
-  search,
-}
-
-/// A primitive input component with variant-based styling using design tokens.
-///
-/// `AppInput` is a Layer 3 primitive component that provides consistent form
-/// input styling across the application.
-///
-/// ## Variants
-///
-/// ```dart
-/// // Text field
-/// AppInput(
-///   variant: InputVariant.textField,
-///   label: 'Full Name',
-///   hint: 'Enter your full name',
-///   controller: nameController,
-/// )
-///
-/// // Search input
-/// AppInput(
-///   variant: InputVariant.search,
-///   hint: 'Search meals...',
-///   controller: searchController,
-///   onChanged: (value) {
-///     // Handle search
-///   },
-/// )
-///
-/// // Dropdown (uses Material DropdownButtonFormField)
-/// AppInput(
-///   variant: InputVariant.dropdown,
-///   label: 'Gender',
-///   hint: 'Select gender',
-/// )
-/// ```
-///
-/// ## Error State
-///
-/// ```dart
-/// AppInput(
-///   variant: InputVariant.textField,
-///   label: 'Email',
-///   errorText: 'Invalid email format',
-///   controller: emailController,
-/// )
-/// ```
-///
-/// ## Token-Based Styling
-///
-/// All styling references semantic tokens:
-/// - Colors: [AppColorTokens]
-/// - Spacing: [AppSpacingTokens]
-/// - Radius: [AppRadiusTokens]
-/// - Text: [AppTextStyles]
-///
-/// **Validates: Requirements 4.4, 4.10, 4.11, 8.1, 8.2**
-class AppInput extends StatelessWidget {
-  /// Creates an input with the specified variant and styling.
-  ///
-  /// The [variant] determines the visual style and interaction pattern.
-  /// The [controller] manages the text input state.
-  /// The [label] is the field label displayed above the input.
-  /// The [hint] is the placeholder text shown when empty.
-  /// The [errorText] displays validation error below the input.
+/// Canonical Kinetic Aura input with focus and validation transitions.
+class AppInput extends StatefulWidget {
   const AppInput({
     super.key,
     required this.variant,
     this.controller,
+    this.focusNode,
     this.label,
     this.hint,
     this.errorText,
@@ -96,149 +23,189 @@ class AppInput extends StatelessWidget {
     this.enabled = true,
     this.obscureText = false,
     this.keyboardType,
+    this.textInputAction,
     this.maxLines = 1,
     this.prefixIcon,
     this.suffixIcon,
+    this.autofocus = false,
   });
 
-  /// The visual style variant for this input.
   final InputVariant variant;
-
-  /// Controller to manage the input text.
   final TextEditingController? controller;
-
-  /// Label text displayed above the input field.
+  final FocusNode? focusNode;
   final String? label;
-
-  /// Placeholder hint text shown when input is empty.
   final String? hint;
-
-  /// Error message displayed below the input field.
   final String? errorText;
-
-  /// Callback triggered when the input value changes.
   final ValueChanged<String>? onChanged;
-
-  /// Callback triggered when the user submits the input.
   final ValueChanged<String>? onSubmitted;
-
-  /// Whether the input is enabled for interaction.
   final bool enabled;
-
-  /// Whether to obscure the text (for passwords).
   final bool obscureText;
-
-  /// The keyboard type for the input.
   final TextInputType? keyboardType;
-
-  /// Maximum number of lines for the input.
+  final TextInputAction? textInputAction;
   final int maxLines;
-
-  /// Optional leading icon inside the input field.
   final IconData? prefixIcon;
-
-  /// Optional trailing icon inside the input field.
   final IconData? suffixIcon;
+  final bool autofocus;
+
+  @override
+  State<AppInput> createState() => _AppInputState();
+}
+
+class _AppInputState extends State<AppInput> {
+  FocusNode? _ownedFocusNode;
+
+  FocusNode get _focusNode => widget.focusNode ?? _ownedFocusNode!;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.focusNode == null) _ownedFocusNode = FocusNode();
+    _focusNode.addListener(_handleFocusChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant AppInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode == widget.focusNode) return;
+    (oldWidget.focusNode ?? _ownedFocusNode)?.removeListener(
+      _handleFocusChanged,
+    );
+    _ownedFocusNode?.dispose();
+    _ownedFocusNode = widget.focusNode == null ? FocusNode() : null;
+    _focusNode.addListener(_handleFocusChanged);
+  }
+
+  void _handleFocusChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChanged);
+    _ownedFocusNode?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hasError = widget.errorText?.trim().isNotEmpty == true;
+    final focused = _focusNode.hasFocus;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (label != null) ...[
-          Text(
-            label!,
+        if (widget.label != null) ...[
+          AnimatedDefaultTextStyle(
+            duration: AppMotionScope.duration(context, AppMotionTokens.input),
+            curve: AppMotionTokens.defaultCurve,
             style: AppTextStyles.labelLarge.copyWith(
+              color: hasError
+                  ? AppColorTokens.error
+                  : focused
+                      ? AppColorTokens.primary
+                      : isDark
+                          ? AppColorTokens.darkTextPrimary
+                          : AppColorTokens.textPrimary,
+            ),
+            child: Text(widget.label!),
+          ),
+          SizedBox(height: AppSpacingTokens.itemSpacing),
+        ],
+        AnimatedContainer(
+          duration: AppMotionScope.duration(context, AppMotionTokens.input),
+          curve: AppMotionTokens.defaultCurve,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadiusTokens.input),
+            boxShadow: focused && !hasError
+                ? [
+                    BoxShadow(
+                      color: AppColorTokens.primary.withValues(alpha: 0.13),
+                      blurRadius: 14,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : const [],
+          ),
+          child: TextField(
+            controller: widget.controller,
+            focusNode: _focusNode,
+            enabled: widget.enabled,
+            autofocus: widget.autofocus,
+            obscureText: widget.obscureText,
+            keyboardType: widget.keyboardType,
+            textInputAction: widget.textInputAction,
+            maxLines: widget.maxLines,
+            onChanged: widget.onChanged,
+            onSubmitted: widget.onSubmitted,
+            style: AppTextStyles.bodyMedium.copyWith(
               color: isDark
                   ? AppColorTokens.darkTextPrimary
                   : AppColorTokens.textPrimary,
             ),
-          ),
-          const SizedBox(height: 6),
-        ],
-        TextField(
-          controller: controller,
-          enabled: enabled,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          onChanged: onChanged,
-          onSubmitted: onSubmitted,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark
-                ? AppColorTokens.darkTextPrimary
-                : AppColorTokens.textPrimary,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: isDark
-                  ? AppColorTokens.darkTextMuted
-                  : AppColorTokens.textMuted,
-            ),
-            errorText: errorText,
-            errorStyle: AppTextStyles.caption.copyWith(
-              color: AppColorTokens.error,
-            ),
-            prefixIcon: _buildPrefixIcon(isDark),
-            suffixIcon: suffixIcon != null
-                ? Icon(
-                    suffixIcon,
-                    color: isDark
-                        ? AppColorTokens.darkTextSecondary
-                        : AppColorTokens.textSecondary,
-                  )
-                : null,
-            filled: true,
-            fillColor: isDark
-                ? AppColorTokens.darkSurface
-                : AppColorTokens.surface,
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacingTokens.inputPaddingH,
-              vertical: AppSpacingTokens.inputPaddingV,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadiusTokens.input),
-              borderSide: BorderSide(
+            decoration: InputDecoration(
+              hintText: widget.hint,
+              hintStyle: AppTextStyles.bodyMedium.copyWith(
                 color: isDark
-                    ? AppColorTokens.darkBorder
-                    : AppColorTokens.border,
-                width: 1,
+                    ? AppColorTokens.darkTextMuted
+                    : AppColorTokens.textMuted,
               ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadiusTokens.input),
-              borderSide: BorderSide(
-                color: isDark
-                    ? AppColorTokens.darkBorder
-                    : AppColorTokens.border,
-                width: 1,
+              errorText: widget.errorText,
+              errorStyle: AppTextStyles.caption.copyWith(
+                color: AppColorTokens.error,
               ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadiusTokens.input),
-              borderSide: BorderSide(color: AppColorTokens.primary, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadiusTokens.input),
-              borderSide: BorderSide(color: AppColorTokens.error, width: 1),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadiusTokens.input),
-              borderSide: BorderSide(color: AppColorTokens.error, width: 2),
-            ),
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadiusTokens.input),
-              borderSide: BorderSide(
-                color: isDark
-                    ? AppColorTokens.darkBorder.withValues(alpha: 0.5)
-                    : AppColorTokens.border.withValues(alpha: 0.5),
-                width: 1,
+              prefixIcon: _buildPrefixIcon(isDark, focused),
+              suffixIcon: widget.suffixIcon != null
+                  ? AnimatedRotation(
+                      turns: widget.variant == InputVariant.dropdown && focused
+                          ? 0.5
+                          : 0,
+                      duration: AppMotionScope.duration(
+                        context,
+                        AppMotionTokens.input,
+                      ),
+                      child: Icon(
+                        widget.suffixIcon,
+                        color: focused
+                            ? AppColorTokens.primary
+                            : isDark
+                                ? AppColorTokens.darkTextSecondary
+                                : AppColorTokens.textSecondary,
+                      ),
+                    )
+                  : null,
+              filled: true,
+              fillColor: isDark
+                  ? AppColorTokens.darkSurface
+                  : AppColorTokens.surface,
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacingTokens.inputPaddingH,
+                vertical: AppSpacingTokens.inputPaddingV,
+              ),
+              border: _border(isDark, AppColorTokens.border, 1),
+              enabledBorder: _border(
+                isDark,
+                isDark ? AppColorTokens.darkBorder : AppColorTokens.border,
+                1,
+              ),
+              focusedBorder: _border(
+                isDark,
+                AppColorTokens.primary,
+                2,
+              ),
+              errorBorder: _border(isDark, AppColorTokens.error, 1.2),
+              focusedErrorBorder: _border(
+                isDark,
+                AppColorTokens.error,
+                2,
+              ),
+              disabledBorder: _border(
+                isDark,
+                (isDark ? AppColorTokens.darkBorder : AppColorTokens.border)
+                    .withValues(alpha: 0.5),
+                1,
               ),
             ),
           ),
@@ -247,26 +214,33 @@ class AppInput extends StatelessWidget {
     );
   }
 
-  /// Builds the prefix icon based on variant and provided prefixIcon.
-  Widget? _buildPrefixIcon(bool isDark) {
-    IconData? iconData;
+  OutlineInputBorder _border(bool isDark, Color color, double width) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppRadiusTokens.input),
+      borderSide: BorderSide(color: color, width: width),
+    );
+  }
 
-    // Use variant-specific icon if no custom prefixIcon is provided
-    if (prefixIcon != null) {
-      iconData = prefixIcon;
-    } else if (variant == InputVariant.search) {
-      iconData = Icons.search;
-    } else if (variant == InputVariant.dropdown) {
-      iconData = Icons.arrow_drop_down;
-    }
-
+  Widget? _buildPrefixIcon(bool isDark, bool focused) {
+    IconData? iconData = widget.prefixIcon;
+    iconData ??= switch (widget.variant) {
+      InputVariant.search => Icons.search,
+      InputVariant.dropdown => Icons.arrow_drop_down,
+      InputVariant.textField => null,
+    };
     if (iconData == null) return null;
 
-    return Icon(
-      iconData,
-      color: isDark
-          ? AppColorTokens.darkTextSecondary
-          : AppColorTokens.textSecondary,
+    return AnimatedSwitcher(
+      duration: AppMotionScope.duration(context, AppMotionTokens.input),
+      child: Icon(
+        iconData,
+        key: ValueKey('${widget.variant.name}-$focused'),
+        color: focused
+            ? AppColorTokens.primary
+            : isDark
+                ? AppColorTokens.darkTextSecondary
+                : AppColorTokens.textSecondary,
+      ),
     );
   }
 }

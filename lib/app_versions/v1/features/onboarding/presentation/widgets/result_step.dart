@@ -157,10 +157,11 @@ class _ScoreRing extends StatelessWidget {
         children: [
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: normalized),
-            duration: nabiReducedMotion(context)
-                ? Duration.zero
-                : const Duration(milliseconds: 850),
-            curve: Curves.easeOutCubic,
+            duration: AppMotionScope.duration(
+              context,
+              AppDuration.xSlow,
+            ),
+            curve: AppAnimations.emphasizedCurve,
             builder: (context, value, _) => CircularProgressIndicator(
               value: value,
               strokeWidth: 9,

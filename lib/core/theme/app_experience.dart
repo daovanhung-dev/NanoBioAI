@@ -2,27 +2,33 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../feedback/app_feedback_service.dart';
+import '../motion/app_motion_scope.dart';
 import 'app_colors.dart';
+import 'app_experience_preferences.dart';
 import 'medical_ui.dart';
 
 /// App-level UX wrapper shared by V1, V2, V3, Admin and Sale surfaces.
-///
-/// It gives every route a consistent medical ambient canvas, keeps keyboard
-/// traversal predictable and enables mouse-drag scrolling on desktop.
 class AppExperience {
   const AppExperience._();
 
   static Widget builder(BuildContext context, Widget? child) {
-    return builderWithTextScale(context, child, presetFactor: 1);
+    return builderWithTextScale(
+      context,
+      child,
+      presetFactor: 1,
+      preferences: AppExperiencePreferences.defaults,
+    );
   }
 
   static Widget builderWithTextScale(
     BuildContext context,
     Widget? child, {
     required double presetFactor,
+    AppExperiencePreferences preferences = AppExperiencePreferences.defaults,
   }) {
     final mediaQuery = MediaQuery.maybeOf(context);
-    final reduceMotion = mediaQuery?.disableAnimations ?? false;
+    final systemReduceMotion = mediaQuery?.disableAnimations ?? false;
     final systemScale = mediaQuery == null
         ? 1.0
         : mediaQuery.textScaler.scale(16) / 16;
@@ -38,27 +44,31 @@ class AppExperience {
             child: child ?? const SizedBox.shrink(),
           );
 
-    return ColoredBox(
-      color: AppColors.background,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          const MedicalAmbientBackground(),
-          ScrollConfiguration(
-            behavior: const _NanoBioScrollBehavior(),
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-              child: TickerMode(
-                enabled: !reduceMotion,
+    AppFeedbackService.instance.configure(preferences.feedbackPolicy);
+
+    return AppMotionScope(
+      policy: preferences.motionPolicy(
+        systemReduceMotion: systemReduceMotion,
+      ),
+      child: ColoredBox(
+        color: AppColors.background,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const MedicalAmbientBackground(),
+            ScrollConfiguration(
+              behavior: const _NanoBioScrollBehavior(),
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
                 child: FocusTraversalGroup(
                   policy: ReadingOrderTraversalPolicy(),
                   child: scaledChild ?? const SizedBox.shrink(),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -69,10 +79,10 @@ class _NanoBioScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => const {
-    PointerDeviceKind.touch,
-    PointerDeviceKind.mouse,
-    PointerDeviceKind.trackpad,
-    PointerDeviceKind.stylus,
-    PointerDeviceKind.unknown,
-  };
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.unknown,
+      };
 }

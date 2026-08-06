@@ -88,7 +88,8 @@ export 'tokens/spacing_tokens.dart' show AppSpacingTokens;
 
 /// Component tokens (radius, shadow, motion, text styles)
 export 'tokens/component_tokens.dart'
-    show AppRadiusTokens, AppShadowTokens, AppMotionTokens, AppTextStyles;
+    show AppRadiusTokens, AppShadowTokens, AppMotionTokens;
+export 'app_text_styles.dart' show AppTextStyles;
 
 // ============================================================================
 // PRIMITIVE COMPONENTS (Layer 3)
@@ -120,6 +121,15 @@ export 'primitives/states/loading_state.dart' show LoadingState, LoadingVariant;
 
 /// Error state primitive (message, retry action)
 export 'primitives/states/error_state.dart' show ErrorState;
+
+
+/// Runtime motion policy and shared semantic feedback.
+export '../motion/app_motion_policy.dart';
+export '../motion/app_motion_scope.dart';
+export '../feedback/feedback.dart';
+export 'app_duration.dart';
+export 'app_animations.dart';
+export 'app_motion.dart';
 
 // ============================================================================
 // THEME CONFIGURATION

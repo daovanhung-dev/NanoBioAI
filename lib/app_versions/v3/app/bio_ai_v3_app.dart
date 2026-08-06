@@ -6,6 +6,7 @@ import 'package:nano_app/core/localization/app_localization_config.dart';
 import 'package:nano_app/core/theme/app_theme.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
 import 'package:nano_app/core/theme/app_experience.dart';
+import 'package:nano_app/core/theme/app_experience_preferences.dart';
 import 'package:nano_app/l10n/app_localizations.dart';
 
 class BioAIV3App extends ConsumerStatefulWidget {
@@ -30,6 +31,9 @@ class _BioAIV3AppState extends ConsumerState<BioAIV3App> {
 
   @override
   Widget build(BuildContext context) {
+    final experiencePreferences =
+        ref.watch(appExperiencePreferencesProvider).value ??
+            AppExperiencePreferences.defaults;
     final textScaleFactor = ref
             .watch(appTextScaleControllerProvider)
             .value
@@ -46,6 +50,7 @@ class _BioAIV3AppState extends ConsumerState<BioAIV3App> {
         context,
         child,
         presetFactor: textScaleFactor,
+        preferences: experiencePreferences,
       ),
       theme: AppTheme.lightTheme,
       routerConfig: v3Router,

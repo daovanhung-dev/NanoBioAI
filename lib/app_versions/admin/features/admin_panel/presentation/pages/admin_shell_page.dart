@@ -123,22 +123,28 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
 
     final state = ref.watch(adminControllerProvider);
 
-    return state.when(
-      loading: _LoadingScaffold.new,
-      error: (_, __) => _AdminStateScaffold(
-        child: _BlockingState(
+    return AppStateSwitcher(
+      child: state.when(
+        loading: () => const KeyedSubtree(
+          key: ValueKey<String>('admin-shell-loading'),
+          child: _LoadingScaffold(),
+        ),
+        error: (_, __) => _AdminStateScaffold(
+          key: const ValueKey<String>('admin-shell-error'),
+          child: _BlockingState(
           icon: Icons.cloud_off_rounded,
           title: 'Chưa tải được khu quản trị',
           message:
               'Nabi chưa lấy được phiên quản trị. Hãy thử lại sau ít phút.',
           actionLabel: 'Thử lại',
-          onAction: () => ref.read(adminControllerProvider.notifier).refresh(),
+          onAction: _refreshCurrentSection,
         ),
       ),
       data: (data) {
-        if (!data.session.isAdmin) {
-          return _AdminStateScaffold(
-            child: _BlockingState(
+          if (!data.session.isAdmin) {
+            return _AdminStateScaffold(
+              key: const ValueKey<String>('admin-shell-forbidden'),
+              child: _BlockingState(
               icon: Icons.lock_person_rounded,
               title: 'Tài khoản chưa có quyền quản trị',
               message:
@@ -156,8 +162,9 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
         final hasHistory = context.canPop();
         final isDashboard = data.section == AdminPanelSection.dashboard;
 
-        return PopScope(
-          canPop: isDashboard || hasHistory,
+          return PopScope(
+            key: ValueKey<String>('admin-shell-${data.section.value}'),
+            canPop: isDashboard || hasHistory,
           onPopInvokedWithResult: (didPop, result) {
             if (didPop || isDashboard) return;
             context.go(AdminRoutePaths.dashboard);
@@ -215,13 +222,7 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
                                           )
                                           .search(value);
                                     },
-                                    onRefresh: () {
-                                      ref
-                                          .read(
-                                            adminControllerProvider.notifier,
-                                          )
-                                          .refresh();
-                                    },
+                                    onRefresh: _refreshCurrentSection,
                                     onShowGuide: _showGuide,
                                     onShowUserApp: data.session.canUseUserApp
                                         ? _showUserApp
@@ -258,15 +259,36 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
             },
           ),
         );
-      },
+        },
+      ),
     );
   }
 
   void _goToSection(AdminPanelSection section) {
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
     context.push(section.routePath);
   }
 
+  Future<void> _refreshCurrentSection() async {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    try {
+      await ref.read(adminControllerProvider.notifier).refresh();
+      if (!mounted) return;
+      final current = ref.read(adminControllerProvider);
+      if (current.hasError) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
+      } else {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+      }
+    } catch (_) {
+      if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
+      }
+    }
+  }
+
   void _showGuide() {
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
     showDialog<void>(
       context: context,
       builder: (context) => const _AdminGuideDialog(),
@@ -274,12 +296,26 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
   }
 
   void _showUserApp() {
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
     ref.read(appSurfaceControllerProvider.notifier).showUser();
   }
 
   Future<void> _signOut() async {
-    await ref.read(adminAccessControllerProvider.notifier).signOut();
-    ref.read(appSurfaceControllerProvider.notifier).reset();
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    try {
+      await ref.read(adminAccessControllerProvider.notifier).signOut();
+      ref.read(appSurfaceControllerProvider.notifier).reset();
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
+    } catch (_) {
+      if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text('Chưa đăng xuất được. Bạn vui lòng thử lại.'),
+        ),
+      );
+    }
   }
 
   Future<void> _runAction(
@@ -300,19 +336,39 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
       if (proofPath != null) payload['payment_proof_path'] = proofPath;
     }
 
-    await ref
-        .read(adminControllerProvider.notifier)
-        .runMutation(
-          section: section,
-          action: action,
-          targetId: item.id,
-          reason: reason,
-          payload: payload,
-        );
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    try {
+      await ref
+          .read(adminControllerProvider.notifier)
+          .runMutation(
+            section: section,
+            action: action,
+            targetId: item.id,
+            reason: reason,
+            payload: payload,
+          );
+      if (!mounted) return;
+      final current = ref.read(adminControllerProvider).asData?.value;
+      AppFeedbackService.instance.emit(
+        current?.isPermissionDenied == true
+            ? AppFeedbackType.warning
+            : AppFeedbackType.success,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text('Thao tác quản trị chưa hoàn tất. Bạn thử lại sau.'),
+        ),
+      );
+    }
   }
 
   Future<String?> _pickAndUploadSalePayoutProof(String conversionId) async {
     try {
+      AppFeedbackService.instance.emit(AppFeedbackType.selection);
       final image = await ImagePicker().pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
@@ -333,9 +389,11 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
             fileOptions: FileOptions(contentType: contentType, upsert: false),
           );
 
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       return path;
     } catch (_) {
       if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             behavior: SnackBarBehavior.floating,
@@ -360,6 +418,7 @@ class _AdminAmbientBackdrop extends StatefulWidget {
 class _AdminAmbientBackdropState extends State<_AdminAmbientBackdrop>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  bool _suppressMotion = false;
 
   @override
   void initState() {
@@ -368,6 +427,23 @@ class _AdminAmbientBackdropState extends State<_AdminAmbientBackdrop>
       vsync: this,
       duration: _ambientMotionDuration,
     )..repeat(reverse: true);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final policy = AppMotionScope.of(context);
+    final nextSuppressed = AppMotionScope.reduceMotionOf(context) ||
+        policy.performanceTier == AppPerformanceTier.economical;
+    if (_suppressMotion == nextSuppressed) return;
+    _suppressMotion = nextSuppressed;
+    if (_suppressMotion) {
+      _controller
+        ..stop()
+        ..value = .5;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
   }
 
   @override
@@ -526,7 +602,7 @@ class _LoadingPanel extends StatelessWidget {
 class _AdminStateScaffold extends StatelessWidget {
   final Widget child;
 
-  const _AdminStateScaffold({required this.child});
+  const _AdminStateScaffold({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {

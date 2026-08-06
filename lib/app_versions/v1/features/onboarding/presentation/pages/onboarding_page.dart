@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/onboarding_constants.dart';
-import 'package:nano_app/core/theme/medical_ui.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 
 import '../widgets/basic_info_step.dart';
@@ -27,24 +27,14 @@ class OnboardingPage extends ConsumerStatefulWidget {
 
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   static const _tag = 'ONBOARDING_PAGE';
-  int _renderedStep = 0;
-  bool _movingForward = true;
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(onboardingProvider);
-    if (state.currentStep != _renderedStep) {
-      _movingForward = state.currentStep > _renderedStep;
-      _renderedStep = state.currentStep;
-    }
-
     AppLogger.info(
       _tag,
       'Rendering step ${state.currentStep + 1}/${OnboardingCatalog.totalSteps}',
     );
     final hasHistory = context.canPop();
-    final reduceMotion = nabiReducedMotion(context);
-
     return PopScope(
       canPop: state.currentStep <= 0 && !state.isSaving && hasHistory,
       onPopInvokedWithResult: (didPop, result) {
@@ -59,39 +49,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         ambientBackground: false,
         backgroundColor: Colors.transparent,
         body: NabiAmbientBackground(
-          child: AnimatedSwitcher(
-            duration: reduceMotion
-                ? Duration.zero
-                : const Duration(milliseconds: 390),
-            reverseDuration: reduceMotion
-                ? Duration.zero
-                : const Duration(milliseconds: 330),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            layoutBuilder: (currentChild, previousChildren) => Stack(
-              fit: StackFit.expand,
-              children: [...previousChildren, if (currentChild != null) currentChild],
-            ),
-            transitionBuilder: (child, animation) {
-              final direction = _movingForward ? 1.0 : -1.0;
-              final childStep = child.key is ValueKey<int>
-                  ? (child.key! as ValueKey<int>).value
-                  : _renderedStep;
-              final incoming = childStep == _renderedStep;
-              final begin = incoming
-                  ? Offset(0.10 * direction, 0)
-                  : Offset(-0.08 * direction, 0);
-              final slide = Tween<Offset>(
-                begin: begin,
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-              );
-              return FadeTransition(
-                opacity: animation,
-                child: SlideTransition(position: slide, child: child),
-              );
-            },
+          child: AppDirectionalSwitcher(
+            index: state.currentStep,
+            duration: AppDuration.emphasized,
             child: KeyedSubtree(
               key: ValueKey(state.currentStep),
               child: switch (state.currentStep) {

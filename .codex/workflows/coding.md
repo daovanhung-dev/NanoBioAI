@@ -11,6 +11,7 @@ Use for feature implementation or behavior changes.
 - One domain file from `.codex/domains/`
 - BD/DD only when the task is product behavior, new feature, or user explicitly says to code from DD.
 - `docs/checklist/checklist_complete_DD.md`, then `docs/checklist/checklist_task_coding.md`, when coding from or affecting DD modules.
+- For UI/theme/motion/sound/Nabi refactor: `.codex/design/README.md`, master design, file matrix, one matching group file, and `.codex/design/15_CODING_PLAN.md`.
 
 ## DD Progress Gate
 

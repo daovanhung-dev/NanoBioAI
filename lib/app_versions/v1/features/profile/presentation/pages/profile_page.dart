@@ -23,24 +23,52 @@ class ProfilePage extends ConsumerWidget {
       floatingActionButton: dashboardAsync.value == null
           ? null
           : FloatingActionButton.extended(
-              onPressed: () =>
-                  _showEditProfileSheet(context, ref, dashboardAsync.value!),
+              onPressed: () {
+                AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                _showEditProfileSheet(context, ref, dashboardAsync.value!);
+              },
               icon: const Icon(Icons.edit_rounded),
               label: const Text('Chỉnh sửa'),
             ),
       body: SafeArea(
-        child: dashboardAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _EmptyProfile(
+        child: AppStateSwitcher(
+          child: dashboardAsync.when(
+            loading: () => const Center(
+              key: ValueKey<String>('profile-loading'),
+              child: CircularProgressIndicator(),
+            ),
+            error: (error, _) => _EmptyProfile(
+              key: const ValueKey<String>('profile-error'),
             message:
                 'Nabi chưa thể mở hồ sơ của bạn lúc này. Mình thử lại sau một chút nhé.',
-            onRetry: () => ref.invalidate(dashboardProvider),
-          ),
-          data: (dashboard) => RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(dashboardProvider);
-              await ref.read(dashboardProvider.future);
-            },
+              onRetry: () async {
+                AppFeedbackService.instance.emit(
+                  AppFeedbackType.primaryAction,
+                );
+                ref.invalidate(dashboardProvider);
+                try {
+                  await ref.read(dashboardProvider.future);
+                  AppFeedbackService.instance.emit(AppFeedbackType.success);
+                } catch (_) {
+                  AppFeedbackService.instance.emit(AppFeedbackType.error);
+                }
+              },
+            ),
+            data: (dashboard) => RefreshIndicator(
+              key: const ValueKey<String>('profile-ready'),
+              onRefresh: () async {
+                AppFeedbackService.instance.emit(
+                  AppFeedbackType.primaryAction,
+                );
+                ref.invalidate(dashboardProvider);
+                try {
+                  await ref.read(dashboardProvider.future);
+                  AppFeedbackService.instance.emit(AppFeedbackType.success);
+                } catch (_) {
+                  AppFeedbackService.instance.emit(AppFeedbackType.error);
+                  rethrow;
+                }
+              },
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
@@ -103,6 +131,7 @@ class ProfilePage extends ConsumerWidget {
                   ),
                 ),
               ],
+            ),
             ),
           ),
         ),
@@ -276,15 +305,20 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
     final authUserId = currentSupabaseUserIdOrNull();
     if (authUserId == null) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       _showMessage(
         'Phiên đăng nhập chưa sẵn sàng. Bạn đăng nhập lại rồi thử cập nhật hồ sơ nhé.',
       );
       return;
     }
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() => _saving = true);
     try {
       final birthYear = int.parse(_birthYear.text.trim());
@@ -302,7 +336,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
         'bmi': bmi,
       };
 
-      // Local data is durable first. SQLite v12 triggers enqueue both user and
+      // Local data is durable first. SQLite outbox triggers enqueue both user and
       // health-profile changes in the same transaction; the outbox pushes a
       // complete authenticated snapshot and retries without discarding the
       // user's edit when the device is offline.
@@ -313,11 +347,13 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
       invalidateUserScopedProviders(ref);
 
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Nabi đã cập nhật hồ sơ của bạn.')),
       );
     } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       _showMessage(
         'Nabi chưa thể cập nhật hồ sơ lúc này. Bạn thử lại sau một chút nhé.',
       );
@@ -678,7 +714,11 @@ class _EmptyProfile extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
-  const _EmptyProfile({required this.message, required this.onRetry});
+  const _EmptyProfile({
+    super.key,
+    required this.message,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {

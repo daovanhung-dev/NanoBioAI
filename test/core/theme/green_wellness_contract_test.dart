@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/theme/app_colors.dart';
 import 'package:nano_app/core/theme/app_radius.dart';
@@ -51,7 +50,7 @@ void main() {
     );
 
     final semantics = tester.getSemantics(find.byType(AppChip));
-    expect(semantics.hasFlag(SemanticsFlag.isSelected), isTrue);
+    expect(semantics.flagsCollection.isSelected.toBoolOrNull(), isTrue);
     expect(tester.getSize(find.byType(AppChip)).height, greaterThanOrEqualTo(48));
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
   });

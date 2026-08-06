@@ -34,6 +34,10 @@ class SettingsView extends ConsumerWidget {
     final preferencesAsync = ref.watch(settingsPreferencesControllerProvider);
     final cacheSizeAsync = ref.watch(settingsCacheSizeProvider);
     final textScale = ref.watch(appTextScaleControllerProvider).value;
+    final experiencePreferencesAsync =
+        ref.watch(appExperiencePreferencesProvider);
+    final experiencePreferences = experiencePreferencesAsync.value ??
+        AppExperiencePreferences.defaults;
     final preferences =
         preferencesAsync.value ?? SettingsPreferencesEntity.defaults();
     final dashboard = dashboardAsync.value;
@@ -51,9 +55,11 @@ class SettingsView extends ConsumerWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
+            AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
             ref.invalidate(dashboardProvider);
             ref.invalidate(settingsPreferencesControllerProvider);
             ref.invalidate(settingsCacheSizeProvider);
+            ref.invalidate(appExperiencePreferencesProvider);
             ref.invalidate(saleStateProvider);
             try {
               await ref.read(dashboardProvider.future);
@@ -64,6 +70,7 @@ class SettingsView extends ConsumerWidget {
             try {
               await ref.read(settingsCacheSizeProvider.future);
             } catch (_) {}
+            AppFeedbackService.instance.emit(AppFeedbackType.success);
           },
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(
@@ -212,6 +219,14 @@ class SettingsView extends ConsumerWidget {
                           ),
                           const _DividerLine(),
                           _MenuItem(
+                            key: const Key('settings_experience_feedback'),
+                            icon: Icons.motion_photos_auto_rounded,
+                            title: 'Hiệu ứng & phản hồi',
+                            subtitle: _experienceSubtitle(experiencePreferences),
+                            onTap: () => _showExperienceSheet(context),
+                          ),
+                          const _DividerLine(),
+                          _MenuItem(
                             icon: Icons.storage_rounded,
                             title: 'Dung lượng',
                             subtitle: cacheSizeAsync.when(
@@ -313,6 +328,155 @@ class SettingsView extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+
+  String _experienceSubtitle(AppExperiencePreferences preferences) {
+    final motion = preferences.reduceMotion
+        ? 'chuyển động tối giản'
+        : switch (preferences.performanceTier) {
+            AppPerformanceTier.economical => 'hiệu ứng tiết kiệm',
+            AppPerformanceTier.balanced => 'hiệu ứng cân bằng',
+            AppPerformanceTier.rich => 'hiệu ứng nổi bật',
+          };
+    final sound = switch (preferences.soundLevel) {
+      AppSoundFeedbackLevel.off => 'không âm thanh',
+      AppSoundFeedbackLevel.subtle => 'âm thanh tinh tế',
+      AppSoundFeedbackLevel.full => 'âm thanh đầy đủ',
+    };
+    return '$motion · $sound';
+  }
+
+  Future<void> _showExperienceSheet(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => Consumer(
+        builder: (context, sheetRef, _) {
+          final preferences =
+              sheetRef.watch(appExperiencePreferencesProvider).value ??
+                  AppExperiencePreferences.defaults;
+          final controller = sheetRef.read(
+            appExperiencePreferencesProvider.notifier,
+          );
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Hiệu ứng & phản hồi', style: AppTextStyles.heading3),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Điều chỉnh chuyển động, rung và âm thanh nhỏ theo cảm giác bạn thấy dễ chịu nhất.',
+                  style: AppTextStyles.bodyMedium,
+                ),
+                const SizedBox(height: AppSpacing.sectionSpacing),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  value: preferences.reduceMotion,
+                  title: const Text('Giảm chuyển động'),
+                  subtitle: const Text(
+                    'Giữ chuyển cảnh ngắn và loại bỏ hiệu ứng lặp.',
+                  ),
+                  onChanged: (value) {
+                    AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                    controller.setReduceMotion(value);
+                  },
+                ),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  value: preferences.hapticsEnabled,
+                  title: const Text('Phản hồi rung'),
+                  subtitle: const Text(
+                    'Tạo cảm giác chạm nhẹ khi chọn hoặc hoàn thành.',
+                  ),
+                  onChanged: (value) {
+                    AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                    controller.setHapticsEnabled(value);
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Độ phong phú chuyển động',
+                  style: AppTextStyles.labelLarge,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                SegmentedButton<AppPerformanceTier>(
+                  segments: const [
+                    ButtonSegment(
+                      value: AppPerformanceTier.economical,
+                      label: Text('Nhẹ'),
+                      icon: Icon(Icons.battery_saver_rounded),
+                    ),
+                    ButtonSegment(
+                      value: AppPerformanceTier.balanced,
+                      label: Text('Cân bằng'),
+                      icon: Icon(Icons.auto_awesome_motion_rounded),
+                    ),
+                    ButtonSegment(
+                      value: AppPerformanceTier.rich,
+                      label: Text('Nổi bật'),
+                      icon: Icon(Icons.auto_awesome_rounded),
+                    ),
+                  ],
+                  selected: {preferences.performanceTier},
+                  onSelectionChanged: (values) {
+                    if (values.isNotEmpty) {
+                      AppFeedbackService.instance.emit(
+                        AppFeedbackType.selection,
+                      );
+                      controller.setPerformanceTier(values.first);
+                    }
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sectionSpacing),
+                Text(
+                  'Âm thanh tương tác',
+                  style: AppTextStyles.labelLarge,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                SegmentedButton<AppSoundFeedbackLevel>(
+                  segments: const [
+                    ButtonSegment(
+                      value: AppSoundFeedbackLevel.off,
+                      label: Text('Tắt'),
+                      icon: Icon(Icons.volume_off_rounded),
+                    ),
+                    ButtonSegment(
+                      value: AppSoundFeedbackLevel.subtle,
+                      label: Text('Tinh tế'),
+                      icon: Icon(Icons.volume_down_rounded),
+                    ),
+                    ButtonSegment(
+                      value: AppSoundFeedbackLevel.full,
+                      label: Text('Đầy đủ'),
+                      icon: Icon(Icons.volume_up_rounded),
+                    ),
+                  ],
+                  selected: {preferences.soundLevel},
+                  onSelectionChanged: (values) {
+                    if (values.isNotEmpty) {
+                      AppFeedbackService.instance.emit(
+                        AppFeedbackType.selection,
+                      );
+                      controller.setSoundLevel(values.first);
+                    }
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sectionSpacing),
+                AppButton(
+                  variant: ButtonVariant.primary,
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: const Text('Xong'),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -1046,10 +1210,17 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppRadius.xl),
-      onTap: onTap,
-      child: Padding(
+    return AppPressScale(
+      enabled: onTap != null,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        onTap: onTap == null
+            ? null
+            : () {
+                AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                onTap!();
+              },
+        child: Padding(
         padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Row(
           children: [
@@ -1082,7 +1253,8 @@ class _MenuItem extends StatelessWidget {
                   size: 18,
                   color: AppColors.textHint,
                 ),
-          ],
+            ],
+          ),
         ),
       ),
     );

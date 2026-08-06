@@ -45,7 +45,12 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
           ),
         ],
       ),
-      body: ListView(
+      body: AppStateSwitcher(
+        alignment: Alignment.topCenter,
+        child: ListView(
+        key: ValueKey(
+          'payment-${paymentState.isLoading}-${paymentState.hasError}-${request?.status ?? 'none'}-${_message ?? ''}',
+        ),
         padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         children: [
           Text('Nâng cấp gói của bạn', style: AppTextStyles.heading2),
@@ -80,9 +85,11 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
               billingCycle: _billingCycle,
               isDisabled: _submitting || isInitialLoading || !hasPayerName,
               onPlanChanged: (value) {
+                AppFeedbackService.instance.emit(AppFeedbackType.selection);
                 setState(() => _planCode = value ?? _planCode);
               },
               onBillingCycleChanged: (value) {
+                AppFeedbackService.instance.emit(AppFeedbackType.selection);
                 setState(() => _billingCycle = value ?? _billingCycle);
               },
             ),
@@ -113,21 +120,26 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
             ),
           ],
         ],
+        ),
       ),
     );
   }
 
   Future<void> _refresh() async {
     if (_submitting) return;
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() {
       _submitting = true;
       _message = null;
     });
     try {
       await ref.read(membershipPaymentControllerProvider.notifier).refresh();
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
     } on MembershipPaymentException catch (error) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (mounted) setState(() => _message = error.safeMessage);
     } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (mounted) {
         setState(
           () => _message = 'Chưa tải được yêu cầu thanh toán. Bạn hãy thử lại.',
@@ -140,6 +152,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
 
   Future<void> _createRequest() async {
     if (_submitting) return;
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() {
       _submitting = true;
       _message = null;
@@ -150,6 +163,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
           .read(membershipPaymentControllerProvider.notifier)
           .createRequest(planCode: _planCode, billingCycle: _billingCycle);
       if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
         setState(() {
           _message = request.isAwaitingTransfer
               ? 'Mã thanh toán đã sẵn sàng. Bạn hãy chuyển khoản rồi xác nhận.'
@@ -157,8 +171,10 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
         });
       }
     } on MembershipPaymentException catch (error) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (mounted) setState(() => _message = error.safeMessage);
     } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (mounted) {
         setState(
           () => _message = 'Chưa tạo được mã thanh toán. Bạn hãy thử lại sau.',
@@ -192,6 +208,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
     );
     if (confirmed != true || !mounted) return;
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() {
       _submitting = true;
       _message = null;
@@ -201,14 +218,17 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
           .read(membershipPaymentControllerProvider.notifier)
           .confirmTransfer();
       if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
         setState(
           () => _message =
               'Đã gửi yêu cầu duyệt. Gói sẽ được mở sau khi được duyệt.',
         );
       }
     } on MembershipPaymentException catch (error) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (mounted) setState(() => _message = error.safeMessage);
     } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (mounted) {
         setState(
           () => _message = 'Chưa gửi được yêu cầu duyệt. Bạn hãy thử lại.',
@@ -426,8 +446,10 @@ class _PaymentRequestPanel extends StatelessWidget {
   }
 
   Future<void> _copyTransferMemo(BuildContext context, String memo) async {
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
     await Clipboard.setData(ClipboardData(text: memo));
     if (context.mounted) {
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đã sao chép nội dung chuyển khoản.')),
       );

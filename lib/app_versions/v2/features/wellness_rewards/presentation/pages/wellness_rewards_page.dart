@@ -48,9 +48,14 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
             ],
           ),
         ),
-        body: state.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _RewardsError(
+        body: AppStateSwitcher(
+          child: state.when(
+            loading: () => const Center(
+              key: ValueKey<String>('wellness-rewards-loading'),
+              child: CircularProgressIndicator(),
+            ),
+            error: (error, _) => _RewardsError(
+              key: const ValueKey<String>('wellness-rewards-error'),
             message: error is WellnessRewardException
                 ? error.safeMessage
                 : 'Nabi chưa tải được Điểm chăm sóc. Bạn vui lòng thử lại.',
@@ -60,8 +65,9 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
                 error is WellnessRewardException &&
                 error.code == 'auth_required',
           ),
-          data: (dashboard) => Column(
-            children: [
+            data: (dashboard) => Column(
+              key: const ValueKey<String>('wellness-rewards-ready'),
+              children: [
               _RewardSummary(summary: dashboard.summary),
               Expanded(
                 child: TabBarView(
@@ -83,15 +89,27 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
                   ],
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Future<void> _refresh() {
-    return ref.read(wellnessRewardsControllerProvider.notifier).refresh();
+  Future<void> _refresh() async {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    try {
+      await ref.read(wellnessRewardsControllerProvider.notifier).refresh();
+      if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+      }
+    } catch (_) {
+      if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
+      }
+      rethrow;
+    }
   }
 
   Future<void> _confirmRedeem(WellnessRewardOffer offer) async {
@@ -116,6 +134,7 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
       ),
     );
     if (confirmed != true || !mounted) return;
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
 
     try {
       final redemption = await ref
@@ -126,17 +145,20 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
       if (code != null && code.isNotEmpty) {
         _voucherCodes[redemption.id] = code;
       }
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đã đổi ưu đãi thành công.')),
       );
       await _showVoucher(redemption);
     } on WellnessRewardException catch (error) {
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error.safeMessage)));
     } catch (_) {
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Chưa đổi được ưu đãi. Bạn vui lòng thử lại.'),
@@ -147,12 +169,14 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
 
   Future<void> _showVoucher(WellnessRewardRedemption redemption) async {
     if (redemption.isCancelled) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Voucher này đã được hủy.')));
       return;
     }
     if (!_isIssuedStatus(redemption.status)) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Voucher này chưa sẵn sàng để hiển thị.')),
       );
@@ -161,12 +185,14 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
 
     var code = redemption.voucherCode ?? _voucherCodes[redemption.id];
     if (code == null || code.isEmpty) {
+      AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
       try {
         code = await ref
             .read(wellnessRewardsControllerProvider.notifier)
             .loadVoucherCode(redemption.id);
       } on WellnessRewardException catch (error) {
         if (mounted) {
+          AppFeedbackService.instance.emit(AppFeedbackType.error);
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(error.safeMessage)));
@@ -176,6 +202,7 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
     }
     if (!mounted) return;
     if (code == null || code.isEmpty) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Mã voucher đang được đồng bộ. Bạn thử lại sau.'),
@@ -184,6 +211,7 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
       return;
     }
     _voucherCodes[redemption.id] = code;
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
 
     await showModalBottomSheet<void>(
       context: context,
@@ -625,8 +653,10 @@ class _VoucherSheet extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             FilledButton.tonalIcon(
               onPressed: () async {
+                AppFeedbackService.instance.emit(AppFeedbackType.selection);
                 await Clipboard.setData(ClipboardData(text: code));
                 if (context.mounted) {
+                  AppFeedbackService.instance.emit(AppFeedbackType.success);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Đã sao chép mã voucher.')),
                   );
@@ -656,6 +686,7 @@ class _RewardsError extends StatelessWidget {
   final bool showSignIn;
 
   const _RewardsError({
+    super.key,
     required this.message,
     required this.onRetry,
     required this.onSignIn,

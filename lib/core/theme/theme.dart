@@ -13,3 +13,7 @@ export 'app_decoration.dart';
 export 'app_typography.dart';
 export 'app_experience.dart';
 export 'medical_ui.dart';
+export 'app_experience_preferences.dart';
+export '../motion/app_motion_policy.dart';
+export '../motion/app_motion_scope.dart';
+export '../feedback/feedback.dart';

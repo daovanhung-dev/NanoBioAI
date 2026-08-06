@@ -20,12 +20,17 @@ class HealthModuleAccessPage extends ConsumerWidget {
     }
 
     final access = ref.watch(effectiveAccessProvider);
-    return access.when(
-      loading: () => const _HealthModuleSupportPage.loading(),
-      error: (_, __) => _HealthModuleSupportPage.accessUnavailable(
-        onRetry: () => ref.invalidate(effectiveAccessProvider),
-      ),
-      data: (effectiveAccess) {
+    return AppStateSwitcher(
+      child: access.when(
+        loading: () => const KeyedSubtree(
+          key: ValueKey<String>('health-module-access-loading'),
+          child: _HealthModuleSupportPage.loading(),
+        ),
+        error: (_, __) => _HealthModuleSupportPage.accessUnavailable(
+          key: const ValueKey<String>('health-module-access-error'),
+          onRetry: () => _retry(ref),
+        ),
+        data: (effectiveAccess) {
         final destination = HealthModuleAccessResolver.resolve(
           item: item,
           access: effectiveAccess,
@@ -52,11 +57,24 @@ class HealthModuleAccessPage extends ConsumerWidget {
           ),
           HealthModuleAccessDestination.unavailable =>
             _HealthModuleSupportPage.accessUnavailable(
-              onRetry: () => ref.invalidate(effectiveAccessProvider),
+              key: const ValueKey<String>('health-module-access-unavailable'),
+              onRetry: () => _retry(ref),
             ),
-        };
-      },
+          };
+        },
+      ),
     );
+  }
+
+  Future<void> _retry(WidgetRef ref) async {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    ref.invalidate(effectiveAccessProvider);
+    try {
+      await ref.read(effectiveAccessProvider.future);
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
+    } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
+    }
   }
 }
 
@@ -107,6 +125,7 @@ class _HealthModuleSupportPage extends StatelessWidget {
   final bool showProgress;
 
   const _HealthModuleSupportPage({
+    super.key,
     required this.title,
     required this.message,
     required this.icon,
@@ -130,8 +149,10 @@ class _HealthModuleSupportPage extends StatelessWidget {
       );
 
   const _HealthModuleSupportPage.accessUnavailable({
+    Key? key,
     required VoidCallback onRetry,
   }) : this(
+         key: key,
          title: 'Chưa kiểm tra được quyền truy cập',
          message:
              'Nabi chưa xác nhận được gói của bạn nên chức năng vẫn được khóa an toàn.',

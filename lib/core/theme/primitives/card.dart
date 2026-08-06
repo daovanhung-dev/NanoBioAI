@@ -1,102 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../../feedback/app_feedback_service.dart';
+import '../../feedback/app_feedback_type.dart';
+import '../../motion/app_motion_scope.dart';
 import '../app_motion.dart';
 import '../tokens/color_tokens.dart';
-import '../tokens/spacing_tokens.dart';
 import '../tokens/component_tokens.dart';
+import '../tokens/spacing_tokens.dart';
 
-/// Card variants for different visual styles and interaction patterns.
-///
-/// Each variant serves a specific purpose in the UI hierarchy:
-/// - **defaultCard**: Standard card with subtle background and shadow
-/// - **elevated**: Prominent card with increased elevation for emphasis
-/// - **outlined**: Card with border emphasis instead of shadow
-///
-/// **Validates: Requirements 4.2, 8.1**
-enum CardVariant {
-  /// Default card with subtle background and shadow
-  defaultCard,
+enum CardVariant { defaultCard, elevated, outlined }
 
-  /// Elevated card with increased shadow for emphasis
-  elevated,
-
-  /// Outlined card with border instead of shadow
-  outlined,
-}
-
-/// A primitive card component with variant-based styling using design tokens.
-///
-/// `AppCard` is a Layer 3 primitive component that provides consistent container
-/// styling across the application. It automatically adapts to light/dark mode
-/// and supports different visual emphasis levels through variants.
-///
-/// ## Variants
-///
-/// ```dart
-/// // Default card
-/// AppCard(
-///   variant: CardVariant.defaultCard,
-///   child: Column(
-///     children: [
-///       Text('Title'),
-///       Text('Content'),
-///     ],
-///   ),
-/// )
-///
-/// // Elevated card (for emphasis)
-/// AppCard(
-///   variant: CardVariant.elevated,
-///   child: Text('Important content'),
-/// )
-///
-/// // Outlined card
-/// AppCard(
-///   variant: CardVariant.outlined,
-///   child: Text('Bordered content'),
-/// )
-/// ```
-///
-/// ## Interaction
-///
-/// ```dart
-/// // Interactive card
-/// AppCard(
-///   variant: CardVariant.defaultCard,
-///   onTap: () {
-///     print('Card tapped');
-///   },
-///   child: Text('Tap me'),
-/// )
-/// ```
-///
-/// ## Custom Padding
-///
-/// ```dart
-/// // Card with custom padding
-/// AppCard(
-///   variant: CardVariant.defaultCard,
-///   padding: EdgeInsets.all(24),
-///   child: Text('Custom padding'),
-/// )
-/// ```
-///
-/// ## Token-Based Styling
-///
-/// All styling references semantic tokens:
-/// - Colors: [AppColorTokens]
-/// - Radius: [AppRadiusTokens]
-/// - Shadows: [AppShadowTokens]
-/// - Motion: [AppMotionTokens]
-///
-/// **Validates: Requirements 4.2, 4.10, 4.11, 3.3, 3.4, 3.5, 8.1, 8.2**
+/// Canonical Kinetic Aura card with shared selection and tactile feedback.
 class AppCard extends StatelessWidget {
-  /// Creates a card with the specified variant and styling.
-  ///
-  /// The [variant] determines the visual style.
-  /// The [child] is the content to display inside the card.
-  /// The [onTap] callback makes the card interactive.
-  /// The [padding] can be customized or set to null for no padding.
   const AppCard({
     super.key,
     required this.variant,
@@ -104,45 +19,33 @@ class AppCard extends StatelessWidget {
     this.onTap,
     this.padding,
     this.selected = false,
+    this.feedbackType = AppFeedbackType.selection,
+    this.semanticLabel,
   });
 
-  /// The visual style variant for this card.
   final CardVariant variant;
-
-  /// The content to display inside the card.
   final Widget child;
-
-  /// Callback triggered when the card is tapped.
-  ///
-  /// If `null`, the card is not interactive.
   final VoidCallback? onTap;
-
-  /// The padding inside the card.
-  ///
-  /// Defaults to [AppSpacingTokens.cardPadding] if not specified.
-  /// Set to [EdgeInsets.zero] for no padding.
   final EdgeInsets? padding;
-
-  /// Whether this card represents the current selected choice.
   final bool selected;
+  final AppFeedbackType feedbackType;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final effectivePadding =
         padding ?? EdgeInsets.all(AppSpacingTokens.cardPaddingCompact);
 
-    final reduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     return Semantics(
       button: onTap != null,
       selected: selected,
+      label: semanticLabel,
       child: AppPressScale(
-        enabled: onTap != null && !reduceMotion,
+        enabled: onTap != null,
+        pressedScale: AppMotionTokens.cardPressedScale,
         child: AnimatedContainer(
-          duration: reduceMotion ? Duration.zero : AppMotionTokens.card,
+          duration: AppMotionScope.duration(context, AppMotionTokens.card),
           curve: AppMotionTokens.defaultCurve,
           decoration: BoxDecoration(
             color: selected
@@ -162,7 +65,12 @@ class AppCard extends StatelessWidget {
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(AppRadiusTokens.card),
             child: InkWell(
-              onTap: onTap,
+              onTap: onTap == null
+                  ? null
+                  : () {
+                      AppFeedbackService.instance.emit(feedbackType);
+                      onTap?.call();
+                    },
               borderRadius: BorderRadius.circular(AppRadiusTokens.card),
               child: Padding(padding: effectivePadding, child: child),
             ),
@@ -172,52 +80,30 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  /// Gets the background color based on variant and theme mode.
   Color _getBackgroundColor(bool isDark) {
     if (isDark) {
-      switch (variant) {
-        case CardVariant.defaultCard:
-          return AppColorTokens.darkSurface;
-        case CardVariant.elevated:
-          return AppColorTokens.darkSurfaceElevated;
-        case CardVariant.outlined:
-          return AppColorTokens.darkSurface;
-      }
-    } else {
-      switch (variant) {
-        case CardVariant.defaultCard:
-        case CardVariant.elevated:
-        case CardVariant.outlined:
-          return AppColorTokens.surface;
-      }
+      return switch (variant) {
+        CardVariant.defaultCard || CardVariant.outlined =>
+          AppColorTokens.darkSurface,
+        CardVariant.elevated => AppColorTokens.darkSurfaceElevated,
+      };
     }
+    return AppColorTokens.surface;
   }
 
-  /// Gets the border based on variant and theme mode.
-  Border? _getBorder(bool isDark) {
+  Border _getBorder(bool isDark) {
     return Border.all(
       color: isDark ? AppColorTokens.darkBorder : AppColorTokens.border,
       width: variant == CardVariant.outlined ? 1.2 : 1,
     );
   }
 
-  /// Gets the shadow based on variant and theme mode.
   List<BoxShadow>? _getShadow(bool isDark) {
-    // Don't apply shadow on outlined variant
-    if (variant == CardVariant.outlined) {
-      return null;
-    }
-
-    // Use appropriate shadow based on theme mode
-    switch (variant) {
-      case CardVariant.defaultCard:
-        return null;
-      case CardVariant.elevated:
-        return isDark
-            ? AppShadowTokens.cardElevatedDark
-            : AppShadowTokens.cardElevated;
-      case CardVariant.outlined:
-        return null;
-    }
+    return switch (variant) {
+      CardVariant.defaultCard || CardVariant.outlined => null,
+      CardVariant.elevated => isDark
+          ? AppShadowTokens.cardElevatedDark
+          : AppShadowTokens.cardElevated,
+    };
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,6 +12,7 @@ import 'package:nano_app/core/theme/app_colors.dart';
 import 'package:nano_app/core/theme/app_spacing.dart';
 import 'package:nano_app/core/theme/app_radius.dart';
 import 'package:nano_app/core/theme/app_duration.dart';
+import 'package:nano_app/core/feedback/feedback.dart';
 /// Callback để app có thể mở chat theo chính sách điều hướng sẵn có.
 typedef NabiOpenChat = FutureOr<void> Function(BuildContext context);
 
@@ -114,7 +114,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
                     isRightSide: _alignment.x >= 0,
                     onTap: _dragMoved ? null : _openChat,
                     onLongPress: () {
-                      HapticFeedback.selectionClick();
+                      AppFeedbackService.instance.emit(AppFeedbackType.selection);
                       ref
                           .read(nabiControllerProvider.notifier)
                           .toggleMinimized();
@@ -161,7 +161,7 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
   }
 
   Future<void> _openChat() async {
-    HapticFeedback.lightImpact();
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     final controller = ref.read(nabiControllerProvider.notifier);
 
     if (widget.config.onOpenChat != null) {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/localization/app_localization_config.dart';
 import 'package:nano_app/core/theme/app_theme.dart';
 import 'package:nano_app/core/theme/app_experience.dart';
+import 'package:nano_app/core/theme/app_experience_preferences.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
 import 'package:nano_app/app_versions/v1/router/v1_router.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_navigation_coordinator.dart';
@@ -30,6 +31,9 @@ class _BioAIV1AppState extends ConsumerState<BioAIV1App> {
 
   @override
   Widget build(BuildContext context) {
+    final experiencePreferences =
+        ref.watch(appExperiencePreferencesProvider).value ??
+            AppExperiencePreferences.defaults;
     final textScaleFactor = ref
             .watch(appTextScaleControllerProvider)
             .value
@@ -46,6 +50,7 @@ class _BioAIV1AppState extends ConsumerState<BioAIV1App> {
         context,
         child,
         presetFactor: textScaleFactor,
+        preferences: experiencePreferences,
       ),
 
       theme: AppTheme.lightTheme,

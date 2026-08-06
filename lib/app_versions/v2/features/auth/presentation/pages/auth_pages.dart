@@ -138,9 +138,16 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
   }
 
   Future<void> _submit() async {
-    if (!ref.read(authBackendAvailabilityProvider).isReady) return;
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!ref.read(authBackendAvailabilityProvider).isReady) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _loading = true);
 
@@ -151,7 +158,10 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
             LoginCommand(email: _email.text.trim(), password: _password.text),
           );
 
-      if (mounted) context.go(V2RoutePaths.authGate);
+      if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+        context.go(V2RoutePaths.authGate);
+      }
     } catch (error) {
       if (mounted) _showError(context, error);
     } finally {
@@ -335,10 +345,14 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
 
     final termsError = AuthValidators.acceptedTerms(_acceptedTerms);
     if (termsError != null) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       _showError(
         context,
         AuthFailure(code: AuthFailureCode.validation, userMessage: termsError),
@@ -346,6 +360,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
       return;
     }
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _loading = true);
 
@@ -367,6 +382,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
           );
 
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       if (result == RegistrationResult.verificationRequired) {
         context.go(
           '${V2RoutePaths.verifyEmail}'
@@ -451,6 +467,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
   }
 
   Future<void> _resend() async {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() => _loading = true);
 
     try {
@@ -459,6 +476,7 @@ class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
           .resendEmailConfirmation(widget.email);
 
       _startCooldown();
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -575,8 +593,12 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _loading = true);
 
@@ -585,7 +607,10 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
           .read(v2AuthControllerProvider.notifier)
           .sendPasswordRecovery(_email.text.trim());
 
-      if (mounted) setState(() => _sent = true);
+      if (mounted) {
+        setState(() => _sent = true);
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+      }
     } catch (error) {
       if (mounted) _showError(context, error);
     } finally {
@@ -692,8 +717,12 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _loading = true);
 
@@ -707,7 +736,10 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
             ),
           );
 
-      if (mounted) context.go(V2RoutePaths.authGate);
+      if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+        context.go(V2RoutePaths.authGate);
+      }
     } catch (error) {
       if (mounted) _showError(context, error);
     } finally {
@@ -781,6 +813,7 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
 
   Future<void> _recover() async {
     if (_loading && _error != null) return;
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() {
       _loading = true;
       _error = null;
@@ -791,12 +824,14 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
           .read(v2AuthControllerProvider.notifier)
           .recoverSessionFromUri(widget.uri);
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       context.go(
         result.isPasswordRecovery
             ? V2RoutePaths.resetPassword
             : V2RoutePaths.authGate,
       );
     } catch (error) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (!mounted) return;
       setState(() => _error = error);
     } finally {
@@ -1708,6 +1743,7 @@ String? _authValidationText(String? raw) {
 }
 
 void _showError(BuildContext context, Object error) {
+  AppFeedbackService.instance.emit(AppFeedbackType.error);
   final message = error is AuthFailure
       ? error.userMessage
       : 'Nabi chưa thể xử lý yêu cầu lúc này. Mình thử lại sau một chút nhé.';

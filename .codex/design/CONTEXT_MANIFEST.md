@@ -1,0 +1,45 @@
+# Design Artifact Manifest
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `.codex/design/00_NABI_KINETIC_AURA_MASTER_DESIGN.md` | 4354 | `fd41bcb1b88364733eb8cae8468c8dcda8d26f51a60a1dd72ab98b2e519c7bdd` |
+| `.codex/design/01_DESIGN_PRINCIPLES.md` | 1573 | `4521aed1720ed41b521fac32844ce8b81072170af54f592816ddd203b2a88084` |
+| `.codex/design/02_COLOR_LIGHT_DEPTH_SYSTEM.md` | 2168 | `63d84a7f0a40eb645cddb93dfd392eb17efb496cec3cc9122cfdd69de181d565` |
+| `.codex/design/03_MOTION_SYSTEM.md` | 2718 | `5f84b2dac14e1691a804d284cbc3cffbf3adb550b67430a77a7506b8fee819c7` |
+| `.codex/design/04_MICRO_INTERACTIONS.md` | 2051 | `fb36ad5ede7fd38c7649068b53c7e0b97b17c2293dd2359b676d7cfb2351c00b` |
+| `.codex/design/05_SOUND_HAPTIC_SYSTEM.md` | 3129 | `519fe858d249ee14809e5a90033fcdbabe91e2afb71e055eb1310263b20f9f84` |
+| `.codex/design/06_COMPONENT_DESIGN_SYSTEM.md` | 1434 | `023ce65d2652195d6fd18b2b7f1632be9d1a6034780055fa93abb361686be275` |
+| `.codex/design/07_NAVIGATION_TRANSITIONS.md` | 1525 | `603eb4344c3350b984b3dea12b136cd4b57f8e4ac54d4d8f3d361725b20d3d7c` |
+| `.codex/design/08_NABI_EXPERIENCE_ORCHESTRATION.md` | 1845 | `b0de6e9979ca1041774ea9a4427cb8878f5af0becb4435fbff69fa5df41ffb23` |
+| `.codex/design/09_ACCESSIBILITY_REDUCED_MOTION.md` | 1309 | `385949435fd9e51fe147933de4284ba8fc57d5627106d53d35f52ba959aaf868` |
+| `.codex/design/10_PERFORMANCE_BUDGET.md` | 1454 | `61bd924fd3fce1609e0b2cb878126dc587de5cbf2701ea7a4b6b841cae9f24a8` |
+| `.codex/design/11_UI_MOTION_AUDIT.md` | 5839 | `302ecbe1ef7f97a9e52aa472165b1731550ba5a5716078d1f7b804827984cabc` |
+| `.codex/design/12_UI_FILE_DESIGN_MATRIX.md` | 146815 | `8e3b897af4f57087ae5f2b3ec5008ef87444d4ee420363a48f98f79793209520` |
+| `.codex/design/13_UI_VIEW_MOTION_STORYBOARD.md` | 24382 | `f8d9fe17e59aca518f88e499e54d6d11fce8da5084e51443dfc80bcf881c9688` |
+| `.codex/design/14_UI_INTERACTION_EVENT_MATRIX.md` | 2143 | `74fee2b02a39530ce77df0d0e02d253b369deb27788f1ec0f53050c53a2aa4d7` |
+| `.codex/design/15_CODING_PLAN.md` | 6586 | `8fa043aa95fd8751eb723d4c061ac400191e67e2016480d1f1476c55d62d9004` |
+| `.codex/design/16_ACCEPTANCE_CHECKLIST.md` | 1961 | `cfb73c64efb3625812fa4cf158b1b586c5c73a5f1ef9bd1c5c20db910d0cdb17` |
+| `.codex/design/17_THEME_MIGRATION_MAP.md` | 10467 | `3d0580e64f8884740c9f1f072a97ae9c9c17a02bea9a20beb1d6b992b9b0e095` |
+| `.codex/design/18_MOTION_FEEDBACK_DEBT_REGISTER.md` | 7707 | `5f8d39cd20b7c117932cef76ba2d68c7301e1d6c38e2ae09f7be8a3e09fbdfbd` |
+| `.codex/design/19_PROTOTYPE_SPEC.md` | 1862 | `9f0b1b1b9a7b9860987133f274ea6f6d5be392ae9aa2eee67e84c2044e103e4a` |
+| `.codex/design/20_CODING_WAVE_FILE_MANIFEST.md` | 23681 | `94485efe274db30c4968aac1d6d3448a378919be2744f1bd22e861af5182b272` |
+| `.codex/design/21_CODING_IMPLEMENTATION_STATUS.md` | 4976 | `2f0366504b622969bcc32ffc18da3a74f90a0214b00281e30d2e6c62fe0bdbef` |
+| `.codex/design/README.md` | 2219 | `f89bcf87b98edfe0a58da25727ecb3a74cb9519dc6eac7e2581d0471df1d1cea` |
+| `.codex/design/groups/01_foundation_shell.md` | 17879 | `b78f270191afe169c97926e9295eccd014955f2d516fdfabef206f407476aa3b` |
+| `.codex/design/groups/02_splash_onboarding.md` | 11465 | `7c65f297e0c49632f93552f5a33134d7aef8d1263e998b98e8dd31f18a173f5b` |
+| `.codex/design/groups/03_dashboard_menu.md` | 15974 | `3f78b55200f9c03eb14acd4d082aadf4e28caeb07cf7055d413412412c9a2939` |
+| `.codex/design/groups/04_ai_chat_voice.md` | 4255 | `2c8fa048dc267e70f8f812f51ae89432f03c006c407be9ae91a821dc2e76ceca` |
+| `.codex/design/groups/05_meal_nutrition.md` | 4407 | `a7cfdb770da833fbfac61c5d132c19632f3ecf9c21c4cc2c0c31ec6cdbdd1444` |
+| `.codex/design/groups/06_schedule_proof.md` | 4830 | `e8c6c618ae038aba1f99df10500c752874ba3af10846df91d4dd114d840d6a28` |
+| `.codex/design/groups/07_health_tracking.md` | 8604 | `29f4c8523058e5932e93f6432ce1f7a1e0f32280a2207eebca377763f5516c69` |
+| `.codex/design/groups/08_features_care.md` | 4720 | `8bd26067804dba1c18df51f0acfd72b176f6b6abc67c27a439d7c1b9caa2d9c6` |
+| `.codex/design/groups/09_auth_profile_settings.md` | 7197 | `b0e8436b2b9dc8d4d9526ae31a642040f56274c28ae073f0668f619298793911` |
+| `.codex/design/groups/10_v2_v3_membership.md` | 5919 | `0699c9ffc7ebd66a18edd575e35bbb9d3824bb60a9e7343608f213aaeed4e88a` |
+| `.codex/design/groups/11_sale_admin.md` | 5884 | `3c3ad06717c7c0c1622fc5ad23e797a61c400415af67ff881a3673399915576f` |
+| `.codex/design/groups/12_nabi_global.md` | 5060 | `b9c8c7b959c0d15d147df96af2e4701ec0553687944ba4a0842b3c2224ebf07a` |
+| `.codex/design/inventory/coding_implementation_status.csv` | 41622 | `c0a6fa380840737c270cdc87bda9c1804597d9be5e41e5f02e75a77799dbbb41` |
+| `.codex/design/inventory/coding_touched_files.txt` | 5449 | `5f964e3aa5b268508e0348a89459d9be5b53be10449e464622680975e0cc4eaf` |
+| `.codex/design/inventory/ui_source_audit.csv` | 64283 | `a496de0912f9fecde44c96bbe6e9ca4766370c9bc07de16df9eeadca4d4d276e` |
+| `.codex/design/inventory/ui_source_audit.json` | 224611 | `d74862ce7220b772e38ea0e1d3927f0058dbba0a5668d44f51028651467ace96` |
+
+Generated from the current `.codex/design` artifact set.

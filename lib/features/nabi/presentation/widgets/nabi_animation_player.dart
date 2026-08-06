@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 
 import '../../data/nabi_assets.dart';
 import '../../domain/nabi_animation_type.dart';
@@ -35,13 +36,13 @@ class _NabiAnimationPlayerState extends State<NabiAnimationPlayer>
     super.initState();
     _spec = _resolveSpec();
     _controller = AnimationController(vsync: this, duration: _spec.duration);
-    _start();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     NabiAssets.precacheFirstFrame(context, _spec);
+    _applyMotionPolicy();
   }
 
   @override
@@ -60,7 +61,7 @@ class _NabiAnimationPlayerState extends State<NabiAnimationPlayer>
       ..duration = _spec.duration
       ..stop();
     NabiAssets.precacheFirstFrame(context, _spec);
-    _start();
+    _applyMotionPolicy();
   }
 
   @override
@@ -73,7 +74,17 @@ class _NabiAnimationPlayerState extends State<NabiAnimationPlayer>
     return widget.spec ?? NabiAssets.specFor(widget.animationType);
   }
 
-  void _start() {
+  void _applyMotionPolicy() {
+    final policy = AppMotionScope.of(context);
+    final suppressAmbient = AppMotionScope.reduceMotionOf(context) ||
+        policy.performanceTier == AppPerformanceTier.economical;
+
+    _controller.stop();
+    if (suppressAmbient) {
+      _controller.value = 0;
+      return;
+    }
+
     if (_spec.loop) {
       _controller.repeat();
     } else {

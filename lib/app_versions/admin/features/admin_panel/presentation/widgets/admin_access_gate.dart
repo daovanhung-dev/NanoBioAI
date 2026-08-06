@@ -29,35 +29,67 @@ class _AdminAccessGateState extends ConsumerState<AdminAccessGate> {
   @override
   Widget build(BuildContext context) {
     final access = ref.watch(adminAccessControllerProvider);
-    return access.when(
-      loading: () => const _AdminChecking(),
-      error: (_, __) => _AdminSupport(
+    return AppStateSwitcher(
+      child: access.when(
+        loading: () => const KeyedSubtree(
+          key: ValueKey<String>('admin-access-loading'),
+          child: _AdminChecking(),
+        ),
+        error: (_, __) => _AdminSupport(
+          key: const ValueKey<String>('admin-access-error'),
         message: 'Chưa thể kiểm tra quyền quản trị. Vui lòng thử lại.',
-        onRetry: () =>
-            ref.read(adminAccessControllerProvider.notifier).refresh(),
-      ),
-      data: (value) {
+          onRetry: _retry,
+        ),
+        data: (value) {
         switch (value.status) {
           case AdminAccessStatus.checking:
-            return const _AdminChecking();
+            return const KeyedSubtree(
+              key: ValueKey<String>('admin-access-checking'),
+              child: _AdminChecking(),
+            );
           case AdminAccessStatus.authorized:
-            return widget.child;
+            return KeyedSubtree(
+              key: const ValueKey<String>('admin-access-authorized'),
+              child: widget.child,
+            );
           case AdminAccessStatus.unauthorized:
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ref.read(appSurfaceControllerProvider.notifier).reset();
             });
-            return const _AdminChecking();
+            return const KeyedSubtree(
+              key: ValueKey<String>('admin-access-forwarding'),
+              child: _AdminChecking(),
+            );
           case AdminAccessStatus.error:
             return _AdminSupport(
+              key: const ValueKey<String>('admin-access-support'),
               message:
                   value.safeMessage ??
                   'Khu vực quản trị chưa sẵn sàng. Vui lòng thử lại.',
-              onRetry: () =>
-                  ref.read(adminAccessControllerProvider.notifier).refresh(),
+              onRetry: _retry,
             );
         }
-      },
+        },
+      ),
     );
+  }
+
+  Future<void> _retry() async {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    try {
+      await ref.read(adminAccessControllerProvider.notifier).refresh();
+      if (!mounted) return;
+      final access = ref.read(adminAccessControllerProvider).asData?.value;
+      AppFeedbackService.instance.emit(
+        access?.isAuthorized == true
+            ? AppFeedbackType.success
+            : AppFeedbackType.warning,
+      );
+    } catch (_) {
+      if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
+      }
+    }
   }
 }
 
@@ -76,7 +108,11 @@ class _AdminSupport extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
-  const _AdminSupport({required this.message, required this.onRetry});
+  const _AdminSupport({
+    super.key,
+    required this.message,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {

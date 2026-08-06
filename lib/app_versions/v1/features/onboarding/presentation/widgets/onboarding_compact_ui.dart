@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/theme/theme.dart';
@@ -142,7 +141,7 @@ class OnboardingChoiceGrid extends StatelessWidget {
                       selected.length < maxSelections!,
                   accent: _accentForIndex(index),
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    AppFeedbackService.instance.emit(AppFeedbackType.selection);
                     onSelected(options[index].code);
                   },
                 ),
@@ -528,7 +527,7 @@ class _PickerSurface extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            HapticFeedback.selectionClick();
+            AppFeedbackService.instance.emit(AppFeedbackType.selection);
             onTap();
           },
           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -679,7 +678,7 @@ class _MultiChoiceSheetState extends State<_MultiChoiceSheet> {
   }
 
   void _toggle(String code) {
-    HapticFeedback.selectionClick();
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
     setState(() {
       if (_selected.contains(code)) {
         _selected.remove(code);

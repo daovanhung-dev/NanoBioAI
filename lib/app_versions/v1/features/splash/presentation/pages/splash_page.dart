@@ -106,12 +106,12 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1900),
+      duration: AppDuration.pulse,
     );
 
     _entryController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 720),
+      duration: AppDuration.xSlow,
     );
 
     Future.microtask(_bootstrap);
@@ -121,8 +121,9 @@ class _SplashPageState extends ConsumerState<SplashPage>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final shouldReduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final policy = AppMotionScope.of(context);
+    final shouldReduceMotion = AppMotionScope.reduceMotionOf(context) ||
+        policy.performanceTier == AppPerformanceTier.economical;
 
     if (_reduceMotion == shouldReduceMotion &&
         (_ambientController.isAnimating || shouldReduceMotion)) {
@@ -288,7 +289,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                             child: FadeTransition(
                               opacity: CurvedAnimation(
                                 parent: _entryController,
-                                curve: Curves.easeOutCubic,
+                                curve: AppAnimations.emphasizedCurve,
                               ),
                               child: SlideTransition(
                                 position:
@@ -298,7 +299,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                                     ).animate(
                                       CurvedAnimation(
                                         parent: _entryController,
-                                        curve: Curves.easeOutCubic,
+                                        curve: AppAnimations.emphasizedCurve,
                                       ),
                                     ),
                                 child: _SplashExperience(

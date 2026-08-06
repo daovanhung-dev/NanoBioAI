@@ -79,13 +79,27 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
   Widget build(BuildContext context) {
     final scheduleAsync = ref.watch(lifestyleScheduleControllerProvider);
 
+    ref.listen(lifestyleScheduleControllerProvider, (previous, next) {
+      final previousError = previous?.value?.lastErrorMessage;
+      final nextError = next.value?.lastErrorMessage;
+      if (nextError != null && nextError != previousError) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
+      }
+    });
+
     return MedicalPageScaffold(
       ambientBackground: false,
       backgroundColor: _SchedulePalette.background(context),
-      body: scheduleAsync.when(
-        loading: () => const _SchedulePageFrame(child: _ScheduleLoadingState()),
-        error: (error, _) => _SchedulePageFrame(
-          child: _ScheduleErrorState(
+      body: AppStateSwitcher(
+        alignment: Alignment.topCenter,
+        child: scheduleAsync.when(
+          loading: () => const KeyedSubtree(
+            key: ValueKey('schedule-loading'),
+            child: _SchedulePageFrame(child: _ScheduleLoadingState()),
+          ),
+          error: (error, _) => _SchedulePageFrame(
+            key: const ValueKey('schedule-error'),
+            child: _ScheduleErrorState(
             message:
                 'Nabi chưa mở được lịch trình. Bạn thử tải lại giúp Nabi nhé.',
             onRetry: () => ref
@@ -97,6 +111,7 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
           _queueBoundaryRefresh(state.summary.items);
           _queueFocusedItemReveal(state);
           return _SchedulePageFrame(
+            key: const ValueKey('schedule-ready'),
             child: RefreshIndicator(
               onRefresh: () => ref
                   .read(lifestyleScheduleControllerProvider.notifier)
@@ -131,7 +146,8 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
               ),
             ),
           );
-        },
+          },
+        ),
       ),
     );
   }
@@ -178,8 +194,11 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
       unawaited(
         Scrollable.ensureVisible(
           targetContext,
-          duration: const Duration(milliseconds: 420),
-          curve: Curves.easeOutCubic,
+          duration: AppMotionScope.duration(
+            context,
+            AppDuration.emphasized,
+          ),
+          curve: AppAnimations.emphasizedCurve,
           alignment: .18,
         ),
       );
@@ -250,7 +269,7 @@ class _ScheduleContent extends StatelessWidget {
 class _SchedulePageFrame extends StatelessWidget {
   final Widget child;
 
-  const _SchedulePageFrame({required this.child});
+  const _SchedulePageFrame({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -324,6 +343,12 @@ class _SoftOrb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tier = AppMotionScope.of(context).performanceTier;
+    final blur = switch (tier) {
+      AppPerformanceTier.economical => 0.0,
+      AppPerformanceTier.balanced => _ScheduleUi.orbBlur * .65,
+      AppPerformanceTier.rich => _ScheduleUi.orbBlur,
+    };
     return IgnorePointer(
       child: Container(
         width: size,
@@ -334,8 +359,8 @@ class _SoftOrb extends StatelessWidget {
         ),
         child: BackdropFilter(
           filter: ImageFilter.blur(
-            sigmaX: _ScheduleUi.orbBlur,
-            sigmaY: _ScheduleUi.orbBlur,
+            sigmaX: blur,
+            sigmaY: blur,
           ),
           child: const SizedBox.expand(),
         ),
@@ -750,7 +775,7 @@ class _EncouragementBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AnimatedContainer(
-      duration: AppMotionTokens.card,
+      duration: AppMotionScope.duration(context, AppMotionTokens.card),
       curve: AppMotionTokens.defaultCurve,
       padding: const EdgeInsets.all(AppSpacingTokens.cardPadding),
       decoration: BoxDecoration(
@@ -920,7 +945,7 @@ class _DateChip extends StatelessWidget {
       button: true,
       child: AnimatedScale(
         scale: selected ? _ScheduleUi.selectedScale : _ScheduleUi.normalScale,
-        duration: AppMotionTokens.button,
+        duration: AppMotionScope.duration(context, AppMotionTokens.button),
         curve: AppMotionTokens.defaultCurve,
         child: Material(
           color: Colors.transparent,
@@ -928,7 +953,7 @@ class _DateChip extends StatelessWidget {
             onTap: onTap,
             borderRadius: BorderRadius.circular(AppRadiusTokens.card),
             child: AnimatedContainer(
-              duration: AppMotionTokens.card,
+              duration: AppMotionScope.duration(context, AppMotionTokens.card),
               curve: AppMotionTokens.defaultCurve,
               width: _ScheduleUi.dateChipWidth,
               padding: const EdgeInsets.symmetric(
@@ -977,7 +1002,7 @@ class _DateChip extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacingTokens.itemSpacing),
                   AnimatedContainer(
-                    duration: AppMotionTokens.button,
+                    duration: AppMotionScope.duration(context, AppMotionTokens.button),
                     width: _ScheduleUi.todayDotSize,
                     height: _ScheduleUi.todayDotSize,
                     decoration: BoxDecoration(
@@ -1149,7 +1174,7 @@ class _TimelineRail extends StatelessWidget {
       child: Column(
         children: [
           AnimatedContainer(
-            duration: AppMotionTokens.button,
+            duration: AppMotionScope.duration(context, AppMotionTokens.button),
             curve: AppMotionTokens.defaultCurve,
             width: _ScheduleUi.railDotSize,
             height: _ScheduleUi.railDotSize,
@@ -1230,7 +1255,7 @@ class _ScheduleItemCard extends StatelessWidget {
       padding: EdgeInsets.zero,
       onTap: onToggle,
       child: AnimatedContainer(
-        duration: AppMotionTokens.card,
+        duration: AppMotionScope.duration(context, AppMotionTokens.card),
         curve: AppMotionTokens.defaultCurve,
         padding: const EdgeInsets.all(AppSpacingTokens.cardPadding),
         decoration: BoxDecoration(
@@ -1533,7 +1558,7 @@ class _CompletionButton extends StatelessWidget {
       button: true,
       enabled: enabled,
       child: AnimatedOpacity(
-        duration: AppMotionTokens.button,
+        duration: AppMotionScope.duration(context, AppMotionTokens.button),
         opacity: enabled
             ? _ScheduleUi.enabledOpacity
             : _ScheduleUi.disabledOpacity,
@@ -1541,7 +1566,7 @@ class _CompletionButton extends StatelessWidget {
           onTap: enabled ? onTap : null,
           borderRadius: BorderRadius.circular(AppRadiusTokens.avatar),
           child: AnimatedContainer(
-            duration: AppMotionTokens.card,
+            duration: AppMotionScope.duration(context, AppMotionTokens.card),
             curve: AppMotionTokens.defaultCurve,
             width: AppSpacingTokens.touchTargetMin,
             height: AppSpacingTokens.touchTargetMin,

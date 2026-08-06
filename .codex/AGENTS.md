@@ -144,6 +144,8 @@ Access rules:
 
 ## UI And Copy
 
+- For UI/theme/motion/sound/Nabi refactor, read `.codex/design/README.md`, the master design, file matrix, one matching group file, and coding plan before editing source.
+- Do not read all `.codex/design/groups/` by default; route through the file matrix.
 - User-facing text must be Vietnamese with Nabitone.
 - Do not expose internal terms: database, table, query, parser, exception, stack trace, log, tier, entitlement, gate, webhook.
 - Prefer tokens in `lib/core/theme/`.

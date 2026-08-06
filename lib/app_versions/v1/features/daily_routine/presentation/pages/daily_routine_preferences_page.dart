@@ -24,24 +24,32 @@ class _DailyRoutinePreferencesPageState
     final asyncValue = ref.watch(dailyRoutinePreferencesProvider);
     return MedicalPageScaffold(
       appBar: AppBar(title: const Text('Tùy chỉnh lịch cá nhân')),
-      body: asyncValue.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => _EditorBody(
-          preferences: _draft ?? DailyRoutinePreferences.defaults(),
-          saving: _saving,
-          onChanged: (value) => setState(() => _draft = value),
-          onSave: _save,
-        ),
-        data: (saved) {
-          final preferences =
-              _draft ?? saved ?? DailyRoutinePreferences.defaults();
-          return _EditorBody(
-            preferences: preferences,
+      body: AppStateSwitcher(
+        alignment: Alignment.topCenter,
+        child: asyncValue.when(
+          loading: () => const Center(
+            key: ValueKey('daily-routine-loading'),
+            child: CircularProgressIndicator(),
+          ),
+          error: (_, __) => _EditorBody(
+            key: const ValueKey('daily-routine-fallback'),
+            preferences: _draft ?? DailyRoutinePreferences.defaults(),
             saving: _saving,
             onChanged: (value) => setState(() => _draft = value),
             onSave: _save,
-          );
-        },
+          ),
+          data: (saved) {
+            final preferences =
+                _draft ?? saved ?? DailyRoutinePreferences.defaults();
+            return _EditorBody(
+              key: const ValueKey('daily-routine-ready'),
+              preferences: preferences,
+              saving: _saving,
+              onChanged: (value) => setState(() => _draft = value),
+              onSave: _save,
+            );
+          },
+        ),
       ),
     );
   }
@@ -53,19 +61,23 @@ class _DailyRoutinePreferencesPageState
         DailyRoutinePreferences.defaults();
     final errors = preferences.validate();
     if (errors.isNotEmpty) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(errors.first)));
       return;
     }
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() => _saving = true);
     try {
       await ref
           .read(dailyRoutinePreferencesRepositoryProvider)
           .saveForCurrentUser(preferences);
       ref.invalidate(dailyRoutinePreferencesProvider);
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       if (mounted) Navigator.of(context).pop(true);
     } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -86,6 +98,7 @@ class _EditorBody extends StatelessWidget {
   final VoidCallback onSave;
 
   const _EditorBody({
+    super.key,
     required this.preferences,
     required this.saving,
     required this.onChanged,

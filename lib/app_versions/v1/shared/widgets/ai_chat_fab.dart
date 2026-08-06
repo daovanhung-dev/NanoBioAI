@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
@@ -47,13 +46,13 @@ class _AIChatFABState extends State<AIChatFAB> with TickerProviderStateMixin {
 
     _breathingController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    )..repeat(reverse: true);
+      duration: AppDuration.pulse,
+    );
 
     _orbitController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 9),
-    )..repeat();
+      duration: AppDuration.xSlow * 13,
+    );
 
     _entranceScale = Tween<double>(begin: .72, end: 1).animate(
       CurvedAnimation(parent: _entranceController, curve: Curves.easeOutBack),
@@ -71,6 +70,29 @@ class _AIChatFABState extends State<AIChatFAB> with TickerProviderStateMixin {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final policy = AppMotionScope.of(context);
+    final suppressAmbient = AppMotionScope.reduceMotionOf(context) ||
+        policy.performanceTier == AppPerformanceTier.economical;
+
+    if (suppressAmbient) {
+      _breathingController
+        ..stop()
+        ..value = .5;
+      _orbitController
+        ..stop()
+        ..value = 0;
+      _entranceController.value = 1;
+    } else {
+      if (!_breathingController.isAnimating) {
+        _breathingController.repeat(reverse: true);
+      }
+      if (!_orbitController.isAnimating) _orbitController.repeat();
+    }
+  }
+
+  @override
   void dispose() {
     _entranceController.dispose();
     _breathingController.dispose();
@@ -79,11 +101,11 @@ class _AIChatFABState extends State<AIChatFAB> with TickerProviderStateMixin {
   }
 
   Future<void> _openAiChat() async {
-    HapticFeedback.mediumImpact();
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
 
     setState(() => _isPressed = true);
 
-    await Future<void>.delayed(const Duration(milliseconds: 90));
+    await Future<void>.delayed(AppDuration.press);
 
     if (!mounted) return;
 
@@ -97,7 +119,7 @@ class _AIChatFABState extends State<AIChatFAB> with TickerProviderStateMixin {
   }
 
   void _handleTapDown(TapDownDetails _) {
-    HapticFeedback.selectionClick();
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
     setState(() => _isPressed = true);
   }
 
@@ -233,7 +255,9 @@ class _DraggableAIChatButtonState extends State<DraggableAIChatButton> {
                   top: currentOffset.dy,
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
-                    onPanStart: (_) => HapticFeedback.selectionClick(),
+                    onPanStart: (_) => AppFeedbackService.instance.emit(
+                      AppFeedbackType.selection,
+                    ),
                     onPanUpdate: (details) {
                       setState(() {
                         _offset = _clampOffset(
@@ -244,7 +268,7 @@ class _DraggableAIChatButtonState extends State<DraggableAIChatButton> {
                       });
                     },
                     onLongPress: () {
-                      HapticFeedback.mediumImpact();
+                      AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                       setState(() => _offset = _defaultOffset(size, padding));
                     },
                     child: SizedBox(

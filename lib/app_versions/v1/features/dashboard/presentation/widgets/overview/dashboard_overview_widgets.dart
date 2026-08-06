@@ -281,7 +281,7 @@ class DashboardQuickActions extends StatelessWidget {
       _QuickActionData(
         icon: Icons.water_drop_rounded,
         label: 'Nước',
-        value: waterMl > 0 ? '${waterMl} ml' : 'Thêm nước',
+        value: waterMl > 0 ? '$waterMl ml' : 'Thêm nước',
         onTap: onWaterTap,
       ),
       _QuickActionData(
@@ -572,11 +572,10 @@ class _ScoreRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final disableAnimations = MediaQuery.disableAnimationsOf(context);
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: progress.clamp(0, 1).toDouble()),
-      duration: disableAnimations ? Duration.zero : AppDuration.progress,
-      curve: Curves.easeOutCubic,
+      duration: AppMotionScope.duration(context, AppDuration.progress),
+      curve: AppAnimations.emphasizedCurve,
       builder: (context, value, _) {
         return SizedBox(
           width: 76,

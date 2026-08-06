@@ -28,8 +28,20 @@ class _SkeletonBoxState extends State<SkeletonBox>
     _controller = AnimationController(
       vsync: this,
       duration: AppDuration.skeleton,
-    )..repeat(reverse: true);
+    );
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (AppMotionScope.reduceMotionOf(context)) {
+      _controller
+        ..stop()
+        ..value = .45;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
   }
 
   @override

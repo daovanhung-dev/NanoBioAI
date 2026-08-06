@@ -22,28 +22,44 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(saleStateProvider);
 
-    return state.when(
-      loading: () => const _SaleLoading(),
-      error: (_, __) => _SaleSupportPage(
+    return AppStateSwitcher(
+      child: state.when(
+        loading: () => const KeyedSubtree(
+          key: ValueKey<String>('sale-shell-loading'),
+          child: _SaleLoading(),
+        ),
+        error: (_, __) => KeyedSubtree(
+          key: const ValueKey<String>('sale-shell-error'),
+          child: _SaleSupportPage(
         title: 'Chưa mở được không gian cộng tác viên',
         message:
             'Hệ thống chưa kiểm tra được trạng thái cộng tác viên. Bạn thử làm mới lại.',
-        onRetry: _refreshAll,
-      ),
-      data: (saleState) {
-        if (!saleState.isActive) {
-          return _SaleSupportPage(
-            title: _inactiveTitle(saleState.status),
-            message: _inactiveMessage(saleState.status),
             onRetry: _refreshAll,
+          ),
+        ),
+        data: (saleState) {
+        if (!saleState.isActive) {
+          return KeyedSubtree(
+            key: ValueKey<String>(
+              'sale-shell-inactive-${saleState.status.name}',
+            ),
+            child: _SaleSupportPage(
+              title: _inactiveTitle(saleState.status),
+              message: _inactiveMessage(saleState.status),
+              onRetry: _refreshAll,
+            ),
           );
         }
 
         if (!saleState.payoutProfileComplete) {
-          return _SalePayoutProfileGate(onSaved: _refreshAll);
+          return KeyedSubtree(
+            key: const ValueKey<String>('sale-shell-payout-gate'),
+            child: _SalePayoutProfileGate(onSaved: _refreshAll),
+          );
         }
 
         return MedicalPageScaffold(
+          key: const ValueKey<String>('sale-shell-ready'),
           backgroundColor: AppColors.background,
           appBar: AppBar(
             title: const Text('NanoBio Cộng tác viên'),
@@ -69,7 +85,10 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
           ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _index,
-            onDestinationSelected: (value) => setState(() => _index = value),
+            onDestinationSelected: (value) {
+              AppFeedbackService.instance.emit(AppFeedbackType.selection);
+              setState(() => _index = value);
+            },
             destinations: const [
               NavigationDestination(
                 icon: Icon(Icons.space_dashboard_rounded),
@@ -90,17 +109,29 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
             ],
           ),
         );
-      },
+        },
+      ),
     );
   }
 
-  void _refreshAll() {
+  Future<void> _refreshAll() async {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     ref.invalidate(saleStateProvider);
     ref.invalidate(saleDashboardProvider);
     ref.invalidate(saleDirectCustomersProvider);
     ref.invalidate(salePointLedgerProvider);
     ref.invalidate(saleConversionsProvider);
     ref.invalidate(salePayoutProfileProvider);
+    try {
+      await ref.read(saleStateProvider.future);
+      if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+      }
+    } catch (_) {
+      if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
+      }
+    }
   }
 
   String _inactiveTitle(SaleStatus status) {
@@ -273,7 +304,12 @@ class _SalePayoutProfileGateState
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate() || _saving) return;
+    if (_saving) return;
+    if (!_formKey.currentState!.validate()) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() => _saving = true);
 
     try {
@@ -291,8 +327,10 @@ class _SalePayoutProfileGateState
       ref.invalidate(saleStateProvider);
       ref.invalidate(salePayoutProfileProvider);
       widget.onSaved();
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       _showSnack('Đã lưu hồ sơ chi trả cộng tác viên.');
     } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       _showSnack('Chưa lưu được hồ sơ chi trả. Bạn thử lại sau.');
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -524,18 +562,25 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
         children: [
           _ReferralCodePanel(referralCode: widget.state.referralCode),
           const SizedBox(height: AppSpacing.sectionSpacing),
-          dashboard.when(
-            loading: () => const _CenteredProgress(),
-            error: (_, __) => const _EmptySaleState(
+          AppStateSwitcher(
+            child: dashboard.when(
+              loading: () => const KeyedSubtree(
+                key: ValueKey<String>('sale-conversion-loading'),
+                child: _CenteredProgress(),
+              ),
+              error: (_, __) => const _EmptySaleState(
+                key: ValueKey<String>('sale-conversion-error'),
               title: 'Chưa tải được cấu hình quy đổi',
               message: 'Bạn thử làm mới lại sau.',
             ),
-            data: (data) => _ConversionRequestPanel(
-              dashboard: data,
+              data: (data) => _ConversionRequestPanel(
+                key: const ValueKey<String>('sale-conversion-ready'),
+                dashboard: data,
               pointController: _pointController,
               submitting: _submitting,
               onChanged: () => setState(() => _pendingIdempotencyKey = null),
-              onSubmit: _submitConversion,
+                onSubmit: _submitConversion,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.sectionSpacing),
@@ -565,10 +610,12 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
       requestedPointCents: requested,
     );
     if (error != null) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       _showSnack(error);
       return;
     }
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() => _submitting = true);
     final idempotencyKey =
         _pendingIdempotencyKey ?? _buildConversionIdempotencyKey(requested);
@@ -587,8 +634,10 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
       ref.invalidate(saleConversionsProvider);
       _pointController.clear();
       _pendingIdempotencyKey = null;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       _showSnack('Đã gửi yêu cầu quy đổi điểm cộng tác viên.');
     } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       _showSnack('Chưa gửi được yêu cầu quy đổi. Bạn thử lại sau.');
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -632,7 +681,19 @@ class _ReferralCodePanel extends StatelessWidget {
           FilledButton.icon(
             onPressed: referralCode == null
                 ? null
-                : () => Clipboard.setData(ClipboardData(text: referralCode!)),
+                : () async {
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.selection,
+                    );
+                    await Clipboard.setData(
+                      ClipboardData(text: referralCode!),
+                    );
+                    if (!context.mounted) return;
+                    AppFeedbackService.instance.emit(AppFeedbackType.success);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Đã sao chép mã giới thiệu.')),
+                    );
+                  },
             icon: const Icon(Icons.copy_rounded),
             label: const Text('Sao chép mã'),
           ),
@@ -650,6 +711,7 @@ class _ConversionRequestPanel extends StatelessWidget {
   final ValueChanged<SaleDashboard> onSubmit;
 
   const _ConversionRequestPanel({
+    super.key,
     required this.dashboard,
     required this.pointController,
     required this.submitting,
@@ -896,7 +958,11 @@ class _EmptySaleState extends StatelessWidget {
   final String title;
   final String message;
 
-  const _EmptySaleState({required this.title, required this.message});
+  const _EmptySaleState({
+    super.key,
+    required this.title,
+    required this.message,
+  });
 
   @override
   Widget build(BuildContext context) {

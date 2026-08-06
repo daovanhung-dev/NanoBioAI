@@ -11,6 +11,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 - Admin app surface: `lib/app_versions/admin/`
 - Sale/referral independent axis: `lib/sale_referral/`
 - Core constants/theme/storage/network/utils: `lib/core/`
+- Canonical UI/motion design: `.codex/design/`
 - Shared services: `lib/services/`
 - Shared widgets: `lib/shared/widgets/`
 - Tests: `test/`
@@ -32,6 +33,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 | Create todo docs                     | `.codex/workflows/create-todo.md`       | optional                 |
 | Create/update/read DD                | `.codex/workflows/docs-dd.md`           | product/domain as needed |
 | Update `.codex`/maps/checklists      | `.codex/workflows/docs-context.md`      | optional                 |
+| Design/refactor toàn UI/motion/sound   | `.codex/workflows/docs-context.md`      | UI/theme/NabiCopy        |
 | Refactor scaffold/version boundaries | `.codex/workflows/refactor-scaffold.md` | access/membership        |
 | Supabase schema/RLS/quota/sale       | `.codex/workflows/supabase-schema.md`   | access/membership        |
 

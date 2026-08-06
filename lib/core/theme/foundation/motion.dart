@@ -1,90 +1,50 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
 
-/// Foundation motion tokens defining animation durations and curves.
+/// Canonical primitive values for the Nabi Kinetic Aura motion language.
 ///
-/// These are primitive, immutable values that form the base of the motion vocabulary.
-/// Use semantic motion tokens from `AppMotionTokens` instead of referencing these directly.
-///
-/// **Duration Scale:**
-/// - `fast` (150ms): Quick micro-interactions like button presses and hover states
-/// - `normal` (250ms): Standard component transitions like cards and inputs
-/// - `slow` (350ms): Page-level transitions and complex animations
-///
-/// **Curves:**
-/// - `easeIn`: Accelerating motion, starting slow and ending fast
-/// - `easeOut`: Decelerating motion, starting fast and ending slow
-/// - `easeInOut`: Smooth motion, accelerating then decelerating (default for most animations)
-///
-/// Example usage:
-/// ```dart
-/// AnimatedContainer(
-///   duration: MotionFoundation.normal,
-///   curve: MotionFoundation.easeInOut,
-///   // ...
-/// )
-/// ```
+/// Feature code should consume semantic values from [AppDuration],
+/// [AppMotionTokens] or the shared motion widgets instead of declaring raw
+/// durations and curves.
 @immutable
 class MotionFoundation {
   const MotionFoundation._();
 
-  // ============================================================
-  // DURATIONS
-  // ============================================================
+  // Micro interactions.
+  static const Duration instant = Duration.zero;
+  static const Duration press = Duration(milliseconds: 90);
+  static const Duration xFast = Duration(milliseconds: 120);
+  static const Duration fast = Duration(milliseconds: 180);
 
-  /// Fast duration for quick micro-interactions (150ms).
-  ///
-  /// Use for:
-  /// - Button press feedback
-  /// - Hover state transitions
-  /// - Focus ring appearances
-  /// - Ripple effects
-  static const Duration fast = Duration(milliseconds: 150);
+  // Component transitions.
+  static const Duration normal = Duration(milliseconds: 260);
+  static const Duration emphasized = Duration(milliseconds: 360);
 
-  /// Normal duration for standard component transitions (250ms).
-  ///
-  /// Use for:
-  /// - Card animations
-  /// - Input field transitions
-  /// - Modal appearances
-  /// - Dropdown expansions
-  static const Duration normal = Duration(milliseconds: 250);
+  // Spatial and celebration transitions.
+  static const Duration slow = Duration(milliseconds: 480);
+  static const Duration xSlow = Duration(milliseconds: 680);
 
-  /// Slow duration for page-level transitions and complex animations (350ms).
-  ///
-  /// Use for:
-  /// - Page transitions
-  /// - Dialog openings
-  /// - Bottom sheet slides
-  /// - Complex multi-element animations
-  static const Duration slow = Duration(milliseconds: 350);
+  // Repeating ambient effects. These remain intentionally slow and subtle.
+  static const Duration shimmer = Duration(milliseconds: 1450);
+  static const Duration pulse = Duration(milliseconds: 1700);
 
-  // ============================================================
-  // CURVES
-  // ============================================================
+  // Curves.
+  static const Curve standard = Cubic(0.2, 0, 0, 1);
+  static const Curve emphasizedCurve = Cubic(0.2, 0.8, 0.2, 1);
+  static const Curve decelerate = Cubic(0, 0, 0, 1);
+  static const Curve accelerate = Cubic(0.3, 0, 1, 1);
+  static const Curve easeIn = accelerate;
+  static const Curve easeOut = decelerate;
+  static const Curve easeInOut = standard;
 
-  /// Ease-in curve: accelerating motion, starting slow and ending fast.
-  ///
-  /// Use for:
-  /// - Elements exiting the viewport
-  /// - Dismissal animations
-  /// - Elements accelerating off-screen
-  static const Curve easeIn = Curves.easeIn;
+  // Spatial distances expressed as logical pixels or fractional offsets.
+  static const double microDistance = 2;
+  static const double componentDistance = 8;
+  static const double pageDistanceFraction = 0.028;
 
-  /// Ease-out curve: decelerating motion, starting fast and ending slow.
-  ///
-  /// Use for:
-  /// - Elements entering the viewport
-  /// - Appearance animations
-  /// - Elements decelerating to rest
-  static const Curve easeOut = Curves.easeOut;
-
-  /// Ease-in-out curve: smooth motion, accelerating then decelerating.
-  ///
-  /// Use for:
-  /// - Most standard animations (default choice)
-  /// - State changes
-  /// - Property transitions
-  /// - Bidirectional movements
-  static const Curve easeInOut = Curves.easeInOut;
+  // Tactile scales.
+  static const double buttonPressedScale = 0.975;
+  static const double cardPressedScale = 0.988;
+  static const double chipPressedScale = 0.97;
+  static const double incomingPageScale = 0.994;
 }

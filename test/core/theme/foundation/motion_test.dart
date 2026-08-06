@@ -3,52 +3,44 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/theme/foundation/motion.dart';
 
 void main() {
-  group('MotionFoundation', () {
-    group('durations', () {
-      test('fast duration should be 150ms', () {
-        expect(MotionFoundation.fast, const Duration(milliseconds: 150));
-      });
-
-      test('normal duration should be 250ms', () {
-        expect(MotionFoundation.normal, const Duration(milliseconds: 250));
-      });
-
-      test('slow duration should be 350ms', () {
-        expect(MotionFoundation.slow, const Duration(milliseconds: 350));
-      });
+  group('MotionFoundation — Nabi Kinetic Aura', () {
+    test('durations follow the canonical micro/component/spatial ladder', () {
+      expect(MotionFoundation.press, const Duration(milliseconds: 90));
+      expect(MotionFoundation.xFast, const Duration(milliseconds: 120));
+      expect(MotionFoundation.fast, const Duration(milliseconds: 180));
+      expect(MotionFoundation.normal, const Duration(milliseconds: 260));
+      expect(MotionFoundation.emphasized, const Duration(milliseconds: 360));
+      expect(MotionFoundation.slow, const Duration(milliseconds: 480));
+      expect(MotionFoundation.xSlow, const Duration(milliseconds: 680));
     });
 
-    group('curves', () {
-      test('easeIn curve should be Curves.easeIn', () {
-        expect(MotionFoundation.easeIn, Curves.easeIn);
-      });
-
-      test('easeOut curve should be Curves.easeOut', () {
-        expect(MotionFoundation.easeOut, Curves.easeOut);
-      });
-
-      test('easeInOut curve should be Curves.easeInOut', () {
-        expect(MotionFoundation.easeInOut, Curves.easeInOut);
-      });
+    test('durations increase monotonically', () {
+      final values = <Duration>[
+        MotionFoundation.press,
+        MotionFoundation.xFast,
+        MotionFoundation.fast,
+        MotionFoundation.normal,
+        MotionFoundation.emphasized,
+        MotionFoundation.slow,
+        MotionFoundation.xSlow,
+      ];
+      for (var index = 1; index < values.length; index++) {
+        expect(values[index], greaterThan(values[index - 1]));
+      }
     });
 
-    group('requirement validation', () {
-      test(
-        'all duration values should match requirement 1.6 specification',
-        () {
-          // Requirement 1.6: fast: 150ms, normal: 250ms, slow: 350ms
-          expect(MotionFoundation.fast.inMilliseconds, 150);
-          expect(MotionFoundation.normal.inMilliseconds, 250);
-          expect(MotionFoundation.slow.inMilliseconds, 350);
-        },
-      );
+    test('canonical curves remain cubic and deterministic', () {
+      expect(MotionFoundation.standard, isA<Cubic>());
+      expect(MotionFoundation.emphasizedCurve, isA<Cubic>());
+      expect(MotionFoundation.decelerate, isA<Cubic>());
+      expect(MotionFoundation.accelerate, isA<Cubic>());
+    });
 
-      test('all required curves should be defined', () {
-        // Requirement 1.6: ease-in, ease-out, ease-in-out
-        expect(MotionFoundation.easeIn, isNotNull);
-        expect(MotionFoundation.easeOut, isNotNull);
-        expect(MotionFoundation.easeInOut, isNotNull);
-      });
+    test('tactile scales are subtle and never exceed the resting scale', () {
+      expect(MotionFoundation.buttonPressedScale, inInclusiveRange(.95, 1));
+      expect(MotionFoundation.cardPressedScale, inInclusiveRange(.97, 1));
+      expect(MotionFoundation.chipPressedScale, inInclusiveRange(.95, 1));
+      expect(MotionFoundation.incomingPageScale, inInclusiveRange(.98, 1));
     });
   });
 }

@@ -12,6 +12,7 @@ import '../../domain/entities/schedule_completion_proof_entity.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
 
 import 'package:nano_app/core/theme/app_colors.dart';
+
 class ScheduleProofPreviewSection extends ConsumerWidget {
   final List<ScheduleCompletionProofEntity> proofs;
 
@@ -87,24 +88,29 @@ class ScheduleProofGalleryPage extends ConsumerWidget {
     final rewardGateway = ref.watch(scheduleRewardOnlineGatewayProvider);
     return MedicalPageScaffold(
       appBar: AppBar(title: const Text('Bằng chứng nhiệm vụ')),
-      body: proofs.isEmpty
-          ? const Center(
-              child: Padding(
-                padding: EdgeInsets.all(AppSpacingTokens.pagePadding),
-                child: Text('Bạn chưa có ảnh minh chứng nào.'),
-              ),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.all(AppSpacingTokens.pagePadding),
+      body: AppStateSwitcher(
+        alignment: Alignment.topCenter,
+        child: proofs.isEmpty
+            ? const Center(
+                key: ValueKey('proof-gallery-empty'),
+                child: Padding(
+                  padding: EdgeInsets.all(AppSpacingTokens.pagePadding),
+                  child: Text('Bạn chưa có ảnh minh chứng nào.'),
+                ),
+              )
+            : ListView.separated(
+                key: const ValueKey('proof-gallery-list'),
+                padding: const EdgeInsets.all(AppSpacingTokens.pagePadding),
               itemCount: proofs.length,
               separatorBuilder: (_, _) =>
                   const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
-              itemBuilder: (context, index) => _ProofCard(
-                proof: proofs[index],
-                service: service,
-                rewardGateway: rewardGateway,
+                itemBuilder: (context, index) => _ProofCard(
+                  proof: proofs[index],
+                  service: service,
+                  rewardGateway: rewardGateway,
+                ),
               ),
-            ),
+      ),
     );
   }
 }
@@ -124,16 +130,24 @@ class _ProofCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _openProof(context),
-        child: compact
+    return AppPressScale(
+      pressedScale: AppMotionTokens.cardPressedScale,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            AppFeedbackService.instance.emit(AppFeedbackType.selection);
+            _openProof(context);
+          },
+          child: compact
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: _ProofImage(proof: proof, service: service),
+                    child: Hero(
+                      tag: 'schedule-proof-${proof.id}',
+                      child: _ProofImage(proof: proof, service: service),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(
@@ -166,7 +180,10 @@ class _ProofCard extends StatelessWidget {
                   SizedBox(
                     width: 112,
                     height: 112,
-                    child: _ProofImage(proof: proof, service: service),
+                    child: Hero(
+                      tag: 'schedule-proof-${proof.id}',
+                      child: _ProofImage(proof: proof, service: service),
+                    ),
                   ),
                   Expanded(
                     child: Padding(
@@ -202,6 +219,7 @@ class _ProofCard extends StatelessWidget {
                   ),
                 ],
               ),
+        ),
       ),
     );
   }
@@ -213,6 +231,7 @@ class _ProofCard extends StatelessWidget {
       final cloudPath = proof.cloudObjectPath;
       if (cloudPath == null || cloudPath.isEmpty) {
         if (!context.mounted) return;
+        AppFeedbackService.instance.emit(AppFeedbackType.warning);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Ảnh minh chứng không còn trên thiết bị này.'),
@@ -224,6 +243,7 @@ class _ProofCard extends StatelessWidget {
         final bytes = await rewardGateway.downloadProof(cloudPath);
         await service.restoreProofFromCloud(proof.localPath, bytes);
       } on ScheduleRewardException catch (error) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -238,6 +258,7 @@ class _ProofCard extends StatelessWidget {
         );
         return;
       } on ScheduleProofException catch (error) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -342,7 +363,10 @@ class _ScheduleProofViewerPage extends StatelessWidget {
         child: InteractiveViewer(
           minScale: 0.8,
           maxScale: 4,
-          child: Image.file(file, fit: BoxFit.contain),
+          child: Hero(
+            tag: 'schedule-proof-${proof.id}',
+            child: Image.file(file, fit: BoxFit.contain),
+          ),
         ),
       ),
     );

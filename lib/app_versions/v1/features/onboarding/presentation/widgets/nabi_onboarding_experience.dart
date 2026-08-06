@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 /// Visual foundation for the NaBi Green Wellness onboarding experience.
@@ -594,7 +593,7 @@ class NabiPrimaryButton extends StatelessWidget {
       enabled: enabled,
       onTap: enabled
           ? () {
-              HapticFeedback.lightImpact();
+              AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
               onPressed?.call();
             }
           : null,

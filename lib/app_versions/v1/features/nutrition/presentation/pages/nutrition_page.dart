@@ -18,20 +18,31 @@ class NutritionPage extends ConsumerWidget {
     return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: summaryAsync.when(
-          loading: () => const _NutritionLoadingState(),
-          error: (error, _) => _StateCard(
-            icon: Icons.spa_rounded,
-            title: 'Nabi chưa mở được góc dinh dưỡng của bạn',
-            message: 'Dữ liệu bữa ăn chưa sẵn sàng. Hãy thử làm mới.',
-            onRetry: () => ref.invalidate(nutritionSummaryProvider),
-          ),
-          data: (summary) => RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(nutritionSummaryProvider);
-              await ref.read(nutritionSummaryProvider.future);
-            },
-            child: CustomScrollView(
+        child: AppStateSwitcher(
+          alignment: Alignment.topCenter,
+          child: summaryAsync.when(
+            loading: () => const _NutritionLoadingState(
+              key: ValueKey('nutrition-loading'),
+            ),
+            error: (error, _) => _StateCard(
+              key: const ValueKey('nutrition-error'),
+              icon: Icons.spa_rounded,
+              title: 'Nabi chưa mở được góc dinh dưỡng của bạn',
+              message: 'Dữ liệu bữa ăn chưa sẵn sàng. Hãy thử làm mới.',
+              onRetry: () {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+                ref.invalidate(nutritionSummaryProvider);
+              },
+            ),
+            data: (summary) => RefreshIndicator(
+              key: const ValueKey('nutrition-ready'),
+              onRefresh: () async {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+                ref.invalidate(nutritionSummaryProvider);
+                await ref.read(nutritionSummaryProvider.future);
+                AppFeedbackService.instance.emit(AppFeedbackType.success);
+              },
+              child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
@@ -68,6 +79,7 @@ class NutritionPage extends ConsumerWidget {
                 ),
               ],
             ),
+            ),
           ),
         ),
       ),
@@ -76,7 +88,7 @@ class NutritionPage extends ConsumerWidget {
 }
 
 class _NutritionLoadingState extends StatelessWidget {
-  const _NutritionLoadingState();
+  const _NutritionLoadingState({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -378,7 +390,10 @@ class _NutritionProfileEntryCard extends StatelessWidget {
           ),
           IconButton(
             tooltip: 'Mở hồ sơ dinh dưỡng',
-            onPressed: () => context.push(V1RoutePaths.nutritionProfile),
+            onPressed: () {
+              AppFeedbackService.instance.emit(AppFeedbackType.selection);
+              context.push(V1RoutePaths.nutritionProfile);
+            },
             icon: const Icon(Icons.chevron_right_rounded),
           ),
         ],
@@ -823,6 +838,7 @@ class _StateCard extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const _StateCard({
+    super.key,
     required this.icon,
     required this.title,
     required this.message,

@@ -22,6 +22,7 @@ Doc `.codex/history/OPEN_RISKS.md` chi khi task cham release readiness, auth, Su
 - `workflows/`: context theo loai cong viec.
 - `domains/`: context theo module/domain san pham.
 - `history/`: tri thuc rut ra tu toan bo `docs/worklog`.
+- `design/`: source thiết kế UI/motion/sound/haptic canonical; chỉ đọc khi task chạm UI/theme/Nabi.
 - `task-skills/`: skill sinh tu dong theo loai task tu lich su worklog.
 - `skills/nanobio-project-agent/`: skill project-local canonical cho AI agent.
 - root `AGENTS.md` va `.agents/skills/nanobio-project-agent/`: bridge nho cho Codex auto-discovery, tro ve context canonical trong `.codex`.

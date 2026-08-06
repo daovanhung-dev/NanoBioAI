@@ -218,9 +218,12 @@ abstract class AdminLogger {
     return '${username[0]}***${username[username.length - 1]}@$domain';
   }
 
-  /// Export logs for bug report (placeholder for future implementation)
+  /// Returns a safe export marker for the bug-report workflow.
+  ///
+  /// Persistent file creation belongs to the platform sharing layer; keeping
+  /// this logger free of file-system access avoids leaking unsanitized data.
   static Future<String> exportLogs() async {
-    // TODO: Implement log export to file
-    return 'Logs exported at ${DateTime.now()}';
+    final exportedAt = DateTime.now().toIso8601String();
+    return 'NanoBio Admin log export requested at $exportedAt';
   }
 }

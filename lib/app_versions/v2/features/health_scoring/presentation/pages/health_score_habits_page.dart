@@ -22,17 +22,27 @@ class HealthScoreHabitsPage extends ConsumerWidget {
         elevation: 0,
         title: const Text('Điểm sức khỏe'),
       ),
-      body: state.when(
-        loading: () => const _HealthScoreLoading(),
+      body: AppStateSwitcher(
+        alignment: Alignment.topCenter,
+        child: state.when(
+        loading: () => const _HealthScoreLoading(
+          key: ValueKey('health-score-loading'),
+        ),
         error: (_, __) => _HealthScoreSupportState(
+          key: const ValueKey('health-score-error'),
           icon: Icons.error_outline_rounded,
           title: 'Chưa tải được điểm sức khỏe',
           message: 'Bạn thử lại sau ít phút.',
           actionLabel: 'Thử lại',
-          onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
+          onAction: () {
+            AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+            ref.invalidate(healthScoreHabitsSummaryProvider);
+          },
         ),
         data: (viewModel) {
-          return switch (viewModel.status) {
+          return KeyedSubtree(
+            key: ValueKey('health-score-${viewModel.status.name}'),
+            child: switch (viewModel.status) {
             HealthScoreHabitsViewStatus.authRequired =>
               _HealthScoreSupportState(
                 icon: Icons.lock_outline_rounded,
@@ -42,7 +52,10 @@ class HealthScoreHabitsPage extends ConsumerWidget {
                   fallback: 'Đăng nhập để tiếp tục.',
                 ),
                 actionLabel: 'Đăng nhập',
-                onAction: () => context.push(V2RoutePaths.login),
+                onAction: () {
+                  AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+                  context.push(V2RoutePaths.login);
+                },
               ),
             HealthScoreHabitsViewStatus.empty => _HealthScoreSupportState(
               icon: Icons.history_toggle_off_rounded,
@@ -53,7 +66,10 @@ class HealthScoreHabitsPage extends ConsumerWidget {
                     'Hoàn thành lịch chăm sóc hằng ngày để Nabi tính điểm.',
               ),
               actionLabel: 'Làm mới',
-              onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
+              onAction: () {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+                ref.invalidate(healthScoreHabitsSummaryProvider);
+              },
             ),
             HealthScoreHabitsViewStatus.failure => _HealthScoreSupportState(
               icon: Icons.error_outline_rounded,
@@ -63,24 +79,31 @@ class HealthScoreHabitsPage extends ConsumerWidget {
                 fallback: 'Bạn thử lại sau ít phút.',
               ),
               actionLabel: 'Thử lại',
-              onAction: () => ref.invalidate(healthScoreHabitsSummaryProvider),
+              onAction: () {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+                ref.invalidate(healthScoreHabitsSummaryProvider);
+              },
             ),
             HealthScoreHabitsViewStatus.ready => _HealthScoreReady(
               result: viewModel.result!,
               onRefresh: () async {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                 ref.invalidate(healthScoreHabitsSummaryProvider);
                 await ref.read(healthScoreHabitsSummaryProvider.future);
+                AppFeedbackService.instance.emit(AppFeedbackType.success);
               },
             ),
-          };
+          },
+          );
         },
+        ),
       ),
     );
   }
 }
 
 class _HealthScoreLoading extends StatelessWidget {
-  const _HealthScoreLoading();
+  const _HealthScoreLoading({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -144,12 +167,20 @@ class _ScoreHeader extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                result.score.toString(),
-                style: AppTextStyles.heading1.copyWith(
-                  color: AppColors.primary,
-                  fontSize: 56,
-                  fontWeight: FontWeight.w900,
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(end: result.score.toDouble()),
+                duration: AppMotionScope.duration(
+                  context,
+                  AppDuration.progress,
+                ),
+                curve: AppAnimations.emphasizedCurve,
+                builder: (context, score, _) => Text(
+                  score.round().toString(),
+                  style: AppTextStyles.heading1.copyWith(
+                    color: AppColors.primary,
+                    fontSize: 56,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.xs),
@@ -277,10 +308,18 @@ class _ProgressRow extends StatelessWidget {
             style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
           ),
           const SizedBox(height: AppSpacing.tiny),
-          LinearProgressIndicator(
-            value: value,
-            minHeight: 6,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(end: value),
+            duration: AppMotionScope.duration(
+              context,
+              AppDuration.progress,
+            ),
+            curve: AppAnimations.emphasizedCurve,
+            builder: (context, progress, _) => LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
           ),
         ],
       ),
@@ -310,6 +349,7 @@ class _HealthScoreSupportState extends StatelessWidget {
   final VoidCallback onAction;
 
   const _HealthScoreSupportState({
+    super.key,
     required this.icon,
     required this.title,
     required this.message,

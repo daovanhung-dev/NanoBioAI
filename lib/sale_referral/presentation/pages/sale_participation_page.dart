@@ -46,27 +46,39 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
       ),
       body: SafeArea(
         top: false,
-        child: saleState.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => _BuildTermsBody(
+        child: AppStateSwitcher(
+          child: saleState.when(
+            loading: () => const Center(
+              key: ValueKey<String>('sale-participation-loading'),
+              child: CircularProgressIndicator(),
+            ),
+            error: (_, __) => _BuildTermsBody(
+              key: const ValueKey<String>('sale-participation-fallback'),
             authenticated: authenticated,
             accepted: _accepted,
             submitting: _submitting,
             state: SaleState.none,
-            onAcceptedChanged: (value) => setState(() => _accepted = value),
-            onSubmit: _submit,
-          ),
-          data: (state) => _BuildTermsBody(
+              onAcceptedChanged: _setAccepted,
+              onSubmit: _submit,
+            ),
+            data: (state) => _BuildTermsBody(
+              key: ValueKey<String>('sale-participation-${state.status.name}'),
             authenticated: authenticated,
             accepted: _accepted,
             submitting: _submitting,
             state: state,
-            onAcceptedChanged: (value) => setState(() => _accepted = value),
-            onSubmit: _submit,
+              onAcceptedChanged: _setAccepted,
+              onSubmit: _submit,
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _setAccepted(bool value) {
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
+    setState(() => _accepted = value);
   }
 
   Future<void> _submit() async {
@@ -78,6 +90,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
     }
     if (!_accepted || _submitting) return;
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() => _submitting = true);
     try {
       final updatedState = await ref
@@ -91,6 +104,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
       ref.invalidate(salePayoutProfileProvider);
 
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       if (updatedState.isActive) {
         context.pushReplacement(V2RoutePaths.sale);
         return;
@@ -104,6 +118,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
       );
     } catch (_) {
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -126,6 +141,7 @@ class _BuildTermsBody extends StatelessWidget {
   final Future<void> Function() onSubmit;
 
   const _BuildTermsBody({
+    super.key,
     required this.authenticated,
     required this.accepted,
     required this.submitting,
@@ -213,7 +229,12 @@ class _BuildTermsBody extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: () => _showFullTerms(context),
+                    onPressed: () {
+                      AppFeedbackService.instance.emit(
+                        AppFeedbackType.selection,
+                      );
+                      _showFullTerms(context);
+                    },
                     icon: const Icon(Icons.article_outlined),
                     label: const Text('Xem điều lệ đầy đủ'),
                   ),

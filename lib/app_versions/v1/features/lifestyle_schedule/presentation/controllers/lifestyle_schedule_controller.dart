@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
@@ -12,6 +11,7 @@ import '../../application/schedule_proof_image_service.dart';
 import '../../application/schedule_reward_online_gateway.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
 import 'lifestyle_schedule_state.dart';
+import 'package:nano_app/core/feedback/feedback.dart';
 
 enum LifestyleScheduleToggleResult {
   completed,
@@ -195,7 +195,7 @@ class LifestyleScheduleController
       final items = current.summary.items
           .map((existing) => existing.id == updated.id ? updated : existing)
           .toList();
-      HapticFeedback.lightImpact();
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       state = AsyncData(
         current.copyWith(
           summary: LifestyleScheduleSummaryEntity(

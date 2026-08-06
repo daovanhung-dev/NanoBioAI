@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart';
@@ -82,12 +82,32 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
     _ambientController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 18),
-    )..repeat();
+    );
 
     _floatingController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
-    )..repeat(reverse: true);
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final policy = AppMotionScope.of(context);
+    final reduceMotion = AppMotionScope.reduceMotionOf(context);
+    if (reduceMotion || policy.performanceTier == AppPerformanceTier.economical) {
+      _ambientController
+        ..stop()
+        ..value = .42;
+      _floatingController
+        ..stop()
+        ..value = .5;
+      return;
+    }
+    if (!_ambientController.isAnimating) _ambientController.repeat();
+    if (!_floatingController.isAnimating) {
+      _floatingController.repeat(reverse: true);
+    }
   }
 
   @override
@@ -101,15 +121,19 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
   void _changeTab(int index) {
     if (_currentIndex == index) return;
 
-    HapticFeedback.lightImpact();
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
 
     setState(() => _currentIndex = index);
 
-    _pageController.animateToPage(
-      index,
-      duration: AppDuration.slow,
-      curve: Curves.easeOutCubic,
-    );
+    if (AppMotionScope.reduceMotionOf(context)) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: AppDuration.slow,
+        curve: AppAnimations.emphasizedCurve,
+      );
+    }
 
     // Cập nhật Nabi context theo tab đang active
     final routeByTab = [
@@ -189,6 +213,12 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
 
   Widget _buildNavigationBar(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tier = AppMotionScope.of(context).performanceTier;
+    final blurSigma = switch (tier) {
+      AppPerformanceTier.economical => 0.0,
+      AppPerformanceTier.balanced => 14.0,
+      AppPerformanceTier.rich => 22.0,
+    };
 
     final glassColors = isDark
         ? [
@@ -207,7 +237,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.xxl),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
         child: Container(
           height: 78,
           padding: const EdgeInsets.all(AppSpacing.sm),

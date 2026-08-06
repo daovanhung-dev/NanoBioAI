@@ -15,16 +15,26 @@ class NutritionProfileEditorPage extends ConsumerWidget {
     return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Hồ sơ dinh dưỡng')),
-      body: profileAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => _ProfileLoadError(
-          onRetry: () => ref
-              .read(nutritionProfileControllerProvider.notifier)
-              .refresh(),
-        ),
-        data: (profile) => _NutritionProfileForm(
-          key: ValueKey('${profile.id}_${profile.updatedAt}'),
-          initialProfile: profile,
+      body: AppStateSwitcher(
+        alignment: Alignment.topCenter,
+        child: profileAsync.when(
+          loading: () => const Center(
+            key: ValueKey('nutrition-profile-loading'),
+            child: CircularProgressIndicator(),
+          ),
+          error: (error, _) => _ProfileLoadError(
+            key: const ValueKey('nutrition-profile-error'),
+            onRetry: () {
+              AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+              ref
+                  .read(nutritionProfileControllerProvider.notifier)
+                  .refresh();
+            },
+          ),
+          data: (profile) => _NutritionProfileForm(
+            key: ValueKey('nutrition-profile-${profile.id}-${profile.updatedAt}'),
+            initialProfile: profile,
+          ),
         ),
       ),
     );
@@ -167,10 +177,10 @@ class _NutritionProfileFormState
                 AppSpacing.md,
                 120,
               ),
-              child: AnimatedSwitcher(
-                duration: AppDuration.normal,
+              child: AppDirectionalSwitcher(
+                index: _step,
                 child: KeyedSubtree(
-                  key: ValueKey(_step),
+                  key: ValueKey('nutrition-profile-step-$_step'),
                   child: _buildStep(),
                 ),
               ),
@@ -179,7 +189,12 @@ class _NutritionProfileFormState
           _NavigationBar(
             step: _step,
             saving: _saving,
-            onBack: _step == 0 ? null : () => setState(() => _step--),
+            onBack: _step == 0
+                ? null
+                : () {
+                    AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                    setState(() => _step--);
+                  },
             onNext: _saving ? null : _next,
           ),
         ],
@@ -387,12 +402,17 @@ class _NutritionProfileFormState
   }
 
   Future<void> _next() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
     if (_step < 4) {
+      AppFeedbackService.instance.emit(AppFeedbackType.selection);
       setState(() => _step++);
       return;
     }
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() => _saving = true);
     await ref
         .read(nutritionProfileControllerProvider.notifier)
@@ -401,11 +421,13 @@ class _NutritionProfileFormState
     final result = ref.read(nutritionProfileControllerProvider);
     setState(() => _saving = false);
     if (result.hasError) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Nabi chưa lưu được hồ sơ. Hãy thử lại.')),
       );
       return;
     }
+    AppFeedbackService.instance.emit(AppFeedbackType.success);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Đã lưu hồ sơ dinh dưỡng.')),
     );
@@ -831,7 +853,7 @@ class _NavigationBar extends StatelessWidget {
 }
 
 class _ProfileLoadError extends StatelessWidget {
-  const _ProfileLoadError({required this.onRetry});
+  const _ProfileLoadError({super.key, required this.onRetry});
 
   final VoidCallback onRetry;
 

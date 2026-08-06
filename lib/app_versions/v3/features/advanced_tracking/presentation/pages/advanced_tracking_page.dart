@@ -21,26 +21,38 @@ class AdvancedTrackingPage extends ConsumerWidget {
         elevation: 0,
         title: const Text('Lộ trình nâng cao'),
       ),
-      body: state.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+      body: AppStateSwitcher(
+        alignment: Alignment.topCenter,
+        child: state.when(
+        loading: () => const Center(
+          key: ValueKey('advanced-tracking-loading'),
+          child: CircularProgressIndicator(),
+        ),
         error: (_, __) => _SupportState(
+          key: const ValueKey('advanced-tracking-error'),
           icon: Icons.error_outline_rounded,
           title: 'Nabi chưa tải được lộ trình',
           message: 'Mình thử lại sau một chút nhé.',
           actionLabel: 'Thử lại',
           onAction: () async {
+            AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
             ref.invalidate(advancedTrackingSummaryProvider);
           },
         ),
         data: (viewModel) {
-          return switch (viewModel.status) {
+          return KeyedSubtree(
+            key: ValueKey('advanced-tracking-${viewModel.status.name}'),
+            child: switch (viewModel.status) {
             AdvancedTrackingViewStatus.authRequired => _SupportState(
               icon: Icons.lock_outline_rounded,
               title: 'Cần đăng nhập',
               message:
                   viewModel.message ?? 'Bạn cần đăng nhập để xem lộ trình.',
               actionLabel: 'Đăng nhập',
-              onAction: () async => context.push(V2RoutePaths.login),
+              onAction: () async {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+                context.push(V2RoutePaths.login);
+              },
             ),
             AdvancedTrackingViewStatus.locked => _SupportState(
               icon: Icons.workspace_premium_rounded,
@@ -50,6 +62,7 @@ class AdvancedTrackingPage extends ConsumerWidget {
                   'Nabi sẽ mở lộ trình nâng cao khi gói của bạn sẵn sàng.',
               actionLabel: 'Làm mới',
               onAction: () async {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                 ref.invalidate(advancedTrackingSummaryProvider);
               },
             ),
@@ -57,15 +70,24 @@ class AdvancedTrackingPage extends ConsumerWidget {
               result: viewModel.result!,
               message: viewModel.message,
               onCreate: () async {
-                await ref.read(advancedTrackingCreateHydrationGoalProvider)();
-                await ref.read(advancedTrackingSummaryProvider.future);
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+                try {
+                  await ref.read(advancedTrackingCreateHydrationGoalProvider)();
+                  await ref.read(advancedTrackingSummaryProvider.future);
+                  AppFeedbackService.instance.emit(AppFeedbackType.success);
+                } catch (_) {
+                  AppFeedbackService.instance.emit(AppFeedbackType.error);
+                  rethrow;
+                }
               },
             ),
             AdvancedTrackingViewStatus.ready => _RoadmapReady(
               result: viewModel.result!,
               onRefresh: () async {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                 ref.invalidate(advancedTrackingSummaryProvider);
                 await ref.read(advancedTrackingSummaryProvider.future);
+                AppFeedbackService.instance.emit(AppFeedbackType.success);
               },
             ),
             AdvancedTrackingViewStatus.failure => _SupportState(
@@ -74,11 +96,14 @@ class AdvancedTrackingPage extends ConsumerWidget {
               message: viewModel.message ?? 'Mình thử lại sau một chút nhé.',
               actionLabel: 'Thử lại',
               onAction: () async {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                 ref.invalidate(advancedTrackingSummaryProvider);
               },
             ),
-          };
+          },
+          );
         },
+        ),
       ),
     );
   }
@@ -209,12 +234,22 @@ class _ProgressPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          LinearProgressIndicator(
-            value: result.progress.clamp(0, 1).toDouble(),
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-            backgroundColor: AppColors.info.withValues(alpha: .12),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.info),
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(
+              end: result.progress.clamp(0, 1).toDouble(),
+            ),
+            duration: AppMotionScope.duration(
+              context,
+              AppDuration.progress,
+            ),
+            curve: AppAnimations.emphasizedCurve,
+            builder: (context, progress, _) => LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+              backgroundColor: AppColors.info.withValues(alpha: .12),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.info),
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
@@ -317,6 +352,7 @@ class _SupportState extends StatelessWidget {
   final Future<void> Function()? onAction;
 
   const _SupportState({
+    super.key,
     required this.icon,
     required this.title,
     required this.message,

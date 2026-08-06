@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 
@@ -7,6 +6,7 @@ import '../../domain/entities/daily_health_task_entity.dart';
 import '../../domain/repositories/daily_health_tracking_repository.dart';
 import '../../providers/daily_health_tracking_provider.dart';
 import 'daily_health_tracking_state.dart';
+import 'package:nano_app/core/feedback/feedback.dart';
 
 class DailyHealthTrackingController
     extends AsyncNotifier<DailyHealthTrackingState> {
@@ -71,7 +71,7 @@ class DailyHealthTrackingController
         taskDate: current.summary.taskDate,
         tasks: tasks,
       );
-      HapticFeedback.lightImpact();
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       AppLogger.summary(_tag, 'TASK_UPDATED', {
         'taskCode': updatedTask.taskCode,
         'completed': updatedTask.isCompleted,

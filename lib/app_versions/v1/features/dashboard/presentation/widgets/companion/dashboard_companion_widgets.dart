@@ -670,7 +670,7 @@ class _StreakDot extends StatelessWidget {
     return Column(
       children: [
         AnimatedContainer(
-          duration: AppDuration.normal,
+          duration: AppMotionScope.duration(context, AppDuration.normal),
           width: 24,
           height: 24,
           decoration: BoxDecoration(

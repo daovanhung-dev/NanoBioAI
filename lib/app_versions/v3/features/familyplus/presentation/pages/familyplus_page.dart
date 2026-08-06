@@ -21,20 +21,43 @@ class FamilyPlusPage extends ConsumerWidget {
         actions: [
           IconButton(
             tooltip: 'Tải lại',
-            onPressed: () => ref.invalidate(familyPlusContextProvider),
+            onPressed: () async {
+              AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+              try {
+                final refreshed = await ref.refresh(
+                  familyPlusContextProvider.future,
+                );
+                AppFeedbackService.instance.emit(
+                  refreshed.status == FamilyPlusViewStatus.failure
+                      ? AppFeedbackType.error
+                      : AppFeedbackType.success,
+                );
+              } catch (_) {
+                AppFeedbackService.instance.emit(AppFeedbackType.error);
+              }
+            },
             icon: const Icon(Icons.refresh_rounded),
           ),
         ],
       ),
       body: SafeArea(
-        child: state.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => const _SupportState(
-            icon: Icons.cloud_off_rounded,
-            title: 'Chưa tải được FamilyPlus',
-            message: 'Hãy thử lại sau ít phút.',
+        child: AppStateSwitcher(
+          child: state.when(
+            loading: () => const Center(
+              key: ValueKey<String>('familyplus-loading'),
+              child: CircularProgressIndicator(),
+            ),
+            error: (_, __) => const _SupportState(
+              key: ValueKey<String>('familyplus-error'),
+              icon: Icons.cloud_off_rounded,
+              title: 'Chưa tải được FamilyPlus',
+              message: 'Hãy thử lại sau ít phút.',
+            ),
+            data: (model) => _FamilyPlusBody(
+              key: ValueKey<String>('familyplus-${model.status.name}'),
+              model: model,
+            ),
           ),
-          data: (model) => _FamilyPlusBody(model: model),
         ),
       ),
     );
@@ -44,13 +67,14 @@ class FamilyPlusPage extends ConsumerWidget {
 class _FamilyPlusBody extends ConsumerWidget {
   final FamilyPlusViewModel model;
 
-  const _FamilyPlusBody({required this.model});
+  const _FamilyPlusBody({super.key, required this.model});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    switch (model.status) {
-      case FamilyPlusViewStatus.authRequired:
-        return _SupportState(
+    return AppStateSwitcher(
+      child: switch (model.status) {
+        FamilyPlusViewStatus.authRequired => _SupportState(
+          key: const ValueKey<String>('familyplus-auth-required'),
           icon: Icons.lock_outline_rounded,
           title: 'Cần đăng nhập',
           message: vietnameseSystemUiText(
@@ -59,37 +83,42 @@ class _FamilyPlusBody extends ConsumerWidget {
           ),
           actionLabel: 'Đăng nhập',
           onAction: () => context.push(V2RoutePaths.login),
-        );
-      case FamilyPlusViewStatus.locked:
-        return _SupportState(
+        ),
+        FamilyPlusViewStatus.locked => _SupportState(
+          key: const ValueKey<String>('familyplus-locked'),
           icon: Icons.workspace_premium_outlined,
           title: 'Dành cho FamilyPlus',
           message: vietnameseSystemUiText(
             model.message,
             fallback: 'Bạn thử lại sau ít phút.',
           ),
-        );
-      case FamilyPlusViewStatus.empty:
-        return _EmptyFamilyState(contextModel: model.context!);
-      case FamilyPlusViewStatus.ready:
-        return _ReadyFamilyState(contextModel: model.context!);
-      case FamilyPlusViewStatus.failure:
-        return _SupportState(
+        ),
+        FamilyPlusViewStatus.empty => _EmptyFamilyState(
+          key: const ValueKey<String>('familyplus-empty'),
+          contextModel: model.context!,
+        ),
+        FamilyPlusViewStatus.ready => _ReadyFamilyState(
+          key: const ValueKey<String>('familyplus-ready'),
+          contextModel: model.context!,
+        ),
+        FamilyPlusViewStatus.failure => _SupportState(
+          key: const ValueKey<String>('familyplus-failure'),
           icon: Icons.error_outline_rounded,
           title: 'Chưa sẵn sàng',
           message: vietnameseSystemUiText(
             model.message,
             fallback: 'Bạn thử lại sau ít phút.',
           ),
-        );
-    }
+        ),
+      },
+    );
   }
 }
 
 class _EmptyFamilyState extends ConsumerWidget {
   final FamilyPlusContext contextModel;
 
-  const _EmptyFamilyState({required this.contextModel});
+  const _EmptyFamilyState({super.key, required this.contextModel});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -111,7 +140,29 @@ class _EmptyFamilyState extends ConsumerWidget {
             width: double.infinity,
             child: FilledButton.icon(
               onPressed: contextModel.canManage
-                  ? () => ref.read(familyPlusCreateDefaultGroupProvider)()
+                  ? () async {
+                      AppFeedbackService.instance.emit(
+                        AppFeedbackType.primaryAction,
+                      );
+                      try {
+                        await ref.read(familyPlusCreateDefaultGroupProvider)();
+                        if (context.mounted) {
+                          AppFeedbackService.instance.emit(
+                            AppFeedbackType.success,
+                          );
+                        }
+                      } catch (_) {
+                        if (!context.mounted) return;
+                        AppFeedbackService.instance.emit(AppFeedbackType.error);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Chưa tạo được nhóm FamilyPlus. Bạn thử lại sau.',
+                            ),
+                          ),
+                        );
+                      }
+                    }
                   : null,
               icon: const Icon(Icons.group_add_rounded),
               label: const Text('Tạo nhóm FamilyPlus'),
@@ -126,7 +177,7 @@ class _EmptyFamilyState extends ConsumerWidget {
 class _ReadyFamilyState extends ConsumerWidget {
   final FamilyPlusContext contextModel;
 
-  const _ReadyFamilyState({required this.contextModel});
+  const _ReadyFamilyState({super.key, required this.contextModel});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -192,10 +243,26 @@ class _MemberTile extends ConsumerWidget {
         trailing: IconButton(
           tooltip: 'Chọn hồ sơ',
           onPressed: member.canView
-              ? () => ref.read(familyPlusSwitchSubjectProvider)(
-                  contextModel,
-                  member.subjectId,
-                )
+              ? () {
+                  try {
+                    ref.read(familyPlusSwitchSubjectProvider)(
+                      contextModel,
+                      member.subjectId,
+                    );
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.selection,
+                    );
+                  } catch (_) {
+                    AppFeedbackService.instance.emit(AppFeedbackType.error);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Chưa chuyển được hồ sơ. Bạn vui lòng thử lại.',
+                        ),
+                      ),
+                    );
+                  }
+                }
               : null,
           icon: const Icon(Icons.switch_account_rounded),
         ),
@@ -226,6 +293,7 @@ class _SupportState extends StatelessWidget {
   final VoidCallback? onAction;
 
   const _SupportState({
+    super.key,
     required this.icon,
     required this.title,
     required this.message,

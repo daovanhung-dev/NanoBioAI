@@ -74,6 +74,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           .read(dashboardControllerProvider.notifier)
           .generateAdditionalPlan();
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.milestone);
       final message = switch (result.generationSource) {
         PlanGenerationSource.ai =>
           'Nabi đã thêm kế hoạch 7 ngày tiếp theo rồi nhé.',
@@ -114,6 +115,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         }
         return;
       }
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       final message = switch (error) {
         DashboardGenerationAuthRequiredException() =>
           DashboardGenerationAuthRequiredException.userMessage,
@@ -211,12 +213,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     try {
       await action();
       if (!mounted) return false;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(successMessage)));
       return true;
     } catch (_) {
       if (!mounted) return false;
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(errorMessage)));
@@ -232,14 +236,20 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     final userDataSyncState = ref.watch(userDataSyncControllerProvider);
 
     final body = dashboardAsync.when(
-      loading: () => const DashboardLoadingView(),
-      error: (error, _) => DashboardErrorView(
+      loading: () => const KeyedSubtree(
+        key: ValueKey('dashboard-loading'),
+        child: DashboardLoadingView(),
+      ),
+      error: (error, _) => KeyedSubtree(
+        key: const ValueKey('dashboard-error'),
+        child: DashboardErrorView(
         message:
             'Nabi chưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
-        onRetry: () {
-          ref.invalidate(dashboardProvider);
-          ref.invalidate(dashboardDynamicProvider);
-        },
+          onRetry: () {
+            ref.invalidate(dashboardProvider);
+            ref.invalidate(dashboardDynamicProvider);
+          },
+        ),
       ),
       data: (dashboard) {
         final dynamicData =
@@ -247,8 +257,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         final membershipInfo = membershipDisplayInfoForTier(
           dashboard.subscriptionTier,
         );
-        return DashboardContent(
-          dashboard: dashboard,
+        return KeyedSubtree(
+          key: const ValueKey('dashboard-ready'),
+          child: DashboardContent(
+            dashboard: dashboard,
           membershipInfo: membershipInfo,
           dynamicData: dynamicData,
           isDynamicLoading: dynamicAsync.isLoading,
@@ -264,7 +276,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           onSetWater: _setWater,
           onSaveWeight: _saveWeight,
           onViewSchedule: () => context.push(V1RoutePaths.lifestyleSchedule),
-          userDataSyncState: userDataSyncState,
+            userDataSyncState: userDataSyncState,
+          ),
         );
       },
     );
@@ -272,7 +285,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     return MedicalPageScaffold(
       body: Stack(
         children: [
-          Positioned.fill(child: body),
+          Positioned.fill(
+            child: AppStateSwitcher(
+              alignment: Alignment.topCenter,
+              child: body,
+            ),
+          ),
           if (widget.showStandaloneChatButton)
             NabiFeatureFlags.spriteMascotEnabled
                 ? const NabiFloatingOverlay(bottomReserve: 24)

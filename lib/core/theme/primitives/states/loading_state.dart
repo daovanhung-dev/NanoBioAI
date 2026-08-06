@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../../motion/app_motion_scope.dart';
+import '../../app_motion.dart';
+
 import '../../tokens/color_tokens.dart';
 import '../../tokens/component_tokens.dart';
 import '../../tokens/spacing_tokens.dart';
+import '../../app_text_styles.dart';
 
 /// Loading state variants for different loading patterns.
 enum LoadingVariant { spinner, skeleton, shimmer }
@@ -35,8 +39,8 @@ class _LoadingStateState extends State<LoadingState>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final reduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reduceMotion = AppMotionScope.reduceMotionOf(context) ||
+        !TickerMode.of(context);
     if (_reduceMotion == reduceMotion && _controller.isAnimating) {
       return;
     }
@@ -84,10 +88,11 @@ class _LoadingStateState extends State<LoadingState>
           padding: EdgeInsets.all(AppSpacingTokens.pagePadding),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
+            child: AppViewMotion(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                 _buildIndicator(isDark),
                 if (widget.message != null) ...[
                   SizedBox(height: AppSpacingTokens.sectionSpacing),
@@ -101,7 +106,8 @@ class _LoadingStateState extends State<LoadingState>
                     textAlign: TextAlign.center,
                   ),
                 ],
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -112,6 +118,13 @@ class _LoadingStateState extends State<LoadingState>
   Widget _buildIndicator(bool isDark) {
     switch (widget.variant) {
       case LoadingVariant.spinner:
+        if (_reduceMotion) {
+          return const Icon(
+            Icons.eco_rounded,
+            size: AppSpacingTokens.touchTargetMin,
+            color: AppColorTokens.primary,
+          );
+        }
         return const SizedBox.square(
           dimension: AppSpacingTokens.touchTargetMin,
           child: CircularProgressIndicator(

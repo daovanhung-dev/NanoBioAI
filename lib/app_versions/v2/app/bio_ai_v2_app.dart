@@ -11,6 +11,7 @@ import 'package:nano_app/core/localization/app_localization_config.dart';
 import 'package:nano_app/core/theme/app_theme.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
 import 'package:nano_app/core/theme/app_experience.dart';
+import 'package:nano_app/core/theme/app_experience_preferences.dart';
 import 'package:nano_app/l10n/app_localizations.dart';
 import 'package:nano_app/services/supabase/cloud_sync/authenticated_sync_trigger_registry.dart';
 
@@ -39,6 +40,9 @@ class _BioAIV2AppState extends ConsumerState<BioAIV2App> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(v2RouterProvider);
+    final experiencePreferences =
+        ref.watch(appExperiencePreferencesProvider).value ??
+            AppExperiencePreferences.defaults;
     final textScaleFactor = ref
             .watch(appTextScaleControllerProvider)
             .value
@@ -70,6 +74,7 @@ class _BioAIV2AppState extends ConsumerState<BioAIV2App> {
         context,
         child,
         presetFactor: textScaleFactor,
+        preferences: experiencePreferences,
       ),
       theme: AppTheme.lightTheme,
       routerConfig: router,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
@@ -46,7 +45,7 @@ class ConsentStep extends ConsumerWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  AppFeedbackService.instance.emit(AppFeedbackType.selection);
                   controller.setAgreed(!state.agreed);
                 },
                 borderRadius: BorderRadius.circular(AppRadius.xl),

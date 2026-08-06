@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../feedback/feedback.dart';
 import 'app_colors.dart';
 import 'app_gradients.dart';
 import 'app_motion.dart';
+import 'app_duration.dart';
 import 'app_radius.dart';
 import 'app_shadows.dart';
 import 'app_spacing.dart';
@@ -138,7 +140,9 @@ class MedicalScrollPage extends StatelessWidget {
                                   .map(
                                     (entry) => AppViewMotion(
                                       delay: Duration(
-                                        milliseconds: 45 * entry.$1,
+                                        milliseconds:
+                                            AppDuration.stagger.inMilliseconds *
+                                                entry.$1.clamp(0, 5),
                                       ),
                                       child: entry.$2,
                                     ),
@@ -441,7 +445,10 @@ class MedicalSurfaceCard extends StatelessWidget {
               decoration: decoration,
               child: InkWell(
                 borderRadius: borderRadius,
-                onTap: onTap,
+                onTap: () {
+                  AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                  onTap?.call();
+                },
                 child: paddedChild,
               ),
             ),

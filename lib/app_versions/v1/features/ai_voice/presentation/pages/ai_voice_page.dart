@@ -54,6 +54,41 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
     final state = ref.watch(aiVoiceControllerProvider);
     final controller = ref.read(aiVoiceControllerProvider.notifier);
 
+    ref.listen<AiVoiceState>(aiVoiceControllerProvider, (previous, next) {
+      if (previous?.phase == next.phase) return;
+
+      switch (next.phase) {
+        case AiVoicePhase.listening:
+          AppFeedbackService.instance.emit(AppFeedbackType.voiceStart);
+          break;
+        case AiVoicePhase.idle:
+          if (previous?.phase == AiVoicePhase.listening ||
+              previous?.phase == AiVoicePhase.speaking) {
+            AppFeedbackService.instance.emit(AppFeedbackType.voiceStop);
+          }
+          break;
+        case AiVoicePhase.speaking:
+          if (next.response.isNotEmpty) {
+            AppFeedbackService.instance.emit(AppFeedbackType.answerReady);
+          }
+          break;
+        case AiVoicePhase.permissionDenied:
+          AppFeedbackService.instance.emit(AppFeedbackType.warning);
+          break;
+        case AiVoicePhase.error:
+          AppFeedbackService.instance.emit(AppFeedbackType.error);
+          break;
+        case AiVoicePhase.initializing:
+        case AiVoicePhase.greeting:
+        case AiVoicePhase.transcribing:
+        case AiVoicePhase.thinking:
+          break;
+      }
+    });
+
+    final canTapMic = !state.isBusy || state.phase == AiVoicePhase.listening;
+    final isListening = state.phase == AiVoicePhase.listening;
+
     return MedicalPageScaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -80,121 +115,158 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 680),
-              child: Column(
-                children: [
-                  _NabiVoiceHero(phase: state.phase),
-                  const SizedBox(height: AppSpacing.sectionSpacing),
-                  Text(
-                    _statusText(state.phase),
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.heading3.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
+              child: AppViewMotion(
+                child: Column(
+                  children: [
+                    _NabiVoiceHero(phase: state.phase),
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+                    Text(
+                      _statusText(state.phase),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.heading3.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Chạm micro và nói một câu ngắn.',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Chạm micro và nói một câu ngắn.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sectionSpacing),
-                  if (state.transcript.isNotEmpty)
-                    _VoiceMessageCard(
-                      title: 'Bạn vừa hỏi',
-                      content: state.transcript,
-                      icon: Icons.person_outline_rounded,
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+                    AppStateSwitcher(
+                      child: state.transcript.isEmpty
+                          ? const SizedBox.shrink(key: ValueKey('no-transcript'))
+                          : Column(
+                              key: const ValueKey('transcript'),
+                              children: [
+                                _VoiceMessageCard(
+                                  title: 'Bạn vừa hỏi',
+                                  content: state.transcript,
+                                  icon: Icons.person_outline_rounded,
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                              ],
+                            ),
                     ),
-                  if (state.transcript.isNotEmpty)
-                    const SizedBox(height: AppSpacing.md),
-                  if (state.response.isNotEmpty)
-                    _VoiceMessageCard(
-                      title: 'NaBi trả lời',
-                      content: state.response,
-                      icon: Icons.favorite_outline_rounded,
-                      trailing: state.isMuted
-                          ? null
-                          : IconButton(
-                              tooltip: 'Nghe lại',
-                              onPressed: state.isBusy
+                    AppStateSwitcher(
+                      child: state.response.isEmpty
+                          ? const SizedBox.shrink(key: ValueKey('no-response'))
+                          : _VoiceMessageCard(
+                              key: ValueKey(state.response),
+                              title: 'NaBi trả lời',
+                              content: state.response,
+                              icon: Icons.favorite_outline_rounded,
+                              trailing: state.isMuted
                                   ? null
-                                  : controller.replayResponse,
-                              icon: const Icon(Icons.replay_rounded),
+                                  : IconButton(
+                                      tooltip: 'Nghe lại',
+                                      onPressed: state.isBusy
+                                          ? null
+                                          : controller.replayResponse,
+                                      icon: const Icon(Icons.replay_rounded),
+                                    ),
                             ),
                     ),
-                  if (state.errorMessage != null) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    _VoiceError(message: state.errorMessage!),
+                    AppStateSwitcher(
+                      child: state.errorMessage == null
+                          ? const SizedBox.shrink(key: ValueKey('no-error'))
+                          : Padding(
+                              key: ValueKey(state.errorMessage),
+                              padding: const EdgeInsets.only(top: AppSpacing.md),
+                              child: _VoiceError(message: state.errorMessage!),
+                            ),
+                    ),
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+                    AppPressScale(
+                      enabled: canTapMic,
+                      pressedScale: .965,
+                      child: Semantics(
+                        button: true,
+                        enabled: canTapMic,
+                        label: isListening
+                            ? 'Dừng nghe'
+                            : 'Bắt đầu nói với NaBi',
+                        child: InkWell(
+                          onTap: isListening
+                              ? controller.stop
+                              : state.isBusy
+                                  ? null
+                                  : controller.listenAndRespond,
+                          customBorder: const CircleBorder(),
+                          child: AnimatedContainer(
+                            duration: AppMotionScope.duration(
+                              context,
+                              AppDuration.normal,
+                            ),
+                            curve: AppAnimations.emphasizedCurve,
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isListening
+                                  ? AppColors.error
+                                  : AppColors.primary,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isListening
+                                          ? AppColors.error
+                                          : AppColors.primary)
+                                      .withValues(alpha: .22),
+                                  blurRadius: state.isBusy ? 18 : 10,
+                                  spreadRadius: state.isBusy ? 2 : 0,
+                                ),
+                              ],
+                            ),
+                            child: AnimatedSwitcher(
+                              duration: AppMotionScope.duration(
+                                context,
+                                AppDuration.fast,
+                              ),
+                              child: Icon(
+                                isListening
+                                    ? Icons.stop_rounded
+                                    : Icons.mic_rounded,
+                                key: ValueKey(isListening),
+                                color: AppColors.surface,
+                                size: 32,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.xs,
+                      children: [
+                        TextButton.icon(
+                          onPressed: state.isBusy ? controller.stop : null,
+                          icon: const Icon(Icons.close_rounded),
+                          label: const Text('Dừng'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () => context.go(V1RoutePaths.aiChat),
+                          icon: const Icon(Icons.keyboard_alt_outlined),
+                          label: const Text('Nhập chữ'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sectionSpacing),
+                    Text(
+                      'Không đọc mật khẩu, thông tin tài chính hoặc dữ liệu quá nhạy cảm bằng giọng nói.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
-                  const SizedBox(height: AppSpacing.sectionSpacing),
-                  Semantics(
-                    button: true,
-                    label: state.phase == AiVoicePhase.listening
-                        ? 'Dừng nghe'
-                        : 'Bắt đầu nói với NaBi',
-                    child: InkWell(
-                      onTap: state.phase == AiVoicePhase.listening
-                          ? controller.stop
-                          : state.isBusy
-                          ? null
-                          : controller.listenAndRespond,
-                      customBorder: const CircleBorder(),
-                      child: AnimatedContainer(
-                        duration: AppDuration.normal,
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: state.phase == AiVoicePhase.listening
-                              ? AppColors.error
-                              : AppColors.primary,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: .22),
-                              blurRadius: state.isBusy ? 18 : 10,
-                              spreadRadius: state.isBusy ? 2 : 0,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          state.phase == AiVoicePhase.listening
-                              ? Icons.stop_rounded
-                              : Icons.mic_rounded,
-                          color: AppColors.surface,
-                          size: 32,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.xs,
-                    children: [
-                      TextButton.icon(
-                        onPressed: state.isBusy ? controller.stop : null,
-                        icon: const Icon(Icons.close_rounded),
-                        label: const Text('Dừng'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () => context.go(V1RoutePaths.aiChat),
-                        icon: const Icon(Icons.keyboard_alt_outlined),
-                        label: const Text('Nhập chữ'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.sectionSpacing),
-                  Text(
-                    'Không đọc mật khẩu, thông tin tài chính hoặc dữ liệu quá nhạy cảm bằng giọng nói.',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -202,6 +274,7 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
       ),
     );
   }
+
 }
 
 class _NabiVoiceHero extends StatelessWidget {
@@ -211,7 +284,7 @@ class _NabiVoiceHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
+    return AppStateSwitcher(
       duration: AppDuration.normal,
       child: NabiAnimationPlayer(
         key: ValueKey(phase),
@@ -248,6 +321,7 @@ class _VoiceMessageCard extends StatelessWidget {
   final Widget? trailing;
 
   const _VoiceMessageCard({
+    super.key,
     required this.title,
     required this.content,
     required this.icon,

@@ -63,6 +63,7 @@ class V1AuthEntryPage extends StatelessWidget {
   }
 
   void _openV2Auth(BuildContext context) {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     final destination = _isRegister
         ? AuthRoutePaths.register
         : AuthRoutePaths.login;
@@ -70,6 +71,7 @@ class V1AuthEntryPage extends StatelessWidget {
     try {
       context.push(destination);
     } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Khu vực tài khoản chưa sẵn sàng trong phiên bản này.'),

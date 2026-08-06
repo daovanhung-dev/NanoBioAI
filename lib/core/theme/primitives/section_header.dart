@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../tokens/color_tokens.dart';
 import '../tokens/spacing_tokens.dart';
-import '../tokens/component_tokens.dart';
 import 'button.dart';
+import '../app_text_styles.dart';
 
 /// A primitive section header component for grouping content with optional action.
 ///

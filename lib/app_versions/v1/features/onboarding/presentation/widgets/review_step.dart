@@ -227,21 +227,25 @@ class ReviewStep extends ConsumerWidget {
     OnboardingController controller,
   ) async {
     if (!state.agreed) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       controller.goToStep(7);
       _showMessage(context, 'Bạn cần xác nhận trước khi tiếp tục.');
       return;
     }
     if (!state.canSave) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       controller.goToStep(1);
       _showMessage(context, 'Bạn cần hoàn tất thông tin bắt buộc.');
       return;
     }
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const AIGeneratingPage()),
     );
     try {
       await controller.saveOnboarding();
+      AppFeedbackService.instance.emit(AppFeedbackType.milestone);
       final generationSource =
           ref.read(onboardingProvider).initialPlanGenerationSource;
       if (generationSource.isBasicSuggestion && context.mounted) {
@@ -249,6 +253,7 @@ class ReviewStep extends ConsumerWidget {
       }
       if (context.mounted) V1AppNavigator.goMenu(context);
     } catch (error) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (!context.mounted) return;
       Navigator.of(context).pop();
       final message = error is AIOverloadedException

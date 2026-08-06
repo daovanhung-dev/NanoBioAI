@@ -116,19 +116,31 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
             ],
           ),
         ),
-        if (_error != null) ...[
-          const SizedBox(height: AppSpacing.md),
-          NamiCareEmptyState(
-            icon: Icons.info_outline_rounded,
-            color: AppColors.warning,
-            title: 'Cần kiểm tra lại số liệu',
-            message: _error!,
-          ),
-        ],
-        if (_report != null) ...[
-          const SizedBox(height: AppSpacing.sectionSpacing),
-          _ReportCard(report: _report!),
-        ],
+        AppStateSwitcher(
+          alignment: Alignment.topCenter,
+          child: _error != null
+              ? Padding(
+                  key: const ValueKey('body-metrics-error'),
+                  padding: const EdgeInsets.only(top: AppSpacing.md),
+                  child: NamiCareEmptyState(
+                    icon: Icons.info_outline_rounded,
+                    color: AppColors.warning,
+                    title: 'Cần kiểm tra lại số liệu',
+                    message: _error!,
+                  ),
+                )
+              : _report != null
+                  ? Padding(
+                      key: const ValueKey('body-metrics-report'),
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.sectionSpacing,
+                      ),
+                      child: _ReportCard(report: _report!),
+                    )
+                  : const SizedBox.shrink(
+                      key: ValueKey('body-metrics-idle'),
+                    ),
+        ),
         const SizedBox(height: AppSpacing.sectionSpacing),
         const NamiCareEmptyState(
           icon: Icons.medical_information_rounded,
@@ -141,6 +153,7 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
   }
 
   void _calculate() {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     try {
       final input = BasicHealthInput(
         heightCm: _parseDouble(_heightController.text),
@@ -154,7 +167,9 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
         _report = report;
         _error = null;
       });
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
     } on BasicHealthCalculatorException catch (error) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       setState(() {
         _report = null;
         _error = vietnameseSystemUiText(
@@ -163,6 +178,7 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
         );
       });
     } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
       setState(() {
         _report = null;
         _error = 'Vui lòng nhập đầy đủ chiều cao, cân nặng và tuổi.';

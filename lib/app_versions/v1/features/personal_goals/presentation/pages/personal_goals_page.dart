@@ -79,20 +79,29 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
               subtitle: goal.subtitle,
               selected: selected,
               trailing: selected ? 'Đang chọn' : null,
-              onTap: () => setState(() => _selectedIndex = index),
+              onTap: () {
+                AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                setState(() => _selectedIndex = index);
+              },
             ),
           );
         }),
-        if (_selectedIndex != null) ...[
-          const SizedBox(height: AppSpacing.md),
-          NamiCareEmptyState(
-            icon: Icons.favorite_rounded,
-            color: _goals[_selectedIndex!].color,
-            title: 'Nabi đã đặt mục tiêu này vào góc nhỏ hôm nay của bạn',
-            message:
-                'Mình không cần làm thật nhiều ngay lập tức. Chỉ cần quay lại từng chút, Nabi sẽ cùng bạn giữ nhịp.',
-          ),
-        ],
+        AppStateSwitcher(
+          alignment: Alignment.topCenter,
+          child: _selectedIndex == null
+              ? const SizedBox.shrink(key: ValueKey('goal-unselected'))
+              : Padding(
+                  key: ValueKey('goal-selected-$_selectedIndex'),
+                  padding: const EdgeInsets.only(top: AppSpacing.md),
+                  child: NamiCareEmptyState(
+                    icon: Icons.favorite_rounded,
+                    color: _goals[_selectedIndex!].color,
+                    title: 'Nabi đã đặt mục tiêu này vào góc nhỏ hôm nay của bạn',
+                    message:
+                        'Mình không cần làm thật nhiều ngay lập tức. Chỉ cần quay lại từng chút, Nabi sẽ cùng bạn giữ nhịp.',
+                  ),
+                ),
+        ),
       ],
     );
   }

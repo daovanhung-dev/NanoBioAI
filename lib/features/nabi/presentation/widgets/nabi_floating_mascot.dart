@@ -3,14 +3,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:flutter/services.dart';
 
 import '../../data/nabi_assets.dart';
 import '../../domain/nabi_animation_type.dart';
 import 'nabi_animation_player.dart';
 
-import 'package:nano_app/core/theme/app_colors.dart';
-import 'package:nano_app/core/theme/app_duration.dart';
 class NaBiFloatingMascot extends StatefulWidget {
   const NaBiFloatingMascot({
     super.key,
@@ -69,7 +66,7 @@ class _NaBiFloatingMascotState extends State<NaBiFloatingMascot> {
 
   Future<void> _handleTap() async {
     if (!widget.enabled) return;
-    HapticFeedback.mediumImpact();
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
 
     setState(() {
       _pressed = false;
@@ -102,7 +99,7 @@ class _NaBiFloatingMascotState extends State<NaBiFloatingMascot> {
           behavior: HitTestBehavior.opaque,
           onTapDown: widget.enabled
               ? (_) {
-                  HapticFeedback.selectionClick();
+                  AppFeedbackService.instance.emit(AppFeedbackType.selection);
                   setState(() => _pressed = true);
                 }
               : null,

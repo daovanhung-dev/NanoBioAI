@@ -6,7 +6,6 @@ import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_ta
 import 'package:nano_app/core/storage/localdb/tables/meal_catalog_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/nutrition_profile_tables.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 
 import '../../domain/entities/nabi_expression.dart';
 
-import 'package:nano_app/core/theme/app_colors.dart';
 /// Nhân vật Nabi dạng vector Canvas, nền trong suốt.
 ///
 /// Canvas giúp biểu cảm thực sự thay đổi theo state, không phụ thuộc bộ ảnh
@@ -39,12 +39,31 @@ class _NabiCharacterState extends State<NabiCharacter>
     super.initState();
     _motionController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2400),
-    )..repeat();
+      duration: AppDuration.pulse,
+    );
     _blinkController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3600),
-    )..repeat();
+      duration: AppDuration.xSlow * 5,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final policy = AppMotionScope.of(context);
+    final suppressAmbient = AppMotionScope.reduceMotionOf(context) ||
+        policy.performanceTier == AppPerformanceTier.economical;
+    if (suppressAmbient) {
+      _motionController
+        ..stop()
+        ..value = 0;
+      _blinkController
+        ..stop()
+        ..value = 0;
+    } else {
+      if (!_motionController.isAnimating) _motionController.repeat();
+      if (!_blinkController.isAnimating) _blinkController.repeat();
+    }
   }
 
   @override

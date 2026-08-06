@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -122,7 +121,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
   }
 
   void _handleTap() {
-    HapticFeedback.mediumImpact();
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     ref.read(nabiContextProvider.notifier).setRoute(V1RoutePaths.aiChat);
     if (widget.onTap != null) {
       widget.onTap!();
@@ -166,7 +165,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onPanStart: (_) {
-                        HapticFeedback.selectionClick();
+                        AppFeedbackService.instance.emit(AppFeedbackType.selection);
                         setState(() => _isDragging = true);
                       },
                       onPanUpdate: (details) {
@@ -183,7 +182,7 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
                         _snapToEdge(size, padding);
                       },
                       onLongPress: () {
-                        HapticFeedback.mediumImpact();
+                        AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                         setState(() => _offset = _defaultOffset(size, padding));
                       },
                       child: SizedBox(

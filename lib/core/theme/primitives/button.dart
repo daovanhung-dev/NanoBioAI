@@ -1,115 +1,21 @@
 import 'package:flutter/material.dart';
+
+import '../../feedback/app_feedback_service.dart';
+import '../../feedback/app_feedback_type.dart';
+import '../../motion/app_motion_scope.dart';
 import '../app_motion.dart';
+import '../app_text_styles.dart';
 import '../tokens/color_tokens.dart';
-import '../tokens/spacing_tokens.dart';
 import '../tokens/component_tokens.dart';
+import '../tokens/spacing_tokens.dart';
 
-/// Button variants for different visual styles and interaction patterns.
-///
-/// Each variant serves a specific purpose in the UI hierarchy:
-/// - **primary**: Main call-to-action buttons with filled background
-/// - **secondary**: Secondary actions with subtle styling
-/// - **text**: Tertiary actions and navigation with text-only appearance
-/// - **icon**: Compact icon-only buttons for toolbars and inline actions
-/// - **outlined**: Alternative secondary style with border emphasis
-///
-/// **Validates: Requirements 4.1, 8.1**
-enum ButtonVariant {
-  /// Primary button with filled background - use for main CTAs
-  primary,
+enum ButtonVariant { primary, secondary, text, icon, outlined }
 
-  /// Secondary button with subtle background - use for secondary actions
-  secondary,
-
-  /// Text-only button - use for tertiary actions and navigation
-  text,
-
-  /// Icon-only button - use for compact actions and toolbars
-  icon,
-
-  /// Outlined button with border - use for alternative secondary actions
-  outlined,
-}
-
-/// A primitive button component with variant-based styling using design tokens.
+/// Canonical Kinetic Aura button.
 ///
-/// `AppButton` is a Layer 3 primitive component that consumes semantic tokens
-/// to provide consistent, accessible button styling across the application.
-///
-/// ## Variants
-///
-/// ```dart
-/// // Primary button (main CTAs)
-/// AppButton(
-///   variant: ButtonVariant.primary,
-///   onPressed: () {},
-///   child: Text('Save'),
-/// )
-///
-/// // Secondary button
-/// AppButton(
-///   variant: ButtonVariant.secondary,
-///   onPressed: () {},
-///   child: Text('Cancel'),
-/// )
-///
-/// // Text button (tertiary actions)
-/// AppButton(
-///   variant: ButtonVariant.text,
-///   onPressed: () {},
-///   child: Text('Learn More'),
-/// )
-///
-/// // Icon button
-/// AppButton(
-///   variant: ButtonVariant.icon,
-///   onPressed: () {},
-///   icon: Icons.favorite,
-/// )
-///
-/// // Outlined button
-/// AppButton(
-///   variant: ButtonVariant.outlined,
-///   onPressed: () {},
-///   child: Text('Details'),
-/// )
-/// ```
-///
-/// ## States
-///
-/// ```dart
-/// // Loading state
-/// AppButton(
-///   variant: ButtonVariant.primary,
-///   onPressed: () {},
-///   loading: true,
-///   child: Text('Save'),
-/// )
-///
-/// // Disabled state
-/// AppButton(
-///   variant: ButtonVariant.primary,
-///   onPressed: null, // null callback disables button
-///   child: Text('Save'),
-/// )
-/// ```
-///
-/// ## Token-Based Styling
-///
-/// All styling references semantic tokens:
-/// - Colors: [AppColorTokens]
-/// - Spacing: [AppSpacingTokens]
-/// - Radius: [AppRadiusTokens]
-/// - Text: [AppTextStyles]
-/// - Motion: [AppMotionTokens]
-///
-/// **Validates: Requirements 4.1, 4.10, 4.11, 8.1, 8.2**
+/// The public API remains compatible with the previous primitive while press,
+/// loading and semantic feedback are now shared across all surfaces.
 class AppButton extends StatelessWidget {
-  /// Creates a button with the specified variant and styling.
-  ///
-  /// The [variant] determines the visual style.
-  /// The [onPressed] callback is required - set to `null` to disable the button.
-  /// For icon buttons, provide [icon] instead of [child].
   const AppButton({
     super.key,
     required this.variant,
@@ -117,60 +23,55 @@ class AppButton extends StatelessWidget {
     this.child,
     this.icon,
     this.loading = false,
+    this.feedbackType,
+    this.semanticLabel,
   });
 
-  /// The visual style variant for this button.
   final ButtonVariant variant;
-
-  /// Callback triggered when the button is pressed.
-  ///
-  /// If `null`, the button is disabled and shows disabled styling.
   final VoidCallback? onPressed;
-
-  /// The button's label content (typically a Text widget).
-  ///
-  /// For icon buttons, use [icon] instead.
   final Widget? child;
-
-  /// Icon to display for icon variant buttons.
-  ///
-  /// Only used when [variant] is [ButtonVariant.icon].
   final IconData? icon;
-
-  /// Whether the button is in a loading state.
-  ///
-  /// When `true`, shows a loading indicator and disables interaction.
   final bool loading;
+  final AppFeedbackType? feedbackType;
+  final String? semanticLabel;
 
-  /// Determines if the button is effectively disabled.
   bool get _isDisabled => onPressed == null || loading;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final reduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final button = variant == ButtonVariant.icon
-        ? _buildIconButton(isDark, reduceMotion)
-        : _buildStandardButton(isDark, reduceMotion);
+        ? _buildIconButton(context, isDark)
+        : _buildStandardButton(context, isDark);
 
     return Semantics(
       button: true,
       enabled: !_isDisabled,
+      label: semanticLabel,
       child: AppPressScale(
-        enabled: !_isDisabled && !reduceMotion,
-        pressedScale: 0.98,
+        enabled: !_isDisabled,
+        pressedScale: AppMotionTokens.buttonPressedScale,
         child: button,
       ),
     );
   }
 
-  /// Builds standard button variants (primary, secondary, text, outlined).
-  Widget _buildStandardButton(bool isDark, bool reduceMotion) {
+  VoidCallback? get _effectiveOnPressed {
+    if (_isDisabled) return null;
+    return () {
+      AppFeedbackService.instance.emit(
+        feedbackType ??
+            (variant == ButtonVariant.primary
+                ? AppFeedbackType.primaryAction
+                : AppFeedbackType.selection),
+      );
+      onPressed?.call();
+    };
+  }
+
+  Widget _buildStandardButton(BuildContext context, bool isDark) {
     return AnimatedContainer(
-      duration: reduceMotion ? Duration.zero : AppMotionTokens.button,
+      duration: AppMotionScope.duration(context, AppMotionTokens.button),
       curve: AppMotionTokens.defaultCurve,
       constraints: const BoxConstraints(
         minHeight: AppSpacingTokens.buttonMinHeight,
@@ -179,8 +80,9 @@ class AppButton extends StatelessWidget {
         color: _getBackgroundColor(isDark),
         borderRadius: BorderRadius.circular(AppRadiusTokens.button),
         elevation: _getElevation(),
+        shadowColor: AppColorTokens.primary.withValues(alpha: 0.22),
         child: InkWell(
-          onTap: _isDisabled ? null : onPressed,
+          onTap: _effectiveOnPressed,
           borderRadius: BorderRadius.circular(AppRadiusTokens.button),
           child: Container(
             padding: EdgeInsets.symmetric(
@@ -197,22 +99,71 @@ class AppButton extends StatelessWidget {
                   )
                 : null,
             child: Center(
+              child: AppStateSwitcher(
+                child: loading
+                    ? SizedBox(
+                        key: const ValueKey('app-button-loading'),
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _getLoadingIndicatorColor(isDark),
+                          ),
+                        ),
+                      )
+                    : KeyedSubtree(
+                        key: const ValueKey('app-button-content'),
+                        child: DefaultTextStyle(
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: _getTextColor(isDark),
+                          ),
+                          child: child ?? const SizedBox.shrink(),
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIconButton(BuildContext context, bool isDark) {
+    return AnimatedContainer(
+      duration: AppMotionScope.duration(context, AppMotionTokens.button),
+      curve: AppMotionTokens.defaultCurve,
+      constraints: const BoxConstraints(
+        minWidth: AppSpacingTokens.touchTargetMin,
+        minHeight: AppSpacingTokens.touchTargetMin,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadiusTokens.button),
+        child: InkWell(
+          onTap: _effectiveOnPressed,
+          borderRadius: BorderRadius.circular(AppRadiusTokens.button),
+          child: Center(
+            child: AppStateSwitcher(
               child: loading
                   ? SizedBox(
+                      key: const ValueKey('app-icon-button-loading'),
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          _getLoadingIndicatorColor(isDark),
+                          isDark
+                              ? AppColorTokens.darkTextPrimary
+                              : AppColorTokens.textPrimary,
                         ),
                       ),
                     )
-                  : DefaultTextStyle(
-                      style: AppTextStyles.labelLarge.copyWith(
-                        color: _getTextColor(isDark),
-                      ),
-                      child: child ?? const SizedBox.shrink(),
+                  : Icon(
+                      icon,
+                      key: const ValueKey('app-icon-button-content'),
+                      color: _getIconColor(isDark),
+                      size: 24,
                     ),
             ),
           ),
@@ -221,138 +172,75 @@ class AppButton extends StatelessWidget {
     );
   }
 
-  /// Builds icon button variant.
-  Widget _buildIconButton(bool isDark, bool reduceMotion) {
-    return AnimatedContainer(
-      duration: reduceMotion ? Duration.zero : AppMotionTokens.button,
-      curve: AppMotionTokens.defaultCurve,
-      constraints: const BoxConstraints(
-        minWidth: AppSpacingTokens.touchTargetMin,
-        minHeight: AppSpacingTokens.touchTargetMin,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _isDisabled ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppRadiusTokens.button),
-          child: Center(
-            child: loading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isDark
-                            ? AppColorTokens.darkTextPrimary
-                            : AppColorTokens.textPrimary,
-                      ),
-                    ),
-                  )
-                : Icon(icon, color: _getIconColor(isDark), size: 24),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Gets the background color based on variant and state.
   Color _getBackgroundColor(bool isDark) {
     if (_isDisabled) {
       return isDark
           ? AppColorTokens.darkBorder.withValues(alpha: 0.3)
           : AppColorTokens.border.withValues(alpha: 0.5);
     }
-
-    switch (variant) {
-      case ButtonVariant.primary:
-        return AppColorTokens.primary;
-      case ButtonVariant.secondary:
-        return isDark
-            ? AppColorTokens.darkSurfaceElevated
-            : AppColorTokens.surface;
-      case ButtonVariant.text:
-      case ButtonVariant.outlined:
-        return Colors.transparent;
-      case ButtonVariant.icon:
-        return Colors.transparent;
-    }
+    return switch (variant) {
+      ButtonVariant.primary => AppColorTokens.primary,
+      ButtonVariant.secondary => isDark
+          ? AppColorTokens.darkSurfaceElevated
+          : AppColorTokens.surface,
+      ButtonVariant.text ||
+      ButtonVariant.outlined ||
+      ButtonVariant.icon => Colors.transparent,
+    };
   }
 
-  /// Gets the text color based on variant and state.
   Color _getTextColor(bool isDark) {
     if (_isDisabled) {
       return isDark ? AppColorTokens.darkTextMuted : AppColorTokens.textMuted;
     }
-
-    switch (variant) {
-      case ButtonVariant.primary:
-        return AppColorTokens.textInverse;
-      case ButtonVariant.secondary:
-      case ButtonVariant.outlined:
-        return isDark
-            ? AppColorTokens.darkTextPrimary
-            : AppColorTokens.textPrimary;
-      case ButtonVariant.text:
-        return AppColorTokens.primary;
-      case ButtonVariant.icon:
-        return isDark
-            ? AppColorTokens.darkTextPrimary
-            : AppColorTokens.textPrimary;
-    }
+    return switch (variant) {
+      ButtonVariant.primary => AppColorTokens.textInverse,
+      ButtonVariant.secondary || ButtonVariant.outlined => isDark
+          ? AppColorTokens.darkTextPrimary
+          : AppColorTokens.textPrimary,
+      ButtonVariant.text => AppColorTokens.primary,
+      ButtonVariant.icon => isDark
+          ? AppColorTokens.darkTextPrimary
+          : AppColorTokens.textPrimary,
+    };
   }
 
-  /// Gets the icon color for icon buttons.
   Color _getIconColor(bool isDark) {
     if (_isDisabled) {
       return isDark ? AppColorTokens.darkTextMuted : AppColorTokens.textMuted;
     }
-
     return isDark ? AppColorTokens.darkTextPrimary : AppColorTokens.textPrimary;
   }
 
-  /// Gets the border color for outlined variant.
   Color _getBorderColor(bool isDark) {
     if (_isDisabled) {
       return isDark ? AppColorTokens.darkBorder : AppColorTokens.border;
     }
-
     return isDark
         ? AppColorTokens.darkBorderStrong
         : AppColorTokens.borderStrong;
   }
 
-  /// Gets the loading indicator color based on variant.
   Color _getLoadingIndicatorColor(bool isDark) {
-    switch (variant) {
-      case ButtonVariant.primary:
-        return AppColorTokens.textInverse;
-      case ButtonVariant.secondary:
-      case ButtonVariant.outlined:
-      case ButtonVariant.text:
-        return AppColorTokens.primary;
-      case ButtonVariant.icon:
-        return isDark
-            ? AppColorTokens.darkTextPrimary
-            : AppColorTokens.textPrimary;
-    }
+    return switch (variant) {
+      ButtonVariant.primary => AppColorTokens.textInverse,
+      ButtonVariant.secondary ||
+      ButtonVariant.outlined ||
+      ButtonVariant.text => AppColorTokens.primary,
+      ButtonVariant.icon => isDark
+          ? AppColorTokens.darkTextPrimary
+          : AppColorTokens.textPrimary,
+    };
   }
 
-  /// Gets the elevation based on variant.
   double _getElevation() {
-    if (_isDisabled) {
-      return 0;
-    }
-
-    switch (variant) {
-      case ButtonVariant.primary:
-        return 1;
-      case ButtonVariant.secondary:
-        return 0.5;
-      case ButtonVariant.text:
-      case ButtonVariant.outlined:
-      case ButtonVariant.icon:
-        return 0;
-    }
+    if (_isDisabled) return 0;
+    return switch (variant) {
+      ButtonVariant.primary => 1.5,
+      ButtonVariant.secondary => 0.5,
+      ButtonVariant.text ||
+      ButtonVariant.outlined ||
+      ButtonVariant.icon => 0,
+    };
   }
 }

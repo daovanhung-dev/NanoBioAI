@@ -4,6 +4,8 @@ import '../../tokens/color_tokens.dart';
 import '../../tokens/component_tokens.dart';
 import '../../tokens/spacing_tokens.dart';
 import '../button.dart';
+import '../../app_text_styles.dart';
+import '../../app_motion.dart';
 
 /// Consistent user-safe error state with an optional retry action.
 class ErrorState extends StatelessWidget {
@@ -30,10 +32,11 @@ class ErrorState extends StatelessWidget {
           padding: EdgeInsets.all(AppSpacingTokens.pagePadding),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
+            child: AppViewMotion(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                 Container(
                   width: 96,
                   height: 96,
@@ -76,7 +79,8 @@ class ErrorState extends StatelessWidget {
                     child: Text(retryLabel),
                   ),
                 ],
-              ],
+                ],
+              ),
             ),
           ),
         ),

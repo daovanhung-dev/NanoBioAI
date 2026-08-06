@@ -165,24 +165,41 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
   _NabiAnimProfile _currentProfile = _NabiAnimProfile.idle;
 
   bool _isPressed = false;
+  bool _motionSuppressed = true;
 
   @override
   void initState() {
     super.initState();
     _initControllers();
-    _startProfile(_NabiAnimProfile.idle);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final policy = AppMotionScope.of(context);
+    final nextSuppressed = AppMotionScope.reduceMotionOf(context) ||
+        policy.performanceTier == AppPerformanceTier.economical;
+    if (nextSuppressed == _motionSuppressed) return;
+
+    _motionSuppressed = nextSuppressed;
+    if (_motionSuppressed) {
+      _stopAll();
+      _resetToStaticFrame();
+    } else {
+      _startProfile(_currentProfile);
+    }
   }
 
   void _initControllers() {
     _floatCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2600),
-    )..repeat(reverse: true);
+      duration: AppDuration.pulse,
+    );
 
     _swayCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3800),
-    )..repeat(reverse: true);
+      duration: AppDuration.xSlow * 6,
+    );
 
     _fadeCtrl = AnimationController(
       vsync: this,
@@ -192,8 +209,8 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
 
     _auraCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
+      duration: AppDuration.pulse,
+    );
 
     _bounceCtrl = AnimationController(
       vsync: this,
@@ -246,7 +263,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
     _chatCtrl = AnimationController(
       vsync: this,
       duration: AppDuration.slow,
-    )..repeat(reverse: true);
+    );
     _chatAnim = Tween<double>(
       begin: 0.96,
       end: 1.04,
@@ -255,17 +272,21 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
     _shineCtrl = AnimationController(
       vsync: this,
       duration: AppDuration.shimmer,
-    )..repeat();
+    );
 
     _spinCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..repeat();
+      duration: AppDuration.pulse,
+    );
   }
 
   void _startProfile(_NabiAnimProfile profile) {
     _stopAll();
     _currentProfile = profile;
+    if (_motionSuppressed) {
+      _resetToStaticFrame();
+      return;
+    }
 
     switch (profile) {
       case _NabiAnimProfile.idle:
@@ -277,9 +298,9 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
         _floatCtrl.repeat(reverse: true);
         _auraCtrl.repeat(reverse: true);
         _bounceCtrl.forward(from: 0).then((_) {
-          if (mounted && _currentProfile == _NabiAnimProfile.happy) {
+          if (mounted && !_motionSuppressed && _currentProfile == _NabiAnimProfile.happy) {
             Future.delayed(AppDuration.slow, () {
-              if (mounted && _currentProfile == _NabiAnimProfile.happy) {
+              if (mounted && !_motionSuppressed && _currentProfile == _NabiAnimProfile.happy) {
                 _bounceCtrl.forward(from: 0);
               }
             });
@@ -295,9 +316,9 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
         _floatCtrl.repeat(reverse: true);
         _auraCtrl.repeat(reverse: true);
         _swingCtrl.forward(from: 0).then((_) {
-          if (mounted && _currentProfile == _NabiAnimProfile.wave) {
+          if (mounted && !_motionSuppressed && _currentProfile == _NabiAnimProfile.wave) {
             Future.delayed(AppDuration.readable, () {
-              if (mounted && _currentProfile == _NabiAnimProfile.wave) {
+              if (mounted && !_motionSuppressed && _currentProfile == _NabiAnimProfile.wave) {
                 _swingCtrl.forward(from: 0);
               }
             });
@@ -308,7 +329,7 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
         _celebCtrl.forward(from: 0).then((_) {
           if (mounted) {
             Future.delayed(AppDuration.fast, () {
-              if (mounted && _currentProfile == _NabiAnimProfile.celebrate) {
+              if (mounted && !_motionSuppressed && _currentProfile == _NabiAnimProfile.celebrate) {
                 _celebCtrl.forward(from: 0);
               }
             });
@@ -350,6 +371,21 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
     _auraCtrl.stop();
   }
 
+  void _resetToStaticFrame() {
+    _floatCtrl.value = 0;
+    _swayCtrl.value = 0;
+    _auraCtrl.value = .5;
+    _bounceCtrl.value = 0;
+    _wobbleCtrl.value = 0;
+    _swingCtrl.value = 0;
+    _droopCtrl.value = 0;
+    _celebCtrl.value = 0;
+    _chatCtrl.value = .5;
+    _shineCtrl.value = 0;
+    _spinCtrl.value = 0;
+    _fadeCtrl.value = 1;
+  }
+
   @override
   void dispose() {
     _floatCtrl.dispose();
@@ -375,17 +411,26 @@ class _NabiCharacterWidgetState extends ConsumerState<NabiCharacterWidget>
     final newProfile = _profileFor(newState);
     if (newProfile != _currentProfile) _startProfile(newProfile);
 
-    _fadeCtrl.forward(from: 0);
-    if (newProfile == _NabiAnimProfile.happy ||
-        newProfile == _NabiAnimProfile.celebrate) {
+    if (_motionSuppressed) {
+      _fadeCtrl.value = 1;
+    } else {
+      _fadeCtrl.forward(from: 0);
+    }
+    if (!_motionSuppressed &&
+        (newProfile == _NabiAnimProfile.happy ||
+        newProfile == _NabiAnimProfile.celebrate)) {
       _bounceCtrl.forward(from: 0);
     }
   }
 
-  void _handleTapDown(TapDownDetails _) => setState(() => _isPressed = true);
+  void _handleTapDown(TapDownDetails _) {
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
+    setState(() => _isPressed = true);
+  }
 
   void _handleTapUp(_) {
     setState(() => _isPressed = false);
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     widget.onTap?.call();
   }
 

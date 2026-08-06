@@ -14,9 +14,15 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
   int _currentMl = 0;
 
   void _addWater(int amount) {
+    final previous = _currentMl;
     setState(() {
       _currentMl = (_currentMl + amount).clamp(0, _goalMl);
     });
+    if (previous < _goalMl && _currentMl >= _goalMl) {
+      AppFeedbackService.instance.emit(AppFeedbackType.milestone);
+    } else {
+      AppFeedbackService.instance.emit(AppFeedbackType.selection);
+    }
   }
 
   @override
@@ -41,22 +47,34 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
                 ),
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text(
-                '$_currentMl ml',
-                style: AppTextStyles.displaySmall.copyWith(
-                  color: AppColors.info,
-                  fontWeight: AppTypography.bold,
+              AppStateSwitcher(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '$_currentMl ml',
+                  key: ValueKey('water-$_currentMl'),
+                  style: AppTextStyles.displaySmall.copyWith(
+                    color: AppColors.info,
+                    fontWeight: AppTypography.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppRadius.circular),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 10,
-                  backgroundColor: AppColors.info.withValues(alpha: .1),
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.info,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(end: progress),
+                  duration: AppMotionScope.duration(
+                    context,
+                    AppDuration.progress,
+                  ),
+                  curve: AppAnimations.emphasizedCurve,
+                  builder: (context, value, _) => LinearProgressIndicator(
+                    value: value,
+                    minHeight: 10,
+                    backgroundColor: AppColors.info.withValues(alpha: .1),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.info,
+                    ),
                   ),
                 ),
               ),
@@ -103,13 +121,20 @@ class _WaterTrackingPageState extends State<WaterTrackingPage> {
           ],
         ),
         const SizedBox(height: AppSpacing.sectionSpacing),
-        NamiCareEmptyState(
-          icon: Icons.notifications_active_rounded,
-          color: AppColors.info,
-          title: 'Nabi nhắc mình uống nước',
-          message: _currentMl == 0
-              ? 'Nabi chưa ghi nhận ly nước nào hôm nay. Mình bắt đầu bằng một ngụm nhỏ nhé.'
-              : 'Từng ngụm nhỏ đang giúp cơ thể dễ chịu hơn rồi. Nabi sẽ tiếp tục nhắc bạn thật nhẹ nhàng.',
+        AppStateSwitcher(
+          child: NamiCareEmptyState(
+            key: ValueKey(
+              'water-message-${_currentMl == 0 ? 'empty' : _currentMl >= _goalMl ? 'goal' : 'progress'}',
+            ),
+            icon: Icons.notifications_active_rounded,
+            color: AppColors.info,
+            title: 'Nabi nhắc mình uống nước',
+            message: _currentMl == 0
+                ? 'Nabi chưa ghi nhận ly nước nào hôm nay. Mình bắt đầu bằng một ngụm nhỏ nhé.'
+                : _currentMl >= _goalMl
+                    ? 'Bạn đã hoàn thành mục tiêu hôm nay. Cơ thể đã nhận được một nhịp chăm sóc thật đều.'
+                    : 'Từng ngụm nhỏ đang giúp cơ thể dễ chịu hơn rồi. Nabi sẽ tiếp tục nhắc bạn thật nhẹ nhàng.',
+          ),
         ),
       ],
     );

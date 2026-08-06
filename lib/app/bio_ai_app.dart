@@ -16,6 +16,9 @@ class BioAIApp extends ConsumerWidget {
     final authIdentity = ref.watch(v2AuthChangesProvider);
     final currentUserId = ref.watch(currentAuthUserIdProvider);
     final requestedSurface = ref.watch(appSurfaceControllerProvider);
+    final experiencePreferences =
+        ref.watch(appExperiencePreferencesProvider).value ??
+            AppExperiencePreferences.defaults;
 
     ref.listen<String?>(currentAuthUserIdProvider, (previous, next) {
       if (previous != null && next == null) {
@@ -27,6 +30,7 @@ class BioAIApp extends ConsumerWidget {
         authIdentity.isLoading) {
       return _AccessResolvingApp(
         key: const ValueKey('auth-identity-resolving'),
+        preferences: experiencePreferences,
         textScaleFactor: ref
                 .watch(appTextScaleControllerProvider)
                 .value
@@ -43,6 +47,7 @@ class BioAIApp extends ConsumerWidget {
     final adminAccess = ref.watch(adminAccessControllerProvider);
     if (adminAccess.isLoading) {
       return _AccessResolvingApp(
+        preferences: experiencePreferences,
         textScaleFactor: ref
                 .watch(appTextScaleControllerProvider)
                 .value
@@ -73,9 +78,11 @@ class _AccessResolvingApp extends StatelessWidget {
   const _AccessResolvingApp({
     super.key,
     required this.textScaleFactor,
+    required this.preferences,
   });
 
   final double textScaleFactor;
+  final AppExperiencePreferences preferences;
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +93,7 @@ class _AccessResolvingApp extends StatelessWidget {
         context,
         child,
         presetFactor: textScaleFactor,
+        preferences: preferences,
       ),
       home: const MedicalPageScaffold(
         body: Center(

@@ -126,6 +126,7 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
       isPasswordObscured: _isPasswordObscured,
       onEmailSubmitted: () => _passwordFocusNode.requestFocus(),
       onTogglePasswordVisibility: () {
+        AppFeedbackService.instance.emit(AppFeedbackType.selection);
         setState(() => _isPasswordObscured = !_isPasswordObscured);
       },
       onSubmit: _submit,
@@ -136,8 +137,12 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
     if (_isSubmitting) return;
 
     final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid) return;
+    if (!isValid) {
+      AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      return;
+    }
 
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     FocusScope.of(context).unfocus();
     setState(() => _isSubmitting = true);
 
@@ -151,9 +156,11 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
           );
 
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       context.go(AdminRoutePaths.dashboard);
     } catch (error) {
       if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
       _showLoginError(error);
     } finally {
       if (mounted) {

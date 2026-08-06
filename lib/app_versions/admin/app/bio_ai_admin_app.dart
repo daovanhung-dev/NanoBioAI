@@ -11,6 +11,9 @@ class BioAIAdminApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final experiencePreferences =
+        ref.watch(appExperiencePreferencesProvider).value ??
+            AppExperiencePreferences.defaults;
     final textScaleFactor = ref
             .watch(appTextScaleControllerProvider)
             .value
@@ -27,6 +30,7 @@ class BioAIAdminApp extends ConsumerWidget {
         context,
         child,
         presetFactor: textScaleFactor,
+        preferences: experiencePreferences,
       ),
       theme: AppTheme.lightTheme,
       routerConfig: adminRouter,
