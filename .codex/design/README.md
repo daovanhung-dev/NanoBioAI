@@ -1,45 +1,27 @@
-# .codex/design — Nabi Kinetic Aura
+# NanoBio Material 3 Expressive Design — Re-execution 2026-08-07
 
-Thư mục này là nguồn thiết kế canonical cho đợt refactor toàn bộ presentation layer NanoBio.
-Tài liệu được tạo từ static audit snapshot `nano_app(8)` ngày 2026-08-05.
+This directory is the canonical UI/UX design handoff generated against `daovanhung-dev/NanoBioAI` commit `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 
-## Phạm vi đã audit
+## Design language
+**NanoBio Calm Expressive Health** combines Material 3 Expressive hierarchy/shape/motion with calm medical presentation, glanceable information and contextual Nabi behavior.
 
-- `183` file UI/theme/router/app-shell.
-- `46` page/screen.
-- `59` widget file.
-- `40` file đang có animation/motion.
-- `21` file dùng `Duration(milliseconds: ...)` trực tiếp.
-- `33` file dùng `Color(0x...)` hoặc `Colors.*` trực tiếp.
-- `11` file gọi haptic trực tiếp.
-- `0` file có playback sound trong source hiện tại.
+## Non-negotiable
+1. No business logic, persistence, access, quota or trust-boundary change is implied by these docs.
+2. Source runtime beats this documentation when drift is detected.
+3. Active, source-only, alias and coming-soon surfaces remain explicitly different.
+4. Theme tokens/primitives are the implementation path; no page-level parallel style system.
+5. Vietnamese copy, accessibility, reduced motion and narrow-screen behavior are required.
 
-## Thứ tự đọc
+## Read pack
+1. `00_NABI_KINETIC_AURA_MASTER_DESIGN.md`
+2. `03_MOTION_SYSTEM.md`
+3. `05_SOUND_HAPTIC_SYSTEM.md`
+4. `12_UI_FILE_DESIGN_MATRIX.md`
+5. One `groups/*.md` file
+6. `15_CODING_PLAN.md`
+7. Exact `screens/*.md` for touched surface
 
-1. [`00_NABI_KINETIC_AURA_MASTER_DESIGN.md`](00_NABI_KINETIC_AURA_MASTER_DESIGN.md)
-2. [`02_COLOR_LIGHT_DEPTH_SYSTEM.md`](02_COLOR_LIGHT_DEPTH_SYSTEM.md)
-3. [`03_MOTION_SYSTEM.md`](03_MOTION_SYSTEM.md)
-4. [`04_MICRO_INTERACTIONS.md`](04_MICRO_INTERACTIONS.md)
-5. [`05_SOUND_HAPTIC_SYSTEM.md`](05_SOUND_HAPTIC_SYSTEM.md)
-6. [`06_COMPONENT_DESIGN_SYSTEM.md`](06_COMPONENT_DESIGN_SYSTEM.md)
-7. [`12_UI_FILE_DESIGN_MATRIX.md`](12_UI_FILE_DESIGN_MATRIX.md)
-8. Group file tương ứng trong [`groups/`](groups/)
-9. [`15_CODING_PLAN.md`](15_CODING_PLAN.md)
-10. [`16_ACCEPTANCE_CHECKLIST.md`](16_ACCEPTANCE_CHECKLIST.md)
-11. [`18_MOTION_FEEDBACK_DEBT_REGISTER.md`](18_MOTION_FEEDBACK_DEBT_REGISTER.md)
-12. [`19_PROTOTYPE_SPEC.md`](19_PROTOTYPE_SPEC.md)
-13. [`20_CODING_WAVE_FILE_MANIFEST.md`](20_CODING_WAVE_FILE_MANIFEST.md)
-
-## Nguồn sự thật
-
-- Thiết kế: thư mục này.
-- Runtime và nghiệp vụ: source/test hiện tại.
-- Token/component hiện hữu: `lib/core/theme/`.
-- Quyền, membership, quota, Sale và Admin: trusted backend/Supabase; animation không được mở quyền.
-
-## Trạng thái
-
-- Design/audit: **Complete ở mức static source**.
-- Prototype trực quan/âm thanh: **Chưa thực hiện**.
-- Coding: **Chưa thực hiện**.
-- Flutter analyze/test/device visual QA: **Chưa thực hiện trong phiên design**.
+## Coverage
+- Screen/surface specs: **79**
+- Active route contracts: V1 20, V2 13, V3 2, Admin 12.
+- Additional coverage: onboarding internals, V1 source-only/embedded pages, V3 FamilyPlus source, Sale internal surfaces, Admin shell/gate/dialogs.

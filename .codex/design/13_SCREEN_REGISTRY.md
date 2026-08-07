@@ -1,0 +1,81 @@
+# Screen Registry
+
+- **V1-01 — Splash** · `active-route` · `V1RoutePaths.splash` · `lib/app_versions/v1/features/splash/presentation/pages/splash_page.dart`
+- **V1-02 — Đăng nhập V1 Entry** · `active-route` · `V1RoutePaths.login` · `lib/app_versions/v1/features/auth/presentation/pages/v1_auth_entry_page.dart`
+- **V1-03 — Đăng ký V1 Entry** · `active-route` · `V1RoutePaths.register` · `lib/app_versions/v1/features/auth/presentation/pages/v1_auth_entry_page.dart`
+- **V1-04 — Dashboard Hôm nay** · `active-route` · `V1RoutePaths.dashboard` · `lib/app_versions/v1/features/dashboard/presentation/pages/dashboard_page.dart`
+- **V1-05 — Onboarding Entry** · `active-route` · `V1RoutePaths.onboardingEntry` · `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_entry_page.dart`
+- **V1-06 — Onboarding Journey Shell** · `active-route` · `V1RoutePaths.onboarding` · `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_page.dart`
+- **V1-07 — Main Navigation** · `active-route` · `V1RoutePaths.menu` · `lib/app_versions/v1/features/dashboard/presentation/pages/menu_page.dart`
+- **V1-08 — Meal Plan** · `active-route` · `V1RoutePaths.mealPlan` · `lib/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart`
+- **V1-09 — Daily Health Tracking Alias** · `alias` · `V1RoutePaths.healthTracking` · `lib/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart`
+- **V1-10 — Body Metrics** · `active-route` · `V1RoutePaths.bodyMetrics` · `lib/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart`
+- **V1-11 — Lifestyle Schedule** · `active-route` · `V1RoutePaths.lifestyleSchedule` · `lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart`
+- **V1-12 — Daily Routine Preferences** · `active-route` · `V1RoutePaths.dailyRoutinePreferences` · `lib/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart`
+- **V1-13 — Sleep Tracking Preview** · `coming-soon` · `V1RoutePaths.sleepTracking` · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart`
+- **V1-14 — Stress Tracking Preview** · `coming-soon` · `V1RoutePaths.stressTracking` · `lib/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart`
+- **V1-15 — AI Chat** · `active-route` · `V1RoutePaths.aiChat` · `lib/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart`
+- **V1-16 — AI Voice** · `active-route` · `V1RoutePaths.aiVoice` · `lib/app_versions/v1/features/ai_voice/presentation/pages/ai_voice_page.dart`
+- **V1-17 — Nutrition** · `active-route` · `V1RoutePaths.nutrition` · `lib/app_versions/v1/features/nutrition/presentation/pages/nutrition_page.dart`
+- **V1-18 — Nutrition Profile Editor** · `active-route` · `V1RoutePaths.nutritionProfile` · `lib/app_versions/v1/features/nutrition/presentation/pages/nutrition_profile_editor_page.dart`
+- **V1-19 — Profile** · `active-route` · `V1RoutePaths.profile` · `lib/app_versions/v1/features/profile/presentation/pages/profile_page.dart`
+- **V1-20 — Community Preview** · `coming-soon` · `V1RoutePaths.community` · `lib/app_versions/v1/features/community/presentation/pages/community_page.dart`
+- **ONB-01 — Text Scale Setup** · `source-sub-surface` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_text_scale_page.dart`
+- **ONB-02 — Welcome Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/welcome_step.dart`
+- **ONB-03 — Basic Info Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/basic_info_step.dart`
+- **ONB-04 — Goals Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/goals_step.dart`
+- **ONB-05 — Conditions Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/conditions_step.dart`
+- **ONB-06 — Lifestyle Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/lifestyle_step.dart`
+- **ONB-07 — Extras Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/extras_step.dart`
+- **ONB-08 — Daily Routine Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/daily_routine_step.dart`
+- **ONB-09 — Consent Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/consent_step.dart`
+- **ONB-10 — Review Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/review_step.dart`
+- **ONB-11 — Result Step** · `source-only` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/result_step.dart`
+- **V1-X01 — Features Hub** · `source-sub-surface` · `MainNavigationPage tab: Tiện ích` · `lib/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart`
+- **V1-X02 — Health Insights / Góc Nabi** · `source-sub-surface` · `MainNavigationPage tab: Góc Nabi` · `lib/app_versions/v1/features/other/presentation/pages/other_page.dart`
+- **V1-X03 — Schedule Proof Gallery** · `source-sub-surface` · `push từ Lifestyle Schedule` · `lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/schedule_proof_gallery_page.dart`
+- **V1-X04 — Dev Database Viewer** · `source-only` · `debug-only từ Settings` · `lib/app_versions/v1/features/settings/presentation/pages/dev_database_viewer_page.dart`
+- **V1-X05 — Water Tracking** · `source-only` · `source invocation` · `lib/app_versions/v1/features/water_tracking/presentation/pages/water_tracking_page.dart`
+- **V1-X06 — Weekly Summary** · `source-only` · `source invocation` · `lib/app_versions/v1/features/weekly_summary/presentation/pages/weekly_summary_page.dart`
+- **V1-X07 — Quick Care** · `source-only` · `source invocation` · `lib/app_versions/v1/features/quick_care/presentation/pages/quick_care_page.dart`
+- **V1-X08 — Gentle Care Mode** · `source-only` · `source invocation` · `lib/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart`
+- **V1-X09 — Personal Goals** · `source-only` · `source invocation` · `lib/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart`
+- **V1-X10 — Nami Care Page** · `source-sub-surface` · `embedded/source invocation` · `lib/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart`
+- **V2-01 — Auth Gate** · `gate` · `V2RoutePaths.authGate` · `lib/app_versions/v2/features/auth/presentation/pages/auth_gate_page.dart`
+- **V2-02 — Login** · `active-route` · `V2RoutePaths.login` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
+- **V2-03 — Register** · `active-route` · `V2RoutePaths.register` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
+- **V2-04 — Verify Email** · `active-route` · `V2RoutePaths.verifyEmail` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
+- **V2-05 — Forgot Password** · `active-route` · `V2RoutePaths.forgotPassword` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
+- **V2-06 — Reset Password** · `active-route` · `V2RoutePaths.resetPassword` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
+- **V2-07 — Auth Callback** · `active-route` · `V2RoutePaths.authCallback` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
+- **V2-08 — Sale Shell** · `active-route` · `V2RoutePaths.sale` · `lib/sale_referral/presentation/pages/sale_shell_page.dart`
+- **V2-09 — Health Score** · `active-route` · `V2RoutePaths.healthScore` · `lib/app_versions/v2/features/health_scoring/presentation/pages/health_score_habits_page.dart`
+- **V2-10 — Health Module Access** · `active-route` · `HealthModuleRoutePaths.detailPattern` · `lib/app_versions/v2/features/health_modules/presentation/pages/health_module_access_page.dart`
+- **V2-11 — Membership Payment** · `active-route` · `V2RoutePaths.payments` · `lib/app_versions/v2/features/payments/presentation/pages/membership_payment_page.dart`
+- **V2-12 — Wellness Rewards** · `active-route` · `V2RoutePaths.wellnessRewards` · `lib/app_versions/v2/features/wellness_rewards/presentation/pages/wellness_rewards_page.dart`
+- **V2-13 — V2 Home** · `active-route` · `V2RoutePaths.home` · `lib/app_versions/v2/features/home/presentation/pages/v2_home_page.dart`
+- **V3-01 — V3 Home** · `active-route` · `V3RoutePaths.home` · `lib/app_versions/v3/features/home/presentation/pages/v3_home_page.dart`
+- **V3-02 — Advanced Tracking** · `active-route` · `V3RoutePaths.advancedTracking` · `lib/app_versions/v3/features/advanced_tracking/presentation/pages/advanced_tracking_page.dart`
+- **V3-03 — FamilyPlus** · `source-only` · `no direct v3 route` · `lib/app_versions/v3/features/family_plus/presentation/pages/family_plus_page.dart`
+- **SALE-01 — Sale Participation** · `source-sub-surface` · `Settings / participation flow` · `lib/sale_referral/presentation/pages/sale_participation_page.dart`
+- **SALE-02 — Payout Profile Gate** · `internal-surface` · `SaleShellPage gate` · `lib/sale_referral/presentation/pages/sale_shell_page.dart::_SalePayoutProfileGate`
+- **SALE-03 — Sale Overview** · `internal-surface` · `SaleShellPage tab 0` · `lib/sale_referral/presentation/pages/sale_shell_page.dart::_OverviewTab`
+- **SALE-04 — Direct Customers** · `internal-surface` · `SaleShellPage tab 1` · `lib/sale_referral/presentation/pages/sale_shell_page.dart::_DirectCustomersTab`
+- **SALE-05 — Point Ledger** · `internal-surface` · `SaleShellPage tab 2` · `lib/sale_referral/presentation/pages/sale_shell_page.dart::_PointLedgerTab`
+- **SALE-06 — Conversion Tools** · `internal-surface` · `SaleShellPage tab 3` · `lib/sale_referral/presentation/pages/sale_shell_page.dart::_ConversionToolsTab`
+- **SALE-07 — Referral Code Panel** · `internal-surface` · `SaleShellPage / Công cụ` · `lib/sale_referral/presentation/pages/sale_shell_page.dart::_ReferralCodePanel`
+- **ADM-01 — Admin Login** · `active-route` · `AdminRoutePaths.login` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_login_page.dart`
+- **ADM-02 — Admin Dashboard** · `active-route` · `AdminRoutePaths.dashboard` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-03 — Admin Users** · `active-route` · `AdminRoutePaths.users` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-04 — Admin Payments** · `active-route` · `AdminRoutePaths.payments` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-05 — Admin Sales** · `active-route` · `AdminRoutePaths.sales` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-06 — Admin Sale Conversions** · `active-route` · `AdminRoutePaths.saleConversions` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-07 — Admin Wellness Rewards** · `active-route` · `AdminRoutePaths.wellnessRewards` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-08 — Admin Reconciliation** · `active-route` · `AdminRoutePaths.reconciliation` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-09 — Admin Plans** · `active-route` · `AdminRoutePaths.plans` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-10 — Admin Reports** · `active-route` · `AdminRoutePaths.reports` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-11 — Admin Audit** · `active-route` · `AdminRoutePaths.audit` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-12 — Admin Config** · `active-route` · `AdminRoutePaths.config` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart`
+- **ADM-X01 — Admin Workspace Shell** · `source-sub-surface` · `embedded by workspace presentation` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_shell.dart`
+- **ADM-X02 — Admin Access Gate** · `gate` · `protected route wrapper` · `lib/app_versions/admin/features/admin_panel/presentation/widgets/admin_access_gate.dart`
+- **ADM-X03 — Admin Workspace Dialogs** · `dialog-surface` · `invoked by admin mutations` · `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_dialogs.dart`
