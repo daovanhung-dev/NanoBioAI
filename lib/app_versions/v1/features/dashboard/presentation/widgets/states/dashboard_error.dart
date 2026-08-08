@@ -17,26 +17,28 @@ class DashboardError extends StatelessWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: const BoxDecoration(
-                color: AppColors.errorSoft,
+              decoration: BoxDecoration(
+                color: context.semanticColors.errorSoft,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.error_outline_rounded,
-                color: AppColors.error,
+                color: context.semanticColors.error,
                 size: 36,
               ),
             ),
             const SizedBox(height: AppSpacing.sectionSpacing),
             Text(
               'Có lỗi xảy ra',
-              style: AppTextStyles.heading3.copyWith(color: AppColors.error),
+              style: AppTextStyles.heading3.copyWith(
+                color: context.semanticColors.error,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               error,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),

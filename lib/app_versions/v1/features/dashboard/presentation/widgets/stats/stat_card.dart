@@ -18,10 +18,10 @@ class StatCard extends StatelessWidget {
         AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: context.semanticColors.card,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: AppShadows.sm,
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -46,7 +46,7 @@ class StatCard extends StatelessWidget {
           Text(
             stat.unit,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textHint,
+              color: context.semanticColors.textHint,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -63,7 +63,7 @@ class StatCard extends StatelessWidget {
           Text(
             stat.label,
             style: AppTextStyles.overline.copyWith(
-              color: AppColors.textHint,
+              color: context.semanticColors.textHint,
               letterSpacing: 0,
             ),
             maxLines: 1,

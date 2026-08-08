@@ -61,8 +61,7 @@ class DashboardContent extends StatelessWidget {
     final waterPerDay = dashboard.waterPerDay.trim().isEmpty
         ? 'Nước chưa ghi nhận'
         : dashboard.waterPerDay.trim();
-    final displayWeightKg =
-        dynamicData.todayWeightKg ?? dashboard.weightKg;
+    final displayWeightKg = dynamicData.todayWeightKg ?? dashboard.weightKg;
     final dailySummary = DashboardCompanionService.buildDailySummary(
       metrics: dynamicData.metrics,
       sleepQuality: sleepQuality,
@@ -109,9 +108,7 @@ class DashboardContent extends StatelessWidget {
                               UserDataSyncStatus.pendingUpload ||
                           userDataSyncState.status ==
                               UserDataSyncStatus.error) ...[
-                        DashboardUserDataSyncBanner(
-                          state: userDataSyncState,
-                        ),
+                        DashboardUserDataSyncBanner(state: userDataSyncState),
                         const SizedBox(height: AppSpacing.md),
                       ],
                       if (isDynamicLoading) ...[

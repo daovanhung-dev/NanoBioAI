@@ -104,10 +104,10 @@ class _AppInputState extends State<AppInput> {
               color: hasError
                   ? AppColorTokens.error
                   : focused
-                      ? AppColorTokens.primary
-                      : isDark
-                          ? AppColorTokens.darkTextPrimary
-                          : AppColorTokens.textPrimary,
+                  ? AppColorTokens.primary
+                  : isDark
+                  ? AppColorTokens.darkTextPrimary
+                  : AppColorTokens.textPrimary,
             ),
             child: Text(widget.label!),
           ),
@@ -170,8 +170,8 @@ class _AppInputState extends State<AppInput> {
                         color: focused
                             ? AppColorTokens.primary
                             : isDark
-                                ? AppColorTokens.darkTextSecondary
-                                : AppColorTokens.textSecondary,
+                            ? AppColorTokens.darkTextSecondary
+                            : AppColorTokens.textSecondary,
                       ),
                     )
                   : null,
@@ -190,17 +190,9 @@ class _AppInputState extends State<AppInput> {
                 isDark ? AppColorTokens.darkBorder : AppColorTokens.border,
                 1,
               ),
-              focusedBorder: _border(
-                isDark,
-                AppColorTokens.primary,
-                2,
-              ),
+              focusedBorder: _border(isDark, AppColorTokens.primary, 2),
               errorBorder: _border(isDark, AppColorTokens.error, 1.2),
-              focusedErrorBorder: _border(
-                isDark,
-                AppColorTokens.error,
-                2,
-              ),
+              focusedErrorBorder: _border(isDark, AppColorTokens.error, 2),
               disabledBorder: _border(
                 isDark,
                 (isDark ? AppColorTokens.darkBorder : AppColorTokens.border)
@@ -238,8 +230,8 @@ class _AppInputState extends State<AppInput> {
         color: focused
             ? AppColorTokens.primary
             : isDark
-                ? AppColorTokens.darkTextSecondary
-                : AppColorTokens.textSecondary,
+            ? AppColorTokens.darkTextSecondary
+            : AppColorTokens.textSecondary,
       ),
     );
   }

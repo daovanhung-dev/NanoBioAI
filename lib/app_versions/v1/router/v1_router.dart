@@ -6,6 +6,8 @@ import 'package:nano_app/app_versions/v1/features/dashboard/dashboard.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/menu_page.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart';
+import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
+import 'package:nano_app/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/presentation/pages/nutrition_page.dart';
@@ -13,12 +15,16 @@ import 'package:nano_app/app_versions/v1/features/nutrition/presentation/pages/n
 import 'package:nano_app/app_versions/v1/features/onboarding/onboarding.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/pages/onboarding_text_scale_page.dart';
 import 'package:nano_app/app_versions/v1/features/profile/presentation/pages/profile_page.dart';
+import 'package:nano_app/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart';
+import 'package:nano_app/app_versions/v1/features/quick_care/presentation/pages/quick_care_page.dart';
 import 'package:nano_app/app_versions/v1/features/splash/splash.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart';
 import 'package:nano_app/app_versions/v1/features/community/presentation/pages/community_page.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart';
 import 'package:nano_app/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart';
 import 'package:nano_app/app_versions/v1/features/today_tasks/presentation/pages/today_tasks_page.dart';
+import 'package:nano_app/app_versions/v1/features/water_tracking/presentation/pages/water_tracking_page.dart';
+import 'package:nano_app/app_versions/v1/features/weekly_summary/presentation/pages/weekly_summary_page.dart';
 
 import 'v1_route_guards.dart';
 import 'v1_route_paths.dart';
@@ -67,9 +73,8 @@ final v1Routes = <RouteBase>[
   GoRoute(
     path: V1RoutePaths.onboarding,
     name: V1RoutePaths.onboarding,
-    builder: (context, state) => const OnboardingTextScaleGate(
-      child: OnboardingPage(),
-    ),
+    builder: (context, state) =>
+        const OnboardingTextScaleGate(child: OnboardingPage()),
   ),
 
   /// Menu
@@ -98,6 +103,42 @@ final v1Routes = <RouteBase>[
     path: V1RoutePaths.todayTasks,
     name: V1RoutePaths.todayTasks,
     builder: (context, state) => const TodayTasksPage(),
+  ),
+
+  GoRoute(
+    path: V1RoutePaths.waterTracking,
+    name: V1RoutePaths.waterTracking,
+    builder: (context, state) => const WaterTrackingPage(),
+  ),
+
+  GoRoute(
+    path: V1RoutePaths.weeklySummary,
+    name: V1RoutePaths.weeklySummary,
+    builder: (context, state) => const WeeklySummaryPage(),
+  ),
+
+  GoRoute(
+    path: V1RoutePaths.personalGoals,
+    name: V1RoutePaths.personalGoals,
+    builder: (context, state) => const PersonalGoalsPage(),
+  ),
+
+  GoRoute(
+    path: V1RoutePaths.quickCare,
+    name: V1RoutePaths.quickCare,
+    builder: (context, state) => const QuickCarePage(),
+  ),
+
+  GoRoute(
+    path: V1RoutePaths.gentleCare,
+    name: V1RoutePaths.gentleCare,
+    builder: (context, state) => const GentleCareModePage(),
+  ),
+
+  GoRoute(
+    path: V1RoutePaths.namiCare,
+    name: V1RoutePaths.namiCare,
+    builder: (context, state) => const NamiCarePage(),
   ),
 
   GoRoute(

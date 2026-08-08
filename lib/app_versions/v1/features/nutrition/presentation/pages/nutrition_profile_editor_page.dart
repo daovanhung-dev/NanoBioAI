@@ -13,7 +13,7 @@ class NutritionProfileEditorPage extends ConsumerWidget {
     final profileAsync = ref.watch(nutritionProfileControllerProvider);
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.semanticColors.background,
       appBar: AppBar(title: const Text('Hồ sơ dinh dưỡng')),
       body: AppStateSwitcher(
         alignment: Alignment.topCenter,
@@ -26,13 +26,13 @@ class NutritionProfileEditorPage extends ConsumerWidget {
             key: const ValueKey('nutrition-profile-error'),
             onRetry: () {
               AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-              ref
-                  .read(nutritionProfileControllerProvider.notifier)
-                  .refresh();
+              ref.read(nutritionProfileControllerProvider.notifier).refresh();
             },
           ),
           data: (profile) => _NutritionProfileForm(
-            key: ValueKey('nutrition-profile-${profile.id}-${profile.updatedAt}'),
+            key: ValueKey(
+              'nutrition-profile-${profile.id}-${profile.updatedAt}',
+            ),
             initialProfile: profile,
           ),
         ),
@@ -42,10 +42,7 @@ class NutritionProfileEditorPage extends ConsumerWidget {
 }
 
 class _NutritionProfileForm extends ConsumerStatefulWidget {
-  const _NutritionProfileForm({
-    super.key,
-    required this.initialProfile,
-  });
+  const _NutritionProfileForm({super.key, required this.initialProfile});
 
   final NutritionProfileEntity initialProfile;
 
@@ -54,8 +51,7 @@ class _NutritionProfileForm extends ConsumerStatefulWidget {
       _NutritionProfileFormState();
 }
 
-class _NutritionProfileFormState
-    extends ConsumerState<_NutritionProfileForm> {
+class _NutritionProfileFormState extends ConsumerState<_NutritionProfileForm> {
   final _formKey = GlobalKey<FormState>();
   int _step = 0;
   bool _saving = false;
@@ -116,15 +112,16 @@ class _NutritionProfileFormState
     );
     _labs = TextEditingController(
       text: profile.labResults
-          .map((item) => '${item.testName}=${item.valueText}${item.unit.isEmpty ? '' : ' ${item.unit}'}')
+          .map(
+            (item) =>
+                '${item.testName}=${item.valueText}${item.unit.isEmpty ? '' : ' ${item.unit}'}',
+          )
           .join('\n'),
     );
     _goals = TextEditingController(
       text: profile.goals.map((item) => item.name).join(', '),
     );
-    _likedFoods = TextEditingController(
-      text: _joinPreference(profile, 'like'),
-    );
+    _likedFoods = TextEditingController(text: _joinPreference(profile, 'like'));
     _dislikedFoods = TextEditingController(
       text: _joinPreference(profile, 'dislike'),
     );
@@ -207,7 +204,8 @@ class _NutritionProfileFormState
       case 0:
         return _StepCard(
           title: 'Thông tin nền',
-          subtitle: 'Chỉ nhập những gì bạn biết. Các trường đều có thể cập nhật sau.',
+          subtitle:
+              'Chỉ nhập những gì bạn biết. Các trường đều có thể cập nhật sau.',
           children: [
             _TextField(
               controller: _birthDate,
@@ -218,7 +216,9 @@ class _NutritionProfileFormState
             _TextField(
               controller: _waist,
               label: 'Vòng eo (cm)',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               validator: (value) => _optionalNumberValidator(
                 value,
                 min: 20,
@@ -229,7 +229,9 @@ class _NutritionProfileFormState
             _TextField(
               controller: _sleep,
               label: 'Số giờ ngủ trung bình',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               validator: (value) => _optionalNumberValidator(
                 value,
                 min: 0,
@@ -246,7 +248,9 @@ class _NutritionProfileFormState
             _TextField(
               controller: _targetWeight,
               label: 'Cân nặng mục tiêu (kg)',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               validator: (value) => _optionalNumberValidator(
                 value,
                 min: 20,
@@ -259,7 +263,8 @@ class _NutritionProfileFormState
       case 1:
         return _StepCard(
           title: 'Thực phẩm cần tránh',
-          subtitle: 'Tách nhiều mục bằng dấu phẩy. Nabi sẽ không tự suy diễn mức độ dị ứng.',
+          subtitle:
+              'Tách nhiều mục bằng dấu phẩy. Nabi sẽ không tự suy diễn mức độ dị ứng.',
           children: [
             _TextField(
               controller: _allergies,
@@ -309,7 +314,8 @@ class _NutritionProfileFormState
       case 2:
         return _StepCard(
           title: 'Triệu chứng và thuốc',
-          subtitle: 'Thông tin này hỗ trợ sàng lọc thực đơn, không thay thế tư vấn y tế.',
+          subtitle:
+              'Thông tin này hỗ trợ sàng lọc thực đơn, không thay thế tư vấn y tế.',
           children: [
             _TextField(
               controller: _symptoms,
@@ -369,7 +375,8 @@ class _NutritionProfileFormState
       case 3:
         return _StepCard(
           title: 'Mục tiêu và sở thích',
-          subtitle: 'Tối đa 3 mục tiêu ưu tiên. Sở thích chỉ được dùng sau các ràng buộc an toàn.',
+          subtitle:
+              'Tối đa 3 mục tiêu ưu tiên. Sở thích chỉ được dùng sau các ràng buộc an toàn.',
           children: [
             _TextField(
               controller: _goals,
@@ -428,9 +435,9 @@ class _NutritionProfileFormState
       return;
     }
     AppFeedbackService.instance.emit(AppFeedbackType.success);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đã lưu hồ sơ dinh dưỡng.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Đã lưu hồ sơ dinh dưỡng.')));
     Navigator.of(context).pop(true);
   }
 
@@ -482,7 +489,11 @@ class _NutritionProfileFormState
           .toList(growable: false),
       preferenceRules: [
         ..._preferenceEntities(_likedFoods.text, 'like', 'preferred'),
-        ..._preferenceEntities(_dislikedFoods.text, 'dislike', 'avoid_if_possible'),
+        ..._preferenceEntities(
+          _dislikedFoods.text,
+          'dislike',
+          'avoid_if_possible',
+        ),
       ],
     );
   }
@@ -555,20 +566,14 @@ class _NutritionProfileFormState
     return null;
   }
 
-  static String _joinRestrictions(
-    NutritionProfileEntity profile,
-    String type,
-  ) {
+  static String _joinRestrictions(NutritionProfileEntity profile, String type) {
     return profile.restrictions
         .where((item) => item.type == type && item.isActive)
         .map((item) => item.itemName)
         .join(', ');
   }
 
-  static String _joinPreference(
-    NutritionProfileEntity profile,
-    String type,
-  ) {
+  static String _joinPreference(NutritionProfileEntity profile, String type) {
     return profile.preferenceRules
         .where((item) => item.ruleType == type && item.isActive)
         .map((item) => item.itemName)
@@ -606,7 +611,7 @@ class _StepHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.surface,
+      color: context.semanticColors.surface,
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.sm,
@@ -619,7 +624,7 @@ class _StepHeader extends StatelessWidget {
           Text(
             'Bước ${step + 1}/5',
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: context.semanticColors.textSecondary,
               fontWeight: AppTypography.semiBold,
             ),
           ),
@@ -651,7 +656,7 @@ class _StepCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         boxShadow: AppShadows.sm,
       ),
@@ -663,7 +668,7 @@ class _StepCard extends StatelessWidget {
           Text(
             subtitle,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: context.semanticColors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -747,13 +752,45 @@ class _ReviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rows = <MapEntry<String, String>>[
-      MapEntry('Ngày sinh', profile.birthDate?.toIso8601String().split('T').first ?? 'Chưa cung cấp'),
-      MapEntry('Vòng eo', profile.waistCm == null ? 'Chưa cung cấp' : '${profile.waistCm} cm'),
-      MapEntry('Ngủ trung bình', profile.averageSleepHours == null ? 'Chưa cung cấp' : '${profile.averageSleepHours} giờ'),
-      MapEntry('Thực phẩm cần tránh', profile.restrictions.isEmpty ? 'Không ghi nhận' : profile.restrictions.map((item) => item.itemName).join(', ')),
-      MapEntry('Triệu chứng', profile.symptoms.isEmpty ? 'Không ghi nhận' : profile.symptoms.map((item) => item.symptomType).join(', ')),
-      MapEntry('Thuốc/sản phẩm', profile.medications.isEmpty ? 'Không ghi nhận' : profile.medications.map((item) => item.name).join(', ')),
-      MapEntry('Mục tiêu', profile.goals.isEmpty ? 'Chưa chọn' : profile.goals.map((item) => item.name).join(', ')),
+      MapEntry(
+        'Ngày sinh',
+        profile.birthDate?.toIso8601String().split('T').first ??
+            'Chưa cung cấp',
+      ),
+      MapEntry(
+        'Vòng eo',
+        profile.waistCm == null ? 'Chưa cung cấp' : '${profile.waistCm} cm',
+      ),
+      MapEntry(
+        'Ngủ trung bình',
+        profile.averageSleepHours == null
+            ? 'Chưa cung cấp'
+            : '${profile.averageSleepHours} giờ',
+      ),
+      MapEntry(
+        'Thực phẩm cần tránh',
+        profile.restrictions.isEmpty
+            ? 'Không ghi nhận'
+            : profile.restrictions.map((item) => item.itemName).join(', '),
+      ),
+      MapEntry(
+        'Triệu chứng',
+        profile.symptoms.isEmpty
+            ? 'Không ghi nhận'
+            : profile.symptoms.map((item) => item.symptomType).join(', '),
+      ),
+      MapEntry(
+        'Thuốc/sản phẩm',
+        profile.medications.isEmpty
+            ? 'Không ghi nhận'
+            : profile.medications.map((item) => item.name).join(', '),
+      ),
+      MapEntry(
+        'Mục tiêu',
+        profile.goals.isEmpty
+            ? 'Chưa chọn'
+            : profile.goals.map((item) => item.name).join(', '),
+      ),
     ];
 
     return _StepCard(
@@ -787,7 +824,7 @@ class _SafetyNote extends StatelessWidget {
       child: Text(
         'Hồ sơ này giúp cá nhân hóa gợi ý. Ứng dụng không tự kê thuốc, chẩn đoán hoặc thay đổi chỉ định chuyên môn.',
         style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textSecondary,
+          color: context.semanticColors.textSecondary,
           height: 1.45,
         ),
       ),
@@ -815,7 +852,7 @@ class _NavigationBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.cardPadding),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.semanticColors.surface,
           boxShadow: AppShadows.md,
         ),
         child: Row(
@@ -841,8 +878,18 @@ class _NavigationBar extends StatelessWidget {
                           color: AppColors.surface,
                         ),
                       )
-                    : Icon(step == 4 ? Icons.save_rounded : Icons.arrow_forward_rounded),
-                label: Text(saving ? 'Đang lưu...' : step == 4 ? 'Lưu hồ sơ' : 'Tiếp tục'),
+                    : Icon(
+                        step == 4
+                            ? Icons.save_rounded
+                            : Icons.arrow_forward_rounded,
+                      ),
+                label: Text(
+                  saving
+                      ? 'Đang lưu...'
+                      : step == 4
+                      ? 'Lưu hồ sơ'
+                      : 'Tiếp tục',
+                ),
               ),
             ),
           ],

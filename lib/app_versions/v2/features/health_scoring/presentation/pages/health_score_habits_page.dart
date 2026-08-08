@@ -14,88 +14,96 @@ class HealthScoreHabitsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(healthScoreHabitsSummaryProvider);
+    final colors = context.semanticColors;
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         title: const Text('Điểm sức khỏe'),
       ),
       body: AppStateSwitcher(
         alignment: Alignment.topCenter,
         child: state.when(
-        loading: () => const _HealthScoreLoading(
-          key: ValueKey('health-score-loading'),
-        ),
-        error: (_, __) => _HealthScoreSupportState(
-          key: const ValueKey('health-score-error'),
-          icon: Icons.error_outline_rounded,
-          title: 'Chưa tải được điểm sức khỏe',
-          message: 'Bạn thử lại sau ít phút.',
-          actionLabel: 'Thử lại',
-          onAction: () {
-            AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-            ref.invalidate(healthScoreHabitsSummaryProvider);
-          },
-        ),
-        data: (viewModel) {
-          return KeyedSubtree(
-            key: ValueKey('health-score-${viewModel.status.name}'),
-            child: switch (viewModel.status) {
-            HealthScoreHabitsViewStatus.authRequired =>
-              _HealthScoreSupportState(
-                icon: Icons.lock_outline_rounded,
-                title: 'Cần đăng nhập',
-                message: vietnameseSystemUiText(
-                  viewModel.message,
-                  fallback: 'Đăng nhập để tiếp tục.',
+          loading: () =>
+              const _HealthScoreLoading(key: ValueKey('health-score-loading')),
+          error: (_, __) => _HealthScoreSupportState(
+            key: const ValueKey('health-score-error'),
+            icon: Icons.error_outline_rounded,
+            title: 'Chưa tải được điểm sức khỏe',
+            message: 'Bạn thử lại sau ít phút.',
+            actionLabel: 'Thử lại',
+            onAction: () {
+              AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+              ref.invalidate(healthScoreHabitsSummaryProvider);
+            },
+          ),
+          data: (viewModel) {
+            return KeyedSubtree(
+              key: ValueKey('health-score-${viewModel.status.name}'),
+              child: switch (viewModel.status) {
+                HealthScoreHabitsViewStatus.authRequired =>
+                  _HealthScoreSupportState(
+                    icon: Icons.lock_outline_rounded,
+                    title: 'Cần đăng nhập',
+                    message: vietnameseSystemUiText(
+                      viewModel.message,
+                      fallback: 'Đăng nhập để tiếp tục.',
+                    ),
+                    actionLabel: 'Đăng nhập',
+                    onAction: () {
+                      AppFeedbackService.instance.emit(
+                        AppFeedbackType.primaryAction,
+                      );
+                      context.push(V2RoutePaths.login);
+                    },
+                  ),
+                HealthScoreHabitsViewStatus.empty => _HealthScoreSupportState(
+                  icon: Icons.history_toggle_off_rounded,
+                  title: 'Chưa có lịch sử chăm sóc',
+                  message: vietnameseSystemUiText(
+                    viewModel.message,
+                    fallback:
+                        'Hoàn thành lịch chăm sóc hằng ngày để Nabi tính điểm.',
+                  ),
+                  actionLabel: 'Làm mới',
+                  onAction: () {
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.primaryAction,
+                    );
+                    ref.invalidate(healthScoreHabitsSummaryProvider);
+                  },
                 ),
-                actionLabel: 'Đăng nhập',
-                onAction: () {
-                  AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-                  context.push(V2RoutePaths.login);
-                },
-              ),
-            HealthScoreHabitsViewStatus.empty => _HealthScoreSupportState(
-              icon: Icons.history_toggle_off_rounded,
-              title: 'Chưa có lịch sử chăm sóc',
-              message: vietnameseSystemUiText(
-                viewModel.message,
-                fallback:
-                    'Hoàn thành lịch chăm sóc hằng ngày để Nabi tính điểm.',
-              ),
-              actionLabel: 'Làm mới',
-              onAction: () {
-                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-                ref.invalidate(healthScoreHabitsSummaryProvider);
+                HealthScoreHabitsViewStatus.failure => _HealthScoreSupportState(
+                  icon: Icons.error_outline_rounded,
+                  title: 'Chưa tải được điểm sức khỏe',
+                  message: vietnameseSystemUiText(
+                    viewModel.message,
+                    fallback: 'Bạn thử lại sau ít phút.',
+                  ),
+                  actionLabel: 'Thử lại',
+                  onAction: () {
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.primaryAction,
+                    );
+                    ref.invalidate(healthScoreHabitsSummaryProvider);
+                  },
+                ),
+                HealthScoreHabitsViewStatus.ready => _HealthScoreReady(
+                  result: viewModel.result!,
+                  onRefresh: () async {
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.primaryAction,
+                    );
+                    ref.invalidate(healthScoreHabitsSummaryProvider);
+                    await ref.read(healthScoreHabitsSummaryProvider.future);
+                    AppFeedbackService.instance.emit(AppFeedbackType.success);
+                  },
+                ),
               },
-            ),
-            HealthScoreHabitsViewStatus.failure => _HealthScoreSupportState(
-              icon: Icons.error_outline_rounded,
-              title: 'Chưa tải được điểm sức khỏe',
-              message: vietnameseSystemUiText(
-                viewModel.message,
-                fallback: 'Bạn thử lại sau ít phút.',
-              ),
-              actionLabel: 'Thử lại',
-              onAction: () {
-                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-                ref.invalidate(healthScoreHabitsSummaryProvider);
-              },
-            ),
-            HealthScoreHabitsViewStatus.ready => _HealthScoreReady(
-              result: viewModel.result!,
-              onRefresh: () async {
-                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-                ref.invalidate(healthScoreHabitsSummaryProvider);
-                await ref.read(healthScoreHabitsSummaryProvider.future);
-                AppFeedbackService.instance.emit(AppFeedbackType.success);
-              },
-            ),
+            );
           },
-          );
-        },
         ),
       ),
     );
@@ -158,9 +166,10 @@ class _ScoreHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-      decoration: _cardDecoration(),
+      decoration: _cardDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -177,7 +186,7 @@ class _ScoreHeader extends StatelessWidget {
                 builder: (context, score, _) => Text(
                   score.round().toString(),
                   style: AppTextStyles.heading1.copyWith(
-                    color: AppColors.primary,
+                    color: colors.primary,
                     fontSize: 56,
                     fontWeight: FontWeight.w900,
                   ),
@@ -194,14 +203,14 @@ class _ScoreHeader extends StatelessWidget {
           Text(
             '${result.period.startDate} đến ${result.period.endDate}',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             _healthScoreDisclaimer,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               height: 1.35,
             ),
           ),
@@ -219,9 +228,10 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _cardDecoration(),
+      decoration: _cardDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -284,6 +294,7 @@ class _ProgressRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Column(
@@ -305,15 +316,12 @@ class _ProgressRow extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             subtitle,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
+            style: AppTextStyles.caption.copyWith(color: colors.textHint),
           ),
           const SizedBox(height: AppSpacing.tiny),
           TweenAnimationBuilder<double>(
             tween: Tween<double>(end: value),
-            duration: AppMotionScope.duration(
-              context,
-              AppDuration.progress,
-            ),
+            duration: AppMotionScope.duration(context, AppDuration.progress),
             curve: AppAnimations.emphasizedCurve,
             builder: (context, progress, _) => LinearProgressIndicator(
               value: progress,
@@ -334,9 +342,10 @@ class _EmptyInline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Text(
       message,
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+      style: AppTextStyles.bodyMedium.copyWith(color: colors.textSecondary),
     );
   }
 }
@@ -359,6 +368,7 @@ class _HealthScoreSupportState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return SafeArea(
       child: Center(
         child: Padding(
@@ -368,7 +378,7 @@ class _HealthScoreSupportState extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: AppColors.primary, size: 48),
+                Icon(icon, color: colors.primary, size: 48),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   title,
@@ -392,11 +402,11 @@ class _HealthScoreSupportState extends StatelessWidget {
   }
 }
 
-BoxDecoration _cardDecoration() {
+BoxDecoration _cardDecoration(AppSemanticColors colors) {
   return BoxDecoration(
-    color: AppColors.surface,
+    color: colors.surface,
     borderRadius: BorderRadius.circular(AppRadius.sm),
-    border: Border.all(color: AppColors.border),
+    border: Border.all(color: colors.border),
   );
 }
 

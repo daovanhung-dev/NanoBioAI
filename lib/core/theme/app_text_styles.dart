@@ -29,21 +29,21 @@ class AppTextStyles {
 
   static TextStyle get displayLarge => _base(
     fontSize: 32,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     height: 1.12,
     letterSpacing: -0.8,
     color: AppColors.textPrimary,
   );
   static TextStyle get displayMedium => _base(
     fontSize: 28,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     height: 1.16,
     letterSpacing: -0.6,
     color: AppColors.textPrimary,
   );
   static TextStyle get displaySmall => _base(
     fontSize: 26,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     height: 1.2,
     letterSpacing: -0.45,
     color: AppColors.textPrimary,
@@ -51,41 +51,41 @@ class AppTextStyles {
 
   static TextStyle get heading1 => _base(
     fontSize: 24,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     height: 1.22,
     letterSpacing: -0.35,
     color: AppColors.textPrimary,
   );
   static TextStyle get heading2 => _base(
     fontSize: 20,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w600,
     height: 1.25,
     letterSpacing: -0.25,
     color: AppColors.textPrimary,
   );
   static TextStyle get heading3 => _base(
     fontSize: 18,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     height: 1.3,
     letterSpacing: -0.15,
     color: AppColors.textPrimary,
   );
   static TextStyle get heading4 => _base(
     fontSize: 17,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     height: 1.35,
     letterSpacing: -0.05,
     color: AppColors.textPrimary,
   );
   static TextStyle get heading5 => _base(
     fontSize: 16,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     height: 1.38,
     color: AppColors.textPrimary,
   );
 
   static TextStyle get bodyLarge => _base(
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.55,
     color: AppColors.textPrimary,
@@ -111,14 +111,14 @@ class AppTextStyles {
 
   static TextStyle get labelLarge => _base(
     fontSize: 14,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     height: 1.28,
     letterSpacing: .02,
     color: AppColors.textPrimary,
   );
   static TextStyle get labelMedium => _base(
     fontSize: 13,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w500,
     height: 1.28,
     letterSpacing: .08,
     color: AppColors.textSecondary,
@@ -132,7 +132,7 @@ class AppTextStyles {
   );
   static TextStyle get overline => _base(
     fontSize: 12,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     height: 1.25,
     letterSpacing: .65,
     color: AppColors.textMuted,
@@ -140,20 +140,20 @@ class AppTextStyles {
 
   static TextStyle get button => _base(
     fontSize: 16,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     height: 1.2,
     letterSpacing: .05,
     color: AppColors.textInverse,
   );
   static TextStyle get buttonSmall => _base(
     fontSize: 15,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     height: 1.2,
     color: AppColors.textInverse,
   );
   static TextStyle get buttonText => _base(
     fontSize: 15,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     height: 1.2,
     color: AppColors.primary,
   );
@@ -172,7 +172,7 @@ class AppTextStyles {
   );
   static TextStyle get chipLabel => _base(
     fontSize: 13,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w500,
     height: 1.28,
     color: AppColors.textPrimary,
   );
@@ -197,7 +197,7 @@ class AppTextStyles {
   );
   static TextStyle get sectionTitle => _base(
     fontSize: 18,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w600,
     height: 1.3,
     letterSpacing: -.08,
     color: AppColors.textPrimary,
@@ -235,11 +235,14 @@ class AppTextStyles {
       style.copyWith(color: AppColors.textSecondary);
   static TextStyle muted(TextStyle style) =>
       style.copyWith(color: AppColors.textMuted);
-  static TextStyle inverse(TextStyle style) => style.copyWith(color: AppColors.textInverse);
+  static TextStyle inverse(TextStyle style) =>
+      style.copyWith(color: AppColors.textInverse);
   static TextStyle success(TextStyle style) =>
       style.copyWith(color: AppColors.success);
   static TextStyle warning(TextStyle style) =>
       style.copyWith(color: AppColors.warning);
-  static TextStyle error(TextStyle style) => style.copyWith(color: AppColors.error);
-  static TextStyle brand(TextStyle style) => style.copyWith(color: AppColors.primary);
+  static TextStyle error(TextStyle style) =>
+      style.copyWith(color: AppColors.error);
+  static TextStyle brand(TextStyle style) =>
+      style.copyWith(color: AppColors.primary);
 }

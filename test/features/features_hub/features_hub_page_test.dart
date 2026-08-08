@@ -6,6 +6,7 @@ import 'package:nano_app/shared/health_features/health_feature_catalog.dart';
 
 void main() {
   const currentFeatureTitles = [
+    'Nami Care',
     'Lịch trình cá nhân',
     'Nhiệm vụ hôm nay',
     'Thực đơn theo tuần',
@@ -17,16 +18,19 @@ void main() {
     'Trò chuyện với Nabi',
   ];
 
-  testWidgets('renders 19 tools in current and advanced sections', (
-    tester,
-  ) async {
+  testWidgets('renders available, planned and advanced tools', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: FeaturesHubPage()));
 
-    expect(find.text('Chăm sức khỏe theo cách dễ hiểu'), findsOneWidget);
-    expect(find.text('19 công cụ'), findsOneWidget);
-    expect(find.byKey(const Key('current-features-section')), findsOneWidget);
-
+    expect(find.text('Bảng Theo dõi Hành Trình Sống Khỏe'), findsOneWidget);
+    expect(find.text('Chăm sóc hôm nay'), findsOneWidget);
     for (final title in currentFeatureTitles) {
+      if (find.text(title).evaluate().isEmpty) {
+        await tester.scrollUntilVisible(
+          find.text(title),
+          300,
+          scrollable: find.byType(Scrollable).first,
+        );
+      }
       expect(find.text(title), findsOneWidget, reason: title);
     }
 

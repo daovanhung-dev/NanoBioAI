@@ -9,7 +9,8 @@ class HealthMetricsOverviewSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final riskColor = _riskColor(status.riskLevel);
+    final colors = context.semanticColors;
+    final riskColor = _riskColor(status.riskLevel, colors);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -18,9 +19,9 @@ class HealthMetricsOverviewSection extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(AppSpacing.cardPadding),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: colors.surface,
             borderRadius: BorderRadius.circular(AppRadius.card),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: colors.border),
             boxShadow: AppShadows.card,
           ),
           child: Column(
@@ -37,7 +38,7 @@ class HealthMetricsOverviewSection extends StatelessWidget {
                           'Nabi vừa tính lại sức khỏe của bạn',
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
-                                color: AppColors.textPrimary,
+                                color: colors.textPrimary,
                                 fontWeight: FontWeight.w800,
                               ),
                         ),
@@ -46,7 +47,7 @@ class HealthMetricsOverviewSection extends StatelessWidget {
                           status.summaryMessage,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
-                                color: AppColors.textSecondary,
+                                color: colors.textSecondary,
                                 height: 1.45,
                               ),
                         ),
@@ -72,16 +73,16 @@ class HealthMetricsOverviewSection extends StatelessWidget {
     );
   }
 
-  Color _riskColor(DashboardRiskLevel riskLevel) {
+  Color _riskColor(DashboardRiskLevel riskLevel, AppSemanticColors colors) {
     switch (riskLevel) {
       case DashboardRiskLevel.excellent:
-        return AppColors.success;
+        return colors.success;
       case DashboardRiskLevel.good:
-        return AppColors.primary;
+        return colors.primary;
       case DashboardRiskLevel.attention:
-        return AppColors.warning;
+        return colors.warning;
       case DashboardRiskLevel.risk:
-        return AppColors.error;
+        return colors.error;
     }
   }
 }
@@ -101,7 +102,10 @@ class _ScoreBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 86,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -170,14 +174,14 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _colorFor(metric.progress);
+    final color = _colorFor(metric.progress, context.semanticColors);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.inputBackground,
+        color: context.semanticColors.inputBackground,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +207,7 @@ class _MetricTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: context.semanticColors.textPrimary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -223,7 +227,7 @@ class _MetricTile extends StatelessWidget {
               Text(
                 metric.value,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.semanticColors.textPrimary,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -245,7 +249,7 @@ class _MetricTile extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
+              color: context.semanticColors.textSecondary,
               height: 1.35,
             ),
           ),
@@ -273,11 +277,11 @@ class _MetricTile extends StatelessWidget {
     }
   }
 
-  Color _colorFor(double progress) {
-    if (progress >= 0.85) return AppColors.success;
-    if (progress >= 0.70) return AppColors.primary;
-    if (progress >= 0.55) return AppColors.warning;
-    return AppColors.error;
+  Color _colorFor(double progress, AppSemanticColors colors) {
+    if (progress >= 0.85) return colors.success;
+    if (progress >= 0.70) return colors.primary;
+    if (progress >= 0.55) return colors.warning;
+    return colors.error;
   }
 }
 
@@ -297,10 +301,14 @@ class _InsightList extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppSpacing.cardPadding),
                 decoration: BoxDecoration(
-                  color: AppColors.primarySoft.withValues(alpha: 0.72),
+                  color: context.semanticColors.primarySoft.withValues(
+                    alpha: 0.72,
+                  ),
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.08),
+                    color: context.semanticColors.primary.withValues(
+                      alpha: 0.08,
+                    ),
                   ),
                 ),
                 child: Row(
@@ -310,12 +318,12 @@ class _InsightList extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: context.semanticColors.surface,
                         borderRadius: BorderRadius.circular(AppRadius.md),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.tips_and_updates_rounded,
-                        color: AppColors.primary,
+                        color: context.semanticColors.primary,
                         size: 18,
                       ),
                     ),
@@ -328,7 +336,7 @@ class _InsightList extends StatelessWidget {
                             insight.title,
                             style: Theme.of(context).textTheme.titleSmall
                                 ?.copyWith(
-                                  color: AppColors.textPrimary,
+                                  color: context.semanticColors.textPrimary,
                                   fontWeight: FontWeight.w800,
                                 ),
                           ),
@@ -337,7 +345,7 @@ class _InsightList extends StatelessWidget {
                             insight.message,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: context.semanticColors.textSecondary,
                                   height: 1.42,
                                 ),
                           ),

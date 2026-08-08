@@ -11,6 +11,12 @@ abstract class V1RoutePaths {
 
   static const healthTracking = '/health-tracking';
   static const todayTasks = '/today-tasks';
+  static const waterTracking = '/water-tracking';
+  static const weeklySummary = '/weekly-summary';
+  static const personalGoals = '/personal-goals';
+  static const quickCare = '/quick-care';
+  static const gentleCare = '/gentle-care';
+  static const namiCare = '/nami-care';
   static const bodyMetrics = '/body-metrics';
   static const lifestyleSchedule = '/lifestyle-schedule';
   static const dailyRoutinePreferences = '/daily-routine-preferences';

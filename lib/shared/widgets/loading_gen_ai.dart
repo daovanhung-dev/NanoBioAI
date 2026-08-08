@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nano_app/core/theme/app_colors.dart';
+import 'package:nano_app/core/theme/app_semantic_colors.dart';
 import 'package:nano_app/core/theme/app_radius.dart';
 import 'package:nano_app/core/theme/app_gradients.dart';
 import 'package:nano_app/core/theme/app_shadows.dart';
@@ -37,6 +38,8 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
   int _messageIndex = 0;
   Timer? _dotTimer;
   Timer? _messageTimer;
+
+  AppSemanticColors get _colors => context.semanticColors;
 
   final List<_ThoughtEntry> _thoughts = const [
     _ThoughtEntry(
@@ -134,7 +137,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
   Widget build(BuildContext context) {
     return MedicalPageScaffold(
       ambientBackground: false,
-      backgroundColor: AppColors.background,
+      backgroundColor: _colors.background,
       body: Stack(
         children: [
           _buildSoftBackground(),
@@ -211,7 +214,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
             right: -64,
             child: _buildSoftCircle(
               size: 190,
-              color: AppColors.primary.withValues(alpha: 0.10),
+              color: _colors.primary.withValues(alpha: 0.10),
             ),
           ),
           Positioned(
@@ -219,7 +222,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
             left: -72,
             child: _buildSoftCircle(
               size: 180,
-              color: AppColors.secondary.withValues(alpha: 0.10),
+              color: _colors.secondary.withValues(alpha: 0.10),
             ),
           ),
           Positioned(
@@ -227,7 +230,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
             left: 36,
             child: _buildSoftCircle(
               size: 74,
-              color: AppColors.primary.withValues(alpha: 0.06),
+              color: _colors.primary.withValues(alpha: 0.06),
             ),
           ),
         ],
@@ -254,9 +257,9 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         vertical: AppSpacing.xs + 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft.withValues(alpha: 0.86),
+        color: _colors.primarySoft.withValues(alpha: 0.86),
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
+        border: Border.all(color: _colors.primary.withValues(alpha: 0.10)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -264,16 +267,16 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
           Container(
             width: 7,
             height: 7,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.success,
+              color: _colors.success,
             ),
           ),
           const SizedBox(width: AppSpacing.xs),
           Text(
             'Nabi • Đang ở bên bạn',
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.primary,
+              color: _colors.primary,
               letterSpacing: 0.2,
             ),
           ),
@@ -287,14 +290,14 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
       children: [
         Text(
           'Đợi Nabi một chút nhé',
-          style: AppTextStyles.heading2.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.heading2.copyWith(color: _colors.textPrimary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
           'Tôi đang chăm chút câu trả lời để mọi thứ đến với bạn thật rõ ràng và dễ chịu.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: _colors.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -320,7 +323,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                 height: orbSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.secondary.withValues(
+                  color: _colors.secondary.withValues(
                     alpha: _ripple2Opacity.value * 0.6,
                   ),
                 ),
@@ -337,7 +340,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                 height: orbSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(
+                  color: _colors.primary.withValues(
                     alpha: _rippleOpacity.value * 0.7,
                   ),
                 ),
@@ -354,15 +357,15 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                 height: 112,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primarySoft,
+                  color: _colors.primarySoft,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.22),
+                      color: _colors.primary.withValues(alpha: 0.22),
                       blurRadius: 28,
                       spreadRadius: 6,
                     ),
                     BoxShadow(
-                      color: AppColors.secondary.withValues(alpha: 0.14),
+                      color: _colors.secondary.withValues(alpha: 0.14),
                       blurRadius: 40,
                       spreadRadius: 2,
                     ),
@@ -390,7 +393,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                   ),
                   child: const Icon(
                     Icons.auto_awesome_rounded,
-                    color: AppColors.surface,
+                    color: AppColors.textInverse,
                     size: 36,
                   ),
                 ),
@@ -409,9 +412,9 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.card.withValues(alpha: 0.96),
+        color: _colors.card.withValues(alpha: 0.96),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.55)),
+        border: Border.all(color: _colors.border.withValues(alpha: 0.55)),
         boxShadow: AppShadows.card,
       ),
       child: Row(
@@ -420,7 +423,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
           Text(
             'Nabi đang nghĩ',
             style: AppTextStyles.labelLarge.copyWith(
-              color: AppColors.textPrimary,
+              color: _colors.textPrimary,
             ),
           ),
           const SizedBox(width: AppSpacing.xs),
@@ -444,7 +447,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
           height: isActive ? 9 : 6,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive ? AppColors.primary : AppColors.textDisabled,
+            color: isActive ? _colors.primary : _colors.disabled,
           ),
         );
       }),
@@ -482,14 +485,14 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
             Icon(
               thought.icon,
               size: 16,
-              color: AppColors.primary.withValues(alpha: 0.78),
+              color: _colors.primary.withValues(alpha: 0.78),
             ),
             const SizedBox(width: AppSpacing.xs),
             Flexible(
               child: Text(
                 thought.text,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: _colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -504,7 +507,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
     return Text(
       'Giữ màn hình mở thêm chút. Nabi sẽ trả lời khi sẵn sàng.',
       style: AppTextStyles.caption.copyWith(
-        color: AppColors.textMuted,
+        color: _colors.textMuted,
         height: 1.45,
       ),
       textAlign: TextAlign.center,

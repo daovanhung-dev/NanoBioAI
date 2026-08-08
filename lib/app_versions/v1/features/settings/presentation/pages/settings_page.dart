@@ -34,10 +34,11 @@ class SettingsView extends ConsumerWidget {
     final preferencesAsync = ref.watch(settingsPreferencesControllerProvider);
     final cacheSizeAsync = ref.watch(settingsCacheSizeProvider);
     final textScale = ref.watch(appTextScaleControllerProvider).value;
-    final experiencePreferencesAsync =
-        ref.watch(appExperiencePreferencesProvider);
-    final experiencePreferences = experiencePreferencesAsync.value ??
-        AppExperiencePreferences.defaults;
+    final experiencePreferencesAsync = ref.watch(
+      appExperiencePreferencesProvider,
+    );
+    final experiencePreferences =
+        experiencePreferencesAsync.value ?? AppExperiencePreferences.defaults;
     final preferences =
         preferencesAsync.value ?? SettingsPreferencesEntity.defaults();
     final dashboard = dashboardAsync.value;
@@ -51,7 +52,7 @@ class SettingsView extends ConsumerWidget {
         adminAccess?.session?.canUseUserApp == true;
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.semanticColors.background,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -90,7 +91,8 @@ class SettingsView extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.sectionSpacing),
                         GuestAccountAccessCard(
                           onLogin: () => context.push(AuthRoutePaths.login),
-                          onRegister: () => context.push(AuthRoutePaths.register),
+                          onRegister: () =>
+                              context.push(AuthRoutePaths.register),
                         ),
                       ],
                       const SizedBox(height: AppSpacing.sectionSpacing),
@@ -222,7 +224,9 @@ class SettingsView extends ConsumerWidget {
                             key: const Key('settings_experience_feedback'),
                             icon: Icons.motion_photos_auto_rounded,
                             title: 'Hiệu ứng & phản hồi',
-                            subtitle: _experienceSubtitle(experiencePreferences),
+                            subtitle: _experienceSubtitle(
+                              experiencePreferences,
+                            ),
                             onTap: () => _showExperienceSheet(context),
                           ),
                           const _DividerLine(),
@@ -332,7 +336,6 @@ class SettingsView extends ConsumerWidget {
     );
   }
 
-
   String _experienceSubtitle(AppExperiencePreferences preferences) {
     final motion = preferences.reduceMotion
         ? 'chuyển động tối giản'
@@ -358,7 +361,7 @@ class SettingsView extends ConsumerWidget {
         builder: (context, sheetRef, _) {
           final preferences =
               sheetRef.watch(appExperiencePreferencesProvider).value ??
-                  AppExperiencePreferences.defaults;
+              AppExperiencePreferences.defaults;
           final controller = sheetRef.read(
             appExperiencePreferencesProvider.notifier,
           );
@@ -434,10 +437,7 @@ class SettingsView extends ConsumerWidget {
                   },
                 ),
                 const SizedBox(height: AppSpacing.sectionSpacing),
-                Text(
-                  'Âm thanh tương tác',
-                  style: AppTextStyles.labelLarge,
-                ),
+                Text('Âm thanh tương tác', style: AppTextStyles.labelLarge),
                 const SizedBox(height: AppSpacing.xs),
                 SegmentedButton<AppSoundFeedbackLevel>(
                   segments: const [
@@ -481,7 +481,6 @@ class SettingsView extends ConsumerWidget {
     );
   }
 
-
   Future<void> _showTextScaleSheet(BuildContext context, WidgetRef ref) {
     return showModalBottomSheet<void>(
       context: context,
@@ -490,9 +489,8 @@ class SettingsView extends ConsumerWidget {
       builder: (sheetContext) {
         return Consumer(
           builder: (context, sheetRef, _) {
-            final state = sheetRef
-                    .watch(appTextScaleControllerProvider)
-                    .value ??
+            final state =
+                sheetRef.watch(appTextScaleControllerProvider).value ??
                 const AppTextScaleState(
                   preset: AppTextScalePreset.standard,
                   isConfigured: true,
@@ -506,15 +504,15 @@ class SettingsView extends ConsumerWidget {
                   Text(
                     'Cỡ chữ hiển thị',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     'Chọn mức bạn thấy dễ đọc nhất.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                      color: context.semanticColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.sectionSpacing),
                   FontScaleSelector(
@@ -1221,38 +1219,35 @@ class _MenuItem extends StatelessWidget {
                 onTap!();
               },
         child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.cardPadding),
-        child: Row(
-          children: [
-            MedicalIconBadge(
-              icon: icon,
-              color: AppColors.primaryDark,
-              backgroundColor: AppColors.primarySoft,
-              size: 48,
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.labelLarge,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodySmall.copyWith(height: 1.5),
-                  ),
-                ],
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
+          child: Row(
+            children: [
+              MedicalIconBadge(
+                icon: icon,
+                color: AppColors.primaryDark,
+                backgroundColor: AppColors.primarySoft,
+                size: 48,
               ),
-            ),
-            trailing ??
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 18,
-                  color: AppColors.textHint,
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppTextStyles.labelLarge),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.bodySmall.copyWith(height: 1.5),
+                    ),
+                  ],
                 ),
+              ),
+              trailing ??
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 18,
+                    color: context.semanticColors.textHint,
+                  ),
             ],
           ),
         ),
@@ -1341,7 +1336,11 @@ class _DividerLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Divider(height: 1, thickness: 1, color: AppColors.borderLight);
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: context.semanticColors.borderLight,
+    );
   }
 }
 

@@ -4,10 +4,7 @@ class _AdminReasonDialog extends StatefulWidget {
   final AdminActionPresentation action;
   final String itemTitle;
 
-  const _AdminReasonDialog({
-    required this.action,
-    required this.itemTitle,
-  });
+  const _AdminReasonDialog({required this.action, required this.itemTitle});
 
   @override
   State<_AdminReasonDialog> createState() => _AdminReasonDialogState();
@@ -26,15 +23,14 @@ class _AdminReasonDialogState extends State<_AdminReasonDialog> {
   Widget build(BuildContext context) {
     final valid = _controller.text.trim().isNotEmpty;
     final danger = widget.action.danger;
+    final colors = context.adminColors;
 
     return AlertDialog(
       title: Row(
         children: [
           _IconTile(
             icon: widget.action.icon,
-            color: danger
-                ? AdminWorkspaceTheme.danger
-                : AdminWorkspaceTheme.blue,
+            color: danger ? colors.danger : colors.blue,
           ),
           const SizedBox(width: 12),
           Expanded(child: Text(widget.action.label)),
@@ -50,9 +46,7 @@ class _AdminReasonDialogState extends State<_AdminReasonDialog> {
               widget.itemTitle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.labelLarge.copyWith(
-                color: AdminWorkspaceTheme.text,
-              ),
+              style: AppTextStyles.labelLarge.copyWith(color: colors.text),
             ),
             const SizedBox(height: 7),
             Text(
@@ -60,7 +54,7 @@ class _AdminReasonDialogState extends State<_AdminReasonDialog> {
                   ? 'Thao tác này có ảnh hưởng trực tiếp. Hãy kiểm tra lại thông tin trước khi tiếp tục.'
                   : 'Hãy ghi lý do ngắn gọn để người khác có thể xem lại quyết định.',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AdminWorkspaceTheme.textSecondary,
+                color: colors.textSecondary,
                 height: 1.45,
               ),
             ),
@@ -89,7 +83,8 @@ class _AdminReasonDialogState extends State<_AdminReasonDialog> {
         FilledButton.icon(
           style: danger
               ? FilledButton.styleFrom(
-                  backgroundColor: AdminWorkspaceTheme.danger,
+                  backgroundColor: colors.danger,
+                  foregroundColor: colors.onAccent,
                 )
               : null,
           onPressed: valid
@@ -108,6 +103,7 @@ class _AdminGuideDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Dialog(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720, maxHeight: 680),
@@ -117,9 +113,9 @@ class _AdminGuideDialog extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const _IconTile(
+                  _IconTile(
                     icon: Icons.help_outline_rounded,
-                    color: AdminWorkspaceTheme.blue,
+                    color: colors.blue,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -129,13 +125,13 @@ class _AdminGuideDialog extends StatelessWidget {
                         Text(
                           'Hướng dẫn nhanh',
                           style: AppTextStyles.heading3.copyWith(
-                            color: AdminWorkspaceTheme.text,
+                            color: colors.text,
                           ),
                         ),
                         Text(
                           'Các nguyên tắc giúp thao tác an toàn và dễ kiểm tra lại.',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AdminWorkspaceTheme.textSecondary,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ],
@@ -216,6 +212,7 @@ class _GuideCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: _WorkspacePanel(
@@ -224,7 +221,7 @@ class _GuideCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _IconTile(icon: icon, color: AdminWorkspaceTheme.blue),
+              _IconTile(icon: icon, color: colors.blue),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -233,14 +230,14 @@ class _GuideCard extends StatelessWidget {
                     Text(
                       title,
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AdminWorkspaceTheme.text,
+                        color: colors.text,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       text,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AdminWorkspaceTheme.textSecondary,
+                        color: colors.textSecondary,
                         height: 1.45,
                       ),
                     ),
@@ -278,8 +275,9 @@ class _AdminBlockingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Scaffold(
-      backgroundColor: AdminWorkspaceTheme.canvas,
+      backgroundColor: colors.canvas,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -299,21 +297,17 @@ class _AdminBlockingState extends StatelessWidget {
                             dimension: 56,
                             child: CircularProgressIndicator(strokeWidth: 3),
                           ),
-                          Icon(
-                            icon,
-                            size: 22,
-                            color: AdminWorkspaceTheme.blue,
-                          ),
+                          Icon(icon, size: 22, color: colors.blue),
                         ],
                       )
                     else
-                      _IconTile(icon: icon, color: AdminWorkspaceTheme.blue),
+                      _IconTile(icon: icon, color: colors.blue),
                     const SizedBox(height: 16),
                     Text(
                       title,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.heading3.copyWith(
-                        color: AdminWorkspaceTheme.text,
+                        color: colors.text,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -321,7 +315,7 @@ class _AdminBlockingState extends StatelessWidget {
                       message,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AdminWorkspaceTheme.textSecondary,
+                        color: colors.textSecondary,
                         height: 1.45,
                       ),
                     ),
@@ -332,7 +326,8 @@ class _AdminBlockingState extends StatelessWidget {
                         child: Text(actionLabel!),
                       ),
                     ],
-                    if (secondaryLabel != null && onSecondaryAction != null) ...[
+                    if (secondaryLabel != null &&
+                        onSecondaryAction != null) ...[
                       const SizedBox(height: 8),
                       TextButton(
                         onPressed: onSecondaryAction,

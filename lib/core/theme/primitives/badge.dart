@@ -65,7 +65,7 @@ class AppBadge extends StatelessWidget {
           count != null && count! > 99 ? '99+' : '${count ?? 0}',
           style: AppTextStyles.labelMedium.copyWith(
             color: AppColorTokens.textInverse,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
           textAlign: TextAlign.center,
         );
@@ -82,9 +82,10 @@ class AppBadge extends StatelessWidget {
           BadgeStatus.warning => AppColorTokens.warningLight,
           BadgeStatus.error => AppColorTokens.errorLight,
           BadgeStatus.info => AppColorTokens.infoLight,
-          BadgeStatus.neutral => isDark
-              ? AppColorTokens.darkSurface
-              : AppColorTokens.surfaceElevated,
+          BadgeStatus.neutral =>
+            isDark
+                ? AppColorTokens.darkSurface
+                : AppColorTokens.surfaceElevated,
         };
       case BadgeVariant.count:
         return AppColorTokens.error;
@@ -94,30 +95,29 @@ class AppBadge extends StatelessWidget {
   }
 
   Color _statusColor(bool isDark) => switch (status) {
-        BadgeStatus.success => AppColorTokens.success,
-        BadgeStatus.warning => AppColorTokens.warning,
-        BadgeStatus.error => AppColorTokens.error,
-        BadgeStatus.info => AppColorTokens.info,
-        BadgeStatus.neutral => isDark
-            ? AppColorTokens.darkTextSecondary
-            : AppColorTokens.textMuted,
-      };
+    BadgeStatus.success => AppColorTokens.success,
+    BadgeStatus.warning => AppColorTokens.warning,
+    BadgeStatus.error => AppColorTokens.error,
+    BadgeStatus.info => AppColorTokens.info,
+    BadgeStatus.neutral =>
+      isDark ? AppColorTokens.darkTextSecondary : AppColorTokens.textMuted,
+  };
 
   EdgeInsets get _padding => switch (variant) {
-        BadgeVariant.status => EdgeInsets.symmetric(
-            horizontal: AppSpacingTokens.chipPaddingH,
-            vertical: AppSpacingTokens.chipPaddingV,
-          ),
-        BadgeVariant.count => EdgeInsets.symmetric(
-            horizontal: AppSpacingTokens.itemSpacing,
-            vertical: AppSpacingTokens.itemSpacing / 2,
-          ),
-        BadgeVariant.dot => EdgeInsets.zero,
-      };
+    BadgeVariant.status => EdgeInsets.symmetric(
+      horizontal: AppSpacingTokens.chipPaddingH,
+      vertical: AppSpacingTokens.chipPaddingV,
+    ),
+    BadgeVariant.count => EdgeInsets.symmetric(
+      horizontal: AppSpacingTokens.itemSpacing,
+      vertical: AppSpacingTokens.itemSpacing / 2,
+    ),
+    BadgeVariant.dot => EdgeInsets.zero,
+  };
 
   BoxConstraints? get _constraints => switch (variant) {
-        BadgeVariant.status => null,
-        BadgeVariant.count => const BoxConstraints(minWidth: 24, minHeight: 24),
-        BadgeVariant.dot => const BoxConstraints.tightFor(width: 8, height: 8),
-      };
+    BadgeVariant.status => null,
+    BadgeVariant.count => const BoxConstraints(minWidth: 24, minHeight: 24),
+    BadgeVariant.dot => const BoxConstraints.tightFor(width: 8, height: 8),
+  };
 }

@@ -14,7 +14,7 @@ class FeaturesHubPage extends StatelessWidget {
     final plannedFeatures = _plannedFeatures(context);
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.semanticColors.background,
       body: SafeArea(
         child: CustomScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -87,6 +87,14 @@ class FeaturesHubPage extends StatelessWidget {
 
   List<_FeatureAction> _currentFeatures(BuildContext context) {
     return [
+      _FeatureAction(
+        title: 'Nami Care',
+        subtitle: 'Mở các công cụ chăm sóc đã sẵn sàng.',
+        icon: Icons.health_and_safety_rounded,
+        color: AppColors.primary,
+        backgroundColor: AppColors.pastelMint,
+        onTap: () => context.push(V1RoutePaths.namiCare),
+      ),
       _FeatureAction(
         title: 'Lịch trình cá nhân',
         subtitle: 'Xem nhịp sống trong tuần.',
@@ -175,8 +183,7 @@ class _CareJourneyHero extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       header: true,
-      label:
-          'Trung tâm chăm sóc. Bảng Theo dõi Hành Trình Sống Khỏe.',
+      label: 'Trung tâm chăm sóc. Bảng Theo dõi Hành Trình Sống Khỏe.',
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
@@ -269,7 +276,7 @@ class _ResponsiveFeatureList extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: AppSpacing.md,
             crossAxisSpacing: AppSpacing.md,
-            mainAxisExtent: 210,
+            mainAxisExtent: 250,
           ),
           itemBuilder: itemBuilder,
         );
@@ -449,12 +456,17 @@ class _AdvancedHealthFeatureTile extends StatelessWidget {
                   Row(
                     children: [
                       _FeatureIcon(icon: item.icon, color: item.color),
-                      const Spacer(),
-                      const _FeatureBadge(
-                        label: 'Đang phát triển',
-                        icon: Icons.schedule_rounded,
-                        foregroundColor: AppColors.info,
-                        backgroundColor: Colors.white70,
+                      const SizedBox(width: AppSpacing.md),
+                      const Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _FeatureBadge(
+                            label: 'Đang phát triển',
+                            icon: Icons.schedule_rounded,
+                            foregroundColor: AppColors.info,
+                            backgroundColor: Colors.white70,
+                          ),
+                        ),
                       ),
                     ],
                   ),

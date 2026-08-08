@@ -7,10 +7,7 @@ import 'package:nano_app/core/theme/theme.dart';
 /// providers/controllers. These widgets only standardize hierarchy,
 /// responsive behavior, accessibility, and interaction affordances.
 class SettingsPageHeader extends StatelessWidget {
-  const SettingsPageHeader({
-    required this.isLoading,
-    super.key,
-  });
+  const SettingsPageHeader({required this.isLoading, super.key});
 
   final bool isLoading;
 
@@ -46,8 +43,9 @@ class SettingsPageHeader extends StatelessWidget {
                           tooltip: 'Quay lại',
                           onPressed: navigator.maybePop,
                           style: IconButton.styleFrom(
-                            backgroundColor:
-                                AppColors.surface.withValues(alpha: .16),
+                            backgroundColor: AppColors.surface.withValues(
+                              alpha: .16,
+                            ),
                             foregroundColor: AppColors.surface,
                           ),
                           icon: const Icon(Icons.arrow_back_rounded),
@@ -92,8 +90,9 @@ class SettingsPageHeader extends StatelessWidget {
                       MedicalIconBadge(
                         icon: Icons.tune_rounded,
                         color: AppColors.surface,
-                        backgroundColor:
-                            AppColors.surface.withValues(alpha: .16),
+                        backgroundColor: AppColors.surface.withValues(
+                          alpha: .16,
+                        ),
                         size: 52,
                       ),
                     ],
@@ -106,8 +105,7 @@ class SettingsPageHeader extends StatelessWidget {
                     child: LinearProgressIndicator(
                       minHeight: 3,
                       color: AppColors.surface,
-                      backgroundColor:
-                          AppColors.surface.withValues(alpha: .18),
+                      backgroundColor: AppColors.surface.withValues(alpha: .18),
                     ),
                   ),
                 ],
@@ -161,7 +159,7 @@ class SettingsSectionHeader extends StatelessWidget {
                 Text(
                   description,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                     height: 1.45,
                   ),
                 ),
@@ -175,10 +173,7 @@ class SettingsSectionHeader extends StatelessWidget {
 }
 
 class SettingsMenuCard extends StatelessWidget {
-  const SettingsMenuCard({
-    required this.children,
-    super.key,
-  });
+  const SettingsMenuCard({required this.children, super.key});
 
   final List<Widget> children;
 
@@ -186,7 +181,7 @@ class SettingsMenuCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return MedicalSurfaceCard(
       padding: EdgeInsets.zero,
-      borderColor: AppColors.borderLight,
+      borderColor: context.semanticColors.borderLight,
       elevated: false,
       radius: AppRadius.xxl,
       child: ClipRRect(
@@ -243,7 +238,7 @@ class SettingsMenuItem extends StatelessWidget {
                   Text(
                     title,
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.semanticColors.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -251,7 +246,7 @@ class SettingsMenuItem extends StatelessWidget {
                   Text(
                     subtitle,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.semanticColors.textSecondary,
                       height: 1.45,
                     ),
                   ),
@@ -263,10 +258,10 @@ class SettingsMenuItem extends StatelessWidget {
               trailing!,
             ] else if (onTap != null) ...[
               const SizedBox(width: AppSpacing.sm),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 17,
-                color: AppColors.textHint,
+                color: context.semanticColors.textHint,
               ),
             ],
           ],
@@ -283,10 +278,7 @@ class SettingsMenuItem extends StatelessWidget {
           ? content
           : Material(
               type: MaterialType.transparency,
-              child: InkWell(
-                onTap: onTap,
-                child: content,
-              ),
+              child: InkWell(onTap: onTap, child: content),
             ),
     );
   }
@@ -297,12 +289,12 @@ class SettingsDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(left: 76),
+    return Padding(
+      padding: const EdgeInsets.only(left: 76),
       child: Divider(
         height: 1,
         thickness: 1,
-        color: AppColors.borderLight,
+        color: context.semanticColors.borderLight,
       ),
     );
   }
@@ -330,9 +322,7 @@ class SettingsStatusBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.errorSoft,
           borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(
-            color: AppColors.error.withValues(alpha: .18),
-          ),
+          border: Border.all(color: AppColors.error.withValues(alpha: .18)),
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {

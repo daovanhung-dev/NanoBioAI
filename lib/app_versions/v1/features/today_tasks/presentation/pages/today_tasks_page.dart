@@ -32,9 +32,8 @@ class TodayTasksPage extends ConsumerWidget {
       ),
       body: SafeArea(
         child: scheduleAsync.when(
-          loading: () => const TodayTasksPageFrame(
-            child: TodayTasksLoadingState(),
-          ),
+          loading: () =>
+              const TodayTasksPageFrame(child: TodayTasksLoadingState()),
           error: (_, __) => TodayTasksPageFrame(
             child: TodayTasksErrorState(
               onRetry: () => ref

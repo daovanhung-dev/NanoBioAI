@@ -36,7 +36,7 @@ Commit de xuat: docs(worklog): ghi nhận phiên dashboard blue wellness
 - `lib/app_versions/v1/features/dashboard/presentation/widgets/overview/dashboard_overview_widgets.dart` — tạo — header/snapshot/quick actions/metrics.
 - `lib/app_versions/v1/features/dashboard/presentation/widgets/sections/dashboard_sections.dart` — tạo — timeline/progress/insight/health details.
 - `lib/app_versions/v1/features/dashboard/presentation/widgets/states/dashboard_state_widgets.dart` — tạo — loading/error/sync states.
-- `test/app_versions/v1/features/dashboard/dashboard_blue_ui_test.dart` — tạo — widget/static contract source.
+- `test/app_versions/v1/features/dashboard/dashboard_green_ui_test.dart` — widget/static contract source; đổi tên ở đợt Green Wellness ngày 2026-08-08.
 - `test/core/theme/blue_wellness_contract_test.dart` — đổi từ Green Wellness contract và cập nhật palette.
 - `tools/validate_nabi_green_wellness.py` — sửa nội dung label sang Blue Wellness, giữ filename tương thích lịch sử.
 - `docs/features/dashboard-blue-wellness/001-feature-dashboard-blue-wellness.md` — tạo.

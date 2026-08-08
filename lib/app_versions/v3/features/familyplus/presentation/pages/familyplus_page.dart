@@ -14,8 +14,9 @@ class FamilyPlusPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(familyPlusContextProvider);
+    final colors = context.semanticColors;
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: const Text('FamilyPlus'),
         actions: [
@@ -122,6 +123,7 @@ class _EmptyFamilyState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.semanticColors;
     return _PagePadding(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,7 +133,7 @@ class _EmptyFamilyState extends ConsumerWidget {
           Text(
             'Tạo nhóm FamilyPlus đầu tiên để thêm thành viên và chọn hồ sơ cần xem.',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -182,6 +184,7 @@ class _ReadyFamilyState extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final members = contextModel.activeMembers;
+    final colors = context.semanticColors;
     return _PagePadding(
       child: ListView(
         children: [
@@ -196,7 +199,7 @@ class _ReadyFamilyState extends ConsumerWidget {
           Text(
             '${members.length}/$familyPlusMaxMembers thành viên đang hoạt động',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
           const SizedBox(height: AppSpacing.sectionSpacing),
@@ -220,18 +223,17 @@ class _MemberTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = contextModel.selectedSubjectId == member.subjectId;
+    final colors = context.semanticColors;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: selected ? AppColors.primary : AppColors.border,
-        ),
+        border: Border.all(color: selected ? colors.primary : colors.border),
       ),
       child: ListTile(
         leading: Icon(
           selected ? Icons.check_circle_rounded : Icons.person_outline_rounded,
-          color: selected ? AppColors.primary : AppColors.textSecondary,
+          color: selected ? colors.primary : colors.textSecondary,
         ),
         title: Text(
           vietnameseUiText(member.displayName, fallback: 'Thành viên'),
@@ -249,9 +251,7 @@ class _MemberTile extends ConsumerWidget {
                       contextModel,
                       member.subjectId,
                     );
-                    AppFeedbackService.instance.emit(
-                      AppFeedbackType.selection,
-                    );
+                    AppFeedbackService.instance.emit(AppFeedbackType.selection);
                   } catch (_) {
                     AppFeedbackService.instance.emit(AppFeedbackType.error);
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -303,11 +303,12 @@ class _SupportState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return _PagePadding(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 48, color: AppColors.primary),
+          Icon(icon, size: 48, color: colors.primary),
           const SizedBox(height: AppSpacing.md),
           Text(
             title,
@@ -319,7 +320,7 @@ class _SupportState extends StatelessWidget {
             message,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               height: 1.45,
             ),
           ),

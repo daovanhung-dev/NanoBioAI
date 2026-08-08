@@ -1,4 +1,4 @@
-/// NaBi Blue Wellness Design System - Layer 3 Export
+/// NaBi Green Wellness Design System - Layer 3 Export
 ///
 /// This file exports the complete three-layer token architecture and primitive
 /// component library for the NanoBio application experience.
@@ -82,6 +82,8 @@ export 'foundation/motion.dart' show MotionFoundation;
 
 /// Semantic color tokens (24 mappings: light + dark)
 export 'tokens/color_tokens.dart' show AppColorTokens;
+export 'app_semantic_colors.dart'
+    show AppSemanticColors, AppSemanticColorsContext;
 
 /// Semantic spacing tokens (15 semantic names)
 export 'tokens/spacing_tokens.dart' show AppSpacingTokens;
@@ -121,7 +123,6 @@ export 'primitives/states/loading_state.dart' show LoadingState, LoadingVariant;
 
 /// Error state primitive (message, retry action)
 export 'primitives/states/error_state.dart' show ErrorState;
-
 
 /// Runtime motion policy and shared semantic feedback.
 export '../motion/app_motion_policy.dart';

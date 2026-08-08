@@ -62,9 +62,7 @@ void main() {
       expect(quotaGateway.commitCalls, 0);
       expect(aiService.sendCalls, 1);
       expect(aiService.acceptedTurns, 0);
-      final history = await repository.getChatHistory();
-      expect(history, hasLength(1));
-      expect(history.single.role, MessageRole.user);
+      expect(await repository.getChatHistory(), isEmpty);
     });
 
     test('maps missing configuration and does not commit quota', () async {
@@ -100,7 +98,7 @@ void main() {
       );
 
       expect(quotaGateway.commitCalls, 0);
-      expect(await repository.getChatHistory(), hasLength(1));
+      expect(await repository.getChatHistory(), isEmpty);
     });
 
     test(
@@ -125,7 +123,7 @@ void main() {
 
           expect(captured, same(failure));
           expect(quotaGateway.commitCalls, 0);
-          expect(await repository.getChatHistory(), hasLength(1));
+          expect(await repository.getChatHistory(), isEmpty);
         }
       },
     );
@@ -170,9 +168,7 @@ void main() {
 
       expect(quotaGateway.commitCalls, 3);
       expect(aiService.acceptedTurns, 0);
-      final history = await repository.getChatHistory();
-      expect(history, hasLength(1));
-      expect(history.single.role, MessageRole.user);
+      expect(await repository.getChatHistory(), isEmpty);
     });
   });
 }

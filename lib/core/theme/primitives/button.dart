@@ -180,9 +180,8 @@ class AppButton extends StatelessWidget {
     }
     return switch (variant) {
       ButtonVariant.primary => AppColorTokens.primary,
-      ButtonVariant.secondary => isDark
-          ? AppColorTokens.darkSurfaceElevated
-          : AppColorTokens.surface,
+      ButtonVariant.secondary =>
+        isDark ? AppColorTokens.darkSurfaceElevated : AppColorTokens.surface,
       ButtonVariant.text ||
       ButtonVariant.outlined ||
       ButtonVariant.icon => Colors.transparent,
@@ -195,13 +194,11 @@ class AppButton extends StatelessWidget {
     }
     return switch (variant) {
       ButtonVariant.primary => AppColorTokens.textInverse,
-      ButtonVariant.secondary || ButtonVariant.outlined => isDark
-          ? AppColorTokens.darkTextPrimary
-          : AppColorTokens.textPrimary,
+      ButtonVariant.secondary || ButtonVariant.outlined =>
+        isDark ? AppColorTokens.darkTextPrimary : AppColorTokens.textPrimary,
       ButtonVariant.text => AppColorTokens.primary,
-      ButtonVariant.icon => isDark
-          ? AppColorTokens.darkTextPrimary
-          : AppColorTokens.textPrimary,
+      ButtonVariant.icon =>
+        isDark ? AppColorTokens.darkTextPrimary : AppColorTokens.textPrimary,
     };
   }
 
@@ -227,9 +224,8 @@ class AppButton extends StatelessWidget {
       ButtonVariant.secondary ||
       ButtonVariant.outlined ||
       ButtonVariant.text => AppColorTokens.primary,
-      ButtonVariant.icon => isDark
-          ? AppColorTokens.darkTextPrimary
-          : AppColorTokens.textPrimary,
+      ButtonVariant.icon =>
+        isDark ? AppColorTokens.darkTextPrimary : AppColorTokens.textPrimary,
     };
   }
 
@@ -238,9 +234,7 @@ class AppButton extends StatelessWidget {
     return switch (variant) {
       ButtonVariant.primary => 1.5,
       ButtonVariant.secondary => 0.5,
-      ButtonVariant.text ||
-      ButtonVariant.outlined ||
-      ButtonVariant.icon => 0,
+      ButtonVariant.text || ButtonVariant.outlined || ButtonVariant.icon => 0,
     };
   }
 }

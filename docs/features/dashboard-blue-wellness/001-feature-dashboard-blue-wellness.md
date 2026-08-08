@@ -33,7 +33,7 @@ Commit de xuat: feat(dashboard): chuyển Blue Wellness và tối giản trang c
 ### Test
 
 - `test/core/theme/blue_wellness_contract_test.dart`
-- `test/app_versions/v1/features/dashboard/dashboard_blue_ui_test.dart`
+- `test/app_versions/v1/features/dashboard/dashboard_green_ui_test.dart` (đổi tên khi Green Wellness cutover)
 
 ## 3. Thiết kế đã triển khai
 
@@ -89,7 +89,7 @@ Chưa thể chạy vì container không có Flutter/Dart executable:
 ```powershell
 dart format lib/core/theme lib/app_versions/v1/features/dashboard test/app_versions/v1/features/dashboard test/core/theme
 flutter analyze lib/core/theme lib/app_versions/v1/features/dashboard test/app_versions/v1/features/dashboard test/core/theme
-flutter test test/app_versions/v1/features/dashboard/dashboard_blue_ui_test.dart
+flutter test test/app_versions/v1/features/dashboard/dashboard_green_ui_test.dart
 flutter test test/core/theme/blue_wellness_contract_test.dart
 flutter test test/features/dashboard
 flutter test test/architecture_version_boundary_test.dart

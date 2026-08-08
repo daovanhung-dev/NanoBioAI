@@ -165,7 +165,9 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onPanStart: (_) {
-                        AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                        AppFeedbackService.instance.emit(
+                          AppFeedbackType.selection,
+                        );
                         setState(() => _isDragging = true);
                       },
                       onPanUpdate: (details) {
@@ -182,7 +184,9 @@ class _NabiFloatingOverlayState extends ConsumerState<NabiFloatingOverlay>
                         _snapToEdge(size, padding);
                       },
                       onLongPress: () {
-                        AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+                        AppFeedbackService.instance.emit(
+                          AppFeedbackType.primaryAction,
+                        );
                         setState(() => _offset = _defaultOffset(size, padding));
                       },
                       child: SizedBox(
@@ -285,7 +289,9 @@ class _NabiLabel extends ConsumerWidget {
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppRadius.circular),
           boxShadow: AppShadows.md,
-          border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+          border: Border.all(
+            color: context.semanticColors.border.withValues(alpha: 0.5),
+          ),
         ),
         child: AnimatedSwitcher(
           duration: AppDuration.fast,

@@ -25,13 +25,14 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(wellnessRewardsControllerProvider);
+    final colors = context.semanticColors;
     return DefaultTabController(
       length: 3,
       child: MedicalPageScaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         appBar: AppBar(
           title: const Text('Điểm chăm sóc và ưu đãi'),
-          backgroundColor: AppColors.background,
+          backgroundColor: colors.background,
           elevation: 0,
           actions: [
             IconButton(
@@ -56,39 +57,39 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
             ),
             error: (error, _) => _RewardsError(
               key: const ValueKey<String>('wellness-rewards-error'),
-            message: error is WellnessRewardException
-                ? error.safeMessage
-                : 'Nabi chưa tải được Điểm chăm sóc. Bạn vui lòng thử lại.',
-            onRetry: _refresh,
-            onSignIn: () => context.push(V2RoutePaths.login),
-            showSignIn:
-                error is WellnessRewardException &&
-                error.code == 'auth_required',
-          ),
+              message: error is WellnessRewardException
+                  ? error.safeMessage
+                  : 'Nabi chưa tải được Điểm chăm sóc. Bạn vui lòng thử lại.',
+              onRetry: _refresh,
+              onSignIn: () => context.push(V2RoutePaths.login),
+              showSignIn:
+                  error is WellnessRewardException &&
+                  error.code == 'auth_required',
+            ),
             data: (dashboard) => Column(
               key: const ValueKey<String>('wellness-rewards-ready'),
               children: [
-              _RewardSummary(summary: dashboard.summary),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    _OffersTab(
-                      dashboard: dashboard,
-                      onRefresh: _refresh,
-                      onRedeem: _confirmRedeem,
-                    ),
-                    _PointHistoryTab(
-                      entries: dashboard.pointHistory,
-                      onRefresh: _refresh,
-                    ),
-                    _RedemptionsTab(
-                      entries: dashboard.redemptions,
-                      onRefresh: _refresh,
-                      onOpen: _showVoucher,
-                    ),
-                  ],
+                _RewardSummary(summary: dashboard.summary),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      _OffersTab(
+                        dashboard: dashboard,
+                        onRefresh: _refresh,
+                        onRedeem: _confirmRedeem,
+                      ),
+                      _PointHistoryTab(
+                        entries: dashboard.pointHistory,
+                        onRefresh: _refresh,
+                      ),
+                      _RedemptionsTab(
+                        entries: dashboard.redemptions,
+                        onRefresh: _refresh,
+                        onOpen: _showVoucher,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               ],
             ),
           ),
@@ -229,6 +230,7 @@ class _RewardSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -236,16 +238,20 @@ class _RewardSummary extends StatelessWidget {
         AppSpacing.lg,
         AppSpacing.md,
       ),
-      decoration: const BoxDecoration(
-        gradient: AppGradients.primarySoft,
-        border: Border(bottom: BorderSide(color: AppColors.borderLight)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [colors.card, colors.primarySoft],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border(bottom: BorderSide(color: colors.borderLight)),
       ),
       child: Row(
         children: [
-          const MedicalIconBadge(
+          MedicalIconBadge(
             icon: Icons.favorite_rounded,
-            color: AppColors.primaryDark,
-            backgroundColor: AppColors.surface,
+            color: colors.primaryDark,
+            backgroundColor: colors.surface,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -269,8 +275,8 @@ class _RewardSummary extends StatelessWidget {
             MedicalStatusPill(
               label: 'Hạn gần nhất ${_dateLabel(summary.nextExpiryAt)}',
               icon: Icons.schedule_rounded,
-              foregroundColor: AppColors.warningDark,
-              backgroundColor: AppColors.warningSoft,
+              foregroundColor: colors.warning,
+              backgroundColor: colors.warningSoft,
             ),
         ],
       ),
@@ -342,6 +348,7 @@ class _OfferCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final enoughPoints = availablePoints >= offer.costPoints;
     final canRedeem = offer.isInStock && enoughPoints;
+    final colors = context.semanticColors;
     return MedicalSurfaceCard(
       elevated: true,
       child: Column(
@@ -350,10 +357,10 @@ class _OfferCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const MedicalIconBadge(
+              MedicalIconBadge(
                 icon: Icons.local_activity_rounded,
-                color: AppColors.tertiary,
-                backgroundColor: AppColors.tertiarySoft,
+                color: colors.tertiary,
+                backgroundColor: colors.tertiarySoft,
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -365,7 +372,7 @@ class _OfferCard extends StatelessWidget {
                     Text(
                       _providerName(offer.providerName),
                       style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ],
@@ -392,18 +399,18 @@ class _OfferCard extends StatelessWidget {
                     ? Icons.inventory_2_outlined
                     : Icons.inventory_outlined,
                 foregroundColor: offer.isInStock
-                    ? AppColors.success
-                    : AppColors.error,
+                    ? colors.success
+                    : colors.error,
                 backgroundColor: offer.isInStock
-                    ? AppColors.successSoft
-                    : AppColors.errorSoft,
+                    ? colors.successSoft
+                    : colors.errorSoft,
               ),
               if (offer.availableUntil != null)
                 MedicalStatusPill(
                   label: 'Đổi đến ${_dateLabel(offer.availableUntil)}',
                   icon: Icons.event_rounded,
-                  foregroundColor: AppColors.warningDark,
-                  backgroundColor: AppColors.warningSoft,
+                  foregroundColor: colors.warning,
+                  backgroundColor: colors.warningSoft,
                 ),
             ],
           ),
@@ -475,7 +482,8 @@ class _PointHistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final positive = entry.pointsDelta >= 0;
-    final color = positive ? AppColors.success : AppColors.error;
+    final colors = context.semanticColors;
+    final color = positive ? colors.success : colors.error;
     return MedicalSurfaceCard(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       child: Row(
@@ -483,9 +491,7 @@ class _PointHistoryCard extends StatelessWidget {
           MedicalIconBadge(
             icon: positive ? Icons.add_rounded : Icons.remove_rounded,
             color: color,
-            backgroundColor: positive
-                ? AppColors.successSoft
-                : AppColors.errorSoft,
+            backgroundColor: positive ? colors.successSoft : colors.errorSoft,
             size: 42,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -525,6 +531,7 @@ class _RedemptionsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView(
@@ -557,12 +564,10 @@ class _RedemptionsTab extends StatelessWidget {
                       icon: entry.isCancelled
                           ? Icons.cancel_outlined
                           : Icons.qr_code_2_rounded,
-                      color: entry.isCancelled
-                          ? AppColors.error
-                          : AppColors.tertiary,
+                      color: entry.isCancelled ? colors.error : colors.tertiary,
                       backgroundColor: entry.isCancelled
-                          ? AppColors.errorSoft
-                          : AppColors.tertiarySoft,
+                          ? colors.errorSoft
+                          : colors.tertiarySoft,
                       size: 44,
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -585,15 +590,15 @@ class _RedemptionsTab extends StatelessWidget {
                     MedicalStatusPill(
                       label: _redemptionStatusLabel(entry.status),
                       foregroundColor: entry.isCancelled
-                          ? AppColors.error
+                          ? colors.error
                           : _isIssuedStatus(entry.status)
-                          ? AppColors.success
-                          : AppColors.textMuted,
+                          ? colors.success
+                          : colors.textMuted,
                       backgroundColor: entry.isCancelled
-                          ? AppColors.errorSoft
+                          ? colors.errorSoft
                           : _isIssuedStatus(entry.status)
-                          ? AppColors.successSoft
-                          : AppColors.surfaceSoft,
+                          ? colors.successSoft
+                          : colors.surfaceSoft,
                     ),
                   ],
                 ),
@@ -636,11 +641,11 @@ class _VoucherSheet extends StatelessWidget {
               label: 'Mã QR của voucher ${_redemptionTitle(redemption)}',
               child: Container(
                 padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                color: AppColors.surface,
+                color: Colors.white,
                 child: QrImageView(
                   data: code,
                   size: 220,
-                  backgroundColor: AppColors.surface,
+                  backgroundColor: Colors.white,
                 ),
               ),
             ),

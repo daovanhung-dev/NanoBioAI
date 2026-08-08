@@ -28,7 +28,6 @@ void main() {
     expect(container.read(aiVoiceControllerProvider).isInitialized, isTrue);
   });
 
-
   test('surfaces microphone permission denial without calling AI', () async {
     final speech = _PermissionDeniedSpeechGateway();
     final chat = _FakeChatRepository();
@@ -48,23 +47,27 @@ void main() {
     expect(chat.sendCalls, 0);
   });
 
-  test('recognizes one phrase, reuses AI chat repository and speaks answer', () async {
-    final speech = _FakeSpeechGateway(result: 'Tôi nên ăn gì?');
-    final tts = _FakeTtsGateway();
-    final chat = _FakeChatRepository(answer: 'Bạn có thể chọn một bữa nhẹ.');
-    final container = _container(speech: speech, tts: tts, chat: chat);
-    addTearDown(container.dispose);
-    final controller = container.read(aiVoiceControllerProvider.notifier);
+  test(
+    'recognizes one phrase, reuses AI chat repository and speaks answer',
+    () async {
+      final speech = _FakeSpeechGateway(result: 'Tôi nên ăn gì?');
+      final tts = _FakeTtsGateway();
+      final chat = _FakeChatRepository(answer: 'Bạn có thể chọn một bữa nhẹ.');
+      final container = _container(speech: speech, tts: tts, chat: chat);
+      addTearDown(container.dispose);
+      final controller = container.read(aiVoiceControllerProvider.notifier);
 
-    await controller.listenAndRespond();
+      await controller.initializeAndGreet();
+      await controller.listenAndRespond();
 
-    final state = container.read(aiVoiceControllerProvider);
-    expect(chat.messages, <String>['Tôi nên ăn gì?']);
-    expect(state.transcript, 'Tôi nên ăn gì?');
-    expect(state.response, 'Bạn có thể chọn một bữa nhẹ.');
-    expect(state.phase, AiVoicePhase.idle);
-    expect(tts.spoken.last, state.response);
-  });
+      final state = container.read(aiVoiceControllerProvider);
+      expect(chat.messages, <String>['Tôi nên ăn gì?']);
+      expect(state.transcript, 'Tôi nên ăn gì?');
+      expect(state.response, 'Bạn có thể chọn một bữa nhẹ.');
+      expect(state.phase, AiVoicePhase.idle);
+      expect(tts.spoken.last, state.response);
+    },
+  );
 
   test('stop invalidates a stale AI response', () async {
     final response = Completer<ChatMessageEntity>();
@@ -76,6 +79,7 @@ void main() {
     addTearDown(container.dispose);
     final controller = container.read(aiVoiceControllerProvider.notifier);
 
+    await controller.initializeAndGreet();
     final operation = controller.listenAndRespond();
     await Future<void>.delayed(Duration.zero);
     await controller.stop();
@@ -143,16 +147,14 @@ class _FakeChatRepository implements AIChatRepository {
   final List<String> messages = <String>[];
   int sendCalls = 0;
 
-  _FakeChatRepository({
-    this.answer = 'NaBi trả lời',
-    this.completer,
-  });
+  _FakeChatRepository({this.answer = 'NaBi trả lời', this.completer});
 
   @override
   Future<ChatMessageEntity> sendMessage(String message) {
     sendCalls++;
     messages.add(message);
-    return completer?.future ?? Future<ChatMessageEntity>.value(_answer(answer));
+    return completer?.future ??
+        Future<ChatMessageEntity>.value(_answer(answer));
   }
 
   @override

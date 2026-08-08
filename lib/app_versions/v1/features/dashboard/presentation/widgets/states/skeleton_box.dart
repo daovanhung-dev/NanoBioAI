@@ -60,8 +60,8 @@ class _SkeletonBoxState extends State<SkeletonBox>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(widget.radius),
           color: Color.lerp(
-            AppColors.border,
-            AppColors.primarySubtle,
+            context.semanticColors.border,
+            context.semanticColors.primarySubtle,
             _animation.value,
           ),
         ),

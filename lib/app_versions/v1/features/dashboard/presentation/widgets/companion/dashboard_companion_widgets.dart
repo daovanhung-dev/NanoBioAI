@@ -53,14 +53,14 @@ class DashboardSlowDayBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _CompanionCard(
-      color: AppColors.secondary.withValues(alpha: 0.08),
-      borderColor: AppColors.secondary.withValues(alpha: 0.18),
+      color: context.semanticColors.secondary.withValues(alpha: 0.08),
+      borderColor: context.semanticColors.secondary.withValues(alpha: 0.18),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SoftIcon(
+          _SoftIcon(
             icon: Icons.self_improvement_rounded,
-            color: AppColors.secondary,
+            color: context.semanticColors.secondary,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -95,8 +95,8 @@ class DashboardNextActionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final action = item;
     return _CompanionCard(
-      color: AppColors.primary.withValues(alpha: 0.08),
-      borderColor: AppColors.primary.withValues(alpha: 0.16),
+      color: context.semanticColors.primary.withValues(alpha: 0.08),
+      borderColor: context.semanticColors.primary.withValues(alpha: 0.16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -146,7 +146,7 @@ class DashboardNextActionSection extends StatelessWidget {
               ),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 height: 1.45,
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
               ),
             ),
             if (isSlowDay) ...[
@@ -233,9 +233,13 @@ class DashboardDailyCheckInCard extends StatelessWidget {
                   vietnameseUiText(DashboardCompanionService.moodLabel(mood)),
                 ),
                 onSelected: (_) => onSelectMood(mood),
-                selectedColor: AppColors.primary.withValues(alpha: 0.14),
+                selectedColor: context.semanticColors.primary.withValues(
+                  alpha: 0.14,
+                ),
                 labelStyle: AppTextStyles.labelMedium.copyWith(
-                  color: selected ? AppColors.primary : AppColors.textPrimary,
+                  color: selected
+                      ? context.semanticColors.primary
+                      : context.semanticColors.textPrimary,
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                 ),
               );
@@ -388,7 +392,9 @@ class DashboardHealthScoreBreakdownSheet extends StatelessWidget {
                 width: 44,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.textHint.withValues(alpha: 0.35),
+                  color: context.semanticColors.textHint.withValues(
+                    alpha: 0.35,
+                  ),
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
               ),
@@ -644,9 +650,11 @@ class _BreakdownRow extends StatelessWidget {
                   child: LinearProgressIndicator(
                     minHeight: 7,
                     value: item.progress.clamp(0, 1).toDouble(),
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.10),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
+                    backgroundColor: context.semanticColors.primary.withValues(
+                      alpha: 0.10,
+                    ),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      context.semanticColors.primary,
                     ),
                   ),
                 ),
@@ -674,16 +682,22 @@ class _StreakDot extends StatelessWidget {
           width: 24,
           height: 24,
           decoration: BoxDecoration(
-            color: active ? AppColors.primary : AppColors.surface,
+            color: active
+                ? context.semanticColors.primary
+                : context.semanticColors.surface,
             shape: BoxShape.circle,
             border: Border.all(
               color: active
-                  ? AppColors.primary
-                  : AppColors.textHint.withValues(alpha: 0.24),
+                  ? context.semanticColors.primary
+                  : context.semanticColors.textHint.withValues(alpha: 0.24),
             ),
           ),
           child: active
-              ? const Icon(Icons.check_rounded, color: AppColors.surface, size: 16)
+              ? Icon(
+                  Icons.check_rounded,
+                  color: context.semanticColors.textInverse,
+                  size: 16,
+                )
               : null,
         ),
         const SizedBox(height: AppSpacing.xs),
@@ -703,22 +717,25 @@ class _InlineHint extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
+        color: context.semanticColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.primary, size: 18),
+          Icon(icon, color: context.semanticColors.primary, size: 18),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 height: 1.35,
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
               ),
             ),
           ),
@@ -730,20 +747,21 @@ class _InlineHint extends StatelessWidget {
 
 class _SoftIcon extends StatelessWidget {
   final IconData icon;
-  final Color color;
+  final Color? color;
 
-  const _SoftIcon({required this.icon, this.color = AppColors.primary});
+  const _SoftIcon({required this.icon, this.color});
 
   @override
   Widget build(BuildContext context) {
+    final effectiveColor = color ?? context.semanticColors.primary;
     return Container(
       width: 38,
       height: 38,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: effectiveColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
-      child: Icon(icon, color: color, size: 20),
+      child: Icon(icon, color: effectiveColor, size: 20),
     );
   }
 }
@@ -764,11 +782,13 @@ class _CompanionCard extends StatelessWidget {
         color: color ?? Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: borderColor ?? AppColors.textPrimary.withValues(alpha: 0.05),
+          color:
+              borderColor ??
+              context.semanticColors.textPrimary.withValues(alpha: 0.05),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.035),
+            color: context.semanticColors.textPrimary.withValues(alpha: 0.035),
             blurRadius: 22,
             offset: const Offset(0, 12),
           ),

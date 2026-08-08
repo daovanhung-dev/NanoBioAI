@@ -120,7 +120,7 @@ void main() {
     await tester.enterText(find.byType(TextField), '10000');
     await tester.pump();
     await tester.tap(find.text('Gửi yêu cầu quy đổi'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(repository.commands, hasLength(1));
     expect(repository.commands.single.pointCents, 10000);
@@ -184,6 +184,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Gửi yêu cầu quy đổi'));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(
       find.text('Chưa gửi được yêu cầu quy đổi. Bạn thử lại sau.'),
@@ -193,6 +194,7 @@ void main() {
 
     await tester.tap(find.text('Gửi yêu cầu quy đổi'));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(repository.commands, hasLength(2));
     expect(repository.commands.last.idempotencyKey, failedKey);

@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tra
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-08-04 |
+| Ngay cap nhat | 2026-08-08 |
 | Muc dich | Ghi lai trang thai coding M01-M19/M30 va coding gate rieng cho planned M20-M29. |
 
 ## DD Progress Next Tasks
@@ -164,3 +164,22 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [x] Static validation: 740 Dart files, 0 blocking findings.
 - [ ] Chạy `dart format`, targeted `flutter analyze`, targeted `flutter test` và `flutter build apk --debug` trên máy có Flutter SDK.
 - [ ] Visual smoke trên thiết bị 320/360/412 px, text scale 90/100/115/130%, xác nhận Nabi overlay không che CTA cuối trang.
+
+### Stitch Green Wellness — 2026-08-08
+
+- [x] Lập registry đủ `76/76` cặp PNG/HTML và validator cho 76 rows/90 asset reference.
+- [x] Khóa 90 asset Stitch ở `license_status=unverified`, `runtime_eligible=false`; không hotlink hoặc dùng làm dữ liệu production.
+- [x] Thêm semantic Green tokens, light/dark theme deterministic, Roboto 400/500/600/700 và facade rollback.
+- [x] Áp setting theme cho V1/V2/V3/resolving app; giữ Admin workspace riêng và bổ sung dark compatibility.
+- [x] Đặt `STITCH_GREEN_UI_ENABLED`: debug/profile mặc định Green để QA; release mặc định Blue và chỉ Green khi opt-in tường minh.
+- [x] Sửa baseline `isSelected`, auth fixture/back behavior, Sale duplicate message và AI failed-input UI draft.
+- [x] Thêm route wellness an toàn, Nami Care runtime-only hub, Water Tracking target do người dùng chọn/lưu local và `/v3/familyplus` effective-access gate.
+- [x] Giữ `/health-tracking` là alias và M20-M29 là catalog/placeholder trong khi DD chưa Approved.
+- [x] Targeted evidence đã chạy: Stitch validator, theme/Roboto/flag tests, auth/Sale/AI/router bundle, water/routes, Admin analyze/tests và app-root targeted analyze.
+- [ ] Root chạy formatter cho toàn bộ Dart thay đổi sau merge, full `flutter analyze` và full `flutter test`; ghi số test/kết quả vào worklog.
+- [ ] Root chạy `flutter build apk --debug`, integrity validator và `git diff --check` cuối; ghi artifact/kết quả vào worklog.
+- [ ] Tạo đủ golden light/dark cho 76 surface ở 390×884 và adaptive/accessibility checks 320/360/412/600+.
+- [ ] Chạy behavior/deep-link/offline/payment/quota acceptance, Supabase sandbox/RLS matrix và Android/iOS real-device smoke.
+- [ ] Hoàn tất PO/Tech/QA/Clinical/Privacy approval cho DD còn thiếu; chưa mở health/AI/chat/Sale business flow trước gate.
+- [ ] Xác minh license asset, store health permission policy và FamilyPlus escrow key ceremony trước production acceptance.
+- [ ] Chỉ build release Green với `--dart-define=STITCH_GREEN_UI_ENABLED=true` sau khi đủ gate; giữ `false` làm rollback ít nhất một release.

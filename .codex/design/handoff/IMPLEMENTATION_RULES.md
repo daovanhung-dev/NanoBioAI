@@ -1,3 +1,12 @@
-# Implementation Rules
+# Implementation Rules - Stitch Green Wellness
 
-1. Source runtime wins. 2. No business logic refactor inside UI migration. 3. Tokens/primitives first. 4. Preserve provider/controller/repository boundaries. 5. Preserve route/access contracts. 6. State parity before polish. 7. Targeted tests per touched feature. 8. No mock production data. 9. Copy is Vietnamese/Nabi-safe. 10. Update design registry when source drifts.
+1. For a Stitch reference, PNG governs layout and HTML governs typography/token intent.
+2. Approved DD and runtime govern business, data, access, quota, payment and trusted state.
+3. Build through semantic theme extensions and primitives; new UI reads colors from context.
+4. Preserve provider/controller/repository boundaries and route/access semantics.
+5. Implement state parity before visual polish.
+6. Use Roboto and the canonical Green tokens; preserve Admin's independent workspace palette.
+7. Unapproved modules or capabilities fail closed to manual fallback or an honest placeholder.
+8. Do not ship sample data, hotlinks, embedded Stitch HTML/Tailwind or unverified-license assets.
+9. Validate light/dark, adaptive widths, large text, focus, semantics and reduced motion.
+10. Update surface/route classification when source drifts; never infer 76/76 acceptance from file count.

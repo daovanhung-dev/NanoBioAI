@@ -10,24 +10,25 @@ class V3HomePage extends StatelessWidget {
       icon: Icons.auto_awesome_rounded,
       title: 'Trợ lý AI mở rộng',
       description: 'Hỗ trợ sâu hơn theo mục tiêu và lịch sinh hoạt.',
-      color: AppColors.primary,
+      tone: _PlannedFeatureTone.primary,
     ),
     _PlannedFeature(
       icon: Icons.timeline_rounded,
       title: 'Theo dõi nâng cao',
       description: 'Nhìn xu hướng sức khỏe theo cách trực quan và dễ hiểu.',
-      color: AppColors.secondary,
+      tone: _PlannedFeatureTone.secondary,
     ),
     _PlannedFeature(
       icon: Icons.family_restroom_rounded,
       title: 'FamilyPlus',
       description: 'Chăm sóc nhiều thành viên với quyền riêng tư tách biệt.',
-      color: AppColors.tertiary,
+      tone: _PlannedFeatureTone.tertiary,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return MedicalScrollPage(
       eyebrow: 'PLUS & FAMILYPLUS',
       title: 'Chăm sóc sâu hơn, vẫn thật dễ dùng',
@@ -35,11 +36,11 @@ class V3HomePage extends StatelessWidget {
       icon: Icons.workspace_premium_rounded,
       gradient: AppGradients.premium,
       children: [
-        const MedicalSectionHeader(
+        MedicalSectionHeader(
           title: 'Trải nghiệm đang được hoàn thiện',
           subtitle: 'Hiểu nhanh hơn, ít áp lực hơn.',
           icon: Icons.view_quilt_rounded,
-          color: AppColors.tertiary,
+          color: colors.tertiary,
         ),
         for (final feature in _plannedFeatures)
           MedicalSurfaceCard(
@@ -48,8 +49,10 @@ class V3HomePage extends StatelessWidget {
               children: [
                 MedicalIconBadge(
                   icon: feature.icon,
-                  color: feature.color,
-                  backgroundColor: feature.color.withValues(alpha: .10),
+                  color: feature.tone.resolve(colors),
+                  backgroundColor: feature.tone
+                      .resolve(colors)
+                      .withValues(alpha: .10),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -65,17 +68,17 @@ class V3HomePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const MedicalStatusPill(
+                MedicalStatusPill(
                   label: 'Sắp có',
-                  foregroundColor: AppColors.tertiary,
-                  backgroundColor: AppColors.tertiarySoft,
+                  foregroundColor: colors.tertiary,
+                  backgroundColor: colors.tertiarySoft,
                 ),
               ],
             ),
           ),
-        const MedicalEmptyState(
+        MedicalEmptyState(
           icon: Icons.verified_user_rounded,
-          color: AppColors.secondary,
+          color: colors.secondary,
           title: 'Quyền lợi luôn được kiểm tra an toàn',
           message: 'Nabi chỉ mở tính năng sau khi xác nhận quyền.',
         ),
@@ -88,12 +91,24 @@ class _PlannedFeature {
   final IconData icon;
   final String title;
   final String description;
-  final Color color;
+  final _PlannedFeatureTone tone;
 
   const _PlannedFeature({
     required this.icon,
     required this.title,
     required this.description,
-    required this.color,
+    required this.tone,
   });
+}
+
+enum _PlannedFeatureTone {
+  primary,
+  secondary,
+  tertiary;
+
+  Color resolve(AppSemanticColors colors) => switch (this) {
+    _PlannedFeatureTone.primary => colors.primary,
+    _PlannedFeatureTone.secondary => colors.secondary,
+    _PlannedFeatureTone.tertiary => colors.tertiary,
+  };
 }

@@ -52,35 +52,36 @@ class _AdminAccessGateState extends ConsumerState<AdminAccessGate> {
         data: (value) {
           return switch (value.status) {
             AdminAccessStatus.checking => const KeyedSubtree(
-                key: ValueKey('admin-access-checking'),
-                child: _AccessChecking(),
-              ),
+              key: ValueKey('admin-access-checking'),
+              child: _AccessChecking(),
+            ),
             AdminAccessStatus.authorized => KeyedSubtree(
-                key: const ValueKey('admin-access-authorized'),
-                child: widget.child,
-              ),
+              key: const ValueKey('admin-access-authorized'),
+              child: widget.child,
+            ),
             AdminAccessStatus.unauthorized => _AccessMessage(
-                key: const ValueKey('admin-access-unauthorized'),
-                icon: Icons.lock_person_outlined,
-                title: 'Bạn chưa đăng nhập quản trị',
-                message:
-                    'Đăng nhập bằng tài khoản đã được cấp quyền hoặc trở lại ứng dụng dành cho người dùng.',
-                primaryLabel: 'Đăng nhập quản trị',
-                onPrimary: () => context.go(AdminRoutePaths.login),
-                secondaryLabel: 'Về ứng dụng người dùng',
-                onSecondary: _showUserApp,
-              ),
+              key: const ValueKey('admin-access-unauthorized'),
+              icon: Icons.lock_person_outlined,
+              title: 'Bạn chưa đăng nhập quản trị',
+              message:
+                  'Đăng nhập bằng tài khoản đã được cấp quyền hoặc trở lại ứng dụng dành cho người dùng.',
+              primaryLabel: 'Đăng nhập quản trị',
+              onPrimary: () => context.go(AdminRoutePaths.login),
+              secondaryLabel: 'Về ứng dụng người dùng',
+              onSecondary: _showUserApp,
+            ),
             AdminAccessStatus.error => _AccessMessage(
-                key: const ValueKey('admin-access-error'),
-                icon: Icons.shield_outlined,
-                title: 'Khu vực quản trị chưa sẵn sàng',
-                message: value.safeMessage ??
-                    'Chưa thể xác nhận quyền quản trị. Vui lòng thử lại.',
-                primaryLabel: 'Thử lại',
-                onPrimary: _retry,
-                secondaryLabel: 'Về ứng dụng người dùng',
-                onSecondary: _showUserApp,
-              ),
+              key: const ValueKey('admin-access-error'),
+              icon: Icons.shield_outlined,
+              title: 'Khu vực quản trị chưa sẵn sàng',
+              message:
+                  value.safeMessage ??
+                  'Chưa thể xác nhận quyền quản trị. Vui lòng thử lại.',
+              primaryLabel: 'Thử lại',
+              onPrimary: _retry,
+              secondaryLabel: 'Về ứng dụng người dùng',
+              onSecondary: _showUserApp,
+            ),
           };
         },
       ),
@@ -90,13 +91,12 @@ class _AdminAccessGateState extends ConsumerState<AdminAccessGate> {
   Future<void> _retry() async {
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     try {
-      final access =
-          await ref.read(adminAccessControllerProvider.notifier).refresh();
+      final access = await ref
+          .read(adminAccessControllerProvider.notifier)
+          .refresh();
       if (!mounted) return;
       AppFeedbackService.instance.emit(
-        access.isAuthorized
-            ? AppFeedbackType.success
-            : AppFeedbackType.warning,
+        access.isAuthorized ? AppFeedbackType.success : AppFeedbackType.warning,
       );
     } catch (_) {
       if (mounted) AppFeedbackService.instance.emit(AppFeedbackType.error);
@@ -114,9 +114,10 @@ class _AccessChecking extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AdminWorkspaceTheme.canvas,
-      body: Center(
+    final colors = context.adminColors;
+    return Scaffold(
+      backgroundColor: colors.canvas,
+      body: const Center(
         child: Padding(
           padding: EdgeInsets.all(20),
           child: Column(
@@ -158,8 +159,9 @@ class _AccessMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Scaffold(
-      backgroundColor: AdminWorkspaceTheme.canvas,
+      backgroundColor: colors.canvas,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -167,12 +169,12 @@ class _AccessMessage extends StatelessWidget {
             width: 500,
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: AdminWorkspaceTheme.panel,
+              color: colors.panel,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AdminWorkspaceTheme.border),
-              boxShadow: const [
+              border: Border.all(color: colors.border),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x1417324D),
+                  color: colors.shadow,
                   blurRadius: 24,
                   offset: Offset(0, 8),
                 ),
@@ -185,37 +187,28 @@ class _AccessMessage extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: AdminWorkspaceTheme.selected,
+                    color: colors.selected,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    icon,
-                    color: AdminWorkspaceTheme.blueDark,
-                    size: 27,
-                  ),
+                  child: Icon(icon, color: colors.blueStrong, size: 27),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.heading3.copyWith(
-                    color: AdminWorkspaceTheme.text,
-                  ),
+                  style: AppTextStyles.heading3.copyWith(color: colors.text),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   message,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AdminWorkspaceTheme.textSecondary,
+                    color: colors.textSecondary,
                     height: 1.45,
                   ),
                 ),
                 const SizedBox(height: 20),
-                FilledButton(
-                  onPressed: onPrimary,
-                  child: Text(primaryLabel),
-                ),
+                FilledButton(onPressed: onPrimary, child: Text(primaryLabel)),
                 if (secondaryLabel != null && onSecondary != null) ...[
                   const SizedBox(height: 8),
                   TextButton(

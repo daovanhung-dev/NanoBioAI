@@ -99,49 +99,47 @@ enum NabiOnboardingMood {
 
 extension NabiOnboardingMoodVisual on NabiOnboardingMood {
   String get assetPath => switch (this) {
-        NabiOnboardingMood.welcome =>
-          'assets/images/nabi/onboarding/nabi_onboarding_intro.png',
-        NabiOnboardingMood.guide =>
-          'assets/images/nabi/onboarding/nabi_onboarding_basic_info.png',
-        NabiOnboardingMood.goal =>
-          'assets/images/nabi/onboarding/nabi_onboarding_goal.png',
-        NabiOnboardingMood.care =>
-          'assets/images/nabi/onboarding/nabi_onboarding_health_check.png',
-        NabiOnboardingMood.lifestyle =>
-          'assets/images/nabi/onboarding/nabi_onboarding_lifestyle.png',
-        NabiOnboardingMood.thinking =>
-          'assets/images/nabi/core/nabi_think.png',
-        NabiOnboardingMood.routine =>
-          'assets/images/nabi/daily/nabi_view_schedule.png',
-        NabiOnboardingMood.consent =>
-          'assets/images/nabi/core/nabi_idle_happy.png',
-        NabiOnboardingMood.review =>
-          'assets/images/nabi/onboarding/nabi_onboarding_review.png',
-        NabiOnboardingMood.celebrate =>
-          'assets/images/nabi/onboarding/nabi_plan_ready.png',
-      };
+    NabiOnboardingMood.welcome =>
+      'assets/images/nabi/onboarding/nabi_onboarding_intro.png',
+    NabiOnboardingMood.guide =>
+      'assets/images/nabi/onboarding/nabi_onboarding_basic_info.png',
+    NabiOnboardingMood.goal =>
+      'assets/images/nabi/onboarding/nabi_onboarding_goal.png',
+    NabiOnboardingMood.care =>
+      'assets/images/nabi/onboarding/nabi_onboarding_health_check.png',
+    NabiOnboardingMood.lifestyle =>
+      'assets/images/nabi/onboarding/nabi_onboarding_lifestyle.png',
+    NabiOnboardingMood.thinking => 'assets/images/nabi/core/nabi_think.png',
+    NabiOnboardingMood.routine =>
+      'assets/images/nabi/daily/nabi_view_schedule.png',
+    NabiOnboardingMood.consent => 'assets/images/nabi/core/nabi_idle_happy.png',
+    NabiOnboardingMood.review =>
+      'assets/images/nabi/onboarding/nabi_onboarding_review.png',
+    NabiOnboardingMood.celebrate =>
+      'assets/images/nabi/onboarding/nabi_plan_ready.png',
+  };
 
   String get message => switch (this) {
-        NabiOnboardingMood.welcome => 'Bắt đầu nhé?',
-        NabiOnboardingMood.guide => 'Mình ghi lại nhé',
-        NabiOnboardingMood.goal => 'Chọn điều quan trọng',
-        NabiOnboardingMood.care => 'Mình đang lắng nghe',
-        NabiOnboardingMood.lifestyle => 'Nhịp sống của bạn',
-        NabiOnboardingMood.thinking => 'Chọn những gì đúng',
-        NabiOnboardingMood.routine => 'Sắp xếp một ngày',
-        NabiOnboardingMood.consent => 'Bạn luôn có quyền chọn',
-        NabiOnboardingMood.review => 'Xem lại lần cuối',
-        NabiOnboardingMood.celebrate => 'Lộ trình đã sẵn sàng',
-      };
+    NabiOnboardingMood.welcome => 'Bắt đầu nhé?',
+    NabiOnboardingMood.guide => 'Mình ghi lại nhé',
+    NabiOnboardingMood.goal => 'Chọn điều quan trọng',
+    NabiOnboardingMood.care => 'Mình đang lắng nghe',
+    NabiOnboardingMood.lifestyle => 'Nhịp sống của bạn',
+    NabiOnboardingMood.thinking => 'Chọn những gì đúng',
+    NabiOnboardingMood.routine => 'Sắp xếp một ngày',
+    NabiOnboardingMood.consent => 'Bạn luôn có quyền chọn',
+    NabiOnboardingMood.review => 'Xem lại lần cuối',
+    NabiOnboardingMood.celebrate => 'Lộ trình đã sẵn sàng',
+  };
 
   Color get accent => switch (this) {
-        NabiOnboardingMood.goal => NabiPalette.energyYellow,
-        NabiOnboardingMood.care => NabiPalette.careCoral,
-        NabiOnboardingMood.lifestyle => NabiPalette.calmBlue,
-        NabiOnboardingMood.thinking => NabiPalette.personalPurple,
-        NabiOnboardingMood.routine => NabiPalette.energyYellow,
-        _ => NabiPalette.greenBright,
-      };
+    NabiOnboardingMood.goal => NabiPalette.energyYellow,
+    NabiOnboardingMood.care => NabiPalette.careCoral,
+    NabiOnboardingMood.lifestyle => NabiPalette.calmBlue,
+    NabiOnboardingMood.thinking => NabiPalette.personalPurple,
+    NabiOnboardingMood.routine => NabiPalette.energyYellow,
+    _ => NabiPalette.greenBright,
+  };
 }
 
 bool nabiReducedMotion(BuildContext context) =>
@@ -195,8 +193,16 @@ class _NabiAmbientBackgroundState extends State<NabiAmbientBackground>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return DecoratedBox(
-      decoration: const BoxDecoration(gradient: NabiPalette.mintWash),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.cardAlt, colors.primarySubtle, colors.background],
+          stops: const [0, 0.48, 1],
+        ),
+      ),
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -231,7 +237,9 @@ class _WellnessAtmospherePainter extends CustomPainter {
     final green = Paint()
       ..color = NabiPalette.greenBright.withValues(alpha: strong ? 0.14 : 0.08);
     final yellow = Paint()
-      ..color = NabiPalette.energyYellow.withValues(alpha: strong ? 0.11 : 0.06);
+      ..color = NabiPalette.energyYellow.withValues(
+        alpha: strong ? 0.11 : 0.06,
+      );
     final blue = Paint()
       ..color = NabiPalette.calmBlue.withValues(alpha: strong ? 0.09 : 0.045);
 
@@ -287,17 +295,25 @@ class NabiGlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        gradient: gradient ?? NabiPalette.card,
+        gradient:
+            gradient ??
+            LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [colors.card, colors.inputBackground],
+            ),
         borderRadius: borderRadius,
-        border: Border.all(color: borderColor ?? NabiPalette.line),
+        border: Border.all(color: borderColor ?? colors.border),
         boxShadow: elevated
             ? [
                 BoxShadow(
-                  color: (shadowColor ?? NabiPalette.greenDeep)
-                      .withValues(alpha: 0.08),
+                  color: (shadowColor ?? colors.primaryDark).withValues(
+                    alpha: 0.08,
+                  ),
                   blurRadius: 24,
                   offset: const Offset(0, 10),
                 ),
@@ -323,9 +339,13 @@ class NabiMoodPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = color ?? NabiPalette.greenPrimary;
+    final colors = context.semanticColors;
+    final accent = color ?? colors.primary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: accent.withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -342,7 +362,7 @@ class NabiMoodPill extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.labelSmall.copyWith(
-                color: NabiPalette.ink,
+                color: colors.textPrimary,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0,
               ),
@@ -408,6 +428,7 @@ class _NabiCompanionAvatarState extends State<NabiCompanionAvatar>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final accent = widget.mood.accent;
     return Semantics(
       image: true,
@@ -454,7 +475,7 @@ class _NabiCompanionAvatarState extends State<NabiCompanionAvatar>
                     padding: EdgeInsets.all(widget.size * 0.07),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.surface.withValues(alpha: 0.96),
+                      color: colors.surface.withValues(alpha: 0.96),
                       border: Border.all(
                         color: accent.withValues(alpha: 0.22),
                         width: 2,
@@ -477,7 +498,7 @@ class _NabiCompanionAvatarState extends State<NabiCompanionAvatar>
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.favorite_rounded,
-                          color: NabiPalette.greenPrimary,
+                          color: colors.primary,
                           size: widget.size * 0.42,
                         ),
                       ),
@@ -517,13 +538,14 @@ class NabiAssistantMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return NabiGlassPanel(
       elevated: false,
       padding: const EdgeInsets.all(AppSpacing.sm),
       gradient: LinearGradient(
         colors: [
           accent.withValues(alpha: 0.11),
-          AppColors.surface.withValues(alpha: 0.92),
+          colors.surface.withValues(alpha: 0.92),
         ],
       ),
       borderColor: accent.withValues(alpha: 0.18),
@@ -547,7 +569,7 @@ class NabiAssistantMessage extends StatelessWidget {
                 Text(
                   message,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: NabiPalette.ink,
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w800,
                     height: 1.25,
                     letterSpacing: 0,
@@ -558,7 +580,7 @@ class NabiAssistantMessage extends StatelessWidget {
                   Text(
                     subtitle!,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: NabiPalette.mutedInk,
+                      color: colors.textSecondary,
                       height: 1.35,
                     ),
                   ),
@@ -588,6 +610,7 @@ class NabiPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final enabled = onPressed != null && !isLoading;
     return _NabiPressScale(
       enabled: enabled,
@@ -607,14 +630,12 @@ class NabiPrimaryButton extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: enabled
                 ? NabiPalette.button
-                : const LinearGradient(
-                    colors: [AppColors.textDisabled, AppColors.textHint],
-                  ),
+                : LinearGradient(colors: [colors.disabled, colors.textHint]),
             borderRadius: BorderRadius.circular(AppRadius.lg),
             boxShadow: enabled
                 ? [
                     BoxShadow(
-                      color: NabiPalette.greenPrimary.withValues(alpha: 0.28),
+                      color: colors.primary.withValues(alpha: 0.28),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
@@ -636,7 +657,7 @@ class NabiPrimaryButton extends StatelessWidget {
                           height: 21,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.3,
-                            color: AppColors.surface,
+                            color: AppColors.textInverse,
                           ),
                         )
                       : Row(
@@ -648,14 +669,14 @@ class NabiPrimaryButton extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTextStyles.buttonSmall.copyWith(
-                                  color: AppColors.surface,
+                                  color: AppColors.textInverse,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 0,
                                 ),
                               ),
                             ),
                             const SizedBox(width: AppSpacing.sm),
-                            Icon(icon, color: AppColors.surface, size: 21),
+                            Icon(icon, color: AppColors.textInverse, size: 21),
                           ],
                         ),
                 ),
@@ -682,22 +703,21 @@ class NabiSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return _NabiPressScale(
       enabled: onPressed != null,
       onTap: onPressed,
       child: Container(
         height: 46,
         decoration: BoxDecoration(
-          color: AppColors.surface.withValues(alpha: 0.86),
+          color: colors.surface.withValues(alpha: 0.86),
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(
-            color: NabiPalette.greenPrimary.withValues(alpha: 0.24),
-          ),
+          border: Border.all(color: colors.primary.withValues(alpha: 0.24)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 19, color: NabiPalette.greenDeep),
+            Icon(icon, size: 19, color: colors.primary),
             const SizedBox(width: AppSpacing.sm),
             Flexible(
               child: Text(
@@ -705,7 +725,7 @@ class NabiSecondaryButton extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.buttonSmall.copyWith(
-                  color: NabiPalette.greenDeep,
+                  color: colors.primary,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0,
                 ),
@@ -734,6 +754,7 @@ class NabiStepHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final color = accent ?? mood.accent;
     return Container(
       width: double.infinity,
@@ -747,8 +768,8 @@ class NabiStepHero extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             color.withValues(alpha: 0.13),
-            NabiPalette.mintSurface.withValues(alpha: 0.86),
-            AppColors.surface.withValues(alpha: 0.94),
+            colors.primarySubtle.withValues(alpha: 0.86),
+            colors.surface.withValues(alpha: 0.94),
           ],
         ),
         borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -771,7 +792,7 @@ class NabiStepHero extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.heading5.copyWith(
-                    color: NabiPalette.ink,
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w900,
                     height: 1.18,
                   ),
@@ -859,10 +880,9 @@ class _CelebrationPainter extends CustomPainter {
       final center = Offset(size.width / 2, size.height * 0.31);
       final point = center + Offset(math.cos(angle), math.sin(angle)) * radius;
       final paint = Paint()
-        ..color = colors[index % colors.length]
-            .withValues(
-              alpha: (1 - progress).clamp(0.0, 1.0).toDouble(),
-            );
+        ..color = colors[index % colors.length].withValues(
+          alpha: (1 - progress).clamp(0.0, 1.0).toDouble(),
+        );
       canvas.save();
       canvas.translate(point.dx, point.dy);
       canvas.rotate(angle + progress * 2);

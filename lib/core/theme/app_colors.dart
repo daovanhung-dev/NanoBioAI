@@ -1,35 +1,67 @@
 import 'package:flutter/material.dart';
 
-/// Canonical semantic palette for NaBi Blue Wellness.
+import 'app_theme_flags.dart';
+
+/// Backward-compatible static facade for NaBi Green Wellness.
 ///
-/// Consumer features must use these semantic roles instead of raw color
-/// literals. Admin and Sale surfaces share the same foundation while retaining
-/// their operational status semantics.
+/// New presentation code should prefer `AppSemanticColors` from the active
+/// theme. These constants remain available while existing consumers migrate.
 @immutable
 class AppColors {
   const AppColors._();
 
-  // NaBi Blue Wellness brand.
-  static const Color primary = Color(0xFF2F6FED);
-  static const Color primaryDark = Color(0xFF1746A2);
-  static const Color primaryLight = Color(0xFF6EA8FE);
-  static const Color primarySoft = Color(0xFFE8F1FF);
-  static const Color primarySubtle = Color(0xFFF4F8FF);
+  static const bool stitchGreenUiEnabled = AppThemeFlags.stitchGreenUiEnabled;
 
-  // Supporting accents. They never compete with the dominant blue.
-  static const Color secondary = Color(0xFF38A9E8);
-  static const Color secondaryDark = Color(0xFF1977A8);
+  // NaBi Green Wellness brand.
+  static const Color primary = stitchGreenUiEnabled
+      ? Color(0xFF006A46)
+      : Color(0xFF2F6FED);
+  static const Color primaryDark = stitchGreenUiEnabled
+      ? Color(0xFF075E45)
+      : Color(0xFF1746A2);
+  static const Color primaryLight = stitchGreenUiEnabled
+      ? Color(0xFF62DDA3)
+      : Color(0xFF6EA8FE);
+  static const Color primarySoft = stitchGreenUiEnabled
+      ? Color(0xFFDDF6E9)
+      : Color(0xFFE8F1FF);
+  static const Color primarySubtle = stitchGreenUiEnabled
+      ? Color(0xFFEAF9F1)
+      : Color(0xFFF4F8FF);
+  static const Color brandAccent = stitchGreenUiEnabled
+      ? Color(0xFF14A36F)
+      : Color(0xFF2F6FED);
+  static const Color ctaStart = stitchGreenUiEnabled
+      ? Color(0xFF0F8E62)
+      : Color(0xFF245CC5);
+  static const Color ctaEnd = stitchGreenUiEnabled
+      ? Color(0xFF32C789)
+      : Color(0xFF4D8DF7);
+
+  // Supporting accents. They never compete with the dominant green.
+  static const Color secondary = stitchGreenUiEnabled
+      ? Color(0xFF58B9E8)
+      : Color(0xFF38A9E8);
+  static const Color secondaryDark = stitchGreenUiEnabled
+      ? Color(0xFF247CA8)
+      : Color(0xFF1977A8);
   static const Color secondaryLight = Color(0xFF9DDCF5);
   static const Color secondarySoft = Color(0xFFE7F6FD);
-  static const Color tertiary = Color(0xFF8174E8);
+  static const Color tertiary = stitchGreenUiEnabled
+      ? Color(0xFF8B7CF6)
+      : Color(0xFF8174E8);
   static const Color tertiarySoft = Color(0xFFF0EDFF);
-  static const Color clinicalNavy = Color(0xFF102A43);
+  static const Color clinicalNavy = stitchGreenUiEnabled
+      ? Color(0xFF12352A)
+      : Color(0xFF102A43);
   static const Color wellnessMint = primary;
 
   static const Color energyYellow = Color(0xFFFFC857);
   static const Color calmBlue = secondary;
   static const Color careCoral = Color(0xFFFF7D75);
   static const Color personalPurple = tertiary;
+  static const Color nabiSkinTint = Color(0xFFFDE8E7);
+  static const Color nabiHighlight = Color(0xFFFFFFFF);
 
   // Semantic status. Success intentionally remains green.
   static const Color success = Color(0xFF14885F);
@@ -45,83 +77,168 @@ class AppColors {
   static const Color dangerSoft = errorSoft;
 
   // Calm category surfaces.
-  static const Color pastelBlue = Color(0xFFE8F1FF);
+  static const Color pastelBlue = stitchGreenUiEnabled
+      ? Color(0xFFE7F6FD)
+      : Color(0xFFE8F1FF);
   static const Color pastelSky = Color(0xFFEDF7FF);
-  static const Color pastelMint = Color(0xFFE8F7F4);
+  static const Color pastelMint = stitchGreenUiEnabled
+      ? Color(0xFFEAF9F1)
+      : Color(0xFFE8F7F4);
   static const Color pastelLavender = Color(0xFFF0EDFF);
   static const Color pastelRose = Color(0xFFFDEDEC);
   static const Color pastelAmber = Color(0xFFFFF3D6);
   static const Color pastelPeach = Color(0xFFFFEEE8);
 
   // Light surfaces.
-  static const Color background = Color(0xFFF7FAFF);
+  static const Color background = stitchGreenUiEnabled
+      ? Color(0xFFF5FAF7)
+      : Color(0xFFF7FAFF);
   static const Color scaffold = background;
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceElevated = Color(0xFFFFFFFF);
-  static const Color surfaceSoft = Color(0xFFF4F8FF);
+  static const Color surfaceSoft = stitchGreenUiEnabled
+      ? Color(0xFFEAF9F1)
+      : Color(0xFFF4F8FF);
   static const Color modalBackground = Color(0xFFFFFFFF);
   static const Color card = Color(0xFFFFFFFF);
-  static const Color cardAlt = Color(0xFFFBFDFF);
-  static const Color inputBackground = Color(0xFFFCFDFF);
+  static const Color cardAlt = stitchGreenUiEnabled
+      ? Color(0xFFF0F5F2)
+      : Color(0xFFFBFDFF);
+  static const Color inputBackground = stitchGreenUiEnabled
+      ? Color(0xFFFFFFFF)
+      : Color(0xFFFCFDFF);
 
-  // Dark-capable tokens. Dark mode is not enabled globally by this refactor.
-  static const Color darkBackground = Color(0xFF07172B);
-  static const Color darkScaffold = Color(0xFF061326);
-  static const Color darkSurface = Color(0xFF0D223D);
-  static const Color darkSurfaceElevated = Color(0xFF123052);
+  // Frozen Green Wellness dark fallbacks. AppTheme derives its ColorScheme
+  // deterministically from [primary] using Material 3 fidelity.
+  static const Color darkBackground = stitchGreenUiEnabled
+      ? Color(0xFF0E1512)
+      : Color(0xFF07172B);
+  static const Color darkScaffold = darkBackground;
+  static const Color darkSurface = stitchGreenUiEnabled
+      ? Color(0xFF171D1B)
+      : Color(0xFF0D223D);
+  static const Color darkSurfaceElevated = stitchGreenUiEnabled
+      ? Color(0xFF202724)
+      : Color(0xFF123052);
   static const Color darkModalBackground = darkSurface;
   static const Color darkCard = darkSurfaceElevated;
-  static const Color darkCardAlt = Color(0xFF102945);
-  static const Color darkInputBackground = Color(0xFF0B1D34);
+  static const Color darkCardAlt = stitchGreenUiEnabled
+      ? Color(0xFF252C29)
+      : Color(0xFF102945);
+  static const Color darkInputBackground = stitchGreenUiEnabled
+      ? Color(0xFF171D1B)
+      : Color(0xFF0B1D34);
 
   // Text hierarchy.
-  static const Color textPrimary = Color(0xFF15253D);
-  static const Color textSecondary = Color(0xFF5B6B82);
-  static const Color textMuted = Color(0xFF8796AA);
-  static const Color textHint = Color(0xFFA4B0C0);
-  static const Color textDisabled = Color(0xFFB7C1CE);
+  static const Color textPrimary = stitchGreenUiEnabled
+      ? Color(0xFF12352A)
+      : Color(0xFF15253D);
+  static const Color textSecondary = stitchGreenUiEnabled
+      ? Color(0xFF60766E)
+      : Color(0xFF5B6B82);
+  static const Color textMuted = stitchGreenUiEnabled
+      ? Color(0xFF8A9B94)
+      : Color(0xFF8796AA);
+  static const Color textHint = stitchGreenUiEnabled
+      ? Color(0xFF8A9B94)
+      : Color(0xFFA4B0C0);
+  static const Color textDisabled = stitchGreenUiEnabled
+      ? Color(0xFFA8B5AF)
+      : Color(0xFFB7C1CE);
   static const Color textInverse = Color(0xFFFFFFFF);
   static const Color textWhite = textInverse;
 
-  static const Color darkTextPrimary = Color(0xFFF4F8FF);
-  static const Color darkTextSecondary = Color(0xFFC7D4E5);
-  static const Color darkTextMuted = Color(0xFF91A4BC);
-  static const Color darkTextHint = Color(0xFF7890AC);
-  static const Color darkTextDisabled = Color(0xFF56708E);
+  static const Color darkTextPrimary = stitchGreenUiEnabled
+      ? Color(0xFFDEE4E1)
+      : Color(0xFFF4F8FF);
+  static const Color darkTextSecondary = stitchGreenUiEnabled
+      ? Color(0xFFBCCABF)
+      : Color(0xFFC7D4E5);
+  static const Color darkTextMuted = stitchGreenUiEnabled
+      ? Color(0xFF8F9D95)
+      : Color(0xFF91A4BC);
+  static const Color darkTextHint = darkTextMuted;
+  static const Color darkTextDisabled = stitchGreenUiEnabled
+      ? Color(0xFF66736C)
+      : Color(0xFF56708E);
   static const Color darkTextInverse = textPrimary;
 
   // Borders, dividers and focus.
-  static const Color border = Color(0xFFDCE6F4);
-  static const Color borderLight = Color(0xFFEBF1F8);
-  static const Color divider = Color(0xFFE4ECF6);
-  static const Color outline = Color(0xFFB8C8DC);
-  static const Color focusRing = Color(0xFF7DB2FF);
+  static const Color border = stitchGreenUiEnabled
+      ? Color(0xFFD9E9E1)
+      : Color(0xFFDCE6F4);
+  static const Color borderLight = stitchGreenUiEnabled
+      ? Color(0xFFE4E9E6)
+      : Color(0xFFEBF1F8);
+  static const Color divider = stitchGreenUiEnabled
+      ? Color(0xFFDEE4E1)
+      : Color(0xFFE4ECF6);
+  static const Color outline = stitchGreenUiEnabled
+      ? Color(0xFF6D7A71)
+      : Color(0xFFB8C8DC);
+  static const Color focusRing = stitchGreenUiEnabled
+      ? Color(0xFF68D9A5)
+      : Color(0xFF7DB2FF);
 
-  static const Color darkBorder = Color(0xFF315678);
-  static const Color darkBorderLight = Color(0xFF244766);
-  static const Color darkDivider = Color(0xFF294D6C);
-  static const Color darkOutline = Color(0xFF4D7193);
+  static const Color darkBorder = stitchGreenUiEnabled
+      ? Color(0xFF89978F)
+      : Color(0xFF315678);
+  static const Color darkBorderLight = stitchGreenUiEnabled
+      ? Color(0xFF3F4A44)
+      : Color(0xFF244766);
+  static const Color darkDivider = stitchGreenUiEnabled
+      ? Color(0xFF3F4A44)
+      : Color(0xFF294D6C);
+  static const Color darkOutline = stitchGreenUiEnabled
+      ? Color(0xFF89978F)
+      : Color(0xFF4D7193);
 
   // States and overlays.
-  static const Color overlay = Color(0x52102A43);
-  static const Color overlayStrong = Color(0x80102A43);
-  static const Color scrim = Color(0x66102A43);
-  static const Color hover = Color(0x122F6FED);
-  static const Color pressed = Color(0x242F6FED);
-  static const Color focused = Color(0x2E2F6FED);
-  static const Color selected = Color(0x1A2F6FED);
-  static const Color disabled = Color(0xFFDDE5EF);
+  static const Color overlay = stitchGreenUiEnabled
+      ? Color(0x5212352A)
+      : Color(0x52102A43);
+  static const Color overlayStrong = stitchGreenUiEnabled
+      ? Color(0x8012352A)
+      : Color(0x80102A43);
+  static const Color scrim = stitchGreenUiEnabled
+      ? Color(0x6612352A)
+      : Color(0x66102A43);
+  static const Color hover = stitchGreenUiEnabled
+      ? Color(0x12006A46)
+      : Color(0x122F6FED);
+  static const Color pressed = stitchGreenUiEnabled
+      ? Color(0x24006A46)
+      : Color(0x242F6FED);
+  static const Color focused = stitchGreenUiEnabled
+      ? Color(0x2E006A46)
+      : Color(0x2E2F6FED);
+  static const Color selected = stitchGreenUiEnabled
+      ? Color(0x1A006A46)
+      : Color(0x1A2F6FED);
+  static const Color disabled = stitchGreenUiEnabled
+      ? Color(0xFFDDE7E2)
+      : Color(0xFFDDE5EF);
 
   static const Color darkOverlay = Color(0x99000000);
-  static const Color darkHover = Color(0x246EA8FE);
-  static const Color darkPressed = Color(0x336EA8FE);
-  static const Color darkFocused = Color(0x446EA8FE);
-  static const Color darkSelected = Color(0x2B6EA8FE);
-  static const Color darkDisabled = Color(0xFF315678);
+  static const Color darkHover = stitchGreenUiEnabled
+      ? Color(0x2462DDA3)
+      : Color(0x246EA8FE);
+  static const Color darkPressed = stitchGreenUiEnabled
+      ? Color(0x3362DDA3)
+      : Color(0x336EA8FE);
+  static const Color darkFocused = stitchGreenUiEnabled
+      ? Color(0x4462DDA3)
+      : Color(0x446EA8FE);
+  static const Color darkSelected = stitchGreenUiEnabled
+      ? Color(0x2B62DDA3)
+      : Color(0x2B6EA8FE);
+  static const Color darkDisabled = stitchGreenUiEnabled
+      ? Color(0xFF3F4A44)
+      : Color(0xFF315678);
 
   // Navigation and icon colors.
-  static const Color icon = Color(0xFF5B6B82);
-  static const Color iconSecondary = Color(0xFF8796AA);
+  static const Color icon = Color(0xFF60766E);
+  static const Color iconSecondary = Color(0xFF8A9B94);
   static const Color iconDisabled = textDisabled;
   static const Color darkIcon = darkTextSecondary;
   static const Color darkIconSecondary = darkTextMuted;
@@ -131,22 +248,22 @@ class AppColors {
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF245CC5), Color(0xFF4D8DF7)],
+    colors: [ctaStart, ctaEnd],
   );
   static const LinearGradient blueGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFF6EA8FE), Color(0xFF2F6FED)],
+    colors: [primaryLight, primary],
   );
   static const LinearGradient premiumGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF2F6FED), Color(0xFF8174E8)],
+    colors: [primary, tertiary],
   );
   static const LinearGradient successGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF14885F), Color(0xFF42C98A)],
+    colors: [brandAccent, ctaEnd],
   );
 
   // Backward-compatible aliases.

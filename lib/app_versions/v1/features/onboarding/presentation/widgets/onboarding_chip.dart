@@ -39,6 +39,7 @@ class OnboardingChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = selectedColor ?? NabiPalette.greenPrimary;
+    final colors = context.semanticColors;
     return Semantics(
       button: true,
       selected: selected,
@@ -55,18 +56,24 @@ class OnboardingChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.lg),
             child: AnimatedContainer(
               duration: AppDuration.ripple,
-              padding: padding ??
-                  const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+              padding:
+                  padding ??
+                  const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.sm,
+                  ),
               decoration: BoxDecoration(
                 gradient: selected
                     ? (selectedGradient ??
-                        (selectedColor == null
-                            ? NabiPalette.selection
-                            : LinearGradient(colors: [active, active])))
-                    : NabiPalette.card,
+                          (selectedColor == null
+                              ? NabiPalette.selection
+                              : LinearGradient(colors: [active, active])))
+                    : LinearGradient(
+                        colors: [colors.card, colors.inputBackground],
+                      ),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 border: Border.all(
-                  color: selected ? active : NabiPalette.line,
+                  color: selected ? active : colors.border,
                   width: selected ? 1.3 : 1,
                 ),
                 boxShadow: selected
@@ -85,7 +92,11 @@ class OnboardingChip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null)
-                      Icon(icon, size: 18, color: selected ? AppColors.surface : active)
+                      Icon(
+                        icon,
+                        size: 18,
+                        color: selected ? AppColors.textInverse : active,
+                      )
                     else
                       Text(emoji, style: const TextStyle(fontSize: 18)),
                     const SizedBox(width: AppSpacing.sm),
@@ -95,7 +106,9 @@ class OnboardingChip extends StatelessWidget {
                         maxLines: description == null ? 2 : 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.labelMedium.copyWith(
-                          color: selected ? AppColors.surface : NabiPalette.ink,
+                          color: selected
+                              ? AppColors.textInverse
+                              : colors.textPrimary,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0,
                         ),
@@ -107,9 +120,11 @@ class OnboardingChip extends StatelessWidget {
                     ],
                     const SizedBox(width: AppSpacing.tiny),
                     Icon(
-                      selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                      selected
+                          ? Icons.check_circle_rounded
+                          : Icons.circle_outlined,
                       size: 19,
-                      color: selected ? AppColors.surface : active,
+                      color: selected ? AppColors.textInverse : active,
                     ),
                   ],
                 ),

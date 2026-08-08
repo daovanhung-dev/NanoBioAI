@@ -12,23 +12,30 @@ void main() {
     SharedPreferences.setMockInitialValues(const {});
   });
 
-  test('experience preferences start with balanced accessible defaults', () async {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
+  test(
+    'experience preferences start with balanced accessible defaults',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
 
-    final state = await container.read(appExperiencePreferencesProvider.future);
+      final state = await container.read(
+        appExperiencePreferencesProvider.future,
+      );
 
-    expect(state.reduceMotion, isFalse);
-    expect(state.hapticsEnabled, isTrue);
-    expect(state.soundLevel, AppSoundFeedbackLevel.subtle);
-    expect(state.performanceTier, AppPerformanceTier.balanced);
-  });
+      expect(state.reduceMotion, isFalse);
+      expect(state.hapticsEnabled, isTrue);
+      expect(state.soundLevel, AppSoundFeedbackLevel.subtle);
+      expect(state.performanceTier, AppPerformanceTier.balanced);
+    },
+  );
 
   test('experience choices persist through shared preferences', () async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     await container.read(appExperiencePreferencesProvider.future);
-    final controller = container.read(appExperiencePreferencesProvider.notifier);
+    final controller = container.read(
+      appExperiencePreferencesProvider.notifier,
+    );
 
     await controller.setReduceMotion(true);
     await controller.setHapticsEnabled(false);
@@ -45,7 +52,10 @@ void main() {
     expect(preferences.getBool('nanobio_reduce_motion'), isTrue);
     expect(preferences.getBool('nanobio_haptics_enabled'), isFalse);
     expect(preferences.getString('nanobio_sound_feedback_level'), 'off');
-    expect(preferences.getString('nanobio_motion_performance_tier'), 'economical');
+    expect(
+      preferences.getString('nanobio_motion_performance_tier'),
+      'economical',
+    );
   });
 
   test('system reduce motion always wins over the local animation choice', () {

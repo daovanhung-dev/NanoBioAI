@@ -35,7 +35,7 @@ class DashboardHeader extends StatelessWidget {
         AppSpacing.lg,
       ),
       decoration: const BoxDecoration(
-        gradient: AppGradients.hero,
+        gradient: AppGradients.dashboard,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(AppRadius.xxl),
           bottomRight: Radius.circular(AppRadius.xxl),
@@ -49,15 +49,15 @@ class DashboardHeader extends StatelessWidget {
             width: AppSpacing.avatarSizeLarge,
             height: AppSpacing.avatarSizeLarge,
             decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: .16),
+              color: context.semanticColors.onBrand.withValues(alpha: .16),
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(
-                color: AppColors.surface.withValues(alpha: .24),
+                color: context.semanticColors.onBrand.withValues(alpha: .24),
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.favorite_rounded,
-              color: AppColors.surface,
+              color: context.semanticColors.onBrand,
               size: 28,
             ),
           ),
@@ -73,7 +73,7 @@ class DashboardHeader extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.textInverse,
+                      color: context.semanticColors.onBrand,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -82,7 +82,7 @@ class DashboardHeader extends StatelessWidget {
                 Text(
                   'Hôm nay mình chăm sóc bản thân nhé.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textInverse.withValues(alpha: .88),
+                    color: context.semanticColors.onBrand,
                     height: 1.35,
                   ),
                 ),
@@ -108,15 +108,19 @@ class DashboardHeader extends StatelessWidget {
                     Positioned.fill(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: AppColors.surface.withValues(alpha: .16),
+                          color: context.semanticColors.onBrand.withValues(
+                            alpha: .16,
+                          ),
                           borderRadius: BorderRadius.circular(AppRadius.md),
                           border: Border.all(
-                            color: AppColors.surface.withValues(alpha: .24),
+                            color: context.semanticColors.onBrand.withValues(
+                              alpha: .24,
+                            ),
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.notifications_none_rounded,
-                          color: AppColors.textInverse,
+                          color: context.semanticColors.onBrand,
                         ),
                       ),
                     ),
@@ -130,10 +134,10 @@ class DashboardHeader extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 5),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: AppColors.error,
+                            color: context.semanticColors.error,
                             borderRadius: BorderRadius.circular(AppRadius.pill),
                             border: Border.all(
-                              color: AppColors.surface,
+                              color: context.semanticColors.onBrand,
                               width: 2,
                             ),
                           ),
@@ -143,7 +147,7 @@ class DashboardHeader extends StatelessWidget {
                                 : '$unreadNotifications',
                             style: Theme.of(context).textTheme.labelSmall
                                 ?.copyWith(
-                                  color: AppColors.textInverse,
+                                  color: Theme.of(context).colorScheme.onError,
                                   fontWeight: FontWeight.w900,
                                 ),
                           ),
@@ -212,10 +216,7 @@ class DashboardSnapshotCard extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               final stacked = constraints.maxWidth < 360 || textScale > 1.18;
-              final score = _ScoreSummary(
-                metrics: metrics,
-                onTap: onScoreTap,
-              );
+              final score = _ScoreSummary(metrics: metrics, onTap: onScoreTap);
               final action = _NextActionSummary(
                 item: nextAction,
                 dailySummary: dailySummary,
@@ -372,20 +373,22 @@ class DashboardMoodCheckInSheet extends StatelessWidget {
                 child: ListTile(
                   minTileHeight: AppSpacing.touchTargetMin,
                   selected: selected,
-                  selectedTileColor: AppColors.primarySoft,
+                  selectedTileColor: context.semanticColors.primarySoft,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.md),
                     side: BorderSide(
                       color: selected
-                          ? AppColors.primary.withValues(alpha: .35)
-                          : AppColors.borderLight,
+                          ? context.semanticColors.primary.withValues(
+                              alpha: .35,
+                            )
+                          : context.semanticColors.borderLight,
                     ),
                   ),
                   leading: Icon(
                     _moodIcon(mood),
                     color: selected
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                        ? context.semanticColors.primary
+                        : context.semanticColors.textSecondary,
                   ),
                   title: Text(
                     DashboardCompanionService.moodLabel(mood),
@@ -447,7 +450,7 @@ class DashboardTodayMetrics extends StatelessWidget {
         value: metrics.totalTasks > 0
             ? '${metrics.completedTasks}/${metrics.totalTasks}'
             : 'Chưa có lịch',
-        color: AppColors.primary,
+        color: context.semanticColors.primary,
       ),
       _MetricData(
         icon: Icons.directions_walk_rounded,
@@ -455,13 +458,13 @@ class DashboardTodayMetrics extends StatelessWidget {
         value: metrics.stepsCount > 0
             ? '${metrics.stepsCount} bước'
             : 'Chưa ghi nhận',
-        color: AppColors.secondary,
+        color: context.semanticColors.secondary,
       ),
       _MetricData(
         icon: Icons.local_fire_department_rounded,
         label: 'Năng lượng',
         value: calories,
-        color: AppColors.warning,
+        color: context.semanticColors.warning,
       ),
       _MetricData(
         icon: Icons.bedtime_outlined,
@@ -469,7 +472,7 @@ class DashboardTodayMetrics extends StatelessWidget {
         value: metrics.sleepHours > 0
             ? '${metrics.sleepHours.toStringAsFixed(1)} giờ'
             : 'Chưa ghi nhận',
-        color: AppColors.tertiary,
+        color: context.semanticColors.tertiary,
       ),
     ];
 
@@ -529,9 +532,9 @@ class _ScoreSummary extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(AppSpacing.cardPadding),
           decoration: BoxDecoration(
-            color: AppColors.primarySubtle,
+            color: context.semanticColors.primarySubtle,
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: AppColors.primarySoft),
+            border: Border.all(color: context.semanticColors.primarySoft),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -545,7 +548,7 @@ class _ScoreSummary extends StatelessWidget {
                 hasInputs ? _scoreTitle(score) : 'Chưa đủ dữ liệu',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppColors.primaryDark,
+                  color: context.semanticColors.primaryDark,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -590,7 +593,7 @@ class _ScoreRing extends StatelessWidget {
                   value: value,
                   strokeWidth: 8,
                   strokeCap: StrokeCap.round,
-                  backgroundColor: AppColors.primarySoft,
+                  backgroundColor: context.semanticColors.primarySoft,
                   valueColor: const AlwaysStoppedAnimation<Color>(
                     AppColors.primary,
                   ),
@@ -602,14 +605,14 @@ class _ScoreRing extends StatelessWidget {
                   Text(
                     label,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.semanticColors.textPrimary,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   Text(
                     'điểm',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.semanticColors.textSecondary,
                     ),
                   ),
                 ],
@@ -644,9 +647,9 @@ class _NextActionSummary extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -658,7 +661,7 @@ class _NextActionSummary extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
+                  color: context.semanticColors.primarySoft,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: const Icon(
@@ -671,9 +674,9 @@ class _NextActionSummary extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Việc tiếp theo',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
                 ),
               ),
             ],
@@ -682,9 +685,9 @@ class _NextActionSummary extends StatelessWidget {
           if (action == null) ...[
             Text(
               'Hôm nay chưa có việc cần làm ngay.',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
@@ -692,7 +695,7 @@ class _NextActionSummary extends StatelessWidget {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
                 height: 1.4,
               ),
             ),
@@ -701,16 +704,16 @@ class _NextActionSummary extends StatelessWidget {
               action.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w900,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
             ),
             if (action.timeLabel.trim().isNotEmpty) ...[
               const SizedBox(height: AppSpacing.xs),
               Text(
                 action.timeLabel,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.primaryDark,
+                  color: context.semanticColors.primaryDark,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -723,7 +726,7 @@ class _NextActionSummary extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
                 height: 1.4,
               ),
             ),
@@ -778,9 +781,9 @@ class _QuickActionTile extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 104),
           padding: const EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.semanticColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border.all(color: context.semanticColors.borderLight),
             boxShadow: AppShadows.xs,
           ),
           child: Column(
@@ -790,16 +793,20 @@ class _QuickActionTile extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
+                  color: context.semanticColors.primarySoft,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: Icon(data.icon, color: AppColors.primary, size: 20),
+                child: Icon(
+                  data.icon,
+                  color: context.semanticColors.primary,
+                  size: 20,
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 data.label,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.semanticColors.textSecondary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -809,7 +816,7 @@ class _QuickActionTile extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.semanticColors.textPrimary,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -846,9 +853,9 @@ class _MetricTile extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 102),
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -870,7 +877,7 @@ class _MetricTile extends StatelessWidget {
                 Text(
                   data.label,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -880,7 +887,7 @@ class _MetricTile extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: context.semanticColors.textPrimary,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -903,9 +910,9 @@ class _DashboardSurface extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
         boxShadow: AppShadows.sm,
       ),
       child: child,
@@ -933,10 +940,10 @@ class _SectionHeading extends StatelessWidget {
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: AppColors.primarySoft,
+            color: context.semanticColors.primarySoft,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          child: Icon(icon, color: AppColors.primary, size: 21),
+          child: Icon(icon, color: context.semanticColors.primary, size: 21),
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
@@ -946,7 +953,7 @@ class _SectionHeading extends StatelessWidget {
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.semanticColors.textPrimary,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -954,7 +961,7 @@ class _SectionHeading extends StatelessWidget {
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.semanticColors.textSecondary,
                 ),
               ),
             ],
@@ -979,21 +986,23 @@ class _HeaderBadge extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: .14),
+        color: context.semanticColors.onBrand.withValues(alpha: .14),
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.surface.withValues(alpha: .2)),
+        border: Border.all(
+          color: context.semanticColors.onBrand.withValues(alpha: .2),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.textInverse, size: 15),
+          Icon(icon, color: context.semanticColors.onBrand, size: 15),
           const SizedBox(width: AppSpacing.xs),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.textInverse,
+              color: context.semanticColors.onBrand,
               fontWeight: FontWeight.w800,
             ),
           ),

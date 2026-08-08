@@ -6,11 +6,12 @@ import 'app_gradients.dart';
 import 'app_motion.dart';
 import 'app_duration.dart';
 import 'app_radius.dart';
+import 'app_semantic_colors.dart';
 import 'app_shadows.dart';
 import 'app_spacing.dart';
 import 'app_text_styles.dart';
 
-/// Shared visual shell for the calm, trustworthy NaBi Blue Wellness experience.
+/// Shared visual shell for the calm, trustworthy NaBi Green Wellness experience.
 class MedicalPageScaffold extends StatelessWidget {
   final Widget body;
   final PreferredSizeWidget? appBar;
@@ -51,7 +52,7 @@ class MedicalPageScaffold extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: backgroundColor ?? AppColors.background,
+      backgroundColor: backgroundColor ?? context.semanticColors.background,
       appBar: appBar,
       body: AppViewMotion(child: content),
       drawer: drawer,
@@ -142,7 +143,7 @@ class MedicalScrollPage extends StatelessWidget {
                                       delay: Duration(
                                         milliseconds:
                                             AppDuration.stagger.inMilliseconds *
-                                                entry.$1.clamp(0, 5),
+                                            entry.$1.clamp(0, 5),
                                       ),
                                       child: entry.$2,
                                     ),
@@ -181,12 +182,19 @@ class MedicalAmbientBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return IgnorePointer(
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const DecoratedBox(
-            decoration: BoxDecoration(gradient: AppGradients.medicalBackground),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [colors.background, colors.surfaceSoft],
+              ),
+            ),
           ),
           Positioned(
             top: -150,
@@ -194,8 +202,8 @@ class MedicalAmbientBackground extends StatelessWidget {
             child: _AmbientGlow(
               size: 320,
               colors: [
-                AppColors.primary.withValues(alpha: .12),
-                AppColors.primary.withValues(alpha: 0),
+                colors.primary.withValues(alpha: .12),
+                colors.primary.withValues(alpha: 0),
               ],
             ),
           ),
@@ -205,8 +213,8 @@ class MedicalAmbientBackground extends StatelessWidget {
             child: _AmbientGlow(
               size: 380,
               colors: [
-                AppColors.secondary.withValues(alpha: .10),
-                AppColors.secondary.withValues(alpha: 0),
+                colors.secondary.withValues(alpha: .10),
+                colors.secondary.withValues(alpha: 0),
               ],
             ),
           ),
@@ -216,8 +224,8 @@ class MedicalAmbientBackground extends StatelessWidget {
             child: _AmbientGlow(
               size: 220,
               colors: [
-                AppColors.tertiary.withValues(alpha: .055),
-                AppColors.tertiary.withValues(alpha: 0),
+                colors.tertiary.withValues(alpha: .055),
+                colors.tertiary.withValues(alpha: 0),
               ],
             ),
           ),
@@ -266,6 +274,7 @@ class MedicalPageHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onBrand = context.semanticColors.onBrand;
     return Container(
       decoration: BoxDecoration(
         gradient: gradient,
@@ -289,24 +298,24 @@ class MedicalPageHero extends StatelessWidget {
                         MedicalStatusPill(
                           label: eyebrow!,
                           icon: Icons.verified_user_outlined,
-                          foregroundColor: AppColors.textInverse,
-                          backgroundColor: AppColors.textInverse.withValues(alpha: .14),
-                          borderColor: AppColors.textInverse.withValues(alpha: .22),
+                          foregroundColor: onBrand,
+                          backgroundColor: onBrand.withValues(alpha: .14),
+                          borderColor: onBrand.withValues(alpha: .22),
                         ),
                         const SizedBox(height: AppSpacing.md),
                       ],
                       Text(
                         title,
                         style: AppTextStyles.heading1.copyWith(
-                          color: AppColors.textInverse,
-                          fontWeight: FontWeight.w800,
+                          color: onBrand,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         subtitle,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textInverse.withValues(alpha: .88),
+                          color: onBrand,
                           height: 1.55,
                         ),
                       ),
@@ -327,8 +336,8 @@ class MedicalPageHero extends StatelessWidget {
                       children: [
                         MedicalIconBadge(
                           icon: icon,
-                          color: AppColors.textInverse,
-                          backgroundColor: AppColors.textInverse.withValues(alpha: .15),
+                          color: onBrand,
+                          backgroundColor: onBrand.withValues(alpha: .15),
                           size: 58,
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -344,8 +353,8 @@ class MedicalPageHero extends StatelessWidget {
                       const SizedBox(width: AppSpacing.lg),
                       MedicalIconBadge(
                         icon: icon,
-                        color: AppColors.textInverse,
-                        backgroundColor: AppColors.textInverse.withValues(alpha: .15),
+                        color: onBrand,
+                        backgroundColor: onBrand.withValues(alpha: .15),
                         size: 74,
                       ),
                     ],
@@ -377,7 +386,7 @@ class _HeroPattern extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.textInverse.withValues(alpha: .10),
+                  color: context.semanticColors.onBrand.withValues(alpha: .10),
                   width: 24,
                 ),
               ),
@@ -391,7 +400,7 @@ class _HeroPattern extends StatelessWidget {
               height: 124,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.textInverse.withValues(alpha: .055),
+                color: context.semanticColors.onBrand.withValues(alpha: .055),
               ),
             ),
           ),
@@ -427,12 +436,13 @@ class MedicalSurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final borderRadius = BorderRadius.circular(radius ?? AppRadius.xl);
     final decoration = BoxDecoration(
-      color: gradient == null ? (color ?? AppColors.surface) : null,
+      color: gradient == null ? (color ?? colors.card) : null,
       gradient: gradient,
       borderRadius: borderRadius,
-      border: Border.all(color: borderColor ?? AppColors.borderLight),
+      border: Border.all(color: borderColor ?? colors.borderLight),
       boxShadow: elevated ? AppShadows.cardRaised : AppShadows.card,
     );
     final paddedChild = Padding(padding: padding, child: child);
@@ -472,7 +482,7 @@ class MedicalSectionHeader extends StatelessWidget {
   final String? subtitle;
   final Widget? action;
   final IconData? icon;
-  final Color color;
+  final Color? color;
 
   const MedicalSectionHeader({
     super.key,
@@ -480,19 +490,21 @@ class MedicalSectionHeader extends StatelessWidget {
     this.subtitle,
     this.action,
     this.icon,
-    this.color = AppColors.primary,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    final resolvedColor = _resolveSemanticTone(colors, color);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (icon != null) ...[
           MedicalIconBadge(
             icon: icon!,
-            color: color,
-            backgroundColor: color.withValues(alpha: .10),
+            color: resolvedColor,
+            backgroundColor: resolvedColor.withValues(alpha: .10),
             size: 42,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -501,10 +513,20 @@ class MedicalSectionHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: AppTextStyles.sectionTitle),
+              Text(
+                title,
+                style: AppTextStyles.sectionTitle.copyWith(
+                  color: colors.textPrimary,
+                ),
+              ),
               if (subtitle != null) ...[
                 const SizedBox(height: AppSpacing.xs),
-                Text(subtitle!, style: AppTextStyles.sectionSubtitle),
+                Text(
+                  subtitle!,
+                  style: AppTextStyles.sectionSubtitle.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
               ],
             ],
           ),
@@ -548,38 +570,41 @@ class MedicalIconBadge extends StatelessWidget {
 class MedicalStatusPill extends StatelessWidget {
   final String label;
   final IconData? icon;
-  final Color foregroundColor;
-  final Color backgroundColor;
+  final Color? foregroundColor;
+  final Color? backgroundColor;
   final Color? borderColor;
 
   const MedicalStatusPill({
     super.key,
     required this.label,
     this.icon,
-    this.foregroundColor = AppColors.primaryDark,
-    this.backgroundColor = AppColors.primarySoft,
+    this.foregroundColor,
+    this.backgroundColor,
     this.borderColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    final foreground = foregroundColor ?? colors.primaryDark;
+    final background = backgroundColor ?? colors.primarySoft;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.tiny,
       ),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: background,
         borderRadius: BorderRadius.circular(AppRadius.circular),
         border: Border.all(
-          color: borderColor ?? foregroundColor.withValues(alpha: .16),
+          color: borderColor ?? foreground.withValues(alpha: .16),
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 14, color: foregroundColor),
+            Icon(icon, size: 14, color: foreground),
             const SizedBox(width: AppSpacing.xs),
           ],
           ConstrainedBox(
@@ -588,8 +613,8 @@ class MedicalStatusPill extends StatelessWidget {
               label,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.labelSmall.copyWith(
-                color: foregroundColor,
-                fontWeight: FontWeight.w800,
+                color: foreground,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -604,7 +629,7 @@ class MedicalMetricCard extends StatelessWidget {
   final String value;
   final String? helper;
   final IconData icon;
-  final Color color;
+  final Color? color;
   final VoidCallback? onTap;
 
   const MedicalMetricCard({
@@ -613,12 +638,14 @@ class MedicalMetricCard extends StatelessWidget {
     required this.value,
     this.helper,
     required this.icon,
-    this.color = AppColors.primary,
+    this.color,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    final resolvedColor = _resolveSemanticTone(colors, color);
     return MedicalSurfaceCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       onTap: onTap,
@@ -630,27 +657,37 @@ class MedicalMetricCard extends StatelessWidget {
             children: [
               MedicalIconBadge(
                 icon: icon,
-                color: color,
-                backgroundColor: color.withValues(alpha: .10),
+                color: resolvedColor,
+                backgroundColor: resolvedColor.withValues(alpha: .10),
                 size: 40,
               ),
               const Spacer(),
               if (onTap != null)
-                Icon(Icons.arrow_forward_rounded, color: color, size: 20),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: resolvedColor,
+                  size: 20,
+                ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(value, style: AppTextStyles.heading3),
+          Text(
+            value,
+            style: AppTextStyles.heading3.copyWith(color: colors.textPrimary),
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             label,
             style: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
           if (helper != null) ...[
             const SizedBox(height: AppSpacing.xs),
-            Text(helper!, style: AppTextStyles.caption),
+            Text(
+              helper!,
+              style: AppTextStyles.caption.copyWith(color: colors.textMuted),
+            ),
           ],
         ],
       ),
@@ -662,7 +699,7 @@ class MedicalEmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String message;
-  final Color color;
+  final Color? color;
   final Widget? action;
 
   const MedicalEmptyState({
@@ -670,16 +707,18 @@ class MedicalEmptyState extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.message,
-    this.color = AppColors.primary,
+    this.color,
     this.action,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    final resolvedColor = _resolveSemanticTone(colors, color);
     return MedicalSurfaceCard(
-      borderColor: color.withValues(alpha: .16),
+      borderColor: resolvedColor.withValues(alpha: .16),
       gradient: LinearGradient(
-        colors: [color.withValues(alpha: .08), AppColors.surface],
+        colors: [resolvedColor.withValues(alpha: .08), colors.card],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
@@ -687,21 +726,24 @@ class MedicalEmptyState extends StatelessWidget {
         children: [
           MedicalIconBadge(
             icon: icon,
-            color: color,
-            backgroundColor: color.withValues(alpha: .10),
+            color: resolvedColor,
+            backgroundColor: resolvedColor.withValues(alpha: .10),
             size: 64,
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: AppTextStyles.heading4,
+            style: AppTextStyles.heading4.copyWith(color: colors.textPrimary),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(height: 1.55),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: colors.textSecondary,
+              height: 1.55,
+            ),
           ),
           if (action != null) ...[
             const SizedBox(height: AppSpacing.lg),
@@ -718,7 +760,7 @@ class MedicalComingSoonPage extends StatelessWidget {
   final String message;
   final String eyebrow;
   final IconData icon;
-  final Color color;
+  final Color? color;
   final List<String> previewItems;
 
   const MedicalComingSoonPage({
@@ -727,26 +769,28 @@ class MedicalComingSoonPage extends StatelessWidget {
     required this.message,
     required this.eyebrow,
     required this.icon,
-    this.color = AppColors.primary,
+    this.color,
     this.previewItems = const [],
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    final resolvedColor = _resolveSemanticTone(colors, color);
     return MedicalScrollPage(
       eyebrow: eyebrow,
       title: title,
       subtitle: message,
       icon: icon,
       gradient: LinearGradient(
-        colors: [AppColors.clinicalNavy, color],
+        colors: [colors.clinicalNavy, resolvedColor],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
       children: [
         MedicalEmptyState(
           icon: icon,
-          color: color,
+          color: resolvedColor,
           title: 'Nabi đang hoàn thiện mục này',
           message: 'Bạn vẫn có thể dùng các mục đang hoạt động.',
         ),
@@ -759,7 +803,7 @@ class MedicalComingSoonPage extends StatelessWidget {
                   title: 'Đang chuẩn bị',
                   subtitle: 'Rõ ràng, riêng tư và dễ dùng.',
                   icon: Icons.fact_check_outlined,
-                  color: color,
+                  color: resolvedColor,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 for (final item in previewItems)
@@ -770,12 +814,17 @@ class MedicalComingSoonPage extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.check_circle_rounded,
-                          color: color,
+                          color: resolvedColor,
                           size: 20,
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
-                          child: Text(item, style: AppTextStyles.bodyMedium),
+                          child: Text(
+                            item,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: colors.textSecondary,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -786,4 +835,22 @@ class MedicalComingSoonPage extends StatelessWidget {
       ],
     );
   }
+}
+
+Color _resolveSemanticTone(AppSemanticColors colors, Color? legacy) {
+  if (legacy == null ||
+      legacy == AppColors.primary ||
+      legacy == AppColors.primaryDark) {
+    return colors.primary;
+  }
+  if (legacy == AppColors.primaryLight) return colors.primaryLight;
+  if (legacy == AppColors.secondary || legacy == AppColors.secondaryDark) {
+    return colors.secondary;
+  }
+  if (legacy == AppColors.tertiary) return colors.tertiary;
+  if (legacy == AppColors.success) return colors.success;
+  if (legacy == AppColors.warning) return colors.warning;
+  if (legacy == AppColors.error) return colors.error;
+  if (legacy == AppColors.info) return colors.info;
+  return legacy;
 }

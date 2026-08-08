@@ -37,16 +37,16 @@ Use expressive typography, shape and motion to clarify hierarchy—not to decora
 
 ## 11. Color
 - Semantic tokens only from `lib/core/theme/`.
-- Primary blue for action/navigation; cyan/mint for informational/wellness semantics; violet only for AI/premium emphasis when relevant.
+- Preserve the independent Admin workspace semantic palette; Green Wellness consumer tokens do not redesign this surface. Adopt shared typography, contrast, focus and dark-mode compatibility only.
 - Error/warning/success must carry icon/text, never color alone.
 
 ## 12. Typography
-- Strong, short display/heading for the current task.
+- Roboto 400/500/600/700 is the deterministic family; use a strong, short display/heading for the current task.
 - Body copy stays compact and Vietnamese-first.
 - Numeric health/business values use tabular/scannable treatment; labels remain readable at increased text scale.
 
 ## 13. Shape
-Use M3 expressive shape contrast: large hero/summary containers may be softer; data rows/forms use calmer radii; pills are reserved for status/chips rather than every container.
+Use M3 expressive shape contrast: input/control 14 dp, card 20 dp and sheet 28 dp are the Green Wellness defaults; pills are reserved for status/chips.
 
 ## 14. Spacing
 Base rhythm 4/8 with practical tokens: 8, 12, 16, 20, 24, 32. Maintain at least 16 px compact side padding and avoid stacking decorative gaps.

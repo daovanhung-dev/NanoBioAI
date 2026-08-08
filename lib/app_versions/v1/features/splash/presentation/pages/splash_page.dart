@@ -122,7 +122,8 @@ class _SplashPageState extends ConsumerState<SplashPage>
     super.didChangeDependencies();
 
     final policy = AppMotionScope.of(context);
-    final shouldReduceMotion = AppMotionScope.reduceMotionOf(context) ||
+    final shouldReduceMotion =
+        AppMotionScope.reduceMotionOf(context) ||
         policy.performanceTier == AppPerformanceTier.economical;
 
     if (_reduceMotion == shouldReduceMotion &&
@@ -248,9 +249,10 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return MedicalPageScaffold(
       ambientBackground: false,
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: Stack(
         children: [
           Positioned.fill(
@@ -397,16 +399,17 @@ class _SplashAtmosphere extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.background,
-            Color.lerp(AppColors.background, NabiPalette.violet, 0.08)!,
-            Color.lerp(AppColors.background, NabiPalette.cyan, 0.09)!,
-            AppColors.background,
+            colors.background,
+            Color.lerp(colors.background, NabiPalette.violet, 0.08)!,
+            Color.lerp(colors.background, NabiPalette.cyan, 0.09)!,
+            colors.background,
           ],
         ),
       ),
@@ -416,6 +419,7 @@ class _SplashAtmosphere extends StatelessWidget {
           return CustomPaint(
             painter: _SplashAtmospherePainter(
               phase: reduceMotion ? 0.5 : controller.value,
+              particleColor: colors.textPrimary.withValues(alpha: 0.18),
             ),
             child: const SizedBox.expand(),
           );
@@ -426,9 +430,13 @@ class _SplashAtmosphere extends StatelessWidget {
 }
 
 class _SplashAtmospherePainter extends CustomPainter {
-  const _SplashAtmospherePainter({required this.phase});
+  const _SplashAtmospherePainter({
+    required this.phase,
+    required this.particleColor,
+  });
 
   final double phase;
+  final Color particleColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -485,7 +493,7 @@ class _SplashAtmospherePainter extends CustomPainter {
     canvas.drawPath(upperWave, linePaint);
     canvas.drawPath(lowerWave, linePaint);
 
-    final particlePaint = Paint()..color = AppColors.surface.withValues(alpha: 0.50);
+    final particlePaint = Paint()..color = particleColor;
 
     for (var index = 0; index < 8; index++) {
       final fraction = index / 8;
@@ -500,7 +508,8 @@ class _SplashAtmospherePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SplashAtmospherePainter oldDelegate) {
-    return oldDelegate.phase != phase;
+    return oldDelegate.phase != phase ||
+        oldDelegate.particleColor != particleColor;
   }
 }
 
@@ -517,6 +526,7 @@ class _SplashTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Row(
       children: [
         Expanded(
@@ -531,16 +541,19 @@ class _SplashTopBar extends StatelessWidget {
         ),
         if (!compact)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.sm,
+            ),
             decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.42),
+              color: colors.surface.withValues(alpha: 0.74),
               borderRadius: BorderRadius.circular(AppRadius.pill),
-              border: Border.all(color: AppColors.surface.withValues(alpha: 0.76)),
+              border: Border.all(color: colors.borderLight),
             ),
             child: Text(
               'CHĂM SÓC CÁ NHÂN',
               style: AppTextStyles.overline.copyWith(
-                color: NabiPalette.mutedInk,
+                color: colors.textSecondary,
                 height: 1,
                 letterSpacing: 1.05,
                 fontWeight: FontWeight.w900,
@@ -565,6 +578,7 @@ class _LaunchStatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Semantics(
       liveRegion: true,
       label: stage.statusLabel,
@@ -579,9 +593,9 @@ class _LaunchStatusPill extends StatelessWidget {
               vertical: compact ? 7 : 8,
             ),
             decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.50),
+              color: colors.surface.withValues(alpha: 0.78),
               borderRadius: BorderRadius.circular(AppRadius.pill),
-              border: Border.all(color: AppColors.surface.withValues(alpha: 0.78)),
+              border: Border.all(color: colors.borderLight),
               boxShadow: [
                 BoxShadow(
                   color: stage.accent.withValues(alpha: 0.08),
@@ -615,7 +629,7 @@ class _LaunchStatusPill extends StatelessWidget {
                 Text(
                   stage.statusLabel,
                   style: AppTextStyles.overline.copyWith(
-                    color: NabiPalette.mutedInk,
+                    color: colors.textSecondary,
                     fontSize: compact ? 8.4 : 9,
                     height: 1,
                     letterSpacing: 1.08,
@@ -652,6 +666,7 @@ class _SplashExperience extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Semantics(
       label: 'NaBi đang chuẩn bị trải nghiệm chăm sóc sức khỏe cá nhân',
       child: Column(
@@ -680,7 +695,7 @@ class _SplashExperience extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.displayMedium.copyWith(
-                color: AppColors.surface,
+                color: AppColors.textInverse,
                 fontSize: layout.isCompact ? 34 : 42,
                 height: 1,
                 fontWeight: FontWeight.w900,
@@ -697,7 +712,7 @@ class _SplashExperience extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: NabiPalette.mutedInk,
+                color: colors.textSecondary,
                 fontSize: layout.isCompact ? 13 : 15,
                 height: 1.52,
               ),
@@ -782,14 +797,14 @@ class _BrandMark extends StatelessWidget {
                       margin: EdgeInsets.all(size * 0.08),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.surface.withValues(alpha: 0.16),
+                        color: AppColors.textInverse.withValues(alpha: 0.16),
                         border: Border.all(
-                          color: AppColors.surface.withValues(alpha: 0.36),
+                          color: AppColors.textInverse.withValues(alpha: 0.36),
                         ),
                       ),
                       child: Icon(
                         Icons.favorite_rounded,
-                        color: AppColors.surface,
+                        color: AppColors.textInverse,
                         size: size * 0.28,
                       ),
                     ),
@@ -937,12 +952,16 @@ class _WellnessTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.50),
+        color: colors.surface.withValues(alpha: 0.82),
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.surface.withValues(alpha: 0.80)),
+        border: Border.all(color: colors.borderLight),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -952,7 +971,7 @@ class _WellnessTag extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(
-              color: NabiPalette.ink,
+              color: colors.textPrimary,
               height: 1,
               fontWeight: FontWeight.w800,
             ),
@@ -978,6 +997,7 @@ class _ReadinessPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return AnimatedBuilder(
       animation: pulseController,
       builder: (context, _) {
@@ -991,7 +1011,7 @@ class _ReadinessPanel extends StatelessWidget {
             vertical: compact ? 12 : 14,
           ),
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.53),
+            color: colors.surface.withValues(alpha: 0.84),
             borderRadius: BorderRadius.circular(compact ? 18 : 21),
             border: Border.all(
               color: stage.accent.withValues(alpha: glowOpacity),
@@ -1031,7 +1051,7 @@ class _ReadinessPanel extends StatelessWidget {
                         Text(
                           stage.title,
                           style: AppTextStyles.labelLarge.copyWith(
-                            color: NabiPalette.ink,
+                            color: colors.textPrimary,
                             fontSize: compact ? 13 : 14,
                             height: 1.15,
                             fontWeight: FontWeight.w900,
@@ -1043,7 +1063,7 @@ class _ReadinessPanel extends StatelessWidget {
                           maxLines: compact ? 2 : 3,
                           overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: NabiPalette.mutedInk,
+                            color: colors.textSecondary,
                             fontSize: compact ? 10.8 : 11.5,
                             height: 1.4,
                           ),
@@ -1139,6 +1159,7 @@ class _TimelineStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Column(
       children: [
         AnimatedContainer(
@@ -1149,16 +1170,16 @@ class _TimelineStep extends StatelessWidget {
             shape: BoxShape.circle,
             color: active
                 ? item.color.withValues(alpha: current ? 0.18 : 0.12)
-                : NabiPalette.ink.withValues(alpha: 0.05),
+                : colors.textPrimary.withValues(alpha: 0.05),
             border: Border.all(
               color: active
                   ? item.color.withValues(alpha: current ? 0.56 : 0.22)
-                  : NabiPalette.ink.withValues(alpha: 0.08),
+                  : colors.textPrimary.withValues(alpha: 0.08),
             ),
           ),
           child: Icon(
             active ? item.icon : Icons.circle_outlined,
-            color: active ? item.color : NabiPalette.mutedInk,
+            color: active ? item.color : colors.textMuted,
             size: compact ? 13 : 15,
           ),
         ),
@@ -1169,7 +1190,7 @@ class _TimelineStep extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.labelSmall.copyWith(
-              color: active ? NabiPalette.ink : NabiPalette.mutedInk,
+              color: active ? colors.textPrimary : colors.textMuted,
               height: 1,
               fontWeight: active ? FontWeight.w800 : FontWeight.w600,
             ),
@@ -1187,6 +1208,7 @@ class _TimelineConnector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return AnimatedContainer(
       duration: AppDuration.card,
       height: 1.5,
@@ -1195,7 +1217,7 @@ class _TimelineConnector extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.pill),
         color: active
             ? NabiPalette.cyan.withValues(alpha: 0.62)
-            : NabiPalette.ink.withValues(alpha: 0.09),
+            : colors.divider,
       ),
     );
   }
@@ -1206,17 +1228,18 @@ class _PrivacyCaption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.lock_outline_rounded, size: 13, color: NabiPalette.mutedInk),
+        Icon(Icons.lock_outline_rounded, size: 13, color: colors.textMuted),
         const SizedBox(width: AppSpacing.tiny),
         Flexible(
           child: Text(
             'Bạn luôn kiểm soát những thông tin mình chia sẻ.',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall.copyWith(
-              color: NabiPalette.mutedInk,
+              color: colors.textSecondary,
               height: 1.2,
             ),
           ),
@@ -1241,6 +1264,7 @@ class _LoadingFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Semantics(
       liveRegion: true,
       label: stage.title,
@@ -1265,7 +1289,7 @@ class _LoadingFooter extends StatelessWidget {
                         : 'Đang chuẩn bị trải nghiệm của bạn',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: NabiPalette.mutedInk,
+                      color: colors.textSecondary,
                       fontSize: compact ? 10.5 : 11.5,
                       height: 1.2,
                     ),

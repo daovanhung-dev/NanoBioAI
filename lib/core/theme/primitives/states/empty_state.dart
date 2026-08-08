@@ -42,50 +42,48 @@ class EmptyState extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColorTokens.darkSurfaceElevated
-                        : AppColorTokens.primaryLight,
-                    borderRadius: BorderRadius.circular(AppRadiusTokens.dialog),
+                  Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColorTokens.darkSurfaceElevated
+                          : AppColorTokens.primaryLight,
+                      borderRadius: BorderRadius.circular(
+                        AppRadiusTokens.dialog,
+                      ),
+                    ),
+                    child: Icon(icon, size: 48, color: AppColorTokens.primary),
                   ),
-                  child: Icon(
-                    icon,
-                    size: 48,
-                    color: AppColorTokens.primary,
-                  ),
-                ),
-                SizedBox(height: AppSpacingTokens.sectionSpacing),
-                Text(
-                  title,
-                  style: AppTextStyles.heading2.copyWith(
-                    color: isDark
-                        ? AppColorTokens.darkTextPrimary
-                        : AppColorTokens.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: AppSpacingTokens.itemSpacing),
-                Text(
-                  description,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: isDark
-                        ? AppColorTokens.darkTextSecondary
-                        : AppColorTokens.textSecondary,
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                if (hasAction) ...[
                   SizedBox(height: AppSpacingTokens.sectionSpacing),
-                  AppButton(
-                    variant: ButtonVariant.primary,
-                    onPressed: onAction,
-                    child: Text(actionLabel!),
+                  Text(
+                    title,
+                    style: AppTextStyles.heading2.copyWith(
+                      color: isDark
+                          ? AppColorTokens.darkTextPrimary
+                          : AppColorTokens.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ],
+                  SizedBox(height: AppSpacingTokens.itemSpacing),
+                  Text(
+                    description,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: isDark
+                          ? AppColorTokens.darkTextSecondary
+                          : AppColorTokens.textSecondary,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (hasAction) ...[
+                    SizedBox(height: AppSpacingTokens.sectionSpacing),
+                    AppButton(
+                      variant: ButtonVariant.primary,
+                      onPressed: onAction,
+                      child: Text(actionLabel!),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -41,7 +41,7 @@ class AppSpacingTokens {
   /// from screen edges.
   ///
   /// References: [SpacingFoundation.space16]
-  static const double pagePadding = 14;
+  static const double pagePadding = 16;
 
   /// Spacing between major sections within a page.
   ///
@@ -50,8 +50,7 @@ class AppSpacingTokens {
   /// feature areas.
   ///
   /// References: [SpacingFoundation.space24]
-  static const double sectionSpacing = 16;
-
+  static const double sectionSpacing = 24;
 
   /// Dense page padding for data-heavy and dashboard surfaces.
   static const double compactPagePadding = 12;
@@ -72,7 +71,7 @@ class AppSpacingTokens {
   /// adequate breathing room for card content.
   ///
   /// References: [SpacingFoundation.space16]
-  static const double cardPadding = 14;
+  static const double cardPadding = 16;
 
   /// Compact padding for cards with dense content.
   ///
@@ -80,7 +79,7 @@ class AppSpacingTokens {
   /// while maintaining readability.
   ///
   /// References: [SpacingFoundation.space12]
-  static const double cardPaddingCompact = 10;
+  static const double cardPaddingCompact = 12;
 
   /// Horizontal padding inside buttons.
   ///

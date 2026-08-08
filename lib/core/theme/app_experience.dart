@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../feedback/app_feedback_service.dart';
 import '../motion/app_motion_scope.dart';
-import 'app_colors.dart';
+import 'app_semantic_colors.dart';
 import 'app_experience_preferences.dart';
 import 'medical_ui.dart';
 
@@ -47,11 +47,9 @@ class AppExperience {
     AppFeedbackService.instance.configure(preferences.feedbackPolicy);
 
     return AppMotionScope(
-      policy: preferences.motionPolicy(
-        systemReduceMotion: systemReduceMotion,
-      ),
+      policy: preferences.motionPolicy(systemReduceMotion: systemReduceMotion),
       child: ColoredBox(
-        color: AppColors.background,
+        color: context.semanticColors.background,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -79,10 +77,10 @@ class _NanoBioScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => const {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.trackpad,
-        PointerDeviceKind.stylus,
-        PointerDeviceKind.unknown,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.unknown,
+  };
 }

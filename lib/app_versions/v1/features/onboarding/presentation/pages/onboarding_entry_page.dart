@@ -10,9 +10,10 @@ class OnboardingEntryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return MedicalPageScaffold(
       ambientBackground: false,
-      backgroundColor: NabiPalette.pageBackground,
+      backgroundColor: colors.background,
       body: NabiAmbientBackground(
         strong: true,
         child: SafeArea(
@@ -42,7 +43,8 @@ class OnboardingEntryPage extends StatelessWidget {
                         primary: true,
                         action: NabiPrimaryButton(
                           key: const Key('onboarding_entry_guest_cta'),
-                          onPressed: () => context.push(V1RoutePaths.onboarding),
+                          onPressed: () =>
+                              context.push(V1RoutePaths.onboarding),
                           label: 'Bắt đầu',
                           icon: Icons.arrow_forward_rounded,
                         ),
@@ -80,6 +82,7 @@ class _BrandBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Row(
       children: [
         Container(
@@ -96,7 +99,7 @@ class _BrandBar extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(Icons.eco_rounded, color: AppColors.surface),
+          child: const Icon(Icons.eco_rounded, color: AppColors.textInverse),
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
@@ -106,24 +109,21 @@ class _BrandBar extends StatelessWidget {
               Text(
                 'NanoBio',
                 style: AppTextStyles.heading4.copyWith(
-                  color: NabiPalette.ink,
+                  color: colors.textPrimary,
                   fontWeight: FontWeight.w900,
                 ),
               ),
               Text(
                 'Sức khỏe theo cách của bạn',
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: NabiPalette.mutedInk,
+                  color: colors.textSecondary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
         ),
-        const NabiMoodPill(
-          icon: Icons.verified_rounded,
-          label: 'Riêng tư',
-        ),
+        const NabiMoodPill(icon: Icons.verified_rounded, label: 'Riêng tư'),
       ],
     );
   }
@@ -179,7 +179,7 @@ class _GreenHero extends StatelessWidget {
                 'Khỏe hơn, nhẹ nhàng hơn',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.heading2.copyWith(
-                  color: AppColors.surface,
+                  color: AppColors.textInverse,
                   fontWeight: FontWeight.w900,
                   height: 1.08,
                   letterSpacing: -0.5,
@@ -190,7 +190,7 @@ class _GreenHero extends StatelessWidget {
                 'NaBi hiểu bạn và tạo lộ trình mỗi ngày.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.surface.withValues(alpha: 0.86),
+                  color: AppColors.textInverse.withValues(alpha: 0.86),
                   height: 1.35,
                 ),
               ),
@@ -227,9 +227,11 @@ class _HeroOrb extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.16),
+        color: AppColors.textInverse.withValues(alpha: 0.16),
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.surface.withValues(alpha: 0.20)),
+        border: Border.all(
+          color: AppColors.textInverse.withValues(alpha: 0.20),
+        ),
       ),
       child: Icon(icon, color: color, size: small ? 19 : 22),
     );
@@ -245,21 +247,26 @@ class _HeroTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.14),
+        color: AppColors.textInverse.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.surface.withValues(alpha: 0.16)),
+        border: Border.all(
+          color: AppColors.textInverse.withValues(alpha: 0.16),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.surface, size: 15),
+          Icon(icon, color: AppColors.textInverse, size: 15),
           const SizedBox(width: AppSpacing.xs),
           Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.surface,
+              color: AppColors.textInverse,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -289,6 +296,7 @@ class _EntryActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return NabiGlassPanel(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       elevated: primary,
@@ -316,7 +324,7 @@ class _EntryActionCard extends StatelessWidget {
                     Text(
                       title,
                       style: AppTextStyles.heading5.copyWith(
-                        color: NabiPalette.ink,
+                        color: colors.textPrimary,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -324,7 +332,7 @@ class _EntryActionCard extends StatelessWidget {
                     Text(
                       description,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: NabiPalette.mutedInk,
+                        color: colors.textSecondary,
                         height: 1.35,
                       ),
                     ),
@@ -346,6 +354,7 @@ class _PrivacyLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -360,7 +369,7 @@ class _PrivacyLine extends StatelessWidget {
             'Bạn quyết định thông tin được chia sẻ.',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall.copyWith(
-              color: NabiPalette.mutedInk,
+              color: colors.textSecondary,
             ),
           ),
         ),

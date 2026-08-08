@@ -25,7 +25,7 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
     final mealState = ref.watch(mealPlanControllerProvider);
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.semanticColors.background,
       body: Column(
         children: [
           // ── Header ──────────────────────────────────────────────────────
@@ -100,8 +100,8 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
                 return ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: ui.contentMaxWidth),
                   child: RefreshIndicator(
-                    color: AppColors.primary,
-                    backgroundColor: AppColors.surface,
+                    color: context.semanticColors.primary,
+                    backgroundColor: context.semanticColors.surface,
                     onRefresh: () async => ref
                         .read(mealPlanControllerProvider.notifier)
                         .refreshMealPlans(),
@@ -275,8 +275,8 @@ class _MealPlanHeader extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primary,
-            AppColors.primary.withValues(alpha: 0.82),
+            context.semanticColors.primary,
+            context.semanticColors.primary.withValues(alpha: 0.82),
           ],
         ),
       ),
@@ -290,7 +290,7 @@ class _MealPlanHeader extends StatelessWidget {
               right: -ui.pagePadding * 1.5,
               child: _DecorativeCircle(
                 size: ui.headerDecorSize,
-                color: AppColors.surface.withValues(alpha: 0.07),
+                color: context.semanticColors.surface.withValues(alpha: 0.07),
               ),
             ),
             Positioned(
@@ -298,7 +298,7 @@ class _MealPlanHeader extends StatelessWidget {
               left: -ui.pagePadding,
               child: _DecorativeCircle(
                 size: ui.headerDecorSize * 0.55,
-                color: AppColors.surface.withValues(alpha: 0.05),
+                color: context.semanticColors.surface.withValues(alpha: 0.05),
               ),
             ),
             // Content
@@ -325,15 +325,19 @@ class _MealPlanHeader extends StatelessWidget {
                                 vertical: AppSpacing.xs,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.surface.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(AppRadius.xs),
+                                color: context.semanticColors.surface
+                                    .withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.xs,
+                                ),
                               ),
                               child: Text(
                                 _todayLabel(),
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   fontSize: ui.headerDateFontSize,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.surface.withValues(alpha: 0.9),
+                                  color: context.semanticColors.surface
+                                      .withValues(alpha: 0.9),
                                   letterSpacing: 0.2,
                                 ),
                               ),
@@ -346,7 +350,7 @@ class _MealPlanHeader extends StatelessWidget {
                           style: AppTextStyles.heading1.copyWith(
                             fontSize: ui.titleFontSize,
                             fontWeight: FontWeight.w900,
-                            color: AppColors.surface,
+                            color: context.semanticColors.surface,
                             height: 1.05,
                             letterSpacing: -0.5,
                           ),
@@ -356,7 +360,9 @@ class _MealPlanHeader extends StatelessWidget {
                           'Dinh dưỡng theo ngày',
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontSize: ui.headerSubtitleFontSize,
-                            color: AppColors.surface.withValues(alpha: 0.72),
+                            color: context.semanticColors.surface.withValues(
+                              alpha: 0.72,
+                            ),
                             height: 1.3,
                           ),
                         ),
@@ -373,16 +379,20 @@ class _MealPlanHeader extends StatelessWidget {
                         height: ui.actionButtonSize,
                         width: ui.actionButtonSize,
                         decoration: BoxDecoration(
-                          color: AppColors.surface.withValues(alpha: 0.15),
+                          color: context.semanticColors.surface.withValues(
+                            alpha: 0.15,
+                          ),
                           borderRadius: BorderRadius.circular(ui.radiusLg),
                           border: Border.all(
-                            color: AppColors.surface.withValues(alpha: 0.25),
+                            color: context.semanticColors.surface.withValues(
+                              alpha: 0.25,
+                            ),
                             width: 1,
                           ),
                         ),
                         child: Icon(
                           Icons.refresh_rounded,
-                          color: AppColors.surface,
+                          color: context.semanticColors.surface,
                           size: ui.actionIconSize,
                         ),
                       ),
@@ -435,7 +445,7 @@ class _DateChipSelector extends StatelessWidget {
     final today = DateUtils.dateOnly(DateTime.now());
 
     return Container(
-      color: AppColors.surface,
+      color: context.semanticColors.surface,
       padding: EdgeInsets.symmetric(vertical: ui.chipSectionVertical),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,7 +457,7 @@ class _DateChipSelector extends StatelessWidget {
               style: AppTextStyles.heading4.copyWith(
                 fontSize: ui.bodySmallFontSize,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
                 letterSpacing: 0.5,
               ),
             ),
@@ -509,11 +519,11 @@ class _DateChip extends StatelessWidget {
         width: ui.chipWidth,
         decoration: BoxDecoration(
           gradient: isSelected ? AppGradients.primary : null,
-          color: isSelected ? null : AppColors.background,
+          color: isSelected ? null : context.semanticColors.background,
           borderRadius: BorderRadius.circular(ui.radiusLg),
           border: isToday && !isSelected
               ? Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.4),
+                  color: context.semanticColors.primary.withValues(alpha: 0.4),
                   width: 1.5,
                 )
               : null,
@@ -528,8 +538,8 @@ class _DateChip extends StatelessWidget {
                 fontSize: ui.chipDayFontSize,
                 fontWeight: FontWeight.w700,
                 color: isSelected
-                    ? AppColors.surface.withValues(alpha: 0.85)
-                    : AppColors.textSecondary,
+                    ? context.semanticColors.surface.withValues(alpha: 0.85)
+                    : context.semanticColors.textSecondary,
                 letterSpacing: 0.3,
               ),
             ),
@@ -539,7 +549,9 @@ class _DateChip extends StatelessWidget {
               style: AppTextStyles.heading4.copyWith(
                 fontSize: ui.chipDateFontSize,
                 fontWeight: FontWeight.w900,
-                color: isSelected ? AppColors.surface : AppColors.textPrimary,
+                color: isSelected
+                    ? context.semanticColors.surface
+                    : context.semanticColors.textPrimary,
               ),
             ),
             if (isToday) ...[
@@ -549,7 +561,9 @@ class _DateChip extends StatelessWidget {
                 height: 5,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isSelected ? AppColors.surface : AppColors.primary,
+                  color: isSelected
+                      ? context.semanticColors.surface
+                      : context.semanticColors.primary,
                 ),
               ),
             ],
@@ -605,7 +619,7 @@ class _DaySummaryBanner extends StatelessWidget {
                 style: AppTextStyles.heading2.copyWith(
                   fontSize: ui.summaryTitleFontSize,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
+                  color: context.semanticColors.textPrimary,
                   height: 1.1,
                 ),
               ),
@@ -614,7 +628,7 @@ class _DaySummaryBanner extends StatelessWidget {
                 dateStr,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: ui.bodySmallFontSize,
-                  color: AppColors.textSecondary,
+                  color: context.semanticColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -627,7 +641,7 @@ class _DaySummaryBanner extends StatelessWidget {
             vertical: ui.smallPadding,
           ),
           decoration: BoxDecoration(
-            color: AppColors.primarySoft,
+            color: context.semanticColors.primarySoft,
             borderRadius: BorderRadius.circular(ui.circularRadius),
           ),
           child: Row(
@@ -636,7 +650,7 @@ class _DaySummaryBanner extends StatelessWidget {
               Icon(
                 Icons.restaurant_rounded,
                 size: ui.filterIconSize,
-                color: AppColors.primary,
+                color: context.semanticColors.primary,
               ),
               SizedBox(width: ui.xsGap + 2),
               Text(
@@ -644,7 +658,7 @@ class _DaySummaryBanner extends StatelessWidget {
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: ui.bodySmallFontSize,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: context.semanticColors.primary,
                 ),
               ),
             ],
@@ -879,7 +893,7 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
           child: AnimatedContainer(
             duration: AppMotionScope.duration(context, AppDuration.fast),
             decoration: AppDecoration.card(
-              color: AppColors.surface,
+              color: context.semanticColors.surface,
               radius: ui.radiusXl,
               shadows: _isPressed ? AppShadows.sm : AppShadows.soft,
             ),
@@ -947,12 +961,13 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                                         ),
                                         child: Text(
                                           label.toUpperCase(),
-                                          style: AppTextStyles.labelSmall.copyWith(
-                                            fontSize: ui.chipDayFontSize,
-                                            fontWeight: FontWeight.w800,
-                                            color: accent,
-                                            letterSpacing: 0.6,
-                                          ),
+                                          style: AppTextStyles.labelSmall
+                                              .copyWith(
+                                                fontSize: ui.chipDayFontSize,
+                                                fontWeight: FontWeight.w800,
+                                                color: accent,
+                                                letterSpacing: 0.6,
+                                              ),
                                         ),
                                       ),
                                       SizedBox(height: ui.xsGap),
@@ -964,7 +979,9 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                                           fontSize: ui.mealTitleFontSize,
                                           fontWeight: FontWeight.w800,
                                           height: 1.2,
-                                          color: AppColors.textPrimary,
+                                          color: context
+                                              .semanticColors
+                                              .textPrimary,
                                         ),
                                       ),
                                     ],
@@ -985,22 +1002,22 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                                   label: meal.servingSize.trim().isEmpty
                                       ? 'Khẩu phần 1 người'
                                       : meal.servingSize,
-                                  color: AppColors.secondary,
+                                  color: context.semanticColors.secondary,
                                 ),
                                 _InlineTag(
                                   icon: Icons.schedule_rounded,
                                   label: time,
-                                  color: AppColors.textSecondary,
+                                  color: context.semanticColors.textSecondary,
                                 ),
                                 _InlineTag(
                                   icon: Icons.local_fire_department_rounded,
                                   label: '${meal.calories} kcal',
-                                  color: AppColors.warning,
+                                  color: context.semanticColors.warning,
                                 ),
                                 _InlineTag(
                                   icon: Icons.water_drop_rounded,
                                   label: '${meal.waterMl} ml',
-                                  color: AppColors.info,
+                                  color: context.semanticColors.info,
                                 ),
                               ],
                             ),
@@ -1015,7 +1032,7 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                               style: AppTextStyles.bodyLarge.copyWith(
                                 fontSize: ui.mealDescriptionFontSize,
                                 height: 1.55,
-                                color: AppColors.textPrimary,
+                                color: context.semanticColors.textPrimary,
                               ),
                             ),
 
@@ -1028,7 +1045,7 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                                         ? 'Chạm để xem nguyên liệu và cách chế biến'
                                         : 'Chạm để xem thông tin chi tiết',
                                     style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.primary,
+                                      color: context.semanticColors.primary,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -1056,11 +1073,11 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                                       ? 'Đã hoàn thành'
                                       : 'Chờ thực hiện',
                                   backgroundColor: meal.isCompleted
-                                      ? AppColors.successSoft
-                                      : AppColors.warningSoft,
+                                      ? context.semanticColors.successSoft
+                                      : context.semanticColors.warningSoft,
                                   textColor: meal.isCompleted
-                                      ? AppColors.success
-                                      : AppColors.warning,
+                                      ? context.semanticColors.success
+                                      : context.semanticColors.warning,
                                 ),
                                 _MealStatusBadge(
                                   ui: ui,
@@ -1070,8 +1087,9 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                                   label: meal.aiGenerated
                                       ? 'Nabi tạo'
                                       : 'Thủ công',
-                                  backgroundColor: AppColors.primarySoft,
-                                  textColor: AppColors.primary,
+                                  backgroundColor:
+                                      context.semanticColors.primarySoft,
+                                  textColor: context.semanticColors.primary,
                                 ),
                               ],
                             ),
@@ -1093,7 +1111,6 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
 // ─────────────────────────────────────────────────────────────────────────────
 // INLINE TAG  (time / calories / water — replaces MealTimeHighlight banner)
 // ─────────────────────────────────────────────────────────────────────────────
-
 
 class _MealDetailSheet extends StatefulWidget {
   const _MealDetailSheet({required this.meal, required this.onReplace});
@@ -1133,7 +1150,7 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
               height: 4,
               margin: const EdgeInsets.only(top: AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: context.semanticColors.border,
                 borderRadius: BorderRadius.circular(AppRadius.circular),
               ),
             ),
@@ -1155,7 +1172,7 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
                               Text(
                                 meal.topicName,
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.primary,
+                                  color: context.semanticColors.primary,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -1226,13 +1243,15 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.cardPadding),
                       decoration: BoxDecoration(
-                        color: AppColors.info.withValues(alpha: .08),
+                        color: context.semanticColors.info.withValues(
+                          alpha: .08,
+                        ),
                         borderRadius: BorderRadius.circular(AppRadius.lg),
                       ),
                       child: Text(
                         'Nguồn tham khảo: ${meal.provenanceSource}. Nội dung công dụng chỉ mang tính tham khảo, không thay thế tư vấn y tế.',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.semanticColors.textSecondary,
                           height: 1.45,
                         ),
                       ),
@@ -1315,7 +1334,7 @@ class _DetailPill extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft,
+        color: context.semanticColors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.circular),
       ),
       child: Text(text, style: AppTextStyles.bodySmall),
@@ -1332,7 +1351,7 @@ class _DetailHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.primary),
+        Icon(icon, color: context.semanticColors.primary),
         const SizedBox(width: AppSpacing.sm),
         Expanded(child: Text(title, style: AppTextStyles.heading4)),
       ],
@@ -1385,7 +1404,7 @@ class _RecipeStep extends StatelessWidget {
           child: Text(
             '$number',
             style: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.textInverse,
+              color: context.semanticColors.textInverse,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1398,7 +1417,7 @@ class _RecipeStep extends StatelessWidget {
               text,
               style: AppTextStyles.bodyMedium.copyWith(
                 height: 1.48,
-                color: AppColors.textPrimary,
+                color: context.semanticColors.textPrimary,
               ),
             ),
           ),
@@ -1429,7 +1448,10 @@ abstract final class _RecipeInstructionParser {
   static String _removeStepPrefix(String value) {
     return value
         .trim()
-        .replaceFirst(RegExp(r'^(?:bước\s*)?\d+[\.)\-:]?\s*', caseSensitive: false), '')
+        .replaceFirst(
+          RegExp(r'^(?:bước\s*)?\d+[\.)\-:]?\s*', caseSensitive: false),
+          '',
+        )
         .replaceFirst(RegExp(r'^[-–—]\s*'), '')
         .trim();
   }
@@ -1449,7 +1471,10 @@ class _InlineTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     constraints: const BoxConstraints(minHeight: 34),
-    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+    padding: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.sm,
+      vertical: AppSpacing.sm,
+    ),
     decoration: BoxDecoration(
       color: color.withValues(alpha: .08),
       borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -1548,13 +1573,13 @@ class _MealEmptyView extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(ui.emptyIconPadding),
               decoration: BoxDecoration(
-                color: AppColors.primarySoft,
+                color: context.semanticColors.primarySoft,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.restaurant_menu_rounded,
                 size: ui.emptyIconSize,
-                color: AppColors.primary,
+                color: context.semanticColors.primary,
               ),
             ),
             SizedBox(height: ui.sectionSpacing),
@@ -1573,7 +1598,7 @@ class _MealEmptyView extends StatelessWidget {
               style: AppTextStyles.bodyLarge.copyWith(
                 fontSize: ui.emptySubtitleFontSize,
                 height: 1.5,
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
               ),
             ),
           ],
@@ -1603,10 +1628,7 @@ class _MealLoadingViewState extends State<_MealLoadingView>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: AppDuration.loading,
-    );
+    _ctrl = AnimationController(vsync: this, duration: AppDuration.loading);
     _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
   }
 
@@ -1654,10 +1676,10 @@ class _SkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final base = AppColors.textHint.withValues(alpha: opacity);
+    final base = context.semanticColors.textHint.withValues(alpha: opacity);
     return Container(
       decoration: AppDecoration.card(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         radius: ui.radiusXl,
         shadows: AppShadows.soft,
       ),
@@ -1766,7 +1788,7 @@ class _MealErrorView extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(ui.cardPadding),
           decoration: AppDecoration.card(
-            color: AppColors.surface,
+            color: context.semanticColors.surface,
             radius: ui.radiusXl,
             shadows: AppShadows.md,
           ),
@@ -1781,7 +1803,7 @@ class _MealErrorView extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.error_outline_rounded,
-                  color: AppColors.error,
+                  color: context.semanticColors.error,
                   size: ui.errorIconSize,
                 ),
               ),
@@ -1801,7 +1823,7 @@ class _MealErrorView extends StatelessWidget {
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: ui.bodyFontSize,
                   height: 1.45,
-                  color: AppColors.textSecondary,
+                  color: context.semanticColors.textSecondary,
                 ),
               ),
               SizedBox(height: ui.cardGap),

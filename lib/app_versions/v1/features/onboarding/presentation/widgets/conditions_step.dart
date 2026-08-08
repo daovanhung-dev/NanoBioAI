@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/constants/app/app_radius.dart';
+import 'package:nano_app/core/theme/app_semantic_colors.dart';
 
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 
@@ -11,6 +12,7 @@ import 'onboarding_step_shell.dart';
 import 'onboarding_text_field.dart';
 
 import 'package:nano_app/core/theme/app_spacing.dart';
+
 class ConditionsStep extends ConsumerStatefulWidget {
   const ConditionsStep({super.key});
 
@@ -23,12 +25,14 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
     final normalized = _query.trim().toLowerCase();
     final visibleOptions = OnboardingCatalog.conditions
         .where(
-          (option) => normalized.isEmpty ||
+          (option) =>
+              normalized.isEmpty ||
               option.label.toLowerCase().contains(normalized),
         )
         .toList(growable: false);
@@ -76,7 +80,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
                             icon: const Icon(Icons.close_rounded),
                           ),
                     filled: true,
-                    fillColor: NabiPalette.mintSurface,
+                    fillColor: colors.inputBackground,
                     isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -129,7 +133,8 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
           const SizedBox(height: AppSpacing.sm),
           const OnboardingInlineInfo(
             icon: Icons.medical_information_outlined,
-            text: 'Thông tin này hỗ trợ gợi ý sức khỏe, không thay thế chẩn đoán.',
+            text:
+                'Thông tin này hỗ trợ gợi ý sức khỏe, không thay thế chẩn đoán.',
             color: NabiPalette.calmBlue,
           ),
         ],

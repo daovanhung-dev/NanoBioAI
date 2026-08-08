@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
 
-import 'nabi_onboarding_experience.dart';
-
 /// Compact free-text field with a clear focus state shared by all onboarding views.
 class OnboardingTextField extends StatefulWidget {
   final String label;
@@ -126,13 +124,14 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final multiline = widget.maxLines > 1;
     final vertical = multiline ? 10.0 : 8.5;
     final borderColor = _hasError
-        ? AppColors.error
+        ? colors.error
         : _isFocused
-        ? NabiPalette.greenPrimary
-        : NabiPalette.line;
+        ? colors.primary
+        : colors.border;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,10 +140,10 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
           duration: AppDuration.hover,
           style: AppTextStyles.labelMedium.copyWith(
             color: _hasError
-                ? AppColors.error
+                ? colors.error
                 : _isFocused
-                ? NabiPalette.greenPrimary
-                : NabiPalette.mutedInk,
+                ? colors.primary
+                : colors.textSecondary,
             fontWeight: FontWeight.w800,
             letterSpacing: 0,
           ),
@@ -159,7 +158,7 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
             boxShadow: _isFocused && !_hasError
                 ? [
                     BoxShadow(
-                      color: NabiPalette.focusRing.withValues(alpha: 0.22),
+                      color: colors.focusRing.withValues(alpha: 0.22),
                       blurRadius: 14,
                       spreadRadius: 1,
                     ),
@@ -183,7 +182,7 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
             onTap: widget.onTap,
             onChanged: widget.onChanged,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: NabiPalette.ink,
+              color: colors.textPrimary,
               fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),
@@ -192,48 +191,52 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
               counterText: '',
               hintText: widget.hint,
               hintStyle: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textHint,
+                color: colors.textHint,
                 fontWeight: FontWeight.w500,
               ),
               prefixIcon: widget.prefixIcon == null
                   ? null
                   : Padding(
-                      padding: const EdgeInsets.only(left: AppSpacing.sm, right: AppSpacing.sm),
+                      padding: const EdgeInsets.only(
+                        left: AppSpacing.sm,
+                        right: AppSpacing.sm,
+                      ),
                       child: IconTheme(
                         data: IconThemeData(
                           color: _isFocused
-                              ? NabiPalette.greenPrimary
-                              : NabiPalette.mutedInk,
+                              ? colors.primary
+                              : colors.textSecondary,
                           size: 20,
                         ),
                         child: widget.prefixIcon!,
                       ),
                     ),
               prefixIconConstraints: const BoxConstraints(minWidth: 40),
-              suffixIcon: _buildSuffix(),
+              suffixIcon: _buildSuffix(colors),
               contentPadding:
                   widget.contentPadding ??
-                  EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: vertical),
+                  EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: vertical,
+                  ),
               filled: true,
               fillColor: widget.enabled
-                  ? AppColors.surface
-                  : NabiPalette.mintSurface,
+                  ? colors.inputBackground
+                  : colors.primarySubtle,
               errorText: widget.errorText,
-              errorStyle: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.error,
-              ),
+              errorStyle: AppTextStyles.bodySmall.copyWith(color: colors.error),
               helperText: widget.helperText,
               helperStyle: AppTextStyles.bodySmall.copyWith(
-                color: NabiPalette.mutedInk,
+                color: colors.textSecondary,
               ),
               border: _border(borderColor),
               enabledBorder: _border(borderColor),
               focusedBorder: _border(
-                _hasError ? AppColors.error : NabiPalette.greenPrimary,
+                _hasError ? colors.error : colors.primary,
                 width: 1.5,
               ),
-              errorBorder: _border(AppColors.error, width: 1.4),
-              focusedErrorBorder: _border(AppColors.error, width: 1.5),
+              errorBorder: _border(colors.error, width: 1.4),
+              focusedErrorBorder: _border(colors.error, width: 1.5),
             ),
           ),
         ),
@@ -248,14 +251,14 @@ class _OnboardingTextFieldState extends State<OnboardingTextField> {
     );
   }
 
-  Widget? _buildSuffix() {
+  Widget? _buildSuffix(AppSemanticColors colors) {
     if (widget.obscureText) {
       return IconButton(
         iconSize: 20,
         onPressed: () => setState(() => _obscure = !_obscure),
         icon: Icon(
           _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-          color: NabiPalette.mutedInk,
+          color: colors.textSecondary,
         ),
       );
     }

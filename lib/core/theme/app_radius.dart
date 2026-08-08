@@ -9,6 +9,7 @@ class AppRadius {
   static const double xs = 6;
   static const double sm = 8;
   static const double md = 12;
+  static const double control = 14;
   static const double lg = 16;
   static const double xl = 20;
   static const double xxl = 24;
@@ -20,12 +21,12 @@ class AppRadius {
   static const double button = md;
   static const double buttonLarge = lg;
   static const double buttonSmall = sm;
-  static const double card = lg;
-  static const double cardLarge = xl;
-  static const double input = md;
+  static const double card = xl;
+  static const double cardLarge = xxl;
+  static const double input = control;
   static const double inputLarge = lg;
   static const double dialog = xl;
-  static const double bottomSheet = xxl;
+  static const double bottomSheet = xxxl;
   static const double sheetHandle = circular;
   static const double appBar = 0;
   static const double listTile = md;

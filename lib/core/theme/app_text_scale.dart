@@ -22,18 +22,12 @@ enum AppTextScalePreset {
 }
 
 class AppTextScaleState {
-  const AppTextScaleState({
-    required this.preset,
-    required this.isConfigured,
-  });
+  const AppTextScaleState({required this.preset, required this.isConfigured});
 
   final AppTextScalePreset preset;
   final bool isConfigured;
 
-  AppTextScaleState copyWith({
-    AppTextScalePreset? preset,
-    bool? isConfigured,
-  }) {
+  AppTextScaleState copyWith({AppTextScalePreset? preset, bool? isConfigured}) {
     return AppTextScaleState(
       preset: preset ?? this.preset,
       isConfigured: isConfigured ?? this.isConfigured,
@@ -65,7 +59,8 @@ class AppTextScaleController extends AsyncNotifier<AppTextScaleState> {
     AppTextScalePreset preset, {
     bool markConfigured = false,
   }) async {
-    final current = state.value ??
+    final current =
+        state.value ??
         const AppTextScaleState(
           preset: AppTextScalePreset.standard,
           isConfigured: false,
@@ -84,7 +79,8 @@ class AppTextScaleController extends AsyncNotifier<AppTextScaleState> {
   }
 
   Future<void> markConfigured() async {
-    final current = state.value ??
+    final current =
+        state.value ??
         const AppTextScaleState(
           preset: AppTextScalePreset.standard,
           isConfigured: false,

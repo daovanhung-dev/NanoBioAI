@@ -22,6 +22,7 @@ class ResultStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return MedicalPageScaffold(
       ambientBackground: false,
       backgroundColor: Colors.transparent,
@@ -44,8 +45,9 @@ class ResultStep extends StatelessWidget {
                           borderRadius: BorderRadius.circular(AppRadius.xxl),
                           boxShadow: [
                             BoxShadow(
-                              color: NabiPalette.greenDeep
-                                  .withValues(alpha: 0.24),
+                              color: NabiPalette.greenDeep.withValues(
+                                alpha: 0.24,
+                              ),
                               blurRadius: 30,
                               offset: const Offset(0, 14),
                             ),
@@ -64,7 +66,7 @@ class ResultStep extends StatelessWidget {
                               'Sẵn sàng rồi, $userName!',
                               textAlign: TextAlign.center,
                               style: AppTextStyles.heading2.copyWith(
-                                color: AppColors.surface,
+                                color: AppColors.textInverse,
                                 fontWeight: FontWeight.w900,
                                 height: 1.08,
                               ),
@@ -74,7 +76,9 @@ class ResultStep extends StatelessWidget {
                               message,
                               textAlign: TextAlign.center,
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.surface.withValues(alpha: 0.86),
+                                color: AppColors.textInverse.withValues(
+                                  alpha: 0.86,
+                                ),
                               ),
                             ),
                           ],
@@ -82,6 +86,9 @@ class ResultStep extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       NabiGlassPanel(
+                        gradient: LinearGradient(
+                          colors: [colors.card, colors.cardAlt],
+                        ),
                         padding: const EdgeInsets.all(AppSpacing.cardPadding),
                         child: Row(
                           children: [
@@ -94,7 +101,7 @@ class ResultStep extends StatelessWidget {
                                   Text(
                                     'Điểm khởi đầu',
                                     style: AppTextStyles.heading5.copyWith(
-                                      color: NabiPalette.ink,
+                                      color: colors.textPrimary,
                                       fontWeight: FontWeight.w900,
                                     ),
                                   ),
@@ -102,7 +109,7 @@ class ResultStep extends StatelessWidget {
                                   Text(
                                     'NaBi sẽ đồng hành và điều chỉnh theo tiến trình của bạn.',
                                     style: AppTextStyles.bodySmall.copyWith(
-                                      color: NabiPalette.mutedInk,
+                                      color: colors.textSecondary,
                                       height: 1.4,
                                     ),
                                   ),
@@ -157,15 +164,12 @@ class _ScoreRing extends StatelessWidget {
         children: [
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: normalized),
-            duration: AppMotionScope.duration(
-              context,
-              AppDuration.xSlow,
-            ),
+            duration: AppMotionScope.duration(context, AppDuration.xSlow),
             curve: AppAnimations.emphasizedCurve,
             builder: (context, value, _) => CircularProgressIndicator(
               value: value,
               strokeWidth: 9,
-              backgroundColor: NabiPalette.greenSoft,
+              backgroundColor: context.semanticColors.primarySoft,
               valueColor: const AlwaysStoppedAnimation<Color>(
                 NabiPalette.greenPrimary,
               ),

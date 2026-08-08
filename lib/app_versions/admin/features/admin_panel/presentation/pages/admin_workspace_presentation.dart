@@ -43,10 +43,7 @@ List<_NavigationGroup> _navigationGroups(List<AdminPanelSection> available) {
     ),
     _NavigationGroup(
       'CỘNG TÁC VIÊN',
-      pick(const [
-        AdminPanelSection.sales,
-        AdminPanelSection.saleConversions,
-      ]),
+      pick(const [AdminPanelSection.sales, AdminPanelSection.saleConversions]),
     ),
     _NavigationGroup(
       'VẬN HÀNH',
@@ -70,136 +67,136 @@ List<AdminActionPresentation> _actionsFor(
 ) {
   final all = switch (section) {
     AdminPanelSection.users => const [
-        AdminActionPresentation(
-          key: 'active',
-          label: 'Mở lại',
-          confirmLabel: 'Mở lại tài khoản',
-          icon: Icons.lock_open_rounded,
-        ),
-        AdminActionPresentation(
-          key: 'suspended',
-          label: 'Tạm khóa',
-          confirmLabel: 'Tạm khóa tài khoản',
-          icon: Icons.lock_rounded,
-          danger: true,
-        ),
-      ],
+      AdminActionPresentation(
+        key: 'active',
+        label: 'Mở lại',
+        confirmLabel: 'Mở lại tài khoản',
+        icon: Icons.lock_open_rounded,
+      ),
+      AdminActionPresentation(
+        key: 'suspended',
+        label: 'Tạm khóa',
+        confirmLabel: 'Tạm khóa tài khoản',
+        icon: Icons.lock_rounded,
+        danger: true,
+      ),
+    ],
     AdminPanelSection.payments => const [
-        AdminActionPresentation(
-          key: 'approve',
-          label: 'Duyệt',
-          confirmLabel: 'Duyệt thanh toán',
-          icon: Icons.check_circle_rounded,
-        ),
-        AdminActionPresentation(
-          key: 'reject',
-          label: 'Từ chối',
-          confirmLabel: 'Từ chối thanh toán',
-          icon: Icons.block_rounded,
-          danger: true,
-        ),
-      ],
+      AdminActionPresentation(
+        key: 'approve',
+        label: 'Duyệt',
+        confirmLabel: 'Duyệt thanh toán',
+        icon: Icons.check_circle_rounded,
+      ),
+      AdminActionPresentation(
+        key: 'reject',
+        label: 'Từ chối',
+        confirmLabel: 'Từ chối thanh toán',
+        icon: Icons.block_rounded,
+        danger: true,
+      ),
+    ],
     AdminPanelSection.sales => const [
-        AdminActionPresentation(
-          key: 'approve',
-          label: 'Duyệt',
-          confirmLabel: 'Duyệt hồ sơ',
-          icon: Icons.verified_user_rounded,
-        ),
-        AdminActionPresentation(
-          key: 'reject',
-          label: 'Từ chối',
-          confirmLabel: 'Từ chối hồ sơ',
-          icon: Icons.block_rounded,
-          danger: true,
-        ),
-        AdminActionPresentation(
-          key: 'suspend',
-          label: 'Tạm dừng',
-          confirmLabel: 'Tạm dừng hoạt động',
-          icon: Icons.pause_circle_rounded,
-          danger: true,
-        ),
-        AdminActionPresentation(
-          key: 'close',
-          label: 'Đóng',
-          confirmLabel: 'Đóng cộng tác viên',
-          icon: Icons.cancel_rounded,
-          danger: true,
-        ),
-      ],
+      AdminActionPresentation(
+        key: 'approve',
+        label: 'Duyệt',
+        confirmLabel: 'Duyệt hồ sơ',
+        icon: Icons.verified_user_rounded,
+      ),
+      AdminActionPresentation(
+        key: 'reject',
+        label: 'Từ chối',
+        confirmLabel: 'Từ chối hồ sơ',
+        icon: Icons.block_rounded,
+        danger: true,
+      ),
+      AdminActionPresentation(
+        key: 'suspend',
+        label: 'Tạm dừng',
+        confirmLabel: 'Tạm dừng hoạt động',
+        icon: Icons.pause_circle_rounded,
+        danger: true,
+      ),
+      AdminActionPresentation(
+        key: 'close',
+        label: 'Đóng',
+        confirmLabel: 'Đóng cộng tác viên',
+        icon: Icons.cancel_rounded,
+        danger: true,
+      ),
+    ],
     AdminPanelSection.saleConversions => const [
-        AdminActionPresentation(
-          key: 'approve',
-          label: 'Duyệt',
-          confirmLabel: 'Duyệt yêu cầu',
-          icon: Icons.check_circle_rounded,
-        ),
-        AdminActionPresentation(
-          key: 'reject',
-          label: 'Từ chối',
-          confirmLabel: 'Từ chối yêu cầu',
-          icon: Icons.block_rounded,
-          danger: true,
-        ),
-        AdminActionPresentation(
-          key: 'mark_paid',
-          label: 'Xác nhận chi trả',
-          confirmLabel: 'Chọn ảnh và xác nhận',
-          icon: Icons.payments_rounded,
-        ),
-      ],
+      AdminActionPresentation(
+        key: 'approve',
+        label: 'Duyệt',
+        confirmLabel: 'Duyệt yêu cầu',
+        icon: Icons.check_circle_rounded,
+      ),
+      AdminActionPresentation(
+        key: 'reject',
+        label: 'Từ chối',
+        confirmLabel: 'Từ chối yêu cầu',
+        icon: Icons.block_rounded,
+        danger: true,
+      ),
+      AdminActionPresentation(
+        key: 'mark_paid',
+        label: 'Xác nhận chi trả',
+        confirmLabel: 'Chọn ảnh và xác nhận',
+        icon: Icons.payments_rounded,
+      ),
+    ],
     AdminPanelSection.reconciliation => const [
-        AdminActionPresentation(
-          key: 'resolved',
-          label: 'Đã đối soát',
-          confirmLabel: 'Xác nhận đã đối soát',
-          icon: Icons.task_alt_rounded,
-        ),
-        AdminActionPresentation(
-          key: 'needs_follow_up',
-          label: 'Cần theo dõi',
-          confirmLabel: 'Đánh dấu cần theo dõi',
-          icon: Icons.manage_search_rounded,
-        ),
-        AdminActionPresentation(
-          key: 'adjusted',
-          label: 'Đã điều chỉnh',
-          confirmLabel: 'Xác nhận điều chỉnh',
-          icon: Icons.tune_rounded,
-        ),
-        AdminActionPresentation(
-          key: 'dismissed',
-          label: 'Bỏ qua',
-          confirmLabel: 'Bỏ qua mục này',
-          icon: Icons.close_rounded,
-          danger: true,
-        ),
-      ],
+      AdminActionPresentation(
+        key: 'resolved',
+        label: 'Đã đối soát',
+        confirmLabel: 'Xác nhận đã đối soát',
+        icon: Icons.task_alt_rounded,
+      ),
+      AdminActionPresentation(
+        key: 'needs_follow_up',
+        label: 'Cần theo dõi',
+        confirmLabel: 'Đánh dấu cần theo dõi',
+        icon: Icons.manage_search_rounded,
+      ),
+      AdminActionPresentation(
+        key: 'adjusted',
+        label: 'Đã điều chỉnh',
+        confirmLabel: 'Xác nhận điều chỉnh',
+        icon: Icons.tune_rounded,
+      ),
+      AdminActionPresentation(
+        key: 'dismissed',
+        label: 'Bỏ qua',
+        confirmLabel: 'Bỏ qua mục này',
+        icon: Icons.close_rounded,
+        danger: true,
+      ),
+    ],
     AdminPanelSection.plans => const [
-        AdminActionPresentation(
-          key: 'upsert',
-          label: 'Cập nhật',
-          confirmLabel: 'Lưu cập nhật',
-          icon: Icons.save_rounded,
-        ),
-      ],
+      AdminActionPresentation(
+        key: 'upsert',
+        label: 'Cập nhật',
+        confirmLabel: 'Lưu cập nhật',
+        icon: Icons.save_rounded,
+      ),
+    ],
     AdminPanelSection.reports => const [
-        AdminActionPresentation(
-          key: 'export',
-          label: 'Xuất báo cáo',
-          confirmLabel: 'Tạo yêu cầu xuất',
-          icon: Icons.download_rounded,
-        ),
-      ],
+      AdminActionPresentation(
+        key: 'export',
+        label: 'Xuất báo cáo',
+        confirmLabel: 'Tạo yêu cầu xuất',
+        icon: Icons.download_rounded,
+      ),
+    ],
     AdminPanelSection.config => const [
-        AdminActionPresentation(
-          key: 'upsert',
-          label: 'Lưu thiết lập',
-          confirmLabel: 'Lưu thiết lập',
-          icon: Icons.save_as_rounded,
-        ),
-      ],
+      AdminActionPresentation(
+        key: 'upsert',
+        label: 'Lưu thiết lập',
+        confirmLabel: 'Lưu thiết lập',
+        icon: Icons.save_as_rounded,
+      ),
+    ],
     _ => const <AdminActionPresentation>[],
   };
 
@@ -211,17 +208,21 @@ List<AdminActionPresentation> _actionsFor(
     AdminPanelSection.users when normalized.contains('suspended') =>
       all.where((action) => action.key == 'active').toList(growable: false),
     AdminPanelSection.payments
-        when !adminPaymentStatusCanBeReviewed(normalized) => const [],
+        when !adminPaymentStatusCanBeReviewed(normalized) =>
+      const [],
     AdminPanelSection.sales when normalized.contains('closed') => const [],
-    AdminPanelSection.sales when normalized.contains('pending') => all
-        .where((action) => action.key == 'approve' || action.key == 'reject')
-        .toList(growable: false),
-    AdminPanelSection.sales when normalized.contains('active') => all
-        .where((action) => action.key == 'suspend' || action.key == 'close')
-        .toList(growable: false),
-    AdminPanelSection.sales when normalized.contains('suspended') => all
-        .where((action) => action.key == 'approve' || action.key == 'close')
-        .toList(growable: false),
+    AdminPanelSection.sales when normalized.contains('pending') =>
+      all
+          .where((action) => action.key == 'approve' || action.key == 'reject')
+          .toList(growable: false),
+    AdminPanelSection.sales when normalized.contains('active') =>
+      all
+          .where((action) => action.key == 'suspend' || action.key == 'close')
+          .toList(growable: false),
+    AdminPanelSection.sales when normalized.contains('suspended') =>
+      all
+          .where((action) => action.key == 'approve' || action.key == 'close')
+          .toList(growable: false),
     AdminPanelSection.saleConversions when normalized.contains('approved') =>
       all.where((action) => action.key == 'mark_paid').toList(growable: false),
     AdminPanelSection.saleConversions
@@ -230,7 +231,8 @@ List<AdminActionPresentation> _actionsFor(
     AdminPanelSection.reconciliation
         when normalized.contains('resolved') ||
             normalized.contains('dismissed') ||
-            normalized.contains('adjusted') => const [],
+            normalized.contains('adjusted') =>
+      const [],
     _ => all,
   };
 }
@@ -280,26 +282,20 @@ IconData _iconForSection(AdminPanelSection section, bool selected) {
   };
 }
 
-_StatusTone _statusTone(String status) {
+_StatusTone _statusTone(String status, AdminWorkspaceColors colors) {
   final normalized = status.toLowerCase();
   if (normalized.contains('fail') ||
       normalized.contains('reject') ||
       normalized.contains('suspend') ||
       normalized.contains('chargeback')) {
-    return const _StatusTone(
-      AdminWorkspaceTheme.danger,
-      Color(0xFFFBEAEC),
-    );
+    return _StatusTone(colors.danger, colors.dangerContainer);
   }
   if (normalized.contains('pending') ||
       normalized.contains('review') ||
       normalized.contains('requested') ||
       normalized.contains('open') ||
       normalized.contains('follow')) {
-    return const _StatusTone(
-      AdminWorkspaceTheme.warning,
-      Color(0xFFFFF5E4),
-    );
+    return _StatusTone(colors.warning, colors.warningContainer);
   }
   if (normalized.contains('active') ||
       normalized.contains('approved') ||
@@ -307,24 +303,15 @@ _StatusTone _statusTone(String status) {
       normalized.contains('succeeded') ||
       normalized.contains('resolved') ||
       normalized.contains('paid')) {
-    return const _StatusTone(
-      AdminWorkspaceTheme.mint,
-      Color(0xFFEAF7F1),
-    );
+    return _StatusTone(colors.mint, colors.successContainer);
   }
   if (normalized.contains('closed') ||
       normalized.contains('cancel') ||
       normalized.contains('archived') ||
       normalized.contains('dismissed')) {
-    return const _StatusTone(
-      AdminWorkspaceTheme.textMuted,
-      Color(0xFFF0F3F6),
-    );
+    return _StatusTone(colors.textMuted, colors.neutralContainer);
   }
-  return const _StatusTone(
-    AdminWorkspaceTheme.cyan,
-    Color(0xFFE8F6F8),
-  );
+  return _StatusTone(colors.cyan, colors.infoContainer);
 }
 
 IconData _statusIcon(String status) {

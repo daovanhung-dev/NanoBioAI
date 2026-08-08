@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/core/theme/app_text_styles.dart';
+import 'package:nano_app/core/theme/theme.dart';
 
 import '../../../daily_routine/presentation/widgets/daily_routine_preferences_editor.dart';
 import '../../providers/onboarding_provider.dart';
@@ -8,7 +8,6 @@ import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
 import 'onboarding_step_shell.dart';
 
-import 'package:nano_app/core/theme/app_spacing.dart';
 class DailyRoutineStep extends ConsumerWidget {
   const DailyRoutineStep({super.key});
 
@@ -60,6 +59,7 @@ class _RoutineTimelinePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     const items = [
       (Icons.wb_sunny_rounded, 'Sáng', NabiPalette.energyYellow),
       (Icons.restaurant_rounded, 'Trưa', NabiPalette.careCoral),
@@ -67,7 +67,10 @@ class _RoutineTimelinePreview extends StatelessWidget {
       (Icons.bedtime_rounded, 'Tối', NabiPalette.personalPurple),
     ];
     return NabiGlassPanel(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
       elevated: false,
       child: Row(
         children: [
@@ -92,7 +95,7 @@ class _RoutineTimelinePreview extends StatelessWidget {
                   Text(
                     items[index].$2,
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: NabiPalette.ink,
+                      color: colors.textPrimary,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -100,11 +103,7 @@ class _RoutineTimelinePreview extends StatelessWidget {
               ),
             ),
             if (index < items.length - 1)
-              Container(
-                width: 14,
-                height: 2,
-                color: NabiPalette.line,
-              ),
+              Container(width: 14, height: 2, color: colors.divider),
           ],
         ],
       ),

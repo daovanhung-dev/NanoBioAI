@@ -42,9 +42,10 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
     });
 
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final colors = context.adminColors;
 
     return Scaffold(
-      backgroundColor: AdminWorkspaceTheme.canvas,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: AnimatedPadding(
           duration: const Duration(milliseconds: 160),
@@ -91,18 +92,15 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
   }
 
   Widget _buildForm() {
+    final colors = context.adminColors;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AdminWorkspaceTheme.panel,
+        color: colors.panel,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AdminWorkspaceTheme.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1417324D),
-            blurRadius: 24,
-            offset: Offset(0, 8),
-          ),
+        border: Border.all(color: colors.border),
+        boxShadow: [
+          BoxShadow(color: colors.shadow, blurRadius: 24, offset: Offset(0, 8)),
         ],
       ),
       child: AutofillGroup(
@@ -114,15 +112,13 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
             children: [
               Text(
                 'Đăng nhập quản trị',
-                style: AppTextStyles.heading3.copyWith(
-                  color: AdminWorkspaceTheme.text,
-                ),
+                style: AppTextStyles.heading3.copyWith(color: colors.text),
               ),
               const SizedBox(height: 6),
               Text(
                 'Sử dụng tài khoản đã được cấp quyền quản trị.',
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AdminWorkspaceTheme.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -200,26 +196,24 @@ class _AdminLoginPageState extends ConsumerState<AdminLoginPage> {
                           ),
                         )
                       : const Icon(Icons.login_rounded, size: 19),
-                  label: Text(
-                    _submitting ? 'Đang kiểm tra' : 'Đăng nhập',
-                  ),
+                  label: Text(_submitting ? 'Đang kiểm tra' : 'Đăng nhập'),
                 ),
               ),
               const SizedBox(height: 13),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.shield_outlined,
                     size: 17,
-                    color: AdminWorkspaceTheme.textMuted,
+                    color: colors.textMuted,
                   ),
                   const SizedBox(width: 7),
                   Expanded(
                     child: Text(
                       'Chỉ những khu vực được cấp quyền mới xuất hiện sau khi đăng nhập.',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AdminWorkspaceTheme.textMuted,
+                        color: colors.textMuted,
                         height: 1.35,
                       ),
                     ),
@@ -290,10 +284,11 @@ class _LoginIntroduction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Container(
       padding: EdgeInsets.all(compact ? 22 : 32),
       decoration: BoxDecoration(
-        color: AdminWorkspaceTheme.navy,
+        color: colors.brandSurface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -322,7 +317,7 @@ class _LoginIntroduction extends StatelessWidget {
           Text(
             'Một không gian tập trung để theo dõi, kiểm tra và xử lý công việc vận hành.',
             style: AppTextStyles.bodyLarge.copyWith(
-              color: const Color(0xFFC7D4E1),
+              color: colors.onBrandSecondary,
               height: 1.45,
             ),
           ),
@@ -359,6 +354,7 @@ class _IntroFeature extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
       decoration: BoxDecoration(
@@ -369,7 +365,7 @@ class _IntroFeature extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 17, color: const Color(0xFFB9D7FF)),
+          Icon(icon, size: 17, color: colors.brandHighlight),
           const SizedBox(width: 7),
           Text(
             label,
@@ -388,28 +384,25 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBEAEC),
+        color: colors.dangerContainer,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE7B7BB)),
+        border: Border.all(color: colors.dangerBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.error_outline_rounded,
-            size: 19,
-            color: AdminWorkspaceTheme.danger,
-          ),
+          Icon(Icons.error_outline_rounded, size: 19, color: colors.danger),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
               style: AppTextStyles.bodySmall.copyWith(
-                color: const Color(0xFF8E2830),
+                color: colors.onDangerContainer,
                 height: 1.4,
               ),
             ),

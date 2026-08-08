@@ -37,7 +37,7 @@ class GoalProgressRow extends StatelessWidget {
             Text(
               '${goal.current.toInt()} / ${goal.target.toInt()} ${goal.unit}',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
               ),
             ),
             const SizedBox(width: AppSpacing.sm),

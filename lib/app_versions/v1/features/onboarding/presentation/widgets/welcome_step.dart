@@ -52,7 +52,7 @@ class WelcomeStep extends ConsumerWidget {
                       '2–3 phút để NaBi hiểu bạn',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.heading4.copyWith(
-                        color: AppColors.surface,
+                        color: AppColors.textInverse,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -61,7 +61,7 @@ class WelcomeStep extends ConsumerWidget {
                       'Không cần thông tin hoàn hảo.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.surface.withValues(alpha: 0.84),
+                        color: AppColors.textInverse.withValues(alpha: 0.84),
                       ),
                     ),
                   ],
@@ -121,8 +121,12 @@ class _WelcomeBenefit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return NabiGlassPanel(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.md,
+      ),
       elevated: false,
       borderColor: color.withValues(alpha: 0.16),
       child: Column(
@@ -143,7 +147,7 @@ class _WelcomeBenefit extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: AppTextStyles.labelSmall.copyWith(
-              color: NabiPalette.ink,
+              color: colors.textPrimary,
               fontWeight: FontWeight.w900,
             ),
           ),

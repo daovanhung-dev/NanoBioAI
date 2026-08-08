@@ -8,11 +8,12 @@ import '../../application/nabi_controller.dart';
 import '../../application/nabi_state.dart';
 import 'nabi_character.dart';
 
-import 'package:nano_app/core/theme/app_colors.dart';
+import 'package:nano_app/core/theme/app_semantic_colors.dart';
 import 'package:nano_app/core/theme/app_spacing.dart';
 import 'package:nano_app/core/theme/app_radius.dart';
 import 'package:nano_app/core/theme/app_duration.dart';
 import 'package:nano_app/core/feedback/feedback.dart';
+
 /// Callback để app có thể mở chat theo chính sách điều hướng sẵn có.
 typedef NabiOpenChat = FutureOr<void> Function(BuildContext context);
 
@@ -114,7 +115,9 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
                     isRightSide: _alignment.x >= 0,
                     onTap: _dragMoved ? null : _openChat,
                     onLongPress: () {
-                      AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                      AppFeedbackService.instance.emit(
+                        AppFeedbackType.selection,
+                      );
                       ref
                           .read(nabiControllerProvider.notifier)
                           .toggleMinimized();
@@ -213,6 +216,7 @@ class _NabiFloatingControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final avatar = Semantics(
       button: true,
       label: state.isChatOpen
@@ -234,7 +238,7 @@ class _NabiFloatingControl extends StatelessWidget {
               borderRadius: BorderRadius.circular(characterSize),
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: AppColors.textPrimary.withValues(alpha: 0.16),
+                  color: colors.textPrimary.withValues(alpha: 0.16),
                   blurRadius: 14,
                   offset: const Offset(0, 7),
                 ),
@@ -260,7 +264,11 @@ class _NabiFloatingControl extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         textDirection: isRightSide ? TextDirection.rtl : TextDirection.ltr,
-        children: <Widget>[avatar, const SizedBox(width: AppSpacing.xs), bubble],
+        children: <Widget>[
+          avatar,
+          const SizedBox(width: AppSpacing.xs),
+          bubble,
+        ],
       ),
     );
   }
@@ -274,26 +282,28 @@ class _NabiSpeechBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = context.semanticColors;
     return AnimatedSize(
       duration: AppDuration.button,
       alignment: Alignment.bottomCenter,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withValues(alpha: 0.98),
+          color: colors.surface.withValues(alpha: 0.98),
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(
-            color: theme.colorScheme.primary.withValues(alpha: 0.12),
-          ),
+          border: Border.all(color: colors.primary.withValues(alpha: 0.12)),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.08),
+              color: colors.textPrimary.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.sm,
+          ),
           child: Text(
             text,
             maxLines: 3,

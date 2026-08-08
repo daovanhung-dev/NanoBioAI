@@ -9,6 +9,7 @@ class V2HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return MedicalScrollPage(
       eyebrow: 'TÀI KHOẢN NANOBIO',
       title: 'Chăm sóc cá nhân, liền mạch hơn',
@@ -20,8 +21,8 @@ class V2HomePage extends StatelessWidget {
           icon: const Icon(Icons.monitor_heart_rounded),
           label: const Text('Xem điểm sức khỏe'),
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.surface,
-            foregroundColor: AppColors.primaryDark,
+            backgroundColor: colors.surface,
+            foregroundColor: colors.primaryDark,
           ),
         ),
       ],
@@ -48,7 +49,7 @@ class V2HomePage extends StatelessWidget {
                     value: 'Theo dõi mỗi ngày',
                     helper: 'Tổng hợp từ những thói quen bạn đã hoàn thành.',
                     icon: Icons.favorite_rounded,
-                    color: AppColors.error,
+                    color: colors.error,
                     onTap: () => context.push(V2RoutePaths.healthScore),
                   ),
                 ),
@@ -60,19 +61,19 @@ class V2HomePage extends StatelessWidget {
                     helper:
                         'Nhận điểm từ nhiệm vụ đúng giờ và đổi voucher phù hợp.',
                     icon: Icons.redeem_rounded,
-                    color: AppColors.tertiary,
+                    color: colors.tertiary,
                     onTap: () => context.push(V2RoutePaths.wellnessRewards),
                   ),
                 ),
                 SizedBox(
                   width: itemWidth,
-                  child: const MedicalMetricCard(
+                  child: MedicalMetricCard(
                     label: 'Đồng bộ cá nhân',
                     value: 'An toàn và chủ động',
                     helper:
                         'Nabi chỉ dùng dữ liệu để phục vụ trải nghiệm của bạn.',
                     icon: Icons.cloud_done_rounded,
-                    color: AppColors.secondary,
+                    color: colors.secondary,
                   ),
                 ),
               ],
@@ -80,15 +81,19 @@ class V2HomePage extends StatelessWidget {
           },
         ),
         MedicalSurfaceCard(
-          gradient: AppGradients.primarySoft,
-          borderColor: AppColors.primary.withValues(alpha: .16),
+          gradient: LinearGradient(
+            colors: [colors.card, colors.primarySoft],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderColor: colors.primary.withValues(alpha: .16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const MedicalIconBadge(
+              MedicalIconBadge(
                 icon: Icons.shield_outlined,
-                color: AppColors.primaryDark,
-                backgroundColor: AppColors.surface,
+                color: colors.primaryDark,
+                backgroundColor: colors.surface,
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(

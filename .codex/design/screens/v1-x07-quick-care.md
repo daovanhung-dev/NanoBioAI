@@ -1,18 +1,18 @@
 # V1-X07 — Quick Care
 
 > Baseline: `daovanhung-dev/NanoBioAI` @ `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`  
-> Classification: **source-only** · Group: `03_dashboard_health` · Archetype: `quick-action`
+> Classification: **active-route** · Group: `03_dashboard_health` · Archetype: `quick-action`
 
 ## 01. Purpose
 Đưa ra tác vụ chăm sóc ngắn với một CTA chính và thời lượng rõ.
 
 ## 02. Source evidence
 - Source: `lib/app_versions/v1/features/quick_care/presentation/pages/quick_care_page.dart`
-- Evidence baseline: commit `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
+- Evidence baseline: commit `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`; route classification refreshed from the working tree on 2026-08-08.
 - This spec preserves runtime/business boundaries; it is a UI/UX implementation contract, not new product logic.
 
 ## 03. Route / entry
-`source invocation`
+`V1RoutePaths.quickCare` (`/quick-care`)
 
 ## 04. Access model
 Respect existing guards, membership, guest/auth, admin/sale state and trusted-backend decisions. UI must never infer access from color, local cache or optimistic state.
@@ -37,16 +37,16 @@ Use expressive typography, shape and motion to clarify hierarchy—not to decora
 
 ## 11. Color
 - Semantic tokens only from `lib/core/theme/`.
-- Primary blue for action/navigation; cyan/mint for informational/wellness semantics; violet only for AI/premium emphasis when relevant.
+- Green Wellness primary `#006A46` directs action/navigation; `#14A36F` is a supporting accent, `#EAF9F1` is the mint surface, and violet is reserved for AI/premium differentiation when relevant.
 - Error/warning/success must carry icon/text, never color alone.
 
 ## 12. Typography
-- Strong, short display/heading for the current task.
+- Roboto 400/500/600/700 is the deterministic family; use a strong, short display/heading for the current task.
 - Body copy stays compact and Vietnamese-first.
 - Numeric health/business values use tabular/scannable treatment; labels remain readable at increased text scale.
 
 ## 13. Shape
-Use M3 expressive shape contrast: large hero/summary containers may be softer; data rows/forms use calmer radii; pills are reserved for status/chips rather than every container.
+Use M3 expressive shape contrast: input/control 14 dp, card 20 dp and sheet 28 dp are the Green Wellness defaults; pills are reserved for status/chips.
 
 ## 14. Spacing
 Base rhythm 4/8 with practical tokens: 8, 12, 16, 20, 24, 32. Maintain at least 16 px compact side padding and avoid stacking decorative gaps.
@@ -79,7 +79,7 @@ Use Nabi-safe Vietnamese on consumer surfaces and operational Vietnamese on Admi
 Ready content should be glanceable in the first viewport, with detail progressively disclosed. Avoid dense prose above the first actionable information.
 
 ## 24. Disabled / locked / coming-soon
-No direct active route is proven. Keep design ready for invocation but do not describe it as a shipping navigation destination.
+Route is active. Quick Care remains deterministic wellness support and must not imply diagnosis, treatment or an unapproved AI call.
 
 ## 25. Motion
 Fade-through / subtle shape morph 180–260 ms. Reduced Motion must collapse movement to opacity/static state changes while preserving causality and hierarchy.

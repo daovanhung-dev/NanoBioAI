@@ -11,9 +11,9 @@ class ConditionsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: context.semanticColors.card,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.errorSoft),
+        border: Border.all(color: context.semanticColors.errorSoft),
         boxShadow: AppShadows.xs,
       ),
       child: Column(
@@ -21,16 +21,16 @@ class ConditionsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.medical_information_rounded,
-                color: AppColors.error,
+                color: context.semanticColors.error,
                 size: 16,
               ),
               const SizedBox(width: AppSpacing.tiny),
               Text(
                 'Tình trạng cần theo dõi',
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: AppColors.error,
+                  color: context.semanticColors.error,
                   fontWeight: AppTypography.semiBold,
                 ),
               ),
@@ -45,9 +45,9 @@ class ConditionsCard extends StatelessWidget {
                   Container(
                     width: 6,
                     height: 6,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.error,
+                      color: context.semanticColors.error,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
@@ -55,7 +55,7 @@ class ConditionsCard extends StatelessWidget {
                     child: Text(
                       condition,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textPrimary,
+                        color: context.semanticColors.textPrimary,
                       ),
                     ),
                   ),

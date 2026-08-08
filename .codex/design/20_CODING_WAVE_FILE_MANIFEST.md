@@ -2,6 +2,18 @@
 
 Exact file scope derived from the UI file matrix. W11 cleanup/certification spans all migrated files.
 
+## Green Wellness delta - 2026-08-08
+
+The counts below remain the historical 183-file inventory baseline. The working-tree Green migration also adds or newly exposes:
+
+- `lib/core/theme/app_semantic_colors.dart` - context-aware light/dark semantic color extension.
+- `lib/app_versions/v1/features/today_tasks/presentation/pages/today_tasks_page.dart`.
+- `lib/app_versions/v1/features/today_tasks/presentation/widgets/today_tasks_states.dart`.
+- `lib/app_versions/v1/features/today_tasks/presentation/widgets/today_task_card.dart`.
+- V1 wellness and V3 FamilyPlus route deltas recorded in `14_ROUTE_MATRIX.md`.
+
+Regenerate the machine inventory before treating the historical per-wave counts as a current exhaustive file count.
+
 ## W1 Foundation
 - Files: **37**.
 

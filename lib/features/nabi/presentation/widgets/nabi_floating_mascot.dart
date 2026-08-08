@@ -88,6 +88,7 @@ class _NaBiFloatingMascotState extends State<NaBiFloatingMascot> {
   @override
   Widget build(BuildContext context) {
     final resolvedSize = _resolveSize(context, widget.size);
+    final colors = context.semanticColors;
     final mascot = Semantics(
       button: true,
       enabled: widget.enabled,
@@ -127,7 +128,7 @@ class _NaBiFloatingMascotState extends State<NaBiFloatingMascot> {
                     offset: const Offset(0, 10),
                   ),
                   BoxShadow(
-                    color: AppColors.textPrimary.withValues(alpha: 0.12),
+                    color: colors.textPrimary.withValues(alpha: 0.12),
                     blurRadius: 16,
                     offset: const Offset(0, 7),
                   ),
@@ -180,6 +181,7 @@ class _MascotLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = context.semanticColors;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: theme.cardColor,
@@ -189,14 +191,17 @@ class _MascotLabel extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.08),
+            color: colors.textPrimary.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
         child: Text(
           text,
           maxLines: 1,

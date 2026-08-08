@@ -8,7 +8,7 @@ import 'package:nano_app/core/membership/membership_display_info.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 void main() {
-  group('Dashboard Blue Wellness UI', () {
+  group('Dashboard Green Wellness UI', () {
     testWidgets('compact metrics remain readable on a narrow screen', (
       tester,
     ) async {
@@ -101,6 +101,57 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('dark header keeps fixed brand content on onBrand', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _testApp(
+          width: 360,
+          themeMode: ThemeMode.dark,
+          child: const DashboardHeader(
+            fullName: 'NanoBio Tester',
+            membershipInfo: MembershipDisplayInfo(
+              code: 'free',
+              label: 'Free',
+              description: 'Free account',
+              icon: Icons.verified_user_rounded,
+            ),
+            unreadNotifications: 0,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final context = tester.element(find.byType(DashboardHeader));
+      final colors = context.semanticColors;
+      final greeting = tester.widget<Text>(find.textContaining('Tester'));
+      final heart = tester.widget<Icon>(find.byIcon(Icons.favorite_rounded));
+      final gradients = tester
+          .widgetList<Container>(find.byType(Container))
+          .map((container) => container.decoration)
+          .whereType<BoxDecoration>()
+          .map((decoration) => decoration.gradient)
+          .whereType<LinearGradient>();
+
+      expect(greeting.style?.color, colors.onBrand);
+      expect(heart.color, colors.onBrand);
+      expect(
+        gradients.any(
+          (gradient) =>
+              gradient.colors.length == AppGradients.dashboard.colors.length &&
+              List.generate(
+                gradient.colors.length,
+                (index) =>
+                    gradient.colors[index] ==
+                    AppGradients.dashboard.colors[index],
+              ).every((matches) => matches),
+        ),
+        isTrue,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     test('dashboard page remains orchestration-only and removes pulse loop', () {
       final page = File(
         'lib/app_versions/v1/features/dashboard/presentation/pages/dashboard_page.dart',
@@ -118,10 +169,13 @@ void main() {
 Widget _testApp({
   required double width,
   double textScale = 1,
+  ThemeMode themeMode = ThemeMode.light,
   required Widget child,
 }) {
   return MaterialApp(
     theme: AppTheme.lightTheme,
+    darkTheme: AppTheme.darkTheme,
+    themeMode: themeMode,
     home: MediaQuery(
       data: MediaQueryData(
         size: Size(width, 800),

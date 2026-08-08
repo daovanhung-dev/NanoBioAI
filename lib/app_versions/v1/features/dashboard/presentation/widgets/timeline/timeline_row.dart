@@ -22,7 +22,7 @@ class TimelineRow extends StatelessWidget {
               child: Text(
                 event.time,
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textHint,
+                  color: context.semanticColors.textHint,
                   fontWeight: AppTypography.medium,
                 ),
                 textAlign: TextAlign.center,
@@ -46,7 +46,10 @@ class TimelineRow extends StatelessWidget {
               ),
               if (!isLast)
                 Expanded(
-                  child: Container(width: 1.5, color: AppColors.borderLight),
+                  child: Container(
+                    width: 1.5,
+                    color: context.semanticColors.borderLight,
+                  ),
                 ),
             ],
           ),
@@ -70,7 +73,7 @@ class TimelineRow extends StatelessWidget {
                   Text(
                     event.detail,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.semanticColors.textSecondary,
                     ),
                   ),
                 ],

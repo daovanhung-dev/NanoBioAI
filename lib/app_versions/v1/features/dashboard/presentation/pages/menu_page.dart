@@ -38,41 +38,6 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
     SettingsView(),
   ];
 
-  late final List<_NavItemData> _items = [
-    _NavItemData(
-      label: 'Hôm nay',
-      semanticLabel: 'Về trang hôm nay của bạn',
-      icon: Icons.home_rounded,
-      activeIcon: Icons.home_filled,
-      baseColor: AppColors.primary,
-      accentColor: AppColors.primaryLight,
-    ),
-    _NavItemData(
-      label: 'Tiện ích',
-      semanticLabel: 'Mở các tiện ích chăm sóc sức khỏe',
-      icon: Icons.widgets_rounded,
-      activeIcon: Icons.dashboard_customize_rounded,
-      baseColor: AppColors.secondary,
-      accentColor: AppColors.info,
-    ),
-    _NavItemData(
-      label: 'Góc Nabi',
-      semanticLabel: 'Mở góc đồng hành cùng Nabi',
-      icon: Icons.auto_awesome_mosaic_rounded,
-      activeIcon: Icons.auto_awesome_rounded,
-      baseColor: AppColors.warning,
-      accentColor: AppColors.secondary,
-    ),
-    _NavItemData(
-      label: 'Của bạn',
-      semanticLabel: 'Mở không gian tùy chỉnh của bạn',
-      icon: Icons.settings_outlined,
-      activeIcon: Icons.settings_rounded,
-      baseColor: AppColors.textPrimary,
-      accentColor: AppColors.textSecondary,
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -95,7 +60,8 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
     super.didChangeDependencies();
     final policy = AppMotionScope.of(context);
     final reduceMotion = AppMotionScope.reduceMotionOf(context);
-    if (reduceMotion || policy.performanceTier == AppPerformanceTier.economical) {
+    if (reduceMotion ||
+        policy.performanceTier == AppPerformanceTier.economical) {
       _ambientController
         ..stop()
         ..value = .42;
@@ -150,17 +116,22 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
 
   @override
   Widget build(BuildContext context) {
-    final overlayStyle = SystemUiOverlayStyle.dark.copyWith(
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final overlayStyle =
+        (isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
+            .copyWith(
+              statusBarColor: Colors.transparent,
+              systemNavigationBarColor: Colors.transparent,
+              systemNavigationBarIconBrightness: isDark
+                  ? Brightness.light
+                  : Brightness.dark,
+            );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlayStyle,
       child: MedicalPageScaffold(
         ambientBackground: false,
-        backgroundColor: AppColors.background,
+        backgroundColor: context.semanticColors.background,
         extendBody: true,
         body: LayoutBuilder(
           builder: (context, _) {
@@ -213,6 +184,41 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
 
   Widget _buildNavigationBar(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.semanticColors;
+    final items = [
+      _NavItemData(
+        label: 'Hôm nay',
+        semanticLabel: 'Về trang hôm nay của bạn',
+        icon: Icons.home_rounded,
+        activeIcon: Icons.home_filled,
+        baseColor: colors.primary,
+        accentColor: colors.primaryLight,
+      ),
+      _NavItemData(
+        label: 'Tiện ích',
+        semanticLabel: 'Mở các tiện ích chăm sóc sức khỏe',
+        icon: Icons.widgets_rounded,
+        activeIcon: Icons.dashboard_customize_rounded,
+        baseColor: colors.secondary,
+        accentColor: colors.info,
+      ),
+      _NavItemData(
+        label: 'Góc Nabi',
+        semanticLabel: 'Mở góc đồng hành cùng Nabi',
+        icon: Icons.auto_awesome_mosaic_rounded,
+        activeIcon: Icons.auto_awesome_rounded,
+        baseColor: colors.warning,
+        accentColor: colors.secondary,
+      ),
+      _NavItemData(
+        label: 'Của bạn',
+        semanticLabel: 'Mở không gian tùy chỉnh của bạn',
+        icon: Icons.settings_outlined,
+        activeIcon: Icons.settings_rounded,
+        baseColor: colors.textPrimary,
+        accentColor: colors.textSecondary,
+      ),
+    ];
     final tier = AppMotionScope.of(context).performanceTier;
     final blurSigma = switch (tier) {
       AppPerformanceTier.economical => 0.0,
@@ -222,17 +228,17 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
 
     final glassColors = isDark
         ? [
-            AppColors.surface.withValues(alpha: .12),
-            AppColors.surface.withValues(alpha: .07),
+            colors.surface.withValues(alpha: .12),
+            colors.surface.withValues(alpha: .07),
           ]
         : [
-            AppColors.surface.withValues(alpha: .84),
-            AppColors.surface.withValues(alpha: .66),
+            colors.surface.withValues(alpha: .84),
+            colors.surface.withValues(alpha: .66),
           ];
 
     final borderColor = isDark
-        ? AppColors.surface.withValues(alpha: .14)
-        : AppColors.surface.withValues(alpha: .58);
+        ? colors.surface.withValues(alpha: .14)
+        : colors.surface.withValues(alpha: .58);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.xxl),
@@ -252,7 +258,7 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
             boxShadow: [
               ...AppShadows.xl,
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: .08),
+                color: colors.primary.withValues(alpha: .08),
                 blurRadius: 34,
                 spreadRadius: 1,
                 offset: const Offset(0, 16),
@@ -260,8 +266,8 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
             ],
           ),
           child: Row(
-            children: List.generate(_items.length, (index) {
-              final item = _items[index];
+            children: List.generate(items.length, (index) {
+              final item = items[index];
 
               return Expanded(
                 child: _AnimatedNavItem(
@@ -294,7 +300,8 @@ class _AnimatedNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final inactiveColor = AppColors.textHint;
+    final colors = context.semanticColors;
+    final inactiveColor = colors.textHint;
     final glowOpacity = lerpDouble(.10, .22, pulseValue)!;
 
     return Semantics(
@@ -359,7 +366,7 @@ class _AnimatedNavItem extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppRadius.xl),
                         border: Border.all(
                           color: isActive
-                              ? AppColors.surface.withValues(alpha: .24)
+                              ? colors.surface.withValues(alpha: .24)
                               : Colors.transparent,
                         ),
                       ),
@@ -375,7 +382,7 @@ class _AnimatedNavItem extends StatelessWidget {
                                 child: Icon(
                                   isActive ? item.activeIcon : item.icon,
                                   color: isActive
-                                      ? AppColors.surface
+                                      ? colors.textInverse
                                       : inactiveColor,
                                   size: lerpDouble(23, 28, value)!,
                                 ),
@@ -387,7 +394,7 @@ class _AnimatedNavItem extends StatelessWidget {
                                   curve: Curves.easeOutCubic,
                                   style: AppTextStyles.labelSmall.copyWith(
                                     color: isActive
-                                        ? AppColors.surface
+                                        ? colors.textInverse
                                         : inactiveColor,
                                     fontWeight: isActive
                                         ? FontWeight.w800
@@ -414,13 +421,15 @@ class _AnimatedNavItem extends StatelessWidget {
                           width: 22,
                           height: 3,
                           decoration: BoxDecoration(
-                            color: AppColors.surface.withValues(alpha: .92),
+                            color: colors.textInverse.withValues(alpha: .92),
                             borderRadius: BorderRadius.circular(
                               AppRadius.circular,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.surface.withValues(alpha: .62),
+                                color: colors.textInverse.withValues(
+                                  alpha: .62,
+                                ),
                                 blurRadius: 10,
                                 spreadRadius: 1,
                               ),
@@ -451,6 +460,7 @@ class _AnimatedBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.semanticColors;
 
     return AnimatedBuilder(
       animation: Listenable.merge([ambientAnimation, floatingAnimation]),
@@ -464,8 +474,8 @@ class _AnimatedBackground extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: isDark
-                        ? [AppColors.textPrimary, AppColors.textSecondary]
-                        : [AppColors.background, AppColors.surface],
+                        ? [colors.background, colors.surface]
+                        : [colors.background, colors.surface],
                   ),
                 ),
               ),
@@ -473,7 +483,7 @@ class _AnimatedBackground extends StatelessWidget {
                 top: -116,
                 left: -84,
                 size: 284,
-                color: AppColors.primary,
+                color: colors.primary,
                 opacity: .16,
                 animationValue: ambientAnimation.value,
                 floatingValue: floatingAnimation.value,
@@ -483,7 +493,7 @@ class _AnimatedBackground extends StatelessWidget {
                 top: 172,
                 right: -92,
                 size: 236,
-                color: AppColors.secondary,
+                color: colors.secondary,
                 opacity: .13,
                 animationValue: ambientAnimation.value,
                 floatingValue: floatingAnimation.value,
@@ -493,7 +503,7 @@ class _AnimatedBackground extends StatelessWidget {
                 bottom: -148,
                 left: 42,
                 size: 276,
-                color: AppColors.warning,
+                color: colors.warning,
                 opacity: .10,
                 animationValue: ambientAnimation.value,
                 floatingValue: floatingAnimation.value,
@@ -506,7 +516,7 @@ class _AnimatedBackground extends StatelessWidget {
                       center: const Alignment(.15, -.55),
                       radius: 1.1,
                       colors: [
-                        AppColors.surface.withValues(alpha: isDark ? .02 : .28),
+                        colors.surface.withValues(alpha: isDark ? .02 : .28),
                         Colors.transparent,
                       ],
                     ),

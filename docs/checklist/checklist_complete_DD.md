@@ -6,10 +6,10 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 
 | Field | Value |
 |---|---|
-| Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, va Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001` |
-| Pham vi | BioAI / NanoBio: approved DD M01-M19 and M30, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, va planned DD backlog M20-M29 |
+| Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001`, va `docs/refactor/stitch_nanobio_design_system/DD_READINESS.md` |
+| Pham vi | BioAI / NanoBio: approved DD M01-M19 and M30, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, planned DD backlog M20-M29, va pending Stitch Green Wellness modules/deltas |
 | Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
-| Ngay cap nhat | 2026-08-04 |
+| Ngay cap nhat | 2026-08-08 |
 | Muc dich | Theo doi DD docs completeness rieng voi coding progress va implementation evidence backlog; khong tron UI discovery shell voi nghiep vu module. |
 
 ## Rubric phan tram
@@ -71,6 +71,19 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Sale/payment/payout | Approved for DD docs | Manual payment/payout approval, 24h hold, 24h refund/cancel, listed-price commission, owner-only FamilyPlus commission. |
 | Admin/privacy | Approved for DD docs | Full Admin group model, Super Admin-only sensitive edits, Sale privacy-limited phone/basic customer info. |
 | Advanced Health M20-M29 | BD Draft; UI catalog shell approved only | M20-M29 DD completeness 0% and business coding progress 0%; placeholder UI is not feature completion. |
+
+## Stitch Green Wellness Wave 0 — Pending DD/Addenda
+
+Nguồn chi tiết: [`DD_READINESS.md`](../refactor/stitch_nanobio_design_system/DD_READINESS.md). Bảng này chỉ ghi gate; không thay đổi status Approved của DD hiện hữu.
+
+| Scope | DD/addendum status | UI được phép hiện tại | Coding gate |
+|---|---|---|---|
+| `DAILY_WELLNESS_JOURNAL` | Not created; owner approvals pending | Giữ/refactor `/health-tracking` alias hoặc placeholder trung thực | Không tạo journal route behavior, provider, merge hoặc schema |
+| `MEMBER_WELLNESS_REPORTS` | Not created; owner approvals pending | Refactor `/weekly-summary`, chỉ dùng runtime data hợp lệ hoặc honest empty state | Không tạo report aggregator/export/snapshot/schema |
+| `SELF_CARE_SESSIONS` | Not created; owner approvals pending | Quick/Gentle/Nami Care deterministic UI, không AI/booking | Không tạo session persistence, coaching call hoặc catalog publish |
+| `SLEEP_TRACKING` | Not created; owner approvals pending | Preview/placeholder only | Không form/persistence/health-hub/AI |
+| `STRESS_TRACKING` | Not created; owner approvals pending | Preview/placeholder only | Không form/persistence/health-hub/AI |
+| Delta M05/M06/M07/M09/M10/M11/M12/M14/M19/M30 | Baseline DD remains Approved; Stitch delta/addendum pending PO/Tech/QA/Clinical/Privacy evidence | Visual refactor trong contract baseline | Không mở behavior, route/provider/schema/RPC mới từ delta |
 
 ## Implementation Evidence Backlog
 

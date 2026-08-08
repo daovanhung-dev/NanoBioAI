@@ -37,8 +37,7 @@ class AdminWorkspacePage extends ConsumerStatefulWidget {
   const AdminWorkspacePage({required this.initialSection, super.key});
 
   @override
-  ConsumerState<AdminWorkspacePage> createState() =>
-      _AdminWorkspacePageState();
+  ConsumerState<AdminWorkspacePage> createState() => _AdminWorkspacePageState();
 }
 
 class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
@@ -170,15 +169,16 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
 
           return Scaffold(
             key: _scaffoldKey,
-            backgroundColor: AdminWorkspaceTheme.canvas,
+            backgroundColor: context.adminColors.canvas,
             drawer: compact
                 ? _AdminNavigationDrawer(
                     selected: current.section,
                     sections: sections,
                     onSelected: _goToSection,
                     onShowGuide: _showGuide,
-                    onShowUserApp:
-                        current.session.canUseUserApp ? _showUserApp : null,
+                    onShowUserApp: current.session.canUseUserApp
+                        ? _showUserApp
+                        : null,
                     onSignOut: _signOut,
                   )
                 : null,
@@ -192,8 +192,9 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
                       extended: wide,
                       onSelected: _goToSection,
                       onShowGuide: _showGuide,
-                      onShowUserApp:
-                          current.session.canUseUserApp ? _showUserApp : null,
+                      onShowUserApp: current.session.canUseUserApp
+                          ? _showUserApp
+                          : null,
                       onSignOut: _signOut,
                     ),
                   Expanded(
@@ -294,8 +295,8 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
         next.hasError
             ? AppFeedbackType.error
             : value?.isPermissionDenied == true
-                ? AppFeedbackType.warning
-                : AppFeedbackType.success,
+            ? AppFeedbackType.warning
+            : AppFeedbackType.success,
       );
     } catch (_) {
       if (mounted) AppFeedbackService.instance.emit(AppFeedbackType.error);
@@ -385,10 +386,8 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
     final reason = await showDialog<String>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => _AdminReasonDialog(
-        action: action,
-        itemTitle: item.title,
-      ),
+      builder: (context) =>
+          _AdminReasonDialog(action: action, itemTitle: item.title),
     );
     if (reason == null || reason.trim().isEmpty || !mounted) return;
 
@@ -488,4 +487,3 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
       );
   }
 }
-

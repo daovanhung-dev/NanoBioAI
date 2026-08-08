@@ -34,9 +34,10 @@ class OnboardingTextScalePage extends ConsumerWidget {
     final state = ref.watch(appTextScaleControllerProvider).value;
     final selected = state?.preset ?? AppTextScalePreset.standard;
     final controller = ref.read(appTextScaleControllerProvider.notifier);
+    final colors = context.semanticColors;
 
     return MedicalPageScaffold(
-      backgroundColor: NabiPalette.pageBackground,
+      backgroundColor: colors.background,
       body: NabiAmbientBackground(
         strong: true,
         child: SafeArea(
@@ -47,7 +48,8 @@ class OnboardingTextScalePage extends ConsumerWidget {
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxWidth: 580,
-                    minHeight: constraints.maxHeight - AppSpacing.pagePadding * 2,
+                    minHeight:
+                        constraints.maxHeight - AppSpacing.pagePadding * 2,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -60,8 +62,9 @@ class OnboardingTextScalePage extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(AppRadius.xxl),
                           boxShadow: [
                             BoxShadow(
-                              color: NabiPalette.greenDeep
-                                  .withValues(alpha: 0.22),
+                              color: NabiPalette.greenDeep.withValues(
+                                alpha: 0.22,
+                              ),
                               blurRadius: 26,
                               offset: const Offset(0, 12),
                             ),
@@ -80,7 +83,7 @@ class OnboardingTextScalePage extends ConsumerWidget {
                               'Chữ vừa mắt bạn',
                               textAlign: TextAlign.center,
                               style: AppTextStyles.heading3.copyWith(
-                                color: AppColors.surface,
+                                color: AppColors.textInverse,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
@@ -89,7 +92,9 @@ class OnboardingTextScalePage extends ConsumerWidget {
                               'Bạn có thể đổi lại sau.',
                               textAlign: TextAlign.center,
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.surface.withValues(alpha: 0.84),
+                                color: AppColors.textInverse.withValues(
+                                  alpha: 0.84,
+                                ),
                               ),
                             ),
                           ],

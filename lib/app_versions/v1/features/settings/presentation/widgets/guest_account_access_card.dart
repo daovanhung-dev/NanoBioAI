@@ -20,7 +20,7 @@ class GuestAccountAccessCard extends StatelessWidget {
         label: 'Đăng nhập để đồng bộ và giữ dữ liệu khi đổi thiết bị',
         child: MedicalSurfaceCard(
           padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-          borderColor: AppColors.borderLight,
+          borderColor: context.semanticColors.borderLight,
           elevated: false,
           radius: AppRadius.xxl,
           child: LayoutBuilder(
@@ -66,7 +66,7 @@ class GuestAccountAccessCard extends StatelessWidget {
                             Text(
                               'Đăng nhập để giữ hành trình lâu dài',
                               style: AppTextStyles.heading3.copyWith(
-                                color: AppColors.textPrimary,
+                                color: context.semanticColors.textPrimary,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -74,7 +74,7 @@ class GuestAccountAccessCard extends StatelessWidget {
                             Text(
                               'Liên kết dữ liệu trên thiết bị, đồng bộ khi đổi máy và dùng các tính năng thành viên.',
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.textSecondary,
+                                color: context.semanticColors.textSecondary,
                                 height: 1.5,
                               ),
                             ),

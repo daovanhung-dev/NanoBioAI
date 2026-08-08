@@ -9,11 +9,15 @@
 | Daily Proof and Wellness Rewards Addendum | docs/BD/wellness_rewards/BD_BioAI_Daily_Proof_Wellness_Rewards_v1.0.md (`BD-BIOAI-WELLNESS-REWARDS-001`) |
 | Nabi Companion Notification BD | docs/BD/notification_Nabi/BD_thong_bao_nut_noi_Nabi.md (`BD-NABI-NOTIFICATION-001`) |
 | DD Baseline Date | 2026-06-28 |
-| Last Updated | 2026-07-17 |
+| Last Updated | 2026-08-08 |
 | Status | M01-M19 and M30 Approved - DD docs complete; M20-M29 DD not started |
 
 ## Purpose
 This folder contains split module DDs for the approved BioAI / NanoBio product-flow baseline M01-M19 and the approved M30 Nabi companion-notification implementation contract. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18, and the 2026-07-17 M30 pass records the user-approved mapping and rollout decisions for `BD-NABI-NOTIFICATION-001`. Runtime/sandbox evidence remains separate from DD completeness. Advanced-health modules M20-M29 remain a future DD backlog only.
+
+## Stitch Green Wellness Readiness — 2026-08-08
+
+The [Wave 0 DD readiness and evidence pack](../refactor/stitch_nanobio_design_system/DD_READINESS.md) records the pending source, owner-approval, safety, privacy, route/provider and schema decisions for the proposed wellness modules, M20-M29 and Stitch deltas to existing modules. It is a Draft gate document, not an Approved module DD or addendum. M01-M19/M30 baseline status remains unchanged; M20-M29 DD completeness and business coding remain 0%, with only the approved catalog/placeholder shell allowed.
 
 ## Module Map
 

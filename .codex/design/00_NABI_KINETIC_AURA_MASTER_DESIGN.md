@@ -1,23 +1,39 @@
-# NanoBio Calm Expressive Health — Master Design
+# NanoBio Stitch Green Wellness - Master Design
 
-The prior “Nabi Kinetic Aura” path is preserved for compatibility, but the target language is **NanoBio Calm Expressive Health**.
+The filename remains stable for project links. The target language is **Stitch Green Wellness** for consumer and Sale surfaces.
 
-## Formula
-- 45% calm medical minimalism: low cognitive noise, trust, whitespace, semantic status.
-- 25% Material 3 Expressive: stronger hierarchy, shape contrast, expressive typography, physics-aware motion.
-- 15% glanceable/bento composition: information grouped by decision and time.
-- 10% restrained translucent control layers: only navigation/transient controls, never health-data content.
-- 5% Nabi emotional layer: contextual companion, micro-celebration and supportive copy.
+## Authority formula
+
+- Stitch `screen.png`: layout, hierarchy and composition.
+- Stitch `code.html`: typography and token intent.
+- Approved DD and current runtime: business rules, access, data and state transitions.
+- Admin: independent operational workspace theme, not a Stitch redesign.
+
+## Experience formula
+
+- 45% calm wellness minimalism: low cognitive noise, trust and whitespace.
+- 25% Material 3 hierarchy: semantic color, shape contrast and accessible state.
+- 15% glanceable composition: information grouped by decision and time.
+- 10% restrained transient depth: tonal layers before blur or decorative shadows.
+- 5% Nabi emotional layer: contextual support and micro-celebration.
+
+## Signature tokens
+
+- Primary `#006A46`; supporting accent `#14A36F`.
+- Primary CTA gradient `#0F8E62` to `#32C789`.
+- Light background `#F5FAF7`; primary text `#12352A`; mint surface `#EAF9F1`.
+- Compact page gutter 16 dp; input radius 14 dp; card radius 20 dp; sheet radius 28 dp.
+- Roboto 400/500/600/700 is bundled and deterministic.
+- Dark mode is a frozen Material 3 fidelity scheme derived from seed `#006A46`; it is not device dynamic color and requires contrast snapshots.
 
 ## Experience principles
-**Clarity → Confidence → Continuity → Delight.** Delight is never allowed to outrank safety or comprehension.
 
-## Signature
-- Calm blue canvas; cyan information; mint completion; restrained violet for AI/premium.
-- Shapes are contrasted by function rather than all being equally rounded.
-- Motion explains cause/effect and spatial continuity.
-- One expressive focal element per viewport.
-- Health/financial/admin data remains stable and readable during animation.
+**Clarity -> Confidence -> Continuity -> Delight.** Delight never outranks safety, comprehension or trusted state.
 
 ## Trust invariants
-Never show payment, reward, access, plan generation or save success before the authoritative operation succeeds. Never fabricate health/social/financial data to make an empty view look attractive.
+
+Never show payment, reward, access, plan generation, AI output or save success before the authoritative operation succeeds. Never fabricate health, social or financial data to fill an empty view. Never copy sample people, health values, QR, revenue or transaction data from Stitch.
+
+## Release invariant
+
+The `stitchGreenUi` cutover cannot be called complete until all 76 Stitch references have classification and light/dark/adaptive/accessibility evidence. Module business flags remain separate, and missing DD/clinical/privacy approval fails closed to an honest placeholder.

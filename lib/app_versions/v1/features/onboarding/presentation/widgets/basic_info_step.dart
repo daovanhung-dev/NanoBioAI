@@ -18,6 +18,7 @@ class BasicInfoStep extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
+    final colors = context.semanticColors;
     return OnboardingStepShell(
       stepIndex: 1,
       title: 'Để NaBi hiểu bạn',
@@ -48,7 +49,7 @@ class BasicInfoStep extends ConsumerWidget {
                   child: Text(
                     'Giới tính *',
                     style: AppTextStyles.labelMedium.copyWith(
-                      color: NabiPalette.mutedInk,
+                      color: colors.textSecondary,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -56,8 +57,9 @@ class BasicInfoStep extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.sm),
                 OnboardingChoiceGrid(
                   options: genders,
-                  selectedCodes:
-                      state.gender.isEmpty ? const [] : [state.gender],
+                  selectedCodes: state.gender.isEmpty
+                      ? const []
+                      : [state.gender],
                   onSelected: controller.updateGender,
                   multiSelect: false,
                   dense: true,
@@ -150,7 +152,13 @@ class _ResponsivePair extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 540) {
-          return Column(children: [first, const SizedBox(height: AppSpacing.sm), second]);
+          return Column(
+            children: [
+              first,
+              const SizedBox(height: AppSpacing.sm),
+              second,
+            ],
+          );
         }
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,13 +183,14 @@ class _BirthYearField extends StatelessWidget {
   Widget build(BuildContext context) {
     final years = OnboardingOptions.birthYears;
     final effective = years.contains(value) ? value : years.first;
+    final colors = context.semanticColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Năm sinh *',
           style: AppTextStyles.labelMedium.copyWith(
-            color: NabiPalette.mutedInk,
+            color: colors.textSecondary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -197,14 +206,14 @@ class _BirthYearField extends StatelessWidget {
             isDense: true,
             prefixIcon: const Icon(Icons.cake_outlined, size: 20),
             filled: true,
-            fillColor: AppColors.surface,
+            fillColor: colors.inputBackground,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              borderSide: const BorderSide(color: NabiPalette.line),
+              borderSide: BorderSide(color: colors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              borderSide: const BorderSide(color: NabiPalette.line),
+              borderSide: BorderSide(color: colors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -238,29 +247,28 @@ class _BmiInsight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final label = value <= 0
         ? 'Chưa đủ dữ liệu'
         : value < 18.5
-            ? 'Hơi thấp'
-            : value < 25
-                ? 'Trong khoảng tham khảo'
-                : value < 30
-                    ? 'Hơi cao'
-                    : 'Cao';
-    final progress = value <= 0
-        ? 0.0
-        : (value / 40).clamp(0.0, 1.0).toDouble();
+        ? 'Hơi thấp'
+        : value < 25
+        ? 'Trong khoảng tham khảo'
+        : value < 30
+        ? 'Hơi cao'
+        : 'Cao';
+    final progress = value <= 0 ? 0.0 : (value / 40).clamp(0.0, 1.0).toDouble();
     final color = value <= 0
-        ? NabiPalette.mutedInk
+        ? colors.textMuted
         : value >= 18.5 && value < 25
-            ? NabiPalette.greenPrimary
-            : NabiPalette.warning;
+        ? NabiPalette.greenPrimary
+        : NabiPalette.warning;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.10), AppColors.surface],
+          colors: [color.withValues(alpha: 0.10), colors.surface],
         ),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: color.withValues(alpha: 0.16)),
@@ -286,14 +294,14 @@ class _BmiInsight extends StatelessWidget {
                     Text(
                       value > 0 ? 'BMI ${value.toStringAsFixed(1)}' : 'BMI',
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: NabiPalette.ink,
+                        color: colors.textPrimary,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     Text(
                       label,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: NabiPalette.mutedInk,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ],
@@ -307,7 +315,7 @@ class _BmiInsight extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: NabiPalette.mintSurface,
+              backgroundColor: colors.primarySubtle,
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),

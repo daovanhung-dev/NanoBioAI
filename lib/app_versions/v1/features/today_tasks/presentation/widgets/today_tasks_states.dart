@@ -8,6 +8,7 @@ class TodayTasksReadyState extends StatelessWidget {
     required this.tasks,
     required this.now,
     required this.onRefresh,
+    super.key,
   });
 
   final List<LifestyleScheduleItemEntity> tasks;
@@ -51,13 +52,11 @@ class TodayTasksReadyState extends StatelessWidget {
                           MedicalStatusPill(
                             label: '$completed/${tasks.length} đã xong',
                             icon: Icons.check_circle_outline_rounded,
-                            foregroundColor: AppColors.textInverse,
-                            backgroundColor: AppColors.textInverse.withValues(
-                              alpha: .14,
-                            ),
-                            borderColor: AppColors.textInverse.withValues(
-                              alpha: .22,
-                            ),
+                            foregroundColor: context.semanticColors.onBrand,
+                            backgroundColor: context.semanticColors.onBrand
+                                .withValues(alpha: .14),
+                            borderColor: context.semanticColors.onBrand
+                                .withValues(alpha: .22),
                           ),
                         ],
                       ),
@@ -76,7 +75,7 @@ class TodayTasksReadyState extends StatelessWidget {
                           subtitle:
                               'Bạn có thể xác nhận trong cửa sổ thời gian hiện tại.',
                           icon: Icons.bolt_rounded,
-                          color: AppColors.primary,
+                          color: context.semanticColors.primary,
                           tasks: groups.open,
                           now: now,
                         ),
@@ -84,7 +83,7 @@ class TodayTasksReadyState extends StatelessWidget {
                           title: 'Sắp tới',
                           subtitle: 'Các nhiệm vụ tiếp theo trong ngày.',
                           icon: Icons.schedule_rounded,
-                          color: AppColors.info,
+                          color: context.semanticColors.info,
                           tasks: groups.waiting,
                           now: now,
                         ),
@@ -92,7 +91,7 @@ class TodayTasksReadyState extends StatelessWidget {
                           title: 'Đã hoàn thành',
                           subtitle: 'Những mốc bạn đã chăm sóc hôm nay.',
                           icon: Icons.verified_rounded,
-                          color: AppColors.success,
+                          color: context.semanticColors.success,
                           tasks: groups.completed,
                           now: now,
                         ),
@@ -101,7 +100,7 @@ class TodayTasksReadyState extends StatelessWidget {
                           subtitle:
                               'Các mốc đã qua thời gian xác nhận trong ngày.',
                           icon: Icons.lock_clock_rounded,
-                          color: AppColors.textSecondary,
+                          color: context.semanticColors.textSecondary,
                           tasks: groups.locked,
                           now: now,
                         ),
@@ -146,10 +145,10 @@ class _TodayProgressCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const MedicalIconBadge(
+              MedicalIconBadge(
                 icon: Icons.insights_rounded,
-                color: AppColors.primary,
-                backgroundColor: AppColors.primarySoft,
+                color: context.semanticColors.primary,
+                backgroundColor: context.semanticColors.primarySoft,
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -163,7 +162,7 @@ class _TodayProgressCard extends StatelessWidget {
                           ? 'Chưa có nhiệm vụ'
                           : '$completed/$total nhiệm vụ • $percent%',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.semanticColors.textSecondary,
                       ),
                     ),
                   ],
@@ -177,9 +176,9 @@ class _TodayProgressCard extends StatelessWidget {
             child: LinearProgressIndicator(
               minHeight: 10,
               value: progress,
-              backgroundColor: AppColors.primarySoft,
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                AppColors.success,
+              backgroundColor: context.semanticColors.primarySoft,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                context.semanticColors.success,
               ),
             ),
           ),
@@ -187,7 +186,7 @@ class _TodayProgressCard extends StatelessWidget {
           Text(
             message,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: context.semanticColors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -246,7 +245,7 @@ class _TaskSection extends StatelessWidget {
 }
 
 class TodayTasksEmptyState extends StatelessWidget {
-  const TodayTasksEmptyState();
+  const TodayTasksEmptyState({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -255,10 +254,10 @@ class TodayTasksEmptyState extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
         child: Column(
           children: [
-            const MedicalIconBadge(
+            MedicalIconBadge(
               icon: Icons.event_available_rounded,
-              color: AppColors.success,
-              backgroundColor: AppColors.pastelMint,
+              color: context.semanticColors.success,
+              backgroundColor: context.semanticColors.successSoft,
               size: 64,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -281,7 +280,7 @@ class TodayTasksEmptyState extends StatelessWidget {
 }
 
 class TodayTasksLoadingState extends StatelessWidget {
-  const TodayTasksLoadingState();
+  const TodayTasksLoadingState({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -301,22 +300,22 @@ class TodayTasksLoadingState extends StatelessWidget {
 }
 
 class TodayTasksErrorState extends StatelessWidget {
-  const TodayTasksErrorState({required this.onRetry});
+  const TodayTasksErrorState({required this.onRetry, super.key});
 
   final Future<void> Function() onRetry;
 
   @override
   Widget build(BuildContext context) {
     return MedicalSurfaceCard(
-      borderColor: AppColors.error.withValues(alpha: .18),
+      borderColor: context.semanticColors.error.withValues(alpha: .18),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         child: Column(
           children: [
-            const MedicalIconBadge(
+            MedicalIconBadge(
               icon: Icons.sync_problem_rounded,
-              color: AppColors.error,
-              backgroundColor: AppColors.pastelRose,
+              color: context.semanticColors.error,
+              backgroundColor: context.semanticColors.errorSoft,
               size: 64,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -329,7 +328,7 @@ class TodayTasksErrorState extends StatelessWidget {
             Text(
               'Bạn kiểm tra kết nối rồi thử lại nhé.',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -347,7 +346,7 @@ class TodayTasksErrorState extends StatelessWidget {
 }
 
 class TodayTasksPageFrame extends StatelessWidget {
-  const TodayTasksPageFrame({required this.child});
+  const TodayTasksPageFrame({required this.child, super.key});
 
   final Widget child;
 

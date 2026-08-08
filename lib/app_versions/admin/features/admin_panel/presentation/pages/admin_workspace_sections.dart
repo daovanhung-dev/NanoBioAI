@@ -8,7 +8,8 @@ class _AdminContentHost extends StatelessWidget {
     AdminPanelSection section,
     AdminActionPresentation action,
     AdminWorkItem item,
-  ) onAction;
+  )
+  onAction;
   final ValueChanged<AdminPanelSection> onGoToSection;
   final VoidCallback onClearSearch;
 
@@ -30,22 +31,24 @@ class _AdminContentHost extends StatelessWidget {
           )
         : switch (state.section) {
             AdminPanelSection.dashboard => _DashboardSection(
-                state: state,
-                onOpenSection: onGoToSection,
-              ),
-            AdminPanelSection.audit =>
-              _AuditSection(events: state.auditEvents, query: state.query),
+              state: state,
+              onOpenSection: onGoToSection,
+            ),
+            AdminPanelSection.audit => _AuditSection(
+              events: state.auditEvents,
+              query: state.query,
+            ),
             AdminPanelSection.wellnessRewards => AdminWellnessRewardsPanel(
-                canWrite: state.session.hasPermission(
-                  AdminPermissions.wellnessRewardsWrite,
-                ),
+              canWrite: state.session.hasPermission(
+                AdminPermissions.wellnessRewardsWrite,
               ),
+            ),
             _ => _WorkQueueSection(
-                state: state,
-                runningTargetId: runningTargetId,
-                onAction: onAction,
-                onClearSearch: onClearSearch,
-              ),
+              state: state,
+              runningTargetId: runningTargetId,
+              onAction: onAction,
+              onClearSearch: onClearSearch,
+            ),
           };
 
     return Stack(
@@ -73,12 +76,7 @@ class _AdminContentHost extends StatelessWidget {
             ),
           ),
         ),
-        if (busy)
-          Positioned(
-            top: 10,
-            right: 18,
-            child: const _BusyPill(),
-          ),
+        if (busy) Positioned(top: 10, right: 18, child: const _BusyPill()),
       ],
     );
   }
@@ -89,18 +87,15 @@ class _BusyPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: AdminWorkspaceTheme.panel,
+        color: colors.panel,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AdminWorkspaceTheme.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1417324D),
-            blurRadius: 12,
-            offset: Offset(0, 3),
-          ),
+        border: Border.all(color: colors.border),
+        boxShadow: [
+          BoxShadow(color: colors.shadow, blurRadius: 12, offset: Offset(0, 3)),
         ],
       ),
       child: Row(
@@ -114,7 +109,7 @@ class _BusyPill extends StatelessWidget {
           Text(
             'Đang cập nhật',
             style: AppTextStyles.bodySmall.copyWith(
-              color: AdminWorkspaceTheme.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ],
@@ -127,10 +122,7 @@ class _DashboardSection extends StatelessWidget {
   final AdminPanelState state;
   final ValueChanged<AdminPanelSection> onOpenSection;
 
-  const _DashboardSection({
-    required this.state,
-    required this.onOpenSection,
-  });
+  const _DashboardSection({required this.state, required this.onOpenSection});
 
   @override
   Widget build(BuildContext context) {
@@ -164,8 +156,9 @@ class _DashboardSection extends StatelessWidget {
                 _MetricCard(
                   metric: metric,
                   onOpen: () {
-                    final section =
-                        AdminPanelSection.fromValue(metric.targetSection);
+                    final section = AdminPanelSection.fromValue(
+                      metric.targetSection,
+                    );
                     if (section != null) onOpenSection(section);
                   },
                 ),
@@ -207,13 +200,14 @@ class _PageIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AdminWorkspaceTheme.panel,
+        color: colors.panel,
         borderRadius: BorderRadius.circular(AdminWorkspaceTheme.panelRadius),
-        border: Border.all(color: AdminWorkspaceTheme.border),
+        border: Border.all(color: colors.border),
       ),
       child: Wrap(
         alignment: WrapAlignment.spaceBetween,
@@ -229,7 +223,7 @@ class _PageIntro extends StatelessWidget {
                 Text(
                   eyebrow,
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: AdminWorkspaceTheme.blueDark,
+                    color: colors.blueStrong,
                     fontWeight: FontWeight.w800,
                     letterSpacing: .7,
                   ),
@@ -237,15 +231,13 @@ class _PageIntro extends StatelessWidget {
                 const SizedBox(height: 7),
                 Text(
                   title,
-                  style: AppTextStyles.heading2.copyWith(
-                    color: AdminWorkspaceTheme.text,
-                  ),
+                  style: AppTextStyles.heading2.copyWith(color: colors.text),
                 ),
                 const SizedBox(height: 7),
                 Text(
                   description,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AdminWorkspaceTheme.textSecondary,
+                    color: colors.textSecondary,
                     height: 1.45,
                   ),
                 ),
@@ -266,26 +258,25 @@ class _SessionBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF7F1),
+        color: colors.successContainer,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFBEE4D3)),
+        border: Border.all(color: colors.successBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.verified_user_outlined,
-            color: AdminWorkspaceTheme.mint,
-            size: 19,
-          ),
+          Icon(Icons.verified_user_outlined, color: colors.mint, size: 19),
           const SizedBox(width: 8),
           Text(
-            roleCount > 1 ? '$roleCount nhóm quyền đang hoạt động' : 'Quyền đã xác nhận',
+            roleCount > 1
+                ? '$roleCount nhóm quyền đang hoạt động'
+                : 'Quyền đã xác nhận',
             style: AppTextStyles.labelMedium.copyWith(
-              color: const Color(0xFF185B45),
+              color: colors.onSuccessContainer,
             ),
           ),
         ],
@@ -302,8 +293,9 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final section = AdminPanelSection.fromValue(metric.targetSection);
-    final tone = _statusTone(metric.status);
+    final tone = _statusTone(metric.status, colors);
 
     return _WorkspacePanel(
       onTap: section == null ? null : onOpen,
@@ -325,9 +317,7 @@ class _MetricCard extends StatelessWidget {
               child: Text(
                 '${metric.value}',
                 key: ValueKey('${metric.key}-${metric.value}'),
-                style: AppTextStyles.heading1.copyWith(
-                  color: AdminWorkspaceTheme.text,
-                ),
+                style: AppTextStyles.heading1.copyWith(color: colors.text),
               ),
             ),
             const SizedBox(height: 5),
@@ -339,15 +329,15 @@ class _MetricCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AdminWorkspaceTheme.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ),
                 if (section != null)
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_rounded,
                     size: 18,
-                    color: AdminWorkspaceTheme.blue,
+                    color: colors.blue,
                   ),
               ],
             ),
@@ -366,6 +356,7 @@ class _ShortcutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return _WorkspacePanel(
       onTap: onOpen,
       child: Padding(
@@ -374,7 +365,7 @@ class _ShortcutCard extends StatelessWidget {
           children: [
             _IconTile(
               icon: _iconForSection(section, false),
-              color: AdminWorkspaceTheme.blue,
+              color: colors.blue,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -384,7 +375,7 @@ class _ShortcutCard extends StatelessWidget {
                   Text(
                     AdminUiCopy.sectionLabel(section),
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: AdminWorkspaceTheme.text,
+                      color: colors.text,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -393,7 +384,7 @@ class _ShortcutCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AdminWorkspaceTheme.textSecondary,
+                      color: colors.textSecondary,
                       height: 1.3,
                     ),
                   ),
@@ -401,10 +392,7 @@ class _ShortcutCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AdminWorkspaceTheme.textMuted,
-            ),
+            Icon(Icons.chevron_right_rounded, color: colors.textMuted),
           ],
         ),
       ),
@@ -419,7 +407,8 @@ class _WorkQueueSection extends StatelessWidget {
     AdminPanelSection section,
     AdminActionPresentation action,
     AdminWorkItem item,
-  ) onAction;
+  )
+  onAction;
   final VoidCallback onClearSearch;
 
   const _WorkQueueSection({
@@ -489,7 +478,8 @@ class _WorkItemCard extends StatelessWidget {
     AdminPanelSection section,
     AdminActionPresentation action,
     AdminWorkItem item,
-  ) onAction;
+  )
+  onAction;
 
   const _WorkItemCard({
     required this.section,
@@ -502,6 +492,7 @@ class _WorkItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final actions = _actionsFor(section, item.status)
         .where((action) {
           return session.canRunMutation(
@@ -515,7 +506,7 @@ class _WorkItemCard extends StatelessWidget {
           );
         })
         .toList(growable: false);
-    final tone = _statusTone(item.status);
+    final tone = _statusTone(item.status, colors);
 
     return _WorkspacePanel(
       child: Padding(
@@ -543,7 +534,7 @@ class _WorkItemCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.labelLarge.copyWith(
-                              color: AdminWorkspaceTheme.text,
+                              color: colors.text,
                             ),
                           ),
                           if (item.subtitle.trim().isNotEmpty) ...[
@@ -553,7 +544,7 @@ class _WorkItemCard extends StatelessWidget {
                               maxLines: narrow ? 4 : 2,
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: AdminWorkspaceTheme.textSecondary,
+                                color: colors.textSecondary,
                                 height: 1.35,
                               ),
                             ),
@@ -562,7 +553,8 @@ class _WorkItemCard extends StatelessWidget {
                             const SizedBox(height: 8),
                             _MetaText(
                               icon: Icons.schedule_rounded,
-                              text: 'Tạo lúc ${_formatDateTime(item.createdAt)}',
+                              text:
+                                  'Tạo lúc ${_formatDateTime(item.createdAt)}',
                             ),
                           ],
                         ],
@@ -634,7 +626,8 @@ class _ActionBar extends StatelessWidget {
     AdminPanelSection section,
     AdminActionPresentation action,
     AdminWorkItem item,
-  ) onAction;
+  )
+  onAction;
 
   const _ActionBar({
     required this.section,
@@ -691,6 +684,7 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     if (primary) {
       return FilledButton.icon(
         onPressed: enabled ? onPressed : null,
@@ -703,8 +697,8 @@ class _ActionButton extends StatelessWidget {
       onPressed: enabled ? onPressed : null,
       style: action.danger
           ? OutlinedButton.styleFrom(
-              foregroundColor: AdminWorkspaceTheme.danger,
-              side: const BorderSide(color: Color(0xFFE7B7BB)),
+              foregroundColor: colors.danger,
+              side: BorderSide(color: colors.dangerBorder),
             )
           : null,
       icon: Icon(action.icon, size: 18),
@@ -720,13 +714,14 @@ class _PaymentDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final details = item.paymentReconciliation;
     if (details == null) return const SizedBox.shrink();
 
     return _DetailPanel(
       title: 'Thông tin đối chiếu',
       icon: Icons.account_balance_outlined,
-      color: AdminWorkspaceTheme.warning,
+      color: colors.warning,
       children: [
         _InfoLine(label: 'Mã giao dịch', value: details.transferReference),
         _InfoLine(label: 'Nội dung chuyển khoản', value: details.transferMemo),
@@ -756,6 +751,7 @@ class _PayoutDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final metadata = item.metadata;
     final bankCode = _metadataString(metadata, 'bank_bin');
     final bankName = _metadataString(metadata, 'bank_name');
@@ -790,7 +786,7 @@ class _PayoutDetails extends StatelessWidget {
     return _DetailPanel(
       title: 'Thông tin chi trả',
       icon: Icons.payments_outlined,
-      color: AdminWorkspaceTheme.blue,
+      color: colors.blue,
       children: [
         Wrap(
           spacing: 18,
@@ -805,7 +801,7 @@ class _PayoutDetails extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AdminWorkspaceTheme.border),
+                  border: Border.all(color: colors.border),
                 ),
                 child: QrImageView(data: qrPayload, version: QrVersions.auto),
               ),
@@ -814,10 +810,7 @@ class _PayoutDetails extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _InfoLine(
-                    label: 'Ngân hàng',
-                    value: bankName ?? bankCode,
-                  ),
+                  _InfoLine(label: 'Ngân hàng', value: bankName ?? bankCode),
                   _InfoLine(label: 'Mã ngân hàng', value: bankCode),
                   _InfoLine(label: 'Số tài khoản', value: accountNumber),
                   _InfoLine(label: 'Chủ tài khoản', value: accountName),
@@ -827,10 +820,7 @@ class _PayoutDetails extends StatelessWidget {
                   ),
                   _InfoLine(label: 'Nội dung', value: transferContent),
                   if (hasProof)
-                    const _InfoLine(
-                      label: 'Ảnh xác nhận',
-                      value: 'Đã tải lên',
-                    ),
+                    const _InfoLine(label: 'Ảnh xác nhận', value: 'Đã tải lên'),
                 ],
               ),
             ),
@@ -856,13 +846,14 @@ class _DetailPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AdminWorkspaceTheme.panelMuted,
+        color: colors.panelMuted,
         borderRadius: BorderRadius.circular(11),
-        border: Border.all(color: AdminWorkspaceTheme.divider),
+        border: Border.all(color: colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -873,9 +864,7 @@ class _DetailPanel extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: AdminWorkspaceTheme.text,
-                ),
+                style: AppTextStyles.labelLarge.copyWith(color: colors.text),
               ),
             ],
           ),
@@ -895,6 +884,7 @@ class _InfoLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final text = value?.trim();
     if (text == null || text.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -905,15 +895,13 @@ class _InfoLine extends StatelessWidget {
             TextSpan(
               text: '$label: ',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AdminWorkspaceTheme.textSecondary,
+                color: colors.textSecondary,
                 fontWeight: FontWeight.w700,
               ),
             ),
             TextSpan(
               text: text,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AdminWorkspaceTheme.text,
-              ),
+              style: AppTextStyles.bodySmall.copyWith(color: colors.text),
             ),
           ],
         ),
@@ -930,6 +918,7 @@ class _AuditSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     if (events.isEmpty) {
       return _EmptyState(
         icon: query.trim().isEmpty
@@ -961,10 +950,7 @@ class _AuditSection extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _IconTile(
-                      icon: Icons.history_rounded,
-                      color: AdminWorkspaceTheme.cyan,
-                    ),
+                    _IconTile(icon: Icons.history_rounded, color: colors.cyan),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -973,7 +959,7 @@ class _AuditSection extends StatelessWidget {
                           Text(
                             AdminUiCopy.auditAction(event.action),
                             style: AppTextStyles.labelLarge.copyWith(
-                              color: AdminWorkspaceTheme.text,
+                              color: colors.text,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -981,7 +967,7 @@ class _AuditSection extends StatelessWidget {
                             '${AdminUiCopy.auditTarget(event.target)} · '
                             '${AdminUiCopy.auditReason(event.reason)}',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AdminWorkspaceTheme.textSecondary,
+                              color: colors.textSecondary,
                               height: 1.35,
                             ),
                           ),
@@ -1016,6 +1002,7 @@ class _PermissionDeniedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return _EmptyState(
       icon: Icons.lock_person_outlined,
       title: 'Bạn chưa được mở khu vực này',
@@ -1023,7 +1010,7 @@ class _PermissionDeniedView extends StatelessWidget {
           'Tài khoản cần quyền '
           '${AdminUiCopy.permissionLabel(permission)}. Hãy liên hệ người '
           'quản lý quyền nếu đây là nhiệm vụ của bạn.',
-      tone: AdminWorkspaceTheme.warning,
+      tone: colors.warning,
     );
   }
 }
@@ -1041,6 +1028,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1050,24 +1038,19 @@ class _SectionHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: AppTextStyles.heading3.copyWith(
-                  color: AdminWorkspaceTheme.text,
-                ),
+                style: AppTextStyles.heading3.copyWith(color: colors.text),
               ),
               const SizedBox(height: 3),
               Text(
                 subtitle,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AdminWorkspaceTheme.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
           ),
         ),
-        if (trailing != null) ...[
-          const SizedBox(width: 12),
-          trailing!,
-        ],
+        if (trailing != null) ...[const SizedBox(width: 12), trailing!],
       ],
     );
   }
@@ -1085,10 +1068,11 @@ class _AdaptiveGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         const spacing = 10.0;
-        final columns = ((constraints.maxWidth + spacing) / (minWidth + spacing))
-            .floor()
-            .clamp(1, 4)
-            .toInt();
+        final columns =
+            ((constraints.maxWidth + spacing) / (minWidth + spacing))
+                .floor()
+                .clamp(1, 4)
+                .toInt();
         final width = columns == 1
             ? constraints.maxWidth
             : (constraints.maxWidth - spacing * (columns - 1)) / columns;
@@ -1119,6 +1103,7 @@ class _WorkspacePanelState extends State<_WorkspacePanel> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final interactive = widget.onTap != null;
     return MouseRegion(
       cursor: interactive ? SystemMouseCursors.click : MouseCursor.defer,
@@ -1127,17 +1112,15 @@ class _WorkspacePanelState extends State<_WorkspacePanel> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 140),
         decoration: BoxDecoration(
-          color: AdminWorkspaceTheme.panel,
+          color: colors.panel,
           borderRadius: BorderRadius.circular(AdminWorkspaceTheme.panelRadius),
           border: Border.all(
-            color: _hovered
-                ? const Color(0xFFB7CBE2)
-                : AdminWorkspaceTheme.border,
+            color: _hovered ? colors.borderStrong : colors.border,
           ),
           boxShadow: _hovered
-              ? const [
+              ? [
                   BoxShadow(
-                    color: Color(0x1217324D),
+                    color: colors.shadow,
                     blurRadius: 14,
                     offset: Offset(0, 4),
                   ),
@@ -1149,7 +1132,9 @@ class _WorkspacePanelState extends State<_WorkspacePanel> {
           borderRadius: BorderRadius.circular(AdminWorkspaceTheme.panelRadius),
           child: InkWell(
             onTap: widget.onTap,
-            borderRadius: BorderRadius.circular(AdminWorkspaceTheme.panelRadius),
+            borderRadius: BorderRadius.circular(
+              AdminWorkspaceTheme.panelRadius,
+            ),
             child: widget.child,
           ),
         ),
@@ -1185,7 +1170,7 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tone = _statusTone(status);
+    final tone = _statusTone(status, context.adminColors);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
@@ -1213,19 +1198,18 @@ class _MetaText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 15, color: AdminWorkspaceTheme.textMuted),
+        Icon(icon, size: 15, color: colors.textMuted),
         const SizedBox(width: 5),
         Flexible(
           child: Text(
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AdminWorkspaceTheme.textMuted,
-            ),
+            style: AppTextStyles.bodySmall.copyWith(color: colors.textMuted),
           ),
         ),
       ],
@@ -1239,7 +1223,7 @@ class _EmptyState extends StatelessWidget {
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
-  final Color tone;
+  final Color? tone;
 
   const _EmptyState({
     required this.icon,
@@ -1247,11 +1231,13 @@ class _EmptyState extends StatelessWidget {
     required this.message,
     this.actionLabel,
     this.onAction,
-    this.tone = AdminWorkspaceTheme.blue,
+    this.tone,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
+    final effectiveTone = tone ?? colors.blue;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
@@ -1261,21 +1247,19 @@ class _EmptyState extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _IconTile(icon: icon, color: tone),
+                _IconTile(icon: icon, color: effectiveTone),
                 const SizedBox(height: 14),
                 Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.heading3.copyWith(
-                    color: AdminWorkspaceTheme.text,
-                  ),
+                  style: AppTextStyles.heading3.copyWith(color: colors.text),
                 ),
                 const SizedBox(height: 7),
                 Text(
                   message,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AdminWorkspaceTheme.textSecondary,
+                    color: colors.textSecondary,
                     height: 1.45,
                   ),
                 ),

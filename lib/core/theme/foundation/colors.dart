@@ -1,33 +1,36 @@
 import 'package:flutter/material.dart';
 
-/// Layer-1 immutable color values for NaBi Blue Wellness.
+/// Layer-1 immutable color values for NaBi Green Wellness.
 @immutable
 class ColorFoundation {
   const ColorFoundation._();
 
-  // Canonical blue brand scale. Legacy green/cyan names remain aliases so
-  // existing imports compile while features migrate to semantic tokens.
-  static const Color blueBright = Color(0xFF6EA8FE);
-  static const Color bluePrimary = Color(0xFF2F6FED);
-  static const Color blueDeep = Color(0xFF1746A2);
-  static const Color blueSoft = Color(0xFFE8F1FF);
-  static const Color blueSurface = Color(0xFFF4F8FF);
+  static const Color greenBright = Color(0xFF62DDA3);
+  static const Color greenPrimary = Color(0xFF006A46);
+  static const Color greenDeep = Color(0xFF075E45);
+  static const Color greenAccent = Color(0xFF14A36F);
+  static const Color greenSoft = Color(0xFFDDF6E9);
+  static const Color mintSurface = Color(0xFFEAF9F1);
+  static const Color ctaStart = Color(0xFF0F8E62);
+  static const Color ctaEnd = Color(0xFF32C789);
 
-  static const Color greenBright = blueBright;
-  static const Color greenPrimary = bluePrimary;
-  static const Color greenDeep = blueDeep;
-  static const Color greenSoft = blueSoft;
-  static const Color mintSurface = blueSurface;
+  // Legacy blue names remain aliases so existing imports compile while
+  // consumers migrate to semantic Green Wellness roles.
+  static const Color blueBright = greenBright;
+  static const Color bluePrimary = greenPrimary;
+  static const Color blueDeep = greenDeep;
+  static const Color blueSoft = greenSoft;
+  static const Color blueSurface = mintSurface;
 
-  static const Color blue400 = blueBright;
-  static const Color blue500 = bluePrimary;
-  static const Color blue600 = blueDeep;
-  static const Color blue700 = Color(0xFF123A88);
-  static const Color cyan400 = Color(0xFF6AC5F0);
-  static const Color cyan500 = Color(0xFF38A9E8);
-  static const Color cyan600 = Color(0xFF1977A8);
-  static const Color purple500 = Color(0xFF8174E8);
-  static const Color purple600 = Color(0xFF6557C9);
+  static const Color blue400 = greenBright;
+  static const Color blue500 = greenPrimary;
+  static const Color blue600 = greenDeep;
+  static const Color blue700 = Color(0xFF00452E);
+  static const Color cyan400 = Color(0xFF9DDCF5);
+  static const Color cyan500 = Color(0xFF58B9E8);
+  static const Color cyan600 = Color(0xFF247CA8);
+  static const Color purple500 = Color(0xFF8B7CF6);
+  static const Color purple600 = Color(0xFF6F60DA);
 
   // Semantic status colors are independent from the brand scale.
   static const Color green500 = Color(0xFF14885F);
@@ -43,16 +46,16 @@ class ColorFoundation {
   static const Color sky600 = Color(0xFF247CA8);
   static const Color skySoft = Color(0xFFE7F6FD);
 
-  static const Color slate50 = Color(0xFFFBFDFF);
-  static const Color slate100 = Color(0xFFF4F8FF);
-  static const Color slate200 = Color(0xFFDCE6F4);
-  static const Color slate300 = Color(0xFFB8C8DC);
-  static const Color slate400 = Color(0xFFA4B0C0);
-  static const Color slate500 = Color(0xFF8796AA);
-  static const Color slate600 = Color(0xFF5B6B82);
-  static const Color slate700 = Color(0xFF3D526D);
-  static const Color slate800 = Color(0xFF213752);
-  static const Color slate900 = Color(0xFF15253D);
+  static const Color slate50 = Color(0xFFF5FAF7);
+  static const Color slate100 = Color(0xFFF0F5F2);
+  static const Color slate200 = Color(0xFFD9E9E1);
+  static const Color slate300 = Color(0xFFBCCABF);
+  static const Color slate400 = Color(0xFFA8B5AF);
+  static const Color slate500 = Color(0xFF8A9B94);
+  static const Color slate600 = Color(0xFF60766E);
+  static const Color slate700 = Color(0xFF3D4A42);
+  static const Color slate800 = Color(0xFF2C3230);
+  static const Color slate900 = Color(0xFF12352A);
 
   static const Color white = Colors.white;
   static const Color black = Colors.black;
@@ -63,13 +66,13 @@ class GradientFoundation {
   const GradientFoundation._();
 
   static const LinearGradient primary = LinearGradient(
-    colors: [ColorFoundation.bluePrimary, ColorFoundation.blueBright],
+    colors: [ColorFoundation.ctaStart, ColorFoundation.ctaEnd],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient premium = LinearGradient(
-    colors: [ColorFoundation.bluePrimary, ColorFoundation.purple500],
+    colors: [ColorFoundation.greenPrimary, ColorFoundation.purple500],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

@@ -15,16 +15,18 @@ class DashboardUserDataSyncBanner extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.warningSoft,
+        color: context.semanticColors.warningSoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.warning.withValues(alpha: .28)),
+        border: Border.all(
+          color: context.semanticColors.warning.withValues(alpha: .28),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             pending ? Icons.cloud_upload_outlined : Icons.cloud_off_outlined,
-            color: AppColors.warningDark,
+            color: context.semanticColors.warning,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -85,11 +87,14 @@ class DashboardInlineErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _StateSurface(
-      borderColor: AppColors.error.withValues(alpha: .18),
+      borderColor: context.semanticColors.error.withValues(alpha: .18),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline_rounded, color: AppColors.error),
+          Icon(
+            Icons.error_outline_rounded,
+            color: context.semanticColors.error,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -167,13 +172,13 @@ class DashboardErrorView extends StatelessWidget {
               Container(
                 width: 56,
                 height: 56,
-                decoration: const BoxDecoration(
-                  color: AppColors.errorSoft,
+                decoration: BoxDecoration(
+                  color: context.semanticColors.errorSoft,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.error_outline_rounded,
-                  color: AppColors.error,
+                  color: context.semanticColors.error,
                   size: 28,
                 ),
               ),
@@ -190,7 +195,7 @@ class DashboardErrorView extends StatelessWidget {
                 message,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.semanticColors.textSecondary,
                   height: 1.45,
                 ),
               ),
@@ -210,12 +215,9 @@ class DashboardErrorView extends StatelessWidget {
 
 class _StateSurface extends StatelessWidget {
   final Widget child;
-  final Color borderColor;
+  final Color? borderColor;
 
-  const _StateSurface({
-    required this.child,
-    this.borderColor = AppColors.borderLight,
-  });
+  const _StateSurface({required this.child, this.borderColor});
 
   @override
   Widget build(BuildContext context) {
@@ -225,9 +227,11 @@ class _StateSurface extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: borderColor),
+        border: Border.all(
+          color: borderColor ?? context.semanticColors.borderLight,
+        ),
       ),
       child: child,
     );
@@ -244,7 +248,7 @@ class _Skeleton extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.primarySoft.withValues(alpha: .72),
+        color: context.semanticColors.primarySoft.withValues(alpha: .72),
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
     );

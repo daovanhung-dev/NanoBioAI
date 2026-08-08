@@ -28,27 +28,28 @@ class _AuthGatePageState extends ConsumerState<AuthGatePage> {
       return AppStateSwitcher(
         child: _GuestConsentState(
           key: const ValueKey('auth-gate-consent'),
-        cloudHasData: syncState.cloudHasMeaningfulData,
-        secondConfirmation: _confirmedExistingCloudWarning,
-        loading: false,
-        onContinueWarning: () {
-          AppFeedbackService.instance.emit(AppFeedbackType.warning);
-          setState(() => _confirmedExistingCloudWarning = true);
-        },
-        onMergeNow: () => _applyGuestAction(GuestMergeAction.mergeNow),
-        onUseCloud: () => _applyGuestAction(GuestMergeAction.useExistingCloud),
-        onDefer: () {
-          AppFeedbackService.instance.emit(AppFeedbackType.warning);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Dữ liệu khách vẫn được giữ trên thiết bị. '
-                'Bạn cần quyết định trước khi vào phần tài khoản.',
+          cloudHasData: syncState.cloudHasMeaningfulData,
+          secondConfirmation: _confirmedExistingCloudWarning,
+          loading: false,
+          onContinueWarning: () {
+            AppFeedbackService.instance.emit(AppFeedbackType.warning);
+            setState(() => _confirmedExistingCloudWarning = true);
+          },
+          onMergeNow: () => _applyGuestAction(GuestMergeAction.mergeNow),
+          onUseCloud: () =>
+              _applyGuestAction(GuestMergeAction.useExistingCloud),
+          onDefer: () {
+            AppFeedbackService.instance.emit(AppFeedbackType.warning);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Dữ liệu khách vẫn được giữ trên thiết bị. '
+                  'Bạn cần quyết định trước khi vào phần tài khoản.',
+                ),
               ),
-            ),
-          );
-        },
-        onSignOut: _signOut,
+            );
+          },
+          onSignOut: _signOut,
         ),
       );
     }
@@ -61,54 +62,51 @@ class _AuthGatePageState extends ConsumerState<AuthGatePage> {
 
     return AppStateSwitcher(
       child: authState.when(
-      loading: () => const _AuthLoading(
-        key: ValueKey('auth-gate-loading'),
-      ),
-      error: (_, __) => _AuthSupportState(
-        key: const ValueKey('auth-gate-error'),
-        title: 'Nabi chưa mở được tài khoản',
-        message:
-            'Mình chưa kiểm tra được phiên đăng nhập. Bạn thử lại sau một chút nhé.',
-        onRetry: () {
-          AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-          controller.refresh();
-        },
-      ),
-      data: (routeState) {
-        final target = _targetFor(routeState);
-        if (target != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (context.mounted) context.go(target);
-          });
-          return const _AuthLoading(
-            key: ValueKey('auth-gate-forwarding'),
-          );
-        }
+        loading: () => const _AuthLoading(key: ValueKey('auth-gate-loading')),
+        error: (_, __) => _AuthSupportState(
+          key: const ValueKey('auth-gate-error'),
+          title: 'Nabi chưa mở được tài khoản',
+          message:
+              'Mình chưa kiểm tra được phiên đăng nhập. Bạn thử lại sau một chút nhé.',
+          onRetry: () {
+            AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+            controller.refresh();
+          },
+        ),
+        data: (routeState) {
+          final target = _targetFor(routeState);
+          if (target != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) context.go(target);
+            });
+            return const _AuthLoading(key: ValueKey('auth-gate-forwarding'));
+          }
 
-        if (routeState.status == AuthRouteStatus.profileBootstrapUnavailable) {
+          if (routeState.status ==
+              AuthRouteStatus.profileBootstrapUnavailable) {
+            return _AuthSupportState(
+              key: const ValueKey('auth-gate-bootstrap'),
+              title: 'Hồ sơ đang được chuẩn bị',
+              message: 'Hồ sơ chưa sẵn sàng. Hãy thử lại sau.',
+              onRetry: () {
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+                controller.refresh();
+              },
+            );
+          }
+
           return _AuthSupportState(
-            key: const ValueKey('auth-gate-bootstrap'),
-            title: 'Hồ sơ đang được chuẩn bị',
-            message: 'Hồ sơ chưa sẵn sàng. Hãy thử lại sau.',
+            key: const ValueKey('auth-gate-support'),
+            title: 'Nabi cần kiểm tra thêm',
+            message:
+                routeState.message ??
+                'Trạng thái tài khoản chưa rõ ràng. Mình thử làm mới lại nhé.',
             onRetry: () {
               AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
               controller.refresh();
             },
           );
-        }
-
-        return _AuthSupportState(
-          key: const ValueKey('auth-gate-support'),
-          title: 'Nabi cần kiểm tra thêm',
-          message:
-              routeState.message ??
-              'Trạng thái tài khoản chưa rõ ràng. Mình thử làm mới lại nhé.',
-          onRetry: () {
-            AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-            controller.refresh();
-          },
-        );
-      },
+        },
       ),
     );
   }
@@ -212,6 +210,7 @@ class _GuestConsentState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isEstablishedWarning = cloudHasData && !secondConfirmation;
+    final colors = context.semanticColors;
     final title = cloudHasData
         ? isEstablishedWarning
               ? 'Tài khoản đã có dữ liệu'
@@ -227,7 +226,7 @@ class _GuestConsentState extends StatelessWidget {
               'dữ liệu khách hiện tại vào tài khoản.';
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -300,9 +299,9 @@ class _AuthLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MedicalPageScaffold(
-      backgroundColor: AppColors.background,
-      body: Center(child: CircularProgressIndicator()),
+    return MedicalPageScaffold(
+      backgroundColor: context.semanticColors.background,
+      body: const Center(child: CircularProgressIndicator()),
     );
   }
 }
@@ -321,8 +320,9 @@ class _AuthSupportState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -340,7 +340,7 @@ class _AuthSupportState extends StatelessWidget {
                     ),
                     child: const Icon(
                       Icons.health_and_safety_rounded,
-                      color: AppColors.surface,
+                      color: AppColors.textInverse,
                       size: 34,
                     ),
                   ),

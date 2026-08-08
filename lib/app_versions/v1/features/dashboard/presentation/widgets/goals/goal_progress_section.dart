@@ -14,10 +14,10 @@ class GoalProgressSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: context.semanticColors.card,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         boxShadow: AppShadows.sm,
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       child: Column(
         children: List.generate(

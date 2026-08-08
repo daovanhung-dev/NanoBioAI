@@ -14,6 +14,7 @@ class V1AuthEntryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final title = _isRegister ? 'Tạo tài khoản BioAI' : 'Đăng nhập BioAI';
     final body = _isRegister
         ? 'Nabi sẽ đưa bạn sang khu vực tài khoản để lưu hồ sơ và mở rộng '
@@ -23,7 +24,7 @@ class V1AuthEntryPage extends StatelessWidget {
     final actionLabel = _isRegister ? 'Tạo tài khoản' : 'Đăng nhập';
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.pagePadding),
@@ -34,7 +35,7 @@ class V1AuthEntryPage extends StatelessWidget {
               Text(
                 title,
                 style: AppTextStyles.heading1.copyWith(
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -42,7 +43,7 @@ class V1AuthEntryPage extends StatelessWidget {
               Text(
                 body,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   height: 1.45,
                 ),
               ),

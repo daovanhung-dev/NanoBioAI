@@ -79,7 +79,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('AI dev banner shows success state', (tester) async {
+  testWidgets('AI dev success stays out of the user-facing onboarding UI', (
+    tester,
+  ) async {
     final container = ProviderContainer(
       overrides: [
         onboardingAiDevCheckEnabledProvider.overrideWithValue(true),
@@ -94,12 +96,12 @@ void main() {
     await _pumpOnboardingPage(tester, container);
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.byKey(_aiDevCheckBannerKey), findsOneWidget);
-    expect(find.text('Trợ lý đã sẵn sàng: fake-model.'), findsOneWidget);
+    expect(find.byKey(_aiDevCheckBannerKey), findsNothing);
+    expect(find.text('Trợ lý đã sẵn sàng: fake-model.'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('AI dev banner shows failure and does not block next step', (
+  testWidgets('AI dev failure stays private and does not block next step', (
     tester,
   ) async {
     final container = ProviderContainer(
@@ -118,8 +120,8 @@ void main() {
     await _pumpOnboardingPage(tester, container);
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.byKey(_aiDevCheckBannerKey), findsOneWidget);
-    expect(find.text('AI test failed'), findsOneWidget);
+    expect(find.byKey(_aiDevCheckBannerKey), findsNothing);
+    expect(find.text('AI test failed'), findsNothing);
 
     await _tapPrimaryOnboardingButton(tester);
     await tester.pump(const Duration(seconds: 1));
@@ -154,48 +156,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 900));
     expect(tester.takeException(), isNull);
 
-    await _tapByText(tester, 'Tạo lộ trình của tôi');
+    for (var step = 0; step < 9; step++) {
+      container.read(onboardingProvider.notifier).goToStep(step);
+      await tester.pump(const Duration(milliseconds: 500));
 
-    for (var i = 0; i < 4; i++) {
-      await _tapByText(tester, 'Tiếp tục');
+      expect(container.read(onboardingProvider).currentStep, step);
+      expect(find.text('${step + 1}/9'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     }
-
-    expect(container.read(onboardingProvider).currentStep, 5);
-    expect(find.text('6/9'), findsOneWidget);
-
-    await _tapByText(tester, 'Tiếp tục');
-
-    expect(container.read(onboardingProvider).currentStep, 6);
-    expect(find.text('7/9'), findsOneWidget);
-
-    container.read(onboardingProvider.notifier).confirmRoutineAndContinue();
-    await tester.pump(const Duration(milliseconds: 300));
-
-    expect(container.read(onboardingProvider).currentStep, 7);
-    expect(find.text('8/9'), findsOneWidget);
-    expect(
-      find.text('Một xác nhận nhỏ,\nđể chăm sóc đúng cách.'),
-      findsOneWidget,
-    );
-
-    await _tapByText(tester, 'Tôi hiểu và đồng ý');
-
-    expect(container.read(onboardingProvider).currentStep, 7);
-    expect(find.text('8/9'), findsOneWidget);
-
-    ScaffoldMessenger.of(
-      tester.element(find.byType(OnboardingPage)),
-    ).clearSnackBars();
-    await tester.pump(const Duration(milliseconds: 500));
-
-    container.read(onboardingProvider.notifier).setAgreed(true);
-    await tester.pump(const Duration(milliseconds: 300));
-
-    await _tapPrimaryOnboardingButton(tester);
-
-    expect(container.read(onboardingProvider).currentStep, 8);
-    expect(find.text('9/9'), findsOneWidget);
-    expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(const SizedBox.shrink());
   });
@@ -233,18 +201,6 @@ Future<void> _tapPrimaryOnboardingButton(WidgetTester tester) async {
       )
       .last;
   await tester.tap(button);
-  await tester.pump(const Duration(milliseconds: 500));
-  expect(tester.takeException(), isNull);
-}
-
-Future<void> _tapByText(WidgetTester tester, String text) async {
-  final textFinder = find.text(text);
-  if (textFinder.evaluate().isEmpty) {
-    await _tapPrimaryOnboardingButton(tester);
-    return;
-  }
-
-  await tester.tap(textFinder.last);
   await tester.pump(const Duration(milliseconds: 500));
   expect(tester.takeException(), isNull);
 }

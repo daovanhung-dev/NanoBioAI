@@ -21,10 +21,8 @@ class AppExperiencePreferences {
 
   static const defaults = AppExperiencePreferences();
 
-  AppFeedbackPolicy get feedbackPolicy => AppFeedbackPolicy(
-        hapticsEnabled: hapticsEnabled,
-        soundLevel: soundLevel,
-      );
+  AppFeedbackPolicy get feedbackPolicy =>
+      AppFeedbackPolicy(hapticsEnabled: hapticsEnabled, soundLevel: soundLevel);
 
   AppMotionPolicy motionPolicy({required bool systemReduceMotion}) {
     return AppMotionPolicy(
@@ -48,10 +46,11 @@ class AppExperiencePreferences {
   }
 }
 
-final appExperiencePreferencesProvider = AsyncNotifierProvider<
-    AppExperiencePreferencesController, AppExperiencePreferences>(
-  AppExperiencePreferencesController.new,
-);
+final appExperiencePreferencesProvider =
+    AsyncNotifierProvider<
+      AppExperiencePreferencesController,
+      AppExperiencePreferences
+    >(AppExperiencePreferencesController.new);
 
 class AppExperiencePreferencesController
     extends AsyncNotifier<AppExperiencePreferences> {
@@ -66,9 +65,7 @@ class AppExperiencePreferencesController
     return AppExperiencePreferences(
       reduceMotion: preferences.getBool(_reduceMotionKey) ?? false,
       hapticsEnabled: preferences.getBool(_hapticsEnabledKey) ?? true,
-      soundLevel: _soundLevelFromStorage(
-        preferences.getString(_soundLevelKey),
-      ),
+      soundLevel: _soundLevelFromStorage(preferences.getString(_soundLevelKey)),
       performanceTier: _performanceTierFromStorage(
         preferences.getString(_performanceTierKey),
       ),
@@ -101,7 +98,7 @@ class AppExperiencePreferencesController
 
   Future<void> _update(
     AppExperiencePreferences Function(AppExperiencePreferences current)
-        transform,
+    transform,
   ) async {
     final current = state.value ?? AppExperiencePreferences.defaults;
     state = AsyncData(transform(current));

@@ -5,11 +5,11 @@ import 'package:nano_app/core/theme/foundation/colors.dart';
 void main() {
   group('GradientFoundation', () {
     group('gradient definitions', () {
-      test('primary gradient should use NaBi green primary to bright', () {
+      test('primary gradient should use the Green Wellness CTA range', () {
         expect(GradientFoundation.primary, isA<LinearGradient>());
         expect(GradientFoundation.primary.colors, [
-          ColorFoundation.greenPrimary,
-          ColorFoundation.greenBright,
+          ColorFoundation.ctaStart,
+          ColorFoundation.ctaEnd,
         ]);
         expect(GradientFoundation.primary.begin, Alignment.topLeft);
         expect(GradientFoundation.primary.end, Alignment.bottomRight);
@@ -87,8 +87,9 @@ void main() {
 
         // Check that all colors are defined in ColorFoundation
         final foundationColors = [
+          ColorFoundation.ctaStart,
+          ColorFoundation.ctaEnd,
           ColorFoundation.greenPrimary,
-          ColorFoundation.greenBright,
           ColorFoundation.purple500,
           ColorFoundation.green500,
           ColorFoundation.green600,
@@ -114,7 +115,7 @@ void main() {
         expect(
           GradientFoundation.primary,
           const LinearGradient(
-            colors: [ColorFoundation.greenPrimary, ColorFoundation.greenBright],
+            colors: [ColorFoundation.ctaStart, ColorFoundation.ctaEnd],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v2/features/auth/application/auth_deep_link_coordinator.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_navigation_coordinator.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
+import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/app_versions/v2/router/v2_router.dart';
 import 'package:nano_app/core/localization/app_localization_config.dart';
@@ -42,13 +43,13 @@ class _BioAIV2AppState extends ConsumerState<BioAIV2App> {
     final router = ref.watch(v2RouterProvider);
     final experiencePreferences =
         ref.watch(appExperiencePreferencesProvider).value ??
-            AppExperiencePreferences.defaults;
-    final textScaleFactor = ref
-            .watch(appTextScaleControllerProvider)
-            .value
-            ?.preset
-            .factor ??
+        AppExperiencePreferences.defaults;
+    final textScaleFactor =
+        ref.watch(appTextScaleControllerProvider).value?.preset.factor ??
         AppTextScalePreset.standard.factor;
+    final isDarkMode =
+        ref.watch(settingsPreferencesControllerProvider).value?.isDarkMode ??
+        false;
     if (!_notificationNavigationRegistered) {
       _notificationNavigationRegistered = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -77,6 +78,8 @@ class _BioAIV2AppState extends ConsumerState<BioAIV2App> {
         preferences: experiencePreferences,
       ),
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       routerConfig: router,
     );
   }

@@ -24,6 +24,7 @@ Every active surface requires explicit Loading / Empty / Error / Ready / Disable
 | V1-18 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-19 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-20 | coming-soon | required | required if meaningful | required | required/preview | required if meaningful |
+| V1-21 | active-route | required | required | required | required | required |
 | ONB-01 | source-sub-surface | required | required if meaningful | required | required/preview | required if meaningful |
 | ONB-02 | internal-step | required | required if meaningful | required | required/preview | required if meaningful |
 | ONB-03 | internal-step | required | required if meaningful | required | required/preview | required if meaningful |
@@ -39,12 +40,12 @@ Every active surface requires explicit Loading / Empty / Error / Ready / Disable
 | V1-X02 | source-sub-surface | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-X03 | source-sub-surface | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-X04 | source-only | required | required if meaningful | required | required/preview | required if meaningful |
-| V1-X05 | source-only | required | required if meaningful | required | required/preview | required if meaningful |
-| V1-X06 | source-only | required | required if meaningful | required | required/preview | required if meaningful |
-| V1-X07 | source-only | required | required if meaningful | required | required/preview | required if meaningful |
-| V1-X08 | source-only | required | required if meaningful | required | required/preview | required if meaningful |
-| V1-X09 | source-only | required | required if meaningful | required | required/preview | required if meaningful |
-| V1-X10 | source-sub-surface | required | required if meaningful | required | required/preview | required if meaningful |
+| V1-X05 | active-route | required | required if meaningful | required | required | required if meaningful |
+| V1-X06 | active-route | required | required | required | required | required if meaningful |
+| V1-X07 | active-route | required if meaningful | required if meaningful | required | required | required if meaningful |
+| V1-X08 | active-route | required if meaningful | required if meaningful | required | required | required if meaningful |
+| V1-X09 | active-route | required | required | required | required | required if meaningful |
+| V1-X10 | active-route | not applicable | empty/availability required | required if navigation fails | required | unavailable capability must stay absent |
 | V2-01 | gate | required | required if meaningful | required | required/preview | required if meaningful |
 | V2-02 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V2-03 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
@@ -60,7 +61,7 @@ Every active surface requires explicit Loading / Empty / Error / Ready / Disable
 | V2-13 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V3-01 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V3-02 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
-| V3-03 | source-only | required | required if meaningful | required | required/preview | required if meaningful |
+| V3-03 | active-route | required | required if meaningful | required | required | required |
 | SALE-01 | source-sub-surface | required | required if meaningful | required | required/preview | required if meaningful |
 | SALE-02 | internal-surface | required | required if meaningful | required | required/preview | required if meaningful |
 | SALE-03 | internal-surface | required | required if meaningful | required | required/preview | required if meaningful |

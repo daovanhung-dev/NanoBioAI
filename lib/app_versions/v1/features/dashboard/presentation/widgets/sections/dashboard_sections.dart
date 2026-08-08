@@ -115,7 +115,7 @@ class DashboardProgressCard extends StatelessWidget {
                   icon: Icons.event_available_rounded,
                   label: 'Kế hoạch',
                   value: planTitle,
-                  color: AppColors.primary,
+                  color: context.semanticColors.primary,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -124,7 +124,7 @@ class DashboardProgressCard extends StatelessWidget {
                   icon: Icons.local_florist_rounded,
                   label: 'Chuỗi chăm sóc',
                   value: streakText,
-                  color: AppColors.success,
+                  color: context.semanticColors.success,
                 ),
               ),
             ],
@@ -216,11 +216,9 @@ class DashboardPrimaryInsight extends StatelessWidget {
                   'Khi có thêm ghi nhận, Nabi sẽ đặt điều quan trọng nhất ở đây.',
             )
           else ...[
-            if (primaryInsight != null)
-              _InsightBody(insight: primaryInsight),
+            if (primaryInsight != null) _InsightBody(insight: primaryInsight),
             if (recommendation != null) ...[
-              if (primaryInsight != null)
-                const SizedBox(height: AppSpacing.sm),
+              if (primaryInsight != null) const SizedBox(height: AppSpacing.sm),
               _RecommendationRow(item: recommendation),
             ],
             if (concern.trim().isNotEmpty) ...[
@@ -229,7 +227,7 @@ class DashboardPrimaryInsight extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: AppColors.secondarySoft,
+                  color: context.semanticColors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Text(
@@ -237,7 +235,7 @@ class DashboardPrimaryInsight extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                     height: 1.4,
                   ),
                 ),
@@ -288,9 +286,9 @@ class DashboardHealthDetails extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
@@ -308,7 +306,7 @@ class DashboardHealthDetails extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.primarySoft,
+            color: context.semanticColors.primarySoft,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: const Icon(
@@ -327,9 +325,9 @@ class DashboardHealthDetails extends StatelessWidget {
           summaryParts.isEmpty
               ? 'Xem thông tin hồ sơ đã chia sẻ'
               : summaryParts.join(' • '),
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: context.semanticColors.textSecondary,
+          ),
         ),
         children: [
           const Divider(),
@@ -369,9 +367,7 @@ class DashboardHealthDetails extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             _DetailGroup(
               title: 'Thói quen đã chia sẻ',
-              children: habits
-                  .map((item) => _InfoChip(label: item))
-                  .toList(),
+              children: habits.map((item) => _InfoChip(label: item)).toList(),
             ),
           ],
         ],
@@ -413,10 +409,11 @@ class _TimelineRow extends StatelessWidget {
                     if (item.timeLabel.trim().isNotEmpty) ...[
                       Text(
                         item.timeLabel,
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppColors.primaryDark,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              color: context.semanticColors.primaryDark,
+                              fontWeight: FontWeight.w800,
+                            ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
                     ],
@@ -447,7 +444,7 @@ class _TimelineRow extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.semanticColors.textSecondary,
                     ),
                   ),
                 ],
@@ -502,7 +499,7 @@ class _ProgressInfo extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: AppColors.textSecondary,
+              color: context.semanticColors.textSecondary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -512,7 +509,7 @@ class _ProgressInfo extends StatelessWidget {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textPrimary,
+              color: context.semanticColors.textPrimary,
               fontWeight: FontWeight.w800,
               height: 1.35,
             ),
@@ -537,15 +534,21 @@ class _StreakDay extends StatelessWidget {
           width: 26,
           height: 26,
           decoration: BoxDecoration(
-            color: active ? AppColors.success : AppColors.surfaceSoft,
+            color: active
+                ? context.semanticColors.success
+                : context.semanticColors.surfaceSoft,
             shape: BoxShape.circle,
             border: Border.all(
-              color: active ? AppColors.success : AppColors.border,
+              color: active
+                  ? context.semanticColors.success
+                  : context.semanticColors.border,
             ),
           ),
           child: Icon(
             active ? Icons.check_rounded : Icons.circle_outlined,
-            color: active ? AppColors.textInverse : AppColors.textMuted,
+            color: active
+                ? context.semanticColors.textInverse
+                : context.semanticColors.textMuted,
             size: 15,
           ),
         ),
@@ -585,9 +588,9 @@ class _InsightBody extends StatelessWidget {
                   insight.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
@@ -595,7 +598,7 @@ class _InsightBody extends StatelessWidget {
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                     height: 1.45,
                   ),
                 ),
@@ -619,7 +622,7 @@ class _RecommendationRow extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.primarySubtle,
+        color: context.semanticColors.primarySubtle,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
@@ -639,9 +642,9 @@ class _RecommendationRow extends StatelessWidget {
                   item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
@@ -649,7 +652,7 @@ class _RecommendationRow extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                     height: 1.4,
                   ),
                 ),
@@ -685,41 +688,43 @@ class _GoalsDetail extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         if (activeItems.isNotEmpty)
-          ...activeItems.take(4).map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+          ...activeItems
+              .take(4)
+              .map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          item.title,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w800,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.title,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            ),
                           ),
-                        ),
+                          Text(
+                            '${(item.progress.clamp(0, 1) * 100).round()}%',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: context.semanticColors.primaryDark,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        '${(item.progress.clamp(0, 1) * 100).round()}%',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.primaryDark,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      const SizedBox(height: AppSpacing.xs),
+                      LinearProgressIndicator(
+                        value: item.progress.clamp(0, 1).toDouble(),
+                        minHeight: 7,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  LinearProgressIndicator(
-                    value: item.progress.clamp(0, 1).toDouble(),
-                    minHeight: 7,
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                  ),
-                ],
-              ),
-            ),
-          )
+                ),
+              )
         else
           Wrap(
             spacing: AppSpacing.sm,
@@ -776,14 +781,14 @@ class _InfoChip extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primarySubtle,
+        color: context.semanticColors.primarySubtle,
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: AppColors.primarySoft),
+        border: Border.all(color: context.semanticColors.primarySoft),
       ),
       child: Text(
         safeLabel,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: AppColors.primaryDark,
+          color: context.semanticColors.primaryDark,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -801,9 +806,9 @@ class _SectionSurface extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
         boxShadow: AppShadows.xs,
       ),
       child: child,
@@ -833,10 +838,10 @@ class _SectionHeading extends StatelessWidget {
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: AppColors.primarySoft,
+            color: context.semanticColors.primarySoft,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          child: Icon(icon, color: AppColors.primary, size: 21),
+          child: Icon(icon, color: context.semanticColors.primary, size: 21),
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
@@ -845,15 +850,15 @@ class _SectionHeading extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.semanticColors.textSecondary,
                 ),
               ),
             ],
@@ -885,13 +890,13 @@ class _EmptyMessage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.primarySubtle,
+        color: context.semanticColors.primarySubtle,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.primary),
+          Icon(icon, color: context.semanticColors.primary),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -899,15 +904,15 @@ class _EmptyMessage extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   message,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                     height: 1.4,
                   ),
                 ),

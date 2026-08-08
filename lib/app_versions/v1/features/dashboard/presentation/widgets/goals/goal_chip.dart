@@ -15,21 +15,26 @@ class GoalChip extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primarySoft, AppColors.secondarySoft],
+        gradient: LinearGradient(
+          colors: [
+            context.semanticColors.primarySoft,
+            context.semanticColors.secondarySoft,
+          ],
         ),
         borderRadius: BorderRadius.circular(AppRadius.circular),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+        border: Border.all(
+          color: context.semanticColors.primary.withValues(alpha: 0.25),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.primary, size: 14),
+          Icon(icon, color: context.semanticColors.primary, size: 14),
           const SizedBox(width: AppSpacing.tiny),
           Text(
             label,
             style: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.primaryDark,
+              color: context.semanticColors.primaryDark,
               fontWeight: AppTypography.semiBold,
             ),
           ),

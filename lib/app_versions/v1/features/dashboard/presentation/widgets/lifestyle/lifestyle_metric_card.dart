@@ -48,7 +48,7 @@ class LifestyleMetricCard extends StatelessWidget {
           Text(
             value,
             style: AppTextStyles.heading4.copyWith(
-              color: AppColors.textPrimary,
+              color: context.semanticColors.textPrimary,
               fontWeight: AppTypography.bold,
             ),
           ),
@@ -56,7 +56,7 @@ class LifestyleMetricCard extends StatelessWidget {
           Text(
             detail,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: context.semanticColors.textSecondary,
             ),
           ),
         ],

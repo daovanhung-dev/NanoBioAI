@@ -105,11 +105,11 @@ class _DevDatabaseViewerPageState extends State<DevDatabaseViewerPage> {
   @override
   Widget build(BuildContext context) {
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.semanticColors.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: context.semanticColors.background,
+        foregroundColor: context.semanticColors.textPrimary,
         title: const Text('Nhà phát triển / Dữ liệu'),
         actions: [
           IconButton(
@@ -290,7 +290,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
                 height: 52,
                 width: 52,
                 decoration: BoxDecoration(
-                  color: AppColors.surface.withValues(alpha: .14),
+                  color: context.semanticColors.surface.withValues(alpha: .14),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 child: const Icon(
@@ -307,7 +307,7 @@ class _DatabaseSummaryCard extends StatelessWidget {
                     Text(
                       'Trình kiểm tra SQLite',
                       style: AppTextStyles.heading3.copyWith(
-                        color: AppColors.surface,
+                        color: context.semanticColors.surface,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -315,7 +315,9 @@ class _DatabaseSummaryCard extends StatelessWidget {
                     Text(
                       'Theo dõi toàn bộ dữ liệu cục bộ của ứng dụng.',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.surface.withValues(alpha: .82),
+                        color: context.semanticColors.surface.withValues(
+                          alpha: .82,
+                        ),
                       ),
                     ),
                   ],
@@ -373,17 +375,19 @@ class _SummaryPill extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: .14),
+        color: context.semanticColors.surface.withValues(alpha: .14),
         borderRadius: BorderRadius.circular(AppRadius.circular),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.surface, size: 16),
+          Icon(icon, color: context.semanticColors.surface, size: 16),
           const SizedBox(width: AppSpacing.xs),
           Text(
             label,
-            style: AppTextStyles.labelMedium.copyWith(color: AppColors.surface),
+            style: AppTextStyles.labelMedium.copyWith(
+              color: context.semanticColors.surface,
+            ),
           ),
         ],
       ),
@@ -406,7 +410,7 @@ class _SearchField extends StatelessWidget {
         hintText: 'Tìm bảng, ví dụ: users, meal_plans, notifications...',
         prefixIcon: const Icon(Icons.search_rounded),
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: context.semanticColors.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.md,
@@ -473,14 +477,18 @@ class _TableSelector extends StatelessWidget {
                 selected: selected,
                 label: Text('${table.name} (${table.totalRows})'),
                 onSelected: (_) => onSelected(table.name),
-                selectedColor: AppColors.primarySoft,
-                backgroundColor: AppColors.inputBackground,
+                selectedColor: context.semanticColors.primarySoft,
+                backgroundColor: context.semanticColors.inputBackground,
                 labelStyle: AppTextStyles.labelMedium.copyWith(
-                  color: selected ? AppColors.primaryDark : AppColors.textMuted,
+                  color: selected
+                      ? context.semanticColors.primaryDark
+                      : context.semanticColors.textMuted,
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                 ),
                 side: BorderSide(
-                  color: selected ? AppColors.primary : AppColors.border,
+                  color: selected
+                      ? context.semanticColors.primary
+                      : context.semanticColors.border,
                 ),
               );
             }).toList(),
@@ -530,7 +538,7 @@ class _TableHeaderCard extends StatelessWidget {
             height: 50,
             width: 50,
             decoration: BoxDecoration(
-              color: AppColors.primarySoft,
+              color: context.semanticColors.primarySoft,
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
             child: const Icon(
@@ -603,7 +611,7 @@ class _ColumnsCard extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 headingTextStyle: AppTextStyles.labelMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.semanticColors.textPrimary,
                   fontWeight: FontWeight.w800,
                 ),
                 dataTextStyle: AppTextStyles.bodySmall,
@@ -691,20 +699,22 @@ class _RowsDataTable extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.borderLight),
+          border: Border.all(color: context.semanticColors.borderLight),
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
             columnSpacing: AppSpacing.lg,
-            headingRowColor: WidgetStateProperty.all(AppColors.inputBackground),
+            headingRowColor: WidgetStateProperty.all(
+              context.semanticColors.inputBackground,
+            ),
             headingTextStyle: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.textPrimary,
+              color: context.semanticColors.textPrimary,
               fontWeight: FontWeight.w800,
             ),
             dataTextStyle: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: context.semanticColors.textSecondary,
             ),
             columns: columnNames.map((name) {
               return DataColumn(label: Text(name));
@@ -719,7 +729,7 @@ class _RowsDataTable extends StatelessWidget {
                         _formatCellValue(row[columnName]),
                         maxLines: 4,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.semanticColors.textSecondary,
                         ),
                       ),
                     ),
@@ -790,9 +800,9 @@ class _MutedInfoBox extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.inputBackground,
+        color: context.semanticColors.inputBackground,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       child: Text(message, style: AppTextStyles.bodySmall),
     );
@@ -843,7 +853,10 @@ class _DatabaseErrorState extends StatelessWidget {
                 size: 48,
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('Không đọc được dữ liệu cục bộ', style: AppTextStyles.heading4),
+              Text(
+                'Không đọc được dữ liệu cục bộ',
+                style: AppTextStyles.heading4,
+              ),
               const SizedBox(height: AppSpacing.sm),
               SelectableText(
                 message,

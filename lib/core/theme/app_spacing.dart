@@ -36,16 +36,16 @@ class AppSpacing {
   // SEMANTIC SPACING
   // ============================================================
 
-  // Compact-by-default layout values. Keep the base scale unchanged so legacy
-  // call sites remain predictable while semantic spacing becomes denser.
-  static const double pagePadding = 14;
-  static const double pagePaddingLarge = 18;
-  static const double sectionSpacing = 18;
-  static const double sectionSpacingLarge = 24;
+  // Green Wellness follows a 4/8 rhythm with a 16 dp mobile page gutter and
+  // 24 dp separation between major sections.
+  static const double pagePadding = 16;
+  static const double pagePaddingLarge = 24;
+  static const double sectionSpacing = 24;
+  static const double sectionSpacingLarge = 32;
 
-  static const double cardPadding = 14;
-  static const double cardPaddingCompact = 10;
-  static const double cardPaddingLarge = 18;
+  static const double cardPadding = 16;
+  static const double cardPaddingCompact = 12;
+  static const double cardPaddingLarge = 24;
 
   static const double itemSpacing = 8;
   static const double itemSpacingCompact = 4;
@@ -82,8 +82,8 @@ class AppSpacing {
   static const double appBarHorizontalPadding = md;
   static const double appBarVerticalPadding = sm;
 
-  static const double screenHorizontalPadding = 14;
-  static const double screenVerticalPadding = 14;
+  static const double screenHorizontalPadding = 16;
+  static const double screenVerticalPadding = 16;
 
   static const double formFieldSpacing = 12;
   static const double formSectionSpacing = 22;
@@ -96,7 +96,7 @@ class AppSpacing {
   // ============================================================
 
   static const double touchTargetMin = 48;
-  static const double buttonMinHeight = 44;
+  static const double buttonMinHeight = 48;
   static const double inputMinHeight = 48;
   static const double iconButtonSize = 48;
   static const double avatarSizeSmall = 32;

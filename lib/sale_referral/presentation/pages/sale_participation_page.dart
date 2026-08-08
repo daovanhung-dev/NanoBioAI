@@ -36,11 +36,12 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
   Widget build(BuildContext context) {
     final saleState = ref.watch(saleStateProvider);
     final authenticated = currentSupabaseUserIdOrNull() != null;
+    final colors = context.semanticColors;
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         title: const Text('Đồng hành phát triển cùng NanoBio'),
       ),
@@ -54,19 +55,19 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
             ),
             error: (_, __) => _BuildTermsBody(
               key: const ValueKey<String>('sale-participation-fallback'),
-            authenticated: authenticated,
-            accepted: _accepted,
-            submitting: _submitting,
-            state: SaleState.none,
+              authenticated: authenticated,
+              accepted: _accepted,
+              submitting: _submitting,
+              state: SaleState.none,
               onAcceptedChanged: _setAccepted,
               onSubmit: _submit,
             ),
             data: (state) => _BuildTermsBody(
               key: ValueKey<String>('sale-participation-${state.status.name}'),
-            authenticated: authenticated,
-            accepted: _accepted,
-            submitting: _submitting,
-            state: state,
+              authenticated: authenticated,
+              accepted: _accepted,
+              submitting: _submitting,
+              state: state,
               onAcceptedChanged: _setAccepted,
               onSubmit: _submit,
             ),
@@ -152,6 +153,8 @@ class _BuildTermsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     final canJoin =
         state.status == SaleStatus.none || state.status == SaleStatus.pending;
     final stateNote = _stateNote(state.status);
@@ -179,14 +182,14 @@ class _BuildTermsBody extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.volunteer_activism_rounded,
-                  color: AppColors.surface,
+                  color: AppColors.textInverse,
                   size: 34,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   _saleTermsTitle,
                   style: AppTextStyles.heading2.copyWith(
-                    color: AppColors.surface,
+                    color: AppColors.textInverse,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -194,7 +197,7 @@ class _BuildTermsBody extends StatelessWidget {
                 Text(
                   _saleTermsIntroduction,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.surface.withValues(alpha: .92),
+                    color: AppColors.textInverse.withValues(alpha: .92),
                     height: 1.5,
                   ),
                 ),
@@ -214,10 +217,10 @@ class _BuildTermsBody extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.check_circle_outline_rounded,
                           size: 18,
-                          color: AppColors.primary,
+                          color: colors.primary,
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
@@ -274,12 +277,12 @@ class _BuildTermsBody extends StatelessWidget {
                     ? null
                     : onSubmit,
                 icon: submitting
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 18,
                         width: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.surface,
+                          color: onPrimary,
                         ),
                       )
                     : Icon(
@@ -364,17 +367,18 @@ class _StatusNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft,
+        color: colors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline_rounded, color: AppColors.primary),
+          Icon(Icons.info_outline_rounded, color: colors.primary),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(

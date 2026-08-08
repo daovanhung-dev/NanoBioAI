@@ -30,9 +30,9 @@ class FontScaleSelector extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.semanticColors.surface,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.semanticColors.border),
               ),
               child: Text(
                 'Nabi sẽ đồng hành cùng bạn mỗi ngày.',
@@ -77,13 +77,14 @@ class FontScaleSelector extends StatelessWidget {
                           preset.label,
                           textAlign: TextAlign.center,
                           maxLines: 2,
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
                                 fontWeight: preset == value
                                     ? FontWeight.w700
                                     : FontWeight.w500,
                                 color: preset == value
                                     ? AppColors.primary
-                                    : AppColors.textSecondary,
+                                    : context.semanticColors.textSecondary,
                               ),
                         ),
                       ),

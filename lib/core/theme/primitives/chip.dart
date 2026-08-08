@@ -154,16 +154,12 @@ class AppChip extends StatelessWidget {
           ? AppColorTokens.primary.withValues(alpha: 0.20)
           : AppColorTokens.primaryLight;
     }
-    return isDark
-        ? AppColorTokens.darkSurface
-        : AppColorTokens.surfaceElevated;
+    return isDark ? AppColorTokens.darkSurface : AppColorTokens.surfaceElevated;
   }
 
   Color _textColor(bool isDark) {
     if (selected && _usesSelectionState) return AppColorTokens.primary;
-    return isDark
-        ? AppColorTokens.darkTextPrimary
-        : AppColorTokens.textPrimary;
+    return isDark ? AppColorTokens.darkTextPrimary : AppColorTokens.textPrimary;
   }
 
   Border _border(bool isDark) {

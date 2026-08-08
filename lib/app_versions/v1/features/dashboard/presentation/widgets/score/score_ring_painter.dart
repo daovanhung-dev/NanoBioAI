@@ -2,12 +2,18 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'package:nano_app/core/theme/app_colors.dart';
+import 'package:nano_app/core/theme/app_semantic_colors.dart';
+
 class ScoreRingPainter extends CustomPainter {
   final double progress;
   final double pulseValue;
+  final AppSemanticColors colors;
 
-  const ScoreRingPainter({required this.progress, required this.pulseValue});
+  const ScoreRingPainter({
+    required this.progress,
+    required this.pulseValue,
+    required this.colors,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -17,7 +23,7 @@ class ScoreRingPainter extends CustomPainter {
     const startAngle = -math.pi / 2;
 
     final trackPaint = Paint()
-      ..color = AppColors.surface.withValues(alpha: 0.08)
+      ..color = colors.onBrand.withValues(alpha: 0.08)
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -25,8 +31,8 @@ class ScoreRingPainter extends CustomPainter {
     canvas.drawCircle(center, radius, trackPaint);
 
     final progressPaint = Paint()
-      ..shader = const SweepGradient(
-        colors: [AppColors.secondary, AppColors.secondary, AppColors.primaryLight],
+      ..shader = SweepGradient(
+        colors: [colors.secondary, colors.secondary, colors.primaryLight],
         stops: [0.0, 0.5, 1.0],
         startAngle: 0,
         endAngle: math.pi * 2,
@@ -51,17 +57,17 @@ class ScoreRingPainter extends CustomPainter {
         center.dy + radius * math.sin(angle),
       );
       final glowPaint = Paint()
-        ..color = const Color(
-          0xFF60A5FA,
-        ).withValues(alpha: 0.4 + pulseValue * 0.2)
+        ..color = colors.primaryLight.withValues(alpha: 0.4 + pulseValue * 0.2)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
       canvas.drawCircle(dotCenter, 6, glowPaint);
-      canvas.drawCircle(dotCenter, 4, Paint()..color = AppColors.outline);
+      canvas.drawCircle(dotCenter, 4, Paint()..color = colors.outline);
     }
   }
 
   @override
   bool shouldRepaint(covariant ScoreRingPainter old) {
-    return old.progress != progress || old.pulseValue != pulseValue;
+    return old.progress != progress ||
+        old.pulseValue != pulseValue ||
+        old.colors != colors;
   }
 }

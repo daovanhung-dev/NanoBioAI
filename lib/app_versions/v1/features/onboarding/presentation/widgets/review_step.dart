@@ -117,7 +117,10 @@ class ReviewStep extends ConsumerWidget {
                 _SummaryChips(values: habits, fallback: 'Chưa chọn thói quen'),
                 const SizedBox(height: AppSpacing.sm),
                 _KeyValue(label: 'Giấc ngủ', value: _value(state.sleepQuality)),
-                _KeyValue(label: 'Vận động', value: _value(state.activityLevel)),
+                _KeyValue(
+                  label: 'Vận động',
+                  value: _value(state.activityLevel),
+                ),
                 _KeyValue(
                   label: 'Nước uống',
                   value: _value(state.waterPerDay),
@@ -240,14 +243,15 @@ class ReviewStep extends ConsumerWidget {
     }
 
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const AIGeneratingPage()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const AIGeneratingPage()));
     try {
       await controller.saveOnboarding();
       AppFeedbackService.instance.emit(AppFeedbackType.milestone);
-      final generationSource =
-          ref.read(onboardingProvider).initialPlanGenerationSource;
+      final generationSource = ref
+          .read(onboardingProvider)
+          .initialPlanGenerationSource;
       if (generationSource.isBasicSuggestion && context.mounted) {
         _showMessage(context, 'NaBi đã tạo lịch gợi ý cơ bản đầu tiên.');
       }
@@ -259,25 +263,26 @@ class ReviewStep extends ConsumerWidget {
       final message = error is AIOverloadedException
           ? AIOverloadedException.userMessage
           : error is StateError
-              ? error.message.toString()
-              : 'Mình chưa thể hoàn tất lúc này. Bạn thử lại nhé.';
+          ? error.message.toString()
+          : 'Mình chưa thể hoàn tất lúc này. Bạn thử lại nhé.';
       _showMessage(context, message);
     }
   }
 
   static void _showMessage(BuildContext context, String message) {
+    final colors = context.semanticColors;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.eco_rounded, color: AppColors.surface),
+              const Icon(Icons.eco_rounded, color: AppColors.textInverse),
               const SizedBox(width: AppSpacing.sm),
               Expanded(child: Text(message)),
             ],
           ),
-          backgroundColor: NabiPalette.greenDeep,
+          backgroundColor: colors.primaryDark,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -295,7 +300,8 @@ class _ReadinessHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = ready ? NabiPalette.greenPrimary : NabiPalette.warning;
+    final colors = context.semanticColors;
+    final color = ready ? colors.primary : colors.warning;
     final normalizedName = name.trim();
     final greeting = normalizedName.isEmpty
         ? 'Sẵn sàng rồi!'
@@ -307,10 +313,7 @@ class _ReadinessHero extends StatelessWidget {
         gradient: ready
             ? NabiPalette.hero
             : LinearGradient(
-                colors: [
-                  NabiPalette.warning,
-                  NabiPalette.energyYellow,
-                ],
+                colors: [NabiPalette.warning, NabiPalette.energyYellow],
               ),
         borderRadius: BorderRadius.circular(AppRadius.xl),
         boxShadow: [
@@ -340,7 +343,7 @@ class _ReadinessHero extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.heading4.copyWith(
-                    color: AppColors.surface,
+                    color: AppColors.textInverse,
                     fontWeight: FontWeight.w900,
                     height: 1.15,
                   ),
@@ -351,7 +354,7 @@ class _ReadinessHero extends StatelessWidget {
                       ? 'NaBi sẽ tạo lộ trình cá nhân.'
                       : 'Kiểm tra các mục chưa hoàn tất.',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.surface.withValues(alpha: 0.86),
+                    color: AppColors.textInverse.withValues(alpha: 0.86),
                   ),
                 ),
               ],
@@ -380,7 +383,9 @@ class _SummarySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return NabiGlassPanel(
+      gradient: LinearGradient(colors: [colors.card, colors.cardAlt]),
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       shadowColor: accent,
       borderColor: accent.withValues(alpha: 0.14),
@@ -403,7 +408,7 @@ class _SummarySection extends StatelessWidget {
                 child: Text(
                   title,
                   style: AppTextStyles.heading5.copyWith(
-                    color: NabiPalette.ink,
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -439,7 +444,8 @@ class _StatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = ready ? NabiPalette.greenPrimary : NabiPalette.warning;
+    final colors = context.semanticColors;
+    final color = ready ? colors.success : colors.warning;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -461,7 +467,7 @@ class _StatusCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: NabiPalette.ink,
+                  color: colors.textPrimary,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -494,6 +500,7 @@ class _KeyValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Column(
       children: [
         Padding(
@@ -506,7 +513,7 @@ class _KeyValue extends StatelessWidget {
                 child: Text(
                   label,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: NabiPalette.mutedInk,
+                    color: colors.textSecondary,
                   ),
                 ),
               ),
@@ -516,7 +523,7 @@ class _KeyValue extends StatelessWidget {
                   value,
                   textAlign: TextAlign.right,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: NabiPalette.ink,
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -524,7 +531,7 @@ class _KeyValue extends StatelessWidget {
             ],
           ),
         ),
-        if (showDivider) const Divider(height: 1, color: NabiPalette.line),
+        if (showDivider) Divider(height: 1, color: colors.divider),
       ],
     );
   }
@@ -538,13 +545,14 @@ class _LabeledChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: AppTextStyles.labelSmall.copyWith(
-            color: NabiPalette.mutedInk,
+            color: colors.textSecondary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -566,7 +574,9 @@ class _SummaryChips extends StatelessWidget {
     if (values.isEmpty) {
       return Text(
         fallback,
-        style: AppTextStyles.bodyMedium.copyWith(color: NabiPalette.mutedInk),
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: context.semanticColors.textSecondary,
+        ),
       );
     }
     return OnboardingSelectedChips(values: values);

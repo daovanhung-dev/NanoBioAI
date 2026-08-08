@@ -29,8 +29,10 @@ class OnboardingSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = accent ?? NabiPalette.greenPrimary;
+    final colors = context.semanticColors;
+    final color = accent ?? colors.primary;
     return NabiGlassPanel(
+      gradient: LinearGradient(colors: [colors.card, colors.cardAlt]),
       padding: padding ?? const EdgeInsets.all(AppSpacing.cardPadding),
       borderRadius: BorderRadius.circular(AppRadius.xl),
       shadowColor: color,
@@ -60,7 +62,7 @@ class OnboardingSectionCard extends StatelessWidget {
                       Text(
                         title!,
                         style: AppTextStyles.heading5.copyWith(
-                          color: NabiPalette.ink,
+                          color: colors.textPrimary,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -0.1,
                         ),
@@ -72,7 +74,7 @@ class OnboardingSectionCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: NabiPalette.mutedInk,
+                            color: colors.textSecondary,
                             height: 1.35,
                           ),
                         ),
@@ -123,7 +125,11 @@ class OnboardingChoiceGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final columns = width >= 680 ? 3 : width >= 340 ? 2 : 1;
+        final columns = width >= 680
+            ? 3
+            : width >= 340
+            ? 2
+            : 1;
         final itemWidth = (width - (columns - 1) * 8) / columns;
         return Wrap(
           spacing: 8,
@@ -136,7 +142,8 @@ class OnboardingChoiceGrid extends StatelessWidget {
                   key: ValueKey(options[index].code),
                   option: options[index],
                   selected: selected.contains(options[index].code),
-                  enabled: maxSelections == null ||
+                  enabled:
+                      maxSelections == null ||
                       selected.contains(options[index].code) ||
                       selected.length < maxSelections!,
                   accent: _accentForIndex(index),
@@ -189,7 +196,10 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = widget.selected ? AppColors.surface : NabiPalette.ink;
+    final colors = context.semanticColors;
+    final foreground = widget.selected
+        ? AppColors.textInverse
+        : colors.textPrimary;
     final border = widget.selected
         ? NabiPalette.greenPrimary
         : widget.accent.withValues(alpha: 0.16);
@@ -201,10 +211,15 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.enabled ? widget.onTap : null,
-        onTapDown: widget.enabled ? (_) => setState(() => _pressed = true) : null,
-        onTapUp: widget.enabled ? (_) => setState(() => _pressed = false) : null,
-        onTapCancel:
-            widget.enabled ? () => setState(() => _pressed = false) : null,
+        onTapDown: widget.enabled
+            ? (_) => setState(() => _pressed = true)
+            : null,
+        onTapUp: widget.enabled
+            ? (_) => setState(() => _pressed = false)
+            : null,
+        onTapCancel: widget.enabled
+            ? () => setState(() => _pressed = false)
+            : null,
         child: AnimatedScale(
           scale: _pressed && !nabiReducedMotion(context) ? 0.975 : 1,
           duration: AppDuration.tap,
@@ -215,7 +230,10 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
                 : AppDuration.ripple,
             curve: Curves.easeOutBack,
             constraints: const BoxConstraints(minHeight: 56),
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: 6,
+            ),
             decoration: BoxDecoration(
               gradient: widget.selected
                   ? NabiPalette.selection
@@ -224,7 +242,7 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
                       end: Alignment.bottomRight,
                       colors: [
                         widget.accent.withValues(alpha: 0.09),
-                        AppColors.surface,
+                        colors.card,
                       ],
                     ),
               borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -253,7 +271,7 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: widget.selected
-                          ? AppColors.surface.withValues(alpha: 0.16)
+                          ? AppColors.textInverse.withValues(alpha: 0.16)
                           : widget.accent.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
@@ -279,16 +297,14 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
                   const SizedBox(width: AppSpacing.tiny),
                   AnimatedSwitcher(
                     duration: AppDuration.button,
-                    transitionBuilder: (child, animation) => ScaleTransition(
-                      scale: animation,
-                      child: child,
-                    ),
+                    transitionBuilder: (child, animation) =>
+                        ScaleTransition(scale: animation, child: child),
                     child: widget.selected
                         ? const Icon(
                             Icons.check_circle_rounded,
                             key: ValueKey('selected'),
                             size: 22,
-                            color: AppColors.surface,
+                            color: AppColors.textInverse,
                           )
                         : Icon(
                             Icons.add_circle_outline_rounded,
@@ -401,7 +417,9 @@ class OnboardingMultiChoicePickerField extends StatelessWidget {
           OnboardingSelectedChips(
             values: cleanLabels,
             onRemove: (value) => onChanged(
-              cleanLabels.where((item) => item != value).toList(growable: false),
+              cleanLabels
+                  .where((item) => item != value)
+                  .toList(growable: false),
             ),
             onClear: () => onChanged(const []),
           ),
@@ -454,6 +472,7 @@ class OnboardingSelectedChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -464,21 +483,20 @@ class OnboardingSelectedChips extends StatelessWidget {
             for (var index = 0; index < values.length; index++)
               InputChip(
                 label: Text(values[index]),
-                onDeleted:
-                    onRemove == null ? null : () => onRemove!(values[index]),
+                onDeleted: onRemove == null
+                    ? null
+                    : () => onRemove!(values[index]),
                 deleteIcon: const Icon(Icons.close_rounded, size: 17),
-                deleteIconColor: NabiPalette.greenDeep,
-                side: BorderSide(
-                  color: NabiPalette.greenPrimary.withValues(alpha: 0.18),
-                ),
+                deleteIconColor: colors.primary,
+                side: BorderSide(color: colors.primary.withValues(alpha: 0.18)),
                 backgroundColor: index.isEven
-                    ? NabiPalette.greenSoft
-                    : NabiPalette.mintSurface,
+                    ? colors.primarySoft
+                    : colors.primarySubtle,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
                 labelStyle: AppTextStyles.labelSmall.copyWith(
-                  color: NabiPalette.ink,
+                  color: colors.textPrimary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0,
                 ),
@@ -493,7 +511,7 @@ class OnboardingSelectedChips extends StatelessWidget {
               icon: const Icon(Icons.clear_all_rounded, size: 18),
               label: const Text('Bỏ chọn tất cả'),
               style: TextButton.styleFrom(
-                foregroundColor: NabiPalette.greenDeep,
+                foregroundColor: colors.primary,
                 visualDensity: VisualDensity.compact,
               ),
             ),
@@ -520,6 +538,7 @@ class _PickerSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Semantics(
       button: true,
       label: '$label: $value',
@@ -534,14 +553,17 @@ class _PickerSurface extends StatelessWidget {
           child: AnimatedContainer(
             duration: AppDuration.button,
             constraints: const BoxConstraints(minHeight: 56),
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             decoration: BoxDecoration(
-              color: hasValue ? NabiPalette.greenSoft : AppColors.surface,
+              color: hasValue ? colors.primarySoft : colors.surface,
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(
                 color: hasValue
-                    ? NabiPalette.greenPrimary.withValues(alpha: 0.32)
-                    : NabiPalette.line,
+                    ? colors.primary.withValues(alpha: 0.32)
+                    : colors.border,
               ),
             ),
             child: Row(
@@ -550,10 +572,10 @@ class _PickerSurface extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: NabiPalette.greenPrimary.withValues(alpha: 0.12),
+                    color: colors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
-                  child: Icon(icon, size: 21, color: NabiPalette.greenPrimary),
+                  child: Icon(icon, size: 21, color: colors.primary),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
@@ -563,7 +585,7 @@ class _PickerSurface extends StatelessWidget {
                       Text(
                         label,
                         style: AppTextStyles.labelSmall.copyWith(
-                          color: NabiPalette.mutedInk,
+                          color: colors.textSecondary,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0,
                         ),
@@ -574,9 +596,7 @@ class _PickerSurface extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.labelLarge.copyWith(
-                          color: hasValue
-                              ? NabiPalette.greenDeep
-                              : NabiPalette.ink,
+                          color: hasValue ? colors.primary : colors.textPrimary,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0,
                         ),
@@ -585,10 +605,7 @@ class _PickerSurface extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: NabiPalette.greenPrimary,
-                ),
+                Icon(Icons.keyboard_arrow_down_rounded, color: colors.primary),
               ],
             ),
           ),
@@ -622,19 +639,23 @@ class _ChoiceSheetState extends State<_ChoiceSheet> {
     final filtered = widget.options
         .where(
           (option) =>
-              normalized.isEmpty || option.label.toLowerCase().contains(normalized),
+              normalized.isEmpty ||
+              option.label.toLowerCase().contains(normalized),
         )
         .toList(growable: false);
     return _SheetFrame(
       title: widget.title,
       count: widget.selectedCode.isEmpty ? 0 : 1,
-      search: _SearchField(onChanged: (value) => setState(() => _query = value)),
+      search: _SearchField(
+        onChanged: (value) => setState(() => _query = value),
+      ),
       child: filtered.isEmpty
           ? const _EmptySearch()
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
               itemCount: filtered.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: AppSpacing.sm),
               itemBuilder: (context, index) {
                 final option = filtered[index];
                 return OnboardingChoiceTile(
@@ -697,11 +718,13 @@ class _MultiChoiceSheetState extends State<_MultiChoiceSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final normalized = _query.trim().toLowerCase();
     final filtered = widget.options
         .where(
           (option) =>
-              normalized.isEmpty || option.label.toLowerCase().contains(normalized),
+              normalized.isEmpty ||
+              option.label.toLowerCase().contains(normalized),
         )
         .toList(growable: false);
     final selectedOptions = widget.options
@@ -712,7 +735,9 @@ class _MultiChoiceSheetState extends State<_MultiChoiceSheet> {
       title: widget.title,
       count: _selected.length,
       onClear: _selected.isEmpty ? null : () => setState(_selected.clear),
-      search: _SearchField(onChanged: (value) => setState(() => _query = value)),
+      search: _SearchField(
+        onChanged: (value) => setState(() => _query = value),
+      ),
       selected: selectedOptions.isEmpty
           ? null
           : SizedBox(
@@ -721,13 +746,14 @@ class _MultiChoiceSheetState extends State<_MultiChoiceSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 scrollDirection: Axis.horizontal,
                 itemCount: selectedOptions.length,
-                separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, index) => InputChip(
                   label: Text(selectedOptions[index].label),
                   onDeleted: () => _toggle(selectedOptions[index].code),
-                  backgroundColor: NabiPalette.greenSoft,
+                  backgroundColor: colors.primarySoft,
                   side: BorderSide(
-                    color: NabiPalette.greenPrimary.withValues(alpha: 0.18),
+                    color: colors.primary.withValues(alpha: 0.18),
                   ),
                 ),
               ),
@@ -745,7 +771,8 @@ class _MultiChoiceSheetState extends State<_MultiChoiceSheet> {
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
               itemCount: filtered.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: AppSpacing.sm),
               itemBuilder: (context, index) {
                 final option = filtered[index];
                 return OnboardingChoiceTile(
@@ -782,12 +809,13 @@ class _SheetFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final height = MediaQuery.sizeOf(context).height * 0.88;
     return Container(
       height: height,
-      decoration: const BoxDecoration(
-        color: NabiPalette.pageBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: colors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
         children: [
@@ -813,7 +841,7 @@ class _SheetFrame extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.eco_rounded,
-                    color: AppColors.surface,
+                    color: AppColors.textInverse,
                     size: 21,
                   ),
                 ),
@@ -824,7 +852,7 @@ class _SheetFrame extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.heading5.copyWith(
-                      color: NabiPalette.ink,
+                      color: colors.textPrimary,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -835,7 +863,7 @@ class _SheetFrame extends StatelessWidget {
                     tooltip: 'Bỏ chọn tất cả',
                     onPressed: onClear,
                     icon: const Icon(Icons.clear_all_rounded),
-                    color: NabiPalette.greenDeep,
+                    color: colors.primary,
                   ),
               ],
             ),
@@ -864,6 +892,7 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return TextField(
       onChanged: onChanged,
       textInputAction: TextInputAction.search,
@@ -871,22 +900,19 @@ class _SearchField extends StatelessWidget {
         hintText: 'Tìm nhanh',
         prefixIcon: const Icon(Icons.search_rounded),
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: colors.inputBackground,
         isDense: true,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: const BorderSide(color: NabiPalette.line),
+          borderSide: BorderSide(color: colors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: const BorderSide(color: NabiPalette.line),
+          borderSide: BorderSide(color: colors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: const BorderSide(
-            color: NabiPalette.greenPrimary,
-            width: 1.5,
-          ),
+          borderSide: BorderSide(color: colors.primary, width: 1.5),
         ),
       ),
     );
@@ -898,6 +924,7 @@ class _EmptySearch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
@@ -913,7 +940,7 @@ class _EmptySearch extends StatelessWidget {
             Text(
               'Chưa tìm thấy',
               style: AppTextStyles.heading5.copyWith(
-                color: NabiPalette.ink,
+                color: colors.textPrimary,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -921,7 +948,7 @@ class _EmptySearch extends StatelessWidget {
             Text(
               'Thử từ khóa ngắn hơn nhé.',
               style: AppTextStyles.bodySmall.copyWith(
-                color: NabiPalette.mutedInk,
+                color: colors.textSecondary,
               ),
             ),
           ],
@@ -945,7 +972,8 @@ class OnboardingInlineInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = color ?? NabiPalette.greenPrimary;
+    final colors = context.semanticColors;
+    final accent = color ?? colors.primary;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.sm),
@@ -963,7 +991,7 @@ class OnboardingInlineInfo extends StatelessWidget {
             child: Text(
               text,
               style: AppTextStyles.bodySmall.copyWith(
-                color: NabiPalette.ink,
+                color: colors.textPrimary,
                 height: 1.4,
               ),
             ),
@@ -988,12 +1016,13 @@ class OnboardingLabelValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.card,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: NabiPalette.line),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         children: [
@@ -1001,10 +1030,10 @@ class OnboardingLabelValue extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: NabiPalette.greenSoft,
+              color: colors.primarySoft,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, size: 18, color: NabiPalette.greenPrimary),
+            child: Icon(icon, size: 18, color: colors.primary),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -1014,7 +1043,7 @@ class OnboardingLabelValue extends StatelessWidget {
                 Text(
                   label,
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: NabiPalette.mutedInk,
+                    color: colors.textSecondary,
                     letterSpacing: 0,
                   ),
                 ),
@@ -1024,7 +1053,7 @@ class OnboardingLabelValue extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: NabiPalette.ink,
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0,
                   ),
@@ -1049,18 +1078,22 @@ class _CountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
       decoration: BoxDecoration(
         color: count > 0
             ? accent.withValues(alpha: 0.12)
-            : NabiPalette.mintSurface,
+            : colors.primarySubtle,
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         '$count',
         style: AppTextStyles.labelSmall.copyWith(
-          color: count > 0 ? accent : NabiPalette.mutedInk,
+          color: count > 0 ? accent : colors.textMuted,
           fontWeight: FontWeight.w900,
           letterSpacing: 0,
         ),

@@ -19,7 +19,7 @@ class ProfilePage extends ConsumerWidget {
     final dashboardAsync = ref.watch(dashboardProvider);
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.semanticColors.background,
       floatingActionButton: dashboardAsync.value == null
           ? null
           : FloatingActionButton.extended(
@@ -39,12 +39,10 @@ class ProfilePage extends ConsumerWidget {
             ),
             error: (error, _) => _EmptyProfile(
               key: const ValueKey<String>('profile-error'),
-            message:
-                'Nabi chưa thể mở hồ sơ của bạn lúc này. Mình thử lại sau một chút nhé.',
+              message:
+                  'Nabi chưa thể mở hồ sơ của bạn lúc này. Mình thử lại sau một chút nhé.',
               onRetry: () async {
-                AppFeedbackService.instance.emit(
-                  AppFeedbackType.primaryAction,
-                );
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                 ref.invalidate(dashboardProvider);
                 try {
                   await ref.read(dashboardProvider.future);
@@ -57,9 +55,7 @@ class ProfilePage extends ConsumerWidget {
             data: (dashboard) => RefreshIndicator(
               key: const ValueKey<String>('profile-ready'),
               onRefresh: () async {
-                AppFeedbackService.instance.emit(
-                  AppFeedbackType.primaryAction,
-                );
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                 ref.invalidate(dashboardProvider);
                 try {
                   await ref.read(dashboardProvider.future);
@@ -69,69 +65,70 @@ class ProfilePage extends ConsumerWidget {
                   rethrow;
                 }
               },
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    AppSpacing.xxl,
-                    AppSpacing.md,
-                    128,
-                  ),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _ProfileHeader(dashboard: dashboard),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _MetricGrid(dashboard: dashboard),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      const _NutritionProfileLinkCard(),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _InfoSection(
-                        title: 'Thông tin cá nhân',
-                        rows: [
-                          _InfoRow('Email', dashboard.email),
-                          _InfoRow('Điện thoại', dashboard.phone),
-                          _InfoRow('Giới tính', dashboard.gender),
-                          _InfoRow(
-                            'Năm sinh',
-                            dashboard.birthYear > 0
-                                ? dashboard.birthYear.toString()
-                                : '',
-                          ),
-                          _InfoRow('Nghề nghiệp', dashboard.occupation),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _ChipSection(
-                        title: 'Mục tiêu',
-                        emptyMessage: 'Nabi chưa thấy mục tiêu nào được chọn.',
-                        items: dashboard.goals,
-                        icon: Icons.flag_rounded,
-                      ),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _ChipSection(
-                        title: 'Tình trạng cần lưu ý',
-                        emptyMessage:
-                            'Nabi chưa thấy tình trạng nào cần lưu ý.',
-                        items: dashboard.conditions,
-                        icon: Icons.health_and_safety_rounded,
-                      ),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _ChipSection(
-                        title: 'Thói quen',
-                        emptyMessage:
-                            'Nabi chưa thấy thói quen nào được ghi nhớ.',
-                        items: dashboard.habits,
-                        icon: Icons.restaurant_rounded,
-                      ),
-                    ]),
-                  ),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
                 ),
-              ],
-            ),
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.xxl,
+                      AppSpacing.md,
+                      128,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        _ProfileHeader(dashboard: dashboard),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _MetricGrid(dashboard: dashboard),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        const _NutritionProfileLinkCard(),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _InfoSection(
+                          title: 'Thông tin cá nhân',
+                          rows: [
+                            _InfoRow('Email', dashboard.email),
+                            _InfoRow('Điện thoại', dashboard.phone),
+                            _InfoRow('Giới tính', dashboard.gender),
+                            _InfoRow(
+                              'Năm sinh',
+                              dashboard.birthYear > 0
+                                  ? dashboard.birthYear.toString()
+                                  : '',
+                            ),
+                            _InfoRow('Nghề nghiệp', dashboard.occupation),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _ChipSection(
+                          title: 'Mục tiêu',
+                          emptyMessage:
+                              'Nabi chưa thấy mục tiêu nào được chọn.',
+                          items: dashboard.goals,
+                          icon: Icons.flag_rounded,
+                        ),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _ChipSection(
+                          title: 'Tình trạng cần lưu ý',
+                          emptyMessage:
+                              'Nabi chưa thấy tình trạng nào cần lưu ý.',
+                          items: dashboard.conditions,
+                          icon: Icons.health_and_safety_rounded,
+                        ),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _ChipSection(
+                          title: 'Thói quen',
+                          emptyMessage:
+                              'Nabi chưa thấy thói quen nào được ghi nhớ.',
+                          items: dashboard.habits,
+                          icon: Icons.restaurant_rounded,
+                        ),
+                      ]),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -417,7 +414,10 @@ class _ProfileHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: AppDecoration.gradient(
-        colors: const [AppColors.primary, AppColors.secondary],
+        colors: [
+          context.semanticColors.primary,
+          context.semanticColors.secondary,
+        ],
         radius: AppRadius.xxl,
         shadows: AppShadows.lg,
       ),
@@ -427,12 +427,12 @@ class _ProfileHeader extends StatelessWidget {
             width: 76,
             height: 76,
             decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: .18),
+              color: context.semanticColors.textInverse.withValues(alpha: .18),
               borderRadius: BorderRadius.circular(AppRadius.circular),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person_rounded,
-              color: AppColors.surface,
+              color: context.semanticColors.textInverse,
               size: 40,
             ),
           ),
@@ -446,7 +446,7 @@ class _ProfileHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.heading2.copyWith(
-                    color: AppColors.surface,
+                    color: context.semanticColors.textInverse,
                     fontWeight: AppTypography.bold,
                   ),
                 ),
@@ -454,14 +454,18 @@ class _ProfileHeader extends StatelessWidget {
                 Text(
                   _subscriptionLabel(dashboard.subscriptionTier),
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.surface.withValues(alpha: .9),
+                    color: context.semanticColors.textInverse.withValues(
+                      alpha: .9,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Nabi sẽ dùng những thông tin này để chăm sóc bạn gần gũi hơn mỗi ngày.',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.surface.withValues(alpha: .78),
+                    color: context.semanticColors.textInverse.withValues(
+                      alpha: .78,
+                    ),
                     height: 1.35,
                   ),
                 ),
@@ -473,7 +477,6 @@ class _ProfileHeader extends StatelessWidget {
     );
   }
 }
-
 
 class _NutritionProfileLinkCard extends StatelessWidget {
   const _NutritionProfileLinkCard();
@@ -487,12 +490,12 @@ class _NutritionProfileLinkCard extends StatelessWidget {
           width: 46,
           height: 46,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: .1),
+            color: context.semanticColors.primary.withValues(alpha: .1),
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.restaurant_menu_rounded,
-            color: AppColors.primary,
+            color: context.semanticColors.primary,
           ),
         ),
         title: const Text('Hồ sơ dinh dưỡng'),
@@ -579,7 +582,7 @@ class _MetricCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(metric.icon, color: AppColors.primary),
+          Icon(metric.icon, color: context.semanticColors.primary),
           const Spacer(),
           Text(
             metric.value,
@@ -680,7 +683,11 @@ class _ChipSection extends StatelessWidget {
               runSpacing: AppSpacing.sm,
               children: items.map((item) {
                 return Chip(
-                  avatar: Icon(icon, size: 16, color: AppColors.primary),
+                  avatar: Icon(
+                    icon,
+                    size: 16,
+                    color: context.semanticColors.primary,
+                  ),
                   label: Text(item),
                 );
               }).toList(),
@@ -728,9 +735,9 @@ class _EmptyProfile extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.person_off_rounded,
-              color: AppColors.textMuted,
+              color: context.semanticColors.textMuted,
               size: 42,
             ),
             const SizedBox(height: AppSpacing.md),

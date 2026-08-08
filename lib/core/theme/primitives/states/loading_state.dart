@@ -39,8 +39,8 @@ class _LoadingStateState extends State<LoadingState>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final reduceMotion = AppMotionScope.reduceMotionOf(context) ||
-        !TickerMode.of(context);
+    final reduceMotion =
+        AppMotionScope.reduceMotionOf(context) || !TickerMode.of(context);
     if (_reduceMotion == reduceMotion && _controller.isAnimating) {
       return;
     }
@@ -93,19 +93,19 @@ class _LoadingStateState extends State<LoadingState>
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                _buildIndicator(isDark),
-                if (widget.message != null) ...[
-                  SizedBox(height: AppSpacingTokens.sectionSpacing),
-                  Text(
-                    widget.message!,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: isDark
-                          ? AppColorTokens.darkTextSecondary
-                          : AppColorTokens.textSecondary,
+                  _buildIndicator(isDark),
+                  if (widget.message != null) ...[
+                    SizedBox(height: AppSpacingTokens.sectionSpacing),
+                    Text(
+                      widget.message!,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: isDark
+                            ? AppColorTokens.darkTextSecondary
+                            : AppColorTokens.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                  ],
                 ],
               ),
             ),
@@ -166,9 +166,8 @@ class _LoadingStateState extends State<LoadingState>
       ? AppColorTokens.darkSurfaceElevated
       : AppColorTokens.surfaceElevated;
 
-  Color _highlightColor(bool isDark) => isDark
-      ? AppColorTokens.darkBorder
-      : AppColorTokens.primaryLight;
+  Color _highlightColor(bool isDark) =>
+      isDark ? AppColorTokens.darkBorder : AppColorTokens.primaryLight;
 }
 
 class _SkeletonPanel extends StatelessWidget {

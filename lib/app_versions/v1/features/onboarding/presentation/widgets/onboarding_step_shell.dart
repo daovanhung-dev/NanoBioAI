@@ -44,7 +44,9 @@ class OnboardingStepShell extends StatelessWidget {
     this.showCompanion = true,
   });
 
-  NabiOnboardingMood get _resolvedMood => mood ?? switch (stepIndex) {
+  NabiOnboardingMood get _resolvedMood =>
+      mood ??
+      switch (stepIndex) {
         0 => NabiOnboardingMood.welcome,
         1 => NabiOnboardingMood.guide,
         2 => NabiOnboardingMood.goal,
@@ -78,11 +80,7 @@ class OnboardingStepShell extends StatelessWidget {
           ),
         ),
         if (footer != null || showNextAction)
-          _BottomAction(
-            footer: footer,
-            onNext: onNext,
-            nextLabel: nextLabel,
-          ),
+          _BottomAction(footer: footer, onNext: onNext, nextLabel: nextLabel),
       ],
     );
 
@@ -105,6 +103,7 @@ class _WellnessTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final progress = ((stepIndex + 1) / totalSteps).clamp(0.0, 1.0).toDouble();
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 9, 14, 6),
@@ -118,12 +117,11 @@ class _WellnessTopBar extends StatelessWidget {
                     tooltip: 'Quay lại',
                     onPressed: onBack,
                     icon: const Icon(Icons.arrow_back_rounded),
-                    color: NabiPalette.greenDeep,
+                    color: colors.primary,
                     style: IconButton.styleFrom(
-                      backgroundColor: AppColors.surface.withValues(alpha: 0.92),
-                      side: const BorderSide(color: NabiPalette.line),
-                      shadowColor:
-                          NabiPalette.greenPrimary.withValues(alpha: 0.14),
+                      backgroundColor: colors.surface.withValues(alpha: 0.92),
+                      side: BorderSide(color: colors.border),
+                      shadowColor: colors.primary.withValues(alpha: 0.14),
                       elevation: 2,
                     ),
                   )
@@ -141,9 +139,11 @@ class _WellnessTopBar extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      stepIndex + 1 == totalSteps ? 'Sắp xong' : 'Hồ sơ của bạn',
+                      stepIndex + 1 == totalSteps
+                          ? 'Sắp xong'
+                          : 'Hồ sơ của bạn',
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: NabiPalette.mutedInk,
+                        color: colors.textSecondary,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0,
                       ),
@@ -185,6 +185,7 @@ class _LeafProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return SizedBox(
       height: 14,
       child: Stack(
@@ -193,7 +194,7 @@ class _LeafProgress extends StatelessWidget {
           Container(
             height: 6,
             decoration: BoxDecoration(
-              color: NabiPalette.greenSoft,
+              color: colors.primarySoft,
               borderRadius: BorderRadius.circular(AppRadius.pill),
             ),
           ),
@@ -227,19 +228,20 @@ class _LeafProgress extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: index <= currentStep
                         ? NabiPalette.greenPrimary
-                        : AppColors.surface,
+                        : colors.surface,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: index <= currentStep
                           ? NabiPalette.greenPrimary
-                          : NabiPalette.line,
+                          : colors.border,
                       width: 1.5,
                     ),
                     boxShadow: index == currentStep
                         ? [
                             BoxShadow(
-                              color: NabiPalette.greenPrimary
-                                  .withValues(alpha: 0.28),
+                              color: NabiPalette.greenPrimary.withValues(
+                                alpha: 0.28,
+                              ),
                               blurRadius: 8,
                             ),
                           ]
@@ -249,7 +251,7 @@ class _LeafProgress extends StatelessWidget {
                       ? const Icon(
                           Icons.check_rounded,
                           size: 7,
-                          color: AppColors.surface,
+                          color: AppColors.textInverse,
                         )
                       : null,
                 ),
@@ -282,6 +284,7 @@ class _StepBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -292,7 +295,7 @@ class _StepBody extends StatelessWidget {
         Text(
           title,
           style: AppTextStyles.heading3.copyWith(
-            color: NabiPalette.ink,
+            color: colors.textPrimary,
             fontWeight: FontWeight.w900,
             height: 1.12,
             letterSpacing: -0.35,
@@ -305,7 +308,7 @@ class _StepBody extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: NabiPalette.mutedInk,
+              color: colors.textSecondary,
               height: 1.35,
             ),
           ),
@@ -348,6 +351,7 @@ class _BottomAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     return AnimatedPadding(
       duration: AppDuration.button,
@@ -356,11 +360,11 @@ class _BottomAction extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
         decoration: BoxDecoration(
-          color: NabiPalette.pageBackground.withValues(alpha: 0.96),
-          border: const Border(top: BorderSide(color: NabiPalette.line)),
+          color: colors.background.withValues(alpha: 0.96),
+          border: Border(top: BorderSide(color: colors.divider)),
           boxShadow: [
             BoxShadow(
-              color: NabiPalette.greenDeep.withValues(alpha: 0.05),
+              color: colors.textPrimary.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -3),
             ),
@@ -371,7 +375,8 @@ class _BottomAction extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 720),
             child: SizedBox(
               width: double.infinity,
-              child: footer ??
+              child:
+                  footer ??
                   NabiPrimaryButton(
                     onPressed: onNext,
                     label: nextLabel ?? 'Tiếp tục',

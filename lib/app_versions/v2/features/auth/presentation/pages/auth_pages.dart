@@ -333,9 +333,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
               _RoutePrompt(
                 prompt: 'Bạn đã có tài khoản?',
                 actionLabel: 'Đăng nhập',
-                onPressed: _loading
-                    ? null
-                    : () => _returnToLogin(context),
+                onPressed: _loading ? null : () => _returnToLogin(context),
               ),
             ],
           ),
@@ -802,9 +800,7 @@ class _V2AuthCallbackPageState extends ConsumerState<V2AuthCallbackPage> {
                 _SecondaryAuthButton(
                   label: 'Về đăng nhập',
                   icon: Icons.login_rounded,
-                  onPressed: _loading
-                      ? null
-                      : () => _returnToLogin(context),
+                  onPressed: _loading ? null : () => _returnToLogin(context),
                 ),
               ],
             ),
@@ -846,7 +842,7 @@ String _safeErrorMessage(Object error) {
 }
 
 void _returnToLogin(BuildContext context) {
-  if (context.canPop()) {
+  if (Navigator.of(context).canPop()) {
     context.pop();
     return;
   }
@@ -873,7 +869,8 @@ class _AuthScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final keyboardBottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final hasHistory = context.canPop();
+    final hasHistory = Navigator.of(context).canPop();
+    final colors = context.semanticColors;
 
     return PopScope(
       canPop: fallbackRoute == null || hasHistory,
@@ -904,19 +901,20 @@ class _AuthScaffold extends StatelessWidget {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: isWide ? 920 : 520),
                     child: Material(
-                      color: AppColors.surface,
+                      color: colors.surface,
                       borderRadius: BorderRadius.circular(AppRadius.xl),
                       clipBehavior: Clip.antiAlias,
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(AppRadius.xl),
-                          border: Border.all(color: AppColors.borderLight),
+                          border: Border.all(color: colors.borderLight),
                           boxShadow: AppShadows.soft,
                         ),
                         child: isWide
                             ? IntrinsicHeight(
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     SizedBox(
                                       width: 310,
@@ -947,7 +945,8 @@ class _AuthScaffold extends StatelessWidget {
                                       : AppSpacing.pagePadding,
                                 ),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     _AuthHero(
                                       eyebrow: eyebrow,
@@ -955,9 +954,13 @@ class _AuthScaffold extends StatelessWidget {
                                       title: title,
                                       subtitle: subtitle,
                                     ),
-                                    const SizedBox(height: AppSpacing.sectionSpacing),
+                                    const SizedBox(
+                                      height: AppSpacing.sectionSpacing,
+                                    ),
                                     child,
-                                    const SizedBox(height: AppSpacing.sectionSpacing),
+                                    const SizedBox(
+                                      height: AppSpacing.sectionSpacing,
+                                    ),
                                     const _AuthTrustNote(),
                                   ],
                                 ),
@@ -1037,14 +1040,14 @@ class _AuthBrandPanel extends StatelessWidget {
                   label: eyebrow,
                   icon: Icons.verified_user_outlined,
                   foregroundColor: AppColors.textInverse,
-                  backgroundColor: AppColors.surface.withValues(alpha: .14),
-                  borderColor: AppColors.surface.withValues(alpha: .22),
+                  backgroundColor: AppColors.textInverse.withValues(alpha: .14),
+                  borderColor: AppColors.textInverse.withValues(alpha: .22),
                 ),
                 const Spacer(),
                 MedicalIconBadge(
                   icon: icon,
                   color: AppColors.textInverse,
-                  backgroundColor: AppColors.surface.withValues(alpha: .14),
+                  backgroundColor: AppColors.textInverse.withValues(alpha: .14),
                   size: 60,
                 ),
                 const SizedBox(height: AppSpacing.sectionSpacing),
@@ -1108,7 +1111,7 @@ class _AuthPanelPattern extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.surface.withValues(alpha: .10),
+                  color: AppColors.textInverse.withValues(alpha: .10),
                   width: 32,
                 ),
               ),
@@ -1122,7 +1125,7 @@ class _AuthPanelPattern extends StatelessWidget {
               height: 220,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.surface.withValues(alpha: .05),
+                color: AppColors.textInverse.withValues(alpha: .05),
               ),
             ),
           ),
@@ -1147,6 +1150,7 @@ class _AuthHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Column(
       children: [
         Container(
@@ -1155,16 +1159,14 @@ class _AuthHero extends StatelessWidget {
             vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.primarySoft,
+            color: colors.primarySoft,
             borderRadius: BorderRadius.circular(AppRadius.circular),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.16),
-            ),
+            border: Border.all(color: colors.primary.withValues(alpha: 0.16)),
           ),
           child: Text(
             eyebrow,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.primaryDark,
+              color: colors.primaryDark,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.7,
             ),
@@ -1180,7 +1182,7 @@ class _AuthHero extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.28),
+                color: colors.primary.withValues(alpha: 0.28),
                 blurRadius: 22,
                 offset: const Offset(0, 10),
               ),
@@ -1193,7 +1195,7 @@ class _AuthHero extends StatelessWidget {
           title,
           textAlign: TextAlign.center,
           style: AppTextStyles.heading2.copyWith(
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1202,7 +1204,7 @@ class _AuthHero extends StatelessWidget {
           subtitle,
           textAlign: TextAlign.center,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
             height: 1.55,
           ),
         ),
@@ -1219,13 +1221,14 @@ class _AuthSectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -1233,7 +1236,7 @@ class _AuthSectionLabel extends StatelessWidget {
         Text(
           subtitle,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
             height: 1.4,
           ),
         ),
@@ -1273,6 +1276,7 @@ class _AuthTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return TextFormField(
       controller: controller,
       validator: validator,
@@ -1285,43 +1289,41 @@ class _AuthTextField extends StatelessWidget {
       autocorrect: !obscureText,
       enableSuggestions: !obscureText,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
-      cursorColor: AppColors.primary,
+      style: AppTextStyles.bodyMedium.copyWith(color: colors.textPrimary),
+      cursorColor: colors.primary,
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         isDense: true,
         filled: true,
-        fillColor: AppColors.inputBackground,
+        fillColor: colors.inputBackground,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.inputPaddingHorizontal,
           vertical: AppSpacing.inputPaddingVertical,
         ),
         prefixIcon: prefixIcon == null
             ? null
-            : Icon(prefixIcon, color: AppColors.primary, size: 21),
+            : Icon(prefixIcon, color: colors.primary, size: 21),
         prefixIconConstraints: const BoxConstraints(minWidth: 46),
         suffixIcon: suffixIcon,
         suffixIconConstraints: const BoxConstraints(minWidth: 46),
         labelStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
           fontWeight: FontWeight.w600,
         ),
-        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
-        helperStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textMuted,
-        ),
+        hintStyle: AppTextStyles.bodyMedium.copyWith(color: colors.textHint),
+        helperStyle: AppTextStyles.bodyMedium.copyWith(color: colors.textMuted),
         errorStyle: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.error,
+          color: colors.error,
           height: 1.3,
         ),
         errorMaxLines: 2,
-        border: _inputBorder(AppColors.borderLight),
-        enabledBorder: _inputBorder(AppColors.borderLight),
-        focusedBorder: _inputBorder(AppColors.primary, width: 1.5),
-        errorBorder: _inputBorder(AppColors.error),
-        focusedErrorBorder: _inputBorder(AppColors.error, width: 1.5),
+        border: _inputBorder(colors.borderLight),
+        enabledBorder: _inputBorder(colors.borderLight),
+        focusedBorder: _inputBorder(colors.primary, width: 1.5),
+        errorBorder: _inputBorder(colors.error),
+        focusedErrorBorder: _inputBorder(colors.error, width: 1.5),
       ),
     );
   }
@@ -1350,7 +1352,7 @@ class _PasswordVisibilityButton extends StatelessWidget {
       onPressed: onPressed,
       icon: Icon(
         obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-        color: AppColors.textSecondary,
+        color: context.semanticColors.textSecondary,
       ),
     );
   }
@@ -1369,16 +1371,17 @@ class _AuthLegalConsent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Semantics(
       label: 'Đồng ý với điều khoản sử dụng và chính sách bảo mật',
       child: Container(
         decoration: BoxDecoration(
-          color: value ? AppColors.primarySoft : AppColors.surface,
+          color: value ? colors.primarySoft : colors.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: value
-                ? AppColors.primary.withValues(alpha: 0.35)
-                : AppColors.borderLight,
+                ? colors.primary.withValues(alpha: 0.35)
+                : colors.borderLight,
           ),
         ),
         child: CheckboxListTile(
@@ -1390,14 +1393,14 @@ class _AuthLegalConsent extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
-          activeColor: AppColors.primary,
+          activeColor: colors.primary,
           checkboxShape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.xs),
           ),
           title: Text(
             'Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật.',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -1425,6 +1428,8 @@ class _PrimaryAuthButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(AppRadius.lg);
     final disabled = loading || onPressed == null;
+    final colors = context.semanticColors;
+    final contentColor = disabled ? colors.textMuted : AppColors.textInverse;
 
     return Semantics(
       button: true,
@@ -1436,14 +1441,18 @@ class _PrimaryAuthButton extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: disabled
-                ? AppGradients.primarySoft
+                ? LinearGradient(
+                    colors: [colors.surfaceSoft, colors.primarySoft],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
                 : AppGradients.primary,
             borderRadius: borderRadius,
             boxShadow: disabled
                 ? const []
                 : [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
+                      color: colors.primary.withValues(alpha: 0.25),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -1459,12 +1468,12 @@ class _PrimaryAuthButton extends StatelessWidget {
                 child: AnimatedSwitcher(
                   duration: AppDuration.fast,
                   child: loading
-                      ? const SizedBox.square(
+                      ? SizedBox.square(
                           key: ValueKey('auth_loading'),
                           dimension: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.2,
-                            color: AppColors.textInverse,
+                            color: contentColor,
                           ),
                         )
                       : Row(
@@ -1474,12 +1483,12 @@ class _PrimaryAuthButton extends StatelessWidget {
                             Text(
                               label,
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.textInverse,
+                                color: contentColor,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             const SizedBox(width: AppSpacing.sm),
-                            Icon(icon, color: AppColors.textInverse, size: 20),
+                            Icon(icon, color: contentColor, size: 20),
                           ],
                         ),
                 ),
@@ -1505,6 +1514,7 @@ class _SecondaryAuthButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return SizedBox(
       height: 46,
       child: OutlinedButton.icon(
@@ -1512,8 +1522,8 @@ class _SecondaryAuthButton extends StatelessWidget {
         icon: Icon(icon, size: 19),
         label: Text(label),
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.36)),
+          foregroundColor: colors.primary,
+          side: BorderSide(color: colors.primary.withValues(alpha: 0.36)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
@@ -1539,12 +1549,13 @@ class _AuthTextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return TextButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 17),
       label: Text(label),
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primary,
+        foregroundColor: colors.primary,
         minimumSize: const Size(48, 44),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
         textStyle: AppTextStyles.bodyMedium.copyWith(
@@ -1568,6 +1579,7 @@ class _RoutePrompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -1575,14 +1587,12 @@ class _RoutePrompt extends StatelessWidget {
       children: [
         Text(
           prompt,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          style: AppTextStyles.bodyMedium.copyWith(color: colors.textSecondary),
         ),
         TextButton(
           onPressed: onPressed,
           style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary,
+            foregroundColor: colors.primary,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
             minimumSize: const Size(48, 40),
             textStyle: AppTextStyles.bodyMedium.copyWith(
@@ -1603,19 +1613,18 @@ class _AuthDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Row(
       children: [
-        const Expanded(child: Divider(color: AppColors.divider)),
+        Expanded(child: Divider(color: colors.divider)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: Text(
             label,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textMuted,
-            ),
+            style: AppTextStyles.bodyMedium.copyWith(color: colors.textMuted),
           ),
         ),
-        const Expanded(child: Divider(color: AppColors.divider)),
+        Expanded(child: Divider(color: colors.divider)),
       ],
     );
   }
@@ -1634,12 +1643,13 @@ class _InfoBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft,
+        color: colors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.15)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1649,10 +1659,10 @@ class _InfoBox extends StatelessWidget {
             height: 38,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 20),
+            child: Icon(icon, color: colors.primary, size: 20),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -1662,7 +1672,7 @@ class _InfoBox extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1670,7 +1680,7 @@ class _InfoBox extends StatelessWidget {
                 Text(
                   message,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     height: 1.45,
                   ),
                 ),
@@ -1688,22 +1698,17 @@ class _AuthTrustNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          Icons.verified_user_outlined,
-          color: AppColors.textMuted,
-          size: 16,
-        ),
+        Icon(Icons.verified_user_outlined, color: colors.textMuted, size: 16),
         const SizedBox(width: AppSpacing.xs),
         Flexible(
           child: Text(
             'NanoBio luôn ưu tiên sự riêng tư của bạn.',
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textMuted,
-            ),
+            style: AppTextStyles.bodyMedium.copyWith(color: colors.textMuted),
           ),
         ),
       ],
@@ -1716,12 +1721,13 @@ class _AuthCallbackLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft,
+        color: colors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.16)),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.16)),
       ),
       child: const Row(
         children: [
@@ -1744,6 +1750,8 @@ String? _authValidationText(String? raw) {
 
 void _showError(BuildContext context, Object error) {
   AppFeedbackService.instance.emit(AppFeedbackType.error);
+  final colors = context.semanticColors;
+  final onError = Theme.of(context).colorScheme.onError;
   final message = error is AuthFailure
       ? error.userMessage
       : 'Nabi chưa thể xử lý yêu cầu lúc này. Mình thử lại sau một chút nhé.';
@@ -1753,25 +1761,19 @@ void _showError(BuildContext context, Object error) {
     ..showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.error,
+        backgroundColor: colors.error,
         margin: const EdgeInsets.all(AppSpacing.cardPadding),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         content: Row(
           children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              color: AppColors.textInverse,
-              size: 20,
-            ),
+            Icon(Icons.error_outline_rounded, color: onError, size: 20),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 message,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textInverse,
-                ),
+                style: AppTextStyles.bodyMedium.copyWith(color: onError),
               ),
             ),
           ],

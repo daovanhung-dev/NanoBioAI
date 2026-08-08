@@ -21,21 +21,25 @@ class HeaderStatPill extends StatelessWidget {
         vertical: AppSpacing.tiny,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: active ? 0.2 : 0.12),
+        color: context.semanticColors.onBrand.withValues(
+          alpha: active ? 0.2 : 0.12,
+        ),
         borderRadius: BorderRadius.circular(AppRadius.circular),
         border: Border.all(
-          color: AppColors.surface.withValues(alpha: active ? 0.4 : 0.2),
+          color: context.semanticColors.onBrand.withValues(
+            alpha: active ? 0.4 : 0.2,
+          ),
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.surface, size: 13),
+          Icon(icon, color: context.semanticColors.onBrand, size: 13),
           const SizedBox(width: AppSpacing.xs),
           Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.surface,
+              color: context.semanticColors.onBrand,
               fontWeight: AppTypography.semiBold,
             ),
           ),

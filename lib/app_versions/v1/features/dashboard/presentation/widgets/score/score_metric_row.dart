@@ -24,13 +24,15 @@ class ScoreMetricRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: AppTextStyles.bodySmall.copyWith(color: Colors.white54),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: context.semanticColors.onBrand,
+            ),
           ),
         ),
         Text(
           value,
           style: AppTextStyles.labelMedium.copyWith(
-            color: AppColors.surface,
+            color: context.semanticColors.onBrand,
             fontWeight: AppTypography.semiBold,
           ),
         ),

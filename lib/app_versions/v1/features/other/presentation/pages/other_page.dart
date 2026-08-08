@@ -18,13 +18,12 @@ class HealthInsightsView extends ConsumerWidget {
     final dynamicAsync = ref.watch(dashboardDynamicProvider);
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.semanticColors.background,
       body: SafeArea(
         child: dashboardAsync.when(
           loading: () => const _HealthInsightsLoadingState(),
-          error: (_, __) => _HealthInsightsErrorState(
-            onRetry: () => _retryAll(ref),
-          ),
+          error: (_, __) =>
+              _HealthInsightsErrorState(onRetry: () => _retryAll(ref)),
           data: (dashboard) {
             final dynamicData =
                 dynamicAsync.value ?? DashboardDynamicEntity.empty();
@@ -77,9 +76,7 @@ class HealthInsightsView extends ConsumerWidget {
                         const SizedBox(
                           height: AppSpacing.compactSectionSpacing,
                         ),
-                        _PrimaryInsightSection(
-                          insights: dynamicData.insights,
-                        ),
+                        _PrimaryInsightSection(insights: dynamicData.insights),
                         const SizedBox(
                           height: AppSpacing.compactSectionSpacing,
                         ),

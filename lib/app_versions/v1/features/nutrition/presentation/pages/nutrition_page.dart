@@ -16,7 +16,7 @@ class NutritionPage extends ConsumerWidget {
     final summaryAsync = ref.watch(nutritionSummaryProvider);
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.semanticColors.background,
       body: SafeArea(
         child: AppStateSwitcher(
           alignment: Alignment.topCenter,
@@ -43,42 +43,42 @@ class NutritionPage extends ConsumerWidget {
                 AppFeedbackService.instance.emit(AppFeedbackType.success);
               },
               child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    AppSpacing.xxl,
-                    AppSpacing.md,
-                    128,
-                  ),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _Header(summary: summary),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _NamiNoteCard(summary: summary),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      const _NutritionProfileEntryCard(),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _SummaryGrid(summary: summary),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _MealPlanSection(meals: summary.todayMeals),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _NutritionLogSection(logs: summary.todayLogs),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _NutritionLogSection(
-                        title: 'Những bữa Nabi đã ghi nhớ',
-                        subtitle:
-                            'Từng ghi nhận nhỏ đều giúp Nabi hiểu bạn hơn một chút.',
-                        logs: summary.logs,
-                      ),
-                    ]),
-                  ),
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
                 ),
-              ],
-            ),
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.xxl,
+                      AppSpacing.md,
+                      128,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        _Header(summary: summary),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _NamiNoteCard(summary: summary),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        const _NutritionProfileEntryCard(),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _SummaryGrid(summary: summary),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _MealPlanSection(meals: summary.todayMeals),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _NutritionLogSection(logs: summary.todayLogs),
+                        const SizedBox(height: AppSpacing.sectionSpacing),
+                        _NutritionLogSection(
+                          title: 'Những bữa Nabi đã ghi nhớ',
+                          subtitle:
+                              'Từng ghi nhận nhỏ đều giúp Nabi hiểu bạn hơn một chút.',
+                          logs: summary.logs,
+                        ),
+                      ]),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -101,7 +101,7 @@ class _NutritionLoadingState extends StatelessWidget {
               width: 58,
               height: 58,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: .1),
+                color: context.semanticColors.primary.withValues(alpha: .1),
                 borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: const Center(
@@ -121,7 +121,7 @@ class _NutritionLoadingState extends StatelessWidget {
               'Chờ Nabi một nhịp nhỏ để gom lại những bữa ăn hôm nay cho bạn nhé.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
                 height: 1.45,
               ),
             ),
@@ -163,7 +163,7 @@ class _Header extends StatelessWidget {
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: AppColors.surface.withValues(alpha: .18),
+                  color: context.semanticColors.surface.withValues(alpha: .18),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 child: const Icon(
@@ -179,7 +179,7 @@ class _Header extends StatelessWidget {
                     Text(
                       'Dinh dưỡng hôm nay',
                       style: AppTextStyles.heading2.copyWith(
-                        color: AppColors.surface,
+                        color: context.semanticColors.surface,
                         fontWeight: AppTypography.bold,
                       ),
                     ),
@@ -187,7 +187,9 @@ class _Header extends StatelessWidget {
                     Text(
                       'Nabi đang cùng $displayName chăm từng bữa ăn nhỏ trong ngày.',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.surface.withValues(alpha: .92),
+                        color: context.semanticColors.surface.withValues(
+                          alpha: .92,
+                        ),
                         height: 1.45,
                       ),
                     ),
@@ -200,9 +202,11 @@ class _Header extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.cardPadding),
             decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: .16),
+              color: context.semanticColors.surface.withValues(alpha: .16),
               borderRadius: BorderRadius.circular(AppRadius.xl),
-              border: Border.all(color: AppColors.surface.withValues(alpha: .22)),
+              border: Border.all(
+                color: context.semanticColors.surface.withValues(alpha: .22),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,7 +216,7 @@ class _Header extends StatelessWidget {
                     Text(
                       'Nhịp năng lượng',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.surface,
+                        color: context.semanticColors.surface,
                         fontWeight: AppTypography.semiBold,
                       ),
                     ),
@@ -222,7 +226,9 @@ class _Header extends StatelessWidget {
                           ? '$loggedCalories / $plannedCalories kcal'
                           : '$loggedCalories kcal',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.surface.withValues(alpha: .92),
+                        color: context.semanticColors.surface.withValues(
+                          alpha: .92,
+                        ),
                         fontWeight: AppTypography.semiBold,
                       ),
                     ),
@@ -234,9 +240,11 @@ class _Header extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 8,
-                    backgroundColor: AppColors.surface.withValues(alpha: .22),
+                    backgroundColor: context.semanticColors.surface.withValues(
+                      alpha: .22,
+                    ),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.surface.withValues(alpha: .92),
+                      context.semanticColors.surface.withValues(alpha: .92),
                     ),
                   ),
                 ),
@@ -244,7 +252,7 @@ class _Header extends StatelessWidget {
                 Text(
                   _energyMessage(summary),
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.surface.withValues(alpha: .9),
+                    color: context.semanticColors.surface.withValues(alpha: .9),
                     height: 1.45,
                   ),
                 ),
@@ -297,7 +305,7 @@ class _NamiNoteCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(alpha: .1),
+              color: context.semanticColors.secondary.withValues(alpha: .1),
               borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
             child: const Icon(
@@ -320,7 +328,7 @@ class _NamiNoteCard extends StatelessWidget {
                 Text(
                   _message,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                     height: 1.45,
                   ),
                 ),
@@ -353,7 +361,6 @@ class _NamiNoteCard extends StatelessWidget {
   }
 }
 
-
 class _NutritionProfileEntryCard extends StatelessWidget {
   const _NutritionProfileEntryCard();
 
@@ -381,7 +388,7 @@ class _NutritionProfileEntryCard extends StatelessWidget {
                 Text(
                   'Cập nhật dị ứng, triệu chứng, mục tiêu và sở thích để Nabi lọc gợi ý phù hợp hơn.',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                     height: 1.4,
                   ),
                 ),
@@ -417,7 +424,7 @@ class _SummaryGrid extends StatelessWidget {
             : '--',
         hint: 'Năng lượng bạn đã ghi nhận',
         icon: Icons.local_fire_department_rounded,
-        color: AppColors.warning,
+        color: context.semanticColors.warning,
       ),
       _Metric(
         title: 'Kế hoạch dịu nhẹ',
@@ -426,7 +433,7 @@ class _SummaryGrid extends StatelessWidget {
             : '--',
         hint: 'Mức năng lượng Nabi dự kiến',
         icon: Icons.restaurant_menu_rounded,
-        color: AppColors.primary,
+        color: context.semanticColors.primary,
       ),
       _Metric(
         title: 'Đạm chăm cơ thể',
@@ -435,7 +442,7 @@ class _SummaryGrid extends StatelessWidget {
             : '--',
         hint: 'Giúp cơ thể no lâu và hồi phục',
         icon: Icons.fitness_center_rounded,
-        color: AppColors.success,
+        color: context.semanticColors.success,
       ),
       _Metric(
         title: 'Tinh bột / chất béo',
@@ -444,7 +451,7 @@ class _SummaryGrid extends StatelessWidget {
             : '--',
         hint: 'Hai nhịp năng lượng chính trong ngày',
         icon: Icons.pie_chart_rounded,
-        color: AppColors.secondary,
+        color: context.semanticColors.secondary,
       ),
     ];
 
@@ -520,7 +527,7 @@ class _MetricCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.bodySmall.copyWith(
               fontWeight: AppTypography.semiBold,
-              color: AppColors.textPrimary,
+              color: context.semanticColors.textPrimary,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -529,7 +536,7 @@ class _MetricCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textMuted,
+              color: context.semanticColors.textMuted,
               height: 1.25,
             ),
           ),
@@ -559,7 +566,7 @@ class _MealPlanSection extends StatelessWidget {
             children: [
               _SoftIcon(
                 icon: Icons.restaurant_rounded,
-                color: AppColors.primary,
+                color: context.semanticColors.primary,
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -583,12 +590,12 @@ class _MealPlanSection extends StatelessWidget {
                         _TinyPill(
                           icon: Icons.schedule_rounded,
                           label: _mealTypeLabel(meal.mealType),
-                          color: AppColors.primary,
+                          color: context.semanticColors.primary,
                         ),
                         _TinyPill(
                           icon: Icons.local_fire_department_rounded,
                           label: '${meal.calories} kcal',
-                          color: AppColors.warning,
+                          color: context.semanticColors.warning,
                         ),
                       ],
                     ),
@@ -597,7 +604,7 @@ class _MealPlanSection extends StatelessWidget {
                       Text(
                         meal.description,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.semanticColors.textSecondary,
                           height: 1.45,
                         ),
                       ),
@@ -639,7 +646,7 @@ class _NutritionLogSection extends StatelessWidget {
             children: [
               _SoftIcon(
                 icon: Icons.receipt_long_rounded,
-                color: AppColors.secondary,
+                color: context.semanticColors.secondary,
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -664,19 +671,19 @@ class _NutritionLogSection extends StatelessWidget {
                           _TinyPill(
                             icon: Icons.local_fire_department_rounded,
                             label: '${log.calories} kcal',
-                            color: AppColors.warning,
+                            color: context.semanticColors.warning,
                           ),
                         if (log.mealType?.trim().isNotEmpty == true)
                           _TinyPill(
                             icon: Icons.restaurant_rounded,
                             label: _mealTypeLabel(log.mealType!),
-                            color: AppColors.primary,
+                            color: context.semanticColors.primary,
                           ),
                         if (log.eatenAt?.trim().isNotEmpty == true)
                           _TinyPill(
                             icon: Icons.calendar_today_rounded,
                             label: _dateLabel(log.eatenAt!),
-                            color: AppColors.secondary,
+                            color: context.semanticColors.secondary,
                           ),
                       ],
                     ),
@@ -684,7 +691,7 @@ class _NutritionLogSection extends StatelessWidget {
                     Text(
                       'Đạm ${_macro(log.protein)} • Tinh bột ${_macro(log.carbs)} • Chất béo ${_macro(log.fat)}',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.semanticColors.textSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -734,7 +741,7 @@ class _Section extends StatelessWidget {
           Text(
             sectionSubtitle,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: context.semanticColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -853,7 +860,9 @@ class _StateCard extends StatelessWidget {
         children: [
           _SoftIcon(
             icon: icon,
-            color: onRetry == null ? AppColors.primary : AppColors.error,
+            color: onRetry == null
+                ? context.semanticColors.primary
+                : context.semanticColors.error,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -870,7 +879,7 @@ class _StateCard extends StatelessWidget {
                 Text(
                   message,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                     height: 1.45,
                   ),
                 ),

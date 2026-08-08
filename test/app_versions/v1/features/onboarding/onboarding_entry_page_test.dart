@@ -30,7 +30,10 @@ void main() {
     expect(find.byKey(const Key('onboarding_entry_login_cta')), findsOneWidget);
     expect(find.byKey(const Key('onboarding_entry_guest_cta')), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('onboarding_entry_login_cta')));
+    final loginCta = find.byKey(const Key('onboarding_entry_login_cta'));
+    await tester.ensureVisible(loginCta);
+    await tester.pump();
+    await tester.tap(loginCta);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -40,7 +43,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    await tester.tap(find.byKey(const Key('onboarding_entry_guest_cta')));
+    final guestCta = find.byKey(const Key('onboarding_entry_guest_cta'));
+    await tester.ensureVisible(guestCta);
+    await tester.pump();
+    await tester.tap(guestCta);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 

@@ -1,44 +1,43 @@
-import 'dart:ui';
-
 import 'package:flutter/foundation.dart';
-import '../foundation/colors.dart';
 
-/// Layer-2 semantic color mapping for NaBi Blue Wellness.
+import '../app_colors.dart';
+
+/// Legacy layer-2 static mapping for NaBi Green Wellness.
 @immutable
 class AppColorTokens {
   const AppColorTokens._();
 
-  static const primary = ColorFoundation.bluePrimary;
-  static const primaryHover = ColorFoundation.blueDeep;
-  static const primaryLight = ColorFoundation.blueSoft;
-  static const secondary = ColorFoundation.sky500;
-  static const tertiary = ColorFoundation.purple500;
+  static const primary = AppColors.primary;
+  static const primaryHover = AppColors.primaryDark;
+  static const primaryLight = AppColors.primarySoft;
+  static const secondary = AppColors.secondary;
+  static const tertiary = AppColors.tertiary;
 
-  static const success = ColorFoundation.green500;
-  static const successLight = ColorFoundation.successSoft;
-  static const warning = ColorFoundation.amber600;
-  static const warningLight = ColorFoundation.amberSoft;
-  static const error = ColorFoundation.red500;
-  static const errorLight = ColorFoundation.redSoft;
-  static const info = ColorFoundation.sky600;
-  static const infoLight = ColorFoundation.skySoft;
+  static const success = AppColors.success;
+  static const successLight = AppColors.successSoft;
+  static const warning = AppColors.warning;
+  static const warningLight = AppColors.warningSoft;
+  static const error = AppColors.error;
+  static const errorLight = AppColors.errorSoft;
+  static const info = AppColors.info;
+  static const infoLight = AppColors.infoSoft;
 
-  static const background = ColorFoundation.slate50;
-  static const surface = ColorFoundation.white;
-  static const surfaceElevated = ColorFoundation.white;
-  static const textPrimary = ColorFoundation.slate900;
-  static const textSecondary = ColorFoundation.slate600;
-  static const textMuted = ColorFoundation.slate500;
-  static const textInverse = ColorFoundation.white;
-  static const border = ColorFoundation.slate200;
-  static const borderStrong = ColorFoundation.slate300;
+  static const background = AppColors.background;
+  static const surface = AppColors.surface;
+  static const surfaceElevated = AppColors.surfaceElevated;
+  static const textPrimary = AppColors.textPrimary;
+  static const textSecondary = AppColors.textSecondary;
+  static const textMuted = AppColors.textMuted;
+  static const textInverse = AppColors.textInverse;
+  static const border = AppColors.border;
+  static const borderStrong = AppColors.outline;
 
-  static const darkBackground = Color(0xFF07172B);
-  static const darkSurface = Color(0xFF0D223D);
-  static const darkSurfaceElevated = Color(0xFF123052);
-  static const darkTextPrimary = Color(0xFFF4F8FF);
-  static const darkTextSecondary = Color(0xFFC7D4E5);
-  static const darkTextMuted = Color(0xFF91A4BC);
-  static const darkBorder = Color(0xFF315678);
-  static const darkBorderStrong = Color(0xFF4D7193);
+  static const darkBackground = AppColors.darkBackground;
+  static const darkSurface = AppColors.darkSurface;
+  static const darkSurfaceElevated = AppColors.darkSurfaceElevated;
+  static const darkTextPrimary = AppColors.darkTextPrimary;
+  static const darkTextSecondary = AppColors.darkTextSecondary;
+  static const darkTextMuted = AppColors.darkTextMuted;
+  static const darkBorder = AppColors.darkBorderLight;
+  static const darkBorderStrong = AppColors.darkOutline;
 }

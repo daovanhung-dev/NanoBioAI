@@ -9,36 +9,36 @@ class InsightCard extends StatelessWidget {
 
   const InsightCard({required this.data, super.key});
 
-  Color get _accentColor {
+  Color _accentColor(AppSemanticColors colors) {
     switch (data.type) {
       case InsightType.recommendation:
-        return AppColors.primary;
+        return colors.primary;
       case InsightType.warning:
-        return AppColors.warning;
+        return colors.warning;
       case InsightType.tip:
-        return AppColors.tertiary;
+        return colors.tertiary;
     }
   }
 
-  Color get _bgColor {
+  Color _bgColor(AppSemanticColors colors) {
     switch (data.type) {
       case InsightType.recommendation:
-        return AppColors.primarySoft;
+        return colors.primarySoft;
       case InsightType.warning:
-        return AppColors.warningSoft;
+        return colors.warningSoft;
       case InsightType.tip:
-        return AppColors.tertiarySoft;
+        return colors.tertiarySoft;
     }
   }
 
-  List<Color> get _gradientColors {
+  List<Color> _gradientColors(AppSemanticColors colors) {
     switch (data.type) {
       case InsightType.recommendation:
-        return const [AppColors.primaryDark, AppColors.primary];
+        return [colors.primaryDark, colors.primary];
       case InsightType.warning:
-        return const [AppColors.error, AppColors.warning];
+        return [colors.error, colors.warning];
       case InsightType.tip:
-        return const [AppColors.tertiary, AppColors.tertiary];
+        return [colors.tertiary, colors.tertiary];
     }
   }
 
@@ -55,13 +55,15 @@ class InsightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    final accentColor = _accentColor(colors);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: colors.card,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: AppShadows.sm,
-        border: Border.all(color: _accentColor.withValues(alpha: 0.15)),
+        border: Border.all(color: accentColor.withValues(alpha: 0.15)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,20 +73,20 @@ class InsightCard extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: _gradientColors,
+                colors: _gradientColors(colors),
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(AppRadius.md),
               boxShadow: [
                 BoxShadow(
-                  color: _accentColor.withValues(alpha: 0.3),
+                  color: accentColor.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
               ],
             ),
-            child: Icon(data.icon, color: AppColors.surface, size: 20),
+            child: Icon(data.icon, color: colors.textInverse, size: 20),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -96,7 +98,7 @@ class InsightCard extends StatelessWidget {
                     Text(
                       data.title,
                       style: AppTextStyles.labelLarge.copyWith(
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                         fontWeight: AppTypography.semiBold,
                       ),
                     ),
@@ -107,13 +109,13 @@ class InsightCard extends StatelessWidget {
                         vertical: AppSpacing.xxs,
                       ),
                       decoration: BoxDecoration(
-                        color: _bgColor,
+                        color: _bgColor(colors),
                         borderRadius: BorderRadius.circular(AppRadius.circular),
                       ),
                       child: Text(
                         _typeLabel,
                         style: AppTextStyles.overline.copyWith(
-                          color: _accentColor,
+                          color: accentColor,
                           fontWeight: AppTypography.bold,
                         ),
                       ),
@@ -124,7 +126,7 @@ class InsightCard extends StatelessWidget {
                 Text(
                   data.body,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     height: 1.55,
                   ),
                 ),

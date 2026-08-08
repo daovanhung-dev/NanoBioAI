@@ -1,6 +1,6 @@
 # UI File Design Matrix — Re-execution
 
-The current repository already carried a **183-file UI-affecting baseline matrix**. This re-execution keeps that requirement and adds a higher-level **79 surface registry**. Do not interpret the 79 specs as permission to ignore supporting widgets/theme/router files.
+The repository carries a historical **183-file UI-affecting baseline matrix** plus a working-tree **80 surface registry**. The 80 repository surfaces are distinct from the 76 Stitch reference pairs; neither count is permission to ignore supporting widgets/theme/router files or claim visual acceptance.
 
 Baseline commit: `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 
@@ -26,6 +26,7 @@ Baseline commit: `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 | V1-18 Nutrition Profile Editor | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/nutrition/presentation/pages/nutrition_profile_editor_page.dart` | active-route | [open](screens/v1-18-nutrition-profile-editor.md) |
 | V1-19 Profile | 05_profile_settings | `lib/app_versions/v1/features/profile/presentation/pages/profile_page.dart` | active-route | [open](screens/v1-19-profile.md) |
 | V1-20 Community Preview | 03_dashboard_health | `lib/app_versions/v1/features/community/presentation/pages/community_page.dart` | coming-soon | [open](screens/v1-20-community-preview.md) |
+| V1-21 Today Tasks | 03_dashboard_health | `lib/app_versions/v1/features/today_tasks/presentation/pages/today_tasks_page.dart` | active-route | [open](screens/v1-21-today-tasks.md) |
 | ONB-01 Text Scale Setup | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_text_scale_page.dart` | source-sub-surface | [open](screens/onb-01-text-scale-setup.md) |
 | ONB-02 Welcome Step | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/widgets/welcome_step.dart` | internal-step | [open](screens/onb-02-welcome-step.md) |
 | ONB-03 Basic Info Step | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/widgets/basic_info_step.dart` | internal-step | [open](screens/onb-03-basic-info-step.md) |
@@ -41,12 +42,12 @@ Baseline commit: `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 | V1-X02 Health Insights / Góc Nabi | 03_dashboard_health | `lib/app_versions/v1/features/other/presentation/pages/other_page.dart` | source-sub-surface | [open](screens/v1-x02-health-insights-g-c-nabi.md) |
 | V1-X03 Schedule Proof Gallery | 03_dashboard_health | `lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/schedule_proof_gallery_page.dart` | source-sub-surface | [open](screens/v1-x03-schedule-proof-gallery.md) |
 | V1-X04 Dev Database Viewer | 03_dashboard_health | `lib/app_versions/v1/features/settings/presentation/pages/dev_database_viewer_page.dart` | source-only | [open](screens/v1-x04-dev-database-viewer.md) |
-| V1-X05 Water Tracking | 03_dashboard_health | `lib/app_versions/v1/features/water_tracking/presentation/pages/water_tracking_page.dart` | source-only | [open](screens/v1-x05-water-tracking.md) |
-| V1-X06 Weekly Summary | 03_dashboard_health | `lib/app_versions/v1/features/weekly_summary/presentation/pages/weekly_summary_page.dart` | source-only | [open](screens/v1-x06-weekly-summary.md) |
-| V1-X07 Quick Care | 03_dashboard_health | `lib/app_versions/v1/features/quick_care/presentation/pages/quick_care_page.dart` | source-only | [open](screens/v1-x07-quick-care.md) |
-| V1-X08 Gentle Care Mode | 03_dashboard_health | `lib/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart` | source-only | [open](screens/v1-x08-gentle-care-mode.md) |
-| V1-X09 Personal Goals | 03_dashboard_health | `lib/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart` | source-only | [open](screens/v1-x09-personal-goals.md) |
-| V1-X10 Nami Care Page | 03_dashboard_health | `lib/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart` | source-sub-surface | [open](screens/v1-x10-nami-care-page.md) |
+| V1-X05 Water Tracking | 03_dashboard_health | `lib/app_versions/v1/features/water_tracking/presentation/pages/water_tracking_page.dart` | active-route | [open](screens/v1-x05-water-tracking.md) |
+| V1-X06 Weekly Summary | 03_dashboard_health | `lib/app_versions/v1/features/weekly_summary/presentation/pages/weekly_summary_page.dart` | active-route | [open](screens/v1-x06-weekly-summary.md) |
+| V1-X07 Quick Care | 03_dashboard_health | `lib/app_versions/v1/features/quick_care/presentation/pages/quick_care_page.dart` | active-route | [open](screens/v1-x07-quick-care.md) |
+| V1-X08 Gentle Care Mode | 03_dashboard_health | `lib/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart` | active-route | [open](screens/v1-x08-gentle-care-mode.md) |
+| V1-X09 Personal Goals | 03_dashboard_health | `lib/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart` | active-route | [open](screens/v1-x09-personal-goals.md) |
+| V1-X10 Nami Care Page | 03_dashboard_health | `lib/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart` | active-route | [open](screens/v1-x10-nami-care-page.md) |
 | V2-01 Auth Gate | 06_v2_v3_access | `lib/app_versions/v2/features/auth/presentation/pages/auth_gate_page.dart` | gate | [open](screens/v2-01-auth-gate.md) |
 | V2-02 Login | 06_v2_v3_access | `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart` | active-route | [open](screens/v2-02-login.md) |
 | V2-03 Register | 06_v2_v3_access | `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart` | active-route | [open](screens/v2-03-register.md) |
@@ -62,14 +63,14 @@ Baseline commit: `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 | V2-13 V2 Home | 06_v2_v3_access | `lib/app_versions/v2/features/home/presentation/pages/v2_home_page.dart` | active-route | [open](screens/v2-13-v2-home.md) |
 | V3-01 V3 Home | 06_v2_v3_access | `lib/app_versions/v3/features/home/presentation/pages/v3_home_page.dart` | active-route | [open](screens/v3-01-v3-home.md) |
 | V3-02 Advanced Tracking | 06_v2_v3_access | `lib/app_versions/v3/features/advanced_tracking/presentation/pages/advanced_tracking_page.dart` | active-route | [open](screens/v3-02-advanced-tracking.md) |
-| V3-03 FamilyPlus | 06_v2_v3_access | `lib/app_versions/v3/features/family_plus/presentation/pages/family_plus_page.dart` | source-only | [open](screens/v3-03-familyplus.md) |
+| V3-03 FamilyPlus | 06_v2_v3_access | `lib/app_versions/v3/features/familyplus/presentation/pages/familyplus_page.dart` | active-route | [open](screens/v3-03-familyplus.md) |
 | SALE-01 Sale Participation | 07_sale | `lib/sale_referral/presentation/pages/sale_participation_page.dart` | source-sub-surface | [open](screens/sale-01-sale-participation.md) |
-| SALE-02 Payout Profile Gate | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart::_SalePayoutProfileGate` | internal-surface | [open](screens/sale-02-payout-profile-gate.md) |
-| SALE-03 Sale Overview | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart::_OverviewTab` | internal-surface | [open](screens/sale-03-sale-overview.md) |
-| SALE-04 Direct Customers | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart::_DirectCustomersTab` | internal-surface | [open](screens/sale-04-direct-customers.md) |
-| SALE-05 Point Ledger | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart::_PointLedgerTab` | internal-surface | [open](screens/sale-05-point-ledger.md) |
-| SALE-06 Conversion Tools | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart::_ConversionToolsTab` | internal-surface | [open](screens/sale-06-conversion-tools.md) |
-| SALE-07 Referral Code Panel | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart::_ReferralCodePanel` | internal-surface | [open](screens/sale-07-referral-code-panel.md) |
+| SALE-02 Payout Profile Gate | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_SalePayoutProfileGate`) | internal-surface | [open](screens/sale-02-payout-profile-gate.md) |
+| SALE-03 Sale Overview | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_OverviewTab`) | internal-surface | [open](screens/sale-03-sale-overview.md) |
+| SALE-04 Direct Customers | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_DirectCustomersTab`) | internal-surface | [open](screens/sale-04-direct-customers.md) |
+| SALE-05 Point Ledger | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_PointLedgerTab`) | internal-surface | [open](screens/sale-05-point-ledger.md) |
+| SALE-06 Conversion Tools | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_ConversionToolsTab`) | internal-surface | [open](screens/sale-06-conversion-tools.md) |
+| SALE-07 Referral Code Panel | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_ReferralCodePanel`) | internal-surface | [open](screens/sale-07-referral-code-panel.md) |
 | ADM-01 Admin Login | 08_admin | `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_login_page.dart` | active-route | [open](screens/adm-01-admin-login.md) |
 | ADM-02 Admin Dashboard | 08_admin | `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart` | active-route | [open](screens/adm-02-admin-dashboard.md) |
 | ADM-03 Admin Users | 08_admin | `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart + admin_workspace_sections.dart` | active-route | [open](screens/adm-03-admin-users.md) |

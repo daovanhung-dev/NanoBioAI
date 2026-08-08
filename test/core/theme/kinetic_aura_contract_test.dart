@@ -10,15 +10,11 @@ void main() {
         final normalized = file.path.replaceAll('\\', '/');
         final source = file.readAsStringSync();
         if (source.contains('HapticFeedback.') &&
-            !normalized.endsWith(
-              'lib/core/feedback/app_haptic_adapter.dart',
-            )) {
+            !normalized.endsWith('lib/core/feedback/app_haptic_adapter.dart')) {
           violations.add('$normalized calls HapticFeedback directly');
         }
         if (source.contains('SystemSound.play') &&
-            !normalized.endsWith(
-              'lib/core/feedback/app_sound_adapter.dart',
-            )) {
+            !normalized.endsWith('lib/core/feedback/app_sound_adapter.dart')) {
           violations.add('$normalized calls SystemSound directly');
         }
       }
@@ -31,25 +27,28 @@ void main() {
       );
     });
 
-    test('the app theme installs one cross-platform page transition system', () {
-      final source = File('lib/core/theme/app_theme.dart').readAsStringSync();
+    test(
+      'the app theme installs one cross-platform page transition system',
+      () {
+        final source = File('lib/core/theme/app_theme.dart').readAsStringSync();
 
-      expect(source, contains('AppPageTransitionsBuilder'));
-      expect(source, contains('pageTransitionsTheme'));
-      for (final platform in <String>[
-        'android',
-        'iOS',
-        'macOS',
-        'windows',
-        'linux',
-        'fuchsia',
-      ]) {
-        expect(
-          source,
-          contains('TargetPlatform.$platform: AppPageTransitionsBuilder()'),
-        );
-      }
-    });
+        expect(source, contains('AppPageTransitionsBuilder'));
+        expect(source, contains('pageTransitionsTheme'));
+        for (final platform in <String>[
+          'android',
+          'iOS',
+          'macOS',
+          'windows',
+          'linux',
+          'fuchsia',
+        ]) {
+          expect(
+            source,
+            contains('TargetPlatform.$platform: AppPageTransitionsBuilder()'),
+          );
+        }
+      },
+    );
 
     test('experience preferences expose accessibility and feedback controls', () {
       final preferences = File(

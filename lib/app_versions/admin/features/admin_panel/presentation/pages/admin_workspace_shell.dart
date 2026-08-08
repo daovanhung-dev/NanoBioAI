@@ -21,15 +21,16 @@ class _AdminSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final width = extended
         ? AdminWorkspaceTheme.sidebarWidth
         : AdminWorkspaceTheme.compactSidebarWidth;
 
     return Container(
       width: width,
-      decoration: const BoxDecoration(
-        color: AdminWorkspaceTheme.sidebar,
-        border: Border(right: BorderSide(color: AdminWorkspaceTheme.divider)),
+      decoration: BoxDecoration(
+        color: colors.sidebar,
+        border: Border(right: BorderSide(color: colors.divider)),
       ),
       child: SafeArea(
         child: Padding(
@@ -49,7 +50,7 @@ class _AdminSidebar extends StatelessWidget {
                           child: Text(
                             group.label,
                             style: AppTextStyles.labelSmall.copyWith(
-                              color: AdminWorkspaceTheme.textMuted,
+                              color: colors.textMuted,
                               fontWeight: FontWeight.w700,
                               letterSpacing: .45,
                             ),
@@ -114,6 +115,7 @@ class _AdminNavigationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -133,7 +135,7 @@ class _AdminNavigationDrawer extends StatelessWidget {
                       child: Text(
                         group.label,
                         style: AppTextStyles.labelSmall.copyWith(
-                          color: AdminWorkspaceTheme.textMuted,
+                          color: colors.textMuted,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -197,11 +199,12 @@ class _AdminBrand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final icon = Container(
       width: 42,
       height: 42,
       decoration: BoxDecoration(
-        color: AdminWorkspaceTheme.navy,
+        color: colors.brandSurface,
         borderRadius: BorderRadius.circular(11),
       ),
       child: const Icon(
@@ -226,14 +229,14 @@ class _AdminBrand extends StatelessWidget {
               Text(
                 'NanoBio',
                 style: AppTextStyles.labelLarge.copyWith(
-                  color: AdminWorkspaceTheme.navy,
+                  color: colors.text,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               Text(
                 'Không gian quản trị',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AdminWorkspaceTheme.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -259,19 +262,18 @@ class _SidebarDestination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected
-        ? AdminWorkspaceTheme.blueDark
-        : AdminWorkspaceTheme.textSecondary;
+    final colors = context.adminColors;
+    final foreground = selected ? colors.blueStrong : colors.textSecondary;
 
     final tile = Padding(
       padding: const EdgeInsets.only(bottom: 3),
       child: Material(
-        color: selected ? AdminWorkspaceTheme.selected : Colors.transparent,
+        color: selected ? colors.selected : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
           onTap: selected ? null : onTap,
           borderRadius: BorderRadius.circular(10),
-          hoverColor: AdminWorkspaceTheme.hover,
+          hoverColor: colors.hover,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 44),
             child: Padding(
@@ -280,11 +282,15 @@ class _SidebarDestination extends StatelessWidget {
                 vertical: 8,
               ),
               child: Row(
-                mainAxisAlignment:
-                    extended ? MainAxisAlignment.start : MainAxisAlignment.center,
+                mainAxisAlignment: extended
+                    ? MainAxisAlignment.start
+                    : MainAxisAlignment.center,
                 children: [
-                  Icon(_iconForSection(section, selected),
-                      size: 21, color: foreground),
+                  Icon(
+                    _iconForSection(section, selected),
+                    size: 21,
+                    color: foreground,
+                  ),
                   if (extended) ...[
                     const SizedBox(width: 10),
                     Expanded(
@@ -294,8 +300,9 @@ class _SidebarDestination extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.labelMedium.copyWith(
                           color: foreground,
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w600,
+                          fontWeight: selected
+                              ? FontWeight.w700
+                              : FontWeight.w600,
                         ),
                       ),
                     ),
@@ -330,16 +337,15 @@ class _SidebarUtility extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = danger
-        ? AdminWorkspaceTheme.danger
-        : AdminWorkspaceTheme.textSecondary;
+    final colors = context.adminColors;
+    final color = danger ? colors.danger : colors.textSecondary;
     final child = Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(10),
-        hoverColor: AdminWorkspaceTheme.hover,
+        hoverColor: colors.hover,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 42),
           child: Padding(
@@ -348,8 +354,9 @@ class _SidebarUtility extends StatelessWidget {
               vertical: 8,
             ),
             child: Row(
-              mainAxisAlignment:
-                  extended ? MainAxisAlignment.start : MainAxisAlignment.center,
+              mainAxisAlignment: extended
+                  ? MainAxisAlignment.start
+                  : MainAxisAlignment.center,
               children: [
                 Icon(icon, size: 20, color: color),
                 if (extended) ...[
@@ -401,12 +408,19 @@ class _AdminToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final searchable = state.section != AdminPanelSection.dashboard &&
+    final colors = context.adminColors;
+    final searchable =
+        state.section != AdminPanelSection.dashboard &&
         !state.isPermissionDenied;
 
     return Container(
-      color: AdminWorkspaceTheme.toolbar,
-      padding: EdgeInsets.fromLTRB(compact ? 12 : 20, 10, compact ? 10 : 16, 10),
+      color: colors.toolbar,
+      padding: EdgeInsets.fromLTRB(
+        compact ? 12 : 20,
+        10,
+        compact ? 10 : 16,
+        10,
+      ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final narrow = constraints.maxWidth < 700;
@@ -424,12 +438,12 @@ class _AdminToolbar extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: AdminWorkspaceTheme.selected,
+                  color: colors.selected,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   _iconForSection(state.section, true),
-                  color: AdminWorkspaceTheme.blueDark,
+                  color: colors.blueStrong,
                   size: 21,
                 ),
               ),
@@ -443,7 +457,7 @@ class _AdminToolbar extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.heading4.copyWith(
-                        color: AdminWorkspaceTheme.text,
+                        color: colors.text,
                       ),
                     ),
                     if (!narrow)
@@ -452,7 +466,7 @@ class _AdminToolbar extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AdminWorkspaceTheme.textSecondary,
+                          color: colors.textSecondary,
                         ),
                       ),
                   ],
@@ -644,9 +658,8 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = danger
-        ? AdminWorkspaceTheme.danger
-        : AdminWorkspaceTheme.textSecondary;
+    final colors = context.adminColors;
+    final color = danger ? colors.danger : colors.textSecondary;
     return Row(
       children: [
         Icon(icon, size: 19, color: color),
@@ -665,8 +678,9 @@ class _PaymentReviewNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return Material(
-      color: const Color(0xFFFFF7E8),
+      color: colors.warningContainer,
       child: InkWell(
         onTap: onOpen,
         child: Padding(
@@ -677,14 +691,14 @@ class _PaymentReviewNotice extends StatelessWidget {
                 width: 28,
                 height: 28,
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AdminWorkspaceTheme.warning,
+                decoration: BoxDecoration(
+                  color: colors.warning,
                   shape: BoxShape.circle,
                 ),
                 child: Text(
                   '$count',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: Colors.white,
+                    color: colors.onAccent,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -694,14 +708,11 @@ class _PaymentReviewNotice extends StatelessWidget {
                 child: Text(
                   '$count thanh toán đang chờ bạn kiểm tra.',
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: AdminWorkspaceTheme.text,
+                    color: colors.onWarningContainer,
                   ),
                 ),
               ),
-              TextButton(
-                onPressed: onOpen,
-                child: const Text('Mở danh sách'),
-              ),
+              TextButton(onPressed: onOpen, child: const Text('Mở danh sách')),
             ],
           ),
         ),

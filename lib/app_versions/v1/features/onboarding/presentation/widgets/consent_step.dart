@@ -12,6 +12,7 @@ class ConsentStep extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.semanticColors;
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
     return OnboardingStepShell(
@@ -58,19 +59,20 @@ class ConsentStep extends ConsumerWidget {
                   decoration: BoxDecoration(
                     gradient: state.agreed
                         ? NabiPalette.selection
-                        : NabiPalette.card,
+                        : LinearGradient(colors: [colors.card, colors.cardAlt]),
                     borderRadius: BorderRadius.circular(AppRadius.xl),
                     border: Border.all(
                       color: state.agreed
                           ? NabiPalette.greenPrimary
-                          : NabiPalette.line,
+                          : colors.border,
                       width: state.agreed ? 1.8 : 1,
                     ),
                     boxShadow: state.agreed
                         ? [
                             BoxShadow(
-                              color: NabiPalette.greenPrimary
-                                  .withValues(alpha: 0.22),
+                              color: NabiPalette.greenPrimary.withValues(
+                                alpha: 0.22,
+                              ),
                               blurRadius: 18,
                               offset: const Offset(0, 8),
                             ),
@@ -86,8 +88,8 @@ class ConsentStep extends ConsumerWidget {
                         height: 48,
                         decoration: BoxDecoration(
                           color: state.agreed
-                              ? AppColors.surface.withValues(alpha: 0.16)
-                              : NabiPalette.greenSoft,
+                              ? AppColors.textInverse.withValues(alpha: 0.16)
+                              : colors.primarySoft,
                           shape: BoxShape.circle,
                         ),
                         child: AnimatedSwitcher(
@@ -100,7 +102,7 @@ class ConsentStep extends ConsumerWidget {
                                 : Icons.touch_app_rounded,
                             key: ValueKey(state.agreed),
                             color: state.agreed
-                                ? AppColors.surface
+                                ? AppColors.textInverse
                                 : NabiPalette.greenPrimary,
                             size: 25,
                           ),
@@ -111,8 +113,9 @@ class ConsentStep extends ConsumerWidget {
                         child: Text(
                           'Tôi đồng ý dùng thông tin đã nhập để tạo lộ trình.',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color:
-                                state.agreed ? AppColors.surface : NabiPalette.ink,
+                            color: state.agreed
+                                ? AppColors.textInverse
+                                : colors.textPrimary,
                             fontWeight: FontWeight.w800,
                             height: 1.35,
                           ),
@@ -126,7 +129,9 @@ class ConsentStep extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           NabiAssistantMessage(
-            message: state.agreed ? 'Cảm ơn bạn đã xác nhận' : 'Chạm để xác nhận',
+            message: state.agreed
+                ? 'Cảm ơn bạn đã xác nhận'
+                : 'Chạm để xác nhận',
             icon: state.agreed
                 ? Icons.favorite_rounded
                 : Icons.touch_app_rounded,
@@ -155,12 +160,13 @@ class _ConsentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return NabiGlassPanel(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       elevated: false,
       borderColor: color.withValues(alpha: 0.16),
       gradient: LinearGradient(
-        colors: [color.withValues(alpha: 0.10), AppColors.surface],
+        colors: [color.withValues(alpha: 0.10), colors.card],
       ),
       child: Row(
         children: [
@@ -181,7 +187,7 @@ class _ConsentCard extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: NabiPalette.ink,
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -189,7 +195,7 @@ class _ConsentCard extends StatelessWidget {
                 Text(
                   text,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: NabiPalette.mutedInk,
+                    color: colors.textSecondary,
                     height: 1.35,
                   ),
                 ),

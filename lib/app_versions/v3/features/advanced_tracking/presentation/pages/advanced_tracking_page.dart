@@ -13,96 +13,110 @@ class AdvancedTrackingPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(advancedTrackingSummaryProvider);
+    final colors = context.semanticColors;
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         title: const Text('Lộ trình nâng cao'),
       ),
       body: AppStateSwitcher(
         alignment: Alignment.topCenter,
         child: state.when(
-        loading: () => const Center(
-          key: ValueKey('advanced-tracking-loading'),
-          child: CircularProgressIndicator(),
-        ),
-        error: (_, __) => _SupportState(
-          key: const ValueKey('advanced-tracking-error'),
-          icon: Icons.error_outline_rounded,
-          title: 'Nabi chưa tải được lộ trình',
-          message: 'Mình thử lại sau một chút nhé.',
-          actionLabel: 'Thử lại',
-          onAction: () async {
-            AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-            ref.invalidate(advancedTrackingSummaryProvider);
+          loading: () => const Center(
+            key: ValueKey('advanced-tracking-loading'),
+            child: CircularProgressIndicator(),
+          ),
+          error: (_, __) => _SupportState(
+            key: const ValueKey('advanced-tracking-error'),
+            icon: Icons.error_outline_rounded,
+            title: 'Nabi chưa tải được lộ trình',
+            message: 'Mình thử lại sau một chút nhé.',
+            actionLabel: 'Thử lại',
+            onAction: () async {
+              AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+              ref.invalidate(advancedTrackingSummaryProvider);
+            },
+          ),
+          data: (viewModel) {
+            return KeyedSubtree(
+              key: ValueKey('advanced-tracking-${viewModel.status.name}'),
+              child: switch (viewModel.status) {
+                AdvancedTrackingViewStatus.authRequired => _SupportState(
+                  icon: Icons.lock_outline_rounded,
+                  title: 'Cần đăng nhập',
+                  message:
+                      viewModel.message ?? 'Bạn cần đăng nhập để xem lộ trình.',
+                  actionLabel: 'Đăng nhập',
+                  onAction: () async {
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.primaryAction,
+                    );
+                    context.push(V2RoutePaths.login);
+                  },
+                ),
+                AdvancedTrackingViewStatus.locked => _SupportState(
+                  icon: Icons.workspace_premium_rounded,
+                  title: 'Chưa mở cho tài khoản này',
+                  message:
+                      viewModel.message ??
+                      'Nabi sẽ mở lộ trình nâng cao khi gói của bạn sẵn sàng.',
+                  actionLabel: 'Làm mới',
+                  onAction: () async {
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.primaryAction,
+                    );
+                    ref.invalidate(advancedTrackingSummaryProvider);
+                  },
+                ),
+                AdvancedTrackingViewStatus.empty => _EmptyGoalState(
+                  result: viewModel.result!,
+                  message: viewModel.message,
+                  onCreate: () async {
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.primaryAction,
+                    );
+                    try {
+                      await ref.read(
+                        advancedTrackingCreateHydrationGoalProvider,
+                      )();
+                      await ref.read(advancedTrackingSummaryProvider.future);
+                      AppFeedbackService.instance.emit(AppFeedbackType.success);
+                    } catch (_) {
+                      AppFeedbackService.instance.emit(AppFeedbackType.error);
+                      rethrow;
+                    }
+                  },
+                ),
+                AdvancedTrackingViewStatus.ready => _RoadmapReady(
+                  result: viewModel.result!,
+                  onRefresh: () async {
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.primaryAction,
+                    );
+                    ref.invalidate(advancedTrackingSummaryProvider);
+                    await ref.read(advancedTrackingSummaryProvider.future);
+                    AppFeedbackService.instance.emit(AppFeedbackType.success);
+                  },
+                ),
+                AdvancedTrackingViewStatus.failure => _SupportState(
+                  icon: Icons.error_outline_rounded,
+                  title: 'Nabi chưa tải được lộ trình',
+                  message:
+                      viewModel.message ?? 'Mình thử lại sau một chút nhé.',
+                  actionLabel: 'Thử lại',
+                  onAction: () async {
+                    AppFeedbackService.instance.emit(
+                      AppFeedbackType.primaryAction,
+                    );
+                    ref.invalidate(advancedTrackingSummaryProvider);
+                  },
+                ),
+              },
+            );
           },
-        ),
-        data: (viewModel) {
-          return KeyedSubtree(
-            key: ValueKey('advanced-tracking-${viewModel.status.name}'),
-            child: switch (viewModel.status) {
-            AdvancedTrackingViewStatus.authRequired => _SupportState(
-              icon: Icons.lock_outline_rounded,
-              title: 'Cần đăng nhập',
-              message:
-                  viewModel.message ?? 'Bạn cần đăng nhập để xem lộ trình.',
-              actionLabel: 'Đăng nhập',
-              onAction: () async {
-                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-                context.push(V2RoutePaths.login);
-              },
-            ),
-            AdvancedTrackingViewStatus.locked => _SupportState(
-              icon: Icons.workspace_premium_rounded,
-              title: 'Chưa mở cho tài khoản này',
-              message:
-                  viewModel.message ??
-                  'Nabi sẽ mở lộ trình nâng cao khi gói của bạn sẵn sàng.',
-              actionLabel: 'Làm mới',
-              onAction: () async {
-                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-                ref.invalidate(advancedTrackingSummaryProvider);
-              },
-            ),
-            AdvancedTrackingViewStatus.empty => _EmptyGoalState(
-              result: viewModel.result!,
-              message: viewModel.message,
-              onCreate: () async {
-                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-                try {
-                  await ref.read(advancedTrackingCreateHydrationGoalProvider)();
-                  await ref.read(advancedTrackingSummaryProvider.future);
-                  AppFeedbackService.instance.emit(AppFeedbackType.success);
-                } catch (_) {
-                  AppFeedbackService.instance.emit(AppFeedbackType.error);
-                  rethrow;
-                }
-              },
-            ),
-            AdvancedTrackingViewStatus.ready => _RoadmapReady(
-              result: viewModel.result!,
-              onRefresh: () async {
-                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-                ref.invalidate(advancedTrackingSummaryProvider);
-                await ref.read(advancedTrackingSummaryProvider.future);
-                AppFeedbackService.instance.emit(AppFeedbackType.success);
-              },
-            ),
-            AdvancedTrackingViewStatus.failure => _SupportState(
-              icon: Icons.error_outline_rounded,
-              title: 'Nabi chưa tải được lộ trình',
-              message: viewModel.message ?? 'Mình thử lại sau một chút nhé.',
-              actionLabel: 'Thử lại',
-              onAction: () async {
-                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-                ref.invalidate(advancedTrackingSummaryProvider);
-              },
-            ),
-          },
-          );
-        },
         ),
       ),
     );
@@ -122,6 +136,7 @@ class _EmptyGoalState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.pagePadding),
       children: [
@@ -130,7 +145,7 @@ class _EmptyGoalState extends StatelessWidget {
         Text(
           message ?? 'Mình bắt đầu nhẹ nhàng với mục tiêu uống đủ nước nhé.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
             height: 1.45,
           ),
         ),
@@ -153,6 +168,7 @@ class _RoadmapReady extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView(
@@ -167,7 +183,7 @@ class _RoadmapReady extends StatelessWidget {
           Text(
             'Đây là gợi ý chăm sóc sức khỏe hằng ngày, không thay thế tư vấn y tế.',
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.textHint,
+              color: colors.textHint,
               height: 1.35,
             ),
           ),
@@ -184,18 +200,19 @@ class _HydrationIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-      decoration: _panelDecoration(),
+      decoration: _panelDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.water_drop_rounded, color: AppColors.info, size: 36),
+          Icon(Icons.water_drop_rounded, color: colors.info, size: 36),
           const SizedBox(height: AppSpacing.md),
           Text(
             advancedTrackingHydrationGoalName,
             style: AppTextStyles.heading2.copyWith(
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
               fontWeight: AppTypography.bold,
             ),
           ),
@@ -203,7 +220,7 @@ class _HydrationIntro extends StatelessWidget {
           Text(
             '${result.targetMl} ml/ngày, ${result.period.startDate} - ${result.period.endDate}.',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -221,9 +238,10 @@ class _ProgressPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percent = (result.progress * 100).round();
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(),
+      decoration: _panelDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -235,27 +253,22 @@ class _ProgressPanel extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           TweenAnimationBuilder<double>(
-            tween: Tween<double>(
-              end: result.progress.clamp(0, 1).toDouble(),
-            ),
-            duration: AppMotionScope.duration(
-              context,
-              AppDuration.progress,
-            ),
+            tween: Tween<double>(end: result.progress.clamp(0, 1).toDouble()),
+            duration: AppMotionScope.duration(context, AppDuration.progress),
             curve: AppAnimations.emphasizedCurve,
             builder: (context, progress, _) => LinearProgressIndicator(
               value: progress,
               minHeight: 8,
               borderRadius: BorderRadius.circular(AppRadius.sm),
-              backgroundColor: AppColors.info.withValues(alpha: .12),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.info),
+              backgroundColor: colors.info.withValues(alpha: .12),
+              valueColor: AlwaysStoppedAnimation<Color>(colors.info),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             '$percent% • ${result.completedDays}/${result.totalDays} ngày • TB ${result.averageWaterMl} ml/ngày.',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               height: 1.35,
             ),
           ),
@@ -272,9 +285,10 @@ class _RoadmapSteps extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(),
+      decoration: _panelDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -299,7 +313,8 @@ class _StepRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = step.isComplete ? AppColors.success : AppColors.info;
+    final colors = context.semanticColors;
+    final color = step.isComplete ? colors.success : colors.info;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
@@ -336,7 +351,7 @@ class _StepRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Text(
             '${step.waterMl} ml',
-            style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
+            style: AppTextStyles.caption.copyWith(color: colors.textHint),
           ),
         ],
       ),
@@ -362,6 +377,7 @@ class _SupportState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return SafeArea(
       child: Center(
         child: Padding(
@@ -371,7 +387,7 @@ class _SupportState extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: AppColors.info, size: 48),
+                Icon(icon, color: colors.info, size: 48),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   title,
@@ -398,10 +414,10 @@ class _SupportState extends StatelessWidget {
   }
 }
 
-BoxDecoration _panelDecoration() {
+BoxDecoration _panelDecoration(AppSemanticColors colors) {
   return BoxDecoration(
-    color: AppColors.surface,
+    color: colors.surface,
     borderRadius: BorderRadius.circular(AppRadius.sm),
-    border: Border.all(color: AppColors.border),
+    border: Border.all(color: colors.border),
   );
 }

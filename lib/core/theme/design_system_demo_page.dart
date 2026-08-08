@@ -4,7 +4,7 @@ import 'design_system.dart';
 /// Design System Demo Page
 ///
 /// This page demonstrates all primitive components and tokens from the
-/// NaBi Blue Wellness design system. Use this as a visual reference and testing ground
+/// NaBi Green Wellness design system. Use this as a visual reference and testing ground
 /// for the new design system.
 ///
 /// **To view this page:**
@@ -36,7 +36,7 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       theme: _isDarkMode ? _buildDarkTheme() : _buildLightTheme(),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Bản xem trước NaBi Blue Wellness'),
+          title: const Text('Bản xem trước NaBi Green Wellness'),
           actions: [
             IconButton(
               icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
@@ -346,9 +346,9 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
           subtitle: 'Nội dung mô tả phụ',
           actionLabel: 'Xem tất cả',
           onAction: () {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Đã thực hiện thao tác!')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Đã thực hiện thao tác!')),
+            );
           },
         ),
       ],
@@ -589,9 +589,9 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
             child: ErrorState(
               message: 'Không tải được dữ liệu. Bạn thử lại nhé.',
               onRetry: () {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Đang thử lại...')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đang thử lại...')),
+                );
               },
             ),
           ),

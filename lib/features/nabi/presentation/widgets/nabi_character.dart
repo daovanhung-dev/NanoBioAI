@@ -5,6 +5,11 @@ import 'package:nano_app/core/theme/theme.dart';
 
 import '../../domain/entities/nabi_expression.dart';
 
+// Decorative character identity colors stay fixed across themes; they are not
+// health/error status roles and must not inherit semantic error-container hues.
+const _nabiSkinTint = AppColors.nabiSkinTint;
+const _nabiHighlight = AppColors.nabiHighlight;
+
 /// Nhân vật Nabi dạng vector Canvas, nền trong suốt.
 ///
 /// Canvas giúp biểu cảm thực sự thay đổi theo state, không phụ thuộc bộ ảnh
@@ -51,7 +56,8 @@ class _NabiCharacterState extends State<NabiCharacter>
   void didChangeDependencies() {
     super.didChangeDependencies();
     final policy = AppMotionScope.of(context);
-    final suppressAmbient = AppMotionScope.reduceMotionOf(context) ||
+    final suppressAmbient =
+        AppMotionScope.reduceMotionOf(context) ||
         policy.performanceTier == AppPerformanceTier.economical;
     if (suppressAmbient) {
       _motionController
@@ -75,9 +81,9 @@ class _NabiCharacterState extends State<NabiCharacter>
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final primary = widget.primaryColor ?? scheme.primary;
-    final secondary = widget.secondaryColor ?? scheme.secondary;
+    final colors = context.semanticColors;
+    final primary = widget.primaryColor ?? colors.primary;
+    final secondary = widget.secondaryColor ?? colors.secondary;
 
     return RepaintBoundary(
       child: AnimatedBuilder(
@@ -96,8 +102,11 @@ class _NabiCharacterState extends State<NabiCharacter>
               minimized: widget.minimized,
               primaryColor: primary,
               secondaryColor: secondary,
-              surfaceColor: scheme.surface,
-              outlineColor: scheme.onSurface.withValues(alpha: 0.78),
+              surfaceColor: colors.surface,
+              outlineColor: colors.textPrimary.withValues(alpha: 0.78),
+              shadowColor: colors.scrim,
+              skinTintColor: _nabiSkinTint,
+              highlightColor: _nabiHighlight,
             ),
           );
         },
@@ -125,6 +134,9 @@ class _NabiCharacterPainter extends CustomPainter {
     required this.secondaryColor,
     required this.surfaceColor,
     required this.outlineColor,
+    required this.shadowColor,
+    required this.skinTintColor,
+    required this.highlightColor,
   });
 
   final NabiEmotion emotion;
@@ -135,6 +147,9 @@ class _NabiCharacterPainter extends CustomPainter {
   final Color secondaryColor;
   final Color surfaceColor;
   final Color outlineColor;
+  final Color shadowColor;
+  final Color skinTintColor;
+  final Color highlightColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -158,7 +173,7 @@ class _NabiCharacterPainter extends CustomPainter {
         width: 50 * unit,
         height: 9 * unit,
       ),
-      Paint()..color = AppColors.textPrimary.withValues(alpha: 0.13),
+      Paint()..color = shadowColor.withValues(alpha: 0.13),
     );
 
     _drawBody(canvas, unit, sway);
@@ -203,7 +218,7 @@ class _NabiCharacterPainter extends CustomPainter {
 
   void _drawHead(Canvas canvas, double u, double sway) {
     final headCenter = Offset(50 * u + sway, 39 * u);
-    final skin = Color.lerp(surfaceColor, AppColors.errorSoft, 0.78)!;
+    final skin = Color.lerp(surfaceColor, skinTintColor, 0.78)!;
 
     // Tóc phía sau.
     canvas.drawOval(
@@ -251,7 +266,7 @@ class _NabiCharacterPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(69.2 * u + sway, 22.3 * u),
       1.4 * u,
-      Paint()..color = AppColors.surface.withValues(alpha: 0.85),
+      Paint()..color = highlightColor.withValues(alpha: 0.85),
     );
   }
 
@@ -371,7 +386,7 @@ class _NabiCharacterPainter extends CustomPainter {
         (emotion == NabiEmotion.listening ? 10.5 : 8.2) * u * eyeScale;
     final eyePaint = Paint()..color = outlineColor;
     final highlightPaint = Paint()
-      ..color = AppColors.surface.withValues(alpha: 0.92);
+      ..color = highlightColor.withValues(alpha: 0.92);
 
     final leftRect = Rect.fromCenter(
       center: left,
@@ -615,6 +630,9 @@ class _NabiCharacterPainter extends CustomPainter {
         oldDelegate.primaryColor != primaryColor ||
         oldDelegate.secondaryColor != secondaryColor ||
         oldDelegate.surfaceColor != surfaceColor ||
-        oldDelegate.outlineColor != outlineColor;
+        oldDelegate.outlineColor != outlineColor ||
+        oldDelegate.shadowColor != shadowColor ||
+        oldDelegate.skinTintColor != skinTintColor ||
+        oldDelegate.highlightColor != highlightColor;
   }
 }

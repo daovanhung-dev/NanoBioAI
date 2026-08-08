@@ -143,6 +143,7 @@ abstract class V2RouteGuards {
     V2RoutePaths.sale,
     V3RoutePaths.home,
     V3RoutePaths.advancedTracking,
+    V3RoutePaths.familyPlus,
   };
 
   static bool isProtectedPath(String path) {

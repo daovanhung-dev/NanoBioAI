@@ -101,9 +101,9 @@ class ScheduleProofGalleryPage extends ConsumerWidget {
             : ListView.separated(
                 key: const ValueKey('proof-gallery-list'),
                 padding: const EdgeInsets.all(AppSpacingTokens.pagePadding),
-              itemCount: proofs.length,
-              separatorBuilder: (_, _) =>
-                  const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
+                itemCount: proofs.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
                 itemBuilder: (context, index) => _ProofCard(
                   proof: proofs[index],
                   service: service,
@@ -140,85 +140,89 @@ class _ProofCard extends StatelessWidget {
             _openProof(context);
           },
           child: compact
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Hero(
-                      tag: 'schedule-proof-${proof.id}',
-                      child: _ProofImage(proof: proof, service: service),
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Hero(
+                        tag: 'schedule-proof-${proof.id}',
+                        child: _ProofImage(proof: proof, service: service),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(
-                      AppSpacingTokens.itemSpacingLarge,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _proofTitle(proof),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.labelMedium,
-                        ),
-                        const SizedBox(height: AppSpacingTokens.itemSpacing),
-                        Text(
-                          _proofStatusLabel(proof),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.caption,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              )
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 112,
-                    height: 112,
-                    child: Hero(
-                      tag: 'schedule-proof-${proof.id}',
-                      child: _ProofImage(proof: proof, service: service),
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
+                    Padding(
                       padding: const EdgeInsets.all(
-                        AppSpacingTokens.cardPadding,
+                        AppSpacingTokens.itemSpacingLarge,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             _proofTitle(proof),
-                            maxLines: 2,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.labelLarge,
-                          ),
-                          const SizedBox(height: AppSpacingTokens.itemSpacing),
-                          Text(
-                            '${_formatDate(proof.scheduleDate)} • ${_formatTime(proof.startTime)}',
-                            style: AppTextStyles.bodyMedium,
+                            style: AppTextStyles.labelMedium,
                           ),
                           const SizedBox(height: AppSpacingTokens.itemSpacing),
                           Text(
                             _proofStatusLabel(proof),
-                            style: AppTextStyles.caption.copyWith(
-                              color: proof.isReversed
-                                  ? Theme.of(context).colorScheme.error
-                                  : Theme.of(context).colorScheme.primary,
-                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.caption,
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 112,
+                      height: 112,
+                      child: Hero(
+                        tag: 'schedule-proof-${proof.id}',
+                        child: _ProofImage(proof: proof, service: service),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(
+                          AppSpacingTokens.cardPadding,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _proofTitle(proof),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.labelLarge,
+                            ),
+                            const SizedBox(
+                              height: AppSpacingTokens.itemSpacing,
+                            ),
+                            Text(
+                              '${_formatDate(proof.scheduleDate)} • ${_formatTime(proof.startTime)}',
+                              style: AppTextStyles.bodyMedium,
+                            ),
+                            const SizedBox(
+                              height: AppSpacingTokens.itemSpacing,
+                            ),
+                            Text(
+                              _proofStatusLabel(proof),
+                              style: AppTextStyles.caption.copyWith(
+                                color: proof.isReversed
+                                    ? Theme.of(context).colorScheme.error
+                                    : Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );
@@ -296,8 +300,8 @@ class _ProofImage extends StatelessWidget {
       builder: (context, snapshot) {
         final file = snapshot.data;
         if (file == null) {
-          return const ColoredBox(
-            color: AppColors.borderLight,
+          return ColoredBox(
+            color: context.semanticColors.borderLight,
             child: Center(child: CircularProgressIndicator()),
           );
         }
@@ -306,7 +310,7 @@ class _ProofImage extends StatelessWidget {
           builder: (context, existsSnapshot) {
             if (existsSnapshot.data != true) {
               return ColoredBox(
-                color: AppColors.borderLight,
+                color: context.semanticColors.borderLight,
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacingTokens.itemSpacing),
@@ -331,8 +335,8 @@ class _ProofImage extends StatelessWidget {
             return Image.file(
               file,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const ColoredBox(
-                color: AppColors.borderLight,
+              errorBuilder: (_, _, _) => ColoredBox(
+                color: context.semanticColors.borderLight,
                 child: Center(child: Icon(Icons.image_not_supported_outlined)),
               ),
             );

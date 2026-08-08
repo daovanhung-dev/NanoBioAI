@@ -50,8 +50,8 @@ class AppCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected
                 ? (isDark
-                    ? AppColorTokens.primary.withValues(alpha: 0.18)
-                    : AppColorTokens.primaryLight)
+                      ? AppColorTokens.primary.withValues(alpha: 0.18)
+                      : AppColorTokens.primaryLight)
                 : _getBackgroundColor(isDark),
             borderRadius: BorderRadius.circular(AppRadiusTokens.card),
             border: selected
@@ -83,8 +83,8 @@ class AppCard extends StatelessWidget {
   Color _getBackgroundColor(bool isDark) {
     if (isDark) {
       return switch (variant) {
-        CardVariant.defaultCard || CardVariant.outlined =>
-          AppColorTokens.darkSurface,
+        CardVariant.defaultCard ||
+        CardVariant.outlined => AppColorTokens.darkSurface,
         CardVariant.elevated => AppColorTokens.darkSurfaceElevated,
       };
     }
@@ -101,9 +101,10 @@ class AppCard extends StatelessWidget {
   List<BoxShadow>? _getShadow(bool isDark) {
     return switch (variant) {
       CardVariant.defaultCard || CardVariant.outlined => null,
-      CardVariant.elevated => isDark
-          ? AppShadowTokens.cardElevatedDark
-          : AppShadowTokens.cardElevated,
+      CardVariant.elevated =>
+        isDark
+            ? AppShadowTokens.cardElevatedDark
+            : AppShadowTokens.cardElevated,
     };
   }
 }

@@ -25,6 +25,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
   @override
   Widget build(BuildContext context) {
     final paymentState = ref.watch(membershipPaymentControllerProvider);
+    final colors = context.semanticColors;
     final viewState = paymentState.value;
     final request = viewState?.request;
     final isInitialLoading = paymentState.isLoading && viewState == null;
@@ -32,10 +33,10 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
     final hasActiveRequest = request?.isActive == true;
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: const Text('Thanh toán gói thành viên'),
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         actions: [
           IconButton(
@@ -48,78 +49,79 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
       body: AppStateSwitcher(
         alignment: Alignment.topCenter,
         child: ListView(
-        key: ValueKey(
-          'payment-${paymentState.isLoading}-${paymentState.hasError}-${request?.status ?? 'none'}-${_message ?? ''}',
-        ),
-        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-        children: [
-          Text('Nâng cấp gói của bạn', style: AppTextStyles.heading2),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Quét mã QR, chuyển đúng số tiền và nội dung. Gói chỉ được mở sau khi yêu cầu được duyệt.',
-            style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+          key: ValueKey(
+            'payment-${paymentState.isLoading}-${paymentState.hasError}-${request?.status ?? 'none'}-${_message ?? ''}',
           ),
-          if (isInitialLoading) ...[
-            const SizedBox(height: AppSpacing.md),
-            const LinearProgressIndicator(),
-          ],
-          if (paymentState.hasError) ...[
-            const SizedBox(height: AppSpacing.md),
-            _FeedbackCard(
-              message: 'Chưa tải được yêu cầu thanh toán. Bạn hãy thử làm mới.',
-              isError: true,
+          padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
+          children: [
+            Text('Nâng cấp gói của bạn', style: AppTextStyles.heading2),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Quét mã QR, chuyển đúng số tiền và nội dung. Gói chỉ được mở sau khi yêu cầu được duyệt.',
+              style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
             ),
+            if (isInitialLoading) ...[
+              const SizedBox(height: AppSpacing.md),
+              const LinearProgressIndicator(),
+            ],
+            if (paymentState.hasError) ...[
+              const SizedBox(height: AppSpacing.md),
+              _FeedbackCard(
+                message:
+                    'Chưa tải được yêu cầu thanh toán. Bạn hãy thử làm mới.',
+                isError: true,
+              ),
+            ],
+            if (!isInitialLoading && !hasPayerName) ...[
+              const SizedBox(height: AppSpacing.md),
+              const _FeedbackCard(
+                message:
+                    'Bạn cần cập nhật họ và tên trong hồ sơ trước khi tạo mã thanh toán.',
+                isError: true,
+              ),
+            ],
+            if (!hasActiveRequest) ...[
+              const SizedBox(height: AppSpacing.sectionSpacing),
+              _PlanSelector(
+                planCode: _planCode,
+                billingCycle: _billingCycle,
+                isDisabled: _submitting || isInitialLoading || !hasPayerName,
+                onPlanChanged: (value) {
+                  AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                  setState(() => _planCode = value ?? _planCode);
+                },
+                onBillingCycleChanged: (value) {
+                  AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                  setState(() => _billingCycle = value ?? _billingCycle);
+                },
+              ),
+              const SizedBox(height: AppSpacing.sectionSpacing),
+              FilledButton.icon(
+                onPressed: _submitting || isInitialLoading || !hasPayerName
+                    ? null
+                    : _createRequest,
+                icon: _submitting
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.qr_code_rounded),
+                label: const Text('Tạo mã thanh toán'),
+              ),
+            ],
+            if (_message != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              _FeedbackCard(message: _message!, isError: false),
+            ],
+            if (request != null) ...[
+              const SizedBox(height: AppSpacing.sectionSpacing),
+              _PaymentRequestPanel(
+                request: request,
+                isSubmitting: _submitting,
+                onConfirmTransfer: _confirmTransfer,
+              ),
+            ],
           ],
-          if (!isInitialLoading && !hasPayerName) ...[
-            const SizedBox(height: AppSpacing.md),
-            const _FeedbackCard(
-              message:
-                  'Bạn cần cập nhật họ và tên trong hồ sơ trước khi tạo mã thanh toán.',
-              isError: true,
-            ),
-          ],
-          if (!hasActiveRequest) ...[
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            _PlanSelector(
-              planCode: _planCode,
-              billingCycle: _billingCycle,
-              isDisabled: _submitting || isInitialLoading || !hasPayerName,
-              onPlanChanged: (value) {
-                AppFeedbackService.instance.emit(AppFeedbackType.selection);
-                setState(() => _planCode = value ?? _planCode);
-              },
-              onBillingCycleChanged: (value) {
-                AppFeedbackService.instance.emit(AppFeedbackType.selection);
-                setState(() => _billingCycle = value ?? _billingCycle);
-              },
-            ),
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            FilledButton.icon(
-              onPressed: _submitting || isInitialLoading || !hasPayerName
-                  ? null
-                  : _createRequest,
-              icon: _submitting
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.qr_code_rounded),
-              label: const Text('Tạo mã thanh toán'),
-            ),
-          ],
-          if (_message != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            _FeedbackCard(message: _message!, isError: false),
-          ],
-          if (request != null) ...[
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            _PaymentRequestPanel(
-              request: request,
-              isSubmitting: _submitting,
-              onConfirmTransfer: _confirmTransfer,
-            ),
-          ],
-        ],
         ),
       ),
     );
@@ -296,6 +298,7 @@ class _PaymentRequestPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     final transferMemo = VietQrPayloadBuilder.normalizeTransferMemo(
       request.transferMemo,
     );
@@ -315,9 +318,9 @@ class _PaymentRequestPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,11 +385,11 @@ class _PaymentRequestPanel extends StatelessWidget {
                 label: 'Mã QR thanh toán',
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                  color: AppColors.surface,
+                  color: Colors.white,
                   child: QrImageView(
                     data: qrPayload,
                     size: 220,
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: Colors.white,
                   ),
                 ),
               ),
@@ -491,7 +494,8 @@ class _FeedbackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isError ? AppColors.error : AppColors.primary;
+    final colors = context.semanticColors;
+    final color = isError ? colors.error : colors.primary;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(

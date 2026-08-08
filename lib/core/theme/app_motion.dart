@@ -173,7 +173,10 @@ class AppStateSwitcher extends StatelessWidget {
       layoutBuilder: (currentChild, previousChildren) {
         return Stack(
           alignment: alignment,
-          children: <Widget>[...previousChildren, if (currentChild != null) currentChild],
+          children: <Widget>[
+            ...previousChildren,
+            if (currentChild != null) currentChild,
+          ],
         );
       },
       transitionBuilder: (transitionChild, animation) {
@@ -225,10 +228,7 @@ class _AppDirectionalSwitcherState extends State<AppDirectionalSwitcher> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveDuration = AppMotionScope.duration(
-      context,
-      widget.duration,
-    );
+    final effectiveDuration = AppMotionScope.duration(context, widget.duration);
     final distance = AppMotionScope.distance(context, 0.035);
 
     return AnimatedSwitcher(
@@ -244,7 +244,10 @@ class _AppDirectionalSwitcherState extends State<AppDirectionalSwitcher> {
         return FadeTransition(
           opacity: animation,
           child: SlideTransition(
-            position: Tween<Offset>(begin: begin, end: Offset.zero).animate(animation),
+            position: Tween<Offset>(
+              begin: begin,
+              end: Offset.zero,
+            ).animate(animation),
             child: transitionChild,
           ),
         );

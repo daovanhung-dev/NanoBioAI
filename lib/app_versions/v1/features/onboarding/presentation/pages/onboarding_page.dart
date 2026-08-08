@@ -34,7 +34,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       _tag,
       'Rendering step ${state.currentStep + 1}/${OnboardingCatalog.totalSteps}',
     );
-    final hasHistory = context.canPop();
+    final hasHistory = Navigator.of(context).canPop();
     return PopScope(
       canPop: state.currentStep <= 0 && !state.isSaving && hasHistory,
       onPopInvokedWithResult: (didPop, result) {

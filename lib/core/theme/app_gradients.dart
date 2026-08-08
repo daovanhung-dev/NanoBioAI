@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Named gradients for the NaBi Blue Wellness visual language.
+import 'app_colors.dart';
+
+/// Named gradients for the NaBi Green Wellness visual language.
 ///
 /// Gradients are reserved for hero, primary CTA, celebration and focused
 /// progress. Routine data cards should remain solid surfaces.
@@ -9,61 +11,61 @@ class AppGradients {
   const AppGradients._();
 
   static const LinearGradient primary = LinearGradient(
-    colors: [Color(0xFF245CC5), Color(0xFF4D8DF7)],
+    colors: [AppColors.ctaStart, AppColors.ctaEnd],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient primaryReverse = LinearGradient(
-    colors: [Color(0xFF4D8DF7), Color(0xFF245CC5)],
+    colors: [AppColors.ctaEnd, AppColors.ctaStart],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient primarySoft = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFF4F8FF)],
+    colors: [AppColors.surface, AppColors.primarySubtle],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient premium = LinearGradient(
-    colors: [Color(0xFF2F6FED), Color(0xFF8174E8)],
+    colors: [AppColors.primary, AppColors.tertiary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient premiumDark = LinearGradient(
-    colors: [Color(0xFF1746A2), Color(0xFF6557C9)],
+    colors: [AppColors.primaryDark, AppColors.tertiary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient surface = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFFBFDFF)],
+    colors: [AppColors.surface, AppColors.background],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient surfaceAlt = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFF4F8FF)],
+    colors: [AppColors.surface, AppColors.surfaceSoft],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient darkSurface = LinearGradient(
-    colors: [Color(0xFF123052), Color(0xFF07172B)],
+    colors: [AppColors.darkSurfaceElevated, AppColors.darkBackground],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient darkSurfaceElevated = LinearGradient(
-    colors: [Color(0xFF19436F), Color(0xFF0D223D)],
+    colors: [AppColors.darkCardAlt, AppColors.darkSurface],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient success = LinearGradient(
-    colors: [Color(0xFF14885F), Color(0xFF42C98A)],
+    colors: [AppColors.brandAccent, AppColors.ctaEnd],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -95,74 +97,74 @@ class AppGradients {
   );
 
   static const LinearGradient sleep = LinearGradient(
-    colors: [Color(0xFF9FD8F6), Color(0xFF38A9E8)],
+    colors: [Color(0xFF9DDCF5), Color(0xFF58B9E8)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient meditation = LinearGradient(
-    colors: [Color(0xFFB6AEFF), Color(0xFF8174E8)],
+    colors: [Color(0xFFBEB6FF), Color(0xFF8B7CF6)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient ai = LinearGradient(
-    colors: [Color(0xFF2F6FED), Color(0xFF38A9E8)],
+    colors: [AppColors.primary, AppColors.secondary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient futuristic = LinearGradient(
-    colors: [Color(0xFF1746A2), Color(0xFF8174E8)],
+    colors: [AppColors.primaryDark, AppColors.tertiary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient overlayTop = LinearGradient(
-    colors: [Color(0x99102A43), Color(0x00102A43)],
+    colors: [Color(0x9912352A), Color(0x0012352A)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient overlayBottom = LinearGradient(
-    colors: [Color(0x00102A43), Color(0xB3102A43)],
+    colors: [Color(0x0012352A), Color(0xB312352A)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient overlayLeft = LinearGradient(
-    colors: [Color(0x99102A43), Color(0x00102A43)],
+    colors: [Color(0x9912352A), Color(0x0012352A)],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
 
   static const LinearGradient overlayRight = LinearGradient(
-    colors: [Color(0x00102A43), Color(0x99102A43)],
+    colors: [Color(0x0012352A), Color(0x9912352A)],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
 
   static const LinearGradient hero = LinearGradient(
-    colors: [Color(0xFF1746A2), Color(0xFF2F6FED), Color(0xFF6EA8FE)],
+    colors: [AppColors.primaryDark, AppColors.primary, AppColors.primary],
     stops: [0, .56, 1],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient dashboard = LinearGradient(
-    colors: [Color(0xFF1746A2), Color(0xFF2F6FED)],
+    colors: [AppColors.primaryDark, AppColors.primary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient onboarding = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFF4F8FF)],
+    colors: [AppColors.surface, AppColors.primarySubtle],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient medicalBackground = LinearGradient(
-    colors: [Color(0xFFF7FAFF), Color(0xFFFBFDFF), Color(0xFFF4F8FF)],
+    colors: [AppColors.background, AppColors.surface, AppColors.primarySubtle],
     stops: [0, .58, 1],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -175,7 +177,7 @@ class AppGradients {
   );
 
   static const LinearGradient glassDark = LinearGradient(
-    colors: [Color(0xCC123052), Color(0x99102A43)],
+    colors: [Color(0xCC202724), Color(0x99171D1B)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

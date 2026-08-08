@@ -6,6 +6,7 @@ import 'package:nano_app/core/theme/app_experience.dart';
 import 'package:nano_app/core/theme/app_experience_preferences.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
 import 'package:nano_app/app_versions/v1/router/v1_router.dart';
+import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_navigation_coordinator.dart';
 import 'package:nano_app/l10n/app_localizations.dart';
 
@@ -33,13 +34,13 @@ class _BioAIV1AppState extends ConsumerState<BioAIV1App> {
   Widget build(BuildContext context) {
     final experiencePreferences =
         ref.watch(appExperiencePreferencesProvider).value ??
-            AppExperiencePreferences.defaults;
-    final textScaleFactor = ref
-            .watch(appTextScaleControllerProvider)
-            .value
-            ?.preset
-            .factor ??
+        AppExperiencePreferences.defaults;
+    final textScaleFactor =
+        ref.watch(appTextScaleControllerProvider).value?.preset.factor ??
         AppTextScalePreset.standard.factor;
+    final isDarkMode =
+        ref.watch(settingsPreferencesControllerProvider).value?.isDarkMode ??
+        false;
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       locale: AppLocalizationConfig.locale,
@@ -54,6 +55,8 @@ class _BioAIV1AppState extends ConsumerState<BioAIV1App> {
       ),
 
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
 
       routerConfig: v1Router,
     );

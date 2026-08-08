@@ -1,27 +1,31 @@
-# Coding Plan
+# Coding Plan - Stitch Green Wellness
 
-## Wave 1 — Foundation
-Normalize semantic color, typography, shape, spacing, elevation, motion, accessibility and feedback primitives. Keep compatibility facades where callers depend on them.
+Each wave requires state parity, visual hierarchy, adaptive layout, motion/feedback, accessibility QA and targeted tests. UI work must not invent business behavior.
 
-## Wave 2 — Shell & navigation
-Unified app surfaces, V1 main navigation, router transitions, app bars, navigation bar/rail and state switchers.
+## Wave 0 - Baseline and documentation gates
 
-## Wave 3 — Onboarding & Auth
-Text scale, onboarding internal steps, V1/V2 auth and gate states.
+Fix contradictory contracts, refresh the canonical surface/route registry and record owners, states and acceptance evidence. New or changed business modules stay placeholders until the required PO, Tech, QA and Clinical/Privacy approvals are explicitly recorded.
 
-## Wave 4 — Core health
-Dashboard, Lifestyle Schedule, Meal Plan, Nutrition, Body Metrics, Health Score.
+## Wave 1 - Foundation, assets and shell
 
-## Wave 5 — Profile / Settings / AI
-Profile, Settings, Features Hub, Health Insights, AI Chat and AI Voice.
+Introduce context-aware semantic colors, deterministic light/dark themes, Roboto, spacing/radius/elevation/focus/reduced-motion primitives and controlled Stitch asset provenance. Keep compatibility facades only for staged migration. Admin remains an independent workspace theme.
 
-## Wave 6 — Access / V3 / Rewards / Payment
-Member home, health module access, V3, payment and rewards.
+## Wave 2 - Existing Stitch-referenced UI
 
-## Wave 7 — Sale
-Participation, payout gate, four tabs and trusted financial states.
+Refactor consumer and Sale surfaces by group: onboarding/auth; dashboard/features/health score; schedule/meal/nutrition; chat/voice; profile/settings; V2/V3/payment/rewards; Sale. Preserve loading, empty, error, locked, pending, offline and retry behavior backed by real state.
 
-## Wave 8 — Admin
-Admin theme, login, workspace shell, each section, dialogs and permission states.
+## Wave 3 - Approved Guest/Free wellness surfaces
 
-Each wave: implement state parity → visual hierarchy → adaptive layout → motion/feedback → accessibility QA → targeted tests. Do not mix business refactor into the UI wave.
+Expose the approved wellness pages and preserve Guest/member storage rules. `/health-tracking` remains an alias until the dedicated journal DD is Approved. Nami Care is a hub only for capabilities already present in runtime and must not invent expert or booking behavior.
+
+## Wave 4 - M20-M29, OCR and health hubs
+
+Implement only after module DD, clinical/privacy approval and platform capability review. Unsupported or unapproved capability fails closed with manual fallback or placeholder; no guessed schema or device contract.
+
+## Wave 5 - AI, FamilyPlus chat and Sale expansion
+
+Require approved backend safety, privacy, cryptography, retention and trusted RPC contracts. Do not call model services directly from new UI and do not expose health/raw payment data to Sale.
+
+## Wave 6 - Cutover
+
+Use `stitchGreenUi` separately from business flags. Cut over only after all 76 Stitch references have recorded visual, dark, accessibility and adaptive evidence; retain rollback for one release before deleting Blue compatibility aliases.

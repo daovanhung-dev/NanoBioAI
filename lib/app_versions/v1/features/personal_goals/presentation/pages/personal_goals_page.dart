@@ -55,15 +55,15 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
   Widget build(BuildContext context) {
     return NamiCareScaffold(
       title: 'Mục tiêu của mình',
-      subtitle: 'Chọn một điều nhỏ thôi, Nabi sẽ đi cùng bạn mỗi ngày.',
-      badge: 'Một bước nhỏ',
+      subtitle: 'Xem trước một điều nhỏ, vừa sức cho hôm nay.',
+      badge: 'Bản xem trước',
       icon: Icons.flag_rounded,
       gradient: AppGradients.success,
       children: [
         const NamiCareSectionTitle(
-          title: 'Hôm nay mình muốn chăm điều gì?',
+          title: 'Hôm nay mình muốn thử điều gì?',
           subtitle:
-              'Bạn chỉ cần chọn một mục tiêu vừa sức. Nabi sẽ nhắc thật nhẹ, không tạo áp lực.',
+              'Lựa chọn trên màn hình này chưa được lưu hoặc tạo nhắc nhở.',
         ),
         const SizedBox(height: AppSpacing.md),
         ...List.generate(_goals.length, (index) {
@@ -96,9 +96,9 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
                   child: NamiCareEmptyState(
                     icon: Icons.favorite_rounded,
                     color: _goals[_selectedIndex!].color,
-                    title: 'Nabi đã đặt mục tiêu này vào góc nhỏ hôm nay của bạn',
+                    title: 'Bạn đang xem trước mục tiêu này',
                     message:
-                        'Mình không cần làm thật nhiều ngay lập tức. Chỉ cần quay lại từng chút, Nabi sẽ cùng bạn giữ nhịp.',
+                        'Lựa chọn chỉ được giữ trong lúc trang này đang mở. Tính năng lưu và nhắc mục tiêu sẽ chỉ bật khi contract tương ứng được duyệt.',
                   ),
                 ),
         ),

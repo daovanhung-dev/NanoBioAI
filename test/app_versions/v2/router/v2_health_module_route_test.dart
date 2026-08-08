@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v2/router/v2_router.dart';
+import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
 import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
 
 void main() {
@@ -22,6 +23,10 @@ void main() {
         isFalse,
       );
       expect(V2RouteGuards.isProtectedPath('/v2/health-modulesx/M20'), isFalse);
+    });
+
+    test('protects the FamilyPlus route', () {
+      expect(V2RouteGuards.isProtectedPath(V3RoutePaths.familyPlus), isTrue);
     });
   });
 }

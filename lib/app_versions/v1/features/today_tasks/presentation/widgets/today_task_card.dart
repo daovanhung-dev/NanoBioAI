@@ -8,7 +8,7 @@ import 'package:nano_app/app_versions/v1/features/meal_plan/providers/meal_plan_
 import 'package:nano_app/core/theme/theme.dart';
 
 class TodayTaskCard extends ConsumerStatefulWidget {
-  const TodayTaskCard({required this.task, required this.now});
+  const TodayTaskCard({required this.task, required this.now, super.key});
 
   final LifestyleScheduleItemEntity task;
   final DateTime now;
@@ -26,7 +26,10 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
   @override
   Widget build(BuildContext context) {
     final status = task.completionStatusAt(widget.now);
-    final presentation = _TaskStatusPresentation.from(status);
+    final presentation = _TaskStatusPresentation.from(
+      status,
+      context.semanticColors,
+    );
     final canToggle = task.isCompleted
         ? task.isWithinCompletionWindow(widget.now)
         : status == CompletionWindowStatus.open;
@@ -60,15 +63,15 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
                             ? TextDecoration.lineThrough
                             : null,
                         color: task.isCompleted
-                            ? AppColors.textSecondary
-                            : AppColors.textPrimary,
+                            ? context.semanticColors.textSecondary
+                            : context.semanticColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       _timeRange(task),
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.semanticColors.textSecondary,
                       ),
                     ),
                   ],
@@ -90,7 +93,7 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.semanticColors.textSecondary,
                 height: 1.45,
               ),
             ),
@@ -132,9 +135,7 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.swap_horiz_rounded),
-                  label: Text(
-                    _isReplacingMeal ? 'Đang thay món' : 'Thay món',
-                  ),
+                  label: Text(_isReplacingMeal ? 'Đang thay món' : 'Thay món'),
                 ),
               TextButton.icon(
                 onPressed: _showDetails,
@@ -152,9 +153,7 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
     if (_isUpdating) return;
     setState(() => _isUpdating = true);
     try {
-      final controller = ref.read(
-        lifestyleScheduleControllerProvider.notifier,
-      );
+      final controller = ref.read(lifestyleScheduleControllerProvider.notifier);
       var result = await controller.toggleItem(task);
       if (!mounted) return;
 
@@ -213,9 +212,9 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
       AppFeedbackService.instance.emit(AppFeedbackType.error);
     }
     if (message != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -228,9 +227,7 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
       await ref
           .read(mealPlanControllerProvider.notifier)
           .replaceMealById(sourceId);
-      await ref
-          .read(lifestyleScheduleControllerProvider.notifier)
-          .refresh();
+      await ref.read(lifestyleScheduleControllerProvider.notifier).refresh();
       ref.invalidate(getMealPlanProvider);
       if (!mounted) return;
       AppFeedbackService.instance.emit(AppFeedbackType.success);
@@ -318,15 +315,16 @@ class _TaskWindowHint extends StatelessWidget {
         'Nhiệm vụ sẽ mở khi đến ${task.startTime}.',
       CompletionWindowStatus.locked =>
         'Thời gian xác nhận đã kết thúc. Kết quả được giữ nguyên.',
-      CompletionWindowStatus.completed => task.isWithinCompletionWindow(now)
-          ? 'Đã hoàn thành. Bạn vẫn có thể hoàn tác trong cửa sổ hiện tại.'
-          : 'Đã hoàn thành và kết quả đã được khóa.',
+      CompletionWindowStatus.completed =>
+        task.isWithinCompletionWindow(now)
+            ? 'Đã hoàn thành. Bạn vẫn có thể hoàn tác trong cửa sổ hiện tại.'
+            : 'Đã hoàn thành và kết quả đã được khóa.',
     };
     final color = switch (status) {
-      CompletionWindowStatus.open => AppColors.primary,
-      CompletionWindowStatus.waiting => AppColors.info,
-      CompletionWindowStatus.locked => AppColors.textSecondary,
-      CompletionWindowStatus.completed => AppColors.success,
+      CompletionWindowStatus.open => context.semanticColors.primary,
+      CompletionWindowStatus.waiting => context.semanticColors.info,
+      CompletionWindowStatus.locked => context.semanticColors.textSecondary,
+      CompletionWindowStatus.completed => context.semanticColors.success,
     };
 
     return Container(
@@ -366,8 +364,8 @@ class _DetailLine extends StatelessWidget {
       children: [
         MedicalIconBadge(
           icon: icon,
-          color: AppColors.primary,
-          backgroundColor: AppColors.primarySoft,
+          color: context.semanticColors.primary,
+          backgroundColor: context.semanticColors.primarySoft,
           size: 40,
         ),
         const SizedBox(width: AppSpacing.md),
@@ -378,7 +376,7 @@ class _DetailLine extends StatelessWidget {
               Text(
                 label,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.semanticColors.textSecondary,
                 ),
               ),
               const SizedBox(height: AppSpacing.xs),
@@ -402,27 +400,30 @@ class _TaskStatusPresentation {
   final IconData icon;
   final Color color;
 
-  factory _TaskStatusPresentation.from(CompletionWindowStatus status) {
+  factory _TaskStatusPresentation.from(
+    CompletionWindowStatus status,
+    AppSemanticColors colors,
+  ) {
     return switch (status) {
-      CompletionWindowStatus.open => const _TaskStatusPresentation(
+      CompletionWindowStatus.open => _TaskStatusPresentation(
         label: 'Đang đến giờ',
         icon: Icons.bolt_rounded,
-        color: AppColors.primary,
+        color: colors.primary,
       ),
-      CompletionWindowStatus.waiting => const _TaskStatusPresentation(
+      CompletionWindowStatus.waiting => _TaskStatusPresentation(
         label: 'Sắp tới',
         icon: Icons.schedule_rounded,
-        color: AppColors.info,
+        color: colors.info,
       ),
-      CompletionWindowStatus.completed => const _TaskStatusPresentation(
+      CompletionWindowStatus.completed => _TaskStatusPresentation(
         label: 'Đã xong',
         icon: Icons.check_circle_rounded,
-        color: AppColors.success,
+        color: colors.success,
       ),
-      CompletionWindowStatus.locked => const _TaskStatusPresentation(
+      CompletionWindowStatus.locked => _TaskStatusPresentation(
         label: 'Đã kết thúc',
         icon: Icons.lock_clock_rounded,
-        color: AppColors.textSecondary,
+        color: colors.textSecondary,
       ),
     };
   }

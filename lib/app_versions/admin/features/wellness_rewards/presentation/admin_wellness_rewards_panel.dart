@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/admin/theme/admin_workspace_theme.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/core/localization/vietnam_time.dart';
 import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
@@ -574,6 +575,7 @@ class _AdminRewardMetrics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final stock = snapshot.offers.fold<int>(
       0,
       (total, offer) => total + offer.availableCodes,
@@ -596,6 +598,7 @@ class _AdminRewardMetrics extends StatelessWidget {
                 label: 'Ưu đãi',
                 value: '${snapshot.offers.length}',
                 icon: Icons.card_giftcard_rounded,
+                color: colors.blue,
               ),
             ),
             SizedBox(
@@ -604,7 +607,7 @@ class _AdminRewardMetrics extends StatelessWidget {
                 label: 'Mã còn trong kho',
                 value: '$stock',
                 icon: Icons.inventory_2_rounded,
-                color: AppColors.success,
+                color: colors.mint,
               ),
             ),
             SizedBox(
@@ -613,7 +616,7 @@ class _AdminRewardMetrics extends StatelessWidget {
                 label: 'Voucher đang được cấp',
                 value: '$issued',
                 icon: Icons.confirmation_num_rounded,
-                color: AppColors.tertiary,
+                color: colors.cyan,
               ),
             ),
           ],
@@ -636,6 +639,7 @@ class _AdminOfferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     return MedicalSurfaceCard(
       elevated: true,
       child: Column(
@@ -652,11 +656,11 @@ class _AdminOfferCard extends StatelessWidget {
               MedicalStatusPill(
                 label: offer.isActive ? 'Đang mở' : 'Đã tắt',
                 foregroundColor: offer.isActive
-                    ? AppColors.success
-                    : AppColors.textMuted,
+                    ? colors.mint
+                    : colors.textMuted,
                 backgroundColor: offer.isActive
-                    ? AppColors.successSoft
-                    : AppColors.surfaceSoft,
+                    ? colors.successContainer
+                    : colors.neutralContainer,
               ),
             ],
           ),
@@ -702,6 +706,7 @@ class _AdminRedemptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.adminColors;
     final normalizedStatus = redemption.status.trim().toLowerCase();
     final isIssued = normalizedStatus == 'issued';
     final isCancelled =
@@ -710,10 +715,10 @@ class _AdminRedemptionCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       child: Row(
         children: [
-          const MedicalIconBadge(
+          MedicalIconBadge(
             icon: Icons.confirmation_num_rounded,
-            color: AppColors.tertiary,
-            backgroundColor: AppColors.tertiarySoft,
+            color: colors.cyan,
+            backgroundColor: colors.infoContainer,
             size: 44,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -740,15 +745,15 @@ class _AdminRedemptionCard extends StatelessWidget {
                 ? 'Đã hủy'
                 : 'Chưa xác định',
             foregroundColor: isIssued
-                ? AppColors.success
+                ? colors.mint
                 : isCancelled
-                ? AppColors.error
-                : AppColors.textMuted,
+                ? colors.danger
+                : colors.textMuted,
             backgroundColor: isIssued
-                ? AppColors.successSoft
+                ? colors.successContainer
                 : isCancelled
-                ? AppColors.errorSoft
-                : AppColors.surfaceSoft,
+                ? colors.dangerContainer
+                : colors.neutralContainer,
           ),
           if (onCancel != null) ...[
             const SizedBox(width: AppSpacing.sm),

@@ -9,11 +9,11 @@ class AppRadiusTokens {
   const AppRadiusTokens._();
 
   static const double button = RadiusFoundation.radius12;
-  static const double card = RadiusFoundation.radius16;
-  static const double input = RadiusFoundation.radius12;
+  static const double card = RadiusFoundation.radius20;
+  static const double input = RadiusFoundation.radius14;
   static const double chip = RadiusFoundation.radiusFull;
   static const double badge = RadiusFoundation.radiusFull;
-  static const double dialog = RadiusFoundation.radius20;
+  static const double dialog = RadiusFoundation.radius24;
   static const double avatar = RadiusFoundation.radiusFull;
 }
 
@@ -51,8 +51,7 @@ class AppMotionTokens {
   static const Curve exitCurve = MotionFoundation.accelerate;
   static const Curve emphasizedCurve = MotionFoundation.emphasizedCurve;
 
-  static const double buttonPressedScale =
-      MotionFoundation.buttonPressedScale;
+  static const double buttonPressedScale = MotionFoundation.buttonPressedScale;
   static const double cardPressedScale = MotionFoundation.cardPressedScale;
   static const double chipPressedScale = MotionFoundation.chipPressedScale;
 }

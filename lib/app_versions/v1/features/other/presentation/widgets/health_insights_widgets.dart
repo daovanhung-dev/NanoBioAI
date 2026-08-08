@@ -28,7 +28,7 @@ class _HealthInsightsHeader extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.semanticColors.textSecondary,
                 ),
               ),
             ],
@@ -84,7 +84,9 @@ class _HealthSnapshotCard extends StatelessWidget {
                     Text(
                       'TỔNG QUAN HÔM NAY',
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.surface.withValues(alpha: .82),
+                        color: context.semanticColors.surface.withValues(
+                          alpha: .82,
+                        ),
                         letterSpacing: .7,
                       ),
                     ),
@@ -94,7 +96,7 @@ class _HealthSnapshotCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.heading2.copyWith(
-                        color: AppColors.surface,
+                        color: context.semanticColors.surface,
                         height: 1.28,
                       ),
                     ),
@@ -104,7 +106,9 @@ class _HealthSnapshotCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.surface.withValues(alpha: .86),
+                        color: context.semanticColors.surface.withValues(
+                          alpha: .86,
+                        ),
                         height: 1.4,
                       ),
                     ),
@@ -121,7 +125,9 @@ class _HealthSnapshotCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: AppColors.surface.withValues(alpha: .2),
+              backgroundColor: context.semanticColors.surface.withValues(
+                alpha: .2,
+              ),
               valueColor: const AlwaysStoppedAnimation(AppColors.surface),
             ),
           ),
@@ -169,10 +175,10 @@ class _ScoreBadge extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: .14),
+        color: context.semanticColors.surface.withValues(alpha: .14),
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: AppColors.surface.withValues(alpha: .2),
+          color: context.semanticColors.surface.withValues(alpha: .2),
         ),
       ),
       child: Column(
@@ -180,7 +186,7 @@ class _ScoreBadge extends StatelessWidget {
           Text(
             score <= 0 ? '--' : '$score',
             style: AppTextStyles.displaySmall.copyWith(
-              color: AppColors.surface,
+              color: context.semanticColors.surface,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -188,7 +194,7 @@ class _ScoreBadge extends StatelessWidget {
             score <= 0 ? 'chưa có' : 'điểm',
             maxLines: 1,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.surface.withValues(alpha: .82),
+              color: context.semanticColors.surface.withValues(alpha: .82),
             ),
           ),
         ],
@@ -216,12 +222,12 @@ class _SnapshotMetric extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: .11),
+        color: context.semanticColors.surface.withValues(alpha: .11),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.surface, size: 20),
+          Icon(icon, color: context.semanticColors.surface, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -232,7 +238,9 @@ class _SnapshotMetric extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.surface.withValues(alpha: .72),
+                    color: context.semanticColors.surface.withValues(
+                      alpha: .72,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xxs),
@@ -241,7 +249,7 @@ class _SnapshotMetric extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.surface,
+                    color: context.semanticColors.surface,
                   ),
                 ),
               ],
@@ -272,16 +280,16 @@ class _TodayMetricStrip extends StatelessWidget {
             : '--',
         unit: 'L',
         icon: Icons.water_drop_rounded,
-        color: AppColors.info,
-        background: AppColors.infoSoft,
+        color: context.semanticColors.info,
+        background: context.semanticColors.infoSoft,
       ),
       _HealthMetricItem(
         label: 'Năng lượng',
         value: calories > 0 ? _formatInt(calories) : '--',
         unit: calories > 0 ? calorieHint : 'kcal',
         icon: Icons.local_fire_department_rounded,
-        color: AppColors.warning,
-        background: AppColors.warningSoft,
+        color: context.semanticColors.warning,
+        background: context.semanticColors.warningSoft,
       ),
       _HealthMetricItem(
         label: 'Giấc ngủ',
@@ -290,18 +298,16 @@ class _TodayMetricStrip extends StatelessWidget {
             : '--',
         unit: 'giờ',
         icon: Icons.bedtime_rounded,
-        color: AppColors.primary,
-        background: AppColors.primarySoft,
+        color: context.semanticColors.primary,
+        background: context.semanticColors.primarySoft,
       ),
       _HealthMetricItem(
         label: 'Bước chân',
-        value: metrics.stepsCount > 0
-            ? _formatInt(metrics.stepsCount)
-            : '--',
+        value: metrics.stepsCount > 0 ? _formatInt(metrics.stepsCount) : '--',
         unit: 'bước',
         icon: Icons.directions_walk_rounded,
-        color: AppColors.success,
-        background: AppColors.successSoft,
+        color: context.semanticColors.success,
+        background: context.semanticColors.successSoft,
       ),
     ];
 
@@ -362,9 +368,9 @@ class _HealthMetricTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPaddingCompact),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       child: Row(
         children: [
@@ -570,7 +576,7 @@ class _PrimaryRecommendationSection extends StatelessWidget {
         const _SectionTitle(title: 'Việc nên làm hôm nay'),
         const SizedBox(height: AppSpacing.sm),
         _CompactSurface(
-          accentColor: AppColors.primary,
+          accentColor: context.semanticColors.primary,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -578,7 +584,7 @@ class _PrimaryRecommendationSection extends StatelessWidget {
                 icon: primary.isRead
                     ? Icons.lightbulb_outline_rounded
                     : Icons.lightbulb_rounded,
-                color: AppColors.primary,
+                color: context.semanticColors.primary,
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -600,7 +606,7 @@ class _PrimaryRecommendationSection extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.labelMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.semanticColors.textSecondary,
                         ),
                       ),
                     ],
@@ -654,7 +660,7 @@ class _RecommendationDetailRow extends StatelessWidget {
               ? Icons.lightbulb_outline_rounded
               : Icons.lightbulb_rounded,
           size: 19,
-          color: AppColors.primary,
+          color: context.semanticColors.primary,
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
@@ -672,7 +678,7 @@ class _RecommendationDetailRow extends StatelessWidget {
                 Text(
                   'Gợi ý: ${item.actionText.trim()}',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.semanticColors.textSecondary,
                   ),
                 ),
               ],
@@ -706,27 +712,27 @@ class _AdditionalHealthDetails extends StatelessWidget {
         value: metrics.stressLevel > 0
             ? _stressLabel(metrics.stressLevel)
             : '--',
-        color: AppColors.secondary,
+        color: context.semanticColors.secondary,
       ),
       _DetailRowData(
         icon: Icons.monitor_weight_rounded,
         label: 'BMI',
         value: dashboard.bmi > 0 ? dashboard.bmi.toStringAsFixed(1) : '--',
-        color: AppColors.warning,
+        color: context.semanticColors.warning,
       ),
       if (insightCount > 1)
         _DetailRowData(
           icon: Icons.auto_awesome_outlined,
           label: 'Nhận xét khác',
           value: '${insightCount - 1}',
-          color: AppColors.success,
+          color: context.semanticColors.success,
         ),
       if (recommendationCount > 1)
         _DetailRowData(
           icon: Icons.lightbulb_outline_rounded,
           label: 'Gợi ý khác',
           value: '${recommendationCount - 1}',
-          color: AppColors.primary,
+          color: context.semanticColors.primary,
         ),
     ];
 
@@ -781,7 +787,7 @@ class _DetailRow extends StatelessWidget {
         Text(
           data.value,
           style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.textPrimary,
+            color: context.semanticColors.textPrimary,
           ),
         ),
       ],
@@ -793,18 +799,15 @@ class _CompactExpansionPanel extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
-  const _CompactExpansionPanel({
-    required this.title,
-    required this.children,
-  });
+  const _CompactExpansionPanel({required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       child: ExpansionTile(
         maintainState: true,
@@ -820,8 +823,8 @@ class _CompactExpansionPanel extends StatelessWidget {
         ),
         shape: const Border(),
         collapsedShape: const Border(),
-        iconColor: AppColors.primary,
-        collapsedIconColor: AppColors.textMuted,
+        iconColor: context.semanticColors.primary,
+        collapsedIconColor: context.semanticColors.textMuted,
         title: Text(title, style: AppTextStyles.labelLarge),
         children: children,
       ),
@@ -841,14 +844,14 @@ class _CompactSurface extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.compactCardPadding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border(
           top: const BorderSide(color: AppColors.borderLight),
           right: const BorderSide(color: AppColors.borderLight),
           bottom: const BorderSide(color: AppColors.borderLight),
           left: BorderSide(
-            color: accentColor ?? AppColors.borderLight,
+            color: accentColor ?? context.semanticColors.borderLight,
             width: accentColor == null ? 1 : 3,
           ),
         ),
@@ -931,14 +934,14 @@ class _CompactEmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.compactCardPadding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: context.semanticColors.borderLight),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _TintedIcon(icon: icon, color: AppColors.primary),
+          _TintedIcon(icon: icon, color: context.semanticColors.primary),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -982,9 +985,9 @@ class _HealthInsightsStatusStrip extends StatelessWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primarySubtle,
+        color: context.semanticColors.primarySubtle,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: AppColors.primarySoft),
+        border: Border.all(color: context.semanticColors.primarySoft),
       ),
       child: Row(
         children: [
@@ -995,14 +998,11 @@ class _HealthInsightsStatusStrip extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           else
-            Icon(icon, size: 19, color: AppColors.primary),
+            Icon(icon, size: 19, color: context.semanticColors.primary),
           const SizedBox(width: AppSpacing.sm),
           Expanded(child: Text(message, style: AppTextStyles.bodySmall)),
           if (actionLabel != null && onAction != null)
-            TextButton(
-              onPressed: onAction,
-              child: Text(actionLabel!),
-            ),
+            TextButton(onPressed: onAction, child: Text(actionLabel!)),
         ],
       ),
     );
@@ -1060,7 +1060,7 @@ class _SkeletonBlock extends StatelessWidget {
       child: Container(
         height: height,
         decoration: BoxDecoration(
-          color: AppColors.borderLight,
+          color: context.semanticColors.borderLight,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
       ),
@@ -1082,9 +1082,9 @@ class _HealthInsightsErrorState extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 420),
           padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.semanticColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border.all(color: context.semanticColors.borderLight),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

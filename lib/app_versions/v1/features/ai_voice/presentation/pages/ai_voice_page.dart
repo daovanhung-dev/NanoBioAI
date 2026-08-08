@@ -90,11 +90,11 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
     final isListening = state.phase == AiVoicePhase.listening;
 
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.semanticColors.background,
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: AppColors.background,
+        backgroundColor: context.semanticColors.background,
         title: const Text('Trò chuyện bằng giọng nói'),
         actions: [
           IconButton(
@@ -124,7 +124,7 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
                       _statusText(state.phase),
                       textAlign: TextAlign.center,
                       style: AppTextStyles.heading3.copyWith(
-                        color: AppColors.textPrimary,
+                        color: context.semanticColors.textPrimary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -133,13 +133,15 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
                       'Chạm micro và nói một câu ngắn.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.semanticColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sectionSpacing),
                     AppStateSwitcher(
                       child: state.transcript.isEmpty
-                          ? const SizedBox.shrink(key: ValueKey('no-transcript'))
+                          ? const SizedBox.shrink(
+                              key: ValueKey('no-transcript'),
+                            )
                           : Column(
                               key: const ValueKey('transcript'),
                               children: [
@@ -176,7 +178,9 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
                           ? const SizedBox.shrink(key: ValueKey('no-error'))
                           : Padding(
                               key: ValueKey(state.errorMessage),
-                              padding: const EdgeInsets.only(top: AppSpacing.md),
+                              padding: const EdgeInsets.only(
+                                top: AppSpacing.md,
+                              ),
                               child: _VoiceError(message: state.errorMessage!),
                             ),
                     ),
@@ -194,8 +198,8 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
                           onTap: isListening
                               ? controller.stop
                               : state.isBusy
-                                  ? null
-                                  : controller.listenAndRespond,
+                              ? null
+                              : controller.listenAndRespond,
                           customBorder: const CircleBorder(),
                           child: AnimatedContainer(
                             duration: AppMotionScope.duration(
@@ -212,10 +216,11 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
                                   : AppColors.primary,
                               boxShadow: [
                                 BoxShadow(
-                                  color: (isListening
-                                          ? AppColors.error
-                                          : AppColors.primary)
-                                      .withValues(alpha: .22),
+                                  color:
+                                      (isListening
+                                              ? AppColors.error
+                                              : AppColors.primary)
+                                          .withValues(alpha: .22),
                                   blurRadius: state.isBusy ? 18 : 10,
                                   spreadRadius: state.isBusy ? 2 : 0,
                                 ),
@@ -262,7 +267,7 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
                       'Không đọc mật khẩu, thông tin tài chính hoặc dữ liệu quá nhạy cảm bằng giọng nói.',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.semanticColors.textSecondary,
                       ),
                     ),
                   ],
@@ -274,7 +279,6 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
       ),
     );
   }
-
 }
 
 class _NabiVoiceHero extends StatelessWidget {
@@ -334,9 +338,9 @@ class _VoiceMessageCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.semanticColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,7 +353,7 @@ class _VoiceMessageCard extends StatelessWidget {
                 child: Text(
                   title,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.textPrimary,
+                    color: context.semanticColors.textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -361,7 +365,7 @@ class _VoiceMessageCard extends StatelessWidget {
           Text(
             content,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textPrimary,
+              color: context.semanticColors.textPrimary,
               height: 1.4,
             ),
           ),
@@ -392,9 +396,7 @@ class _VoiceError extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.error,
-              ),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
             ),
           ),
         ],

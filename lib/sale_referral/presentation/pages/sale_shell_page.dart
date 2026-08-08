@@ -21,6 +21,7 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(saleStateProvider);
+    final colors = context.semanticColors;
 
     return AppStateSwitcher(
       child: state.when(
@@ -31,84 +32,84 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
         error: (_, __) => KeyedSubtree(
           key: const ValueKey<String>('sale-shell-error'),
           child: _SaleSupportPage(
-        title: 'Chưa mở được không gian cộng tác viên',
-        message:
-            'Hệ thống chưa kiểm tra được trạng thái cộng tác viên. Bạn thử làm mới lại.',
+            title: 'Chưa mở được không gian cộng tác viên',
+            message:
+                'Hệ thống chưa kiểm tra được trạng thái cộng tác viên. Bạn thử làm mới lại.',
             onRetry: _refreshAll,
           ),
         ),
         data: (saleState) {
-        if (!saleState.isActive) {
-          return KeyedSubtree(
-            key: ValueKey<String>(
-              'sale-shell-inactive-${saleState.status.name}',
+          if (!saleState.isActive) {
+            return KeyedSubtree(
+              key: ValueKey<String>(
+                'sale-shell-inactive-${saleState.status.name}',
+              ),
+              child: _SaleSupportPage(
+                title: _inactiveTitle(saleState.status),
+                message: _inactiveMessage(saleState.status),
+                onRetry: _refreshAll,
+              ),
+            );
+          }
+
+          if (!saleState.payoutProfileComplete) {
+            return KeyedSubtree(
+              key: const ValueKey<String>('sale-shell-payout-gate'),
+              child: _SalePayoutProfileGate(onSaved: _refreshAll),
+            );
+          }
+
+          return MedicalPageScaffold(
+            key: const ValueKey<String>('sale-shell-ready'),
+            backgroundColor: colors.background,
+            appBar: AppBar(
+              title: const Text('NanoBio Cộng tác viên'),
+              backgroundColor: colors.surface,
+              foregroundColor: colors.textPrimary,
+              elevation: 0,
+              actions: [
+                IconButton(
+                  tooltip: 'Làm mới',
+                  onPressed: _refreshAll,
+                  icon: const Icon(Icons.refresh_rounded),
+                ),
+              ],
             ),
-            child: _SaleSupportPage(
-              title: _inactiveTitle(saleState.status),
-              message: _inactiveMessage(saleState.status),
-              onRetry: _refreshAll,
+            body: IndexedStack(
+              index: _index,
+              children: [
+                _OverviewTab(state: saleState),
+                const _DirectCustomersTab(),
+                const _PointLedgerTab(),
+                _ConversionToolsTab(state: saleState),
+              ],
+            ),
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: _index,
+              onDestinationSelected: (value) {
+                AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                setState(() => _index = value);
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.space_dashboard_rounded),
+                  label: 'Tổng quan',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.group_rounded),
+                  label: 'Khách hàng',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.account_balance_wallet_rounded),
+                  label: 'Điểm',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.handyman_rounded),
+                  label: 'Công cụ',
+                ),
+              ],
             ),
           );
-        }
-
-        if (!saleState.payoutProfileComplete) {
-          return KeyedSubtree(
-            key: const ValueKey<String>('sale-shell-payout-gate'),
-            child: _SalePayoutProfileGate(onSaved: _refreshAll),
-          );
-        }
-
-        return MedicalPageScaffold(
-          key: const ValueKey<String>('sale-shell-ready'),
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            title: const Text('NanoBio Cộng tác viên'),
-            backgroundColor: AppColors.surface,
-            foregroundColor: AppColors.textPrimary,
-            elevation: 0,
-            actions: [
-              IconButton(
-                tooltip: 'Làm mới',
-                onPressed: _refreshAll,
-                icon: const Icon(Icons.refresh_rounded),
-              ),
-            ],
-          ),
-          body: IndexedStack(
-            index: _index,
-            children: [
-              _OverviewTab(state: saleState),
-              const _DirectCustomersTab(),
-              const _PointLedgerTab(),
-              _ConversionToolsTab(state: saleState),
-            ],
-          ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _index,
-            onDestinationSelected: (value) {
-              AppFeedbackService.instance.emit(AppFeedbackType.selection);
-              setState(() => _index = value);
-            },
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.space_dashboard_rounded),
-                label: 'Tổng quan',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.group_rounded),
-                label: 'Khách hàng',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.account_balance_wallet_rounded),
-                label: 'Điểm',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.handyman_rounded),
-                label: 'Công cụ',
-              ),
-            ],
-          ),
-        );
         },
       ),
     );
@@ -188,12 +189,13 @@ class _SalePayoutProfileGateState
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: const Text('Hồ sơ chi trả cộng tác viên'),
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.textPrimary,
         elevation: 0,
         actions: [
           IconButton(
@@ -209,7 +211,7 @@ class _SalePayoutProfileGateState
             constraints: const BoxConstraints(maxWidth: 560),
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.cardPadding),
-              decoration: _panelDecoration(),
+              decoration: _panelDecoration(colors),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -570,15 +572,15 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
               ),
               error: (_, __) => const _EmptySaleState(
                 key: ValueKey<String>('sale-conversion-error'),
-              title: 'Chưa tải được cấu hình quy đổi',
-              message: 'Bạn thử làm mới lại sau.',
-            ),
+                title: 'Chưa tải được cấu hình quy đổi',
+                message: 'Bạn thử làm mới lại sau.',
+              ),
               data: (data) => _ConversionRequestPanel(
                 key: const ValueKey<String>('sale-conversion-ready'),
                 dashboard: data,
-              pointController: _pointController,
-              submitting: _submitting,
-              onChanged: () => setState(() => _pendingIdempotencyKey = null),
+                pointController: _pointController,
+                submitting: _submitting,
+                onChanged: () => setState(() => _pendingIdempotencyKey = null),
                 onSubmit: _submitConversion,
               ),
             ),
@@ -664,10 +666,11 @@ class _ReferralCodePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(),
+      decoration: _panelDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -675,23 +678,21 @@ class _ReferralCodePanel extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             referralCode ?? 'Chưa có mã đang hoạt động',
-            style: AppTextStyles.heading3.copyWith(color: AppColors.primary),
+            style: AppTextStyles.heading3.copyWith(color: colors.primary),
           ),
           const SizedBox(height: AppSpacing.md),
           FilledButton.icon(
             onPressed: referralCode == null
                 ? null
                 : () async {
-                    AppFeedbackService.instance.emit(
-                      AppFeedbackType.selection,
-                    );
-                    await Clipboard.setData(
-                      ClipboardData(text: referralCode!),
-                    );
+                    AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                    await Clipboard.setData(ClipboardData(text: referralCode!));
                     if (!context.mounted) return;
                     AppFeedbackService.instance.emit(AppFeedbackType.success);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Đã sao chép mã giới thiệu.')),
+                      const SnackBar(
+                        content: Text('Đã sao chép mã giới thiệu.'),
+                      ),
                     );
                   },
             icon: const Icon(Icons.copy_rounded),
@@ -722,6 +723,7 @@ class _ConversionRequestPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final requested = _parseInt(pointController.text);
+    final colors = context.semanticColors;
     final money = dashboard.conversionPolicy.estimateMoneyCents(requested);
     final canSubmit =
         dashboard.conversionPolicy.canRequest(dashboard.availablePointCents) &&
@@ -731,7 +733,7 @@ class _ConversionRequestPanel extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(),
+      decoration: _panelDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -851,11 +853,13 @@ class _HeroPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: colors.primary,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Column(
@@ -864,7 +868,7 @@ class _HeroPanel extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.heading2.copyWith(
-              color: AppColors.surface,
+              color: onPrimary,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -872,7 +876,7 @@ class _HeroPanel extends StatelessWidget {
           Text(
             subtitle,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.surface.withValues(alpha: .9),
+              color: onPrimary.withValues(alpha: .9),
               height: 1.4,
             ),
           ),
@@ -895,13 +899,14 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(),
+      decoration: _panelDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.primary),
+          Icon(icon, color: colors.primary),
           const Spacer(),
           Text(
             value,
@@ -930,13 +935,14 @@ class _ListTilePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(),
+      decoration: _panelDecoration(colors),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primary),
+          Icon(icon, color: colors.primary),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -966,17 +972,14 @@ class _EmptySaleState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.insights_rounded,
-              color: AppColors.textHint,
-              size: 44,
-            ),
+            Icon(Icons.insights_rounded, color: colors.textHint, size: 44),
             const SizedBox(height: AppSpacing.md),
             Text(
               title,
@@ -1013,9 +1016,9 @@ class _SaleLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MedicalPageScaffold(
-      backgroundColor: AppColors.background,
-      body: Center(child: CircularProgressIndicator()),
+    return MedicalPageScaffold(
+      backgroundColor: context.semanticColors.background,
+      body: const Center(child: CircularProgressIndicator()),
     );
   }
 }
@@ -1033,8 +1036,9 @@ class _SaleSupportPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.semanticColors;
     return MedicalPageScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -1047,12 +1051,10 @@ class _SaleSupportPage extends StatelessWidget {
                   Container(
                     width: 60,
                     height: 60,
-                    decoration: AppDecoration.circle(
-                      color: AppColors.primarySoft,
-                    ),
-                    child: const Icon(
+                    decoration: AppDecoration.circle(color: colors.primarySoft),
+                    child: Icon(
                       Icons.support_agent_rounded,
-                      color: AppColors.primary,
+                      color: colors.primary,
                       size: 28,
                     ),
                   ),
@@ -1084,11 +1086,11 @@ class _SaleSupportPage extends StatelessWidget {
   }
 }
 
-BoxDecoration _panelDecoration() {
+BoxDecoration _panelDecoration(AppSemanticColors colors) {
   return BoxDecoration(
-    color: AppColors.surface,
+    color: colors.surface,
     borderRadius: BorderRadius.circular(AppRadius.sm),
-    border: Border.all(color: AppColors.borderLight),
+    border: Border.all(color: colors.borderLight),
   );
 }
 

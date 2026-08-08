@@ -39,6 +39,7 @@ class HealthChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = activeColor ?? NabiPalette.greenPrimary;
+    final colors = context.semanticColors;
     return Semantics(
       button: true,
       selected: selected,
@@ -55,17 +56,23 @@ class HealthChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.lg),
             child: AnimatedContainer(
               duration: AppDuration.ripple,
-              padding: padding ??
-                  const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+              padding:
+                  padding ??
+                  const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.sm,
+                  ),
               decoration: BoxDecoration(
                 gradient: selected
                     ? (gradient ??
-                        (activeColor == null
-                            ? NabiPalette.selection
-                            : LinearGradient(colors: [color, color])))
-                    : NabiPalette.card,
+                          (activeColor == null
+                              ? NabiPalette.selection
+                              : LinearGradient(colors: [color, color])))
+                    : LinearGradient(
+                        colors: [colors.card, colors.inputBackground],
+                      ),
                 border: Border.all(
-                  color: selected ? color : NabiPalette.line,
+                  color: selected ? color : colors.border,
                   width: selected ? 1.3 : 1,
                 ),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -87,27 +94,42 @@ class HealthChip extends StatelessWidget {
                     if (emoji != null)
                       Text(emoji!, style: const TextStyle(fontSize: 18))
                     else if (icon != null)
-                      Icon(icon, size: 18, color: selected ? AppColors.surface : color),
-                    if (emoji != null || icon != null) const SizedBox(width: AppSpacing.sm),
+                      Icon(
+                        icon,
+                        size: 18,
+                        color: selected ? AppColors.textInverse : color,
+                      ),
+                    if (emoji != null || icon != null)
+                      const SizedBox(width: AppSpacing.sm),
                     Flexible(
                       child: Text(
                         label,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.labelMedium.copyWith(
-                          color: selected ? AppColors.surface : NabiPalette.ink,
+                          color: selected
+                              ? AppColors.textInverse
+                              : colors.textPrimary,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0,
                         ),
                       ),
                     ),
-                    if (badge != null) ...[const SizedBox(width: AppSpacing.xs), badge!],
-                    if (trailing != null) ...[const SizedBox(width: AppSpacing.xs), trailing!],
+                    if (badge != null) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      badge!,
+                    ],
+                    if (trailing != null) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      trailing!,
+                    ],
                     const SizedBox(width: AppSpacing.tiny),
                     Icon(
-                      selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                      selected
+                          ? Icons.check_circle_rounded
+                          : Icons.circle_outlined,
                       size: 19,
-                      color: selected ? AppColors.surface : color,
+                      color: selected ? AppColors.textInverse : color,
                     ),
                   ],
                 ),
