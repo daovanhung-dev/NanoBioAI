@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nhiệm vụ hôm nay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#dee4e1",
+                      "secondary": "#1d6a51",
+                      "tertiary": "#006a43",
+                      "error-container": "#ffdad6",
+                      "on-surface": "#171d1b",
+                      "mint-surface": "#EAF9F1",
+                      "surface-container-high": "#e4e9e6",
+                      "calm-blue": "#58B9E8",
+                      "focus-ring": "#68D9A5",
+                      "surface-container": "#eaefec",
+                      "on-primary-container": "#f6fff6",
+                      "on-tertiary-fixed": "#002112",
+                      "primary-fixed-dim": "#62dda3",
+                      "primary-fixed": "#7ff9be",
+                      "outline-variant": "#bccabf",
+                      "surface-dim": "#d6dbd8",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#002113",
+                      "border-soft": "#D9E9E1",
+                      "text-muted": "#8A9B94",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed-variant": "#005235",
+                      "surface-tint": "#006c48",
+                      "on-error": "#ffffff",
+                      "on-tertiary-container": "#f6fff6",
+                      "on-secondary-container": "#226f55",
+                      "warning": "#B7791F",
+                      "text-secondary": "#60766E",
+                      "on-secondary-fixed": "#002116",
+                      "on-tertiary": "#ffffff",
+                      "secondary-container": "#a4efce",
+                      "secondary-fixed-dim": "#8bd5b6",
+                      "surface-bright": "#f5faf7",
+                      "on-background": "#171d1b",
+                      "care-coral": "#FF7D75",
+                      "inverse-on-surface": "#edf2ef",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "primary-soft": "#DDF6E9",
+                      "info": "#247CA8",
+                      "success": "#14885F",
+                      "primary": "#006a46",
+                      "inverse-surface": "#2c3230",
+                      "surface-container-highest": "#dee4e1",
+                      "error": "#C64A4A",
+                      "tertiary-container": "#008656",
+                      "primary-container": "#008559",
+                      "text-primary": "#12352A",
+                      "tertiary-fixed-dim": "#50df9c",
+                      "inverse-primary": "#62dda3",
+                      "tertiary-fixed": "#70fcb7",
+                      "background": "#f5faf7",
+                      "energy-yellow": "#FFC857",
+                      "personal-purple": "#8B7CF6",
+                      "on-tertiary-fixed-variant": "#005233",
+                      "on-surface-variant": "#3d4a42",
+                      "surface": "#f5faf7",
+                      "secondary-fixed": "#a7f2d1",
+                      "outline": "#6d7a71",
+                      "on-primary": "#ffffff",
+                      "surface-container-low": "#f0f5f2"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "md": "16px",
+                      "sm": "8px",
+                      "xs": "4px",
+                      "xxs": "2px",
+                      "section-gap": "24px",
+                      "page-padding": "16px",
+                      "lg": "24px",
+                      "card-padding": "16px"
+              },
+              "fontFamily": {
+                      "body-base": ["Roboto"],
+                      "cta": ["Roboto"],
+                      "section-title": ["Roboto"],
+                      "body-sm": ["Roboto"],
+                      "display-hero": ["Roboto"],
+                      "label-chip": ["Roboto"],
+                      "screen-title": ["Roboto"]
+              },
+              "fontSize": {
+                      "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "cta": ["16px", {"lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600"}],
+                      "section-title": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "21px", "fontWeight": "400"}],
+                      "display-hero": ["32px", {"lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700"}],
+                      "label-chip": ["13px", {"lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500"}],
+                      "screen-title": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700"}]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body { background-color: #F6FBF8; }
+        .bento-card {
+            background-color: #FFFFFF;
+            border: 1px solid #D9E9E1;
+            box-shadow: 0 4px 20px rgba(20, 163, 111, 0.08);
+            border-radius: 1.25rem; /* 20px */
+            padding: 1rem;
+        }
+        .bento-card-completed {
+            background-color: #EAF9F1;
+            border: 1px solid transparent;
+            opacity: 0.8;
+        }
+        .shimmer {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-base text-on-surface pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button aria-label="Go back" class="flex items-center justify-center p-2 rounded-full hover:opacity-80 transition-opacity text-primary dark:text-primary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim">NaBi Wellness</h1>
+<div class="w-10 h-10 rounded-full bg-mint-surface overflow-hidden border border-border-soft flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="face">face</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-page-padding max-w-md mx-auto min-h-screen flex flex-col gap-section-gap">
+<!-- Header Section with Refresh -->
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-display-hero text-display-hero text-text-primary">Hôm nay</h2>
+<p class="font-body-base text-body-base text-text-secondary mt-1">Hoàn thành 3/5 nhiệm vụ</p>
+</div>
+<button aria-label="Làm mới" class="w-10 h-10 rounded-full bg-mint-surface text-primary flex items-center justify-center hover:bg-primary-soft transition-colors shadow-sm" onclick="toggleState()">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+</button>
+</div>
+<!-- Progress Ring (Bento style) -->
+<div class="bento-card flex items-center gap-4">
+<div class="relative w-16 h-16 flex-shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+<!-- Background Circle -->
+<path class="text-surface-variant" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-width="3"></path>
+<!-- Progress Circle -->
+<path class="text-primary transition-all duration-1000 ease-out" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="60, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="font-section-title text-section-title text-primary">60%</span>
+</div>
+</div>
+<div>
+<h3 class="font-section-title text-section-title text-text-primary">Tuyệt vời!</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">Bạn đang đi đúng hướng để đạt mục tiêu sức khỏe hôm nay.</p>
+</div>
+</div>
+<!-- Tasks List (Active State) -->
+<div class="flex flex-col gap-4" id="state-active">
+<!-- Pending Task -->
+<div class="bento-card flex gap-4 items-start relative overflow-hidden group hover:-translate-y-1 transition-transform duration-200">
+<div class="w-2 rounded-full bg-energy-yellow absolute left-0 top-4 bottom-4"></div>
+<div class="pl-2 flex-grow">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-energy-yellow text-xl" data-icon="water_drop">water_drop</span>
+<span class="font-label-chip text-label-chip text-text-secondary">08:00 - 09:00</span>
+</div>
+<button class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center text-transparent hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
+</button>
+</div>
+<h3 class="font-section-title text-section-title text-text-primary">Uống nước buổi sáng</h3>
+<p class="font-body-sm text-body-sm text-text-muted mt-1">1 ly nước ấm để đánh thức cơ thể.</p>
+</div>
+</div>
+<!-- Pending Task -->
+<div class="bento-card flex gap-4 items-start relative overflow-hidden group hover:-translate-y-1 transition-transform duration-200">
+<div class="w-2 rounded-full bg-calm-blue absolute left-0 top-4 bottom-4"></div>
+<div class="pl-2 flex-grow">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-calm-blue text-xl" data-icon="directions_walk">directions_walk</span>
+<span class="font-label-chip text-label-chip text-text-secondary">17:00 - 18:00</span>
+</div>
+<button class="w-8 h-8 rounded-full border-2 border-outline-variant flex items-center justify-center text-transparent hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
+</button>
+</div>
+<h3 class="font-section-title text-section-title text-text-primary">Đi bộ nhẹ nhàng</h3>
+<p class="font-body-sm text-body-sm text-text-muted mt-1">30 phút tại công viên gần nhà.</p>
+</div>
+</div>
+<!-- Completed Task -->
+<div class="bento-card bento-card-completed flex gap-4 items-start relative overflow-hidden">
+<div class="w-2 rounded-full bg-success absolute left-0 top-4 bottom-4"></div>
+<div class="pl-2 flex-grow opacity-60">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-success text-xl" data-icon="restaurant">restaurant</span>
+<span class="font-label-chip text-label-chip text-text-secondary line-through">07:00 - 07:30</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-success text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
+</div>
+</div>
+<h3 class="font-section-title text-section-title text-text-primary line-through">Bữa sáng dinh dưỡng</h3>
+<p class="font-body-sm text-body-sm text-text-muted mt-1">Bột yến mạch và trái cây.</p>
+</div>
+</div>
+</div>
+<!-- Loading State (Hidden by default) -->
+<div class="hidden flex flex-col gap-4" id="state-loading">
+<div class="bento-card shimmer flex gap-4 items-start">
+<div class="w-12 h-12 rounded-full bg-mint-surface"></div>
+<div class="flex-grow space-y-3 pt-2">
+<div class="h-4 bg-mint-surface rounded w-3/4"></div>
+<div class="h-3 bg-mint-surface rounded w-1/2"></div>
+</div>
+</div>
+<div class="bento-card shimmer flex gap-4 items-start">
+<div class="w-12 h-12 rounded-full bg-mint-surface"></div>
+<div class="flex-grow space-y-3 pt-2">
+<div class="h-4 bg-mint-surface rounded w-3/4"></div>
+<div class="h-3 bg-mint-surface rounded w-1/2"></div>
+</div>
+</div>
+</div>
+<!-- Empty/Success State (Hidden by default) -->
+<div class="hidden flex flex-col items-center justify-center py-12 text-center" id="state-empty">
+<div class="w-32 h-32 rounded-full bg-primary-soft flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-6xl text-primary" data-icon="celebration">celebration</span>
+</div>
+<h3 class="font-display-hero text-display-hero text-text-primary mb-2">Hoàn hảo!</h3>
+<p class="font-body-base text-body-base text-text-secondary mb-6 px-4">Bạn đã hoàn thành tất cả nhiệm vụ sức khỏe trong ngày. Hãy dành thời gian thư giãn nhé!</p>
+<button class="bg-gradient-to-r from-[#0F8E62] to-[#32C789] text-white font-cta text-cta py-3 px-8 rounded-full shadow-[0_8px_20px_rgba(20,163,111,0.16)] hover:opacity-90 transition-opacity">
+                Xem thống kê
+            </button>
+</div>
+<!-- Error State (Hidden by default) -->
+<div class="hidden flex flex-col items-center justify-center py-12 text-center" id="state-error">
+<div class="w-24 h-24 rounded-full bg-error-container flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-5xl text-error" data-icon="cloud_off">cloud_off</span>
+</div>
+<h3 class="font-section-title text-section-title text-text-primary mb-2">Không thể tải dữ liệu</h3>
+<p class="font-body-base text-body-base text-text-secondary mb-6 px-4">Vui lòng kiểm tra kết nối mạng và thử lại.</p>
+<button class="bg-mint-surface border border-primary text-primary font-cta text-cta py-3 px-8 rounded-full hover:bg-primary-soft transition-colors" onclick="toggleState()">
+                Thử lại
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)] md:hidden">
+<div class="flex justify-around items-center px-4 pb-safe pt-2 min-h-[64px]">
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-chip text-label-chip">Trang chủ</span>
+</a>
+<!-- Active Tab -->
+<a class="flex flex-col items-center justify-center bg-primary-soft dark:bg-on-primary-fixed-variant text-primary dark:text-primary-fixed rounded-full px-4 py-1 scale-[0.975] transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip">Sức khỏe</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="face">face</span>
+<span class="font-label-chip text-label-chip">Nabi</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-chip text-label-chip">Nhật ký</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-chip text-label-chip">Hồ sơ</span>
+</a>
+</div>
+</nav>
+<script>
+        // Simple state toggler for demonstration purposes
+        let currentState = 0;
+        const states = ['active', 'loading', 'empty', 'error'];
+        
+        function toggleState() {
+            // Hide all states
+            states.forEach(s => {
+                document.getElementById('state-' + s).classList.add('hidden');
+            });
+            
+            // Show next state
+            currentState = (currentState + 1) % states.length;
+            
+            if(states[currentState] === 'loading') {
+                document.getElementById('state-loading').classList.remove('hidden');
+                // Auto transition from loading to next state after 1.5s
+                setTimeout(toggleState, 1500);
+            } else {
+                document.getElementById('state-' + states[currentState]).classList.remove('hidden');
+            }
+        }
+    </script>
+</body></html>

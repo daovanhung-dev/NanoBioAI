@@ -1,0 +1,281 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Thông tin bổ sung - Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-variant": "#dee4e1",
+                        "secondary": "#1d6a51",
+                        "tertiary": "#006a43",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#171d1b",
+                        "mint-surface": "#EAF9F1",
+                        "surface-container-high": "#e4e9e6",
+                        "calm-blue": "#58B9E8",
+                        "focus-ring": "#68D9A5",
+                        "surface-container": "#eaefec",
+                        "on-primary-container": "#f6fff6",
+                        "on-tertiary-fixed": "#002112",
+                        "primary-fixed-dim": "#62dda3",
+                        "primary-fixed": "#7ff9be",
+                        "outline-variant": "#bccabf",
+                        "surface-dim": "#d6dbd8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#002113",
+                        "border-soft": "#D9E9E1",
+                        "text-muted": "#8A9B94",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#005235",
+                        "surface-tint": "#006c48",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#f6fff6",
+                        "on-secondary-container": "#226f55",
+                        "warning": "#B7791F",
+                        "text-secondary": "#60766E",
+                        "on-secondary-fixed": "#002116",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#a4efce",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "surface-bright": "#f5faf7",
+                        "on-background": "#171d1b",
+                        "care-coral": "#FF7D75",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-soft": "#DDF6E9",
+                        "info": "#247CA8",
+                        "success": "#14885F",
+                        "primary": "#006a46",
+                        "inverse-surface": "#2c3230",
+                        "surface-container-highest": "#dee4e1",
+                        "error": "#C64A4A",
+                        "tertiary-container": "#008656",
+                        "primary-container": "#008559",
+                        "text-primary": "#12352A",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "inverse-primary": "#62dda3",
+                        "tertiary-fixed": "#70fcb7",
+                        "background": "#f5faf7",
+                        "energy-yellow": "#FFC857",
+                        "personal-purple": "#8B7CF6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "on-surface-variant": "#3d4a42",
+                        "surface": "#f5faf7",
+                        "secondary-fixed": "#a7f2d1",
+                        "outline": "#6d7a71",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f0f5f2"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        xl: "32px",
+                        md: "16px",
+                        sm: "8px",
+                        xs: "4px",
+                        xxs: "2px",
+                        "section-gap": "24px",
+                        "page-padding": "16px",
+                        lg: "24px",
+                        "card-padding": "16px"
+                    },
+                    fontFamily: {
+                        "body-base": ["Roboto"],
+                        cta: ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "screen-title": ["Roboto"]
+                    },
+                    fontSize: {
+                        "body-base": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        cta: ["16px", { lineHeight: "20px", letterSpacing: "0.2px", fontWeight: "600" }],
+                        "section-title": ["20px", { lineHeight: "26px", letterSpacing: "-0.2px", fontWeight: "600" }],
+                        "body-sm": ["14px", { lineHeight: "21px", fontWeight: "400" }],
+                        "display-hero": ["32px", { lineHeight: "38px", letterSpacing: "-0.6px", fontWeight: "700" }],
+                        "label-chip": ["13px", { lineHeight: "18px", letterSpacing: "0.1px", fontWeight: "500" }],
+                        "screen-title": ["26px", { lineHeight: "32px", letterSpacing: "-0.4px", fontWeight: "700" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #D9E9E1;
+            border-radius: 4px;
+        }
+        
+        .bento-card-active {
+            border-color: #006a46;
+            background-color: #EAF9F1;
+            box-shadow: 0 4px 12px rgba(20, 163, 111, 0.12);
+        }
+        
+        .bento-card-active .icon-container {
+            background-color: #006a46;
+            color: #ffffff;
+        }
+        
+        .bento-card-active .check-indicator {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-base text-on-surface antialiased min-h-screen flex flex-col items-center justify-center p-page-padding md:p-section-gap">
+<!-- Top Navigation (Onboarding flow - no standard TopAppBar) -->
+<header class="w-full max-w-md mx-auto flex items-center justify-between py-4 mb-section-gap">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-text-primary">arrow_back</span>
+</button>
+<div class="flex gap-2 items-center">
+<div class="w-2 h-2 rounded-full bg-border-soft"></div>
+<div class="w-2 h-2 rounded-full bg-border-soft"></div>
+<div class="w-8 h-2 rounded-full bg-primary"></div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-primary font-cta text-cta hover:opacity-80 transition-opacity">
+            Bỏ qua
+        </button>
+</header>
+<main class="w-full max-w-md mx-auto flex-1 flex flex-col custom-scrollbar pb-24">
+<!-- Header Content -->
+<div class="mb-section-gap text-center">
+<h1 class="font-display-hero text-display-hero text-text-primary mb-2">Thêm một chút chi tiết</h1>
+<p class="font-body-base text-body-base text-text-secondary">Để Nabi có thể thiết kế lộ trình chăm sóc phù hợp nhất, bạn có lưu ý gì đặc biệt không?</p>
+</div>
+<!-- Content Area -->
+<div class="space-y-section-gap flex-1">
+<!-- Section 1: Dị ứng -->
+<section>
+<h2 class="font-section-title text-section-title text-text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-care-coral" style="font-variation-settings: 'FILL' 1;">warning</span>
+                    Dị ứng &amp; Mẫn cảm
+                </h2>
+<div class="grid grid-cols-2 gap-4">
+<!-- Option 1 -->
+<button class="group relative flex flex-col items-center p-card-padding bg-surface-container-lowest border border-border-soft rounded-xl transition-all duration-200 hover:border-primary-soft hover:shadow-sm bento-card-active text-left" onclick="this.classList.toggle('bento-card-active')">
+<div class="absolute top-3 right-3 w-5 h-5 rounded-full border border-border-soft flex items-center justify-center bg-white z-10">
+<span class="material-symbols-outlined text-white text-[14px] check-indicator opacity-1 scale-100 transition-all duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="w-12 h-12 rounded-full bg-mint-surface text-primary flex items-center justify-center mb-3 icon-container transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">set_meal</span>
+</div>
+<span class="font-cta text-cta text-text-primary text-center">Hải sản</span>
+</button>
+<!-- Option 2 -->
+<button class="group relative flex flex-col items-center p-card-padding bg-surface-container-lowest border border-border-soft rounded-xl transition-all duration-200 hover:border-primary-soft hover:shadow-sm text-left" onclick="this.classList.toggle('bento-card-active')">
+<div class="absolute top-3 right-3 w-5 h-5 rounded-full border border-border-soft flex items-center justify-center bg-white z-10">
+<span class="material-symbols-outlined text-white text-[14px] check-indicator opacity-0 scale-50 transition-all duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="w-12 h-12 rounded-full bg-mint-surface text-primary flex items-center justify-center mb-3 icon-container transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">egg_alt</span>
+</div>
+<span class="font-cta text-cta text-text-primary text-center">Trứng &amp; Sữa</span>
+</button>
+<!-- Option 3 -->
+<button class="group relative flex flex-col items-center p-card-padding bg-surface-container-lowest border border-border-soft rounded-xl transition-all duration-200 hover:border-primary-soft hover:shadow-sm text-left" onclick="this.classList.toggle('bento-card-active')">
+<div class="absolute top-3 right-3 w-5 h-5 rounded-full border border-border-soft flex items-center justify-center bg-white z-10">
+<span class="material-symbols-outlined text-white text-[14px] check-indicator opacity-0 scale-50 transition-all duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="w-12 h-12 rounded-full bg-mint-surface text-primary flex items-center justify-center mb-3 icon-container transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">grass</span>
+</div>
+<span class="font-cta text-cta text-text-primary text-center">Phấn hoa</span>
+</button>
+<!-- Option 4 -->
+<button class="group relative flex flex-col items-center p-card-padding bg-surface-container-lowest border border-border-soft rounded-xl transition-all duration-200 hover:border-primary-soft hover:shadow-sm text-left" onclick="this.classList.toggle('bento-card-active')">
+<div class="absolute top-3 right-3 w-5 h-5 rounded-full border border-border-soft flex items-center justify-center bg-white z-10">
+<span class="material-symbols-outlined text-white text-[14px] check-indicator opacity-0 scale-50 transition-all duration-200" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="w-12 h-12 rounded-full bg-mint-surface text-primary flex items-center justify-center mb-3 icon-container transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">cruelty_free</span>
+</div>
+<span class="font-cta text-cta text-text-primary text-center">Lông thú nuôi</span>
+</button>
+</div>
+</section>
+<!-- Section 2: Chế độ ăn -->
+<section>
+<h2 class="font-section-title text-section-title text-text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-energy-yellow" style="font-variation-settings: 'FILL' 1;">restaurant_menu</span>
+                    Chế độ ăn uống
+                </h2>
+<div class="flex flex-col gap-3">
+<!-- Option 1 -->
+<label class="flex items-center p-4 bg-surface-container-lowest border border-border-soft rounded-xl cursor-pointer hover:border-primary-soft transition-colors has-[:checked]:border-primary has-[:checked]:bg-mint-surface has-[:checked]:shadow-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary">eco</span>
+</div>
+<div class="flex-1">
+<span class="block font-cta text-cta text-text-primary">Thuần chay (Vegan)</span>
+<span class="block font-body-sm text-body-sm text-text-secondary mt-1">Không sử dụng bất kỳ sản phẩm nào từ động vật.</span>
+</div>
+<input class="ml-4 w-5 h-5 rounded border-outline-variant text-primary focus:ring-focus-ring" type="checkbox">
+</label>
+<!-- Option 2 -->
+<label class="flex items-center p-4 bg-surface-container-lowest border border-border-soft rounded-xl cursor-pointer hover:border-primary-soft transition-colors has-[:checked]:border-primary has-[:checked]:bg-mint-surface has-[:checked]:shadow-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary">bakery_dining</span>
+</div>
+<div class="flex-1">
+<span class="block font-cta text-cta text-text-primary">Không Gluten</span>
+<span class="block font-body-sm text-body-sm text-text-secondary mt-1">Tránh lúa mì và các loại ngũ cốc chứa gluten.</span>
+</div>
+<input checked="" class="ml-4 w-5 h-5 rounded border-outline-variant text-primary focus:ring-focus-ring" type="checkbox">
+</label>
+<!-- Option 3 -->
+<label class="flex items-center p-4 bg-surface-container-lowest border border-border-soft rounded-xl cursor-pointer hover:border-primary-soft transition-colors has-[:checked]:border-primary has-[:checked]:bg-mint-surface has-[:checked]:shadow-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary">water_drop</span>
+</div>
+<div class="flex-1">
+<span class="block font-cta text-cta text-text-primary">Keto</span>
+<span class="block font-body-sm text-body-sm text-text-secondary mt-1">Chế độ ăn ít carbohydrate, nhiều chất béo tốt.</span>
+</div>
+<input class="ml-4 w-5 h-5 rounded border-outline-variant text-primary focus:ring-focus-ring" type="checkbox">
+</label>
+</div>
+</section>
+<!-- Custom Input -->
+<section>
+<div class="relative mt-2">
+<textarea class="w-full bg-surface-container-lowest border border-border-soft rounded-xl px-4 py-3 font-body-base text-body-base text-text-primary placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-focus-ring transition-shadow min-h-[100px] resize-none" placeholder="Bạn có lưu ý gì khác muốn chia sẻ với Nabi không? (Ví dụ: Đang dùng thuốc, chấn thương cũ...)"></textarea>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Fixed Action -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-md p-page-padding border-t border-border-soft z-50 pb-safe">
+<div class="max-w-md mx-auto">
+<button class="w-full bg-gradient-to-r from-[#0F8E62] to-[#32C789] text-white font-cta text-cta py-4 rounded-xl shadow-[0_8px_20px_rgba(20,163,111,0.16)] hover:opacity-90 transition-opacity active:scale-[0.98] flex items-center justify-center gap-2">
+                Hoàn tất
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

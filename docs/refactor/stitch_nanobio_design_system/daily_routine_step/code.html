@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Daily Routine - Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#dee4e1",
+                        "secondary": "#1d6a51",
+                        "tertiary": "#006a43",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#171d1b",
+                        "mint-surface": "#EAF9F1",
+                        "surface-container-high": "#e4e9e6",
+                        "calm-blue": "#58B9E8",
+                        "focus-ring": "#68D9A5",
+                        "surface-container": "#eaefec",
+                        "on-primary-container": "#f6fff6",
+                        "on-tertiary-fixed": "#002112",
+                        "primary-fixed-dim": "#62dda3",
+                        "primary-fixed": "#7ff9be",
+                        "outline-variant": "#bccabf",
+                        "surface-dim": "#d6dbd8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#002113",
+                        "border-soft": "#D9E9E1",
+                        "text-muted": "#8A9B94",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#005235",
+                        "surface-tint": "#006c48",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#f6fff6",
+                        "on-secondary-container": "#226f55",
+                        "warning": "#B7791F",
+                        "text-secondary": "#60766E",
+                        "on-secondary-fixed": "#002116",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#a4efce",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "surface-bright": "#f5faf7",
+                        "on-background": "#171d1b",
+                        "care-coral": "#FF7D75",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-soft": "#DDF6E9",
+                        "info": "#247CA8",
+                        "success": "#14885F",
+                        "primary": "#006a46",
+                        "inverse-surface": "#2c3230",
+                        "surface-container-highest": "#dee4e1",
+                        "error": "#C64A4A",
+                        "tertiary-container": "#008656",
+                        "primary-container": "#008559",
+                        "text-primary": "#12352A",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "inverse-primary": "#62dda3",
+                        "tertiary-fixed": "#70fcb7",
+                        "background": "#f5faf7",
+                        "energy-yellow": "#FFC857",
+                        "personal-purple": "#8B7CF6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "on-surface-variant": "#3d4a42",
+                        "surface": "#f5faf7",
+                        "secondary-fixed": "#a7f2d1",
+                        "outline": "#6d7a71",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f0f5f2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "page-padding": "16px",
+                        "lg": "24px",
+                        "card-padding": "16px"
+                    },
+                    "fontFamily": {
+                        "body-base": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "screen-title": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #F6FBF8; /* page-background Level 0 */
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Hide scrollbar for clean UI but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        .time-picker-gradient {
+            background: linear-gradient(180deg, 
+                rgba(255,255,255,1) 0%, 
+                rgba(255,255,255,0) 25%, 
+                rgba(255,255,255,0) 75%, 
+                rgba(255,255,255,1) 100%);
+            pointer-events: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface font-body-base antialiased min-h-screen flex flex-col items-center justify-center bg-background p-page-padding">
+<!-- Main Container -->
+<main class="w-full max-w-md bg-surface-container-lowest rounded-[32px] overflow-hidden shadow-[0_8px_24px_rgba(20,163,111,0.08)] flex flex-col h-[85vh] max-h-[850px] relative border border-border-soft">
+<!-- Header -->
+<header class="pt-10 pb-6 px-8 text-center shrink-0">
+<h1 class="font-display-hero text-display-hero text-primary mb-2">Nhịp điệu của bạn</h1>
+<p class="font-body-base text-body-base text-text-secondary">Hãy cho Nabi biết khung giờ sinh hoạt thường ngày để thiết kế lộ trình phù hợp nhất.</p>
+</header>
+<!-- Content Area -->
+<div class="flex-1 overflow-y-auto px-6 pb-24 no-scrollbar relative flex flex-col gap-section-gap">
+<!-- Timeline Axis Line -->
+<div class="absolute left-[39px] top-6 bottom-6 w-0.5 bg-border-soft rounded-full"></div>
+<!-- Wake Up Time Block -->
+<div class="relative pl-16">
+<!-- Timeline Dot -->
+<div class="absolute left-[-2px] top-6 w-8 h-8 rounded-full bg-mint-surface border-[3px] border-surface-container-lowest flex items-center justify-center shadow-sm z-10">
+<span class="material-symbols-outlined text-energy-yellow" data-icon="light_mode" data-weight="fill" style="font-size: 18px;">light_mode</span>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-5 shadow-[0_4px_16px_rgba(20,163,111,0.04)] border border-border-soft">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-section-title text-section-title text-text-primary">Thức dậy</h3>
+<span class="font-label-chip text-label-chip text-text-muted bg-surface py-1 px-3 rounded-full">Sáng</span>
+</div>
+<!-- Time Picker (Wake Up) -->
+<div class="h-40 relative flex justify-center items-center bg-mint-surface/30 rounded-xl overflow-hidden">
+<!-- Selection Highlight -->
+<div class="absolute top-1/2 left-0 right-0 h-12 -mt-6 bg-mint-surface border-y border-primary/20 z-0"></div>
+<div class="flex gap-8 relative z-10 h-full w-full justify-center">
+<!-- Hours -->
+<div class="h-full w-16 overflow-y-scroll no-scrollbar snap-y snap-mandatory py-[60px] text-center" id="wake-hour">
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">05</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[28px] text-primary transition-all">06</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">07</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">08</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">09</div>
+</div>
+<!-- Separator -->
+<div class="h-full flex items-center font-display-hero text-[28px] text-primary pb-2">:</div>
+<!-- Minutes -->
+<div class="h-full w-16 overflow-y-scroll no-scrollbar snap-y snap-mandatory py-[60px] text-center" id="wake-min">
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">15</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[28px] text-primary transition-all">30</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">45</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">00</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">15</div>
+</div>
+</div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 time-picker-gradient z-20 rounded-xl"></div>
+</div>
+</div>
+</div>
+<!-- Sleep Time Block -->
+<div class="relative pl-16">
+<!-- Timeline Dot -->
+<div class="absolute left-[-2px] top-6 w-8 h-8 rounded-full bg-mint-surface border-[3px] border-surface-container-lowest flex items-center justify-center shadow-sm z-10">
+<span class="material-symbols-outlined text-personal-purple" data-icon="dark_mode" data-weight="fill" style="font-size: 18px;">dark_mode</span>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-5 shadow-[0_4px_16px_rgba(20,163,111,0.04)] border border-border-soft">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-section-title text-section-title text-text-primary">Đi ngủ</h3>
+<span class="font-label-chip text-label-chip text-text-muted bg-surface py-1 px-3 rounded-full">Tối</span>
+</div>
+<!-- Time Picker (Sleep) -->
+<div class="h-40 relative flex justify-center items-center bg-mint-surface/30 rounded-xl overflow-hidden">
+<!-- Selection Highlight -->
+<div class="absolute top-1/2 left-0 right-0 h-12 -mt-6 bg-mint-surface border-y border-primary/20 z-0"></div>
+<div class="flex gap-8 relative z-10 h-full w-full justify-center">
+<!-- Hours -->
+<div class="h-full w-16 overflow-y-scroll no-scrollbar snap-y snap-mandatory py-[60px] text-center" id="sleep-hour">
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">21</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[28px] text-primary transition-all">22</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">23</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">00</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">01</div>
+</div>
+<!-- Separator -->
+<div class="h-full flex items-center font-display-hero text-[28px] text-primary pb-2">:</div>
+<!-- Minutes -->
+<div class="h-full w-16 overflow-y-scroll no-scrollbar snap-y snap-mandatory py-[60px] text-center" id="sleep-min">
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">00</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[28px] text-primary transition-all">15</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">30</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">45</div>
+<div class="h-12 snap-center flex items-center justify-center font-display-hero text-[24px] text-text-muted opacity-40 transition-all">00</div>
+</div>
+</div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 time-picker-gradient z-20 rounded-xl"></div>
+</div>
+</div>
+</div>
+<!-- Insight / Feedback Area -->
+<div class="mt-4 bg-primary-soft rounded-2xl p-5 flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+<!-- Nabi Mascot Placeholder (using image logic for fallback) -->
+<img class="w-full h-full object-cover" data-alt="A small, friendly glowing green NanoBio mascot avatar face, soft minimalist corporate vector style, white background, expressive and warm." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXjcxnXT9BYr37PfuyqbF-v3evIVNeFTFJdNC_iHkLAKoOYE-cxnct6mbTOysSsu0a7YcA_-BHxnHLaHZRymTgHfPD5H_Rk4pTQYqRkHEN_javwI5HALVtft_FVKfJUqwqYV0k2SEsIB-HxZ8bAAfePKD4mX2Fo6ypD28xCMQ5M9AK9UfGSL3Y4YJ5J1nmURh6IamWD-A0VMlg8ycWQ2tv9mfYZOmveDcm4ZxECCThPBFogdAWMNs5nA">
+</div>
+<div>
+<p class="font-body-sm text-body-sm text-text-primary">Tuyệt vời! Bạn dự định ngủ khoảng <strong class="text-primary font-medium">8 tiếng 15 phút</strong> mỗi đêm. Đây là một mục tiêu rất tốt cho sức khỏe phục hồi.</p>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Action -->
+<div class="absolute bottom-0 w-full bg-surface-container-lowest/90 backdrop-blur-md border-t border-border-soft p-6 z-30">
+<button class="w-full bg-gradient-to-r from-[#0F8E62] to-[#32C789] text-on-primary font-cta text-cta py-4 rounded-full shadow-[0_8px_20px_rgba(20,163,111,0.16)] hover:opacity-90 transition-opacity active:scale-[0.98] flex items-center justify-center gap-2">
+                Tiếp tục
+                <span class="material-symbols-outlined" data-icon="arrow_forward" style="font-size: 20px;">arrow_forward</span>
+</button>
+</div>
+</main>
+<script>
+        // Simple script to handle scroll snapping highlights (visual only for mockup)
+        document.addEventListener('DOMContentLoaded', () => {
+            const scrollers = document.querySelectorAll('.overflow-y-scroll');
+            
+            scrollers.forEach(scroller => {
+                scroller.addEventListener('scroll', () => {
+                    // This is a simplified visual representation.
+                    // In a real app, IntersectionObserver would determine the active item
+                    // and apply classes (text-primary text-[28px]) to it, 
+                    // while resetting others to (text-text-muted opacity-40 text-[24px]).
+                }, { passive: true });
+            });
+        });
+    </script>
+</body></html>

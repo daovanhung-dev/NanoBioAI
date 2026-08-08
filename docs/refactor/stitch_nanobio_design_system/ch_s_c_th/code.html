@@ -1,0 +1,320 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Chỉ số cơ thể - NaBi Wellness</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#C64A4A",
+                        "on-background": "#171d1b",
+                        "surface-container": "#eaefec",
+                        "text-secondary": "#60766E",
+                        "primary-fixed-dim": "#62dda3",
+                        "text-muted": "#8A9B94",
+                        "care-coral": "#FF7D75",
+                        "on-tertiary-fixed": "#002112",
+                        "on-secondary-fixed": "#002116",
+                        "on-secondary-container": "#226f55",
+                        "surface-container-high": "#e4e9e6",
+                        "calm-blue": "#58B9E8",
+                        "on-primary-fixed": "#002113",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-container": "#008559",
+                        "inverse-on-surface": "#edf2ef",
+                        "tertiary": "#006a43",
+                        "on-tertiary-container": "#f6fff6",
+                        "surface-dim": "#d6dbd8",
+                        "primary-soft": "#DDF6E9",
+                        "focus-ring": "#68D9A5",
+                        "inverse-primary": "#62dda3",
+                        "border-soft": "#D9E9E1",
+                        "tertiary-container": "#008656",
+                        "on-primary-fixed-variant": "#005235",
+                        "background": "#f5faf7",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-container-low": "#f0f5f2",
+                        "warning": "#B7791F",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#dee4e1",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#006c48",
+                        "on-secondary": "#ffffff",
+                        "mint-surface": "#EAF9F1",
+                        "on-surface-variant": "#3d4a42",
+                        "surface-bright": "#f5faf7",
+                        "outline-variant": "#bccabf",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "energy-yellow": "#FFC857",
+                        "success": "#14885F",
+                        "outline": "#6d7a71",
+                        "secondary-container": "#a4efce",
+                        "info": "#247CA8",
+                        "primary": "#006a46",
+                        "on-surface": "#171d1b",
+                        "tertiary-fixed": "#70fcb7",
+                        "secondary": "#1d6a51",
+                        "personal-purple": "#8B7CF6",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#2c3230",
+                        "text-primary": "#12352A",
+                        "surface": "#f5faf7",
+                        "on-primary-container": "#f6fff6",
+                        "secondary-fixed": "#a7f2d1",
+                        "primary-fixed": "#7ff9be",
+                        "secondary-fixed-dim": "#8bd5b6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "4xl": "2rem",
+                    },
+                    "spacing": {
+                        "section-gap": "24px",
+                        "lg": "24px",
+                        "page-padding": "16px",
+                        "xl": "32px",
+                        "card-padding": "16px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "xxs": "2px"
+                    },
+                    "fontFamily": {
+                        "cta": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "section-title": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom range slider styling */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            background: #006a46;
+            cursor: pointer;
+            margin-top: -12px; 
+            box-shadow: 0 4px 6px -1px rgba(20, 163, 111, 0.2);
+            border: 4px solid #ffffff;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #DDF6E9;
+            border-radius: 4px;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        /* Warning state slider */
+        .warning-slider::-webkit-slider-thumb {
+            background: #B7791F;
+            box-shadow: 0 4px 6px -1px rgba(183, 121, 31, 0.2);
+        }
+        .warning-slider::-webkit-slider-runnable-track {
+            background: rgba(183, 121, 31, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased font-sans min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button class="text-text-secondary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim">NaBi Wellness</h1>
+<button class="w-10 h-10 rounded-full overflow-hidden border border-border-soft hover:opacity-80 transition-opacity flex items-center justify-center bg-mint-surface">
+<img alt="Nabi Assistant Avatar" class="w-full h-full object-cover" data-alt="A small circular avatar illustration of the Nabi Wellness assistant mascot, a friendly, soft green leaf-like character, smiling warmly. Clean vector style, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLMX9Uqk5q2ClZBRm4smxmNf_WaplXizcNW9QTb8kPeyB7WXnj63JkN-Sas59mT4wXJ3JLvW2AbDnAdbD2NBEjZCdaTwvTyn2IyWSKOBn_uCJFT1lTJht_B3tpgGeRhIM02rSwqBPEG1WH4wCY1udM5ZLxTbLA8dan5BQIqzhwuCOdg8No6k_cX_-k_g4Vd18ZhqPglID0hr31n5U4K5PBk-jpMtG2VcnO7c3g5kXPhbrYyHv_CWViyA">
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 pb-28 px-page-padding max-w-md mx-auto flex flex-col gap-section-gap">
+<!-- Header Text -->
+<section class="text-center">
+<h2 class="font-display-hero text-display-hero text-text-primary">Chỉ số cơ thể</h2>
+<p class="font-body-base text-body-base text-text-secondary mt-sm">Cập nhật chiều cao và cân nặng của bạn</p>
+</section>
+<!-- Tactile Input Cards -->
+<div class="grid grid-cols-1 gap-md">
+<!-- Height Input -->
+<div class="bg-surface-container-lowest rounded-3xl p-lg border border-border-soft shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-mint-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">straighten</span>
+</div>
+<h3 class="font-section-title text-section-title text-text-primary">Chiều cao</h3>
+</div>
+<div class="font-display-hero text-display-hero text-primary flex items-baseline gap-xs">
+<span id="heightValue">165</span>
+<span class="font-body-sm text-body-sm text-text-secondary">cm</span>
+</div>
+</div>
+<div class="mt-md relative w-full pt-4">
+<input class="w-full appearance-none bg-transparent focus:outline-none" id="heightSlider" max="220" min="100" type="range" value="165">
+<div class="flex justify-between mt-sm text-text-muted font-label-chip text-label-chip px-1">
+<span>100cm</span>
+<span>220cm</span>
+</div>
+</div>
+</div>
+<!-- Weight Input (Warning State Example) -->
+<div class="bg-surface-container-lowest rounded-3xl p-lg border border-warning/30 shadow-[0_8px_20px_0_rgba(183,121,31,0.08)] flex flex-col gap-md relative overflow-hidden">
+<!-- Warning Indicator Strip -->
+<div class="absolute top-0 left-0 w-full h-1 bg-warning"></div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center text-warning">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">monitor_weight</span>
+</div>
+<h3 class="font-section-title text-section-title text-text-primary">Cân nặng</h3>
+</div>
+<div class="font-display-hero text-display-hero text-warning flex items-baseline gap-xs">
+<span id="weightValue">85</span>
+<span class="font-body-sm text-body-sm text-text-secondary">kg</span>
+</div>
+</div>
+<div class="mt-md relative w-full pt-4">
+<input class="w-full appearance-none bg-transparent focus:outline-none warning-slider" id="weightSlider" max="150" min="30" type="range" value="85">
+<div class="flex justify-between mt-sm text-text-muted font-label-chip text-label-chip px-1">
+<span>30kg</span>
+<span>150kg</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Result Card (Warning State) -->
+<section class="bg-surface-container-lowest rounded-3xl p-lg border border-warning/30 shadow-[0_8px_20px_0_rgba(183,121,31,0.08)] flex flex-col gap-md relative overflow-hidden">
+<!-- Soft background gradient hint -->
+<div class="absolute -right-20 -top-20 w-64 h-64 bg-warning/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex justify-between items-start z-10">
+<div>
+<h3 class="font-section-title text-section-title text-text-primary">Chỉ số BMI</h3>
+<p class="font-body-sm text-body-sm text-text-secondary mt-xs">Dựa trên thông tin hiện tại</p>
+</div>
+<div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center text-warning border border-warning/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center py-sm z-10">
+<div class="font-display-hero text-[48px] leading-[56px] font-bold text-warning tracking-tight" id="bmiValue">31.2</div>
+<div class="mt-sm inline-flex items-center gap-xs px-3 py-1 rounded-full bg-warning/10 text-warning font-label-chip text-label-chip border border-warning/20">
+                    Thừa cân cấp độ 1
+                </div>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden z-10 flex">
+<div class="h-full bg-info w-1/4"></div>
+<div class="h-full bg-success w-1/4"></div>
+<div class="h-full bg-warning w-1/4 relative">
+<!-- Marker -->
+<div class="absolute top-1/2 -translate-y-1/2 left-[20%] w-1.5 h-4 bg-on-surface rounded-full shadow-sm"></div>
+</div>
+<div class="h-full bg-error w-1/4"></div>
+</div>
+<div class="flex justify-between text-text-muted font-label-chip text-[11px] z-10">
+<span>Thiếu cân</span>
+<span>Bình thường</span>
+<span>Thừa cân</span>
+<span>Béo phì</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary text-center mt-sm z-10">
+                Bạn cần chú ý hơn đến chế độ ăn uống và vận động để đưa chỉ số về mức lý tưởng.
+            </p>
+</section>
+<!-- Save Button -->
+<button class="w-full h-[56px] rounded-2xl bg-gradient-to-r from-[#0F8E62] to-[#32C789] text-white font-cta text-cta shadow-[0_8px_20px_0_rgba(20,163,111,0.16)] flex items-center justify-center transition-transform active:scale-95 hover:shadow-lg mt-md">
+            Lưu chỉ số
+        </button>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md rounded-t-xl shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)]">
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors py-2 px-3" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-chip text-label-chip">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-soft dark:bg-on-primary-fixed-variant text-primary dark:text-primary-fixed rounded-full px-4 py-1 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip">Sức khỏe</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors py-2 px-3" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">face</span>
+<span class="font-label-chip text-label-chip">Nabi</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors py-2 px-3" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">auto_stories</span>
+<span class="font-label-chip text-label-chip">Nhật ký</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors py-2 px-3" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-chip text-label-chip">Hồ sơ</span>
+</a>
+</nav>
+<script>
+        // Simple slider interaction logic for demonstration
+        const heightSlider = document.getElementById('heightSlider');
+        const heightValue = document.getElementById('heightValue');
+        const weightSlider = document.getElementById('weightSlider');
+        const weightValue = document.getElementById('weightValue');
+        const bmiValue = document.getElementById('bmiValue');
+
+        function updateBMI() {
+            const heightM = heightSlider.value / 100;
+            const weight = weightSlider.value;
+            const bmi = (weight / (heightM * heightM)).toFixed(1);
+            bmiValue.textContent = bmi;
+            
+            // In a real app, this would dynamically update the UI colors/warnings based on the BMI value.
+            // For this design, we are strictly maintaining the requested 'warning state' theme.
+        }
+
+        heightSlider.addEventListener('input', (e) => {
+            heightValue.textContent = e.target.value;
+            updateBMI();
+        });
+
+        weightSlider.addEventListener('input', (e) => {
+            weightValue.textContent = e.target.value;
+            updateBMI();
+        });
+    </script>
+</body></html>

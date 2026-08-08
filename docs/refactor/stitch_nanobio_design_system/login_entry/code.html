@@ -1,0 +1,226 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "border-soft": "#D9E9E1",
+                        "on-tertiary-fixed": "#002112",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-primary-fixed": "#002113",
+                        "primary-fixed-dim": "#62dda3",
+                        "tertiary": "#006a43",
+                        "inverse-surface": "#2c3230",
+                        "primary-container": "#008559",
+                        "warning": "#B7791F",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "on-error-container": "#93000a",
+                        "text-primary": "#12352A",
+                        "surface-bright": "#f5faf7",
+                        "calm-blue": "#58B9E8",
+                        "focus-ring": "#68D9A5",
+                        "primary": "#006a46",
+                        "primary-soft": "#DDF6E9",
+                        "surface-variant": "#dee4e1",
+                        "personal-purple": "#8B7CF6",
+                        "inverse-on-surface": "#edf2ef",
+                        "outline": "#6d7a71",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface": "#f5faf7",
+                        "surface-dim": "#d6dbd8",
+                        "secondary": "#1d6a51",
+                        "secondary-container": "#a4efce",
+                        "surface-container-highest": "#dee4e1",
+                        "on-secondary-container": "#226f55",
+                        "surface-tint": "#006c48",
+                        "on-primary-container": "#f6fff6",
+                        "surface-container": "#eaefec",
+                        "error": "#C64A4A",
+                        "text-secondary": "#60766E",
+                        "outline-variant": "#bccabf",
+                        "tertiary-fixed": "#70fcb7",
+                        "primary-fixed": "#7ff9be",
+                        "tertiary-container": "#008656",
+                        "on-primary-fixed-variant": "#005235",
+                        "care-coral": "#FF7D75",
+                        "energy-yellow": "#FFC857",
+                        "text-muted": "#8A9B94",
+                        "surface-container-low": "#f0f5f2",
+                        "on-secondary-fixed": "#002116",
+                        "surface-container-high": "#e4e9e6",
+                        "background": "#f5faf7",
+                        "secondary-fixed": "#a7f2d1",
+                        "info": "#247CA8",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#62dda3",
+                        "success": "#14885F",
+                        "on-tertiary-container": "#f6fff6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#171d1b",
+                        "on-surface-variant": "#3d4a42",
+                        "on-surface": "#171d1b",
+                        "mint-surface": "#EAF9F1",
+                        "error-container": "#ffdad6"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "card-padding": "16px",
+                        xl: "32px",
+                        xs: "4px",
+                        xxs: "2px",
+                        "section-gap": "24px",
+                        sm: "8px",
+                        lg: "24px",
+                        md: "16px",
+                        "page-padding": "16px"
+                    },
+                    fontFamily: {
+                        "body-sm": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        cta: ["Roboto"]
+                    },
+                    fontSize: {
+                        "body-sm": ["14px", { lineHeight: "21px", fontWeight: "400" }],
+                        "screen-title": ["26px", { lineHeight: "32px", letterSpacing: "-0.4px", fontWeight: "700" }],
+                        "label-chip": ["13px", { lineHeight: "18px", letterSpacing: "0.1px", fontWeight: "500" }],
+                        "section-title": ["20px", { lineHeight: "26px", letterSpacing: "-0.2px", fontWeight: "600" }],
+                        "display-hero": ["32px", { lineHeight: "38px", letterSpacing: "-0.6px", fontWeight: "700" }],
+                        "body-base": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        cta: ["16px", { lineHeight: "20px", letterSpacing: "0.2px", fontWeight: "600" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Floating label logic */
+        .floating-input:focus ~ .floating-label,
+        .floating-input:not(:placeholder-shown) ~ .floating-label {
+            transform: translateY(-50%) scale(0.85);
+            top: 0;
+            background-color: white;
+            padding: 0 4px;
+            color: var(--tw-colors-primary);
+        }
+
+        .floating-input-error:focus ~ .floating-label-error,
+        .floating-input-error:not(:placeholder-shown) ~ .floating-label-error {
+            transform: translateY(-50%) scale(0.85);
+            top: 0;
+            background-color: white;
+            padding: 0 4px;
+            color: var(--tw-colors-error);
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-base antialiased min-h-screen flex flex-col items-center justify-center relative overflow-x-hidden">
+<!-- Ambient Background Elements -->
+<div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary-soft rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-mint-surface rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+<main class="w-full max-w-md px-page-padding py-xl z-10 relative">
+<!-- Header Section -->
+<header class="text-center mb-xl">
+<!-- Logo & Illustration -->
+<div class="flex flex-col items-center justify-center mb-section-gap">
+<div class="w-24 h-24 rounded-full bg-mint-surface flex items-center justify-center mb-md shadow-sm border border-border-soft overflow-hidden">
+<img class="w-16 h-16 object-contain" data-alt="A warm, approachable illustration of the Nabi mascot character, a friendly small robotic companion, waving cheerfully. The style is modern, minimalist vector art with soft natural greens, a hint of calm blue, set against a crisp white background. The mascot conveys trust, health, and a supportive 'companion not clinician' vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsvq8LdIR2C23uGHfDWzqge5JPHzaJ78iRtYZft7rV10S3KK4H3dn4f2H7llvZCVbzIJBLKAgblH6xcrZ9Q0L9kOzpynY3Pa_ZrRyIKPSAkUYutEvHVSAp7xlrQFiHNOQ0IPOHHGtlEsrNcNYSpx_Kvn2OimIkD5jbtO7pP5dysVt7M7u1NBOglP27pvG1YB-T2a8qLVJNsbQ6drx-cUxFCR8SVTCvOFiWcdbEc-PoJCaP4LQjzc9B0Q">
+</div>
+<h1 class="font-screen-title text-screen-title text-primary mb-sm">Chào mừng trở lại</h1>
+<p class="font-body-base text-body-base text-text-secondary px-sm">
+                    Hãy đăng nhập để tiếp tục hành trình chăm sóc sức khỏe cùng Nabi.
+                </p>
+</div>
+</header>
+<!-- Login Form Section (Level 2 Surface) -->
+<div class="bg-white rounded-xl shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] border border-border-soft p-card-padding">
+<form action="#" class="space-y-section-gap flex flex-col" method="POST">
+<!-- Email Input (Ready State) -->
+<div class="relative w-full">
+<input class="floating-input block w-full px-4 py-3 text-text-primary bg-white border border-outline-variant rounded-lg appearance-none focus:outline-none focus:ring-1 focus:ring-focus-ring focus:border-primary transition-colors peer" id="email" name="email" placeholder=" " required="" type="email">
+<label class="floating-label absolute text-text-muted font-body-base duration-200 transform -translate-y-1/2 top-1/2 left-4 z-10 origin-[0] pointer-events-none" for="email">
+                        Email
+                    </label>
+</div>
+<!-- Password Input (Validation Error State Example) -->
+<div class="relative w-full">
+<input class="floating-input-error block w-full px-4 py-3 text-text-primary bg-error-container/10 border border-error rounded-lg appearance-none focus:outline-none focus:ring-1 focus:ring-error focus:border-error transition-colors peer" id="password" name="password" placeholder=" " required="" type="password" value="wrongpassword123">
+<label class="floating-label-error absolute text-error font-body-base duration-200 transform -translate-y-1/2 top-1/2 left-4 z-10 origin-[0] pointer-events-none" for="password">
+                        Mật khẩu
+                    </label>
+<button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-primary transition-colors focus:outline-none" type="button">
+<span aria-label="Toggle password visibility" class="material-symbols-outlined" data-icon="visibility_off">visibility_off</span>
+</button>
+<!-- Error Message -->
+<p class="font-body-sm text-body-sm text-error mt-xs flex items-center">
+<span class="material-symbols-outlined text-[16px] mr-1" data-icon="error">error</span>
+                        Mật khẩu không đúng. Vui lòng thử lại.
+                    </p>
+</div>
+<!-- Actions -->
+<div class="pt-sm space-y-md flex flex-col">
+<button class="w-full h-12 flex items-center justify-center rounded-full bg-gradient-to-r from-primary to-[#32C789] text-on-primary font-cta text-cta shadow-[0_8px_20px_0_rgba(20,163,111,0.16)] hover:opacity-90 active:scale-95 transition-all duration-200" type="submit">
+                        Đăng nhập
+                    </button>
+<button class="w-full h-12 flex items-center justify-center rounded-full bg-mint-surface border border-primary text-primary font-cta text-cta hover:bg-primary-soft active:scale-95 transition-all duration-200" type="button">
+                        Tạo tài khoản mới
+                    </button>
+</div>
+<!-- Footer Link -->
+<div class="text-center mt-md">
+<a class="font-label-chip text-label-chip text-secondary hover:text-primary hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring rounded px-2 py-1" href="#">
+                        Quên mật khẩu?
+                    </a>
+</div>
+</form>
+</div>
+</main>
+</body></html>

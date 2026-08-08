@@ -1,0 +1,244 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Đang đồng bộ - NaBi Wellness</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#f6fff6",
+                      "tertiary-fixed-dim": "#50df9c",
+                      "surface-variant": "#dee4e1",
+                      "care-coral": "#FF7D75",
+                      "primary-fixed": "#7ff9be",
+                      "warning": "#B7791F",
+                      "surface-container-highest": "#dee4e1",
+                      "primary-container": "#008559",
+                      "secondary-container": "#a4efce",
+                      "surface": "#f5faf7",
+                      "on-primary": "#ffffff",
+                      "calm-blue": "#58B9E8",
+                      "on-tertiary": "#ffffff",
+                      "border-soft": "#D9E9E1",
+                      "on-secondary-container": "#226f55",
+                      "mint-surface": "#EAF9F1",
+                      "surface-bright": "#f5faf7",
+                      "primary-fixed-dim": "#62dda3",
+                      "inverse-surface": "#2c3230",
+                      "on-primary-container": "#f6fff6",
+                      "primary": "#006a46",
+                      "secondary-fixed-dim": "#8bd5b6",
+                      "on-tertiary-fixed-variant": "#005233",
+                      "on-background": "#171d1b",
+                      "on-error-container": "#93000a",
+                      "text-muted": "#8A9B94",
+                      "on-secondary": "#ffffff",
+                      "energy-yellow": "#FFC857",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#70fcb7",
+                      "on-surface": "#171d1b",
+                      "tertiary": "#006a43",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "primary-soft": "#DDF6E9",
+                      "secondary": "#1d6a51",
+                      "on-tertiary-fixed": "#002112",
+                      "text-primary": "#12352A",
+                      "secondary-fixed": "#a7f2d1",
+                      "on-surface-variant": "#3d4a42",
+                      "on-secondary-fixed": "#002116",
+                      "text-secondary": "#60766E",
+                      "background": "#f5faf7",
+                      "outline": "#6d7a71",
+                      "info": "#247CA8",
+                      "outline-variant": "#bccabf",
+                      "on-primary-fixed": "#002113",
+                      "error-container": "#ffdad6",
+                      "error": "#C64A4A",
+                      "tertiary-container": "#008656",
+                      "inverse-primary": "#62dda3",
+                      "surface-container-high": "#e4e9e6",
+                      "surface-container-low": "#f0f5f2",
+                      "on-primary-fixed-variant": "#005235",
+                      "inverse-on-surface": "#edf2ef",
+                      "personal-purple": "#8B7CF6",
+                      "surface-container": "#eaefec",
+                      "success": "#14885F",
+                      "surface-dim": "#d6dbd8",
+                      "surface-tint": "#006c48",
+                      "focus-ring": "#68D9A5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "16px",
+                      "card-padding": "16px",
+                      "xxs": "2px",
+                      "page-padding": "16px",
+                      "sm": "8px",
+                      "section-gap": "24px",
+                      "xl": "32px",
+                      "xs": "4px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "screen-title": [
+                              "Roboto"
+                      ],
+                      "body-sm": [
+                              "Roboto"
+                      ],
+                      "label-chip": [
+                              "Roboto"
+                      ],
+                      "display-hero": [
+                              "Roboto"
+                      ],
+                      "body-base": [
+                              "Roboto"
+                      ],
+                      "cta": [
+                              "Roboto"
+                      ],
+                      "section-title": [
+                              "Roboto"
+                      ]
+              },
+              "fontSize": {
+                      "screen-title": [
+                              "26px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.4px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "21px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-chip": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0.1px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-hero": [
+                              "32px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.6px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-base": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "cta": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.2px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "section-title": [
+                              "20px",
+                              {
+                                      "lineHeight": "26px",
+                                      "letterSpacing": "-0.2px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .loading-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .shimmer-text {
+            background: linear-gradient(90deg, #12352A 0%, #006a46 50%, #12352A 100%);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shimmer 2s linear infinite;
+        }
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Ambient Background -->
+<div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+<div class="w-[120vw] h-[120vw] max-w-[800px] max-h-[800px] bg-primary-soft rounded-full opacity-60 blur-3xl loading-pulse"></div>
+</div>
+<!-- Main Content Canvas -->
+<main class="relative z-10 flex flex-col items-center px-page-padding w-full max-w-md">
+<!-- Mascot Container with Progress Ring -->
+<div class="relative flex items-center justify-center mb-xl">
+<!-- Decorative Progress Ring SVG -->
+<svg class="absolute w-48 h-48 sm:w-56 sm:h-56 -rotate-90" viewBox="0 0 100 100">
+<!-- Background track -->
+<circle class="text-mint-surface opacity-50" cx="50" cy="50" fill="none" r="46" stroke="currentColor" stroke-width="2"></circle>
+<!-- Animated dashed track -->
+<circle class="text-primary-fixed-dim opacity-70" cx="50" cy="50" fill="none" r="46" stroke="currentColor" stroke-dasharray="30 20 15 35" stroke-dashoffset="0" stroke-linecap="round" stroke-width="4">
+<animate attributeName="stroke-dashoffset" dur="3s" from="0" repeatCount="indefinite" to="-200"></animate>
+</circle>
+</svg>
+<!-- Mascot Illustration -->
+<div class="w-36 h-36 sm:w-44 sm:h-44 bg-surface-container-lowest rounded-full shadow-lg flex items-center justify-center relative z-10 overflow-hidden border border-border-soft">
+<img class="w-full h-full object-cover p-4" data-alt="A warm, approachable mascot character for a wellness app, styled with soft minimalism. The mascot is a friendly, abstract creature or gentle robot with organic shapes, depicted in a 'checking' or 'preparing' pose, perhaps holding a small clipboard or looking thoughtfully at a glowing green orb. The color palette features natural greens (like #006a46 and #EAF9F1), soft white, and warm accents. The lighting is soft and inviting, emphasizing a supportive and non-judgmental tone suitable for a Vietnamese-first health ecosystem. 3D render style with soft clay-like textures, high quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMKL7LoJBHnpdsyD_epuoZ_Qc1EJ_fOW55dSplbQo02kjgNyKHs8oWRxh4vzSLTnRBawF3zcLx4XdLVt5zc9aYmeYYlQCAZImyXM5ROImznz3xwXK8we6PPSg405RI4cXEYJKVlzqENDEc7_v3NxnGk7Poz9APFo54SoiomYg4tlygkN0CLT24zemf3HcFwcodUZGnD2S8bAsebOt8_6E8ZvV2sXKrY95rdBHRnTXVVj8OY8XByR_MTA">
+</div>
+</div>
+<!-- Typography Section -->
+<div class="text-center flex flex-col gap-sm">
+<h1 class="font-screen-title text-screen-title text-primary shimmer-text">
+                Đang đồng bộ dữ liệu...
+            </h1>
+<p class="font-body-base text-body-base text-text-secondary max-w-[280px] mx-auto">
+                Vui lòng đợi trong giây lát, NaBi đang chuẩn bị không gian sức khỏe của bạn.
+            </p>
+</div>
+<!-- Loading Dots Indicator -->
+<div class="flex gap-2 mt-lg">
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim animate-bounce" style="animation-delay: 0s;"></div>
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim animate-bounce" style="animation-delay: 0.15s;"></div>
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim animate-bounce" style="animation-delay: 0.3s;"></div>
+</div>
+</main>
+<!-- Navigation Suppressed: Transactional/Loading State -->
+</body></html>

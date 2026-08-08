@@ -1,0 +1,234 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Đăng ký - NaBi Wellness</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#f6fff6",
+                    "tertiary-fixed-dim": "#50df9c",
+                    "surface-variant": "#dee4e1",
+                    "care-coral": "#FF7D75",
+                    "primary-fixed": "#7ff9be",
+                    "warning": "#B7791F",
+                    "surface-container-highest": "#dee4e1",
+                    "primary-container": "#008559",
+                    "secondary-container": "#a4efce",
+                    "surface": "#f5faf7",
+                    "on-primary": "#ffffff",
+                    "calm-blue": "#58B9E8",
+                    "on-tertiary": "#ffffff",
+                    "border-soft": "#D9E9E1",
+                    "on-secondary-container": "#226f55",
+                    "mint-surface": "#EAF9F1",
+                    "surface-bright": "#f5faf7",
+                    "primary-fixed-dim": "#62dda3",
+                    "inverse-surface": "#2c3230",
+                    "on-primary-container": "#f6fff6",
+                    "primary": "#006a46",
+                    "secondary-fixed-dim": "#8bd5b6",
+                    "on-tertiary-fixed-variant": "#005233",
+                    "on-background": "#171d1b",
+                    "on-error-container": "#93000a",
+                    "text-muted": "#8A9B94",
+                    "on-secondary": "#ffffff",
+                    "energy-yellow": "#FFC857",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed": "#70fcb7",
+                    "on-surface": "#171d1b",
+                    "tertiary": "#006a43",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "primary-soft": "#DDF6E9",
+                    "secondary": "#1d6a51",
+                    "on-tertiary-fixed": "#002112",
+                    "text-primary": "#12352A",
+                    "secondary-fixed": "#a7f2d1",
+                    "on-surface-variant": "#3d4a42",
+                    "on-secondary-fixed": "#002116",
+                    "text-secondary": "#60766E",
+                    "background": "#f5faf7",
+                    "outline": "#6d7a71",
+                    "info": "#247CA8",
+                    "outline-variant": "#bccabf",
+                    "on-primary-fixed": "#002113",
+                    "error-container": "#ffdad6",
+                    "error": "#C64A4A",
+                    "tertiary-container": "#008656",
+                    "inverse-primary": "#62dda3",
+                    "surface-container-high": "#e4e9e6",
+                    "surface-container-low": "#f0f5f2",
+                    "on-primary-fixed-variant": "#005235",
+                    "inverse-on-surface": "#edf2ef",
+                    "personal-purple": "#8B7CF6",
+                    "surface-container": "#eaefec",
+                    "success": "#14885F",
+                    "surface-dim": "#d6dbd8",
+                    "surface-tint": "#006c48",
+                    "focus-ring": "#68D9A5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "16px",
+                    "card-padding": "16px",
+                    "xxs": "2px",
+                    "page-padding": "16px",
+                    "sm": "8px",
+                    "section-gap": "24px",
+                    "xl": "32px",
+                    "xs": "4px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "screen-title": ["Roboto"],
+                    "body-sm": ["Roboto"],
+                    "label-chip": ["Roboto"],
+                    "display-hero": ["Roboto"],
+                    "body-base": ["Roboto"],
+                    "cta": ["Roboto"],
+                    "section-title": ["Roboto"]
+            },
+            "fontSize": {
+                    "screen-title": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "21px", "fontWeight": "400"}],
+                    "label-chip": ["13px", {"lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500"}],
+                    "display-hero": ["32px", {"lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700"}],
+                    "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "cta": ["16px", {"lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600"}],
+                    "section-title": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--tw-colors-border-soft);
+        }
+        
+        .floating-input:focus-within label,
+        .floating-input input:not(:placeholder-shown) + label {
+            transform: translateY(-1.5rem) scale(0.85);
+            color: var(--tw-colors-primary);
+        }
+        
+        .floating-input input:focus {
+            border-color: var(--tw-colors-primary);
+            box-shadow: 0 0 0 4px rgba(104, 217, 165, 0.2);
+            outline: none;
+        }
+
+        .gradient-btn {
+            background: linear-gradient(135deg, #0F8E62 0%, #32C789 100%);
+            box-shadow: 0 4px 12px rgba(20, 163, 111, 0.16);
+            transition: all 0.2s ease;
+        }
+
+        .gradient-btn:hover {
+            box-shadow: 0 6px 16px rgba(20, 163, 111, 0.24);
+            transform: translateY(-1px);
+        }
+        
+        .gradient-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 8px rgba(20, 163, 111, 0.12);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-base antialiased">
+<!-- Top Navigation (Transactional context - Back button only) -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 docked full-width top-0 sticky backdrop-blur-md flex justify-between items-center px-page-padding h-16 w-full z-50 flat no shadows">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full text-primary dark:text-primary-fixed-dim hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<!-- Title centered -->
+<div class="absolute left-1/2 transform -translate-x-1/2">
+<span class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim">NaBi Wellness</span>
+</div>
+<div class="w-10 h-10"></div> <!-- Spacer for balance -->
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col justify-center items-center px-page-padding py-section-gap relative overflow-hidden">
+<!-- Decorative Background Blob -->
+<div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-primary-soft rounded-full mix-blend-multiply filter blur-3xl opacity-50 pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-secondary-container rounded-full mix-blend-multiply filter blur-3xl opacity-30 pointer-events-none"></div>
+<!-- Registration Container (Bento Style Card) -->
+<div class="w-full max-w-md glass-panel rounded-[24px] p-card-padding shadow-[0_8px_32px_rgba(20,163,111,0.08)] relative z-10 flex flex-col gap-lg">
+<!-- Header Section -->
+<div class="text-center space-y-sm pt-sm">
+<h1 class="font-display-hero text-display-hero text-primary">Tạo tài khoản</h1>
+<p class="font-body-base text-body-base text-text-secondary">Bắt đầu hành trình sức khỏe của bạn cùng NaBi</p>
+</div>
+<!-- Form Section -->
+<form class="flex flex-col gap-md mt-sm">
+<!-- Name Input -->
+<div class="relative floating-input bg-mint-surface rounded-xl border border-border-soft overflow-hidden">
+<input class="w-full bg-transparent px-md pt-[22px] pb-[6px] border-none text-text-primary focus:ring-0 peer font-body-base text-body-base" id="name" name="name" placeholder=" " required="" type="text">
+<label class="absolute left-md top-1/2 -translate-y-1/2 text-text-muted font-body-sm text-body-sm transition-all duration-200 pointer-events-none origin-left" for="name">Họ và tên</label>
+</div>
+<!-- Email Input -->
+<div class="relative floating-input bg-mint-surface rounded-xl border border-border-soft overflow-hidden">
+<input class="w-full bg-transparent px-md pt-[22px] pb-[6px] border-none text-text-primary focus:ring-0 peer font-body-base text-body-base" id="email" name="email" placeholder=" " required="" type="email">
+<label class="absolute left-md top-1/2 -translate-y-1/2 text-text-muted font-body-sm text-body-sm transition-all duration-200 pointer-events-none origin-left" for="email">Email</label>
+</div>
+<!-- Password Input -->
+<div class="relative floating-input bg-mint-surface rounded-xl border border-border-soft overflow-hidden">
+<input class="w-full bg-transparent pl-md pr-12 pt-[22px] pb-[6px] border-none text-text-primary focus:ring-0 peer font-body-base text-body-base" id="password" name="password" placeholder=" " required="" type="password">
+<label class="absolute left-md top-1/2 -translate-y-1/2 text-text-muted font-body-sm text-body-sm transition-all duration-200 pointer-events-none origin-left" for="password">Mật khẩu</label>
+<button class="absolute right-md top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility_off">visibility_off</span>
+</button>
+</div>
+<!-- Referral Code (Optional) -->
+<div class="relative floating-input bg-mint-surface rounded-xl border border-border-soft overflow-hidden">
+<input class="w-full bg-transparent px-md pt-[22px] pb-[6px] border-none text-text-primary focus:ring-0 peer font-body-base text-body-base" id="referral" name="referral" placeholder=" " type="text">
+<label class="absolute left-md top-1/2 -translate-y-1/2 text-text-muted font-body-sm text-body-sm transition-all duration-200 pointer-events-none origin-left" for="referral">Mã giới thiệu (không bắt buộc)</label>
+</div>
+<!-- Consent Checkbox -->
+<label class="flex items-start gap-sm cursor-pointer group mt-xs">
+<div class="relative flex items-center justify-center w-5 h-5 flex-shrink-0 mt-0.5">
+<input class="peer appearance-none w-5 h-5 border-2 border-outline-variant rounded bg-white checked:bg-primary checked:border-primary transition-colors cursor-pointer" required="" type="checkbox">
+<span class="material-symbols-outlined absolute text-white text-[16px] opacity-0 peer-checked:opacity-100 pointer-events-none font-bold" data-icon="check">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-text-secondary leading-tight select-none">
+                        Tôi đồng ý với <a class="text-primary font-medium hover:underline" href="#">Điều khoản dịch vụ</a> và <a class="text-primary font-medium hover:underline" href="#">Chính sách bảo mật</a>
+</span>
+</label>
+<!-- Primary CTA -->
+<button class="gradient-btn w-full py-[14px] rounded-xl flex items-center justify-center gap-sm mt-md font-cta text-cta text-on-primary" type="submit">
+                    Đăng ký ngay
+                    <span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</form>
+<!-- Login Link -->
+<div class="text-center pb-xs border-t border-border-soft pt-md mt-xs">
+<p class="font-body-base text-body-base text-text-secondary">
+                    Đã có tài khoản? 
+                    <a class="text-primary font-semibold hover:text-primary-container transition-colors ml-1 inline-flex items-center" href="#">
+                        Đăng nhập
+                    </a>
+</p>
+</div>
+</div>
+</main>
+</body></html>

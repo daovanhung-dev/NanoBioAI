@@ -1,0 +1,355 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Công thức món ăn</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#C64A4A",
+                      "on-background": "#171d1b",
+                      "surface-container": "#eaefec",
+                      "text-secondary": "#60766E",
+                      "primary-fixed-dim": "#62dda3",
+                      "text-muted": "#8A9B94",
+                      "care-coral": "#FF7D75",
+                      "on-tertiary-fixed": "#002112",
+                      "on-secondary-fixed": "#002116",
+                      "on-secondary-container": "#226f55",
+                      "surface-container-high": "#e4e9e6",
+                      "calm-blue": "#58B9E8",
+                      "on-primary-fixed": "#002113",
+                      "tertiary-fixed-dim": "#50df9c",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "primary-container": "#008559",
+                      "inverse-on-surface": "#edf2ef",
+                      "tertiary": "#006a43",
+                      "on-tertiary-container": "#f6fff6",
+                      "surface-dim": "#d6dbd8",
+                      "primary-soft": "#DDF6E9",
+                      "focus-ring": "#68D9A5",
+                      "inverse-primary": "#62dda3",
+                      "border-soft": "#D9E9E1",
+                      "tertiary-container": "#008656",
+                      "on-primary-fixed-variant": "#005235",
+                      "background": "#f5faf7",
+                      "surface-container-highest": "#dee4e1",
+                      "surface-container-low": "#f0f5f2",
+                      "warning": "#B7791F",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed-variant": "#005233",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#dee4e1",
+                      "on-primary": "#ffffff",
+                      "surface-tint": "#006c48",
+                      "on-secondary": "#ffffff",
+                      "mint-surface": "#EAF9F1",
+                      "on-surface-variant": "#3d4a42",
+                      "surface-bright": "#f5faf7",
+                      "outline-variant": "#bccabf",
+                      "on-error-container": "#93000a",
+                      "on-error": "#ffffff",
+                      "energy-yellow": "#FFC857",
+                      "success": "#14885F",
+                      "outline": "#6d7a71",
+                      "secondary-container": "#a4efce",
+                      "info": "#247CA8",
+                      "primary": "#006a46",
+                      "on-surface": "#171d1b",
+                      "tertiary-fixed": "#70fcb7",
+                      "secondary": "#1d6a51",
+                      "personal-purple": "#8B7CF6",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-surface": "#2c3230",
+                      "text-primary": "#12352A",
+                      "surface": "#f5faf7",
+                      "on-primary-container": "#f6fff6",
+                      "secondary-fixed": "#a7f2d1",
+                      "primary-fixed": "#7ff9be",
+                      "secondary-fixed-dim": "#8bd5b6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-gap": "24px",
+                      "lg": "24px",
+                      "page-padding": "16px",
+                      "xl": "32px",
+                      "card-padding": "16px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "xxs": "2px"
+              },
+              "fontFamily": {
+                      "cta": [
+                              "Roboto"
+                      ],
+                      "screen-title": [
+                              "Roboto"
+                      ],
+                      "label-chip": [
+                              "Roboto"
+                      ],
+                      "body-base": [
+                              "Roboto"
+                      ],
+                      "display-hero": [
+                              "Roboto"
+                      ],
+                      "body-sm": [
+                              "Roboto"
+                      ],
+                      "section-title": [
+                              "Roboto"
+                      ]
+              },
+              "fontSize": {
+                      "cta": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.2px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "screen-title": [
+                              "26px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.4px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-chip": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0.1px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-base": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-hero": [
+                              "32px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.6px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "21px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "section-title": [
+                              "20px",
+                              {
+                                      "lineHeight": "26px",
+                                      "letterSpacing": "-0.2px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-base antialiased pb-24 md:pb-0">
+<!-- Top Navigation for Detail Surface (Hidden nav shell, back button only) -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto bg-transparent transition-all duration-300" id="detailHeader">
+<button class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-primary shadow-sm hover:opacity-80 transition-opacity active:scale-95">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<button class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-primary shadow-sm hover:opacity-80 transition-opacity active:scale-95">
+<span class="material-symbols-outlined" data-icon="favorite_border">favorite_border</span>
+</button>
+</header>
+<main class="w-full max-w-md mx-auto bg-surface min-h-screen relative shadow-[0_0_40px_rgba(0,0,0,0.05)] md:max-w-4xl">
+<!-- Hero Image -->
+<div class="relative w-full h-[353px] md:h-[442px] rounded-b-[2rem] overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A beautiful overhead shot of a vibrant Quinoa Salad Bowl on a rustic wooden table. The salad includes bright green edamame, deeply roasted sweet potato cubes, and fresh purple cabbage, drizzled with a light sesame dressing. Soft, warm natural sunlight creates a healthy, appetizing, and inviting atmosphere, reflecting a clean, organic wellness lifestyle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0IBujduJEFwd3YE6BNiMSu2DmubgJRWOrVHBpt4RiXC9lnUNDUV8gmgbc5_rOOYj4VzcoFt6PmYPuhg47-jbrvuuKx16INdPEzpj3XR0U_92HrfZ-LlaI5fIL1dFlJpH1Qt5wV-gKZa7fC0R7IefI2Y-0xdyHwGpJq_AHDozxK_jnM1jaklwNlD2ZQDNWA4GcZNYSxxdYoiUBaUjbAIV_4XrIsNlvoclv9xKdTb2rDTlE0Fe58D5rSA">
+<!-- Fade overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<!-- Quick Info Tags at bottom of hero -->
+<div class="absolute bottom-6 left-page-padding right-page-padding flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+<span class="bg-mint-surface/90 text-primary px-3 py-1.5 rounded-full font-label-chip text-label-chip flex items-center gap-1 shrink-0 shadow-sm backdrop-blur-md border border-white/20">
+<span class="material-symbols-outlined text-[16px]" data-icon="timer">timer</span> 20 Phút
+                </span>
+<span class="bg-care-coral/20 text-error px-3 py-1.5 rounded-full font-label-chip text-label-chip flex items-center gap-1 shrink-0 shadow-sm backdrop-blur-md border border-white/20">
+<span class="material-symbols-outlined text-[16px]" data-icon="warning">warning</span> Không Gluten
+                </span>
+<span class="bg-surface/90 text-text-secondary px-3 py-1.5 rounded-full font-label-chip text-label-chip flex items-center gap-1 shrink-0 shadow-sm backdrop-blur-md border border-white/20">
+<span class="material-symbols-outlined text-[16px]" data-icon="spa">spa</span> Chay
+                </span>
+</div>
+</div>
+<div class="px-page-padding pt-section-gap pb-8 md:grid md:grid-cols-12 md:gap-8">
+<div class="md:col-span-7">
+<!-- Title & Meta -->
+<div class="mb-section-gap">
+<h1 class="font-display-hero text-display-hero text-text-primary mb-2">Salad Quinoa Cầu Vồng</h1>
+<p class="font-body-base text-body-base text-text-secondary">Một bữa trưa nhẹ nhàng, giàu protein thực vật, giúp cân bằng năng lượng và dễ tiêu hóa.</p>
+</div>
+<!-- Bento: Nutritional Summary -->
+<div class="bg-white rounded-[20px] p-card-padding shadow-[0_8px_20px_rgba(20,163,111,0.08)] border border-border-soft mb-section-gap">
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-section-title text-section-title text-text-primary">Dinh dưỡng (mỗi khẩu phần)</h2>
+<span class="font-label-chip text-label-chip text-primary bg-primary-soft px-2 py-1 rounded-full">320 kcal</span>
+</div>
+<div class="space-y-4">
+<!-- Protein -->
+<div>
+<div class="flex justify-between font-body-sm text-body-sm mb-1">
+<span class="text-text-secondary">Protein</span>
+<span class="text-text-primary font-medium">12g</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-info rounded-full" style="width: 30%;"></div>
+</div>
+</div>
+<!-- Carbs -->
+<div>
+<div class="flex justify-between font-body-sm text-body-sm mb-1">
+<span class="text-text-secondary">Carbs (chủ yếu là chất xơ)</span>
+<span class="text-text-primary font-medium">45g</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-energy-yellow rounded-full" style="width: 65%;"></div>
+</div>
+</div>
+<!-- Fat -->
+<div>
+<div class="flex justify-between font-body-sm text-body-sm mb-1">
+<span class="text-text-secondary">Chất béo (tốt)</span>
+<span class="text-text-primary font-medium">8g</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-success rounded-full" style="width: 20%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Nabi Assistant Tip -->
+<div class="bg-mint-surface rounded-[20px] rounded-tl-[4px] p-card-padding mb-section-gap flex gap-3 items-start border border-border-soft shadow-sm">
+<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-primary" data-icon="psychiatry">psychiatry</span>
+</div>
+<div>
+<p class="font-label-chip text-label-chip text-primary mb-1">Nabi nói:</p>
+<p class="font-body-sm text-body-sm text-text-secondary">Quinoa chứa đủ 9 loại axit amin thiết yếu, rất tốt cho quá trình phục hồi cơ bắp sau khi bạn tập yoga sáng nay nhé!</p>
+</div>
+</div>
+</div>
+<div class="md:col-span-5 space-y-section-gap">
+<!-- Bento: Ingredients -->
+<div class="bg-white rounded-[20px] p-card-padding shadow-[0_8px_20px_rgba(20,163,111,0.08)] border border-border-soft">
+<h2 class="font-section-title text-section-title text-text-primary mb-4">Nguyên liệu (2 phần)</h2>
+<ul class="space-y-3">
+<li class="flex justify-between items-center border-b border-surface-container pb-2">
+<span class="font-body-base text-body-base text-text-secondary flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary-soft"></span> Hạt Quinoa</span>
+<span class="font-body-base text-body-base font-medium text-text-primary">100g</span>
+</li>
+<li class="flex justify-between items-center border-b border-surface-container pb-2">
+<span class="font-body-base text-body-base text-text-secondary flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary-soft"></span> Khoai lang (cắt hạt lựu)</span>
+<span class="font-body-base text-body-base font-medium text-text-primary">1 củ vừa</span>
+</li>
+<li class="flex justify-between items-center border-b border-surface-container pb-2">
+<span class="font-body-base text-body-base text-text-secondary flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary-soft"></span> Đậu edamame</span>
+<span class="font-body-base text-body-base font-medium text-text-primary">50g</span>
+</li>
+<li class="flex justify-between items-center border-b border-surface-container pb-2">
+<span class="font-body-base text-body-base text-text-secondary flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary-soft"></span> Bắp cải tím (thái sợi)</span>
+<span class="font-body-base text-body-base font-medium text-text-primary">50g</span>
+</li>
+<li class="flex justify-between items-center">
+<span class="font-body-base text-body-base text-text-secondary flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary-soft"></span> Sốt mè rang (ít béo)</span>
+<span class="font-body-base text-body-base font-medium text-text-primary">2 muỗng</span>
+</li>
+</ul>
+</div>
+<!-- Bento: Steps -->
+<div class="bg-white rounded-[20px] p-card-padding shadow-[0_8px_20px_rgba(20,163,111,0.08)] border border-border-soft">
+<h2 class="font-section-title text-section-title text-text-primary mb-4">Các bước thực hiện</h2>
+<div class="space-y-4">
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary-soft text-primary font-cta flex items-center justify-center shrink-0">1</div>
+<div class="w-px h-full bg-surface-container my-1"></div>
+</div>
+<div class="pb-4">
+<p class="font-body-base text-body-base font-medium text-text-primary">Nấu Quinoa</p>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Rửa sạch hạt Quinoa. Đun sôi với 200ml nước, sau đó giảm lửa nhỏ, đậy nắp và nấu trong 15 phút cho đến khi hạt nở bung.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary-soft text-primary font-cta flex items-center justify-center shrink-0">2</div>
+<div class="w-px h-full bg-surface-container my-1"></div>
+</div>
+<div class="pb-4">
+<p class="font-body-base text-body-base font-medium text-text-primary">Chuẩn bị rau củ</p>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Nướng hoặc luộc khoai lang chín mềm. Trần qua đậu edamame với nước sôi trong 2 phút.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary-soft text-primary font-cta flex items-center justify-center shrink-0">3</div>
+</div>
+<div>
+<p class="font-body-base text-body-base font-medium text-text-primary">Hoàn thiện</p>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Cho Quinoa vào bát, xếp các loại rau củ xung quanh. Rưới sốt mè rang lên trên và trộn đều trước khi thưởng thức.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple scroll effect for header
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('detailHeader');
+            if (window.scrollY > 50) {
+                header.classList.add('backdrop-blur-md');
+                header.style.backgroundColor = 'rgba(255,255,255,0.5)';
+            } else {
+                header.classList.remove('backdrop-blur-md');
+                header.style.backgroundColor = 'transparent';
+            }
+        });
+    </script>
+</body></html>

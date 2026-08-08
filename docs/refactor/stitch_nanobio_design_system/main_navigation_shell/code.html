@@ -1,0 +1,233 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Trang chủ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#dee4e1",
+                        "secondary": "#1d6a51",
+                        "tertiary": "#006a43",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#171d1b",
+                        "mint-surface": "#EAF9F1",
+                        "surface-container-high": "#e4e9e6",
+                        "calm-blue": "#58B9E8",
+                        "focus-ring": "#68D9A5",
+                        "surface-container": "#eaefec",
+                        "on-primary-container": "#f6fff6",
+                        "on-tertiary-fixed": "#002112",
+                        "primary-fixed-dim": "#62dda3",
+                        "primary-fixed": "#7ff9be",
+                        "outline-variant": "#bccabf",
+                        "surface-dim": "#d6dbd8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#002113",
+                        "border-soft": "#D9E9E1",
+                        "text-muted": "#8A9B94",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#005235",
+                        "surface-tint": "#006c48",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#f6fff6",
+                        "on-secondary-container": "#226f55",
+                        "warning": "#B7791F",
+                        "text-secondary": "#60766E",
+                        "on-secondary-fixed": "#002116",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#a4efce",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "surface-bright": "#f5faf7",
+                        "on-background": "#171d1b",
+                        "care-coral": "#FF7D75",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-soft": "#DDF6E9",
+                        "info": "#247CA8",
+                        "success": "#14885F",
+                        "primary": "#006a46",
+                        "inverse-surface": "#2c3230",
+                        "surface-container-highest": "#dee4e1",
+                        "error": "#C64A4A",
+                        "tertiary-container": "#008656",
+                        "primary-container": "#008559",
+                        "text-primary": "#12352A",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "inverse-primary": "#62dda3",
+                        "tertiary-fixed": "#70fcb7",
+                        "background": "#f5faf7",
+                        "energy-yellow": "#FFC857",
+                        "personal-purple": "#8B7CF6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "on-surface-variant": "#3d4a42",
+                        "surface": "#f5faf7",
+                        "secondary-fixed": "#a7f2d1",
+                        "outline": "#6d7a71",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f0f5f2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "page-padding": "16px",
+                        "lg": "24px",
+                        "card-padding": "16px",
+                        "safe": "env(safe-area-inset-bottom)"
+                    },
+                    "fontFamily": {
+                        "body-base": ["Roboto", "sans-serif"],
+                        "cta": ["Roboto", "sans-serif"],
+                        "section-title": ["Roboto", "sans-serif"],
+                        "body-sm": ["Roboto", "sans-serif"],
+                        "display-hero": ["Roboto", "sans-serif"],
+                        "label-chip": ["Roboto", "sans-serif"],
+                        "screen-title": ["Roboto", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F6FBF8;
+        }
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 300ms ease-out, transform 300ms ease-out;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-base antialiased pb-24 md:hidden">
+<!-- Main Content Area -->
+<main class="w-full max-w-md mx-auto px-page-padding pt-6 fade-enter-active" id="main-content">
+<header class="mb-section-gap">
+<h1 class="font-display-hero text-display-hero text-primary mb-2">Chào buổi sáng,</h1>
+<p class="font-body-base text-body-base text-text-secondary">Hôm nay bạn cảm thấy thế nào?</p>
+</header>
+<!-- Bento Grid Example for Home -->
+<div class="grid grid-cols-1 gap-sm">
+<!-- Hero Card -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-soft rounded-bl-full opacity-50 -mr-8 -mt-8"></div>
+<div class="flex items-center justify-between mb-4">
+<span class="font-section-title text-section-title text-text-primary">Sức khỏe tổng quan</span>
+<span class="material-symbols-outlined text-primary" data-icon="monitor_heart">monitor_heart</span>
+</div>
+<div class="flex items-end gap-2">
+<span class="font-display-hero text-display-hero text-primary">85</span>
+<span class="font-body-sm text-body-sm text-text-muted mb-1">/100</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary mt-2">Tuyệt vời! Bạn đang duy trì phong độ tốt.</p>
+</div>
+<!-- Smaller Cards Grid -->
+<div class="grid grid-cols-2 gap-sm mt-sm">
+<div class="bg-mint-surface rounded-xl p-card-padding flex flex-col justify-between h-32 border border-border-soft">
+<span class="material-symbols-outlined text-energy-yellow" data-icon="directions_walk" style="font-variation-settings: 'FILL' 1;">directions_walk</span>
+<div>
+<p class="font-body-sm text-body-sm text-text-secondary">Bước chân</p>
+<p class="font-section-title text-section-title text-text-primary">4,230</p>
+</div>
+</div>
+<div class="bg-mint-surface rounded-xl p-card-padding flex flex-col justify-between h-32 border border-border-soft">
+<span class="material-symbols-outlined text-personal-purple" data-icon="bedtime" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+<div>
+<p class="font-body-sm text-body-sm text-text-secondary">Giấc ngủ</p>
+<p class="font-section-title text-section-title text-text-primary">7h 20m</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Generated from JSON structure) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 bg-surface/80 backdrop-blur-md shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)] rounded-t-xl md:hidden">
+<!-- Tab 1: Trang chủ (Active) -->
+<button class="flex flex-col items-center justify-center bg-primary-soft text-primary rounded-full px-4 py-1 scale-[0.975] transition-all duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-chip text-label-chip">Trang chủ</span>
+</button>
+<!-- Tab 2: Sức khỏe -->
+<button class="flex flex-col items-center justify-center text-text-muted hover:text-primary transition-colors hover:opacity-80 px-4 py-1">
+<span class="material-symbols-outlined mb-1" data-icon="favorite">favorite</span>
+<span class="font-label-chip text-label-chip">Sức khỏe</span>
+</button>
+<!-- Tab 3: Nabi -->
+<button class="flex flex-col items-center justify-center text-text-muted hover:text-primary transition-colors hover:opacity-80 px-4 py-1">
+<span class="material-symbols-outlined mb-1" data-icon="face">face</span>
+<span class="font-label-chip text-label-chip">Nabi</span>
+</button>
+<!-- Tab 4: Nhật ký -->
+<button class="flex flex-col items-center justify-center text-text-muted hover:text-primary transition-colors hover:opacity-80 px-4 py-1">
+<span class="material-symbols-outlined mb-1" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-chip text-label-chip">Nhật ký</span>
+</button>
+<!-- Tab 5: Hồ sơ -->
+<button class="flex flex-col items-center justify-center text-text-muted hover:text-primary transition-colors hover:opacity-80 px-4 py-1">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-chip text-label-chip">Hồ sơ</span>
+</button>
+</nav>
+<script>
+        // Simple mock interaction to demonstrate the transition effect
+        document.querySelectorAll('nav button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active classes from all buttons
+                document.querySelectorAll('nav button').forEach(btn => {
+                    btn.className = "flex flex-col items-center justify-center text-text-muted hover:text-primary transition-colors hover:opacity-80 px-4 py-1";
+                    btn.querySelector('.material-symbols-outlined').style.fontVariationSettings = "'FILL' 0";
+                });
+                
+                // Add active classes to clicked button
+                this.className = "flex flex-col items-center justify-center bg-primary-soft text-primary rounded-full px-4 py-1 scale-[0.975] transition-all duration-200";
+                this.querySelector('.material-symbols-outlined').style.fontVariationSettings = "'FILL' 1";
+
+                // Trigger fade animation on main content
+                const mainContent = document.getElementById('main-content');
+                mainContent.classList.remove('fade-enter-active');
+                mainContent.classList.add('fade-enter');
+                
+                setTimeout(() => {
+                    mainContent.classList.remove('fade-enter');
+                    mainContent.classList.add('fade-enter-active');
+                    // In a real app, content would change here
+                }, 50);
+            });
+        });
+    </script>
+</body></html>

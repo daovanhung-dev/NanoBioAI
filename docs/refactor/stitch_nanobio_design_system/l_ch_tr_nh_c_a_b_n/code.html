@@ -1,0 +1,405 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Lịch Trình Lối Sống</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#C64A4A",
+                        "on-background": "#171d1b",
+                        "surface-container": "#eaefec",
+                        "text-secondary": "#60766E",
+                        "primary-fixed-dim": "#62dda3",
+                        "text-muted": "#8A9B94",
+                        "care-coral": "#FF7D75",
+                        "on-tertiary-fixed": "#002112",
+                        "on-secondary-fixed": "#002116",
+                        "on-secondary-container": "#226f55",
+                        "surface-container-high": "#e4e9e6",
+                        "calm-blue": "#58B9E8",
+                        "on-primary-fixed": "#002113",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-container": "#008559",
+                        "inverse-on-surface": "#edf2ef",
+                        "tertiary": "#006a43",
+                        "on-tertiary-container": "#f6fff6",
+                        "surface-dim": "#d6dbd8",
+                        "primary-soft": "#DDF6E9",
+                        "focus-ring": "#68D9A5",
+                        "inverse-primary": "#62dda3",
+                        "border-soft": "#D9E9E1",
+                        "tertiary-container": "#008656",
+                        "on-primary-fixed-variant": "#005235",
+                        "background": "#f5faf7",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-container-low": "#f0f5f2",
+                        "warning": "#B7791F",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#dee4e1",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#006c48",
+                        "on-secondary": "#ffffff",
+                        "mint-surface": "#EAF9F1",
+                        "on-surface-variant": "#3d4a42",
+                        "surface-bright": "#f5faf7",
+                        "outline-variant": "#bccabf",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "energy-yellow": "#FFC857",
+                        "success": "#14885F",
+                        "outline": "#6d7a71",
+                        "secondary-container": "#a4efce",
+                        "info": "#247CA8",
+                        "primary": "#006a46",
+                        "on-surface": "#171d1b",
+                        "tertiary-fixed": "#70fcb7",
+                        "secondary": "#1d6a51",
+                        "personal-purple": "#8B7CF6",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#2c3230",
+                        "text-primary": "#12352A",
+                        "surface": "#f5faf7",
+                        "on-primary-container": "#f6fff6",
+                        "secondary-fixed": "#a7f2d1",
+                        "primary-fixed": "#7ff9be",
+                        "secondary-fixed-dim": "#8bd5b6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "24px",
+                        "lg": "24px",
+                        "page-padding": "16px",
+                        "xl": "32px",
+                        "card-padding": "16px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "xxs": "2px"
+                    },
+                    "fontFamily": {
+                        "cta": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "section-title": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 23px; /* Center of the icon */
+            top: 40px;
+            bottom: -16px;
+            width: 2px;
+            background-color: theme('colors.mint-surface');
+            z-index: 0;
+        }
+        
+        .timeline-item:last-child .timeline-line::before {
+            display: none;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .pulse-soft {
+            animation: pulseSoft 2s infinite;
+        }
+        
+        @keyframes pulseSoft {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(20, 136, 95, 0.2); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 4px rgba(20, 136, 95, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(20, 136, 95, 0); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-base antialiased pb-24 selection:bg-primary-soft selection:text-primary">
+<!-- TopAppBar from JSON -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button aria-label="Quay lại" class="hover:opacity-80 transition-opacity flex items-center justify-center w-10 h-10 rounded-full bg-mint-surface text-primary">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim">NaBi Wellness</h1>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-mint-surface flex items-center justify-center border border-border-soft">
+<img alt="Nabi Assistant Avatar" class="w-full h-full object-cover" data-alt="A friendly, minimalist 3D rendering of a small robot mascot named Nabi, with a soft green and white color palette, soft lighting, modern clinical aesthetic, approachable and warm expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAUM0kWX6-eTV8859TgV2yzOXnOtGqPnNEeF5sN6cYwJFhX4kafzDH2sbmmbcUx7VpSg6lp0tX-fQ25jTKH82ukdvWpYmiuStkcQ1EUwYi5jO6zcdU2hpAZY8XIpXZgyvZkS0rst5XeI3lwAUCMGoE0eW6SieM-nbVWfmWx-K2p9pdvBHGqVOLuSKur01TeLQa8hGQnFzqtC_2HQ8jiGEER6FG-GOviRGREzLVsUnuz3dEOErEi6NO7g">
+</div>
+</div>
+</header>
+<main class="pt-20 px-page-padding max-w-md mx-auto min-h-screen flex flex-col gap-section-gap">
+<!-- Header & Date Selector -->
+<section class="flex flex-col gap-md fade-in-up" style="animation-delay: 0.1s;">
+<div>
+<h2 class="font-display-hero text-display-hero text-text-primary">Lịch Trình Hôm Nay</h2>
+<p class="font-body-base text-body-base text-text-secondary mt-xs">Theo dõi thói quen sống khỏe của bạn</p>
+</div>
+<!-- Date Strip -->
+<div class="flex gap-sm overflow-x-auto pb-sm snap-x scrollbar-hide">
+<!-- Previous days -->
+<button class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-surface-container-low text-text-muted snap-center border border-transparent">
+<span class="font-label-chip text-label-chip uppercase">T2</span>
+<span class="font-section-title text-section-title">12</span>
+</button>
+<button class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-surface-container-low text-text-muted snap-center border border-transparent">
+<span class="font-label-chip text-label-chip uppercase">T3</span>
+<span class="font-section-title text-section-title">13</span>
+</button>
+<!-- Current Day -->
+<button class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-primary text-on-primary snap-center shadow-[0_8px_20px_-4px_rgba(0,106,70,0.3)]">
+<span class="font-label-chip text-label-chip uppercase text-primary-soft">T4</span>
+<span class="font-section-title text-section-title">14</span>
+</button>
+<!-- Next days -->
+<button class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-surface-container-low text-text-muted snap-center border border-transparent">
+<span class="font-label-chip text-label-chip uppercase">T5</span>
+<span class="font-section-title text-section-title">15</span>
+</button>
+<button class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-surface-container-low text-text-muted snap-center border border-transparent">
+<span class="font-label-chip text-label-chip uppercase">T6</span>
+<span class="font-section-title text-section-title">16</span>
+</button>
+</div>
+<!-- Filters -->
+<div class="flex gap-sm">
+<button class="px-4 py-2 rounded-full bg-mint-surface border border-primary text-primary font-label-chip text-label-chip flex items-center gap-xs">
+                    Tất cả
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container-low border border-transparent text-text-secondary font-label-chip text-label-chip flex items-center gap-xs">
+                    Chưa hoàn thành
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container-low border border-transparent text-text-secondary font-label-chip text-label-chip flex items-center gap-xs">
+                    Đã hoàn thành
+                </button>
+</div>
+</section>
+<!-- Nabi Contextual Guide -->
+<section class="bg-mint-surface rounded-2xl p-card-padding flex gap-md items-start relative overflow-hidden fade-in-up" style="animation-delay: 0.2s;">
+<!-- Decorative blur -->
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-primary-soft rounded-full blur-2xl opacity-60"></div>
+<div class="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0 z-10 p-1 border border-border-soft">
+<img alt="Nabi Guide" class="w-full h-full object-contain" data-alt="A friendly, minimalist 3D rendering of a small robot mascot named Nabi, with a soft green and white color palette, soft lighting, modern clinical aesthetic, approachable and warm expression, holding a small checklist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlFxUt_y7Tpbd5gC3cr0emdMxRm5CCusRn8nD1JdO9NghzZl2feEO4uOOhMRdfrXN8TLbE0nRNrfdccumfJExR3TBqVRN_NtANlZ8AwBvtkER-ycEYdGMImCf7uTYA3cEAb5YR7DiAzvjPkwK9r43W871-Td3GL3tZWzz6E9t-VQEqFBRiIu_VUJllEvo1Og62IXaTm8YQgQJrslDivNVUfh3kpxmN7qL3ESQ2TwY-rqZV9m-ILP47fA">
+</div>
+<div class="z-10">
+<h3 class="font-section-title text-section-title text-text-primary mb-xs">Nabi nhắc nhở</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">Bạn đang làm rất tốt! Hãy nhớ uống một cốc nước ấm trước khi bắt đầu bài tập thiền buổi sáng nhé. Điều này giúp khởi động hệ tiêu hóa.</p>
+</div>
+</section>
+<!-- Vertical Timeline -->
+<section class="flex flex-col fade-in-up relative" style="animation-delay: 0.3s;">
+<!-- Completed Item -->
+<div class="flex gap-md relative timeline-item timeline-line pb-lg">
+<!-- Status Icon Column -->
+<div class="flex flex-col items-center z-10 w-12 flex-shrink-0">
+<div class="w-12 h-12 rounded-full bg-success text-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+<!-- Content Card -->
+<div class="flex-grow bg-white rounded-2xl p-card-padding border border-border-soft shadow-sm opacity-70">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-chip text-label-chip text-text-muted">07:00</span>
+<span class="px-2 py-1 bg-surface-container-low text-text-secondary rounded text-[11px] font-medium tracking-wider">ĐÃ HOÀN THÀNH</span>
+</div>
+<h3 class="font-section-title text-section-title text-text-primary mb-xs line-through text-opacity-70">Uống 300ml nước ấm</h3>
+<p class="font-body-sm text-body-sm text-text-secondary mb-md">Thanh lọc cơ thể, kích thích tiêu hóa.</p>
+</div>
+</div>
+<!-- Current Active Item -->
+<div class="flex gap-md relative timeline-item timeline-line pb-lg">
+<!-- Status Icon Column -->
+<div class="flex flex-col items-center z-10 w-12 flex-shrink-0">
+<div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,106,70,0.3)] pulse-soft">
+<span class="material-symbols-outlined text-[24px]" data-icon="self_improvement">self_improvement</span>
+</div>
+</div>
+<!-- Content Card -->
+<div class="flex-grow bg-white rounded-2xl p-card-padding border border-primary shadow-[0_8px_24px_-8px_rgba(20,136,95,0.15)] relative overflow-hidden">
+<!-- subtle gradient background -->
+<div class="absolute inset-0 bg-gradient-to-br from-mint-surface/50 to-transparent pointer-events-none"></div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-chip text-label-chip text-primary font-bold">07:30 - Hiện tại</span>
+<span class="px-2 py-1 bg-mint-surface text-primary rounded text-[11px] font-bold tracking-wider">ĐANG CHỜ</span>
+</div>
+<h3 class="font-section-title text-section-title text-text-primary mb-xs">Thiền định 15 phút</h3>
+<p class="font-body-sm text-body-sm text-text-secondary mb-md">Giảm căng thẳng, tăng cường sự tập trung cho ngày mới.</p>
+<div class="flex gap-sm mt-sm">
+<button class="flex-1 bg-gradient-to-r from-[#0F8E62] to-[#32C789] text-white font-cta text-cta py-3 rounded-xl shadow-[0_4px_12px_rgba(20,136,95,0.2)] hover:opacity-90 transition-opacity flex justify-center items-center gap-xs">
+<span class="material-symbols-outlined text-[20px]" data-icon="check">check</span>
+                                Hoàn thành
+                            </button>
+<button class="w-12 h-12 flex items-center justify-center bg-surface-container rounded-xl text-text-secondary hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Skipped Item -->
+<div class="flex gap-md relative timeline-item timeline-line pb-lg">
+<!-- Status Icon Column -->
+<div class="flex flex-col items-center z-10 w-12 flex-shrink-0">
+<div class="w-12 h-12 rounded-full bg-surface-container-high text-text-muted flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]" data-icon="cancel">cancel</span>
+</div>
+</div>
+<!-- Content Card -->
+<div class="flex-grow bg-white rounded-2xl p-card-padding border border-border-soft shadow-sm opacity-60">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-chip text-label-chip text-text-muted">08:00</span>
+<span class="px-2 py-1 bg-surface-container text-text-muted rounded text-[11px] font-medium tracking-wider">ĐÃ BỎ QUA</span>
+</div>
+<h3 class="font-section-title text-section-title text-text-muted mb-xs line-through">Ăn sáng nhẹ (Trái cây)</h3>
+</div>
+</div>
+<!-- Upcoming Item -->
+<div class="flex gap-md relative timeline-item timeline-line pb-lg">
+<!-- Status Icon Column -->
+<div class="flex flex-col items-center z-10 w-12 flex-shrink-0">
+<div class="w-12 h-12 rounded-full bg-surface-container text-text-secondary flex items-center justify-center shadow-sm border border-border-soft">
+<span class="material-symbols-outlined text-[24px]" data-icon="directions_walk">directions_walk</span>
+</div>
+</div>
+<!-- Content Card -->
+<div class="flex-grow bg-white rounded-2xl p-card-padding border border-border-soft shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-chip text-label-chip text-text-secondary">16:30</span>
+<span class="px-2 py-1 bg-surface-container text-text-secondary rounded text-[11px] font-medium tracking-wider">SẮP TỚI</span>
+</div>
+<h3 class="font-section-title text-section-title text-text-primary mb-xs">Đi dạo nhẹ nhàng</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">30 phút đi bộ công viên để thư giãn sau giờ làm.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar from JSON -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)]">
+<div class="flex justify-around items-center px-4 pb-safe pt-2 h-16 w-full max-w-md mx-auto">
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors w-16">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-chip text-label-chip text-[11px]">Trang chủ</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-soft dark:bg-on-primary-fixed-variant text-primary dark:text-primary-fixed rounded-full px-4 py-1 hover:opacity-90 transition-colors">
+<span class="material-symbols-outlined mb-1" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip text-[11px]">Sức khỏe</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors w-16">
+<span class="material-symbols-outlined mb-1" data-icon="face">face</span>
+<span class="font-label-chip text-label-chip text-[11px]">Nabi</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors w-16">
+<span class="material-symbols-outlined mb-1" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-chip text-label-chip text-[11px]">Nhật ký</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors w-16">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-chip text-label-chip text-[11px]">Hồ sơ</span>
+</button>
+</div>
+</nav>
+<script>
+        // Simple logic to demonstrate delta refresh visualization (not full persistence logic)
+        document.addEventListener('DOMContentLoaded', () => {
+            const completeBtns = document.querySelectorAll('.font-cta'); // Very basic selector for the Complete button
+            
+            completeBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const card = this.closest('.timeline-item');
+                    
+                    // Add a brief loading state to simulate persistence wait
+                    this.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]" data-icon="sync">sync</span> Đang lưu...';
+                    this.disabled = true;
+
+                    setTimeout(() => {
+                        // After fake persistence, animate the delta change
+                        card.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                        
+                        setTimeout(() => {
+                            // Morph to completed state (simplified visual change for demo)
+                            const iconContainer = card.querySelector('.pulse-soft');
+                            if(iconContainer) {
+                                iconContainer.classList.remove('bg-primary', 'pulse-soft', 'shadow-[0_4px_12px_rgba(0,106,70,0.3)]');
+                                iconContainer.classList.add('bg-success');
+                                iconContainer.innerHTML = '<span class="material-symbols-outlined text-[24px]" data-icon="check_circle">check_circle</span>';
+                            }
+
+                            const contentCard = card.querySelector('.border-primary');
+                            if(contentCard) {
+                                contentCard.classList.remove('border-primary', 'shadow-[0_8px_24px_-8px_rgba(20,136,95,0.15)]');
+                                contentCard.classList.add('border-border-soft', 'shadow-sm', 'opacity-70');
+                                
+                                const title = contentCard.querySelector('h3');
+                                title.classList.add('line-through', 'text-opacity-70');
+                                
+                                const statusBadge = contentCard.querySelector('.bg-mint-surface');
+                                if(statusBadge) {
+                                    statusBadge.className = 'px-2 py-1 bg-surface-container-low text-text-secondary rounded text-[11px] font-medium tracking-wider';
+                                    statusBadge.textContent = 'ĐÃ HOÀN THÀNH';
+                                }
+
+                                const buttons = contentCard.querySelector('.flex.gap-sm.mt-sm');
+                                if(buttons) buttons.style.display = 'none';
+                            }
+                            
+                            card.classList.remove('opacity-0');
+                            card.classList.add('opacity-100');
+                        }, 300);
+                    }, 800); // 800ms fake network delay
+                });
+            });
+        });
+    </script>
+</body></html>

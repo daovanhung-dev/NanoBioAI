@@ -1,0 +1,328 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Uống nước - NaBi Wellness</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "energy-yellow": "#FFC857",
+                      "outline-variant": "#bccabf",
+                      "warning": "#B7791F",
+                      "error": "#C64A4A",
+                      "on-tertiary-fixed": "#002112",
+                      "surface-container-highest": "#dee4e1",
+                      "on-primary-container": "#f6fff6",
+                      "surface-container-low": "#f0f5f2",
+                      "on-error-container": "#93000a",
+                      "info": "#247CA8",
+                      "surface-tint": "#006c48",
+                      "text-muted": "#8A9B94",
+                      "background": "#f5faf7",
+                      "on-tertiary-container": "#f6fff6",
+                      "text-secondary": "#60766E",
+                      "tertiary": "#006a43",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#a7f2d1",
+                      "on-tertiary-fixed-variant": "#005233",
+                      "tertiary-fixed": "#70fcb7",
+                      "on-surface-variant": "#3d4a42",
+                      "on-primary": "#ffffff",
+                      "secondary-container": "#a4efce",
+                      "on-error": "#ffffff",
+                      "primary-soft": "#DDF6E9",
+                      "surface-dim": "#d6dbd8",
+                      "primary": "#006a46",
+                      "outline": "#6d7a71",
+                      "on-secondary-fixed": "#002116",
+                      "primary-fixed-dim": "#62dda3",
+                      "surface-container": "#eaefec",
+                      "primary-fixed": "#7ff9be",
+                      "text-primary": "#12352A",
+                      "inverse-on-surface": "#edf2ef",
+                      "inverse-surface": "#2c3230",
+                      "care-coral": "#FF7D75",
+                      "surface": "#f5faf7",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "surface-variant": "#dee4e1",
+                      "surface-bright": "#f5faf7",
+                      "calm-blue": "#58B9E8",
+                      "secondary": "#1d6a51",
+                      "surface-container-high": "#e4e9e6",
+                      "on-primary-fixed-variant": "#005235",
+                      "border-soft": "#D9E9E1",
+                      "on-surface": "#171d1b",
+                      "tertiary-fixed-dim": "#50df9c",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed-dim": "#8bd5b6",
+                      "mint-surface": "#EAF9F1",
+                      "success": "#14885F",
+                      "personal-purple": "#8B7CF6",
+                      "on-primary-fixed": "#002113",
+                      "on-background": "#171d1b",
+                      "primary-container": "#008559",
+                      "on-secondary-container": "#226f55",
+                      "tertiary-container": "#008656",
+                      "focus-ring": "#68D9A5",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-primary": "#62dda3"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "section-gap": "24px",
+                      "lg": "24px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "xxs": "2px",
+                      "md": "16px",
+                      "card-padding": "16px",
+                      "page-padding": "16px"
+              },
+              "fontFamily": {
+                      "body-base": [
+                              "Roboto"
+                      ],
+                      "body-sm": [
+                              "Roboto"
+                      ],
+                      "cta": [
+                              "Roboto"
+                      ],
+                      "screen-title": [
+                              "Roboto"
+                      ],
+                      "label-chip": [
+                              "Roboto"
+                      ],
+                      "section-title": [
+                              "Roboto"
+                      ],
+                      "display-hero": [
+                              "Roboto"
+                      ]
+              },
+              "fontSize": {
+                      "body-base": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "21px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "cta": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.2px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "screen-title": [
+                              "26px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.4px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-chip": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0.1px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "section-title": [
+                              "20px",
+                              {
+                                      "lineHeight": "26px",
+                                      "letterSpacing": "-0.2px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-hero": [
+                              "32px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.6px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .water-fill {
+            transition: height 1s ease-in-out;
+        }
+        .water-wave {
+            animation: wave 2s infinite linear;
+        }
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* Utility for smooth gradient background */
+        .bg-water-gradient {
+            background: linear-gradient(180deg, #58B9E8 0%, #14885F 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-base min-h-screen flex flex-col pb-20">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-page-padding h-16 w-full z-50 docked full-width top-0 sticky backdrop-blur-md bg-surface/80 dark:bg-surface-dim/80 flat no shadows text-primary dark:text-primary-fixed-dim">
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title font-display-hero text-display-hero text-primary dark:text-primary-fixed-dim">NaBi Wellness</h1>
+<button class="w-10 h-10 rounded-full overflow-hidden hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95 transition-transform flex items-center justify-center bg-mint-surface border border-border-soft">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="A portrait photograph of a confident professional smiling warmly, bathed in bright, soft natural light against a clean, minimalist green background. The lighting emphasizes a modern, light-mode wellness aesthetic with high-key clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYiMP6Z6tRsD2q83jfrjZkqqaqlwLUTHrWHqeE9thowHGiKoa7ohvt4HLXEFBpdX4wOEz7hfvIfzT1HCoJmBtkL4fVk6Oz_jUW8lrUAK1WfHLBOV1k14iq8e4JWAPb1u659CLKnMmbCCELXJdRYtLpIswR-2X-NQqrkTHHB-kq6__73BL5rRq2KDVSnvZ8LZs441OTQYahK20ng9jbP-GZuRd5kWI3BmvSzPZ60-EjNLzrARflOczUQw">
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow px-page-padding flex flex-col gap-section-gap py-section-gap max-w-md mx-auto w-full relative">
+<!-- Header -->
+<div class="text-center">
+<h2 class="font-section-title text-section-title text-text-primary">Uống nước</h2>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Daily hydration tracker</p>
+</div>
+<!-- Central Water Visual -->
+<div class="relative w-64 h-64 mx-auto flex items-center justify-center">
+<!-- Glass/Drop Container -->
+<div class="w-56 h-56 rounded-full border-4 border-surface-container-high relative overflow-hidden bg-mint-surface/30 flex items-center justify-center shadow-sm">
+<!-- Water Fill (Animates height) -->
+<div class="absolute bottom-0 left-0 w-[200%] h-[60%] bg-calm-blue/80 water-fill water-wave" style="border-radius: 40% 40% 0 0;"></div>
+<!-- Center Value -->
+<div class="relative z-10 flex flex-col items-center">
+<span class="font-display-hero text-display-hero text-primary">1.2</span>
+<span class="font-body-base text-body-base text-text-secondary">/ 2.0 Lít</span>
+</div>
+</div>
+<!-- Decorative particles -->
+<span class="material-symbols-outlined absolute top-4 left-10 text-calm-blue/50 transform -rotate-12" data-icon="water_drop" data-weight="fill" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+<span class="material-symbols-outlined absolute bottom-10 right-4 text-calm-blue/30 transform rotate-45 scale-75" data-icon="water_drop" data-weight="fill" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+</div>
+<!-- Nabi Assistant Message -->
+<div class="flex items-end gap-sm bg-mint-surface p-card-padding rounded-xl border border-border-soft shadow-sm relative">
+<!-- Nabi Avatar (Simplified as an icon for now, normally would be image) -->
+<div class="w-12 h-12 rounded-full bg-primary-soft flex items-center justify-center flex-shrink-0 border border-primary/10">
+<img alt="Nabi mascot" class="w-10 h-10 object-contain" data-alt="A stylized 3D illustration of a friendly robotic mascot character with rounded organic shapes and a calming green and white color palette. The character holds a small glass of water, lit brightly with soft, modern studio lighting to match a clean app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0suU0aNZmrU7P1840efOdcAXiczHtJmIwlt2dwrrZD2TYNm_EEIryRhBv4dmscuBA2o-wtLx3qjH22uCgXk2GjDVOOCLXO2__GEQXezrHji2jXC4I2Mc8QLGmUghv0jyGWowTPldMHMul0Io26MxIUkxuzWj4Kx_xQtJlJMTPYZYeU9N6qdESPOMFDtP4K72XmN9xYulP7lAG-tn2y315Q_I-En7EKbyNTrE6slJcQ2sLZDP3l_djlA">
+</div>
+<!-- Speech Bubble -->
+<div class="bg-surface rounded-2xl rounded-bl-sm p-3 border border-border-soft flex-grow shadow-[0_2px_8px_rgba(20,163,111,0.04)]">
+<p class="font-body-sm text-body-sm text-text-primary">"Đừng quên tiếp nước nhé!"</p>
+</div>
+</div>
+<!-- Quick Add Buttons -->
+<div class="grid grid-cols-3 gap-3 mt-4">
+<button class="flex flex-col items-center justify-center py-3 bg-surface border border-border-soft rounded-xl hover:bg-mint-surface active:scale-95 transition-all shadow-sm">
+<span class="material-symbols-outlined text-info mb-1" data-icon="local_drink">local_drink</span>
+<span class="font-cta text-cta text-text-primary">+200ml</span>
+</button>
+<button class="flex flex-col items-center justify-center py-3 bg-surface border border-border-soft rounded-xl hover:bg-mint-surface active:scale-95 transition-all shadow-sm">
+<span class="material-symbols-outlined text-calm-blue mb-1" data-icon="water_bottle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">water_bottle</span>
+<span class="font-cta text-cta text-text-primary">+350ml</span>
+</button>
+<button class="flex flex-col items-center justify-center py-3 bg-surface border border-border-soft rounded-xl hover:bg-mint-surface active:scale-95 transition-all shadow-sm">
+<span class="material-symbols-outlined text-primary mb-1" data-icon="coffee" data-weight="fill" style="font-variation-settings: 'FILL' 1;">coffee</span>
+<span class="font-cta text-cta text-text-primary">+500ml</span>
+</button>
+</div>
+<!-- Overall Progress Bar (Bottom) -->
+<div class="mt-auto pt-lg">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-chip text-label-chip text-text-secondary">Tiến độ hôm nay</span>
+<span class="font-label-chip text-label-chip text-primary font-bold">60%</span>
+</div>
+<div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-calm-blue to-primary w-[60%] rounded-full transition-all duration-500"></div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-4 pb-safe bg-surface/90 dark:bg-surface-container-lowest/90 shadow-[0_-4px_12px_rgba(20,163,111,0.08)] rounded-t-xl backdrop-blur-lg z-50">
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 p-2 min-w-[48px]" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-chip text-label-chip">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim relative after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 p-2 min-w-[48px]" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip">Sức khỏe</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 p-2 min-w-[48px]" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-chip text-label-chip">Nabi</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 p-2 min-w-[48px]" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="book">book</span>
+<span class="font-label-chip text-label-chip">Nhật ký</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 p-2 min-w-[48px]" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-chip text-label-chip">Hồ sơ</span>
+</a>
+</nav>
+<script>
+        // Simple interaction script to demonstrate adding water
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('.grid button');
+            const fillElement = document.querySelector('.water-fill');
+            const valueElement = document.querySelector('.font-display-hero');
+            const progressElement = document.querySelector('.bg-gradient-to-r');
+            const percentageElement = document.querySelector('.font-label-chip.font-bold');
+            
+            let currentVolume = 1.2;
+            const maxVolume = 2.0;
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Extract value from button text (e.g., "+200ml" -> 0.2)
+                    const text = btn.querySelector('.font-cta').innerText;
+                    const amount = parseInt(text.replace(/[^0-9]/g, '')) / 1000;
+                    
+                    if (currentVolume < maxVolume) {
+                        currentVolume = Math.min(currentVolume + amount, maxVolume);
+                        const percentage = (currentVolume / maxVolume) * 100;
+                        
+                        // Update UI
+                        valueElement.innerText = currentVolume.toFixed(1);
+                        fillElement.style.height = `${percentage}%`;
+                        progressElement.style.width = `${percentage}%`;
+                        percentageElement.innerText = `${Math.round(percentage)}%`;
+
+                        // Optional: Add a temporary success state to the button
+                        const originalBg = btn.className;
+                        btn.classList.add('bg-mint-surface', 'border-primary');
+                        setTimeout(() => {
+                            btn.className = originalBg;
+                        }, 300);
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Thanh Toán Thẻ Hội Viên</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#3d4a42",
+                        "secondary": "#1d6a51",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-secondary-container": "#226f55",
+                        "primary-container": "#008559",
+                        "personal-purple": "#8B7CF6",
+                        "text-primary": "#12352A",
+                        "surface-bright": "#f5faf7",
+                        "surface": "#f5faf7",
+                        "text-muted": "#8A9B94",
+                        "surface-container": "#eaefec",
+                        "on-surface": "#171d1b",
+                        "on-tertiary-fixed": "#002112",
+                        "surface-dim": "#d6dbd8",
+                        "care-coral": "#FF7D75",
+                        "outline": "#6d7a71",
+                        "primary": "#006a46",
+                        "secondary-container": "#a4efce",
+                        "on-secondary-fixed": "#002116",
+                        "energy-yellow": "#FFC857",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#002113",
+                        "background": "#f5faf7",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#008656",
+                        "primary-fixed": "#7ff9be",
+                        "text-secondary": "#60766E",
+                        "info": "#247CA8",
+                        "mint-surface": "#EAF9F1",
+                        "warning": "#B7791F",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-variant": "#dee4e1",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bccabf",
+                        "on-tertiary-container": "#f6fff6",
+                        "on-primary-container": "#f6fff6",
+                        "focus-ring": "#68D9A5",
+                        "inverse-on-surface": "#edf2ef",
+                        "primary-fixed-dim": "#62dda3",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface-container-high": "#e4e9e6",
+                        "primary-soft": "#DDF6E9",
+                        "inverse-surface": "#2c3230",
+                        "border-soft": "#D9E9E1",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-secondary": "#ffffff",
+                        "error": "#C64A4A",
+                        "surface-tint": "#006c48",
+                        "surface-container-low": "#f0f5f2",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "secondary-fixed": "#a7f2d1",
+                        "tertiary": "#006a43",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#62dda3",
+                        "success": "#14885F",
+                        "calm-blue": "#58B9E8",
+                        "on-background": "#171d1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "page-padding": "16px",
+                        "card-padding": "16px",
+                        "md": "16px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "sm": "8px",
+                        "safe": "env(safe-area-inset-bottom, 20px)"
+                    },
+                    "fontFamily": {
+                        "label-chip": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-sm": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .pulse-border {
+            animation: pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { border-color: transparent; }
+            50% { border-color: theme('colors.primary'); }
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen text-on-background pb-[100px]">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-text-primary" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim">Thanh Toán</h1>
+<div class="w-10"></div> <!-- Spacer -->
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-[88px] px-page-padding max-w-md mx-auto space-y-section-gap">
+<!-- Plan Selection Section (Visible by default) -->
+<section class="space-y-4" id="plan-selection">
+<div class="text-center mb-6">
+<h2 class="font-section-title text-section-title text-text-primary mb-2">Chọn Gói Hội Viên</h2>
+<p class="font-body-base text-body-base text-text-secondary">Nâng cấp trải nghiệm sức khỏe cùng NaBi</p>
+</div>
+<!-- Basic Plan Card -->
+<button class="w-full text-left bg-surface-container-lowest border border-border-soft rounded-[20px] p-card-padding shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] hover:border-primary transition-colors focus:ring-2 focus:ring-focus-ring relative group" onclick="selectPlan('basic')">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-mint-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-xl" data-icon="spa">spa</span>
+</div>
+<h3 class="font-cta text-cta text-text-primary">Gói Cơ Bản</h3>
+</div>
+<span class="font-section-title text-section-title text-primary">99k<span class="text-sm font-normal text-text-secondary">/tháng</span></span>
+</div>
+<ul class="space-y-2 mt-4 font-body-sm text-body-sm text-text-secondary">
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-success text-[16px]">check</span> Theo dõi chỉ số sức khỏe cơ bản</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-success text-[16px]">check</span> Lời khuyên dinh dưỡng hàng ngày</li>
+</ul>
+</button>
+<!-- Plus Plan Card (Selected State Example) -->
+<button class="w-full text-left bg-surface-container-lowest border-2 border-primary rounded-[20px] p-card-padding shadow-[0_8px_20px_0_rgba(20,163,111,0.16)] relative" onclick="selectPlan('plus')">
+<div class="absolute top-0 right-0 bg-primary text-on-primary font-label-chip text-label-chip px-3 py-1 rounded-bl-[20px] rounded-tr-[16px]">
+                    Phổ Biến Nhất
+                </div>
+<div class="flex justify-between items-start mb-2 mt-2">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary-soft flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-xl" data-icon="verified">verified</span>
+</div>
+<h3 class="font-cta text-cta text-text-primary">Gói Plus</h3>
+</div>
+<span class="font-section-title text-section-title text-primary">199k<span class="text-sm font-normal text-text-secondary">/tháng</span></span>
+</div>
+<ul class="space-y-2 mt-4 font-body-sm text-body-sm text-text-secondary">
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-success text-[16px]">check</span> Mọi tính năng của gói Cơ Bản</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-success text-[16px]">check</span> Tư vấn trực tiếp với NaBi Assistant</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-success text-[16px]">check</span> Báo cáo chuyên sâu hàng tháng</li>
+</ul>
+</button>
+</section>
+<!-- Payment Pending Section (Hidden by default, shown for demo) -->
+<section class="hidden space-y-6" id="payment-pending">
+<div class="bg-surface-container-lowest rounded-[24px] p-6 text-center shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] border border-border-soft">
+<div class="w-16 h-16 mx-auto bg-energy-yellow/20 text-warning rounded-full flex items-center justify-center mb-4 pulse-border border-4">
+<span class="material-symbols-outlined text-3xl" data-icon="hourglass_top">hourglass_top</span>
+</div>
+<h2 class="font-section-title text-section-title text-text-primary mb-2">Đang chờ thanh toán</h2>
+<p class="font-body-sm text-body-sm text-text-secondary mb-6">Vui lòng quét mã QR dưới đây qua ứng dụng ngân hàng hoặc ví điện tử để hoàn tất.</p>
+<!-- Mock QR Code -->
+<div class="w-48 h-48 mx-auto bg-surface-container rounded-xl flex items-center justify-center mb-6 relative overflow-hidden">
+<div class="bg-cover bg-center w-full h-full absolute inset-0 opacity-80 mix-blend-multiply" data-alt="A detailed digital rendering of a clean, minimalist QR code payment interface on a white background, incorporating subtle medical cross motifs and soft green accents consistent with a modern health and wellness app. High contrast, sharp edges, professional ui presentation." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBFKyRCQ0pvwmEBgsWckfppeuO76EwUGMNaqKA2WcrsKN7qlNV7lk2HK86O985gzMD1xVxUE3t5yAaFoaUKE-DA1UMyaXrR9W_87aSx7xVxXEmd1ChgbUeomTdDa-Bv57W_rqVuAc58FVW-_FEeg6R6wIMUGAmVZseIQMeNGY54iIpuW9L9dDVbQ_v5_7Utfgfr-DknEVhk9V6OIJtnL4cNN9JeDglvBM0wORwWUVDwgRgrNoEObbcwew')"></div>
+<span class="material-symbols-outlined text-4xl text-outline z-10">qr_code_2</span>
+</div>
+<div class="bg-mint-surface p-4 rounded-xl text-left border border-border-soft">
+<div class="flex justify-between items-center mb-2">
+<span class="font-body-sm text-body-sm text-text-secondary">Số tiền:</span>
+<span class="font-cta text-cta text-primary">199.000 VNĐ</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-text-secondary">Mã GD:</span>
+<span class="font-label-chip text-label-chip text-text-primary bg-surface py-1 px-2 rounded font-mono">NB20231024</span>
+</div>
+</div>
+</div>
+<button class="w-full py-4 rounded-xl border border-primary text-primary font-cta text-cta text-center hover:bg-mint-surface transition-colors" onclick="cancelPayment()">
+                Hủy giao dịch
+            </button>
+</section>
+</main>
+<!-- Fixed Bottom CTA (For Plan Selection) -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-md p-4 border-t border-border-soft z-40 pb-safe" id="bottom-cta">
+<div class="max-w-md mx-auto">
+<button class="w-full bg-gradient-to-r from-[#0F8E62] to-[#32C789] text-on-primary font-cta text-cta py-4 rounded-[16px] shadow-[0_8px_20px_0_rgba(20,163,111,0.24)] hover:shadow-lg transition-all active:scale-[0.98]" onclick="proceedToPayment()">
+                Tiếp tục thanh toán - Gói Plus
+            </button>
+</div>
+</div>
+<script>
+        // Simple mock logic to switch states for demonstration
+        function proceedToPayment() {
+            document.getElementById('plan-selection').classList.add('hidden');
+            document.getElementById('bottom-cta').classList.add('hidden');
+            document.getElementById('payment-pending').classList.remove('hidden');
+        }
+
+        function cancelPayment() {
+            document.getElementById('payment-pending').classList.add('hidden');
+            document.getElementById('plan-selection').classList.remove('hidden');
+            document.getElementById('bottom-cta').classList.remove('hidden');
+        }
+
+        function selectPlan(plan) {
+            // Visual selection logic would go here
+            console.log('Selected:', plan);
+        }
+    </script>
+</body></html>

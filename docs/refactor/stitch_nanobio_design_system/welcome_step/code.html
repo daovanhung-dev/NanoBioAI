@@ -1,0 +1,258 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>NaBi Wellness - Welcome</title>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts (Roboto) -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "border-soft": "#D9E9E1",
+                    "on-tertiary-fixed": "#002112",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed-dim": "#50df9c",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "on-primary-fixed": "#002113",
+                    "primary-fixed-dim": "#62dda3",
+                    "tertiary": "#006a43",
+                    "inverse-surface": "#2c3230",
+                    "primary-container": "#008559",
+                    "warning": "#B7791F",
+                    "secondary-fixed-dim": "#8bd5b6",
+                    "on-error-container": "#93000a",
+                    "text-primary": "#12352A",
+                    "surface-bright": "#f5faf7",
+                    "calm-blue": "#58B9E8",
+                    "focus-ring": "#68D9A5",
+                    "primary": "#006a46",
+                    "primary-soft": "#DDF6E9",
+                    "surface-variant": "#dee4e1",
+                    "personal-purple": "#8B7CF6",
+                    "inverse-on-surface": "#edf2ef",
+                    "outline": "#6d7a71",
+                    "on-tertiary-fixed-variant": "#005233",
+                    "surface": "#f5faf7",
+                    "surface-dim": "#d6dbd8",
+                    "secondary": "#1d6a51",
+                    "secondary-container": "#a4efce",
+                    "surface-container-highest": "#dee4e1",
+                    "on-secondary-container": "#226f55",
+                    "surface-tint": "#006c48",
+                    "on-primary-container": "#f6fff6",
+                    "surface-container": "#eaefec",
+                    "error": "#C64A4A",
+                    "text-secondary": "#60766E",
+                    "outline-variant": "#bccabf",
+                    "tertiary-fixed": "#70fcb7",
+                    "primary-fixed": "#7ff9be",
+                    "tertiary-container": "#008656",
+                    "on-primary-fixed-variant": "#005235",
+                    "care-coral": "#FF7D75",
+                    "energy-yellow": "#FFC857",
+                    "text-muted": "#8A9B94",
+                    "surface-container-low": "#f0f5f2",
+                    "on-secondary-fixed": "#002116",
+                    "surface-container-high": "#e4e9e6",
+                    "background": "#f5faf7",
+                    "secondary-fixed": "#a7f2d1",
+                    "info": "#247CA8",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#62dda3",
+                    "success": "#14885F",
+                    "on-tertiary-container": "#f6fff6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#171d1b",
+                    "on-surface-variant": "#3d4a42",
+                    "on-surface": "#171d1b",
+                    "mint-surface": "#EAF9F1",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px",
+                    "2xl": "1.25rem",
+                    "3xl": "1.5rem",
+                    "4xl": "2rem"
+            },
+            "spacing": {
+                    "card-padding": "16px",
+                    "xl": "32px",
+                    "xs": "4px",
+                    "xxs": "2px",
+                    "section-gap": "24px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "page-padding": "16px",
+                    "safe": "env(safe-area-inset-bottom)"
+            },
+            "fontFamily": {
+                    "body-sm": ["Roboto", "sans-serif"],
+                    "screen-title": ["Roboto", "sans-serif"],
+                    "label-chip": ["Roboto", "sans-serif"],
+                    "section-title": ["Roboto", "sans-serif"],
+                    "display-hero": ["Roboto", "sans-serif"],
+                    "body-base": ["Roboto", "sans-serif"],
+                    "cta": ["Roboto", "sans-serif"]
+            },
+            "fontSize": {
+                    "body-sm": ["14px", {"lineHeight": "21px", "fontWeight": "400"}],
+                    "screen-title": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700"}],
+                    "label-chip": ["13px", {"lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500"}],
+                    "section-title": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600"}],
+                    "display-hero": ["32px", {"lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700"}],
+                    "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "cta": ["16px", {"lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600"}]
+            },
+            "boxShadow": {
+                "soft-green": "0 8px 20px 0 rgba(20, 163, 111, 0.08)",
+                "hero-float": "0 8px 20px 0 rgba(20, 163, 111, 0.16)"
+            },
+            "backgroundImage": {
+                "primary-gradient": "linear-gradient(135deg, #0F8E62 0%, #32C789 100%)"
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Custom Animations */
+        @keyframes float-gentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float {
+            animation: float-gentle 4s ease-in-out infinite;
+        }
+        
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up {
+            animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+        
+        /* Hide scrollbar for a cleaner look while maintaining functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center justify-center relative overflow-hidden font-body-base">
+<!-- Background Decor (Minimalist geometric blobs representing organic vitality) -->
+<div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+<div class="absolute top-[-10%] right-[-5%] w-[60vw] h-[60vw] max-w-[400px] max-h-[400px] bg-primary-soft rounded-full mix-blend-multiply filter blur-3xl opacity-60"></div>
+<div class="absolute bottom-[-15%] left-[-10%] w-[80vw] h-[80vw] max-w-[500px] max-h-[500px] bg-secondary-fixed rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
+</div>
+<!-- Main Container - Mobile First -->
+<main class="w-full max-w-md mx-auto h-full min-h-screen flex flex-col justify-between px-page-padding py-xl relative z-10">
+<!-- Top Spacer for balance -->
+<div class="flex-shrink-0 h-4"></div>
+<!-- Central Content Canvas -->
+<div class="flex flex-col items-center flex-grow justify-center space-y-section-gap w-full">
+<!-- Hero Illustration Canvas -->
+<div class="relative w-48 h-48 sm:w-56 sm:h-56 mb-lg flex items-center justify-center animate-fade-up">
+<!-- Soft Glow behind Avatar -->
+<div class="absolute inset-0 bg-mint-surface rounded-full filter blur-xl opacity-80"></div>
+<!-- Nabi Avatar Image -->
+<div class="relative z-10 w-full h-full animate-float">
+<img alt="Nabi waving hello" class="w-full h-full object-contain" data-alt="A highly detailed, 3D rendered, cute, friendly mascot representing health and vitality. The mascot has organic, rounded shapes, perhaps resembling a stylized leaf or a gentle creature. It is smiling and waving energetically. The color palette is bright, featuring natural greens and soft whites. The lighting is studio-quality, soft and inviting, emphasizing a modern, companionable, non-clinical feel against a clean, minimal background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvTUvw_WlHiEwHZHS9lZhspBrwH3NXrCtpTxBYGsuEEWSX1wgpEv6KcLOVfgyG5_Kscz2opZtaIu_bcjtOBmWYr3ZtJ6KJd-Ss92AaV8OO-n5BZ-5tYPTmXyipJqR19D07OVCFHZjWeCAb2SxKQ-1gt1Oz7fGWozwj2BPp29YFK_ox2tbfNcU0GQMpBtEmoFLp9WWnAAw3YVE33WDe99oXcIJiNuXMeuiMPeeApDgyMt_FXq3rMFhjjg">
+</div>
+<!-- Decorative Sparkles -->
+<span class="material-symbols-outlined absolute top-4 right-4 text-primary-fixed-dim text-2xl" style="font-variation-settings: 'FILL' 1;">arrow_back_ios_new</span>
+<span class="material-symbols-outlined absolute bottom-8 left-0 text-secondary text-xl opacity-50" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<!-- Header Text -->
+<div class="text-center w-full space-y-sm animate-fade-up stagger-1 px-4">
+<h1 class="font-display-hero text-display-hero text-primary">Nabi rất vui được gặp bạn!</h1>
+<p class="font-body-base text-body-base text-text-secondary max-w-[280px] mx-auto">
+                    Người bạn đồng hành chăm sóc sức khỏe hàng ngày của bạn.
+                </p>
+</div>
+<!-- Benefit Cards (Bento Style) -->
+<div class="w-full flex flex-col space-y-md mt-lg px-2">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-border-soft rounded-2xl p-card-padding flex items-center shadow-soft-green animate-fade-up stagger-2">
+<div class="w-12 h-12 rounded-full bg-mint-surface flex items-center justify-center text-primary flex-shrink-0 mr-md">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+</div>
+<div class="flex-grow">
+<h3 class="font-section-title text-section-title text-text-primary text-[16px]">Lịch trình cá nhân</h3>
+<p class="font-body-sm text-body-sm text-text-secondary mt-xs">Kế hoạch phù hợp riêng biệt</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest border border-border-soft rounded-2xl p-card-padding flex items-center shadow-soft-green animate-fade-up stagger-3" style="animation-delay: 0.25s;">
+<div class="w-12 h-12 rounded-full bg-mint-surface flex items-center justify-center text-info flex-shrink-0 mr-md">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+</div>
+<div class="flex-grow">
+<h3 class="font-section-title text-section-title text-text-primary text-[16px]">Theo dõi thông minh</h3>
+<p class="font-body-sm text-body-sm text-text-secondary mt-xs">Chỉ số sức khỏe trực quan</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest border border-border-soft rounded-2xl p-card-padding flex items-center shadow-soft-green animate-fade-up stagger-3" style="animation-delay: 0.3s;">
+<div class="w-12 h-12 rounded-full bg-mint-surface flex items-center justify-center text-care-coral flex-shrink-0 mr-md">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">support_agent</span>
+</div>
+<div class="flex-grow">
+<h3 class="font-section-title text-section-title text-text-primary text-[16px]">Chuyên gia đồng hành</h3>
+<p class="font-body-sm text-body-sm text-text-secondary mt-xs">Tư vấn sức khỏe 24/7</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Action Area -->
+<div class="w-full pt-lg pb-safe flex-shrink-0 animate-fade-up stagger-3" style="animation-delay: 0.4s;">
+<button class="w-full h-14 bg-primary-gradient text-on-primary rounded-full font-cta text-cta shadow-hero-float flex items-center justify-center space-x-2 transition-transform duration-200 active:scale-95 hover:opacity-95">
+<span>Bắt đầu tìm hiểu</span>
+<span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+</main>
+<script>
+        // Simple micro-interaction for button press effect, though handled mostly by tailwind active:scale
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.querySelector('button');
+            if(btn) {
+                btn.addEventListener('touchstart', () => {
+                    btn.style.transform = 'scale(0.97)';
+                }, {passive: true});
+                btn.addEventListener('touchend', () => {
+                    btn.style.transform = 'scale(1)';
+                }, {passive: true});
+            }
+        });
+    </script>
+</body></html>

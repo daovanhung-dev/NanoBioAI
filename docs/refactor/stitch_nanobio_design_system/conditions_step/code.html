@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Nabi Wellness - Tình trạng sức khỏe</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "border-soft": "#D9E9E1",
+                        "on-tertiary-fixed": "#002112",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-primary-fixed": "#002113",
+                        "primary-fixed-dim": "#62dda3",
+                        "tertiary": "#006a43",
+                        "inverse-surface": "#2c3230",
+                        "primary-container": "#008559",
+                        "warning": "#B7791F",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "on-error-container": "#93000a",
+                        "text-primary": "#12352A",
+                        "surface-bright": "#f5faf7",
+                        "calm-blue": "#58B9E8",
+                        "focus-ring": "#68D9A5",
+                        "primary": "#006a46",
+                        "primary-soft": "#DDF6E9",
+                        "surface-variant": "#dee4e1",
+                        "personal-purple": "#8B7CF6",
+                        "inverse-on-surface": "#edf2ef",
+                        "outline": "#6d7a71",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface": "#f5faf7",
+                        "surface-dim": "#d6dbd8",
+                        "secondary": "#1d6a51",
+                        "secondary-container": "#a4efce",
+                        "surface-container-highest": "#dee4e1",
+                        "on-secondary-container": "#226f55",
+                        "surface-tint": "#006c48",
+                        "on-primary-container": "#f6fff6",
+                        "surface-container": "#eaefec",
+                        "error": "#C64A4A",
+                        "text-secondary": "#60766E",
+                        "outline-variant": "#bccabf",
+                        "tertiary-fixed": "#70fcb7",
+                        "primary-fixed": "#7ff9be",
+                        "tertiary-container": "#008656",
+                        "on-primary-fixed-variant": "#005235",
+                        "care-coral": "#FF7D75",
+                        "energy-yellow": "#FFC857",
+                        "text-muted": "#8A9B94",
+                        "surface-container-low": "#f0f5f2",
+                        "on-secondary-fixed": "#002116",
+                        "surface-container-high": "#e4e9e6",
+                        "background": "#f5faf7",
+                        "secondary-fixed": "#a7f2d1",
+                        "info": "#247CA8",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#62dda3",
+                        "success": "#14885F",
+                        "on-tertiary-container": "#f6fff6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#171d1b",
+                        "on-surface-variant": "#3d4a42",
+                        "on-surface": "#171d1b",
+                        "mint-surface": "#EAF9F1",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "16px",
+                        "xl": "32px",
+                        "xs": "4px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "page-padding": "16px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "cta": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F6FBF8;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #0F8E62 0%, #32C789 100%);
+        }
+
+        .shadow-hero {
+            box-shadow: 0 8px 20px rgba(20, 163, 111, 0.16);
+        }
+
+        .shadow-soft {
+            box-shadow: 0 4px 12px rgba(20, 163, 111, 0.08);
+        }
+        
+        /* Custom Scrollbar for chips area */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased flex flex-col min-h-screen">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md shadow-sm flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button class="w-12 h-12 flex items-center justify-center -ml-3 text-text-primary hover:opacity-80 transition-opacity rounded-full focus:outline-none focus:ring-2 focus:ring-focus-ring">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary">NaBi Wellness</h1>
+<div class="w-12 h-12 flex items-center justify-center -mr-3">
+<div class="w-8 h-8 rounded-full bg-mint-surface overflow-hidden border border-border-soft flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">face</span>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow pt-24 pb-32 px-page-padding max-w-md mx-auto w-full flex flex-col gap-section-gap">
+<!-- Header Section -->
+<section class="flex flex-col gap-2">
+<h2 class="font-display-hero text-display-hero text-text-primary">Tình trạng sức khỏe</h2>
+<p class="font-body-base text-body-base text-text-secondary">Nếu bạn có các tình trạng sau, Nabi sẽ điều chỉnh các gợi ý an toàn hơn.</p>
+</section>
+<!-- Search Section -->
+<section class="flex flex-col gap-4">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" style="font-variation-settings: 'FILL' 0;">search</span>
+<input class="w-full pl-12 pr-4 py-3 bg-surface-container-lowest border border-border-soft rounded-xl font-body-base text-body-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-focus-ring shadow-soft transition-all duration-200" placeholder="Tìm kiếm tình trạng..." type="text">
+</div>
+<!-- Selected Chips Area (Empty State - normally hidden if empty, but keeping structural space) -->
+<div class="flex flex-wrap gap-2 min-h-[40px] items-center">
+<!-- Example of a selected chip -->
+<div class="inline-flex items-center gap-1 pl-3 pr-2 py-1.5 bg-mint-surface border border-primary/20 rounded-full">
+<span class="font-label-chip text-label-chip text-primary">Huyết áp cao</span>
+<button class="w-5 h-5 flex items-center justify-center rounded-full text-primary hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+</div>
+<div class="inline-flex items-center gap-1 pl-3 pr-2 py-1.5 bg-mint-surface border border-primary/20 rounded-full">
+<span class="font-label-chip text-label-chip text-primary">Dạ dày</span>
+<button class="w-5 h-5 flex items-center justify-center rounded-full text-primary hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Conditions Grid -->
+<section class="grid grid-cols-2 gap-3">
+<!-- Unselected Item -->
+<button class="flex items-center justify-between p-3 bg-surface-container-lowest border border-border-soft rounded-xl shadow-sm hover:border-primary/50 transition-colors text-left group">
+<span class="font-body-sm text-body-sm text-text-primary group-hover:text-primary transition-colors">Tiểu đường</span>
+<span class="material-symbols-outlined text-text-muted text-[20px]" style="font-variation-settings: 'FILL' 0;">add_circle</span>
+</button>
+<!-- Unselected Item -->
+<button class="flex items-center justify-between p-3 bg-surface-container-lowest border border-border-soft rounded-xl shadow-sm hover:border-primary/50 transition-colors text-left group">
+<span class="font-body-sm text-body-sm text-text-primary group-hover:text-primary transition-colors">Béo phì</span>
+<span class="material-symbols-outlined text-text-muted text-[20px]" style="font-variation-settings: 'FILL' 0;">add_circle</span>
+</button>
+<!-- Unselected Item -->
+<button class="flex items-center justify-between p-3 bg-surface-container-lowest border border-border-soft rounded-xl shadow-sm hover:border-primary/50 transition-colors text-left group">
+<span class="font-body-sm text-body-sm text-text-primary group-hover:text-primary transition-colors">Mỡ máu cao</span>
+<span class="material-symbols-outlined text-text-muted text-[20px]" style="font-variation-settings: 'FILL' 0;">add_circle</span>
+</button>
+<!-- Unselected Item -->
+<button class="flex items-center justify-between p-3 bg-surface-container-lowest border border-border-soft rounded-xl shadow-sm hover:border-primary/50 transition-colors text-left group">
+<span class="font-body-sm text-body-sm text-text-primary group-hover:text-primary transition-colors">Gout</span>
+<span class="material-symbols-outlined text-text-muted text-[20px]" style="font-variation-settings: 'FILL' 0;">add_circle</span>
+</button>
+<!-- Unselected Item -->
+<button class="flex items-center justify-between p-3 bg-surface-container-lowest border border-border-soft rounded-xl shadow-sm hover:border-primary/50 transition-colors text-left group">
+<span class="font-body-sm text-body-sm text-text-primary group-hover:text-primary transition-colors">Xương khớp</span>
+<span class="material-symbols-outlined text-text-muted text-[20px]" style="font-variation-settings: 'FILL' 0;">add_circle</span>
+</button>
+<!-- Unselected Item -->
+<button class="flex items-center justify-between p-3 bg-surface-container-lowest border border-border-soft rounded-xl shadow-sm hover:border-primary/50 transition-colors text-left group">
+<span class="font-body-sm text-body-sm text-text-primary group-hover:text-primary transition-colors">Tim mạch</span>
+<span class="material-symbols-outlined text-text-muted text-[20px]" style="font-variation-settings: 'FILL' 0;">add_circle</span>
+</button>
+</section>
+</main>
+<!-- Bottom Action Area -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-border-soft pb-safe pt-4 px-page-padding z-40 max-w-md mx-auto left-1/2 -translate-x-1/2">
+<!-- Medical Disclaimer -->
+<div class="mb-4 p-3 bg-mint-surface rounded-lg flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5 text-[20px]" style="font-variation-settings: 'FILL' 1;">info</span>
+<p class="font-body-sm text-body-sm text-text-secondary leading-tight">
+                Nabi là ứng dụng hỗ trợ chăm sóc sức khỏe, không thay thế cho chẩn đoán hay lời khuyên y tế chuyên nghiệp.
+            </p>
+</div>
+<button class="w-full h-[52px] hero-gradient rounded-full flex items-center justify-center font-cta text-cta text-on-primary shadow-hero hover:opacity-90 active:scale-[0.98] transition-all duration-200 mb-6">
+            Tiếp theo
+        </button>
+</div>
+</body></html>

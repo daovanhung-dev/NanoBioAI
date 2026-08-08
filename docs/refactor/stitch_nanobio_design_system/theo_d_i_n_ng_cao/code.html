@@ -1,0 +1,320 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Theo dõi nâng cao - NaBi Wellness</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#3d4a42",
+                        "secondary": "#1d6a51",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-secondary-container": "#226f55",
+                        "primary-container": "#008559",
+                        "personal-purple": "#8B7CF6",
+                        "text-primary": "#12352A",
+                        "surface-bright": "#f5faf7",
+                        "surface": "#f5faf7",
+                        "text-muted": "#8A9B94",
+                        "surface-container": "#eaefec",
+                        "on-surface": "#171d1b",
+                        "on-tertiary-fixed": "#002112",
+                        "surface-dim": "#d6dbd8",
+                        "care-coral": "#FF7D75",
+                        "outline": "#6d7a71",
+                        "primary": "#006a46",
+                        "secondary-container": "#a4efce",
+                        "on-secondary-fixed": "#002116",
+                        "energy-yellow": "#FFC857",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#002113",
+                        "background": "#f5faf7",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#008656",
+                        "primary-fixed": "#7ff9be",
+                        "text-secondary": "#60766E",
+                        "info": "#247CA8",
+                        "mint-surface": "#EAF9F1",
+                        "warning": "#B7791F",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-variant": "#dee4e1",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bccabf",
+                        "on-tertiary-container": "#f6fff6",
+                        "on-primary-container": "#f6fff6",
+                        "focus-ring": "#68D9A5",
+                        "inverse-on-surface": "#edf2ef",
+                        "primary-fixed-dim": "#62dda3",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface-container-high": "#e4e9e6",
+                        "primary-soft": "#DDF6E9",
+                        "inverse-surface": "#2c3230",
+                        "border-soft": "#D9E9E1",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-secondary": "#ffffff",
+                        "error": "#C64A4A",
+                        "surface-tint": "#006c48",
+                        "surface-container-low": "#f0f5f2",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "secondary-fixed": "#a7f2d1",
+                        "tertiary": "#006a43",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#62dda3",
+                        "success": "#14885F",
+                        "calm-blue": "#58B9E8",
+                        "on-background": "#171d1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "page-padding": "16px",
+                        "card-padding": "16px",
+                        "md": "16px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "label-chip": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-sm": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F6FBF8;
+            font-family: 'Roboto', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Utility for Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        /* Hero Gradient */
+        .hero-gradient {
+            background: linear-gradient(135deg, #0F8E62 0%, #32C789 100%);
+        }
+
+        /* Subtle Shadow */
+        .shadow-subtle {
+            box-shadow: 0 4px 20px 0 rgba(20, 163, 111, 0.08);
+        }
+        
+        /* Floating active shadow */
+        .shadow-floating {
+            box-shadow: 0 8px 20px 0 rgba(20, 163, 111, 0.16);
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button class="text-primary hover:opacity-80 transition-opacity p-2 -ml-2 flex items-center justify-center active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim font-bold tracking-tight">Theo dõi</h1>
+<div class="w-10 h-10 rounded-full bg-mint-surface border border-border-soft flex items-center justify-center overflow-hidden">
+<img alt="Nabi Assistant Avatar" class="w-full h-full object-cover" data-alt="A small, friendly digital assistant avatar named Nabi, designed as a cute, minimalist green leaf or sprout character. It is rendered in a clean, modern flat illustration style on a soft mint green background, reflecting a calm and supportive wellness vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvPH2Ao1DbxpEQAk4kJgNl4OJ62MzCFThvsNZ9rDEcCx8N1cnBB8o2lan-up1oiS2yCeRZlHf8zmyYIusKxxCHNrGiKGxaSO64QOMgu94axrFRsbED0C6vnblIBKlj0Q0k2P1WTeYnSe489ggob-f4rzqoUKDhjIwAooteClXvBrfyM8ViyaACGCvOzLij_7d5RbKx4cJ_ll6DGdiFutvyVqicYi5_CzaUGbmSsnTKQgiyTCVlSthp5Q">
+</div>
+</div>
+</header>
+<main class="pt-20 px-page-padding max-w-md mx-auto space-y-section-gap">
+<!-- Goal Roadmap Section (Empty to Created state demo) -->
+<section>
+<div class="flex items-center justify-between mb-sm">
+<h2 class="font-section-title text-section-title text-text-primary">Mục tiêu hiện tại</h2>
+<button class="font-cta text-cta text-primary hover:opacity-80 flex items-center" id="add-goal-btn">
+<span class="material-symbols-outlined mr-1" style="font-size: 20px;">add</span> Thêm
+                </button>
+</div>
+<!-- Empty State (Initially visible) -->
+<div class="bg-white rounded-xl p-6 border border-border-soft shadow-subtle flex flex-col items-center justify-center text-center transition-all duration-300" id="empty-goal-state">
+<div class="w-24 h-24 rounded-full bg-mint-surface flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+</div>
+<p class="font-body-base text-body-base text-text-primary mb-2">Chưa có mục tiêu nào</p>
+<p class="font-body-sm text-body-sm text-text-secondary mb-4">Hãy đặt một mục tiêu nhỏ để bắt đầu hành trình sức khỏe của bạn cùng Nabi.</p>
+<button class="hero-gradient text-on-primary font-cta text-cta py-3 px-6 rounded-full shadow-floating hover:opacity-90 active:scale-95 transition-all" onclick="toggleGoalState()">
+                    Thiết lập mục tiêu
+                </button>
+</div>
+<!-- Active Goal State (Initially hidden) -->
+<div class="hidden bg-white rounded-xl p-card-padding border border-border-soft shadow-subtle transition-all duration-300" id="active-goal-state">
+<div class="flex items-start justify-between mb-4">
+<div>
+<span class="inline-block bg-mint-surface text-primary font-label-chip text-label-chip px-2 py-1 rounded mb-1">Vận động</span>
+<h3 class="font-body-base text-body-base text-text-primary font-semibold">Đi bộ 5,000 bước/ngày</h3>
+</div>
+<button class="text-text-muted hover:text-text-primary">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+</button>
+</div>
+<div class="relative pt-2">
+<div class="flex justify-between text-xs text-text-secondary mb-1">
+<span>Ngày 1</span>
+<span>Ngày 7</span>
+</div>
+<!-- Roadmap Progress -->
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="h-full bg-primary" style="width: 42%;"></div>
+</div>
+<!-- Roadmap Milestones -->
+<div class="flex justify-between mt-2 px-1 relative -top-5 pointer-events-none">
+<div class="w-4 h-4 rounded-full bg-primary border-2 border-white flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-white" style="font-size: 10px; font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="w-4 h-4 rounded-full bg-primary border-2 border-white flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-white" style="font-size: 10px; font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="w-4 h-4 rounded-full bg-primary border-2 border-white flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-white" style="font-size: 10px; font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="w-4 h-4 rounded-full bg-surface-container-high border-2 border-white z-10"></div>
+<div class="w-4 h-4 rounded-full bg-surface-container-high border-2 border-white z-10"></div>
+<div class="w-4 h-4 rounded-full bg-surface-container-high border-2 border-white z-10"></div>
+<div class="w-4 h-4 rounded-full bg-surface-container-high border-2 border-white z-10"></div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary mt-2 text-center">Đang ở ngày 3. Cố lên nhé!</p>
+</div>
+</section>
+<!-- Hydration Capture Widget (Bento Style) -->
+<section class="grid grid-cols-2 gap-4">
+<!-- Hydration Card -->
+<div class="col-span-2 bg-white rounded-xl p-card-padding border border-border-soft shadow-subtle relative overflow-hidden">
+<!-- Decorative background wave -->
+<div class="absolute bottom-0 left-0 w-full h-1/2 bg-calm-blue/10 rounded-t-[100%] scale-150 transform translate-y-1/4 z-0"></div>
+<div class="relative z-10 flex items-center justify-between">
+<div>
+<div class="flex items-center space-x-1 mb-1">
+<span class="material-symbols-outlined text-info" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+<h2 class="font-body-base text-body-base text-text-primary font-semibold">Nước uống</h2>
+</div>
+<div class="flex items-baseline space-x-1">
+<span class="font-display-hero text-display-hero text-text-primary" id="water-count">1.2</span>
+<span class="font-body-sm text-body-sm text-text-secondary">/ 2.0 Lít</span>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<button class="w-10 h-10 rounded-full bg-white border border-border-soft text-text-secondary flex items-center justify-center hover:bg-mint-surface active:scale-95 transition-all shadow-sm" onclick="updateWater(-0.2)">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<button class="w-12 h-12 rounded-full hero-gradient text-white flex items-center justify-center hover:opacity-90 active:scale-95 transition-all shadow-floating" onclick="updateWater(0.2)">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Sleep Mini Card -->
+<div class="bg-mint-surface rounded-xl p-card-padding border border-border-soft flex flex-col justify-between">
+<span class="material-symbols-outlined text-primary mb-2" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+<div>
+<p class="font-body-sm text-body-sm text-text-secondary">Giấc ngủ</p>
+<p class="font-section-title text-section-title text-text-primary">6h 45m</p>
+</div>
+</div>
+<!-- Energy Mini Card -->
+<div class="bg-[#FFF9E6] rounded-xl p-card-padding border border-border-soft flex flex-col justify-between">
+<span class="material-symbols-outlined text-energy-yellow mb-2" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<div>
+<p class="font-body-sm text-body-sm text-text-secondary">Năng lượng</p>
+<p class="font-section-title text-section-title text-text-primary">Khá tốt</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)] rounded-t-xl hidden md:hidden flex" style="padding-bottom: env(safe-area-inset-bottom, 16px);">
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-chip text-label-chip">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-soft dark:bg-on-primary-fixed-variant text-primary dark:text-primary-fixed rounded-full px-4 py-1 hover:text-primary transition-colors active:scale-[0.975] transition-all duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip font-bold">Sức khỏe</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined mb-1">face</span>
+<span class="font-label-chip text-label-chip">Nabi</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined mb-1">auto_stories</span>
+<span class="font-label-chip text-label-chip">Nhật ký</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors py-2" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-chip text-label-chip">Hồ sơ</span>
+</a>
+</nav>
+<script>
+        // Simple toggle for Goal State Demonstration
+        function toggleGoalState() {
+            const emptyState = document.getElementById('empty-goal-state');
+            const activeState = document.getElementById('active-goal-state');
+            
+            emptyState.classList.add('hidden');
+            activeState.classList.remove('hidden');
+        }
+
+        document.getElementById('add-goal-btn').addEventListener('click', toggleGoalState);
+
+        // Simple Hydration Logic
+        let currentWater = 1.2;
+        const maxWater = 2.0;
+
+        function updateWater(amount) {
+            currentWater += amount;
+            if (currentWater < 0) currentWater = 0;
+            if (currentWater > maxWater) currentWater = maxWater;
+            
+            document.getElementById('water-count').innerText = currentWater.toFixed(1);
+        }
+    </script>
+</body></html>

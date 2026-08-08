@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Onboarding Result</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#dee4e1",
+                        "secondary": "#1d6a51",
+                        "tertiary": "#006a43",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#171d1b",
+                        "mint-surface": "#EAF9F1",
+                        "surface-container-high": "#e4e9e6",
+                        "calm-blue": "#58B9E8",
+                        "focus-ring": "#68D9A5",
+                        "surface-container": "#eaefec",
+                        "on-primary-container": "#f6fff6",
+                        "on-tertiary-fixed": "#002112",
+                        "primary-fixed-dim": "#62dda3",
+                        "primary-fixed": "#7ff9be",
+                        "outline-variant": "#bccabf",
+                        "surface-dim": "#d6dbd8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#002113",
+                        "border-soft": "#D9E9E1",
+                        "text-muted": "#8A9B94",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#005235",
+                        "surface-tint": "#006c48",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#f6fff6",
+                        "on-secondary-container": "#226f55",
+                        "warning": "#B7791F",
+                        "text-secondary": "#60766E",
+                        "on-secondary-fixed": "#002116",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#a4efce",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "surface-bright": "#f5faf7",
+                        "on-background": "#171d1b",
+                        "care-coral": "#FF7D75",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-soft": "#DDF6E9",
+                        "info": "#247CA8",
+                        "success": "#14885F",
+                        "primary": "#006a46",
+                        "inverse-surface": "#2c3230",
+                        "surface-container-highest": "#dee4e1",
+                        "error": "#C64A4A",
+                        "tertiary-container": "#008656",
+                        "primary-container": "#008559",
+                        "text-primary": "#12352A",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "inverse-primary": "#62dda3",
+                        "tertiary-fixed": "#70fcb7",
+                        "background": "#f5faf7",
+                        "energy-yellow": "#FFC857",
+                        "personal-purple": "#8B7CF6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "on-surface-variant": "#3d4a42",
+                        "surface": "#f5faf7",
+                        "secondary-fixed": "#a7f2d1",
+                        "outline": "#6d7a71",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f0f5f2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "page-padding": "16px",
+                        "lg": "24px",
+                        "card-padding": "16px"
+                    },
+                    "fontFamily": {
+                        "body-base": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "screen-title": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .loading-ring {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.05); }
+        }
+        .progress-bar-fill {
+            transition: width 1s ease-in-out;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-base min-h-screen flex flex-col justify-center items-center px-page-padding">
+<!-- Main Content Canvas (Transactional Page - Nav Suppressed) -->
+<main class="w-full max-w-md mx-auto flex flex-col items-center justify-center space-y-section-gap py-xl relative">
+<!-- Hero Illustration -->
+<div class="relative w-64 h-64 mb-8 flex items-center justify-center">
+<!-- Glow Effect -->
+<div class="absolute inset-0 bg-primary-soft rounded-full loading-ring opacity-50 blur-xl"></div>
+<!-- Mascot Image -->
+<img class="w-48 h-48 object-contain z-10 relative" data-alt="A friendly, stylized robotic mascot character representing a wellness companion named Nabi. The mascot has an expressive, excited face and is glowing slightly with a soft green light. The background is a clean, modern gradient from light green to white, conveying health, vitality, and technological reliability in a soft minimalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnN396JzBe28nmbQub_fA_20ll1rSkPoGjKQPXGT00pLHcvuES-kR_1m9--7eL2_1madyDJQrwH-YdsS89-nbWn2Uebzg1nHnymAkTjwffCy8xAHYPauWpuhxXjRJCfc4DjLvIjnnNU2WRUW2j-Bob8PciFOPpb9AhVyldJC7ufaYRaRYXqiIpCasSDw3OTHdJX27WYKYAAEIAmC4P_dBTF02l4861VWGXAbOoGogzJY64VXWw5MW4nw">
+</div>
+<!-- Status Text -->
+<div class="text-center space-y-md w-full">
+<h1 class="font-display-hero text-display-hero text-text-primary" id="status-title">Nabi đang chuẩn bị...</h1>
+<p class="font-body-base text-body-base text-text-secondary" id="status-desc">Chúng tôi đang tổng hợp dữ liệu sức khỏe của bạn để tạo ra một kế hoạch cá nhân hóa hoàn hảo.</p>
+</div>
+<!-- Progress Steps -->
+<div class="w-full max-w-sm mt-8 space-y-sm">
+<!-- Step 1: Chuẩn bị -->
+<div class="flex items-center space-x-md" id="step-1">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center transition-colors duration-300" id="step-1-icon-container">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="flex-grow">
+<p class="font-cta text-cta text-text-primary">Đang chuẩn bị dữ liệu</p>
+</div>
+</div>
+<!-- Step 2: Tạo kế hoạch -->
+<div class="flex items-center space-x-md opacity-50" id="step-2">
+<div class="flex-shrink-0 w-8 h-8 rounded-full border-2 border-primary text-primary flex items-center justify-center bg-surface transition-colors duration-300" id="step-2-icon-container">
+<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span>
+</div>
+<div class="flex-grow">
+<p class="font-cta text-cta text-text-primary">Đang tạo kế hoạch</p>
+</div>
+</div>
+<!-- Step 3: Lưu trữ -->
+<div class="flex items-center space-x-md opacity-30" id="step-3">
+<div class="flex-shrink-0 w-8 h-8 rounded-full border-2 border-outline-variant text-outline-variant flex items-center justify-center bg-surface transition-colors duration-300" id="step-3-icon-container">
+<span class="material-symbols-outlined text-[16px]">save</span>
+</div>
+<div class="flex-grow">
+<p class="font-cta text-cta text-text-primary">Đã lưu an toàn</p>
+</div>
+</div>
+<!-- Step 4: Sẵn sàng -->
+<div class="flex items-center space-x-md opacity-30" id="step-4">
+<div class="flex-shrink-0 w-8 h-8 rounded-full border-2 border-outline-variant text-outline-variant flex items-center justify-center bg-surface transition-colors duration-300" id="step-4-icon-container">
+<span class="material-symbols-outlined text-[16px]">rocket_launch</span>
+</div>
+<div class="flex-grow">
+<p class="font-cta text-cta text-text-primary">Sẵn sàng trải nghiệm</p>
+</div>
+</div>
+</div>
+<!-- Global Progress Bar -->
+<div class="w-full max-w-sm h-2 bg-surface-variant rounded-full mt-8 overflow-hidden">
+<div class="h-full bg-gradient-to-r from-[#0F8E62] to-[#32C789] rounded-full progress-bar-fill w-[25%]" id="global-progress"></div>
+</div>
+<!-- Hidden CTA (Revealed on success) -->
+<div class="w-full max-w-sm pt-8 opacity-0 transition-opacity duration-500 pointer-events-none" id="success-cta">
+<button class="w-full bg-gradient-to-r from-[#0F8E62] to-[#32C789] text-white font-cta text-cta py-3 rounded-full shadow-[0_8px_20px_0_rgba(20,163,111,0.16)] hover:opacity-90 transition-opacity flex justify-center items-center">
+                Bắt đầu hành trình
+            </button>
+</div>
+</main>
+<script>
+        // Simple mock progression logic for demonstration
+        document.addEventListener('DOMContentLoaded', () => {
+            const steps = [
+                { id: 'step-1', iconId: 'step-1-icon-container', icon: 'check', title: 'Đang chuẩn bị dữ liệu', desc: 'Đang chuẩn bị...', progress: '25%' },
+                { id: 'step-2', iconId: 'step-2-icon-container', icon: 'check', title: 'Đang tạo kế hoạch', desc: 'Nabi đang suy nghĩ...', progress: '50%' },
+                { id: 'step-3', iconId: 'step-3-icon-container', icon: 'check', title: 'Đã lưu an toàn', desc: 'Dữ liệu bền vững...', progress: '75%' },
+                { id: 'step-4', iconId: 'step-4-icon-container', icon: 'check', title: 'Sẵn sàng trải nghiệm', desc: 'Hoàn tất!', progress: '100%' }
+            ];
+
+            const titleEl = document.getElementById('status-title');
+            const descEl = document.getElementById('status-desc');
+            const progressEl = document.getElementById('global-progress');
+            const ctaEl = document.getElementById('success-cta');
+
+            let currentStep = 1;
+
+            const updateStep = () => {
+                if (currentStep >= steps.length) {
+                    // Success state
+                    titleEl.innerText = "Hoàn tất!";
+                    descEl.innerText = "Kế hoạch sức khỏe cá nhân của bạn đã sẵn sàng.";
+                    ctaEl.classList.remove('opacity-0', 'pointer-events-none');
+                    return;
+                }
+
+                // Complete previous step
+                const prevStep = steps[currentStep - 1];
+                const prevEl = document.getElementById(prevStep.id);
+                const prevIconContainer = document.getElementById(prevStep.iconId);
+                
+                if(currentStep > 0) {
+                     prevIconContainer.className = "flex-shrink-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center transition-colors duration-300";
+                     prevIconContainer.innerHTML = `<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>`;
+                }
+
+                // Activate current step
+                const currStep = steps[currentStep];
+                const currEl = document.getElementById(currStep.id);
+                const currIconContainer = document.getElementById(currStep.iconId);
+
+                currEl.classList.remove('opacity-50', 'opacity-30');
+                
+                currIconContainer.className = "flex-shrink-0 w-8 h-8 rounded-full border-2 border-primary text-primary flex items-center justify-center bg-surface transition-colors duration-300";
+                
+                // Keep the original icon for the active state but spin it if it's step 2 (creating)
+                let iconContent = 'refresh';
+                if(currentStep === 1) iconContent = 'refresh';
+                if(currentStep === 2) iconContent = 'save';
+                if(currentStep === 3) iconContent = 'rocket_launch';
+
+                currIconContainer.innerHTML = `<span class="material-symbols-outlined text-[16px] ${currentStep === 1 ? 'animate-spin' : 'animate-pulse'}">${iconContent}</span>`;
+
+                titleEl.innerText = currStep.desc;
+                progressEl.style.width = currStep.progress;
+
+                currentStep++;
+                
+                // Simulate network/processing delay
+                setTimeout(updateStep, 2000);
+            };
+
+            // Start the sequence after a brief pause
+            setTimeout(updateStep, 2000);
+        });
+    </script>
+</body></html>

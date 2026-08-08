@@ -1,0 +1,175 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nabi Assistant Overlay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e8e1db",
+                    "surface-dim": "#dfd9d3",
+                    "error-container": "#ffdad6",
+                    "on-background": "#1d1b18",
+                    "inverse-surface": "#33302c",
+                    "surface-container-highest": "#e8e1db",
+                    "outline": "#707973",
+                    "on-error-container": "#93000a",
+                    "secondary": "#3e6750",
+                    "on-secondary-container": "#426b54",
+                    "primary-container": "#2d6a4f",
+                    "tertiary-container": "#5d605d",
+                    "on-surface-variant": "#404943",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#002112",
+                    "surface-tint": "#2c694e",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#fff8f2",
+                    "primary-fixed-dim": "#95d4b3",
+                    "on-secondary-fixed-variant": "#264f39",
+                    "on-primary-fixed": "#002114",
+                    "primary": "#0f5238",
+                    "on-tertiary-container": "#d9dad7",
+                    "tertiary": "#464846",
+                    "on-primary-container": "#a8e7c5",
+                    "surface-container": "#f3ede7",
+                    "surface": "#fff8f2",
+                    "secondary-fixed-dim": "#a4d1b4",
+                    "on-surface": "#1d1b18",
+                    "tertiary-fixed": "#e2e3df",
+                    "on-tertiary-fixed-variant": "#454745",
+                    "outline-variant": "#bfc9c1",
+                    "on-primary": "#ffffff",
+                    "background": "#fff8f2",
+                    "secondary-container": "#bdeacd",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#b1f0ce",
+                    "surface-container-high": "#ede7e1",
+                    "inverse-on-surface": "#f6f0ea",
+                    "on-primary-fixed-variant": "#0e5138",
+                    "on-secondary": "#ffffff",
+                    "surface-container-low": "#f9f2ec",
+                    "tertiary-fixed-dim": "#c5c7c3",
+                    "secondary-fixed": "#c0edd0",
+                    "inverse-primary": "#95d4b3",
+                    "on-tertiary-fixed": "#1a1c1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "companion-offset": "20px",
+                    "xl": "32px",
+                    "touch-target": "48px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "xs": "4px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Manrope"],
+                    "label-sm": ["Manrope"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-lg": ["Manrope"],
+                    "label-md": ["Manrope"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .nabi-breathe {
+            animation: breathe 4s ease-in-out infinite;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .glass-overlay {
+            background: rgba(237, 246, 241, 0.7); /* Light mint wash */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .slide-up {
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen relative overflow-hidden font-body-md text-body-md text-on-surface">
+<!-- Background Content (Simulated underlying page) -->
+<div class="absolute inset-0 z-0 p-lg opacity-30">
+<div class="h-48 bg-surface-container rounded-xl mb-md"></div>
+<div class="h-32 bg-surface-container rounded-xl mb-md"></div>
+<div class="h-64 bg-surface-container rounded-xl"></div>
+</div>
+<!-- Full Screen Overlay -->
+<div class="fixed inset-0 z-50 glass-overlay flex flex-col items-center justify-center p-lg">
+<!-- Close Button (Top Right) -->
+<button class="absolute top-safe right-lg w-touch-target h-touch-target flex items-center justify-center rounded-full bg-surface-container-highest/50 text-on-surface hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<!-- Main Content Container -->
+<div class="w-full max-w-md flex flex-col items-center slide-up">
+<!-- Nabi Avatar (Reassuring presence) -->
+<div class="w-32 h-32 mb-lg nabi-breathe rounded-full bg-primary-container flex items-center justify-center shadow-[0_8px_24px_rgba(45,106,79,0.15)]">
+<!-- Fallback to a placeholder if no avatar image provided, but instructions imply a comforting persona -->
+<img class="w-full h-full object-cover rounded-full" data-alt="A stylized, friendly, and calming 2D illustration of a health companion mascot named Nabi. The mascot is rendered in a soft, modern minimalist style with rounded edges, smiling gently directly at the viewer to provide reassurance. The color palette features soft mint greens and warm whites, reflecting a calm and supportive wellness environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5jDd6FJRl2hrsxH0nPgOlFOYeo7rayOc8eUKBN-OUDpwLYP4k8uMgLmh2KOz_d2HIthmbsSVicW0A9lHdx77S_toMY_LIOOwMLfX0zey-g-kO2GSjmgLwazgwy4C4Dzx_KJpZQh8ONE5IXbJv_uiEFI8FgnGHejwNe0s5BdyIyAtXLVISkO1s4HmtsHoNZKsPludJeukR1Wi5GQRuhUIRm8urkwBqOv8PGgTZaCzC2DUX6jCwb4sdLA">
+</div>
+<!-- Speech Bubble / Greeting -->
+<div class="bg-primary-container rounded-2xl rounded-tl-sm p-lg text-on-primary-container shadow-[0_4px_12px_rgba(45,106,79,0.08)] mb-xl relative w-full text-center">
+<p class="font-headline-md text-headline-md mb-xs">Chào Lan Anh,</p>
+<p class="font-body-lg text-body-lg">chúng mình cùng bắt đầu lộ trình hôm nay nhé!</p>
+<!-- Bubble Tail -->
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[16px] border-b-primary-container md:left-12 md:translate-x-0"></div>
+</div>
+<!-- Action Card (Next Step) -->
+<div class="w-full bg-surface rounded-xl p-md border border-secondary-container shadow-lg flex items-center gap-md hover:scale-[1.02] transition-transform duration-300 cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+<span class="material-symbols-outlined" data-icon="directions_walk" data-weight="fill" style="font-variation-settings: 'FILL' 1;">directions_walk</span>
+</div>
+<div class="flex-1">
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">Bài tập đầu tiên</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Đi bộ nhẹ nhàng 15 phút</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+<button class="mt-lg font-label-md text-label-md text-outline hover:text-on-surface transition-colors">
+                Để sau
+            </button>
+</div>
+</div>
+</body></html>

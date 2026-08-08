@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Hoàn thiện hồ sơ thanh toán</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f0f5f2",
+                        "primary-soft": "#DDF6E9",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-surface-variant": "#3d4a42",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-bright": "#f5faf7",
+                        "on-surface": "#171d1b",
+                        "calm-blue": "#58B9E8",
+                        "text-muted": "#8A9B94",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#1d6a51",
+                        "surface-container-high": "#e4e9e6",
+                        "surface-dim": "#d6dbd8",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#002112",
+                        "error": "#C64A4A",
+                        "surface-variant": "#dee4e1",
+                        "surface": "#f5faf7",
+                        "on-primary-fixed": "#002113",
+                        "primary": "#006a46",
+                        "info": "#247CA8",
+                        "border-soft": "#D9E9E1",
+                        "surface-container": "#eaefec",
+                        "on-error": "#ffffff",
+                        "outline-variant": "#bccabf",
+                        "primary-fixed-dim": "#62dda3",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "inverse-surface": "#2c3230",
+                        "on-background": "#171d1b",
+                        "on-primary-container": "#f6fff6",
+                        "on-secondary-fixed": "#002116",
+                        "energy-yellow": "#FFC857",
+                        "background": "#f5faf7",
+                        "on-secondary-container": "#226f55",
+                        "personal-purple": "#8B7CF6",
+                        "on-tertiary-container": "#f6fff6",
+                        "surface-tint": "#006c48",
+                        "text-secondary": "#60766E",
+                        "tertiary-container": "#008656",
+                        "secondary-fixed": "#a7f2d1",
+                        "primary-fixed": "#7ff9be",
+                        "focus-ring": "#68D9A5",
+                        "success": "#14885F",
+                        "inverse-primary": "#62dda3",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6d7a71",
+                        "on-tertiary": "#ffffff",
+                        "mint-surface": "#EAF9F1",
+                        "primary-container": "#008559",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "secondary-container": "#a4efce",
+                        "care-coral": "#FF7D75",
+                        "tertiary": "#006a43",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "text-primary": "#12352A",
+                        "warning": "#B7791F"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "page-padding": "16px",
+                        "md": "16px",
+                        "card-padding": "16px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "sm": "8px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "label-chip": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "screen-title": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F6FBF8; /* page-background Level 0 */
+        }
+        /* Custom Gradient for Primary Button */
+        .btn-gradient {
+            background: linear-gradient(135deg, #0F8E62 0%, #32C789 100%);
+            box-shadow: 0 8px 20px rgba(20, 163, 111, 0.16);
+        }
+        .bento-card {
+            background-color: #ffffff;
+            border: 1px solid #D9E9E1;
+            box-shadow: 0 4px 12px rgba(20, 163, 111, 0.08);
+            border-radius: 1.25rem;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-text-primary antialiased pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface-bright/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-screen-xl mx-auto">
+<div class="flex items-center gap-4">
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-primary-soft/50 transition-colors rounded-full p-2 active:scale-95 duration-150 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title-mobile md:text-screen-title text-primary dark:text-primary-fixed-dim">Hồ sơ thanh toán</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-energy-yellow/20 text-warning font-label-chip text-label-chip flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="pending">pending</span>
+                    Chưa xác thực
+                </span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-page-padding max-w-2xl mx-auto space-y-section-gap">
+<!-- Security Banner -->
+<section class="bg-mint-surface rounded-xl p-4 flex items-start gap-3 border border-border-soft">
+<span class="material-symbols-outlined text-success mt-0.5" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+<div>
+<h2 class="font-cta text-cta text-primary">Bảo mật thông tin</h2>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Thông tin của bạn được mã hóa an toàn và chỉ sử dụng cho mục đích đối soát, chi trả hoa hồng.</p>
+</div>
+</section>
+<!-- Form Area -->
+<form class="space-y-section-gap">
+<!-- Identity Section -->
+<section class="bento-card p-card-padding">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="badge">badge</span>
+<h3 class="font-section-title text-section-title text-text-primary">Thông tin định danh</h3>
+</div>
+<div class="space-y-4">
+<div class="relative">
+<label class="block font-label-chip text-label-chip text-text-secondary mb-1">Số CCCD/CMND</label>
+<input class="w-full bg-surface-container-low border border-border-soft rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/50 transition-all font-body-base text-body-base" placeholder="Nhập số thẻ..." type="text">
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Front ID -->
+<div class="relative group cursor-pointer">
+<label class="block font-label-chip text-label-chip text-text-secondary mb-1">Mặt trước</label>
+<div class="h-32 border-2 border-dashed border-border-soft rounded-lg flex flex-col items-center justify-center bg-surface-container-low group-hover:bg-primary-soft/30 transition-colors">
+<span class="material-symbols-outlined text-text-muted mb-2" data-icon="add_photo_alternate">add_photo_alternate</span>
+<span class="font-body-sm text-body-sm text-text-muted">Tải ảnh lên</span>
+</div>
+</div>
+<!-- Back ID -->
+<div class="relative group cursor-pointer">
+<label class="block font-label-chip text-label-chip text-text-secondary mb-1">Mặt sau</label>
+<div class="h-32 border-2 border-dashed border-border-soft rounded-lg flex flex-col items-center justify-center bg-surface-container-low group-hover:bg-primary-soft/30 transition-colors">
+<span class="material-symbols-outlined text-text-muted mb-2" data-icon="add_photo_alternate">add_photo_alternate</span>
+<span class="font-body-sm text-body-sm text-text-muted">Tải ảnh lên</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Banking Section -->
+<section class="bento-card p-card-padding">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance">account_balance</span>
+<h3 class="font-section-title text-section-title text-text-primary">Tài khoản nhận tiền</h3>
+</div>
+<div class="space-y-4">
+<div class="relative">
+<label class="block font-label-chip text-label-chip text-text-secondary mb-1">Ngân hàng</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border border-border-soft rounded-lg px-4 py-3 appearance-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/50 transition-all font-body-base text-body-base">
+<option disabled="" selected="" value="">Chọn ngân hàng...</option>
+<option value="vcb">Vietcombank</option>
+<option value="tcb">Techcombank</option>
+<option value="mbb">MB Bank</option>
+<option value="vtb">VietinBank</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="relative">
+<label class="block font-label-chip text-label-chip text-text-secondary mb-1">Số tài khoản</label>
+<input class="w-full bg-surface-container-low border border-border-soft rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/50 transition-all font-body-base text-body-base" placeholder="Nhập số tài khoản..." type="text">
+</div>
+<div class="relative">
+<label class="block font-label-chip text-label-chip text-text-secondary mb-1">Tên chủ tài khoản</label>
+<input class="w-full bg-surface-container-low border border-border-soft rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/50 transition-all font-body-base text-body-base uppercase" placeholder="NGUYEN VAN A" type="text">
+<p class="font-label-chip text-label-chip text-text-muted mt-1">Viết hoa không dấu, trùng với tên trên CCCD/CMND.</p>
+</div>
+</div>
+</section>
+</form>
+</main>
+<!-- Floating Action Button / Fixed Bottom Action -->
+<div class="fixed bottom-0 w-full bg-surface-bright/90 backdrop-blur-md border-t border-border-soft p-4 pb-safe z-40 shadow-[0_-4px_12px_rgba(20,163,111,0.08)] max-w-screen-xl mx-auto left-0 right-0">
+<button class="w-full max-w-2xl mx-auto block btn-gradient text-on-primary font-cta text-cta py-4 rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined" data-icon="save">save</span>
+            Lưu hồ sơ
+        </button>
+</div>
+</body></html>

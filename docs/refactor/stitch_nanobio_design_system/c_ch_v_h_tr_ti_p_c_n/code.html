@@ -1,0 +1,321 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Text Scale &amp; Accessibility</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#226f55",
+                      "on-tertiary-fixed-variant": "#005233",
+                      "surface": "#f5faf7",
+                      "inverse-surface": "#2c3230",
+                      "surface-variant": "#dee4e1",
+                      "personal-purple": "#8B7CF6",
+                      "tertiary": "#006a43",
+                      "inverse-on-surface": "#edf2ef",
+                      "on-primary": "#ffffff",
+                      "primary-soft": "#DDF6E9",
+                      "focus-ring": "#68D9A5",
+                      "surface-container": "#eaefec",
+                      "on-background": "#171d1b",
+                      "tertiary-fixed-dim": "#50df9c",
+                      "outline": "#6d7a71",
+                      "info": "#247CA8",
+                      "secondary-container": "#a4efce",
+                      "primary-fixed-dim": "#62dda3",
+                      "error": "#C64A4A",
+                      "mint-surface": "#EAF9F1",
+                      "tertiary-fixed": "#70fcb7",
+                      "care-coral": "#FF7D75",
+                      "primary": "#006a46",
+                      "on-tertiary-container": "#f6fff6",
+                      "primary-fixed": "#7ff9be",
+                      "primary-container": "#008559",
+                      "inverse-primary": "#62dda3",
+                      "secondary-fixed": "#a7f2d1",
+                      "success": "#14885F",
+                      "on-tertiary-fixed": "#002112",
+                      "calm-blue": "#58B9E8",
+                      "error-container": "#ffdad6",
+                      "secondary": "#1d6a51",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#f6fff6",
+                      "on-surface": "#171d1b",
+                      "surface-container-low": "#f0f5f2",
+                      "text-primary": "#12352A",
+                      "on-error": "#ffffff",
+                      "background": "#f5faf7",
+                      "surface-dim": "#d6dbd8",
+                      "surface-bright": "#f5faf7",
+                      "surface-tint": "#006c48",
+                      "energy-yellow": "#FFC857",
+                      "outline-variant": "#bccabf",
+                      "text-muted": "#8A9B94",
+                      "text-secondary": "#60766E",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-highest": "#dee4e1",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#8bd5b6",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "on-secondary-fixed": "#002116",
+                      "on-primary-fixed-variant": "#005235",
+                      "on-surface-variant": "#3d4a42",
+                      "warning": "#B7791F",
+                      "tertiary-container": "#008656",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed": "#002113",
+                      "surface-container-high": "#e4e9e6",
+                      "border-soft": "#D9E9E1"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "xxs": "2px",
+                      "card-padding": "16px",
+                      "md": "16px",
+                      "section-gap": "24px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "page-padding": "16px",
+                      "xl": "32px"
+              },
+              "fontFamily": {
+                      "section-title": [
+                              "Roboto"
+                      ],
+                      "body-sm": [
+                              "Roboto"
+                      ],
+                      "cta": [
+                              "Roboto"
+                      ],
+                      "body-base": [
+                              "Roboto"
+                      ],
+                      "screen-title": [
+                              "Roboto"
+                      ],
+                      "display-hero": [
+                              "Roboto"
+                      ],
+                      "label-chip": [
+                              "Roboto"
+                      ]
+              },
+              "fontSize": {
+                      "section-title": [
+                              "20px",
+                              {
+                                      "lineHeight": "26px",
+                                      "letterSpacing": "-0.2px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "21px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "cta": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.2px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-base": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "screen-title": [
+                              "26px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.4px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-hero": [
+                              "32px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.6px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-chip": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0.1px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5faf7; /* page-background */
+        }
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button class="text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim">NaBi Wellness</h1>
+<div class="w-8 h-8 rounded-full bg-mint-surface border border-border-soft overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-[88px] pb-[100px] px-page-padding w-full max-w-md mx-auto space-y-section-gap">
+<!-- Live Preview Bento Card -->
+<section class="bg-on-primary rounded-[20px] p-card-padding border border-border-soft shadow-[0_8px_20px_0_rgba(20,163,111,0.08)]">
+<h2 class="font-section-title text-section-title text-text-primary mb-md">Xem trước (Live Preview)</h2>
+<div class="bg-mint-surface rounded-xl p-md border border-border-soft space-y-sm" id="preview-container">
+<div class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-primary" data-icon="chat_bubble">chat_bubble</span>
+<p class="font-body-base text-body-base text-text-primary preview-text">Xin chào! Tôi là trợ lý NaBi.</p>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary preview-subtext">Hôm nay bạn cảm thấy thế nào?</p>
+<div class="inline-block px-4 py-2 bg-gradient-to-r from-[#0F8E62] to-[#32C789] rounded-lg shadow-sm">
+<span class="font-cta text-cta text-on-primary preview-btn">Ghi nhận cảm xúc</span>
+</div>
+</div>
+</section>
+<!-- Text Scale Settings -->
+<section class="bg-on-primary rounded-[20px] p-card-padding border border-border-soft shadow-[0_8px_20px_0_rgba(20,163,111,0.08)]">
+<div class="flex items-center space-x-sm mb-md">
+<span class="material-symbols-outlined text-secondary" data-icon="text_fields">text_fields</span>
+<h2 class="font-section-title text-section-title text-text-primary">Kích thước văn bản</h2>
+</div>
+<div class="flex items-center justify-between space-x-md">
+<span class="font-body-sm text-body-sm text-text-secondary">A</span>
+<input class="w-full h-2 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary" id="text-scale-slider" max="150" min="80" type="range" value="100">
+<span class="font-screen-title text-screen-title text-text-secondary">A</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-muted mt-sm text-center">Điều chỉnh để thay đổi kích thước chữ toàn hệ thống</p>
+</section>
+<!-- Accessibility Preferences -->
+<section class="bg-on-primary rounded-[20px] p-card-padding border border-border-soft shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] space-y-md">
+<div class="flex items-center space-x-sm mb-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="accessibility_new">accessibility_new</span>
+<h2 class="font-section-title text-section-title text-text-primary">Tuỳ chỉnh Hỗ trợ</h2>
+</div>
+<!-- Motion -->
+<div class="flex items-center justify-between py-xs">
+<div class="flex flex-col">
+<span class="font-body-base text-body-base text-text-primary">Giảm chuyển động (Motion)</span>
+<span class="font-body-sm text-body-sm text-text-muted">Tắt hiệu ứng để giao diện tĩnh hơn</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value="">
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border-soft after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<div class="h-px bg-border-soft w-full"></div>
+<!-- Haptic -->
+<div class="flex items-center justify-between py-xs">
+<div class="flex flex-col">
+<span class="font-body-base text-body-base text-text-primary">Phản hồi xúc giác (Haptic)</span>
+<span class="font-body-sm text-body-sm text-text-muted">Rung nhẹ khi tương tác</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value="">
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border-soft after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<div class="h-px bg-border-soft w-full"></div>
+<!-- Sound -->
+<div class="flex items-center justify-between py-xs">
+<div class="flex flex-col">
+<span class="font-body-base text-body-base text-text-primary">Âm thanh hệ thống (Sound)</span>
+<span class="font-body-sm text-body-sm text-text-muted">Phát tiếng động khi nhấn nút</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value="">
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border-soft after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Settings usually sits under Profile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md rounded-t-xl shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)]">
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-chip text-label-chip mt-1">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-label-chip text-label-chip mt-1">Sức khỏe</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="face">face</span>
+<span class="font-label-chip text-label-chip mt-1">Nabi</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-chip text-label-chip mt-1">Nhật ký</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-soft dark:bg-on-primary-fixed-variant text-primary dark:text-primary-fixed rounded-full px-4 py-1 hover:text-primary transition-colors active:scale-[0.975] transition-all duration-200" href="#">
+<span class="material-symbols-outlined icon-filled" data-icon="person">person</span>
+<span class="font-label-chip text-label-chip mt-1">Hồ sơ</span>
+</a>
+</nav>
+<script>
+        // Simple JS for Live Preview text scaling
+        const slider = document.getElementById('text-scale-slider');
+        const container = document.getElementById('preview-container');
+        const previewTexts = container.querySelectorAll('.preview-text, .preview-subtext, .preview-btn');
+
+        slider.addEventListener('input', function() {
+            const scale = this.value / 100;
+            previewTexts.forEach(el => {
+                el.style.transform = `scale(${scale})`;
+                el.style.transformOrigin = 'left center';
+            });
+        });
+    </script>
+</body></html>

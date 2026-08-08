@@ -1,0 +1,368 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Kế hoạch ăn uống</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "error": "#C64A4A",
+                        "on-background": "#171d1b",
+                        "surface-container": "#eaefec",
+                        "text-secondary": "#60766E",
+                        "primary-fixed-dim": "#62dda3",
+                        "text-muted": "#8A9B94",
+                        "care-coral": "#FF7D75",
+                        "on-tertiary-fixed": "#002112",
+                        "on-secondary-fixed": "#002116",
+                        "on-secondary-container": "#226f55",
+                        "surface-container-high": "#e4e9e6",
+                        "calm-blue": "#58B9E8",
+                        "on-primary-fixed": "#002113",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-container": "#008559",
+                        "inverse-on-surface": "#edf2ef",
+                        "tertiary": "#006a43",
+                        "on-tertiary-container": "#f6fff6",
+                        "surface-dim": "#d6dbd8",
+                        "primary-soft": "#DDF6E9",
+                        "focus-ring": "#68D9A5",
+                        "inverse-primary": "#62dda3",
+                        "border-soft": "#D9E9E1",
+                        "tertiary-container": "#008656",
+                        "on-primary-fixed-variant": "#005235",
+                        "background": "#f5faf7",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-container-low": "#f0f5f2",
+                        "warning": "#B7791F",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#dee4e1",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#006c48",
+                        "on-secondary": "#ffffff",
+                        "mint-surface": "#EAF9F1",
+                        "on-surface-variant": "#3d4a42",
+                        "surface-bright": "#f5faf7",
+                        "outline-variant": "#bccabf",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "energy-yellow": "#FFC857",
+                        "success": "#14885F",
+                        "outline": "#6d7a71",
+                        "secondary-container": "#a4efce",
+                        "info": "#247CA8",
+                        "primary": "#006a46",
+                        "on-surface": "#171d1b",
+                        "tertiary-fixed": "#70fcb7",
+                        "secondary": "#1d6a51",
+                        "personal-purple": "#8B7CF6",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#2c3230",
+                        "text-primary": "#12352A",
+                        "surface": "#f5faf7",
+                        "on-primary-container": "#f6fff6",
+                        "secondary-fixed": "#a7f2d1",
+                        "primary-fixed": "#7ff9be",
+                        "secondary-fixed-dim": "#8bd5b6"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "section-gap": "24px",
+                        "lg": "24px",
+                        "page-padding": "16px",
+                        "xl": "32px",
+                        "card-padding": "16px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "xxs": "2px"
+                    },
+                    fontFamily: {
+                        "cta": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "section-title": ["Roboto"]
+                    },
+                    fontSize: {
+                        "cta": ["16px", { lineHeight: "20px", letterSpacing: "0.2px", fontWeight: "600" }],
+                        "screen-title": ["26px", { lineHeight: "32px", letterSpacing: "-0.4px", fontWeight: "700" }],
+                        "label-chip": ["13px", { lineHeight: "18px", letterSpacing: "0.1px", fontWeight: "500" }],
+                        "body-base": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "display-hero": ["32px", { lineHeight: "38px", letterSpacing: "-0.6px", fontWeight: "700" }],
+                        "body-sm": ["14px", { lineHeight: "21px", fontWeight: "400" }],
+                        "section-title": ["20px", { lineHeight: "26px", letterSpacing: "-0.2px", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased pb-safe">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button aria-label="Back" class="text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity flex items-center justify-center p-2 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim font-bold tracking-tight">Kế hoạch ăn uống</h1>
+<div aria-label="Nabi Assistant Avatar" class="w-10 h-10 rounded-full bg-mint-surface flex items-center justify-center border border-border-soft overflow-hidden">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">face</span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="w-full max-w-md mx-auto pt-20 pb-28 px-page-padding flex flex-col gap-section-gap">
+<!-- Day Switcher -->
+<section class="w-full overflow-x-auto hide-scrollbar -mx-page-padding px-page-padding">
+<div class="flex gap-2 min-w-max pb-2">
+<button class="flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-surface-container-lowest border border-border-soft text-text-muted hover:bg-mint-surface transition-colors">
+<span class="font-label-chip text-label-chip">T2</span>
+<span class="font-body-base text-body-base font-medium">12</span>
+</button>
+<button class="flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-surface-container-lowest border border-border-soft text-text-muted hover:bg-mint-surface transition-colors">
+<span class="font-label-chip text-label-chip">T3</span>
+<span class="font-body-base text-body-base font-medium">13</span>
+</button>
+<!-- Active Day -->
+<button class="flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-primary text-on-primary shadow-[0_8px_20px_-4px_rgba(0,106,70,0.4)] scale-105 transition-all">
+<span class="font-label-chip text-label-chip">T4</span>
+<span class="font-body-base text-body-base font-bold">14</span>
+</button>
+<button class="flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-surface-container-lowest border border-border-soft text-text-muted hover:bg-mint-surface transition-colors">
+<span class="font-label-chip text-label-chip">T5</span>
+<span class="font-body-base text-body-base font-medium">15</span>
+</button>
+<button class="flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-surface-container-lowest border border-border-soft text-text-muted hover:bg-mint-surface transition-colors">
+<span class="font-label-chip text-label-chip">T6</span>
+<span class="font-body-base text-body-base font-medium">16</span>
+</button>
+<button class="flex flex-col items-center justify-center w-14 h-16 rounded-xl bg-surface-container-lowest border border-border-soft text-text-muted hover:bg-mint-surface transition-colors">
+<span class="font-label-chip text-label-chip">T7</span>
+<span class="font-body-base text-body-base font-medium">17</span>
+</button>
+</div>
+</section>
+<!-- Daily Summary Bento Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-border-soft shadow-[0_4px_16px_0_rgba(20,163,111,0.04)] p-card-padding flex flex-col gap-4 relative overflow-hidden">
+<!-- Decorative gradient bg -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-soft rounded-full blur-2xl opacity-50"></div>
+<div class="flex justify-between items-start z-10">
+<div class="flex flex-col">
+<h2 class="font-section-title text-section-title text-primary">Tổng mục tiêu</h2>
+<p class="font-body-sm text-body-sm text-text-secondary">Dựa trên cân nặng &amp; hoạt động</p>
+</div>
+<div class="text-right">
+<span class="font-display-hero text-display-hero text-on-surface">1,850</span>
+<span class="font-body-sm text-body-sm text-text-muted">kcal</span>
+</div>
+</div>
+<div class="flex gap-3 mt-2 z-10">
+<div class="flex-1 bg-mint-surface rounded-lg p-2 flex flex-col items-center">
+<span class="font-label-chip text-label-chip text-text-secondary mb-1">Đạm</span>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full mb-1 overflow-hidden">
+<div class="h-full bg-primary w-[60%]"></div>
+</div>
+<span class="font-body-sm text-body-sm font-medium text-primary">120g</span>
+</div>
+<div class="flex-1 bg-mint-surface rounded-lg p-2 flex flex-col items-center">
+<span class="font-label-chip text-label-chip text-text-secondary mb-1">Tinh bột</span>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full mb-1 overflow-hidden">
+<div class="h-full bg-energy-yellow w-[45%]"></div>
+</div>
+<span class="font-body-sm text-body-sm font-medium text-warning">200g</span>
+</div>
+<div class="flex-1 bg-mint-surface rounded-lg p-2 flex flex-col items-center">
+<span class="font-label-chip text-label-chip text-text-secondary mb-1">Béo</span>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full mb-1 overflow-hidden">
+<div class="h-full bg-care-coral w-[80%]"></div>
+</div>
+<span class="font-body-sm text-body-sm font-medium text-error">65g</span>
+</div>
+</div>
+</section>
+<!-- Meal List -->
+<div class="flex flex-col gap-4">
+<!-- Breakfast Card -->
+<article class="bg-surface-container-lowest rounded-xl border border-border-soft shadow-sm overflow-hidden flex flex-col">
+<div class="flex items-center justify-between p-3 border-b border-border-soft bg-mint-surface/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 0;">wb_twilight</span>
+<h3 class="font-section-title text-section-title text-primary text-[18px]">Bữa sáng</h3>
+<span class="font-label-chip text-label-chip text-text-muted bg-surface-container px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">07:00</span>
+</div>
+<button aria-label="Đổi món" class="flex items-center gap-1 text-primary hover:bg-primary-soft px-2 py-1 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+<span class="font-label-chip text-label-chip hidden xs:inline">Đổi</span>
+</button>
+</div>
+<div class="p-card-padding flex gap-4 items-center">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-surface-container-high relative">
+<img alt="Yến mạch ngũ cốc" class="w-full h-full object-cover absolute inset-0" data-alt="A beautiful top-down shot of a healthy breakfast bowl with oatmeal, fresh berries, chia seeds, and a drizzle of honey. Shot in bright, natural morning light on a light wooden table. Clean, minimal, appetizing food photography suitable for a modern wellness app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYKyMmQx1YTSHlSvFzNiRLerwcbrF2c5BZkbWMyU545glkMIwxQmH385ZkOqMPczg_I5IvWCEMMyIfSP1H6to8hzdmHt7J4beb5euh4-qP6GfT5QlHFisoWqHMaF0H_6Uls6K0011_VRY2bDFF3m_JVOWmYIMvb58Ww3OIXEpE58i-BSkJ7ooz-qN42_aWWChEkTRvl2a3gl42ImO6V4b77b_RyHvXgeROBq7jry7nJCDw0tTgatDXhw">
+</div>
+<div class="flex-1">
+<h4 class="font-body-base text-body-base font-semibold text-on-surface mb-1 line-clamp-2">Yến mạch ủ qua đêm với quả mọng &amp; hạt chia</h4>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="font-label-chip text-label-chip bg-primary-soft text-primary px-2 py-0.5 rounded">320 kcal</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">P: 12g</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">C: 45g</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">F: 8g</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Lunch Card -->
+<article class="bg-surface-container-lowest rounded-xl border border-border-soft shadow-sm overflow-hidden flex flex-col">
+<div class="flex items-center justify-between p-3 border-b border-border-soft bg-mint-surface/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-energy-yellow text-xl" style="font-variation-settings: 'FILL' 1;">light_mode</span>
+<h3 class="font-section-title text-section-title text-primary text-[18px]">Bữa trưa</h3>
+<span class="font-label-chip text-label-chip text-text-muted bg-surface-container px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">12:30</span>
+</div>
+<button aria-label="Đổi món" class="flex items-center gap-1 text-primary hover:bg-primary-soft px-2 py-1 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+<span class="font-label-chip text-label-chip hidden xs:inline">Đổi</span>
+</button>
+</div>
+<div class="p-card-padding flex gap-4 items-center">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-surface-container-high relative">
+<img alt="Salad gà nướng" class="w-full h-full object-cover absolute inset-0" data-alt="A vibrant, healthy lunch salad bowl featuring grilled chicken breast, quinoa, avocado slices, cherry tomatoes, and fresh greens. Bright, natural lighting casting soft shadows on a pristine white marble surface. High-end food photography, fresh and nutritious aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2slzRPgnrRpt5e82int0DoJBqRRv39j79Tv5iRuZDe7NOi0CGOmMOo8CtYZoNzTNPksWOxdiDzHjQKpXcyhG90yHa1shBnfbgCSMFdwh3YvQkAhGIlIdz_zJi0p00mOTRtBgQi6R6LLDVTRCfeoa9ayexJch5s6dPmq4b1DUyjUUBhdxrm75gyxVXo4etm0ip_k0YD8PelaQYmzAf8khb7UxgCroVrKPVEtkwnEJEWecNYSRyI6OeYQ">
+</div>
+<div class="flex-1">
+<h4 class="font-body-base text-body-base font-semibold text-on-surface mb-1 line-clamp-2">Salad ức gà nướng Quinoa bơ</h4>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="font-label-chip text-label-chip bg-primary-soft text-primary px-2 py-0.5 rounded">540 kcal</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">P: 45g</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">C: 50g</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">F: 18g</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Snack Card -->
+<article class="bg-surface-container-lowest rounded-xl border border-border-soft shadow-sm overflow-hidden flex flex-col">
+<div class="flex items-center justify-between p-3 border-b border-border-soft bg-mint-surface/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-info text-xl" style="font-variation-settings: 'FILL' 0;">local_cafe</span>
+<h3 class="font-section-title text-section-title text-primary text-[18px]">Bữa phụ</h3>
+<span class="font-label-chip text-label-chip text-text-muted bg-surface-container px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">15:30</span>
+</div>
+<button aria-label="Đổi món" class="flex items-center gap-1 text-primary hover:bg-primary-soft px-2 py-1 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+<span class="font-label-chip text-label-chip hidden xs:inline">Đổi</span>
+</button>
+</div>
+<div class="p-card-padding flex gap-4 items-center">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-surface-container-high relative">
+<img alt="Sữa chua Hy Lạp" class="w-full h-full object-cover absolute inset-0" data-alt="A small, elegant serving of Greek yogurt topped with a few almond slices and a sprig of mint in a minimalist ceramic bowl. Soft, diffused lighting, clean pastel green background. Delicate, healthy snack presentation for a modern app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQ7aD1Mms5Sh9rvaXOvaFXuiUm7FfyM443RCSqLD6FjmUBZ5n6QOUXaIwTo0_W4O0wVUl8pNQjqpgtCEUH0H2QPt3KMMyEUMS5XbcG4TfxAPaNhzPztnpuG_fSxkYNyHtxHTKhF1IvVYrn28SKiYLx0v0-sLRiQD1ajTYhfL51zycXFbHQE6MhgoRoB9nQLHxiyt7w_qh1NnU50DWJR4P4GiqJnkaw2NJrBF3N0YBGDy2da9KYCP48ug">
+</div>
+<div class="flex-1">
+<h4 class="font-body-base text-body-base font-semibold text-on-surface mb-1 line-clamp-2">Sữa chua Hy Lạp mix hạnh nhân</h4>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="font-label-chip text-label-chip bg-primary-soft text-primary px-2 py-0.5 rounded">180 kcal</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">P: 15g</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">C: 10g</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">F: 8g</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Dinner Card -->
+<article class="bg-surface-container-lowest rounded-xl border border-border-soft shadow-sm overflow-hidden flex flex-col opacity-75 grayscale-[20%] relative">
+<!-- Overlay for future meal -->
+<div class="absolute top-2 right-2 bg-surface-container px-2 py-1 rounded-full flex items-center gap-1 z-10 border border-border-soft">
+<span class="material-symbols-outlined text-[14px] text-text-muted">schedule</span>
+<span class="font-label-chip text-label-chip text-text-muted text-[11px]">Sắp tới</span>
+</div>
+<div class="flex items-center justify-between p-3 border-b border-border-soft bg-mint-surface/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-personal-purple text-xl" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+<h3 class="font-section-title text-section-title text-primary text-[18px]">Bữa tối</h3>
+<span class="font-label-chip text-label-chip text-text-muted bg-surface-container px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">19:00</span>
+</div>
+<button aria-label="Đổi món" class="flex items-center gap-1 text-primary hover:bg-primary-soft px-2 py-1 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+<span class="font-label-chip text-label-chip hidden xs:inline">Đổi</span>
+</button>
+</div>
+<div class="p-card-padding flex gap-4 items-center">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-surface-container-high relative">
+<img alt="Cá hồi áp chảo" class="w-full h-full object-cover absolute inset-0" data-alt="A well-balanced dinner plate with a beautifully seared salmon fillet, steamed asparagus, and a small portion of wild rice. Warm, inviting lighting, shot slightly angled on a dark slate background to contrast the food colors. Premium, healthy culinary presentation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDENvFVWZgPGqvA0P5aYQ0cM6nCFAp0vH7TRefqqu_WnBXSke29sY3cjTzPJfgE_Sc6oTCuOj_IdIqEfz7nrQerIEMS9SuCSi6NVaiOSHK4pb-QGSikD_heFMWIn2AO_xvyZPkK_WnZ1Y39UpI0MynGVK0WqgUSWwWt3ZgepNaXOWHkqXhfIZJ32D0o1R8HAlnqHh4nuh69hjtxBvsyugGZGy1kv2cFUy98gS5Rlfve3fDq5PGDFTflMw">
+</div>
+<div class="flex-1">
+<h4 class="font-body-base text-body-base font-semibold text-on-surface mb-1 line-clamp-2">Cá hồi áp chảo, măng tây &amp; gạo lứt</h4>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="font-label-chip text-label-chip bg-primary-soft text-primary px-2 py-0.5 rounded">490 kcal</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">P: 35g</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">C: 40g</span>
+<span class="font-label-chip text-label-chip text-text-secondary border border-border-soft px-2 py-0.5 rounded">F: 22g</span>
+</div>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)]">
+<div class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 md:hidden max-w-md mx-auto relative right-0">
+<!-- Inactive: Trang chủ -->
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors flex-1 py-1">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-chip text-label-chip">Trang chủ</span>
+</button>
+<!-- Active: Sức khỏe -->
+<button class="flex flex-col items-center justify-center bg-primary-soft dark:bg-on-primary-fixed-variant text-primary dark:text-primary-fixed rounded-full px-4 py-1 flex-1 scale-[0.975] transition-all duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip">Sức khỏe</span>
+</button>
+<!-- Inactive: Nabi -->
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors flex-1 py-1 relative">
+<!-- Floating Action Button concept for Nabi -->
+<div class="absolute -top-6 bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center shadow-lg border-4 border-surface">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">face</span>
+</div>
+<span class="font-label-chip text-label-chip mt-6">Nabi</span>
+</button>
+<!-- Inactive: Nhật ký -->
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors flex-1 py-1">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">auto_stories</span>
+<span class="font-label-chip text-label-chip">Nhật ký</span>
+</button>
+<!-- Inactive: Hồ sơ -->
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors flex-1 py-1">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-chip text-label-chip">Hồ sơ</span>
+</button>
+</div>
+</nav>
+</body></html>

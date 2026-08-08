@@ -1,0 +1,235 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Dinh Dưỡng</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#14A36F",
+                        "primary-fixed-dim": "#4ADE80",
+                        "primary-soft": "rgba(20, 163, 111, 0.1)",
+                        "on-primary-fixed-variant": "#042F2E",
+                        "primary-fixed": "#D1FAE5",
+                        surface: "#FFFFFF",
+                        "surface-dim": "#1F2937",
+                        "text-primary": "#111827",
+                        "text-secondary": "#4B5563",
+                        "text-muted": "#9CA3AF",
+                        outline: "#D1D5DB",
+                        danger: "#EF4444",
+                        warning: "#F59E0B",
+                        protein: "#3B82F6",
+                        carbs: "#F59E0B",
+                        fat: "#EF4444"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem"
+                    },
+                    spacing: {
+                        "page-padding": "1rem",
+                        "safe": "env(safe-area-inset-bottom, 1rem)"
+                    },
+                    fontFamily: {
+                        headline: ["Public Sans", "sans-serif"],
+                        display: ["Public Sans", "sans-serif"],
+                        body: ["Public Sans", "sans-serif"],
+                        label: ["Public Sans", "sans-serif"]
+                    },
+                    fontSize: {
+                        "screen-title": ["1.25rem", { lineHeight: "1.75rem", fontWeight: "700" }],
+                        "label-chip": ["0.75rem", { lineHeight: "1rem", fontWeight: "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; background-color: #F3F4F6; }
+        .progress-ring__circle {
+            transition: stroke-dashoffset 1s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .bento-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 1.5rem;
+        }
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-text-primary pb-24 pt-20 max-w-md mx-auto relative min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button class="text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim font-bold tracking-tight">NaBi Wellness</h1>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline">
+<img alt="Nabi Assistant Avatar" class="w-full h-full object-cover" data-alt="A small circular avatar placeholder image showing a friendly, stylized digital health assistant face. The assistant has a modern, minimalist design with a soft green and white color palette, reflecting a trustworthy AI personality for a wellness app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhAMH7LHKluOP8Kjg6fInBDJ94xoAL7XPlhTac3bJYLEe4ffjNG9uhRdjWTM6nDcUrp1kHTlTYXE9ezalwsA5BquIO1UXdFkck2BpB7d-Du32nlhaEfllBV7C5eMdwcQAQigl5uRrk0o77t4snRfnmTWqU1gkPpNGVLgQmYUs7JdfhRknSxeVN9CbD88s8RiINIIIj1dDdMxSBWN7vE2uC9GNDwATZOgBlmvJiuHjXnOwgMdlbbjN7XQ">
+</div>
+</div>
+</header>
+<main class="px-4 space-y-6">
+<!-- Today's Overview -->
+<section>
+<div class="flex justify-between items-end mb-4">
+<div>
+<h2 class="text-2xl font-bold font-headline">Dinh Dưỡng</h2>
+<p class="text-sm text-text-secondary">Hôm nay, 24 Thg 10</p>
+</div>
+</div>
+<!-- Main Macro Ring -->
+<div class="bento-card p-6 flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+<div class="absolute -bottom-10 -left-10 w-32 h-32 bg-protein/10 rounded-full blur-2xl"></div>
+<div class="relative w-48 h-48">
+<svg class="w-full h-full" viewBox="0 0 120 120">
+<!-- Background ring -->
+<circle cx="60" cy="60" fill="none" r="54" stroke="#E5E7EB" stroke-width="10"></circle>
+<!-- Calories (Total) -->
+<circle class="progress-ring__circle" cx="60" cy="60" data-target="85" fill="none" r="54" stroke="#14A36F" stroke-dasharray="339.292" stroke-dashoffset="339.292" stroke-linecap="round" stroke-width="10"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-extrabold text-primary" id="cal-value">1,450</span>
+<span class="text-xs text-text-secondary font-medium">/ 1,800 kcal</span>
+</div>
+</div>
+<!-- Macro breakdown -->
+<div class="flex justify-between w-full mt-8 px-2">
+<div class="flex flex-col items-center">
+<span class="text-xs text-text-secondary mb-1">Carbs</span>
+<span class="font-bold text-carbs">150g</span>
+<div class="w-12 h-1.5 bg-gray-200 rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-carbs w-[60%]"></div>
+</div>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-xs text-text-secondary mb-1">Protein</span>
+<span class="font-bold text-protein">90g</span>
+<div class="w-12 h-1.5 bg-gray-200 rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-protein w-[80%]"></div>
+</div>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-xs text-text-secondary mb-1">Fat</span>
+<span class="font-bold text-fat">45g</span>
+<div class="w-12 h-1.5 bg-gray-200 rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-fat w-[45%]"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Alerts Section -->
+<section>
+<div class="bento-card p-4 bg-red-50/80 border-red-200 flex items-start gap-3">
+<div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 text-red-500">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<h3 class="font-semibold text-red-800 text-sm">Cảnh báo: Hàm lượng muối cao</h3>
+<p class="text-xs text-red-600 mt-1 leading-relaxed">Bữa trưa của bạn chứa nhiều Natri hơn mức khuyến nghị. Hãy uống thêm nước và ăn nhạt vào bữa tối.</p>
+</div>
+</div>
+</section>
+<!-- Meals Log Bento Grid -->
+<section>
+<h3 class="text-lg font-bold font-headline mb-3 text-gray-800">Bữa ăn trong ngày</h3>
+<div class="grid grid-cols-2 gap-4">
+<!-- Breakfast -->
+<div class="bento-card p-4 flex flex-col relative overflow-hidden group">
+<div class="absolute inset-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity" data-alt="A close-up, soft-lit photo of a healthy breakfast bowl containing oatmeal, fresh berries, chia seeds, and a drizzle of honey, set on a bright modern wooden table." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAiFFS3sknRvPkpdlDqhQVvOXQJMitRzpKFX8U9-X6znj7pPhqCkLUswgMSn4kap1roY1edcD_IoAOj4z79DJI0HG8we1iUIoHjAN1uw3hXwT7CtNyQFWjZmgT_EozT5f3hQEJRr-Fn60DqCTlNbO2se8aIEHZnIY9c9DJiZ5uhJidVDn2GA2R3JI4_4XLbR_szs9nJBW-XZDBDU_2k8DL5KszqeQID6g1sO36XXswyeCBgHlLcgwrfcw')"></div>
+<div class="flex justify-between items-start mb-2 relative z-10">
+<div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
+<span class="material-symbols-outlined text-sm">bakery_dining</span>
+</div>
+<span class="text-xs font-semibold text-gray-500">Sáng</span>
+</div>
+<h4 class="font-semibold text-sm relative z-10 mt-auto">Yến mạch &amp; Quả mọng</h4>
+<span class="text-xs text-primary font-medium relative z-10">320 kcal</span>
+</div>
+<!-- Lunch -->
+<div class="bento-card p-4 flex flex-col relative overflow-hidden group">
+<div class="absolute inset-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity" data-alt="A bright, overhead shot of a healthy lunch salad with grilled chicken breast, mixed greens, cherry tomatoes, and a light vinaigrette dressing on a minimalist white ceramic plate." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBYzWp6fdSl9xX9FC9-trH80FKEGKpn5gLWf60GGhPQXRbOLHVq4nGJiMcsjKI_XY4LnCOIr6JrWggiEkZa3zPOmHWdUtHk3ja4IJOCMX7vx3S-mI8-g9gGAN7oAR4ZsLcIDUwCUwgDZKnQWxtSPtjWbRzw5B_O8aVCf_WCwCf6cfVH2gP_US1NymUCpz-ZnkqYa24bgd-p582ashMBTxSjAsTLavvoJSBvSWA3Zhz-fFCqodwA90raPQ')"></div>
+<div class="flex justify-between items-start mb-2 relative z-10">
+<div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined text-sm">restaurant</span>
+</div>
+<span class="text-xs font-semibold text-gray-500">Trưa</span>
+</div>
+<h4 class="font-semibold text-sm relative z-10 mt-auto">Salad Gà Nướng</h4>
+<span class="text-xs text-primary font-medium relative z-10">450 kcal</span>
+</div>
+<!-- Dinner (Add) -->
+<div class="bento-card p-4 flex flex-col items-center justify-center border-dashed border-2 border-gray-300 bg-transparent col-span-2 hover:bg-gray-50 transition-colors cursor-pointer min-h-[100px]">
+<span class="material-symbols-outlined text-gray-400 mb-2">add_circle</span>
+<span class="text-sm font-medium text-gray-500">Thêm bữa tối</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)] rounded-t-xl max-w-md mx-auto">
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-chip text-label-chip mt-1">Trang chủ</span>
+</a>
+<!-- Active -->
+<a class="flex flex-col items-center justify-center bg-primary-soft dark:bg-on-primary-fixed-variant text-primary dark:text-primary-fixed rounded-full px-4 py-1 active:scale-[0.975] transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip mt-1 font-bold">Sức khỏe</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">face</span>
+<span class="font-label-chip text-label-chip mt-1">Nabi</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">auto_stories</span>
+<span class="font-label-chip text-label-chip mt-1">Nhật ký</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-chip text-label-chip mt-1">Hồ sơ</span>
+</a>
+</nav>
+<script>
+        // Animate the main progress ring
+        setTimeout(() => {
+            const circle = document.querySelector('.progress-ring__circle');
+            const targetPercent = parseInt(circle.getAttribute('data-target'));
+            const circumference = 339.292; // 2 * pi * 54
+            
+            const offset = circumference - (targetPercent / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }, 300);
+    </script>
+</body></html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Trợ lý Giọng nói</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#226f55",
+                    "on-tertiary-fixed-variant": "#005233",
+                    "surface": "#f5faf7",
+                    "inverse-surface": "#2c3230",
+                    "surface-variant": "#dee4e1",
+                    "personal-purple": "#8B7CF6",
+                    "tertiary": "#006a43",
+                    "inverse-on-surface": "#edf2ef",
+                    "on-primary": "#ffffff",
+                    "primary-soft": "#DDF6E9",
+                    "focus-ring": "#68D9A5",
+                    "surface-container": "#eaefec",
+                    "on-background": "#171d1b",
+                    "tertiary-fixed-dim": "#50df9c",
+                    "outline": "#6d7a71",
+                    "info": "#247CA8",
+                    "secondary-container": "#a4efce",
+                    "primary-fixed-dim": "#62dda3",
+                    "error": "#C64A4A",
+                    "mint-surface": "#EAF9F1",
+                    "tertiary-fixed": "#70fcb7",
+                    "care-coral": "#FF7D75",
+                    "primary": "#006a46",
+                    "on-tertiary-container": "#f6fff6",
+                    "primary-fixed": "#7ff9be",
+                    "primary-container": "#008559",
+                    "inverse-primary": "#62dda3",
+                    "secondary-fixed": "#a7f2d1",
+                    "success": "#14885F",
+                    "on-tertiary-fixed": "#002112",
+                    "calm-blue": "#58B9E8",
+                    "error-container": "#ffdad6",
+                    "secondary": "#1d6a51",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#f6fff6",
+                    "on-surface": "#171d1b",
+                    "surface-container-low": "#f0f5f2",
+                    "text-primary": "#12352A",
+                    "on-error": "#ffffff",
+                    "background": "#f5faf7",
+                    "surface-dim": "#d6dbd8",
+                    "surface-bright": "#f5faf7",
+                    "surface-tint": "#006c48",
+                    "energy-yellow": "#FFC857",
+                    "outline-variant": "#bccabf",
+                    "text-muted": "#8A9B94",
+                    "text-secondary": "#60766E",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#dee4e1",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed-dim": "#8bd5b6",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "on-secondary-fixed": "#002116",
+                    "on-primary-fixed-variant": "#005235",
+                    "on-surface-variant": "#3d4a42",
+                    "warning": "#B7791F",
+                    "tertiary-container": "#008656",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#002113",
+                    "surface-container-high": "#e4e9e6",
+                    "border-soft": "#D9E9E1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "xxs": "2px",
+                    "card-padding": "16px",
+                    "md": "16px",
+                    "section-gap": "24px",
+                    "xs": "4px",
+                    "sm": "8px",
+                    "page-padding": "16px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "section-title": [
+                            "Roboto"
+                    ],
+                    "body-sm": [
+                            "Roboto"
+                    ],
+                    "cta": [
+                            "Roboto"
+                    ],
+                    "body-base": [
+                            "Roboto"
+                    ],
+                    "screen-title": [
+                            "Roboto"
+                    ],
+                    "display-hero": [
+                            "Roboto"
+                    ],
+                    "label-chip": [
+                            "Roboto"
+                    ]
+            },
+            "fontSize": {
+                    "section-title": [
+                            "20px",
+                            {
+                                    "lineHeight": "26px",
+                                    "letterSpacing": "-0.2px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "21px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "cta": [
+                            "16px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.2px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-base": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "screen-title": [
+                            "26px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "-0.4px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-hero": [
+                            "32px",
+                            {
+                                    "lineHeight": "38px",
+                                    "letterSpacing": "-0.6px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-chip": [
+                            "13px",
+                            {
+                                    "lineHeight": "18px",
+                                    "letterSpacing": "0.1px",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .orb-idle {
+            animation: pulse-idle 3s infinite ease-in-out;
+            background: radial-gradient(circle, rgba(0,106,70,0.8) 0%, rgba(104,217,165,0.4) 100%);
+            box-shadow: 0 0 40px rgba(0,106,70,0.3);
+        }
+        
+        .orb-listening {
+            animation: ripple-listen 1.5s infinite ease-in-out;
+            background: radial-gradient(circle, rgba(0,133,89,1) 0%, rgba(127,249,190,0.6) 100%);
+            box-shadow: 0 0 60px rgba(0,133,89,0.5);
+        }
+        
+        .orb-processing {
+            animation: spin-process 2s infinite linear;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(0,106,70,1) 50%, transparent 100%);
+            border-radius: 50%;
+            padding: 4px;
+        }
+        
+        .orb-speaking {
+            animation: expand-speak 0.8s infinite alternate ease-in-out;
+            background: radial-gradient(circle, rgba(20,136,95,0.9) 0%, rgba(167,242,209,0.5) 100%);
+            box-shadow: 0 0 80px rgba(20,136,95,0.6);
+        }
+        
+        .orb-error {
+            animation: shake-error 0.5s ease-in-out;
+            background: radial-gradient(circle, rgba(198,74,74,0.8) 0%, rgba(255,125,117,0.4) 100%);
+            box-shadow: 0 0 40px rgba(198,74,74,0.4);
+        }
+
+        @keyframes pulse-idle {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        @keyframes ripple-listen {
+            0% { box-shadow: 0 0 0 0 rgba(0,133,89, 0.4); }
+            70% { box-shadow: 0 0 0 40px rgba(0,133,89, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0,133,89, 0); }
+        }
+
+        @keyframes spin-process {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes expand-speak {
+            0% { transform: scale(1); border-radius: 50%; }
+            100% { transform: scale(1.1) scaleY(1.05); border-radius: 45%; }
+        }
+        
+        @keyframes shake-error {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-text-primary min-h-screen font-body-base overflow-hidden flex flex-col items-center justify-center relative">
+<!-- Ambient Background -->
+<div class="absolute inset-0 z-0 opacity-30 pointer-events-none" style="background: radial-gradient(circle at center, rgba(104,217,165,0.2) 0%, transparent 70%);"></div>
+<!-- Top Navigation (Hidden on task-focused screen, but maintaining structure for return) -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-page-padding h-16 max-w-md mx-auto pointer-events-none">
+<button aria-label="Go back" class="p-2 text-text-secondary hover:text-primary transition-colors pointer-events-auto rounded-full hover:bg-surface-variant flex items-center justify-center w-12 h-12" onclick="window.history.back()">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+<!-- TopAppBar headline omitted as this is a focused task screen -->
+</header>
+<!-- Main Content Canvas -->
+<main class="relative z-10 w-full max-w-md mx-auto flex flex-col items-center justify-between h-[884px] pb-safe">
+<!-- Top Helper Text -->
+<div class="mt-24 text-center px-lg animate-fade-in">
+<h1 class="font-screen-title text-screen-title text-primary mb-sm">Xin chào, tôi là NaBi</h1>
+<p class="font-body-base text-text-secondary h-6 transition-all duration-300" id="status-text">Tôi đang lắng nghe bạn...</p>
+</div>
+<!-- The Voice Orb (State Machine Core) -->
+<div class="flex-grow flex items-center justify-center relative w-full my-xl">
+<!-- Center Orb -->
+<div class="w-48 h-48 rounded-full orb-listening flex items-center justify-center cursor-pointer relative z-20 transition-all duration-500" id="voice-orb" onclick="cycleState()">
+<!-- Inner Core -->
+<div class="w-32 h-32 rounded-full bg-white opacity-20 absolute pointer-events-none"></div>
+<!-- Optional Icon Inside -->
+<span class="material-symbols-outlined text-white text-[48px] opacity-80 transition-opacity duration-300" id="orb-icon" style="font-variation-settings: 'FILL' 1;">mic</span>
+</div>
+<!-- Processing Wrapper (visible only in processing state) -->
+<div class="absolute w-52 h-52 rounded-full hidden z-10" id="processing-ring">
+<div class="w-full h-full orb-processing">
+<div class="w-full h-full bg-background rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Transcript / Subtitles Area -->
+<div class="w-full px-lg mb-xl h-32 flex flex-col items-center justify-end">
+<div class="w-full glass-panel rounded-xl p-md text-center transform transition-all duration-500 opacity-100 translate-y-0" id="transcript-container">
+<p class="font-body-base text-text-primary" id="transcript-text">"Hôm nay tôi cảm thấy hơi mệt mỏi..."</p>
+</div>
+</div>
+<!-- NaBi Assistant Mascot (Supportive presence, distinct from Orb) -->
+<div class="mb-lg flex flex-col items-center opacity-80">
+<div class="w-16 h-16 rounded-full bg-mint-surface border border-border-soft flex items-center justify-center shadow-sm relative overflow-hidden mb-xs">
+<img class="w-full h-full object-cover rounded-full" data-alt="A minimalist, soft-styled 3D illustration of a friendly health assistant mascot character named NaBi, rendered in light pastel greens and whites. The mascot has a gentle, supportive expression, set against a pristine, light-mode background. Modern corporate meets soft minimalism." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJZLbWszw9EeDYlI5TFLPUixpL42t_DVQmiSHahNzi85P2LbxwvKEOyQEwF2krxNX12VfcJ-OGUzQlrQYItg3CZEUCZEXir8D_99KfKLvPDGP6dhlvDmaVlzubmqotKMFPA7NjEdJ04ybpKCIBzgZ1f6AkCajY3nYs9K8Ohsa9SIGw7T2KwofXJy67LWwqDvDvPIYcP120mYhsD7lAPnNYYDABwdPVvO3Hp35e-H8xmFXYlQTkIhRSDg">
+</div>
+<span class="font-label-chip text-label-chip text-text-muted">Trợ lý NaBi</span>
+</div>
+</main>
+<script>
+        const states = ['idle', 'listening', 'processing', 'speaking', 'error'];
+        let currentStateIndex = 1; // Start with listening for demo
+
+        const orb = document.getElementById('voice-orb');
+        const processingRing = document.getElementById('processing-ring');
+        const orbIcon = document.getElementById('orb-icon');
+        const statusText = document.getElementById('status-text');
+        const transcriptContainer = document.getElementById('transcript-container');
+        const transcriptText = document.getElementById('transcript-text');
+
+        const stateConfig = {
+            'idle': {
+                class: 'orb-idle',
+                icon: 'mic_none',
+                text: 'Chạm để nói chuyện',
+                transcriptText: '',
+                showTranscript: false
+            },
+            'listening': {
+                class: 'orb-listening',
+                icon: 'mic',
+                text: 'Tôi đang lắng nghe...',
+                transcriptText: '"Hôm nay tôi cảm thấy..."',
+                showTranscript: true
+            },
+            'processing': {
+                class: 'bg-transparent', // Handled by ring
+                icon: 'graphic_eq',
+                text: 'Đang suy nghĩ...',
+                transcriptText: '"Hôm nay tôi cảm thấy hơi mệt mỏi..."',
+                showTranscript: true
+            },
+            'speaking': {
+                class: 'orb-speaking',
+                icon: 'volume_up',
+                text: 'NaBi đang trả lời...',
+                transcriptText: 'Bạn nên nghỉ ngơi một chút nhé. Uống một ngụm nước ấm sẽ giúp bạn thấy tốt hơn.',
+                showTranscript: true
+            },
+            'error': {
+                class: 'orb-error',
+                icon: 'warning',
+                text: 'Không nghe rõ, vui lòng thử lại',
+                transcriptText: 'Lỗi kết nối hoặc không nhận diện được giọng nói.',
+                showTranscript: true
+            }
+        };
+
+        function cycleState() {
+            // Remove current classes
+            const currentState = states[currentStateIndex];
+            orb.classList.remove(stateConfig[currentState].class);
+            
+            // Advance state
+            currentStateIndex = (currentStateIndex + 1) % states.length;
+            const newState = states[currentStateIndex];
+            const config = stateConfig[newState];
+
+            // Apply new state
+            if (newState === 'processing') {
+                orb.classList.remove('orb-idle', 'orb-listening', 'orb-speaking', 'orb-error');
+                orb.style.background = 'transparent';
+                orb.style.boxShadow = 'none';
+                processingRing.classList.remove('hidden');
+                orbIcon.style.opacity = '0.4';
+                orbIcon.style.color = '#006a46'; // Primary color for icon when transparent bg
+            } else {
+                processingRing.classList.add('hidden');
+                orb.style.background = ''; // reset inline style
+                orb.style.boxShadow = '';
+                orb.classList.add(config.class);
+                orbIcon.style.opacity = '0.8';
+                orbIcon.style.color = '#ffffff'; // White for colored backgrounds
+            }
+
+            orbIcon.textContent = config.icon;
+            statusText.textContent = config.text;
+            
+            if (config.showTranscript) {
+                transcriptText.textContent = config.transcriptText;
+                transcriptContainer.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                transcriptContainer.classList.add('opacity-100', 'translate-y-0');
+                
+                if(newState === 'error') {
+                    transcriptContainer.style.borderColor = 'rgba(198,74,74,0.3)';
+                    transcriptText.classList.replace('text-text-primary', 'text-error');
+                } else if (newState === 'speaking') {
+                     transcriptContainer.style.borderColor = 'rgba(20,136,95,0.3)';
+                     transcriptText.classList.replace('text-error', 'text-text-primary');
+                } else {
+                    transcriptContainer.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    transcriptText.classList.replace('text-error', 'text-text-primary');
+                }
+            } else {
+                transcriptContainer.classList.remove('opacity-100', 'translate-y-0');
+                transcriptContainer.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+            }
+        }
+    </script>
+</body></html>

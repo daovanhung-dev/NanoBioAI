@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nabi - Lắng nghe</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e8e1db",
+                        "surface-dim": "#dfd9d3",
+                        "error-container": "#ffdad6",
+                        "on-background": "#1d1b18",
+                        "inverse-surface": "#33302c",
+                        "surface-container-highest": "#e8e1db",
+                        "outline": "#707973",
+                        "on-error-container": "#93000a",
+                        "secondary": "#3e6750",
+                        "on-secondary-container": "#426b54",
+                        "primary-container": "#2d6a4f",
+                        "tertiary-container": "#5d605d",
+                        "on-surface-variant": "#404943",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#002112",
+                        "surface-tint": "#2c694e",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#fff8f2",
+                        "primary-fixed-dim": "#95d4b3",
+                        "on-secondary-fixed-variant": "#264f39",
+                        "on-primary-fixed": "#002114",
+                        "primary": "#0f5238",
+                        "on-tertiary-container": "#d9dad7",
+                        "tertiary": "#464846",
+                        "on-primary-container": "#a8e7c5",
+                        "surface-container": "#f3ede7",
+                        "surface": "#fff8f2",
+                        "secondary-fixed-dim": "#a4d1b4",
+                        "on-surface": "#1d1b18",
+                        "tertiary-fixed": "#e2e3df",
+                        "on-tertiary-fixed-variant": "#454745",
+                        "outline-variant": "#bfc9c1",
+                        "on-primary": "#ffffff",
+                        "background": "#fff8f2",
+                        "secondary-container": "#bdeacd",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#b1f0ce",
+                        "surface-container-high": "#ede7e1",
+                        "inverse-on-surface": "#f6f0ea",
+                        "on-primary-fixed-variant": "#0e5138",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#f9f2ec",
+                        "tertiary-fixed-dim": "#c5c7c3",
+                        "secondary-fixed": "#c0edd0",
+                        "inverse-primary": "#95d4b3",
+                        "on-tertiary-fixed": "#1a1c1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "companion-offset": "20px",
+                        "xl": "32px",
+                        "touch-target": "48px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "safe": "80px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Manrope"],
+                        "label-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .spring-anim {
+            animation: spring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes spring {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .breathing {
+            animation: breathe 4s ease-in-out infinite;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col items-center justify-center relative p-md">
+<!-- Top Navigation (Suppressed for focused interaction, but included as invisible anchor if needed, keeping it hidden for this specific isolated surface view as requested by prompt context focusing on bubble) -->
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-md flex flex-col items-center justify-center relative min-h-[60vh]">
+<!-- Nabi & Speech Bubble Container -->
+<div class="relative flex flex-col items-center gap-sm">
+<!-- Speech Bubble -->
+<div class="spring-anim bg-surface-container-lowest border border-primary rounded-2xl rounded-br-sm p-3 max-w-[200px] shadow-[0_8px_24px_rgba(45,106,79,0.08)] relative mb-2">
+<p class="font-body-md text-body-md text-on-surface">Mình đang lắng nghe...</p>
+<!-- Tail pointing to Nabi -->
+<div class="absolute -bottom-[6px] right-4 w-3 h-3 bg-surface-container-lowest border-b border-r border-primary transform rotate-45"></div>
+</div>
+<!-- Nabi Mascot -->
+<div class="breathing w-24 h-24 rounded-full bg-secondary-container flex items-center justify-center shadow-lg border-2 border-surface cursor-pointer hover:scale-[1.02] transition-transform duration-200 ease-out">
+<img class="w-20 h-20 object-contain rounded-full" data-alt="A cute, friendly, abstract mascot character representing a calming wellness companion. It has soft, rounded geometric shapes, glowing with gentle warm tones of mint green and creamy white against a soft light-mode background. The mascot expresses a listening, attentive posture, highly modern and minimalist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZKlBSuDPWs0tOEnaegFmKtLGDqgHw2WOEyq2rOjH1VZSfoXFFLBMe5uXsi8xsvCXleW_YRIykBxqhdykSL-g5jyobDiAmVRMEqL6Azfe6vb8yzpNHxCF3ggIrxFuDihTtpBBMrvlWR2-p3l7n3mT3gFVQIZ5K4MZITFfe4-yvEChpDGdjlEJkqHIneDXMavBFu3KmTWu1qDfPTPefy_R-szzpWpgy33KX971PxyzCHEBdifcIxHMGeA">
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Shell (Suppressed for focused surface view, but structural placeholder remains if context requires) -->
+</body></html>

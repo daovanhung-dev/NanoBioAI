@@ -1,0 +1,312 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Kiểm tra thông tin - NaBi Wellness</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Subtle entry animation for bento cards */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+    </style>
+<!-- Tailwind Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#dee4e1",
+                    "secondary": "#1d6a51",
+                    "tertiary": "#006a43",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#171d1b",
+                    "mint-surface": "#EAF9F1",
+                    "surface-container-high": "#e4e9e6",
+                    "calm-blue": "#58B9E8",
+                    "focus-ring": "#68D9A5",
+                    "surface-container": "#eaefec",
+                    "on-primary-container": "#f6fff6",
+                    "on-tertiary-fixed": "#002112",
+                    "primary-fixed-dim": "#62dda3",
+                    "primary-fixed": "#7ff9be",
+                    "outline-variant": "#bccabf",
+                    "surface-dim": "#d6dbd8",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#002113",
+                    "border-soft": "#D9E9E1",
+                    "text-muted": "#8A9B94",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#005235",
+                    "surface-tint": "#006c48",
+                    "on-error": "#ffffff",
+                    "on-tertiary-container": "#f6fff6",
+                    "on-secondary-container": "#226f55",
+                    "warning": "#B7791F",
+                    "text-secondary": "#60766E",
+                    "on-secondary-fixed": "#002116",
+                    "on-tertiary": "#ffffff",
+                    "secondary-container": "#a4efce",
+                    "secondary-fixed-dim": "#8bd5b6",
+                    "surface-bright": "#f5faf7",
+                    "on-background": "#171d1b",
+                    "care-coral": "#FF7D75",
+                    "inverse-on-surface": "#edf2ef",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "primary-soft": "#DDF6E9",
+                    "info": "#247CA8",
+                    "success": "#14885F",
+                    "primary": "#006a46",
+                    "inverse-surface": "#2c3230",
+                    "surface-container-highest": "#dee4e1",
+                    "error": "#C64A4A",
+                    "tertiary-container": "#008656",
+                    "primary-container": "#008559",
+                    "text-primary": "#12352A",
+                    "tertiary-fixed-dim": "#50df9c",
+                    "inverse-primary": "#62dda3",
+                    "tertiary-fixed": "#70fcb7",
+                    "background": "#f5faf7",
+                    "energy-yellow": "#FFC857",
+                    "personal-purple": "#8B7CF6",
+                    "on-tertiary-fixed-variant": "#005233",
+                    "on-surface-variant": "#3d4a42",
+                    "surface": "#f5faf7",
+                    "secondary-fixed": "#a7f2d1",
+                    "outline": "#6d7a71",
+                    "on-primary": "#ffffff",
+                    "surface-container-low": "#f0f5f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px",
+                    "2xl": "1.25rem",
+                    "3xl": "1.5rem"
+            },
+            "spacing": {
+                    "xl": "32px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "xs": "4px",
+                    "xxs": "2px",
+                    "section-gap": "24px",
+                    "page-padding": "16px",
+                    "lg": "24px",
+                    "card-padding": "16px"
+            },
+            "fontFamily": {
+                    "body-base": ["Roboto", "sans-serif"],
+                    "cta": ["Roboto", "sans-serif"],
+                    "section-title": ["Roboto", "sans-serif"],
+                    "body-sm": ["Roboto", "sans-serif"],
+                    "display-hero": ["Roboto", "sans-serif"],
+                    "label-chip": ["Roboto", "sans-serif"],
+                    "screen-title": ["Roboto", "sans-serif"]
+            },
+            "fontSize": {
+                    "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "cta": ["16px", {"lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600"}],
+                    "section-title": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "21px", "fontWeight": "400"}],
+                    "display-hero": ["32px", {"lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700"}],
+                    "label-chip": ["13px", {"lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500"}],
+                    "screen-title": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-text-primary min-h-screen relative font-body-base selection:bg-primary-soft selection:text-primary">
+<!-- Header / Nav -->
+<header class="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-md flex items-center px-page-padding h-16 w-full max-w-md mx-auto">
+<button aria-label="Quay lại" class="p-2 -ml-2 rounded-full hover:bg-mint-surface transition-colors flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">arrow_back</span>
+</button>
+<!-- Progress Indicator -->
+<div class="flex-1 flex justify-center gap-xs ml-4">
+<div class="h-1.5 w-8 rounded-full bg-mint-surface"></div>
+<div class="h-1.5 w-8 rounded-full bg-mint-surface"></div>
+<div class="h-1.5 w-8 rounded-full bg-mint-surface"></div>
+<div class="h-1.5 w-12 rounded-full bg-primary relative overflow-hidden">
+<div class="absolute inset-0 bg-white/30 animate-pulse"></div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-md mx-auto pt-24 pb-32 px-page-padding flex flex-col gap-section-gap">
+<!-- Hero Context -->
+<div class="flex flex-col items-center text-center animate-fade-in-up">
+<div class="w-20 h-20 mb-sm rounded-full bg-mint-surface border border-border-soft flex items-center justify-center shadow-[0_8px_20px_rgba(20,163,111,0.08)]">
+<!-- Placeholder for NaBi Avatar Image -->
+<img class="w-16 h-16 object-contain rounded-full" data-alt="A friendly, minimalist 3D rendering of a green sprout mascot character smiling warmly in a soft studio lighting setup with a pure white background. The aesthetic is clean, modern, and restorative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCi5cal8zjZjE-eJ9dXezOqDRBTgtkakkL0Q5bEgzu0ZCnEHlKUADjZvv5ENvMp0G7FQK3Yi6_h8uVfnAg20j_pgIN3b6wo96duTxJRvMpS7p1CwADHsRWsYbt2evVoB8gIXpk39y7mrDAQkZ-3lcY7uDTOwaMsRGrjwkQT_k_oja11WnJXmHliCr2Hr-3rBMkG680oCeUMaeHEhvB3jSdqbsiWNi_vL1p_QnzyvsnODsiN16gzKfKnNQ">
+</div>
+<h1 class="font-display-hero text-display-hero text-text-primary mb-xs">Sắp xong rồi!</h1>
+<p class="font-body-base text-body-base text-text-secondary max-w-[280px]">Hãy cùng NaBi kiểm tra lại thông tin để cá nhân hóa hành trình của bạn nhé.</p>
+</div>
+<!-- Bento Grid: Profile Info -->
+<section class="bg-surface-container-lowest rounded-2xl p-card-padding border border-border-soft shadow-[0_4px_16px_rgba(20,163,111,0.04)] animate-fade-in-up delay-100 relative group overflow-hidden">
+<div class="flex justify-between items-center mb-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-calm-blue/10 text-info flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">person</span>
+</div>
+<h2 class="font-section-title text-section-title text-text-primary">Hồ sơ cá nhân</h2>
+</div>
+<button aria-label="Sửa hồ sơ" class="text-text-muted hover:text-primary transition-colors flex items-center justify-center p-1 rounded-full hover:bg-mint-surface">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<!-- Info Chip -->
+<div class="bg-surface rounded-xl p-3 flex flex-col">
+<span class="font-body-sm text-body-sm text-text-muted mb-xxs">Tên gọi</span>
+<span class="font-body-base text-body-base font-medium text-text-primary truncate">Minh Anh</span>
+</div>
+<div class="bg-surface rounded-xl p-3 flex flex-col">
+<span class="font-body-sm text-body-sm text-text-muted mb-xxs">Giới tính</span>
+<span class="font-body-base text-body-base font-medium text-text-primary">Nữ</span>
+</div>
+<div class="bg-surface rounded-xl p-3 flex flex-col">
+<span class="font-body-sm text-body-sm text-text-muted mb-xxs">Chiều cao</span>
+<div class="flex items-baseline gap-xs">
+<span class="font-body-base text-body-base font-medium text-text-primary">162</span>
+<span class="font-label-chip text-label-chip text-text-muted">cm</span>
+</div>
+</div>
+<div class="bg-surface rounded-xl p-3 flex flex-col">
+<span class="font-body-sm text-body-sm text-text-muted mb-xxs">Cân nặng</span>
+<div class="flex items-baseline gap-xs">
+<span class="font-body-base text-body-base font-medium text-text-primary">55</span>
+<span class="font-label-chip text-label-chip text-text-muted">kg</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid: Goals -->
+<section class="bg-surface-container-lowest rounded-2xl p-card-padding border border-border-soft shadow-[0_4px_16px_rgba(20,163,111,0.04)] animate-fade-in-up delay-200">
+<div class="flex justify-between items-center mb-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-energy-yellow/10 text-warning flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">track_changes</span>
+</div>
+<h2 class="font-section-title text-section-title text-text-primary">Mục tiêu sức khỏe</h2>
+</div>
+<button aria-label="Sửa mục tiêu" class="text-text-muted hover:text-primary transition-colors flex items-center justify-center p-1 rounded-full hover:bg-mint-surface">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+<div class="flex flex-wrap gap-sm">
+<!-- Goal Chips -->
+<div class="px-3 py-2 rounded-xl bg-primary-soft text-primary-container font-label-chip text-label-chip flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">monitor_weight</span>
+                    Kiểm soát cân nặng
+                </div>
+<div class="px-3 py-2 rounded-xl bg-mint-surface text-secondary border border-border-soft font-label-chip text-label-chip flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">bedtime</span>
+                    Ngủ ngon hơn
+                </div>
+<div class="px-3 py-2 rounded-xl bg-mint-surface text-secondary border border-border-soft font-label-chip text-label-chip flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">water_drop</span>
+                    Uống đủ nước
+                </div>
+</div>
+</section>
+<!-- Bento Grid: Habits -->
+<section class="bg-surface-container-lowest rounded-2xl p-card-padding border border-border-soft shadow-[0_4px_16px_rgba(20,163,111,0.04)] animate-fade-in-up delay-300">
+<div class="flex justify-between items-center mb-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-personal-purple/10 text-personal-purple flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">directions_run</span>
+</div>
+<h2 class="font-section-title text-section-title text-text-primary">Thói quen hiện tại</h2>
+</div>
+<button aria-label="Sửa thói quen" class="text-text-muted hover:text-primary transition-colors flex items-center justify-center p-1 rounded-full hover:bg-mint-surface">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Habit Row -->
+<div class="flex items-center gap-3 p-2 rounded-xl hover:bg-surface transition-colors">
+<div class="w-10 h-10 rounded-full bg-mint-surface flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">directions_walk</span>
+</div>
+<div class="flex-1">
+<h3 class="font-body-base text-body-base font-medium text-text-primary">Mức độ vận động</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">Ít vận động (Dưới 30p/ngày)</p>
+</div>
+</div>
+<div class="h-[1px] w-full bg-surface-variant/50"></div>
+<!-- Habit Row -->
+<div class="flex items-center gap-3 p-2 rounded-xl hover:bg-surface transition-colors">
+<div class="w-10 h-10 rounded-full bg-calm-blue/10 flex items-center justify-center text-info shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">snooze</span>
+</div>
+<div class="flex-1">
+<h3 class="font-body-base text-body-base font-medium text-text-primary">Thời gian ngủ</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">5 - 6 tiếng/đêm</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Sticky Bottom Action -->
+<div class="fixed bottom-0 left-0 w-full z-50 p-4 pb-safe bg-gradient-to-t from-background via-background/95 to-transparent pt-8">
+<div class="max-w-md mx-auto">
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-white py-4 rounded-xl font-cta text-cta shadow-[0_8px_20px_rgba(20,163,111,0.2)] hover:shadow-[0_4px_12px_rgba(20,163,111,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-sm relative overflow-hidden group">
+<span class="relative z-10">Bắt đầu hành trình</span>
+<span class="material-symbols-outlined relative z-10 text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+<!-- Subtle button shine effect -->
+<div class="absolute inset-0 bg-white/20 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] skew-x-12"></div>
+</button>
+<p class="text-center font-body-sm text-body-sm text-text-muted mt-3">
+                Bạn có thể cập nhật thông tin này bất kỳ lúc nào trong Cài đặt.
+            </p>
+</div>
+</div>
+<style>
+        @keyframes shimmer {
+            100% { transform: translateX(200%); }
+        }
+        /* Handle safe area for iOS */
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 1rem);
+        }
+    </style>
+</body></html>

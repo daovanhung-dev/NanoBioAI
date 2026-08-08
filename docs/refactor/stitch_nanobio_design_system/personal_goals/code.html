@@ -1,0 +1,316 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Mục tiêu cá nhân - NaBi Wellness</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "energy-yellow": "#FFC857",
+                        "outline-variant": "#bccabf",
+                        "warning": "#B7791F",
+                        "error": "#C64A4A",
+                        "on-tertiary-fixed": "#002112",
+                        "surface-container-highest": "#dee4e1",
+                        "on-primary-container": "#f6fff6",
+                        "surface-container-low": "#f0f5f2",
+                        "on-error-container": "#93000a",
+                        "info": "#247CA8",
+                        "surface-tint": "#006c48",
+                        "text-muted": "#8A9B94",
+                        "background": "#f5faf7",
+                        "on-tertiary-container": "#f6fff6",
+                        "text-secondary": "#60766E",
+                        "tertiary": "#006a43",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#a7f2d1",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-surface-variant": "#3d4a42",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#a4efce",
+                        "on-error": "#ffffff",
+                        "primary-soft": "#DDF6E9",
+                        "surface-dim": "#d6dbd8",
+                        "primary": "#006a46",
+                        "outline": "#6d7a71",
+                        "on-secondary-fixed": "#002116",
+                        "primary-fixed-dim": "#62dda3",
+                        "surface-container": "#eaefec",
+                        "primary-fixed": "#7ff9be",
+                        "text-primary": "#12352A",
+                        "inverse-on-surface": "#edf2ef",
+                        "inverse-surface": "#2c3230",
+                        "care-coral": "#FF7D75",
+                        "surface": "#f5faf7",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-variant": "#dee4e1",
+                        "surface-bright": "#f5faf7",
+                        "calm-blue": "#58B9E8",
+                        "secondary": "#1d6a51",
+                        "surface-container-high": "#e4e9e6",
+                        "on-primary-fixed-variant": "#005235",
+                        "border-soft": "#D9E9E1",
+                        "on-surface": "#171d1b",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "mint-surface": "#EAF9F1",
+                        "success": "#14885F",
+                        "personal-purple": "#8B7CF6",
+                        "on-primary-fixed": "#002113",
+                        "on-background": "#171d1b",
+                        "primary-container": "#008559",
+                        "on-secondary-container": "#226f55",
+                        "tertiary-container": "#008656",
+                        "focus-ring": "#68D9A5",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#62dda3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "section-gap": "24px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "xxs": "2px",
+                        "md": "16px",
+                        "card-padding": "16px",
+                        "page-padding": "16px"
+                    },
+                    "fontFamily": {
+                        "body-base": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "display-hero": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Shimmer Loading Animation */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, var(--tw-colors-surface-container) 25%, var(--tw-colors-surface-container-high) 50%, var(--tw-colors-surface-container) 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
+        }
+        
+        /* Glassmorphism utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Smooth scrolling */
+        html { scroll-behavior: smooth; }
+        
+        /* Gradient Button */
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, var(--tw-colors-primary-container) 0%, var(--tw-colors-primary-fixed-dim) 100%);
+            box-shadow: 0 4px 12px rgba(20, 163, 111, 0.16);
+            transition: all 0.2s ease;
+        }
+        .btn-primary-gradient:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px rgba(20, 163, 111, 0.12);
+        }
+    </style>
+</head>
+<body class="bg-background text-text-primary font-body-base antialiased min-h-screen flex flex-col pb-24 md:pb-0 pt-16">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 sticky backdrop-blur-md bg-surface/80 flat no shadows flex justify-between items-center px-page-padding h-16 w-full z-50">
+<button aria-label="Go back" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container transition-colors active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-text-primary text-[24px]">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary font-extrabold tracking-tight">NaBi Wellness</h1>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high flex items-center justify-center hover:bg-surface-container transition-colors active:scale-95 transition-transform cursor-pointer">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A close-up portrait of a friendly user avatar for a wellness app, featuring soft, natural lighting, a clear background, and a serene expression, aligning with a modern, restorative design aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1jqhcnhOBCUabTSqxPqaYkWm9ZAgGxjiG6ftbrikNsR433dxpqacNO8EZaL8CQujhdx2YuXsuswxZ4U_YRHcFUxqN6Iytr0behQnryD009-CAbHWNbP39dlv_IORD2eEoyjqQ2TuM0lKu6xYn7m246d8zjexbKFAiIjA4sBtMWITV4oh_HT8gzdbJqIYP5IPXSAD7q9IEtpKap9OCpsVv0HlYouj-VIeOP0w6TDgKFdK5w38FVcnnTA">
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-4xl mx-auto px-page-padding py-section-gap flex flex-col gap-section-gap">
+<!-- Header Section -->
+<div class="flex flex-col gap-sm">
+<h2 class="font-display-hero text-display-hero text-primary font-bold">Mục tiêu cá nhân</h2>
+<p class="font-body-base text-body-base text-text-secondary">Theo dõi và ưu tiên các mục tiêu sức khỏe của bạn.</p>
+</div>
+<!-- Nabi Assistant Banner -->
+<section class="bg-mint-surface rounded-xl p-card-padding flex items-start gap-md border border-border-soft">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+<img alt="Nabi Mascot" class="w-full h-full object-cover" data-alt="A cute, minimalist digital mascot avatar for a wellness app, rendered in soft pastel greens and whites, looking friendly and encouraging, reflecting a modern companion design philosophy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqO4O7_37w4a0fDm-N7qEM6SOB851NVQcRL--bcVYKPpGsKmMuixpq5mWxsAXzTZVwcJnT7CJFCOjKW_lbmkcYF-H_jGil58bSk4v87TZm3JZBrnkyz9TJWq8deX46mOvRqbqKWpiN8wblOU4m9k4JpnidTlgas7qNFkjjKP2LxzFXxSZinv8m_JDpogNxoz1bghFecBPXRUDOF4tQoIexpB9JO4LIWKpvpBF1ae1WuTgHFITsM1RzRQ">
+</div>
+<div class="flex-1 pt-1">
+<p class="font-body-base text-body-base text-text-primary italic">"Mỗi bước nhỏ đều đáng giá!"</p>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Nabi luôn ở đây để hỗ trợ bạn.</p>
+</div>
+</section>
+<!-- Current Goals (Active) Bento Grid -->
+<section class="flex flex-col gap-md">
+<div class="flex items-center justify-between">
+<h3 class="font-section-title text-section-title text-text-primary font-semibold">Mục tiêu hiện tại</h3>
+<button class="font-cta text-cta text-primary hover:text-primary-container transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    Thêm
+                </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<!-- Goal Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-[0_4px_20px_rgba(20,163,111,0.03)] flex flex-col gap-md relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1 h-full bg-energy-yellow"></div>
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">scale</span>
+</div>
+<span class="font-label-chip text-label-chip bg-energy-yellow/20 text-warning px-2 py-1 rounded-full">Đang thực hiện</span>
+</div>
+<button aria-label="Sửa" class="text-text-secondary hover:text-primary transition-colors p-1">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+<div>
+<h4 class="font-section-title text-section-title text-text-primary">Giảm 2kg trong 1 tháng</h4>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Cố gắng duy trì thói quen ăn uống lành mạnh.</p>
+</div>
+<div class="mt-auto">
+<div class="flex justify-between text-body-sm font-body-sm text-text-secondary mb-1">
+<span>Tiến độ</span>
+<span>40%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 40%"></div>
+</div>
+</div>
+</div>
+<!-- Goal Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-[0_4px_20px_rgba(20,163,111,0.03)] flex flex-col gap-md relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1 h-full bg-calm-blue"></div>
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-info">
+<span class="material-symbols-outlined text-[24px]">directions_walk</span>
+</div>
+<span class="font-label-chip text-label-chip bg-energy-yellow/20 text-warning px-2 py-1 rounded-full">Đang thực hiện</span>
+</div>
+<button aria-label="Sửa" class="text-text-secondary hover:text-primary transition-colors p-1">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+<div>
+<h4 class="font-section-title text-section-title text-text-primary">Đi bộ 10k bước mỗi ngày</h4>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Tăng cường vận động nhẹ nhàng.</p>
+</div>
+<div class="mt-auto">
+<div class="flex justify-between text-body-sm font-body-sm text-text-secondary mb-1">
+<span>Tiến độ hôm nay</span>
+<span>7,500 / 10,000</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-info rounded-full transition-all duration-500" style="width: 75%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Archived Goals (Completed) List -->
+<section class="flex flex-col gap-md mt-sm opacity-80 hover:opacity-100 transition-opacity">
+<h3 class="font-section-title text-section-title text-text-primary font-semibold flex items-center gap-sm">
+<span class="material-symbols-outlined text-[24px] text-success">task_alt</span>
+                Đã hoàn thành
+            </h3>
+<div class="flex flex-col gap-sm">
+<!-- Completed Item 1 -->
+<div class="bg-surface-container-low rounded-lg p-3 flex items-center justify-between border border-transparent hover:border-border-soft transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-mint-surface flex items-center justify-center text-success shrink-0">
+<span class="material-symbols-outlined text-[18px]">water_drop</span>
+</div>
+<div>
+<p class="font-body-base text-body-base text-text-primary line-through text-text-muted">Uống 2L nước mỗi ngày (7 ngày)</p>
+<p class="font-body-sm text-body-sm text-text-secondary text-xs">Hoàn thành: 15/10/2023</p>
+</div>
+</div>
+<span class="font-label-chip text-label-chip text-success bg-mint-surface px-2 py-1 rounded">Đạt</span>
+</div>
+<!-- Completed Item 2 -->
+<div class="bg-surface-container-low rounded-lg p-3 flex items-center justify-between border border-transparent hover:border-border-soft transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-mint-surface flex items-center justify-center text-success shrink-0">
+<span class="material-symbols-outlined text-[18px]">bedtime</span>
+</div>
+<div>
+<p class="font-body-base text-body-base text-text-primary line-through text-text-muted">Ngủ trước 11h đêm (Tuần 1)</p>
+<p class="font-body-sm text-body-sm text-text-secondary text-xs">Hoàn thành: 08/10/2023</p>
+</div>
+</div>
+<span class="font-label-chip text-label-chip text-success bg-mint-surface px-2 py-1 rounded">Đạt</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-4 pb-safe bg-surface/90 shadow-[0_-4px_12px_rgba(20,163,111,0.08)] rounded-t-xl backdrop-blur-lg z-50 md:hidden border-t-0">
+<button class="flex flex-col items-center justify-center text-text-secondary hover:bg-primary-soft/30 rounded-xl transition-all active:scale-90 duration-200 w-16 h-14 group">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:text-primary transition-colors">home</span>
+<span class="font-label-chip text-[11px] font-medium">Trang chủ</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-secondary hover:bg-primary-soft/30 rounded-xl transition-all active:scale-90 duration-200 w-16 h-14 group">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:text-primary transition-colors">favorite</span>
+<span class="font-label-chip text-[11px] font-medium">Sức khỏe</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-secondary hover:bg-primary-soft/30 rounded-xl transition-all active:scale-90 duration-200 w-16 h-14 group">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:text-primary transition-colors">smart_toy</span>
+<span class="font-label-chip text-[11px] font-medium">Nabi</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-secondary hover:bg-primary-soft/30 rounded-xl transition-all active:scale-90 duration-200 w-16 h-14 group">
+<span class="material-symbols-outlined text-[24px] mb-1 group-hover:text-primary transition-colors">book</span>
+<span class="font-label-chip text-[11px] font-medium">Nhật ký</span>
+</button>
+<!-- Active Tab: Profile/Hồ sơ -->
+<button class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 hover:bg-primary-soft/30 rounded-xl transition-all active:scale-90 duration-200 w-16 h-14">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-chip text-[11px] font-medium">Hồ sơ</span>
+</button>
+</nav>
+<!-- Loading State Overlay (Hidden by default, used for demonstration) -->
+<div class="fixed inset-0 bg-surface/50 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden" id="loading-overlay">
+<div class="w-16 h-16 rounded-full border-4 border-surface-container border-t-primary animate-spin"></div>
+<p class="font-body-base text-body-base text-text-secondary mt-4">Đang tải dữ liệu...</p>
+</div>
+</body></html>

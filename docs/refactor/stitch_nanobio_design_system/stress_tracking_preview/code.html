@@ -1,0 +1,271 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Theo dõi căng thẳng - NaBi Wellness</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "energy-yellow": "#FFC857",
+                        "outline-variant": "#bccabf",
+                        "warning": "#B7791F",
+                        "error": "#C64A4A",
+                        "on-tertiary-fixed": "#002112",
+                        "surface-container-highest": "#dee4e1",
+                        "on-primary-container": "#f6fff6",
+                        "surface-container-low": "#f0f5f2",
+                        "on-error-container": "#93000a",
+                        "info": "#247CA8",
+                        "surface-tint": "#006c48",
+                        "text-muted": "#8A9B94",
+                        "background": "#f5faf7",
+                        "on-tertiary-container": "#f6fff6",
+                        "text-secondary": "#60766E",
+                        "tertiary": "#006a43",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#a7f2d1",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-surface-variant": "#3d4a42",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#a4efce",
+                        "on-error": "#ffffff",
+                        "primary-soft": "#DDF6E9",
+                        "surface-dim": "#d6dbd8",
+                        "primary": "#006a46",
+                        "outline": "#6d7a71",
+                        "on-secondary-fixed": "#002116",
+                        "primary-fixed-dim": "#62dda3",
+                        "surface-container": "#eaefec",
+                        "primary-fixed": "#7ff9be",
+                        "text-primary": "#12352A",
+                        "inverse-on-surface": "#edf2ef",
+                        "inverse-surface": "#2c3230",
+                        "care-coral": "#FF7D75",
+                        "surface": "#f5faf7",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-variant": "#dee4e1",
+                        "surface-bright": "#f5faf7",
+                        "calm-blue": "#58B9E8",
+                        "secondary": "#1d6a51",
+                        "surface-container-high": "#e4e9e6",
+                        "on-primary-fixed-variant": "#005235",
+                        "border-soft": "#D9E9E1",
+                        "on-surface": "#171d1b",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "mint-surface": "#EAF9F1",
+                        "success": "#14885F",
+                        "personal-purple": "#8B7CF6",
+                        "on-primary-fixed": "#002113",
+                        "on-background": "#171d1b",
+                        "primary-container": "#008559",
+                        "on-secondary-container": "#226f55",
+                        "tertiary-container": "#008656",
+                        "focus-ring": "#68D9A5",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#62dda3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "section-gap": "24px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "xxs": "2px",
+                        "md": "16px",
+                        "card-padding": "16px",
+                        "page-padding": "16px"
+                    },
+                    "fontFamily": {
+                        "body-base": ["Roboto", "sans-serif"],
+                        "body-sm": ["Roboto", "sans-serif"],
+                        "cta": ["Roboto", "sans-serif"],
+                        "screen-title": ["Roboto", "sans-serif"],
+                        "label-chip": ["Roboto", "sans-serif"],
+                        "section-title": ["Roboto", "sans-serif"],
+                        "display-hero": ["Roboto", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom Keyframes for Animations */
+        @keyframes gentle-breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .animate-breathe {
+            animation: gentle-breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes float-badge {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .animate-float {
+            animation: float-badge 3s ease-in-out infinite;
+        }
+        
+        /* Hide scrollbar for bento cards if they overflow */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-base min-h-screen flex flex-col pt-[64px] pb-[80px]">
+<!-- TopAppBar from JSON -->
+<!-- active mapping: Defaulting to TopAppBar standard rendering as no specific nav active state applies here -->
+<header class="docked full-width top-0 sticky backdrop-blur-md bg-surface/80 dark:bg-surface-dim/80 flat no shadows flex justify-between items-center px-page-padding h-16 w-full z-50 fixed left-0 right-0">
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95 transition-transform p-2 rounded-full flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-display-hero text-display-hero text-primary dark:text-primary-fixed-dim truncate flex-1 text-center font-bold tracking-tight">NaBi Wellness</h1>
+<button class="hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95 transition-transform p-1 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-border-soft bg-mint-surface flex items-center justify-center">
+<!-- Fallback avatar icon if no image -->
+<span class="material-symbols-outlined text-primary text-body-sm" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-page-padding py-section-gap flex flex-col gap-section-gap relative overflow-hidden h-full max-w-3xl mx-auto w-full">
+<!-- Background subtle accent -->
+<div class="absolute -top-40 -right-40 w-96 h-96 bg-care-coral/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+<div class="absolute top-1/2 -left-32 w-80 h-80 bg-energy-yellow/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+<!-- Header Section -->
+<header class="text-center mt-md space-y-sm z-10">
+<h2 class="font-section-title text-section-title text-text-primary">Theo dõi căng thẳng</h2>
+</header>
+<!-- Central Illustration - Zen Nabi -->
+<div class="flex justify-center items-center mt-lg mb-md relative z-10">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<!-- Aura / Halo -->
+<div class="absolute inset-0 bg-mint-surface rounded-full opacity-60 animate-breathe scale-110"></div>
+<div class="absolute inset-2 bg-gradient-to-tr from-primary-soft to-surface rounded-full opacity-80 animate-breathe" style="animation-delay: 0.5s;"></div>
+<!-- Placeholder for Nabi Zen Image -->
+<div class="relative z-10 w-40 h-40 rounded-full overflow-hidden shadow-lg border-2 border-surface flex items-center justify-center bg-surface-container-lowest">
+<img class="w-full h-full object-cover" data-alt="A cute, friendly mascot character in a meditative zen pose, sitting cross-legged with eyes closed gently. The character is softly illuminated with warm, natural light against a pristine white background. Accents of soft coral and mint green are subtly incorporated into the character's design. The style is modern, approachable, and minimalist 3D rendering, fitting a supportive health and wellness app UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvwEUXFwqU7ZxXN0xWBkI-RqZq52LdZsujIPS5F-buavCnlwZ1XHf7ITn7uYDnGKZEBrv8WqUvaF61WaABtRjLsRfjxviedC4zNX2i9HdnryConZuSTH5OLF7iGVWMFURasAVMq8NPkGr4LKVE71dLFc-DcBA4d4yNBLR1kDugap7FLk4tGg_KtFsRrGWCxRoklpK-t-VuZ8NrBOlytXPlhvHrXAl4LRVdhEodf-49aibKUrC1j0VN5g">
+</div>
+</div>
+</div>
+<!-- Message Content -->
+<div class="text-center px-4 space-y-md z-10">
+<h3 class="font-section-title text-section-title text-text-primary leading-tight">
+                Nabi đang học cách thấu hiểu bạn...
+            </h3>
+<p class="font-body-base text-body-base text-text-secondary">
+                Một công cụ giúp bạn nhận diện và cân bằng cảm xúc mỗi ngày sẽ sớm xuất hiện.
+            </p>
+</div>
+<!-- Sneak Peek Bento Card -->
+<div class="mt-auto mb-lg z-10 relative">
+<!-- Badge -->
+<div class="absolute -top-3 right-4 z-20 animate-float">
+<span class="bg-care-coral text-on-error font-label-chip text-label-chip px-3 py-1 rounded-full shadow-md border border-white/20 inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+                    Coming Q3
+                </span>
+</div>
+<!-- Bento Card Concept -->
+<div class="bg-surface-container-lowest border border-border-soft rounded-[24px] p-6 shadow-[0_8px_20px_rgba(20,163,111,0.04)] relative overflow-hidden group">
+<!-- Shimmer effect overlay for "coming soon" vibe -->
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none"></div>
+<div class="flex items-center gap-3 mb-4 opacity-70">
+<div class="w-10 h-10 rounded-full bg-care-coral/10 flex items-center justify-center text-care-coral">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">ecg_heart</span>
+</div>
+<div>
+<h4 class="font-cta text-cta text-text-primary">Độ biến thiên nhịp tim</h4>
+<p class="font-label-chip text-label-chip text-text-muted">Dự báo mức độ căng thẳng</p>
+</div>
+</div>
+<!-- Mock Graph Area -->
+<div class="h-24 w-full bg-surface-container-low rounded-xl relative overflow-hidden flex items-end justify-around p-2 opacity-60">
+<!-- Fake bars for graph -->
+<div class="w-1/6 bg-mint-surface rounded-t-md h-1/3"></div>
+<div class="w-1/6 bg-primary-soft rounded-t-md h-2/3"></div>
+<div class="w-1/6 bg-mint-surface rounded-t-md h-1/2"></div>
+<div class="w-1/6 bg-care-coral/20 rounded-t-md h-full relative">
+<div class="absolute -top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-care-coral"></div>
+</div>
+<div class="w-1/6 bg-primary-soft rounded-t-md h-3/4"></div>
+<!-- Overlay to make it look faded/locked -->
+<div class="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center">
+<span class="material-symbols-outlined text-text-muted text-[32px]" style="font-variation-settings: 'FILL' 0;">lock</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar from JSON -->
+<!-- Intent Mapping: This is a health feature preview, "Sức khỏe" (Health) is the closest semantic match, but since it's a specific tracking screen, we highlight the most relevant tab if it were a main flow. Let's map to "Sức khỏe" (index 1) as it relates to wellness tracking. -->
+<nav class="md:hidden bg-surface/90 dark:bg-surface-container-lowest/90 shadow-[0_-4px_12px_rgba(20,163,111,0.08)] shadow-lg fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-4 pb-safe z-50 rounded-t-xl backdrop-blur-lg">
+<!-- Tab 0: Trang chủ (Inactive) -->
+<button class="hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 flex flex-col items-center justify-center text-text-secondary dark:text-text-muted p-2 min-w-[64px] focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-chip text-label-chip">Trang chủ</span>
+</button>
+<!-- Tab 1: Sức khỏe (Active - best match for Stress Tracking) -->
+<button class="hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim relative after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 p-2 min-w-[64px] focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip">Sức khỏe</span>
+</button>
+<!-- Tab 2: Nabi (Inactive) -->
+<button class="hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 flex flex-col items-center justify-center text-text-secondary dark:text-text-muted p-2 min-w-[64px] focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">smart_toy</span>
+<span class="font-label-chip text-label-chip">Nabi</span>
+</button>
+<!-- Tab 3: Nhật ký (Inactive) -->
+<button class="hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 flex flex-col items-center justify-center text-text-secondary dark:text-text-muted p-2 min-w-[64px] focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">book</span>
+<span class="font-label-chip text-label-chip">Nhật ký</span>
+</button>
+<!-- Tab 4: Hồ sơ (Inactive) -->
+<button class="hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 flex flex-col items-center justify-center text-text-secondary dark:text-text-muted p-2 min-w-[64px] focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-chip text-label-chip">Hồ sơ</span>
+</button>
+</nav>
+<style>
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        /* Safe area padding for modern mobile browsers */
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 16px);
+        }
+    </style>
+</body></html>

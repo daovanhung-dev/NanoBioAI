@@ -1,0 +1,305 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Lịch sử điểm thưởng</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-low": "#f0f5f2",
+                        "primary-soft": "#DDF6E9",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-surface-variant": "#3d4a42",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-bright": "#f5faf7",
+                        "on-surface": "#171d1b",
+                        "calm-blue": "#58B9E8",
+                        "text-muted": "#8A9B94",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#1d6a51",
+                        "surface-container-high": "#e4e9e6",
+                        "surface-dim": "#d6dbd8",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#002112",
+                        "error": "#C64A4A",
+                        "surface-variant": "#dee4e1",
+                        "surface": "#f5faf7",
+                        "on-primary-fixed": "#002113",
+                        "primary": "#006a46",
+                        "info": "#247CA8",
+                        "border-soft": "#D9E9E1",
+                        "surface-container": "#eaefec",
+                        "on-error": "#ffffff",
+                        "outline-variant": "#bccabf",
+                        "primary-fixed-dim": "#62dda3",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "inverse-surface": "#2c3230",
+                        "on-background": "#171d1b",
+                        "on-primary-container": "#f6fff6",
+                        "on-secondary-fixed": "#002116",
+                        "energy-yellow": "#FFC857",
+                        "background": "#f5faf7",
+                        "on-secondary-container": "#226f55",
+                        "personal-purple": "#8B7CF6",
+                        "on-tertiary-container": "#f6fff6",
+                        "surface-tint": "#006c48",
+                        "text-secondary": "#60766E",
+                        "tertiary-container": "#008656",
+                        "secondary-fixed": "#a7f2d1",
+                        "primary-fixed": "#7ff9be",
+                        "focus-ring": "#68D9A5",
+                        "success": "#14885F",
+                        "inverse-primary": "#62dda3",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6d7a71",
+                        "on-tertiary": "#ffffff",
+                        "mint-surface": "#EAF9F1",
+                        "primary-container": "#008559",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "secondary-container": "#a4efce",
+                        "care-coral": "#FF7D75",
+                        "tertiary": "#006a43",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "text-primary": "#12352A",
+                        "warning": "#B7791F"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "page-padding": "16px",
+                        "md": "16px",
+                        "card-padding": "16px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "sm": "8px",
+                        "xl": "32px"
+                    },
+                    fontFamily: {
+                        "label-chip": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "screen-title": ["Roboto"]
+                    },
+                    fontSize: {
+                        "label-chip": ["13px", { lineHeight: "18px", letterSpacing: "0.1px", fontWeight: "500" }],
+                        "display-hero": ["32px", { lineHeight: "38px", letterSpacing: "-0.6px", fontWeight: "700" }],
+                        "cta": ["16px", { lineHeight: "20px", letterSpacing: "0.2px", fontWeight: "600" }],
+                        "body-sm": ["14px", { lineHeight: "21px", fontWeight: "400" }],
+                        "section-title": ["20px", { lineHeight: "26px", letterSpacing: "-0.2px", fontWeight: "600" }],
+                        "body-base": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "screen-title": ["26px", { lineHeight: "32px", letterSpacing: "-0.4px", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Smooth scrolling and generic utilities */
+        html { scroll-behavior: smooth; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Hide scrollbar for horizontal scrolling */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-base pt-16 pb-20 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface-bright/80 backdrop-blur-md border-b border-border-soft shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-screen-xl mx-auto">
+<!-- Leading: Avatar -->
+<div class="flex items-center gap-sm">
+<img alt="Quản trị viên" class="w-10 h-10 rounded-full object-cover border border-border-soft" data-alt="A small, professional avatar portrait of an Asian administrator in a soft lit studio environment, wearing a neat business casual outfit, conveying trust and approachability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh9SnvpqD50ID87uqDcCXbaK--NR1J8O60defLO_U903-Uh8YFWn68hWDkJZwQlT3rfrsrgwJ8sg-IDNW4hV3QEAOCC_zXuSs_azhyfH5fyvGMQ_HR24clmZZeDL6E-156zwzsx7xmNKWPbe9a9-BJeYqJY5gzq06uMrGCXLgRZMllsDtvCnChM6tLGGa_yL3YEkcNmhfyvC8kKNDJfgGbsG-c6GM6FO74SpjbAG5DLQWREWkTaLOUSg">
+<span class="font-body-sm text-body-sm text-text-secondary hidden sm:block">Quản trị viên</span>
+</div>
+<!-- Headline -->
+<h1 class="font-screen-title text-screen-title md:text-screen-title text-primary text-center absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+                Hệ thống Cộng tác viên
+            </h1>
+<!-- Trailing: Icon -->
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-primary-soft/50 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-screen-md mx-auto px-page-padding py-section-gap flex flex-col gap-section-gap">
+<!-- Page Context Header -->
+<div class="pt-sm">
+<h2 class="font-display-hero text-display-hero text-on-surface">Lịch sử điểm</h2>
+<p class="font-body-base text-body-base text-text-secondary mt-1">Theo dõi biến động và số dư điểm thưởng của bạn.</p>
+</div>
+<!-- Balance Card (Hero Bento) -->
+<section class="bg-mint-surface border border-border-soft rounded-xl p-card-padding shadow-[0_4px_20px_rgba(20,163,111,0.08)] relative overflow-hidden">
+<!-- Decorative background element -->
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-primary-soft rounded-full opacity-50 blur-xl pointer-events-none"></div>
+<div class="flex flex-col relative z-10">
+<span class="font-label-chip text-label-chip text-secondary">Số dư hiện tại</span>
+<div class="flex items-baseline gap-sm mt-2">
+<span class="font-display-hero text-display-hero text-primary">12,450</span>
+<span class="font-cta text-cta text-primary-container">điểm</span>
+</div>
+<div class="mt-4 flex gap-sm">
+<button class="flex-1 bg-gradient-to-r from-primary to-primary-fixed-dim text-on-primary font-cta text-cta py-3 px-4 rounded-lg shadow-sm hover:opacity-90 transition-opacity flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">redeem</span>
+                        Quy đổi
+                    </button>
+</div>
+</div>
+</section>
+<!-- Filters -->
+<section>
+<div class="flex gap-sm overflow-x-auto no-scrollbar pb-2">
+<button class="whitespace-nowrap px-4 py-2 rounded-full border border-primary bg-primary-soft text-primary-container font-label-chip text-label-chip flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                    Tháng này
+                </button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full border border-border-soft bg-surface-container text-on-surface-variant hover:bg-surface-variant font-label-chip text-label-chip transition-colors">
+                    Tất cả
+                </button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full border border-border-soft bg-surface-container text-on-surface-variant hover:bg-surface-variant font-label-chip text-label-chip transition-colors">
+                    Đã cộng (+)
+                </button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full border border-border-soft bg-surface-container text-on-surface-variant hover:bg-surface-variant font-label-chip text-label-chip transition-colors">
+                    Đã trừ (-)
+                </button>
+</div>
+</section>
+<!-- Transaction List -->
+<section class="flex flex-col gap-sm">
+<!-- Transaction Item: Earned -->
+<div class="bg-surface-container-lowest border border-border-soft rounded-lg p-md shadow-sm flex items-center justify-between hover:bg-surface-bright transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-mint-surface flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined">add_circle</span>
+</div>
+<div>
+<h3 class="font-cta text-cta text-on-surface">Hoa hồng từ đơn #456</h3>
+<div class="flex gap-2 items-center mt-1">
+<span class="font-body-sm text-body-sm text-text-muted">15/10/2023</span>
+<span class="w-1 h-1 rounded-full bg-border-soft"></span>
+<span class="font-label-chip text-label-chip text-success bg-primary-soft px-2 py-0.5 rounded-full">Đã cộng</span>
+</div>
+</div>
+</div>
+<div class="font-section-title text-section-title text-success">
+                    +450
+                </div>
+</div>
+<!-- Transaction Item: Redeemed -->
+<div class="bg-surface-container-lowest border border-border-soft rounded-lg p-md shadow-sm flex items-center justify-between hover:bg-surface-bright transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-error-container/30 flex items-center justify-center text-error group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined">remove_circle</span>
+</div>
+<div>
+<h3 class="font-cta text-cta text-on-surface">Quy đổi voucher giảm giá</h3>
+<div class="flex gap-2 items-center mt-1">
+<span class="font-body-sm text-body-sm text-text-muted">12/10/2023</span>
+<span class="w-1 h-1 rounded-full bg-border-soft"></span>
+<span class="font-label-chip text-label-chip text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded-full">Thành công</span>
+</div>
+</div>
+</div>
+<div class="font-section-title text-section-title text-error">
+                    -1,000
+                </div>
+</div>
+<!-- Transaction Item: Pending -->
+<div class="bg-surface-container-lowest border border-border-soft rounded-lg p-md shadow-sm flex items-center justify-between hover:bg-surface-bright transition-colors cursor-pointer group opacity-80">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined">pending</span>
+</div>
+<div>
+<h3 class="font-cta text-cta text-on-surface">Hoa hồng từ đơn #482</h3>
+<div class="flex gap-2 items-center mt-1">
+<span class="font-body-sm text-body-sm text-text-muted">10/10/2023</span>
+<span class="w-1 h-1 rounded-full bg-border-soft"></span>
+<span class="font-label-chip text-label-chip text-warning bg-energy-yellow/20 px-2 py-0.5 rounded-full">Đang chờ</span>
+</div>
+</div>
+</div>
+<div class="font-section-title text-section-title text-warning">
+                    +200
+                </div>
+</div>
+<!-- Transaction Item: Earned -->
+<div class="bg-surface-container-lowest border border-border-soft rounded-lg p-md shadow-sm flex items-center justify-between hover:bg-surface-bright transition-colors cursor-pointer group">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-mint-surface flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined">emoji_events</span>
+</div>
+<div>
+<h3 class="font-cta text-cta text-on-surface">Thưởng đạt doanh số tuần</h3>
+<div class="flex gap-2 items-center mt-1">
+<span class="font-body-sm text-body-sm text-text-muted">08/10/2023</span>
+<span class="w-1 h-1 rounded-full bg-border-soft"></span>
+<span class="font-label-chip text-label-chip text-success bg-primary-soft px-2 py-0.5 rounded-full">Đã cộng</span>
+</div>
+</div>
+</div>
+<div class="font-section-title text-section-title text-success">
+                    +500
+                </div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only typically, but strictly following requirements) -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl border-t border-border-soft shadow-[0_-4px_12px_rgba(20,163,111,0.08)] md:hidden">
+<div class="flex justify-around items-center h-16 px-2 pb-safe w-full">
+<!-- Inactive Tab 1 -->
+<button class="flex flex-col items-center justify-center text-text-muted hover:text-primary-container transition-all active:scale-90 duration-200 w-16">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-chip text-label-chip mt-1">Tổng quan</span>
+</button>
+<!-- Inactive Tab 2 -->
+<button class="flex flex-col items-center justify-center text-text-muted hover:text-primary-container transition-all active:scale-90 duration-200 w-16">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-chip text-label-chip mt-1">Khách hàng</span>
+</button>
+<!-- Active Tab 3 -->
+<button class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full hover:text-primary-container transition-all active:scale-90 duration-200 w-16">
+<span class="material-symbols-outlined fill">history</span>
+<span class="font-label-chip text-label-chip mt-1">Lịch sử</span>
+</button>
+<!-- Inactive Tab 4 -->
+<button class="flex flex-col items-center justify-center text-text-muted hover:text-primary-container transition-all active:scale-90 duration-200 w-16">
+<span class="material-symbols-outlined">construction</span>
+<span class="font-label-chip text-label-chip mt-1">Công cụ</span>
+</button>
+</div>
+</nav>
+</body></html>

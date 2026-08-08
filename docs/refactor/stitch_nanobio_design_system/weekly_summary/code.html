@@ -1,0 +1,284 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Tóm tắt tuần qua - NaBi Wellness</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "energy-yellow": "#FFC857",
+                        "outline-variant": "#bccabf",
+                        "warning": "#B7791F",
+                        "error": "#C64A4A",
+                        "on-tertiary-fixed": "#002112",
+                        "surface-container-highest": "#dee4e1",
+                        "on-primary-container": "#f6fff6",
+                        "surface-container-low": "#f0f5f2",
+                        "on-error-container": "#93000a",
+                        "info": "#247CA8",
+                        "surface-tint": "#006c48",
+                        "text-muted": "#8A9B94",
+                        "background": "#f5faf7",
+                        "on-tertiary-container": "#f6fff6",
+                        "text-secondary": "#60766E",
+                        "tertiary": "#006a43",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#a7f2d1",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-surface-variant": "#3d4a42",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#a4efce",
+                        "on-error": "#ffffff",
+                        "primary-soft": "#DDF6E9",
+                        "surface-dim": "#d6dbd8",
+                        "primary": "#006a46",
+                        "outline": "#6d7a71",
+                        "on-secondary-fixed": "#002116",
+                        "primary-fixed-dim": "#62dda3",
+                        "surface-container": "#eaefec",
+                        "primary-fixed": "#7ff9be",
+                        "text-primary": "#12352A",
+                        "inverse-on-surface": "#edf2ef",
+                        "inverse-surface": "#2c3230",
+                        "care-coral": "#FF7D75",
+                        "surface": "#f5faf7",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-variant": "#dee4e1",
+                        "surface-bright": "#f5faf7",
+                        "calm-blue": "#58B9E8",
+                        "secondary": "#1d6a51",
+                        "surface-container-high": "#e4e9e6",
+                        "on-primary-fixed-variant": "#005235",
+                        "border-soft": "#D9E9E1",
+                        "on-surface": "#171d1b",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "mint-surface": "#EAF9F1",
+                        "success": "#14885F",
+                        "personal-purple": "#8B7CF6",
+                        "on-primary-fixed": "#002113",
+                        "on-background": "#171d1b",
+                        "primary-container": "#008559",
+                        "on-secondary-container": "#226f55",
+                        "tertiary-container": "#008656",
+                        "focus-ring": "#68D9A5",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#62dda3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "section-gap": "24px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "xxs": "2px",
+                        "md": "16px",
+                        "card-padding": "16px",
+                        "page-padding": "16px"
+                    },
+                    "fontFamily": {
+                        "body-base": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "display-hero": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes chart-grow {
+            from { height: 0; opacity: 0; }
+            to { opacity: 1; }
+        }
+        .chart-bar {
+            animation: chart-grow 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform-origin: bottom;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-base min-h-screen flex flex-col overflow-x-hidden pt-16 pb-24">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 sticky backdrop-blur-md bg-surface/80 dark:bg-surface-dim/80 flat no shadows flex justify-between items-center px-page-padding h-16 w-full z-50">
+<button class="text-on-surface-variant hover:bg-surface-container transition-colors active:scale-95 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim">Tóm tắt tuần qua</h1>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-border-soft">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A smiling, warm professional portrait of a Vietnamese user in their 30s. Soft, natural lighting. Expressive minimal style, warm green and white tones in the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkz9CqPfuriZXSUk7EOvWat6ALaKDAgJ3Yk4bN1kXchmzgKp6afO47nKvBtmVoDwh9brvLsVRrmdpOIonGVEPechQBcSHeI10RZMjxL6XWffYZ7fqv2qiqKHu0PCSaYrY6MV3VOySvq3TSPwABoVCHXGSx_qUU54SpPdV6v8g-zPb4qHntDj7Zb4v8nOzW39HoxjImcliPL_arMGaKjyyqlSlKq018pqAXDWy6hpRWhAraSUFyoz5kiQ">
+</div>
+</header>
+<main class="flex-1 px-page-padding py-section-gap flex flex-col gap-section-gap max-w-2xl mx-auto w-full">
+<!-- Welcome Card -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-sm flex items-center gap-4 relative overflow-hidden">
+<div class="absolute right-[-20px] top-[-20px] w-32 h-32 bg-primary-soft/50 rounded-full blur-2xl"></div>
+<div class="w-20 h-20 rounded-full bg-mint-surface flex items-center justify-center flex-shrink-0 relative z-10 border border-primary-soft">
+<img alt="Nabi giving a thumbs up" class="w-16 h-16 object-contain animate-float" data-alt="A cute, friendly robotic or abstract mascot resembling a small green sprout or helper. Soft 3D rendering, pastel green and white colors. Warm and approachable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7Pd_BU6ZvAOp0F3IXsx2DOdHEhMi0C4DC_8OJsdMkr5gx6ZyOsIrnA0CGrZjgimzPyWTsfxQO3YBWZOSvGARRHDZmwc_QWm5BK81FM8XVnhu-mbLC1O3vwOinZ-4VXmMPzPgpKxGTGmy1zR3zLh47sI5vRFMNXzy6VUqHM0HEyK_3CMrl4MOrF5sxtZh_0Lcv2x4yCjL4Y39cDgHrpX-2ufeslZB04Bx0eDxcuAD0Sk9OdIUDMZ7kEA">
+</div>
+<div class="relative z-10 flex-1">
+<h2 class="font-section-title text-section-title text-text-primary mb-1">Thành tựu nhỏ</h2>
+<p class="font-body-base text-body-base text-text-secondary">Bạn đã duy trì thói quen uống nước đều đặn hơn tuần trước!</p>
+</div>
+</div>
+<!-- Weekly Chart Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Chart Card -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-sm md:col-span-2">
+<div class="flex justify-between items-end mb-6">
+<div>
+<h3 class="font-section-title text-section-title text-text-primary">Hoạt động</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">7 ngày qua</p>
+</div>
+</div>
+<!-- Bar Chart (Simulated) -->
+<div class="flex items-end justify-between h-48 pt-4 gap-2 border-b border-surface-variant pb-2">
+<!-- Day 1 -->
+<div class="flex flex-col items-center flex-1 gap-2 group">
+<div class="w-full bg-surface-container rounded-t-lg relative h-full flex items-end justify-center">
+<div class="chart-bar w-full bg-primary-soft rounded-t-lg absolute bottom-0 transition-colors group-hover:bg-primary/20" style="height: 40%; animation-delay: 0.1s;"></div>
+</div>
+<span class="font-label-chip text-label-chip text-text-muted">T2</span>
+</div>
+<!-- Day 2 -->
+<div class="flex flex-col items-center flex-1 gap-2 group">
+<div class="w-full bg-surface-container rounded-t-lg relative h-full flex items-end justify-center">
+<div class="chart-bar w-full bg-primary rounded-t-lg absolute bottom-0 transition-colors group-hover:bg-primary-container" style="height: 85%; animation-delay: 0.2s;"></div>
+</div>
+<span class="font-label-chip text-label-chip text-text-primary font-semibold">T3</span>
+</div>
+<!-- Day 3 -->
+<div class="flex flex-col items-center flex-1 gap-2 group">
+<div class="w-full bg-surface-container rounded-t-lg relative h-full flex items-end justify-center">
+<div class="chart-bar w-full bg-energy-yellow/80 rounded-t-lg absolute bottom-0 transition-colors group-hover:bg-energy-yellow" style="height: 60%; animation-delay: 0.3s;"></div>
+</div>
+<span class="font-label-chip text-label-chip text-text-muted">T4</span>
+</div>
+<!-- Day 4 -->
+<div class="flex flex-col items-center flex-1 gap-2 group">
+<div class="w-full bg-surface-container rounded-t-lg relative h-full flex items-end justify-center">
+<div class="chart-bar w-full bg-primary rounded-t-lg absolute bottom-0 transition-colors group-hover:bg-primary-container" style="height: 95%; animation-delay: 0.4s;"></div>
+</div>
+<span class="font-label-chip text-label-chip text-text-primary font-semibold">T5</span>
+</div>
+<!-- Day 5 -->
+<div class="flex flex-col items-center flex-1 gap-2 group">
+<div class="w-full bg-surface-container rounded-t-lg relative h-full flex items-end justify-center">
+<div class="chart-bar w-full bg-primary-soft rounded-t-lg absolute bottom-0 transition-colors group-hover:bg-primary/20" style="height: 30%; animation-delay: 0.5s;"></div>
+</div>
+<span class="font-label-chip text-label-chip text-text-muted">T6</span>
+</div>
+<!-- Day 6 -->
+<div class="flex flex-col items-center flex-1 gap-2 group">
+<div class="w-full bg-surface-container rounded-t-lg relative h-full flex items-end justify-center">
+<div class="chart-bar w-full bg-primary rounded-t-lg absolute bottom-0 transition-colors group-hover:bg-primary-container" style="height: 100%; animation-delay: 0.6s;"></div>
+</div>
+<span class="font-label-chip text-label-chip text-text-primary font-semibold">T7</span>
+</div>
+<!-- Day 7 -->
+<div class="flex flex-col items-center flex-1 gap-2 group">
+<div class="w-full bg-surface-container rounded-t-lg relative h-full flex items-end justify-center">
+<div class="chart-bar w-full bg-energy-yellow/80 rounded-t-lg absolute bottom-0 transition-colors group-hover:bg-energy-yellow" style="height: 50%; animation-delay: 0.7s;"></div>
+</div>
+<span class="font-label-chip text-label-chip text-text-muted">CN</span>
+</div>
+</div>
+</div>
+<!-- Stats Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-sm flex items-start gap-4 hover:bg-mint-surface transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-primary-soft flex items-center justify-center flex-shrink-0 text-primary">
+<span class="material-symbols-outlined" data-icon="flag">flag</span>
+</div>
+<div>
+<h4 class="font-section-title text-section-title text-text-primary">3 ngày đạt mục tiêu</h4>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Tuyệt vời, cố gắng duy trì nhé!</p>
+</div>
+</div>
+<!-- Stats Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-sm flex items-start gap-4 hover:bg-mint-surface transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-[#FFF7E3] flex items-center justify-center flex-shrink-0 text-energy-yellow">
+<span class="material-symbols-outlined" data-icon="directions_walk">directions_walk</span>
+</div>
+<div>
+<h4 class="font-section-title text-section-title text-text-primary">Trung bình 7.000 bước/ngày</h4>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Gần đạt 10.000 bước rồi.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-4 pb-safe bg-surface/90 dark:bg-surface-container-lowest/90 shadow-[0_-4px_12px_rgba(20,163,111,0.08)] z-50 rounded-t-xl backdrop-blur-lg shadow-lg md:hidden">
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 duration-200 w-16 h-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-chip text-label-chip">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 duration-200 w-16 h-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="favorite">favorite</span>
+<span class="font-label-chip text-label-chip">Sức khỏe</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 duration-200 w-16 h-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-chip text-label-chip">Nabi</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim relative after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 duration-200 w-16 h-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="book" data-weight="fill" style="font-variation-settings: 'FILL' 1;">book</span>
+<span class="font-label-chip text-label-chip">Nhật ký</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 duration-200 w-16 h-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-chip text-label-chip">Hồ sơ</span>
+</a>
+</nav>
+<!-- Desktop Nav Rail (Hidden on Mobile) -->
+<nav class="hidden md:flex fixed left-0 top-0 h-full w-24 bg-surface-container-lowest border-r border-border-soft flex-col items-center py-6 gap-8 z-40">
+<div class="w-12 h-12 bg-primary text-on-primary rounded-xl flex items-center justify-center font-display-hero text-2xl font-bold">N</div>
+<div class="flex flex-col gap-4 mt-8">
+<a class="w-14 h-14 rounded-2xl flex items-center justify-center text-text-secondary hover:bg-mint-surface transition-colors" href="#" title="Trang chủ">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+</a>
+<a class="w-14 h-14 rounded-2xl flex items-center justify-center text-text-secondary hover:bg-mint-surface transition-colors" href="#" title="Sức khỏe">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</a>
+<a class="w-14 h-14 rounded-2xl flex items-center justify-center bg-primary-soft text-primary transition-colors" href="#" title="Nhật ký">
+<span class="material-symbols-outlined" data-icon="book" data-weight="fill" style="font-variation-settings: 'FILL' 1;">book</span>
+</a>
+<a class="w-14 h-14 rounded-2xl flex items-center justify-center text-text-secondary hover:bg-mint-surface transition-colors" href="#" title="Hồ sơ">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</a>
+</div>
+</nav>
+</body></html>

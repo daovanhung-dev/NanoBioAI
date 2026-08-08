@@ -1,0 +1,342 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>FamilyPlus - Sức khỏe gia đình</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#3d4a42",
+                        "secondary": "#1d6a51",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-secondary-container": "#226f55",
+                        "primary-container": "#008559",
+                        "personal-purple": "#8B7CF6",
+                        "text-primary": "#12352A",
+                        "surface-bright": "#f5faf7",
+                        "surface": "#f5faf7",
+                        "text-muted": "#8A9B94",
+                        "surface-container": "#eaefec",
+                        "on-surface": "#171d1b",
+                        "on-tertiary-fixed": "#002112",
+                        "surface-dim": "#d6dbd8",
+                        "care-coral": "#FF7D75",
+                        "outline": "#6d7a71",
+                        "primary": "#006a46",
+                        "secondary-container": "#a4efce",
+                        "on-secondary-fixed": "#002116",
+                        "energy-yellow": "#FFC857",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#002113",
+                        "background": "#f5faf7",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#008656",
+                        "primary-fixed": "#7ff9be",
+                        "text-secondary": "#60766E",
+                        "info": "#247CA8",
+                        "mint-surface": "#EAF9F1",
+                        "warning": "#B7791F",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-variant": "#dee4e1",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bccabf",
+                        "on-tertiary-container": "#f6fff6",
+                        "on-primary-container": "#f6fff6",
+                        "focus-ring": "#68D9A5",
+                        "inverse-on-surface": "#edf2ef",
+                        "primary-fixed-dim": "#62dda3",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface-container-high": "#e4e9e6",
+                        "primary-soft": "#DDF6E9",
+                        "inverse-surface": "#2c3230",
+                        "border-soft": "#D9E9E1",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-secondary": "#ffffff",
+                        "error": "#C64A4A",
+                        "surface-tint": "#006c48",
+                        "surface-container-low": "#f0f5f2",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "secondary-fixed": "#a7f2d1",
+                        "tertiary": "#006a43",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#62dda3",
+                        "success": "#14885F",
+                        "calm-blue": "#58B9E8",
+                        "on-background": "#171d1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "page-padding": "16px",
+                        "card-padding": "16px",
+                        "md": "16px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "label-chip": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-sm": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .switch-overlay {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .switch-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-base antialiased pb-24 selection:bg-primary-soft selection:text-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-40 bg-surface/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto">
+<button class="text-primary hover:opacity-80 transition-opacity w-10 h-10 flex items-center justify-center rounded-full hover:bg-mint-surface">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary tracking-tight">FamilyPlus</h1>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary cursor-pointer hover:opacity-80 transition-opacity" onclick="toggleSwitchOverlay()">
+<img alt="Bà Nội" class="w-full h-full object-cover" data-alt="A gentle, warm headshot portrait of an elderly Vietnamese woman smiling softly, illuminated by soft natural light. The mood is caring, reliable, and approachable, perfectly suited for a healthcare app profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkEUgGk6W3mL_6EoF4Ld4dMkfV6-GUUqA7wnn_wUewaPEIC2k5vXvDMRcdbjrwK1x8-BDQoqzOzIKVOy-KjZ5to4JtnWDoxQduph-YjSAl_hhEjxX8YRvpV7d-BfJpOpuYu9M0lCVaXbeTBXudCFRlump__retjGMUiPNCBcSeKXQOZlH9Qhh-3nrWQREm1yIECTlTxu-n83WnNNj-enW6Xj0V3jV4oO9fVASmn9zEmaUrxTO2LmOypQ">
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 px-page-padding max-w-md mx-auto min-h-screen">
+<!-- Active Member Context -->
+<section class="mb-section-gap pt-4">
+<div class="flex items-center space-x-4 mb-6">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-mint-surface shadow-sm relative">
+<img alt="Bà Nội" class="w-full h-full object-cover" data-alt="A gentle, warm headshot portrait of an elderly Vietnamese woman smiling softly, illuminated by soft natural light. The mood is caring, reliable, and approachable, perfectly suited for a healthcare app profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6KmtDXuvEw9F28Ug3vT78a4wxmVgSw9SJF4S0FVnl4TVEr8CJrIQPq0OZQBNXUXTCvrBJzo0a-CKPHHGIdvIahns0wz8sJio0KS2Uf7ahVUXNc7cDAb-t110BHkxC-uazTi_uBD8usipmkrmsb2Cz3HfHuksmR4ngtV5B8Gk6fC87BB62G3jx_Ou1XPbra9KVvWNY2Kfg9JDvA-cuyb9WZauLR2aHnRbbt73Jste8gn6Qp2P4JVawcg">
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-success rounded-full border-2 border-surface"></div>
+</div>
+<div>
+<h2 class="font-section-title text-section-title text-text-primary">Bà Nội (Nguyễn Thị Mai)</h2>
+<p class="font-body-sm text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+                        Đã xác thực danh tính
+                    </p>
+</div>
+</div>
+<div class="bg-gradient-to-br from-[#0F8E62] to-[#32C789] rounded-xl p-6 text-white shadow-[0_8px_20px_-4px_rgba(20,163,111,0.16)] relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+<h3 class="font-cta text-cta opacity-90 mb-2">Điểm Sức Khỏe Tổng Quan</h3>
+<div class="flex items-baseline gap-2 mb-1">
+<span class="font-display-hero text-display-hero">85</span>
+<span class="font-body-sm opacity-80">/100</span>
+</div>
+<p class="font-body-sm opacity-90">Sức khỏe ổn định. Nhịp tim trong vùng an toàn hôm nay.</p>
+</div>
+</section>
+<!-- Metrics Bento Grid -->
+<section class="grid grid-cols-2 gap-4 mb-section-gap">
+<!-- Heart Rate -->
+<div class="bg-white rounded-xl p-4 border border-border-soft shadow-[0_4px_12px_rgba(20,163,111,0.03)] hover:shadow-[0_4px_16px_rgba(20,163,111,0.08)] transition-shadow">
+<div class="w-10 h-10 rounded-full bg-care-coral/10 flex items-center justify-center mb-3 text-care-coral">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<p class="font-label-chip text-label-chip text-text-secondary mb-1">Nhịp tim</p>
+<div class="flex items-end gap-1">
+<span class="font-section-title text-section-title text-text-primary">72</span>
+<span class="font-body-sm text-text-muted pb-[2px]">bpm</span>
+</div>
+</div>
+<!-- Blood Pressure -->
+<div class="bg-white rounded-xl p-4 border border-border-soft shadow-[0_4px_12px_rgba(20,163,111,0.03)] hover:shadow-[0_4px_16px_rgba(20,163,111,0.08)] transition-shadow">
+<div class="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center mb-3 text-info">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bloodtype</span>
+</div>
+<p class="font-label-chip text-label-chip text-text-secondary mb-1">Huyết áp</p>
+<div class="flex items-end gap-1">
+<span class="font-section-title text-section-title text-text-primary">120/80</span>
+</div>
+</div>
+<!-- Sleep -->
+<div class="bg-white rounded-xl p-4 border border-border-soft shadow-[0_4px_12px_rgba(20,163,111,0.03)] hover:shadow-[0_4px_16px_rgba(20,163,111,0.08)] transition-shadow col-span-2">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-personal-purple/10 flex items-center justify-center text-personal-purple">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+</div>
+<div>
+<p class="font-label-chip text-label-chip text-text-secondary">Giấc ngủ đêm qua</p>
+<div class="flex items-end gap-1">
+<span class="font-section-title text-section-title text-text-primary">6h 30m</span>
+<span class="font-body-sm text-success flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">trending_up</span>Tốt</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Action Area -->
+<section class="mb-section-gap">
+<h3 class="font-cta text-cta text-text-primary mb-4">Hành động cần thiết</h3>
+<div class="bg-mint-surface rounded-xl p-4 border border-primary-soft flex items-center gap-4">
+<div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medication</span>
+</div>
+<div class="flex-1">
+<h4 class="font-cta text-text-primary">Uống thuốc buổi chiều</h4>
+<p class="font-body-sm text-text-secondary">15:00 - Thuốc huyết áp</p>
+</div>
+<button class="px-4 py-2 bg-primary text-white font-label-chip text-label-chip rounded-full hover:bg-primary/90 transition-colors">
+                    Đã uống
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-30 flex justify-around items-center px-4 pb-safe pt-2 bg-surface/80 backdrop-blur-md rounded-t-xl shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)] max-w-md mx-auto right-0">
+<a class="flex flex-col items-center justify-center text-text-muted hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-chip text-label-chip mt-1">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-soft text-primary rounded-full px-4 py-1 hover:text-primary transition-colors scale-[0.975]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip mt-1">Sức khỏe</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">face</span>
+<span class="font-label-chip text-label-chip mt-1">Nabi</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-chip text-label-chip mt-1">Nhật ký</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-chip text-label-chip mt-1">Hồ sơ</span>
+</a>
+</nav>
+<!-- Privacy-Aware Switch Overlay -->
+<div class="switch-overlay fixed inset-0 z-50 bg-on-surface/40 flex flex-col justify-end" id="switchOverlay">
+<!-- Blur area to hide underlying data -->
+<div class="absolute inset-0 bg-surface/95 backdrop-blur-xl" onclick="toggleSwitchOverlay()"></div>
+<div class="relative bg-white rounded-t-3xl p-6 shadow-2xl max-w-md mx-auto w-full transform transition-transform duration-300 translate-y-full" id="switchModal">
+<div class="w-12 h-1.5 bg-border-soft rounded-full mx-auto mb-6"></div>
+<div class="text-center mb-8">
+<h3 class="font-screen-title text-screen-title text-text-primary mb-2">Chuyển đổi hồ sơ</h3>
+<p class="font-body-sm text-text-secondary">Chọn thành viên gia đình để xem thông tin an toàn.</p>
+</div>
+<div class="space-y-3 mb-6">
+<!-- Active Member -->
+<button class="w-full flex items-center justify-between p-4 bg-mint-surface rounded-xl border border-primary/20">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
+<img alt="Bà Nội" class="w-full h-full object-cover" data-alt="A gentle, warm headshot portrait of an elderly Vietnamese woman smiling softly, illuminated by soft natural light. The mood is caring, reliable, and approachable, perfectly suited for a healthcare app profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAlf2Ok-5Y6kJzRMDqZhAskhxsp8Ssta7TO4SqeksgmQDu8YIcHnZsgsZTB8DLsr8MrSVImT6OQfifWEidGNdqi9_auPdut5_CRKUFA1jyPARlBmgHRKB_p-KnbsS_MX1Iav9-vGqsf5Ag4h73JpIEd8gvnsgCwHyvPjPWbZhF333btxW_PQQxUbUy68mJC_3ldZjYVCz9_A1biCexvAY9kzeRnJ7SgIiYWxd781EH8xwtI29pVrqJsA">
+</div>
+<div class="text-left">
+<h4 class="font-cta text-text-primary">Bà Nội</h4>
+<p class="font-body-sm text-primary">Đang xem</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</button>
+<!-- Inactive Member 1 -->
+<button class="w-full flex items-center justify-between p-4 bg-surface rounded-xl border border-transparent hover:border-border-soft hover:bg-surface-container transition-all group" onclick="switchProfile('Ông Nội')">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-transparent group-hover:border-border-soft transition-colors grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100">
+<img alt="Ông Nội" class="w-full h-full object-cover" data-alt="A dignified, calm headshot portrait of an elderly Vietnamese man with a gentle smile, illuminated by soft natural light. The mood is wise, reliable, and approachable, perfectly suited for a healthcare app profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCA8gvtgCb45d03fZABCiZqlUjahUO0yGz-4G9s3WrMDWHNzLzK7DAvy3hD7e2f_3qPZhpPq8xbsGMdJLouB5GlvA5AJdsCcVqRrX0eKpIkFkyLX83oSxPqi6aR29vJbBac493Az1OLOvUZwTarFAKJJGL46N-QoKrlmCpPt-IWTUzSkfZiv6xBur3ys-Du__WmL93uxh6JXnD7RZ3Avg-WkELOkRnH5ksu7AYOmO1Nm8laWJYqdm2eLw">
+</div>
+<div class="text-left">
+<h4 class="font-cta text-text-primary">Ông Nội</h4>
+<p class="font-body-sm text-text-muted">Cần xác thực FaceID</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">lock_open</span>
+</button>
+<!-- Inactive Member 2 -->
+<button class="w-full flex items-center justify-between p-4 bg-surface rounded-xl border border-transparent hover:border-border-soft hover:bg-surface-container transition-all group" onclick="switchProfile('Bé Bo')">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-transparent group-hover:border-border-soft transition-colors grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100">
+<img alt="Bé Bo" class="w-full h-full object-cover" data-alt="A joyful, energetic headshot portrait of a young Vietnamese boy (around 7 years old) smiling brightly, illuminated by soft natural light. The mood is vibrant, healthy, and approachable, perfectly suited for a healthcare app profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0YUBmM2khSdAFGQgx3a4igpcvpyDXMsPc6kr9gW4agEiYFrJT_AgOEws6siYOTHrbHOuNKUebTC00a4ldGWj6d3vO5ubSCHwXCYStQpVGduh3FujejYM8nAD9ZjQ0UxqDvYcSGaj0IboJAPTSu587v0M9rOmqg2BZB5FHpTRhjGKNAhuI_VZZiCE_RDjobTZsNEkE7fKhuxugnSI63QcZv9jU1HbctgkGe9B8675bJqhqcx2yY94aZA">
+</div>
+<div class="text-left">
+<h4 class="font-cta text-text-primary">Bé Bo</h4>
+<p class="font-body-sm text-text-muted">Không yêu cầu xác thực</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward_ios</span>
+</button>
+</div>
+<button class="w-full py-4 text-primary font-cta flex items-center justify-center gap-2 hover:bg-mint-surface rounded-xl transition-colors">
+<span class="material-symbols-outlined">person_add</span>
+                Thêm thành viên
+            </button>
+</div>
+</div>
+<script>
+        function toggleSwitchOverlay() {
+            const overlay = document.getElementById('switchOverlay');
+            const modal = document.getElementById('switchModal');
+            
+            if (overlay.classList.contains('active')) {
+                modal.classList.add('translate-y-full');
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                }, 300);
+            } else {
+                overlay.classList.add('active');
+                // Small delay to allow display block to render before transform
+                setTimeout(() => {
+                    modal.classList.remove('translate-y-full');
+                }, 10);
+            }
+        }
+
+        function switchProfile(name) {
+            // Simulate a secure transition state where content is hidden
+            const mainContent = document.querySelector('main');
+            mainContent.style.opacity = '0';
+            mainContent.style.transition = 'opacity 0.2s';
+            
+            toggleSwitchOverlay();
+            
+            // Simulate loading/auth delay before showing new content
+            setTimeout(() => {
+                alert(`Mô phỏng: Chuyển sang hồ sơ của ${name}. Thực tế sẽ yêu cầu sinh trắc học nếu cần và tải lại dữ liệu mới, đảm bảo không rò rỉ dữ liệu cũ.`);
+                mainContent.style.opacity = '1';
+            }, 600);
+        }
+    </script>
+</body></html>

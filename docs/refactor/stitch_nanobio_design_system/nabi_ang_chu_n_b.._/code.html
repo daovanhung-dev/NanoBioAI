@@ -1,0 +1,319 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Đang xử lý - NaBi Wellness</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config from Guidelines -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#226f55",
+                      "on-tertiary-fixed-variant": "#005233",
+                      "surface": "#f5faf7",
+                      "inverse-surface": "#2c3230",
+                      "surface-variant": "#dee4e1",
+                      "personal-purple": "#8B7CF6",
+                      "tertiary": "#006a43",
+                      "inverse-on-surface": "#edf2ef",
+                      "on-primary": "#ffffff",
+                      "primary-soft": "#DDF6E9",
+                      "focus-ring": "#68D9A5",
+                      "surface-container": "#eaefec",
+                      "on-background": "#171d1b",
+                      "tertiary-fixed-dim": "#50df9c",
+                      "outline": "#6d7a71",
+                      "info": "#247CA8",
+                      "secondary-container": "#a4efce",
+                      "primary-fixed-dim": "#62dda3",
+                      "error": "#C64A4A",
+                      "mint-surface": "#EAF9F1",
+                      "tertiary-fixed": "#70fcb7",
+                      "care-coral": "#FF7D75",
+                      "primary": "#006a46",
+                      "on-tertiary-container": "#f6fff6",
+                      "primary-fixed": "#7ff9be",
+                      "primary-container": "#008559",
+                      "inverse-primary": "#62dda3",
+                      "secondary-fixed": "#a7f2d1",
+                      "success": "#14885F",
+                      "on-tertiary-fixed": "#002112",
+                      "calm-blue": "#58B9E8",
+                      "error-container": "#ffdad6",
+                      "secondary": "#1d6a51",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#f6fff6",
+                      "on-surface": "#171d1b",
+                      "surface-container-low": "#f0f5f2",
+                      "text-primary": "#12352A",
+                      "on-error": "#ffffff",
+                      "background": "#f5faf7",
+                      "surface-dim": "#d6dbd8",
+                      "surface-bright": "#f5faf7",
+                      "surface-tint": "#006c48",
+                      "energy-yellow": "#FFC857",
+                      "outline-variant": "#bccabf",
+                      "text-muted": "#8A9B94",
+                      "text-secondary": "#60766E",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-highest": "#dee4e1",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#8bd5b6",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "on-secondary-fixed": "#002116",
+                      "on-primary-fixed-variant": "#005235",
+                      "on-surface-variant": "#3d4a42",
+                      "warning": "#B7791F",
+                      "tertiary-container": "#008656",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed": "#002113",
+                      "surface-container-high": "#e4e9e6",
+                      "border-soft": "#D9E9E1"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "xxs": "2px",
+                      "card-padding": "16px",
+                      "md": "16px",
+                      "section-gap": "24px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "page-padding": "16px",
+                      "xl": "32px"
+              },
+              "fontFamily": {
+                      "section-title": ["Roboto"],
+                      "body-sm": ["Roboto"],
+                      "cta": ["Roboto"],
+                      "body-base": ["Roboto"],
+                      "screen-title": ["Roboto"],
+                      "display-hero": ["Roboto"],
+                      "label-chip": ["Roboto"]
+              },
+              "fontSize": {
+                      "section-title": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "21px", "fontWeight": "400"}],
+                      "cta": ["16px", {"lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600"}],
+                      "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "screen-title": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700"}],
+                      "display-hero": ["32px", {"lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700"}],
+                      "label-chip": ["13px", {"lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Base Styles & Utility Classes */
+        body {
+            background-color: #F6FBF8; /* Level 0 flat background */
+            color: #12352A;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Hide scrollbar for cleaner look during loading */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Material Symbols Setup */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Animations */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes progress-fill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .pulse-effect::before {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            border-radius: 50%;
+            background: #68D9A5;
+            z-index: -1;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        /* Glassmorphism for specific elements */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(217, 233, 225, 0.5); /* border-soft */
+        }
+        
+        /* Shimmer for text */
+        .shimmer-text {
+            background: linear-gradient(90deg, #12352A 0%, #60766E 50%, #12352A 100%);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shimmer 2s linear infinite;
+        }
+        
+        @keyframes shimmer {
+            to {
+                background-position: 200% center;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full flex flex-col font-body-base text-body-base overflow-hidden">
+<!-- Top Navigation (Shell suppressed as per mandate for linear/transactional intent - Loading screen) -->
+<!-- Content Canvas - Full Screen for Focus -->
+<main class="flex-1 w-full h-full flex flex-col items-center justify-center relative px-page-padding py-xl max-w-md mx-auto z-10">
+<!-- Background Ambient Effect -->
+<div class="absolute inset-0 w-full h-full pointer-events-none overflow-hidden flex items-center justify-center z-0">
+<div class="w-96 h-96 bg-primary-soft/50 rounded-full blur-[80px] absolute top-1/4 -left-1/4 mix-blend-multiply"></div>
+<div class="w-[500px] h-[500px] bg-mint-surface/60 rounded-full blur-[100px] absolute bottom-1/4 -right-1/4 mix-blend-multiply"></div>
+</div>
+<!-- Main Loading Container -->
+<div class="relative z-10 w-full flex flex-col items-center max-w-sm mx-auto" id="loading-state">
+<!-- Nabi Mascot Container -->
+<div class="relative mb-xl flex justify-center items-center h-48 w-48">
+<!-- Outer Pulse Rings -->
+<div class="absolute inset-0 border-2 border-primary-fixed-dim/30 rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+<div class="absolute inset-4 border border-secondary-fixed/40 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite_0.5s]"></div>
+<!-- Mascot Image (Floating) -->
+<div class="relative z-10 w-32 h-32 rounded-full bg-white shadow-[0_8px_20px_rgba(20,163,111,0.16)] flex items-center justify-center p-4 animate-float border border-border-soft">
+<img class="w-full h-full object-contain" data-alt="A highly detailed, 3D rendered cute and friendly wellness mascot character named Nabi, resembling a soft, glowing, plant-inspired companion. The character is set against a pure white background with soft, high-key lighting to enhance its welcoming and supportive expression. The style is modern, minimalist, and utilizes soft green hues to convey vitality and organic growth, perfectly aligning with a calming healthcare app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkkfZLQ2o5aJ-HSShupznTSiZPjin1_7LhgdU1ljMROYfodqJ1yXXDTAQiUvbi0uPxV4KyBZ9nRZu2FTyQkDOCm0rJiZ2wkV2VwCK8qwKGpBpcA8L6_imIxxBCMNykMxbltwbcR_XHwtwxG3BG5qsYoDx8HIkBUmK1KYjLCtDSHpp9jbMKhOfSOBDUSxV75Ty336Ef530RXGtvWlUVKhP90E-rezbH_TVH4n_iO1F43bCjXffFsdA66g">
+</div>
+</div>
+<!-- Contextual Messaging -->
+<div class="text-center mb-section-gap space-y-sm">
+<h1 class="font-screen-title text-screen-title text-text-primary shimmer-text">
+                    Nabi đang chuẩn bị...
+                </h1>
+<p class="font-body-base text-body-base text-text-secondary max-w-[280px] mx-auto" id="loading-message" style="opacity: 0;">
+                    Đang phân tích dữ liệu sức khỏe của bạn để đưa ra lời khuyên tốt nhất.
+                </p>
+</div>
+<!-- Staged Progress Tracker -->
+<div class="w-full bg-white rounded-xl p-card-padding shadow-[0_4px_16px_rgba(20,163,111,0.06)] border border-border-soft">
+<div class="relative">
+<!-- Progress Line (Background) -->
+<div class="absolute left-[15px] top-0 bottom-0 w-0.5 bg-surface-container h-full z-0"></div>
+<!-- Stages List -->
+<ul class="relative z-10 space-y-md">
+<!-- Stage 1: Completed -->
+<li class="flex items-start gap-md stage-item" data-status="completed">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-[0_2px_8px_rgba(0,106,70,0.2)]">
+<span class="material-symbols-outlined text-on-primary text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="pt-1">
+<h3 class="font-cta text-cta text-text-primary">Thu thập dữ liệu</h3>
+</div>
+</li>
+<!-- Stage 2: In Progress (Active) -->
+<li class="flex items-start gap-md stage-item" data-status="active">
+<div class="w-8 h-8 rounded-full bg-mint-surface border-2 border-primary flex items-center justify-center shrink-0 relative">
+<div class="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+</div>
+<div class="pt-1">
+<h3 class="font-cta text-cta text-primary">Phân tích nhịp sinh học</h3>
+<p class="font-body-sm text-body-sm text-text-muted mt-xs">Đang xử lý dữ liệu giấc ngủ...</p>
+</div>
+</li>
+<!-- Stage 3: Pending -->
+<li class="flex items-start gap-md stage-item opacity-50" data-status="pending">
+<div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-text-muted text-sm">auto_awesome</span>
+</div>
+<div class="pt-1">
+<h3 class="font-cta text-cta text-text-secondary">Tạo lộ trình cá nhân</h3>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<!-- Cancel Action (Subtle) -->
+<button class="mt-xl font-cta text-cta text-text-secondary hover:text-primary transition-colors py-2 px-4 rounded-full active:bg-surface-container">
+                Hủy bỏ
+            </button>
+</div>
+<!-- Error State Container (Hidden by default for demonstration) -->
+<div class="relative z-10 w-full hidden flex-col items-center max-w-sm mx-auto" id="error-state">
+<div class="w-24 h-24 rounded-full bg-error-container flex items-center justify-center mb-section-gap text-error">
+<span class="material-symbols-outlined text-[48px]" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<h2 class="font-screen-title text-screen-title text-text-primary text-center mb-sm">
+                Đã xảy ra sự cố
+            </h2>
+<p class="font-body-base text-body-base text-text-secondary text-center mb-xl">
+                Nabi không thể hoàn thành việc tạo nội dung lúc này. Vui lòng thử lại sau.
+            </p>
+<button class="w-full bg-gradient-to-r from-[#0F8E62] to-[#32C789] text-white font-cta text-cta py-4 px-6 rounded-xl shadow-[0_8px_16px_rgba(20,163,111,0.16)] flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">refresh</span>
+                Thử lại ngay
+            </button>
+</div>
+</main>
+<script>
+        // Simple script to demonstrate state switching for the UI design preview
+        // In a real app, this would be driven by the actual AI generation process
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Optional: simulate failure state by uncommenting below
+            /*
+            setTimeout(() => {
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('loading-state').classList.remove('flex');
+                
+                document.getElementById('error-state').classList.remove('hidden');
+                document.getElementById('error-state').classList.add('flex');
+            }, 5000);
+            */
+            
+            // Rotate playful messages
+            const messages = [
+                "Đang phân tích dữ liệu sức khỏe của bạn để đưa ra lời khuyên tốt nhất.",
+                "Nabi đang tìm kiếm các công thức ăn uống phù hợp với bạn.",
+                "Chờ một chút nhé, những thông tin hữu ích sắp hoàn thiện.",
+                "Gần xong rồi! Hãy hít một hơi thật sâu trong lúc chờ đợi."
+            ];
+            
+            let msgIdx = 0;
+            const msgEl = document.getElementById('loading-message');
+            
+            setInterval(() => {
+                msgIdx = (msgIdx + 1) % messages.length;
+                msgEl.style.opacity = 0;
+                setTimeout(() => {
+                    msgEl.textContent = messages[msgIdx];
+                    msgEl.style.opacity = 1;
+                }, 300);
+            }, 4000);
+        });
+    </script>
+</body></html>

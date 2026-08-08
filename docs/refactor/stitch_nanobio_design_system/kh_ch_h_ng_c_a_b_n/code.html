@@ -1,0 +1,275 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Danh sách khách hàng</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f0f5f2",
+                        "primary-soft": "#DDF6E9",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-surface-variant": "#3d4a42",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-bright": "#f5faf7",
+                        "on-surface": "#171d1b",
+                        "calm-blue": "#58B9E8",
+                        "text-muted": "#8A9B94",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#1d6a51",
+                        "surface-container-high": "#e4e9e6",
+                        "surface-dim": "#d6dbd8",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#002112",
+                        "error": "#C64A4A",
+                        "surface-variant": "#dee4e1",
+                        "surface": "#f5faf7",
+                        "on-primary-fixed": "#002113",
+                        "primary": "#006a46",
+                        "info": "#247CA8",
+                        "border-soft": "#D9E9E1",
+                        "surface-container": "#eaefec",
+                        "on-error": "#ffffff",
+                        "outline-variant": "#bccabf",
+                        "primary-fixed-dim": "#62dda3",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "inverse-surface": "#2c3230",
+                        "on-background": "#171d1b",
+                        "on-primary-container": "#f6fff6",
+                        "on-secondary-fixed": "#002116",
+                        "energy-yellow": "#FFC857",
+                        "background": "#f5faf7",
+                        "on-secondary-container": "#226f55",
+                        "personal-purple": "#8B7CF6",
+                        "on-tertiary-container": "#f6fff6",
+                        "surface-tint": "#006c48",
+                        "text-secondary": "#60766E",
+                        "tertiary-container": "#008656",
+                        "secondary-fixed": "#a7f2d1",
+                        "primary-fixed": "#7ff9be",
+                        "focus-ring": "#68D9A5",
+                        "success": "#14885F",
+                        "inverse-primary": "#62dda3",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6d7a71",
+                        "on-tertiary": "#ffffff",
+                        "mint-surface": "#EAF9F1",
+                        "primary-container": "#008559",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "secondary-container": "#a4efce",
+                        "care-coral": "#FF7D75",
+                        "tertiary": "#006a43",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "text-primary": "#12352A",
+                        "warning": "#B7791F"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "page-padding": "16px",
+                        "md": "16px",
+                        "card-padding": "16px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "sm": "8px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "label-chip": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "screen-title": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-base text-on-surface antialiased bg-background">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface-bright/80 dark:bg-surface-dim/80 backdrop-blur-md border-b border-border-soft shadow-sm flex items-center justify-between px-page-padding h-16 w-full max-w-screen-xl mx-auto">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-soft flex items-center justify-center text-primary font-bold overflow-hidden">
+<img alt="Quản trị viên" class="w-full h-full object-cover" data-alt="A small, professional avatar of an administrator in a corporate setting, with soft lighting and a warm tone, suitable for a modern wellness app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxi2VOMr-wS23_jnXnGUMqD1j674RqD7jsJxsvIy00vRlACyQVxaFTY7uPKfDey1aRHsfm8t-zE9CYxOm0kiOtlBhb5lyt3q0PIg7g81Q73RRAAGGYULS_opXS1_BS9aR_C392E_KDNx-kcOZbIUg_v5ORCPIRNFPlSPzdAocudn0tEl228BLZK3wJz5bG-W1D9mpKkeevxdtmIaa_sioL_aKES19-1NwKvE0cU-qpHwrbmwcxz4GXXA">
+</div>
+<span class="font-display-hero text-display-hero text-primary dark:text-primary-fixed-dim text-[20px] leading-[26px]">Hệ thống Cộng tác viên</span>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-primary-soft/50 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="pt-20 pb-24 px-page-padding max-w-screen-xl mx-auto min-h-screen">
+<div class="mb-section-gap">
+<h1 class="font-screen-title text-screen-title text-text-primary mb-sm">Khách hàng</h1>
+<p class="font-body-sm text-text-muted">Quản lý và theo dõi thông tin khách hàng trực tiếp.</p>
+</div>
+<!-- Search and Filters -->
+<div class="mb-section-gap flex flex-col gap-sm">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-text-muted">search</span>
+<input class="w-full pl-10 pr-sm py-sm rounded-lg border border-border-soft bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-focus-ring outline-none font-body-sm text-on-surface transition-all" placeholder="Tìm kiếm tên, SĐT..." type="text">
+</div>
+<div class="flex gap-sm overflow-x-auto pb-xs scrollbar-hide">
+<button class="px-md py-xs rounded-full bg-primary-soft border border-primary text-primary font-label-chip whitespace-nowrap">Tất cả</button>
+<button class="px-md py-xs rounded-full bg-surface-container-lowest border border-border-soft text-text-muted hover:bg-mint-surface transition-colors font-label-chip whitespace-nowrap">Mới</button>
+<button class="px-md py-xs rounded-full bg-surface-container-lowest border border-border-soft text-text-muted hover:bg-mint-surface transition-colors font-label-chip whitespace-nowrap">Đang chăm sóc</button>
+<button class="px-md py-xs rounded-full bg-surface-container-lowest border border-border-soft text-text-muted hover:bg-mint-surface transition-colors font-label-chip whitespace-nowrap">Đã mua</button>
+</div>
+</div>
+<!-- Customer List Bento -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Customer Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-[0_4px_12px_rgba(20,163,111,0.03)] flex flex-col gap-sm hover:shadow-[0_8px_20px_rgba(20,163,111,0.08)] transition-shadow">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-mint-surface flex items-center justify-center text-primary font-bold text-lg">
+                            N
+                        </div>
+<div>
+<h3 class="font-cta text-text-primary">Nguyễn Văn A</h3>
+<p class="font-body-sm text-text-muted">090 123 ****</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-primary-soft text-primary rounded text-[11px] font-bold tracking-wide uppercase">VIP</span>
+</div>
+<div class="mt-xs pt-xs border-t border-border-soft flex justify-between items-center">
+<span class="font-body-sm text-text-muted">Tham gia: 12/10/2023</span>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Customer Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-[0_4px_12px_rgba(20,163,111,0.03)] flex flex-col gap-sm hover:shadow-[0_8px_20px_rgba(20,163,111,0.08)] transition-shadow">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-text-secondary font-bold text-lg">
+                            T
+                        </div>
+<div>
+<h3 class="font-cta text-text-primary">Trần Thị B</h3>
+<p class="font-body-sm text-text-muted">nguyen****@gmail.com</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-surface-variant text-text-secondary rounded text-[11px] font-bold tracking-wide uppercase">Mới</span>
+</div>
+<div class="mt-xs pt-xs border-t border-border-soft flex justify-between items-center">
+<span class="font-body-sm text-text-muted">Tham gia: 05/11/2023</span>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Customer Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-[0_4px_12px_rgba(20,163,111,0.03)] flex flex-col gap-sm hover:shadow-[0_8px_20px_rgba(20,163,111,0.08)] transition-shadow">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-info font-bold text-lg">
+                            L
+                        </div>
+<div>
+<h3 class="font-cta text-text-primary">Lê Văn C</h3>
+<p class="font-body-sm text-text-muted">098 765 ****</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-blue-100 text-info rounded text-[11px] font-bold tracking-wide uppercase">Gói 3T</span>
+</div>
+<div class="mt-xs pt-xs border-t border-border-soft flex justify-between items-center">
+<span class="font-body-sm text-text-muted">Tham gia: 20/09/2023</span>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Customer Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-border-soft shadow-[0_4px_12px_rgba(20,163,111,0.03)] flex flex-col gap-sm hover:shadow-[0_8px_20px_rgba(20,163,111,0.08)] transition-shadow">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-mint-surface flex items-center justify-center text-primary font-bold text-lg">
+                            P
+                        </div>
+<div>
+<h3 class="font-cta text-text-primary">Phạm Thị D</h3>
+<p class="font-body-sm text-text-muted">pham****@yahoo.com</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-primary-soft text-primary rounded text-[11px] font-bold tracking-wide uppercase">VIP</span>
+</div>
+<div class="mt-xs pt-xs border-t border-border-soft flex justify-between items-center">
+<span class="font-body-sm text-text-muted">Tham gia: 01/08/2023</span>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface-container-lowest/90 dark:bg-inverse-surface/90 backdrop-blur-xl border-t border-border-soft shadow-[0_-4px_12px_rgba(20,163,111,0.08)] flex justify-around items-center h-16 px-2 pb-safe w-full">
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline-variant hover:text-primary-container transition-all active:scale-90 duration-200 w-16" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-chip text-label-chip mt-1">Tổng quan</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-tertiary-fixed-dim relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full hover:text-primary-container transition-all active:scale-90 duration-200 w-16" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-chip text-label-chip mt-1 font-bold">Khách hàng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline-variant hover:text-primary-container transition-all active:scale-90 duration-200 w-16" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-chip text-label-chip mt-1">Lịch sử</span>
+</a>
+<a class="flex flex-col items-center justify-center text-text-muted dark:text-outline-variant hover:text-primary-container transition-all active:scale-90 duration-200 w-16" href="#">
+<span class="material-symbols-outlined">construction</span>
+<span class="font-label-chip text-label-chip mt-1">Công cụ</span>
+</a>
+</nav>
+<style>
+        /* Hide scrollbar for clean horizontal scrolling */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</body></html>

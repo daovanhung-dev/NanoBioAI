@@ -1,0 +1,254 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Thông tin cơ bản</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "border-soft": "#D9E9E1",
+                    "on-tertiary-fixed": "#002112",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed-dim": "#50df9c",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "on-primary-fixed": "#002113",
+                    "primary-fixed-dim": "#62dda3",
+                    "tertiary": "#006a43",
+                    "inverse-surface": "#2c3230",
+                    "primary-container": "#008559",
+                    "warning": "#B7791F",
+                    "secondary-fixed-dim": "#8bd5b6",
+                    "on-error-container": "#93000a",
+                    "text-primary": "#12352A",
+                    "surface-bright": "#f5faf7",
+                    "calm-blue": "#58B9E8",
+                    "focus-ring": "#68D9A5",
+                    "primary": "#006a46",
+                    "primary-soft": "#DDF6E9",
+                    "surface-variant": "#dee4e1",
+                    "personal-purple": "#8B7CF6",
+                    "inverse-on-surface": "#edf2ef",
+                    "outline": "#6d7a71",
+                    "on-tertiary-fixed-variant": "#005233",
+                    "surface": "#f5faf7",
+                    "surface-dim": "#d6dbd8",
+                    "secondary": "#1d6a51",
+                    "secondary-container": "#a4efce",
+                    "surface-container-highest": "#dee4e1",
+                    "on-secondary-container": "#226f55",
+                    "surface-tint": "#006c48",
+                    "on-primary-container": "#f6fff6",
+                    "surface-container": "#eaefec",
+                    "error": "#C64A4A",
+                    "text-secondary": "#60766E",
+                    "outline-variant": "#bccabf",
+                    "tertiary-fixed": "#70fcb7",
+                    "primary-fixed": "#7ff9be",
+                    "tertiary-container": "#008656",
+                    "on-primary-fixed-variant": "#005235",
+                    "care-coral": "#FF7D75",
+                    "energy-yellow": "#FFC857",
+                    "text-muted": "#8A9B94",
+                    "surface-container-low": "#f0f5f2",
+                    "on-secondary-fixed": "#002116",
+                    "surface-container-high": "#e4e9e6",
+                    "background": "#f5faf7",
+                    "secondary-fixed": "#a7f2d1",
+                    "info": "#247CA8",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#62dda3",
+                    "success": "#14885F",
+                    "on-tertiary-container": "#f6fff6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#171d1b",
+                    "on-surface-variant": "#3d4a42",
+                    "on-surface": "#171d1b",
+                    "mint-surface": "#EAF9F1",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "card-padding": "16px",
+                    "xl": "32px",
+                    "xs": "4px",
+                    "xxs": "2px",
+                    "section-gap": "24px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "page-padding": "16px"
+            },
+            "fontFamily": {
+                    "body-sm": ["Roboto"],
+                    "screen-title": ["Roboto"],
+                    "label-chip": ["Roboto"],
+                    "section-title": ["Roboto"],
+                    "display-hero": ["Roboto"],
+                    "body-base": ["Roboto"],
+                    "cta": ["Roboto"]
+            },
+            "fontSize": {
+                    "body-sm": ["14px", {"lineHeight": "21px", "fontWeight": "400"}],
+                    "screen-title": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700"}],
+                    "label-chip": ["13px", {"lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500"}],
+                    "section-title": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600"}],
+                    "display-hero": ["32px", {"lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700"}],
+                    "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "cta": ["16px", {"lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: #F6FBF8;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #D9E9E1; border-radius: 10px; }
+        
+        /* Hide number input arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-base relative pb-24">
+<!-- Simple Top Bar for Onboarding -->
+<header class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto z-40 bg-background sticky top-0">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-start text-text-primary hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<div class="flex gap-1">
+<div class="h-1.5 w-6 rounded-full bg-primary"></div>
+<div class="h-1.5 w-6 rounded-full bg-border-soft"></div>
+<div class="h-1.5 w-6 rounded-full bg-border-soft"></div>
+<div class="h-1.5 w-6 rounded-full bg-border-soft"></div>
+</div>
+<div class="w-12"></div> <!-- Spacer -->
+</header>
+<main class="flex-1 w-full max-w-md mx-auto px-page-padding pt-4 flex flex-col gap-section-gap relative">
+<!-- Header Text -->
+<section class="flex flex-col gap-2">
+<h1 class="font-display-hero text-display-hero text-text-primary">Thông tin cơ bản</h1>
+<p class="font-body-base text-body-base text-text-secondary">Nabi cần hiểu về cơ thể bạn để tính toán các chỉ số chính xác.</p>
+</section>
+<!-- Form Elements -->
+<form class="flex flex-col gap-6" onsubmit="event.preventDefault();">
+<!-- Gender Selection -->
+<div class="flex flex-col gap-3">
+<label class="font-section-title text-section-title text-text-primary">Giới tính</label>
+<div class="grid grid-cols-2 gap-4">
+<!-- Male Card (Selected) -->
+<label class="relative cursor-pointer group">
+<input checked="" class="peer sr-only" name="gender" type="radio" value="male">
+<div class="flex flex-col items-center justify-center p-6 bg-surface-lowest border border-border-soft rounded-xl peer-checked:bg-mint-surface peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary transition-all shadow-[0_4px_12px_rgba(20,163,111,0.03)] hover:shadow-[0_4px_12px_rgba(20,163,111,0.08)]">
+<span class="material-symbols-outlined text-[40px] text-info mb-2" style="font-variation-settings: 'FILL' 1;">male</span>
+<span class="font-cta text-cta text-text-primary">Nam</span>
+</div>
+<div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+<!-- Female Card -->
+<label class="relative cursor-pointer group">
+<input class="peer sr-only" name="gender" type="radio" value="female">
+<div class="flex flex-col items-center justify-center p-6 bg-surface-lowest border border-border-soft rounded-xl peer-checked:bg-mint-surface peer-checked:border-primary peer-checked:ring-1 peer-checked:ring-primary transition-all shadow-[0_4px_12px_rgba(20,163,111,0.03)] hover:shadow-[0_4px_12px_rgba(20,163,111,0.08)]">
+<span class="material-symbols-outlined text-[40px] text-care-coral mb-2" style="font-variation-settings: 'FILL' 1;">female</span>
+<span class="font-cta text-cta text-text-primary">Nữ</span>
+</div>
+<div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Birth Year -->
+<div class="flex flex-col gap-2 relative">
+<label class="font-section-title text-section-title text-text-primary" for="birthYear">Năm sinh</label>
+<div class="relative">
+<select class="w-full h-14 bg-surface-lowest border border-border-soft rounded-xl px-4 appearance-none focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-primary font-body-base text-body-base text-text-primary shadow-[0_2px_8px_rgba(20,163,111,0.02)] transition-all cursor-pointer" id="birthYear">
+<option disabled="" selected="" value="">Chọn năm sinh</option>
+<option value="1990">1990</option>
+<option value="1991">1991</option>
+<option value="1992">1992</option>
+<option value="1993">1993</option>
+<option value="1994">1994</option>
+<option value="1995">1995</option>
+<option value="1996">1996</option>
+<option value="1997">1997</option>
+<option value="1998">1998</option>
+<option value="1999">1999</option>
+<option value="2000">2000</option>
+</select>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Height & Weight Bento Row -->
+<div class="grid grid-cols-2 gap-4">
+<!-- Height -->
+<div class="flex flex-col gap-2">
+<label class="font-section-title text-section-title text-text-primary" for="height">Chiều cao</label>
+<div class="relative flex items-center">
+<input class="w-full h-14 bg-surface-lowest border border-border-soft rounded-xl pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-primary font-body-base text-body-base text-text-primary shadow-[0_2px_8px_rgba(20,163,111,0.02)] transition-all" id="height" placeholder="0" type="number">
+<span class="absolute right-4 font-body-sm text-body-sm text-text-muted pointer-events-none">cm</span>
+</div>
+</div>
+<!-- Weight -->
+<div class="flex flex-col gap-2">
+<label class="font-section-title text-section-title text-text-primary" for="weight">Cân nặng</label>
+<div class="relative flex items-center">
+<input class="w-full h-14 bg-surface-lowest border border-border-soft rounded-xl pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-primary font-body-base text-body-base text-text-primary shadow-[0_2px_8px_rgba(20,163,111,0.02)] transition-all" id="weight" placeholder="0" type="number">
+<span class="absolute right-4 font-body-sm text-body-sm text-text-muted pointer-events-none">kg</span>
+</div>
+</div>
+</div>
+<!-- BMI Insight Card (Simulated as visible for design showcase) -->
+<div class="mt-2 bg-gradient-to-br from-mint-surface to-surface-bright border border-border-soft rounded-xl p-4 flex gap-4 items-center shadow-[0_4px_16px_rgba(20,163,111,0.04)]">
+<div class="w-12 h-12 rounded-full bg-primary-soft flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[24px]" style="font-variation-settings: 'FILL' 1;">monitor_weight</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-cta text-cta text-text-primary">Chỉ số BMI dự kiến: 22.4</span>
+<span class="bg-primary-soft text-primary font-label-chip text-label-chip px-2 py-0.5 rounded-full">Chuẩn</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary leading-tight">Tuyệt vời! Cân nặng của bạn đang ở mức lý tưởng. Nabi sẽ giúp bạn duy trì vóc dáng này.</p>
+</div>
+</div>
+</form>
+</main>
+<!-- Fixed Bottom Action -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-md border-t border-border-soft/50 px-page-padding py-4 pb-safe z-50">
+<div class="max-w-md mx-auto">
+<button class="w-full h-14 bg-gradient-to-r from-[#0F8E62] to-[#32C789] text-on-primary font-cta text-cta rounded-xl flex items-center justify-center shadow-[0_8px_20px_rgba(20,163,111,0.16)] hover:opacity-90 active:scale-[0.98] transition-all">
+                Tiếp theo
+            </button>
+</div>
+</div>
+</body></html>

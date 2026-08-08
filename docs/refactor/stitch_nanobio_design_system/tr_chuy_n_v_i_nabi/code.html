@@ -1,0 +1,246 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - AI Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-container": "#226f55",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface": "#f5faf7",
+                        "inverse-surface": "#2c3230",
+                        "surface-variant": "#dee4e1",
+                        "personal-purple": "#8B7CF6",
+                        "tertiary": "#006a43",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-primary": "#ffffff",
+                        "primary-soft": "#DDF6E9",
+                        "focus-ring": "#68D9A5",
+                        "surface-container": "#eaefec",
+                        "on-background": "#171d1b",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "outline": "#6d7a71",
+                        "info": "#247CA8",
+                        "secondary-container": "#a4efce",
+                        "primary-fixed-dim": "#62dda3",
+                        "error": "#C64A4A",
+                        "mint-surface": "#EAF9F1",
+                        "tertiary-fixed": "#70fcb7",
+                        "care-coral": "#FF7D75",
+                        "primary": "#006a46",
+                        "on-tertiary-container": "#f6fff6",
+                        "primary-fixed": "#7ff9be",
+                        "primary-container": "#008559",
+                        "inverse-primary": "#62dda3",
+                        "secondary-fixed": "#a7f2d1",
+                        "success": "#14885F",
+                        "on-tertiary-fixed": "#002112",
+                        "calm-blue": "#58B9E8",
+                        "error-container": "#ffdad6",
+                        "secondary": "#1d6a51",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#f6fff6",
+                        "on-surface": "#171d1b",
+                        "surface-container-low": "#f0f5f2",
+                        "text-primary": "#12352A",
+                        "on-error": "#ffffff",
+                        "background": "#f5faf7",
+                        "surface-dim": "#d6dbd8",
+                        "surface-bright": "#f5faf7",
+                        "surface-tint": "#006c48",
+                        "energy-yellow": "#FFC857",
+                        "outline-variant": "#bccabf",
+                        "text-muted": "#8A9B94",
+                        "text-secondary": "#60766E",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#dee4e1",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-secondary-fixed": "#002116",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-surface-variant": "#3d4a42",
+                        "warning": "#B7791F",
+                        "tertiary-container": "#008656",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#002113",
+                        "surface-container-high": "#e4e9e6",
+                        "border-soft": "#D9E9E1"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "lg": "24px",
+                        "xxs": "2px",
+                        "card-padding": "16px",
+                        "md": "16px",
+                        "section-gap": "24px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "page-padding": "16px",
+                        "xl": "32px"
+                    },
+                    fontFamily: {
+                        "section-title": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "label-chip": ["Roboto"]
+                    },
+                    fontSize: {
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        /* Hide scrollbar for a cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-lowest flex justify-center w-full h-screen font-body-base text-text-primary antialiased selection:bg-primary-soft selection:text-primary">
+<!-- Mobile Frame Container (for desktop preview, acts as main viewport) -->
+<div class="w-full max-w-md h-full relative flex flex-col bg-surface shadow-2xl overflow-hidden border-x border-border-soft">
+<!-- Shared Component: TopAppBar -->
+<header class="fixed top-0 w-full max-w-md mx-auto z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm flex items-center justify-between px-page-padding h-16">
+<!-- Leading Icon (Back) -->
+<button aria-label="Go back" class="text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity active:scale-95 duration-200 p-2 -ml-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<!-- Headline -->
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim truncate px-4">NaBi Wellness</h1>
+<!-- Trailing Avatar -->
+<button class="w-9 h-9 rounded-full overflow-hidden border-2 border-mint-surface shadow-sm hover:opacity-80 transition-opacity active:scale-95 duration-200 shrink-0">
+<img class="w-full h-full object-cover" data-alt="A meticulously crafted 3D render of a friendly, small green sprout mascot character acting as a health assistant. The mascot has large expressive eyes, a gentle smile, and is wearing a stylized, minimalist white stethoscope around its neck. The background is a clean, bright, light-mode studio environment with soft diffused lighting, emphasizing a modern corporate wellness aesthetic and approachable warmth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLtzUWUNXBz4zKzCKvabGBxDGUYf_lFt-azWLoR0JcV_YYFMIiEPLTOrhj6lh_ldhgjpAb1vh-RiiulGFWXNlhUWEQ-e-8WzR_medd6RHwYxkHkr0fQIj2wRQWVjACLfcBFE8WxawKNu4ghPRwdyMPhPCljS5J2w7dJI4K7CjOvgbPRUgtFsGhh4o22e1x6Em2lb3CHymffgcl031a_XXWlzBzEgKdnTFy4OuoFMXbDM7tZbc41gKxkw">
+</button>
+</header>
+<!-- Chat Canvas (Scrollable) -->
+<!-- Note: BottomNavBar is suppressed due to Task-Focused intent (implied by back button and chat context) -->
+<main class="flex-1 overflow-y-auto no-scrollbar px-page-padding pt-20 pb-32 flex flex-col gap-6" id="chat-container">
+<!-- Timestamp -->
+<div class="flex justify-center w-full mt-4">
+<span class="font-label-chip text-label-chip text-text-muted bg-surface-container-low px-3 py-1 rounded-full">Hôm nay, 09:41</span>
+</div>
+<!-- Nabi Message (Assistant) -->
+<div class="flex items-end gap-3 max-w-[85%]">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-border-soft mb-1">
+<img class="w-full h-full object-cover" data-alt="A close-up portrait of the NaBi wellness mascot, a cute green 3D character with a soothing smile, set against a pristine white background with soft, natural lighting. The visual style is expressive minimalism, focusing on conveying empathy, support, and health awareness in a modern digital ecosystem." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAn-JkFjAoD3x3qG-5W4AabLQw66ZmscsZg_ch7WYXAniN9EOEBXLhJDt_GfsHPZfJ4XpLunnjkpw8wy1dgkg4yu0-hpI9T2kAtqfiGeeDIWk3LVzsWjJCe_BoEaOZJYjlVoYwZlzodr2-D87TYnPhSCDr9nhQ2549u7jyH4pSgQn42ZaAaFyByegTStWfop5zY4N0Z_dU3vqC2eF3L9a3TG8pKBvO7hI1CnwSpkZ9hesu5A4C-ATvmPw">
+</div>
+<div class="bg-mint-surface text-text-primary px-4 py-3 rounded-2xl rounded-bl-[4px] shadow-[0_2px_8px_rgba(20,163,111,0.04)] border border-border-soft/50 font-body-base leading-relaxed">
+                    Chào buổi sáng! 👋 Hôm nay bạn cảm thấy thế nào? Hôm qua bạn có vẻ hơi mệt mỏi, hy vọng giấc ngủ đêm qua đã giúp bạn hồi phục.
+                </div>
+</div>
+<!-- User Message -->
+<div class="flex items-end justify-end gap-3 max-w-[85%] self-end">
+<div class="bg-primary text-on-primary px-4 py-3 rounded-2xl rounded-br-[4px] shadow-[0_4px_12px_rgba(0,106,70,0.15)] font-body-base leading-relaxed">
+                    Mình thấy đỡ hơn rồi, nhưng vẫn hơi đau đầu một chút. Có cách nào giảm đau đầu tự nhiên không NaBi?
+                </div>
+</div>
+<!-- Nabi Message (Assistant) - Long content with structured data -->
+<div class="flex items-end gap-3 max-w-[90%]">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-border-soft mb-1">
+<img class="w-full h-full object-cover" data-alt="The NaBi wellness mascot character depicted in a thoughtful, analytical pose, tapping its chin lightly. The 3D render is brightly lit with a soft green rim light, embodying a helpful, intelligent health companion within a clean, modern UI environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApSVVt5kAC5YSZwWLk5DqOobSHcBJvLcgUh41k75do-9g0z72PkyUaMzXaZKuk86Siw-FGDPiX3IH15zcoAQtxQ8iIXW84nJZFOyKEUrs_Xv4OhXO_0jUmMvM1YmjiWi8PrQbnNSQe8hattbLFFiahp1GWGru48DDWlmUaRUUawjMANc9ht7COYO3wU8piB-Js2vriwIZB45yZ_Mgpy-CtlkJF1FFjKy5tcnGEtVvnmU8-3xCpVfSTCg">
+</div>
+<div class="bg-mint-surface text-text-primary px-4 py-3 rounded-2xl rounded-bl-[4px] shadow-[0_2px_8px_rgba(20,163,111,0.04)] border border-border-soft/50 font-body-base leading-relaxed flex flex-col gap-2">
+<p>Rất vui vì bạn đã thấy đỡ hơn! Đối với cơn đau đầu nhẹ, bạn có thể thử vài cách tự nhiên sau nhé:</p>
+<ul class="list-disc pl-4 space-y-1 font-body-sm text-text-secondary mt-1">
+<li><strong>Uống đủ nước:</strong> Đôi khi mất nước nhẹ cũng gây đau đầu.</li>
+<li><strong>Massage ấn huyệt:</strong> Dùng hai ngón tay xoa bóp nhẹ nhàng vùng thái dương theo vòng tròn khoảng 1-2 phút.</li>
+<li><strong>Trà gừng ấm:</strong> Gừng có đặc tính chống viêm tự nhiên có thể giúp thư giãn mạch máu.</li>
+</ul>
+<div class="mt-2 p-3 bg-surface rounded-xl border border-border-soft flex items-center gap-3">
+<span class="material-symbols-outlined text-info" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+<div class="flex-1">
+<p class="font-cta text-cta text-text-primary">Mục tiêu nước hôm nay</p>
+<p class="font-body-sm text-text-muted">Bạn đã uống 500ml / 2000ml</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Typing Indicator (Nabi is typing) -->
+<div class="flex items-end gap-3 max-w-[85%] opacity-70">
+<div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-border-soft mb-1">
+<img class="w-full h-full object-cover" data-alt="A static placeholder image showing a softly blurred, abstract green gradient background. The aesthetic is clean, modern, and aligned with a minimalist health app, intended to represent the concept of a digital assistant processing or loading information." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_67rLRQTHsTx8YM0AOXHlmAblzcy1AETQjVkTFNgFs8kcdMgtp376ey0TgDG_pywnWMKo5WHoBNcJk4kkAPpKMXLxn2ihjTuGS7YU0_2Yj8REm4PS5nkSrrmBNIQ_KQOM9-iMFTtaH95wC2ddQaXcX6xxMsaP_FspxMoEi5Jg40c6LbZxsV-tWR9cVdq9en6ycC-j2I0Hm0hrDUwo-JoYMsn10TxBORz_Nau2dKh-J5vDWcjcZLT8uA">
+</div>
+<div class="bg-surface-container-high px-4 py-4 rounded-2xl rounded-bl-[4px] flex items-center gap-1.5 h-[46px]">
+<div class="w-2 h-2 bg-text-muted rounded-full typing-dot"></div>
+<div class="w-2 h-2 bg-text-muted rounded-full typing-dot"></div>
+<div class="w-2 h-2 bg-text-muted rounded-full typing-dot"></div>
+</div>
+</div>
+</main>
+<!-- Composer Area (Fixed Bottom) -->
+<div class="fixed bottom-0 w-full max-w-md mx-auto z-50 pb-safe">
+<!-- Quota/Warning Banner (Contextual UI example) -->
+<div class="absolute -top-10 left-0 w-full flex justify-center px-4 pointer-events-none">
+<div class="bg-surface-container-high/90 backdrop-blur-sm border border-border-soft rounded-full px-4 py-1.5 shadow-sm flex items-center gap-2 transform transition-transform translate-y-0">
+<span class="material-symbols-outlined text-warning text-sm" style="font-variation-settings: 'FILL' 1;">info</span>
+<span class="font-label-chip text-label-chip text-text-secondary">Bạn còn 3 tin nhắn miễn phí hôm nay</span>
+</div>
+</div>
+<div class="bg-surface/95 backdrop-blur-xl border-t border-border-soft px-page-padding py-3 shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
+<!-- Input Container -->
+<div class="flex items-end gap-2 bg-surface-container-low border border-border-soft rounded-2xl p-1.5 focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/20 transition-all duration-200">
+<!-- Attachment Action -->
+<button class="p-2.5 text-text-muted hover:text-primary transition-colors rounded-xl flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+<!-- Text Area -->
+<textarea class="flex-1 max-h-32 min-h-[44px] bg-transparent border-none focus:ring-0 resize-none font-body-base text-text-primary placeholder:text-text-muted py-2.5 px-1 no-scrollbar leading-relaxed" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Hỏi NaBi bất cứ điều gì..." rows="1"></textarea>
+<!-- Send Button (Active state) -->
+<button class="p-2.5 bg-primary text-on-primary hover:bg-primary-container active:scale-90 transition-all duration-200 rounded-xl flex items-center justify-center shrink-0 shadow-sm self-end mb-[2px] mr-[2px]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+<!-- Helper Text / Error State Area -->
+<!-- <div class="mt-2 flex items-center gap-1.5 px-2">
+                    <span class="material-symbols-outlined text-error text-sm" style="font-variation-settings: 'FILL' 1;">error</span>
+                    <p class="font-label-chip text-label-chip text-error">Kết nối mạng không ổn định. Vui lòng thử lại.</p>
+                </div> -->
+<!-- Example of disabled quota state text (hidden by default in this flow, but designed per prompt) -->
+<!-- <p class="mt-2 font-label-chip text-label-chip text-care-coral text-center w-full">Đã hết lượt tương tác hôm nay. Nâng cấp để chat không giới hạn.</p> -->
+</div>
+</div>
+</div>
+</body></html>

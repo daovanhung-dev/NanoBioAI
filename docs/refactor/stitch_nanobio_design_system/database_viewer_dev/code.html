@@ -1,0 +1,343 @@
+<!DOCTYPE html><html class="dark" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Dev Database Viewer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#226f55",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface": "#f5faf7",
+                        "inverse-surface": "#2c3230",
+                        "surface-variant": "#dee4e1",
+                        "personal-purple": "#8B7CF6",
+                        "tertiary": "#006a43",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-primary": "#ffffff",
+                        "primary-soft": "#DDF6E9",
+                        "focus-ring": "#68D9A5",
+                        "surface-container": "#eaefec",
+                        "on-background": "#171d1b",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "outline": "#6d7a71",
+                        "info": "#247CA8",
+                        "secondary-container": "#a4efce",
+                        "primary-fixed-dim": "#62dda3",
+                        "error": "#C64A4A",
+                        "mint-surface": "#EAF9F1",
+                        "tertiary-fixed": "#70fcb7",
+                        "care-coral": "#FF7D75",
+                        "primary": "#006a46",
+                        "on-tertiary-container": "#f6fff6",
+                        "primary-fixed": "#7ff9be",
+                        "primary-container": "#008559",
+                        "inverse-primary": "#62dda3",
+                        "secondary-fixed": "#a7f2d1",
+                        "success": "#14885F",
+                        "on-tertiary-fixed": "#002112",
+                        "calm-blue": "#58B9E8",
+                        "error-container": "#ffdad6",
+                        "secondary": "#1d6a51",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#f6fff6",
+                        "on-surface": "#171d1b",
+                        "surface-container-low": "#f0f5f2",
+                        "text-primary": "#12352A",
+                        "on-error": "#ffffff",
+                        "background": "#f5faf7",
+                        "surface-dim": "#d6dbd8",
+                        "surface-bright": "#f5faf7",
+                        "surface-tint": "#006c48",
+                        "energy-yellow": "#FFC857",
+                        "outline-variant": "#bccabf",
+                        "text-muted": "#8A9B94",
+                        "text-secondary": "#60766E",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#dee4e1",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-secondary-fixed": "#002116",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-surface-variant": "#3d4a42",
+                        "warning": "#B7791F",
+                        "tertiary-container": "#008656",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#002113",
+                        "surface-container-high": "#e4e9e6",
+                        "border-soft": "#D9E9E1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xxs": "2px",
+                        "card-padding": "16px",
+                        "md": "16px",
+                        "section-gap": "24px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "page-padding": "16px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "section-title": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "label-chip": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Compact table styling for high density */
+        .dense-table th, .dense-table td {
+            padding: 4px 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-right: 1px solid theme('colors.surface-variant');
+            border-bottom: 1px solid theme('colors.surface-variant');
+        }
+        .dense-table th:last-child, .dense-table td:last-child {
+            border-right: none;
+        }
+        .sidebar-item {
+            padding: 4px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .sidebar-item:hover {
+            background-color: theme('colors.surface-variant');
+        }
+        .sidebar-item.active {
+            background-color: theme('colors.primary-soft');
+            color: theme('colors.primary');
+            font-weight: 500;
+        }
+        
+        /* Dark mode overrides for high-density tools */
+        .dark .dense-table th, .dark .dense-table td {
+            border-color: theme('colors.on-surface-variant');
+        }
+        .dark .sidebar-item:hover {
+            background-color: theme('colors.on-surface-variant');
+        }
+        .dark .sidebar-item.active {
+            background-color: theme('colors.primary-container');
+            color: theme('colors.on-primary-container');
+        }
+        
+        /* Monospace for data */
+        .font-mono-data {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface dark:bg-surface-dim text-on-surface dark:text-inverse-on-surface h-screen flex flex-col font-body-base text-body-base overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md fixed top-0 w-full z-50 shadow-sm flex items-center justify-between px-page-padding h-16 w-full mx-auto border-b border-surface-variant dark:border-on-surface-variant">
+<div class="flex items-center gap-4">
+<button class="text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity flex items-center justify-center p-2 rounded-full hover:bg-surface-variant dark:hover:bg-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim font-bold tracking-tight">NaBi DB Viewer</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-2 text-text-muted text-sm">search</span>
+<input class="pl-8 pr-3 py-1 bg-surface-container dark:bg-surface-variant border border-outline-variant dark:border-outline rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64 h-8 font-body-sm text-body-sm" placeholder="Filter schemas..." type="text">
+</div>
+<div class="h-8 w-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">
+                NA
+            </div>
+</div>
+</header>
+<!-- Main Content Area - Density focused layout -->
+<main class="flex-1 flex mt-16 overflow-hidden h-[calc(100vh-64px)]">
+<!-- Sidebar - Schema Browser -->
+<aside class="w-64 border-r border-surface-variant dark:border-on-surface-variant bg-surface-container-low dark:bg-inverse-surface flex flex-col h-full overflow-y-auto">
+<div class="p-2 border-b border-surface-variant dark:border-on-surface-variant bg-surface-container dark:bg-surface-variant">
+<h2 class="font-label-chip text-label-chip text-text-secondary dark:text-outline font-semibold uppercase tracking-wider">Schemas &amp; Tables</h2>
+</div>
+<div class="p-2 space-y-1">
+<!-- Schema 1 -->
+<div>
+<div class="flex items-center gap-1 text-sm font-semibold text-text-primary dark:text-inverse-on-surface p-1">
+<span class="material-symbols-outlined text-[16px]">folder_open</span>
+<span>nabi_core</span>
+</div>
+<div class="pl-4 space-y-px mt-1 font-body-sm text-body-sm">
+<div class="sidebar-item active flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-text-muted">table</span>
+                            users
+                        </div>
+<div class="sidebar-item flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-text-muted">table</span>
+                            profiles
+                        </div>
+<div class="sidebar-item flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-text-muted">table</span>
+                            settings
+                        </div>
+</div>
+</div>
+<!-- Schema 2 -->
+<div class="mt-4">
+<div class="flex items-center gap-1 text-sm font-semibold text-text-primary dark:text-inverse-on-surface p-1">
+<span class="material-symbols-outlined text-[16px]">folder</span>
+<span>health_metrics</span>
+</div>
+<div class="pl-4 space-y-px mt-1 font-body-sm text-body-sm hidden">
+<!-- Collapsed state simulation -->
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Workspace -->
+<div class="flex-1 flex flex-col min-w-0 bg-background dark:bg-background h-full">
+<!-- Toolbar -->
+<div class="h-12 border-b border-surface-variant dark:border-on-surface-variant bg-surface flex items-center justify-between px-4 shrink-0">
+<div class="flex items-center gap-2">
+<span class="font-mono-data font-semibold text-primary dark:text-primary-fixed">nabi_core.users</span>
+<span class="text-xs text-text-muted bg-surface-variant dark:bg-on-surface-variant px-2 py-0.5 rounded">Table</span>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-surface-container dark:bg-surface-variant border border-outline-variant dark:border-outline rounded text-xs hover:bg-surface-variant dark:hover:bg-outline-variant flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">refresh</span> Refresh
+                    </button>
+<button class="px-3 py-1 bg-primary text-on-primary rounded text-xs hover:opacity-90 flex items-center gap-1 transition-opacity">
+<span class="material-symbols-outlined text-[14px]">play_arrow</span> Run Query
+                    </button>
+</div>
+</div>
+<!-- Query Editor Area (Collapsible) -->
+<div class="h-32 border-b border-surface-variant dark:border-on-surface-variant bg-[#1E1E1E] text-[#D4D4D4] font-mono-data p-2 overflow-auto shrink-0 relative group">
+<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1 bg-surface-variant/20 hover:bg-surface-variant/40 rounded text-xs"><span class="material-symbols-outlined text-[14px]">content_copy</span></button>
+</div>
+<pre><code><span class="text-[#569CD6]">SELECT</span> * 
+<span class="text-[#569CD6]">FROM</span> nabi_core.users 
+<span class="text-[#569CD6]">ORDER BY</span> created_at <span class="text-[#569CD6]">DESC</span>
+<span class="text-[#569CD6]">LIMIT</span> 100;</code></pre>
+</div>
+<!-- Data Table Area -->
+<div class="flex-1 overflow-auto bg-surface-container-lowest dark:bg-inverse-surface relative">
+<table class="w-full text-left border-collapse dense-table font-mono-data bg-surface-container-lowest dark:bg-inverse-surface">
+<thead class="sticky top-0 bg-surface-container-low dark:bg-on-surface-variant shadow-sm z-10 text-xs text-text-secondary dark:text-outline font-semibold">
+<tr>
+<th class="w-10 text-center">#</th>
+<th class="w-48">
+<div class="flex items-center justify-between">
+                                    id <span class="text-[10px] text-text-muted font-normal ml-2">uuid 🔑</span>
+</div>
+</th>
+<th class="w-32">
+<div class="flex items-center justify-between">
+                                    email <span class="text-[10px] text-text-muted font-normal ml-2">varchar</span>
+</div>
+</th>
+<th class="w-24">
+<div class="flex items-center justify-between">
+                                    status <span class="text-[10px] text-text-muted font-normal ml-2">enum</span>
+</div>
+</th>
+<th class="w-40">
+<div class="flex items-center justify-between">
+                                    created_at <span class="text-[10px] text-text-muted font-normal ml-2">timestamptz</span>
+</div>
+</th>
+<th>
+<div class="flex items-center justify-between">
+                                    metadata <span class="text-[10px] text-text-muted font-normal ml-2">jsonb</span>
+</div>
+</th>
+</tr>
+</thead>
+<tbody class="text-text-primary dark:text-inverse-on-surface text-sm divide-y divide-surface-variant dark:divide-on-surface-variant">
+<tr class="hover:bg-mint-surface/50 dark:hover:bg-primary-container/20">
+<td class="text-center text-text-muted text-xs">1</td>
+<td class="text-info dark:text-calm-blue truncate" title="550e8400-e29b-41d4-a716-446655440000">550e8400-e29b-41d4...</td>
+<td class="truncate" title="user.dev@nabi.io">user.dev@nabi.io</td>
+<td><span class="text-success text-xs bg-success/10 px-1 rounded">active</span></td>
+<td class="text-text-secondary">2023-10-25 14:32:01</td>
+<td class="truncate text-text-muted" title="{&quot;role&quot;: &quot;admin&quot;, &quot;beta_features&quot;: true}">{"role": "admin", ...}</td>
+</tr>
+<tr class="hover:bg-mint-surface/50 dark:hover:bg-primary-container/20">
+<td class="text-center text-text-muted text-xs">2</td>
+<td class="text-info dark:text-calm-blue truncate" title="a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d">a1b2c3d4-e5f6-7a8b...</td>
+<td class="truncate" title="test.ops@nabi.io">test.ops@nabi.io</td>
+<td><span class="text-warning text-xs bg-warning/10 px-1 rounded">pending</span></td>
+<td class="text-text-secondary">2023-10-26 09:15:44</td>
+<td class="truncate text-text-muted text-style-italic">null</td>
+</tr>
+<tr class="hover:bg-mint-surface/50 dark:hover:bg-primary-container/20 bg-error/5 dark:bg-error/10">
+<td class="text-center text-text-muted text-xs">3</td>
+<td class="text-info dark:text-calm-blue truncate" title="99f8e7d6-c5b4-a392-8170-f6e5d4c3b2a1">99f8e7d6-c5b4-a392...</td>
+<td class="truncate" title="legacy.user@old.domain">legacy.user@old.domain</td>
+<td><span class="text-error text-xs bg-error/10 px-1 rounded">suspended</span></td>
+<td class="text-text-secondary">2022-01-15 11:22:33</td>
+<td class="truncate text-text-muted" title="{&quot;reason&quot;: &quot;policy_violation&quot;}">{"reason": "policy...}</td>
+</tr>
+<!-- Generate more rows for density feel -->
+<script>
+                            for(let i=4; i<=20; i++) {
+                                document.write(`
+                                <tr class="hover:bg-mint-surface/50 dark:hover:bg-primary-container/20">
+                                    <td class="text-center text-text-muted text-xs">${i}</td>
+                                    <td class="text-info dark:text-calm-blue truncate">f47ac10b-58cc-4372...</td>
+                                    <td class="truncate">dummy.user${i}@test.com</td>
+                                    <td><span class="text-success text-xs bg-success/10 px-1 rounded">active</span></td>
+                                    <td class="text-text-secondary">2023-11-0${i%9+1} 10:00:00</td>
+                                    <td class="truncate text-text-muted">{"tier": "free"}</td>
+                                </tr>
+                                `);
+                            }
+                        </script>
+</tbody>
+</table>
+</div>
+<!-- Status Bar -->
+<div class="h-6 bg-surface-container-high dark:bg-on-surface-variant border-t border-surface-variant dark:border-surface-variant flex items-center px-4 text-[11px] text-text-secondary dark:text-outline shrink-0 justify-between font-mono-data">
+<div class="flex gap-4">
+<span><span class="inline-block w-2 h-2 rounded-full bg-success mr-1"></span>Connected to: nabi-prod-replica-1</span>
+<span>Rows: 100</span>
+<span>Query time: 42ms</span>
+</div>
+<div>
+                    PostgreSQL 15.3
+                </div>
+</div>
+</div>
+</main>
+</body></html>

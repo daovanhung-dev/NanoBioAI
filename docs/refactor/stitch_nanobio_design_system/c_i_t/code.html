@@ -1,0 +1,359 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Settings - NaBi Wellness</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#226f55",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface": "#f5faf7",
+                        "inverse-surface": "#2c3230",
+                        "surface-variant": "#dee4e1",
+                        "personal-purple": "#8B7CF6",
+                        "tertiary": "#006a43",
+                        "inverse-on-surface": "#edf2ef",
+                        "on-primary": "#ffffff",
+                        "primary-soft": "#DDF6E9",
+                        "focus-ring": "#68D9A5",
+                        "surface-container": "#eaefec",
+                        "on-background": "#171d1b",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "outline": "#6d7a71",
+                        "info": "#247CA8",
+                        "secondary-container": "#a4efce",
+                        "primary-fixed-dim": "#62dda3",
+                        "error": "#C64A4A",
+                        "mint-surface": "#EAF9F1",
+                        "tertiary-fixed": "#70fcb7",
+                        "care-coral": "#FF7D75",
+                        "primary": "#006a46",
+                        "on-tertiary-container": "#f6fff6",
+                        "primary-fixed": "#7ff9be",
+                        "primary-container": "#008559",
+                        "inverse-primary": "#62dda3",
+                        "secondary-fixed": "#a7f2d1",
+                        "success": "#14885F",
+                        "on-tertiary-fixed": "#002112",
+                        "calm-blue": "#58B9E8",
+                        "error-container": "#ffdad6",
+                        "secondary": "#1d6a51",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#f6fff6",
+                        "on-surface": "#171d1b",
+                        "surface-container-low": "#f0f5f2",
+                        "text-primary": "#12352A",
+                        "on-error": "#ffffff",
+                        "background": "#f5faf7",
+                        "surface-dim": "#d6dbd8",
+                        "surface-bright": "#f5faf7",
+                        "surface-tint": "#006c48",
+                        "energy-yellow": "#FFC857",
+                        "outline-variant": "#bccabf",
+                        "text-muted": "#8A9B94",
+                        "text-secondary": "#60766E",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#dee4e1",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-secondary-fixed": "#002116",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-surface-variant": "#3d4a42",
+                        "warning": "#B7791F",
+                        "tertiary-container": "#008656",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#002113",
+                        "surface-container-high": "#e4e9e6",
+                        "border-soft": "#D9E9E1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xxs": "2px",
+                        "card-padding": "16px",
+                        "md": "16px",
+                        "section-gap": "24px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "page-padding": "16px",
+                        "xl": "32px",
+                        "safe": "env(safe-area-inset-bottom)"
+                    },
+                    "fontFamily": {
+                        "section-title": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "label-chip": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #F6FBF8; } /* page-background Level 0 */
+        .glass-nav {
+            background-color: rgba(245, 250, 247, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        
+        /* Toggle Switch Styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #006a46; /* primary */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #006a46; /* primary */
+        }
+        .toggle-checkbox {
+            right: 0;
+            z-index: 1;
+            border-color: #dee4e1;
+            transition: all 0.3s;
+        }
+        .toggle-label {
+            width: 44px;
+            height: 24px;
+            background-color: #dee4e1;
+            border-radius: 9999px;
+            transition: all 0.3s;
+        }
+        .toggle-dot {
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .toggle-checkbox:checked ~ .toggle-dot {
+            transform: translateX(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background font-body-base antialiased pb-24">
+<!-- TopAppBar -->
+<header class="glass-nav fixed top-0 w-full z-50 flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto shadow-sm md:max-w-full md:px-8">
+<button class="text-text-secondary hover:opacity-80 transition-opacity Active: scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim">Cài đặt</h1>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-mint-surface flex items-center justify-center border border-border-soft">
+<img class="w-full h-full object-cover" data-alt="A small, stylized avatar of a friendly virtual assistant mascot for a wellness app. The mascot has soft, rounded features and is predominantly green and white. The background is a very pale mint color. Light mode aesthetic, clean and modern vector style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_dh5x07ebTcePH5bHUpzJH6__vSU9lE-eBnGFBMUj65-3VTg4_eziAOVlDO_TBmhsHmhnnTXqMITTxrn9MzdmwUgpWcPmuwcSTX4Rrv09myUKOi1hTS3aynjzAr4AfyzFVaQlWqj8pBhMon2B8ehnBl3MqTK6VvG-nEBxkGC33HVav4H8_23jKn4J9VCvPD35rQk6qCLnctnLKHKrQx6RvZrghhqTyOxBfPhWj9FtNhnnCX8NFGCwGA">
+</div>
+</header>
+<main class="pt-20 px-page-padding max-w-md mx-auto md:max-w-2xl">
+<!-- Account Settings Group -->
+<section class="mb-section-gap">
+<h2 class="font-section-title text-section-title text-primary mb-sm pl-2">Tài khoản</h2>
+<div class="bg-white rounded-xl border border-border-soft shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] overflow-hidden">
+<div class="flex items-center justify-between p-card-padding border-b border-surface-container-low hover:bg-mint-surface transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<div>
+<p class="font-cta text-cta text-text-primary">Thông tin cá nhân</p>
+<p class="font-body-sm text-body-sm text-text-muted">Cập nhật tên, email, số điện thoại</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-text-muted">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-card-padding border-b border-surface-container-low hover:bg-mint-surface transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-soft flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<p class="font-cta text-cta text-text-primary">Bảo mật</p>
+<p class="font-body-sm text-body-sm text-text-muted">Đổi mật khẩu, xác thực 2 bước</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-text-muted">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Experience Settings Group -->
+<section class="mb-section-gap">
+<h2 class="font-section-title text-section-title text-primary mb-sm pl-2">Trải nghiệm</h2>
+<div class="bg-white rounded-xl border border-border-soft shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] overflow-hidden">
+<!-- Font Size -->
+<div class="p-card-padding border-b border-surface-container-low">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 rounded-full bg-mint-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">text_fields</span>
+</div>
+<div>
+<p class="font-cta text-cta text-text-primary">Cỡ chữ</p>
+<p class="font-body-sm text-body-sm text-text-muted">Điều chỉnh kích thước văn bản hiển thị</p>
+</div>
+</div>
+<div class="flex items-center justify-between px-2">
+<span class="font-body-sm text-body-sm text-text-secondary">A</span>
+<input class="w-2/3 h-1 bg-surface-container rounded-lg appearance-none cursor-pointer accent-primary" max="3" min="1" type="range" value="2">
+<span class="font-body-base text-body-base text-text-primary font-bold">A</span>
+</div>
+</div>
+<!-- Reduce Motion -->
+<div class="flex items-center justify-between p-card-padding border-b border-surface-container-low">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-mint-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">animation</span>
+</div>
+<div>
+<p class="font-cta text-cta text-text-primary">Giảm chuyển động</p>
+<p class="font-body-sm text-body-sm text-text-muted">Hạn chế hiệu ứng hình ảnh</p>
+</div>
+</div>
+<div class="relative inline-block w-11 h-6 align-middle select-none">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="reduce-motion" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden cursor-pointer" for="reduce-motion"></label>
+<span class="toggle-dot absolute block pointer-events-none shadow-sm"></span>
+</div>
+</div>
+<!-- Haptic Feedback -->
+<div class="flex items-center justify-between p-card-padding border-b border-surface-container-low">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-mint-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">vibration</span>
+</div>
+<div>
+<p class="font-cta text-cta text-text-primary">Phản hồi rung</p>
+<p class="font-body-sm text-body-sm text-text-muted">Rung khi tương tác</p>
+</div>
+</div>
+<div class="relative inline-block w-11 h-6 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="haptic" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden cursor-pointer bg-primary" for="haptic"></label>
+<span class="toggle-dot absolute block pointer-events-none shadow-sm transform translate-x-[20px]"></span>
+</div>
+</div>
+<!-- Sound -->
+<div class="flex items-center justify-between p-card-padding">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-mint-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">volume_up</span>
+</div>
+<div>
+<p class="font-cta text-cta text-text-primary">Âm thanh</p>
+<p class="font-body-sm text-body-sm text-text-muted">Âm thanh thông báo và hệ thống</p>
+</div>
+</div>
+<div class="relative inline-block w-11 h-6 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="sound" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden cursor-pointer bg-primary" for="sound"></label>
+<span class="toggle-dot absolute block pointer-events-none shadow-sm transform translate-x-[20px]"></span>
+</div>
+</div>
+</div>
+</section>
+<!-- Nabi Assistant Settings Group -->
+<section class="mb-section-gap">
+<h2 class="font-section-title text-section-title text-primary mb-sm pl-2">Trợ lý NaBi</h2>
+<div class="bg-white rounded-xl border border-border-soft shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] overflow-hidden p-card-padding flex items-start gap-4">
+<div class="w-16 h-16 rounded-2xl bg-mint-surface flex-shrink-0 flex items-center justify-center border border-border-soft">
+<img class="w-12 h-12 object-contain" data-alt="Close up icon of the friendly virtual assistant mascot NaBi. Soft rounded green and white features. Minimalist light mode UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL9yV-d6FIJAqHk2-ddFEp71107UIxnItYkXSf9tAxidqkInV6d-ukfgu1H7BgmOTTRvnhbhm-_LoaDNfHHU8hXqUl-lqPYY3LhiXdayU-lVI1FX6lpnhnjo3eP-1b0nRA23ka9nSUNn6ClpKHQRymM7DSbt3-gjjm9b_Ew5vwBGQUKK7DKuX2NBsvw7getWyE2-aXb06xPUS1oBCwoIEUvYs6ZpTyj57o8UxNKBuSAF9VKKQCLymL5Q">
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-center mb-2">
+<p class="font-cta text-cta text-text-primary">Gợi ý thông minh</p>
+<div class="relative inline-block w-11 h-6 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="nabi-suggest" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden cursor-pointer bg-primary" for="nabi-suggest"></label>
+<span class="toggle-dot absolute block pointer-events-none shadow-sm transform translate-x-[20px]"></span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-text-muted mb-3">NaBi sẽ phân tích dữ liệu để đưa ra lời khuyên cá nhân hóa cho bạn.</p>
+<button class="text-primary font-cta text-cta bg-mint-surface px-4 py-2 rounded-lg border border-primary/20 w-full hover:bg-primary-soft transition-colors">
+                        Quản lý chủ đề quan tâm
+                    </button>
+</div>
+</div>
+</section>
+<!-- Data & Support Group -->
+<section class="mb-section-gap">
+<h2 class="font-section-title text-section-title text-primary mb-sm pl-2">Dữ liệu &amp; Hỗ trợ</h2>
+<div class="bg-white rounded-xl border border-border-soft shadow-[0_8px_20px_0_rgba(20,163,111,0.08)] overflow-hidden">
+<div class="flex items-center justify-between p-card-padding border-b border-surface-container-low hover:bg-mint-surface transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-mint-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">data_usage</span>
+</div>
+<p class="font-cta text-cta text-text-primary">Quản lý dữ liệu</p>
+</div>
+<span class="material-symbols-outlined text-text-muted">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-card-padding hover:bg-mint-surface transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-mint-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">help</span>
+</div>
+<p class="font-cta text-cta text-text-primary">Trung tâm hỗ trợ</p>
+</div>
+<span class="material-symbols-outlined text-text-muted">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Sensitive Actions -->
+<section class="mt-xl mb-xl space-y-4">
+<button class="w-full bg-white border border-border-soft rounded-xl p-4 flex items-center justify-center gap-2 text-text-secondary hover:bg-surface-container-low transition-colors shadow-sm">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-cta text-cta">Đăng xuất</span>
+</button>
+<button class="w-full bg-care-coral/10 border border-care-coral/20 rounded-xl p-4 flex items-center justify-center gap-2 text-error hover:bg-care-coral/20 transition-colors shadow-sm">
+<span class="material-symbols-outlined">delete_forever</span>
+<span class="font-cta text-cta">Xóa tài khoản và dữ liệu</span>
+</button>
+</section>
+<p class="text-center font-body-sm text-body-sm text-text-muted mb-8">Phiên bản 1.2.0 (Build 42)</p>
+</main>
+<!-- Suppressed Nav Shells as this is a Settings (Transactional/Focused) Page -->
+<script>
+        // Simple script to handle custom toggle visuals if needed for dynamic updates, 
+        // though CSS handles the basic checked state above.
+        document.querySelectorAll('.toggle-checkbox').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const dot = this.parentElement.querySelector('.toggle-dot');
+                const label = this.parentElement.querySelector('.toggle-label');
+                if (this.checked) {
+                    label.classList.add('bg-primary');
+                    dot.style.transform = 'translateX(20px)';
+                } else {
+                    label.classList.remove('bg-primary');
+                    dot.style.transform = 'translateX(0)';
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nabi - Animation Showcase</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e8e1db",
+                        "surface-dim": "#dfd9d3",
+                        "error-container": "#ffdad6",
+                        "on-background": "#1d1b18",
+                        "inverse-surface": "#33302c",
+                        "surface-container-highest": "#e8e1db",
+                        "outline": "#707973",
+                        "on-error-container": "#93000a",
+                        "secondary": "#3e6750",
+                        "on-secondary-container": "#426b54",
+                        "primary-container": "#2d6a4f",
+                        "tertiary-container": "#5d605d",
+                        "on-surface-variant": "#404943",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#002112",
+                        "surface-tint": "#2c694e",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#fff8f2",
+                        "primary-fixed-dim": "#95d4b3",
+                        "on-secondary-fixed-variant": "#264f39",
+                        "on-primary-fixed": "#002114",
+                        "primary": "#0f5238",
+                        "on-tertiary-container": "#d9dad7",
+                        "tertiary": "#464846",
+                        "on-primary-container": "#a8e7c5",
+                        "surface-container": "#f3ede7",
+                        "surface": "#fff8f2",
+                        "secondary-fixed-dim": "#a4d1b4",
+                        "on-surface": "#1d1b18",
+                        "tertiary-fixed": "#e2e3df",
+                        "on-tertiary-fixed-variant": "#454745",
+                        "outline-variant": "#bfc9c1",
+                        "on-primary": "#ffffff",
+                        "background": "#fff8f2",
+                        "secondary-container": "#bdeacd",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#b1f0ce",
+                        "surface-container-high": "#ede7e1",
+                        "inverse-on-surface": "#f6f0ea",
+                        "on-primary-fixed-variant": "#0e5138",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#f9f2ec",
+                        "tertiary-fixed-dim": "#c5c7c3",
+                        "secondary-fixed": "#c0edd0",
+                        "inverse-primary": "#95d4b3",
+                        "on-tertiary-fixed": "#1a1c1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "companion-offset": "20px",
+                        "xl": "32px",
+                        "touch-target": "48px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Manrope"],
+                        "label-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom Animations representing Fluid Motion Cues */
+        @keyframes micro-breathe {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.02) translateY(-4px); }
+        }
+        @keyframes organic-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-6px) rotate(2deg); }
+            66% { transform: translateY(-2px) rotate(-1deg); }
+        }
+        @keyframes subtle-glow {
+            0%, 100% { box-shadow: 0 10px 25px -5px rgba(45, 106, 79, 0.08); }
+            50% { box-shadow: 0 15px 35px -5px rgba(45, 106, 79, 0.15); }
+        }
+
+        .animate-expressive {
+            animation: micro-breathe 4s ease-in-out infinite, organic-float 6s ease-in-out infinite;
+        }
+        .animate-card-expressive {
+            animation: subtle-glow 4s ease-in-out infinite;
+        }
+        
+        /* Glassmorphism utility for subtle backdrop if needed */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex flex-col font-body-md text-on-background overflow-x-hidden selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- TopAppBar Shared Component -->
+<header class="bg-background dark:bg-background top-0 w-full z-40 transition-shadow duration-300">
+<div class="flex justify-between items-center w-full px-lg py-sm">
+<!-- Leading Avatar -->
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="Nabi Mascot Avatar" class="w-full h-full object-cover" data-alt="A small, circular avatar icon featuring Nabi, a minimalist, cute abstract wellness companion with a soft green color palette, clean vector illustration style, set against a pristine white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuChcHkYzkEPCJjPWtyptPrSJsUM0LfeN1SLIRW6hUsERW4y6O104JU7yMsCfdH2ChM8j2aF9FJ8DwoS-qs--LfOZzbecsy_iwGr8jsypTeTaAAKXepOlRjXmXEZoB1OWyCsxuybz1xvtH2mG_tvHjWvcsfk2zuEmNo8_xop-FGw0HK_jH_yXEb0HVF-LK_LFCws2lq8Wtf28rUZlgjVlWWR1zd9WMGJAqsuNqUStI1iWGeHb5aFumfKRg">
+</div>
+<!-- Headline -->
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed font-bold tracking-tight">Nabi</h1>
+<!-- Trailing Icon -->
+<button aria-label="Settings" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area: Split View Presentation on Mint Background -->
+<!-- Using a soft mint background (secondary-fixed) to contrast the white minimalist cards -->
+<main class="flex-1 w-full bg-secondary-fixed relative flex flex-col">
+<!-- Decorative subtle background pattern -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#0f5238 2px, transparent 2px); background-size: 32px 32px;"></div>
+<div class="w-full max-w-7xl mx-auto px-lg py-xl flex-1 flex flex-col md:flex-row items-center justify-center gap-xl md:gap-12 relative z-10">
+<!-- Context Header for the Split View -->
+<div class="w-full text-center md:hidden mb-sm">
+<h2 class="font-headline-md text-headline-md text-on-secondary-fixed-variant">Animation States</h2>
+<p class="font-body-md text-on-surface-variant mt-xs">Expressive vs Reduced Motion</p>
+</div>
+<!-- 1. Expressive State (Animated) -->
+<section class="w-full max-w-sm flex flex-col items-center group">
+<div class="bg-surface-container-lowest rounded-[24px] shadow-lg border border-outline-variant/20 p-xl w-full flex flex-col items-center relative animate-card-expressive transition-transform duration-500 hover:scale-[1.02]">
+<!-- State Label -->
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-on-primary font-label-md text-label-md px-4 py-1.5 rounded-full shadow-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">animation</span>
+                        Expressive
+                    </div>
+<!-- Nabi Avatar Area (Animated) -->
+<div class="relative w-48 h-48 mt-md mb-lg flex items-center justify-center">
+<!-- Diffused Shadow behind avatar to create float effect -->
+<div class="absolute bottom-4 w-32 h-6 bg-primary-container/20 rounded-[100%] blur-md animate-[micro-breathe_4s_ease-in-out_infinite_reverse]"></div>
+<!-- The Avatar Image -->
+<div class="animate-expressive w-full h-full relative z-10 drop-shadow-xl">
+<img alt="Nabi Animated Pose" class="w-full h-full object-contain" data-alt="A high-quality, soft-edged 3D render of Nabi, a supportive and calming wellness companion mascot. Nabi is wearing a delicate crown made of small, fresh green leaves and has a warm, reassuring smile. The pose conveys 'acknowledging progress'. The lighting is bright, soft, and modern, casting gentle ambient shadows on a pure white background, emphasizing tactile softness and organic shapes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxJxgihkiK2eQuK1DXBnPK90CX9Tl9wFelxg2pilV91TwQuXO8UtFQRF6q_1AiT98Cy1igycEbErn7Z2ZD_aAkuyrSPCQo1tFLJThuK6tQlCl0ehW254_gAOqT5IePpJE-5hXJvw4oYRSzS6MKPqouHBkLsyCLsBIhOldym0f_rI1DG80RMp0-QXk0pJ_EedwYOg2EeZ6VamD4ikT3Q0WfsZ_oJBW7TUhT0Xa43tHPrkvxgAFlxfVlCQ">
+</div>
+</div>
+<!-- Speech Bubble (Mint colored as per guidance) -->
+<div class="w-full relative mt-sm">
+<!-- Tail -->
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-b-[16px] border-b-secondary-container border-r-[12px] border-r-transparent"></div>
+<!-- Bubble Body -->
+<div class="bg-secondary-container text-on-secondary-container rounded-[20px] p-lg text-center shadow-[0_4px_12px_rgba(45,106,79,0.06)] relative z-10">
+<p class="font-body-lg text-body-lg font-medium leading-relaxed">
+                                Tuyệt vời, bạn đã hoàn thành!
+                            </p>
+</div>
+</div>
+</div>
+<p class="mt-md font-label-md text-label-md text-on-secondary-fixed-variant opacity-80 text-center max-w-[280px]">
+                    Fluid motion cues with soft spring physics and micro-breathing.
+                </p>
+</section>
+<!-- Divider (Desktop only) -->
+<div class="hidden md:block w-px h-64 bg-on-secondary-fixed/10 rounded-full"></div>
+<!-- 2. Reduced Motion State (Static) -->
+<section class="w-full max-w-sm flex flex-col items-center">
+<div class="bg-surface-container-lowest rounded-[24px] shadow-sm border border-outline-variant/30 p-xl w-full flex flex-col items-center relative transition-transform duration-500">
+<!-- State Label -->
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-surface-variant text-on-surface-variant font-label-md text-label-md px-4 py-1.5 rounded-full shadow-sm flex items-center gap-2 border border-outline-variant/20">
+<span class="material-symbols-outlined text-[16px]">accessibility_new</span>
+                        Reduced Motion
+                    </div>
+<!-- Nabi Avatar Area (Static) -->
+<div class="relative w-48 h-48 mt-md mb-lg flex items-center justify-center">
+<!-- Static diffused shadow -->
+<div class="absolute bottom-4 w-32 h-6 bg-primary-container/10 rounded-[100%] blur-md"></div>
+<!-- The Avatar Image (Static) -->
+<div class="w-full h-full relative z-10 drop-shadow-md">
+<img alt="Nabi Static Pose" class="w-full h-full object-contain" data-alt="A pristine, high-resolution static 3D illustration of Nabi, a supportive wellness companion. Nabi is adorned with a delicate, small leaf crown and bears a warm, encouraging smile, indicating successful progress. The rendering style emphasizes modern minimalism and tactile softness, utilizing a soft mint and warm neutral palette. The character is perfectly still on a pure white background, illuminated by soft, flat, even lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqcKl9JdUTvfLqmoXgmPIxhfp-IyOfUOULmLCRE0b4uMCSmv2h-fTliTrwV5TdK5zaeV-LknM65fwJHrQ1KlSgEdANKdI1tND2rZNBghnmSQmCBe-46079s5wVq20uP7P6lLO0rZeY7fPH8t23JdlKNmF98FBNVQyZh8qcIhhTR5we9cjiblD_GKwkzIkcbwtpFUO9hTht6Kw_8V345VEqfeGZ6H4VB81_bG96yez3id5H17ayEUTi1A">
+</div>
+</div>
+<!-- Speech Bubble (Mint colored as per guidance) -->
+<div class="w-full relative mt-sm">
+<!-- Tail -->
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-b-[16px] border-b-secondary-container border-r-[12px] border-r-transparent"></div>
+<!-- Bubble Body -->
+<div class="bg-secondary-container text-on-secondary-container rounded-[20px] p-lg text-center shadow-sm relative z-10">
+<p class="font-body-lg text-body-lg font-medium leading-relaxed">
+                                Tuyệt vời, bạn đã hoàn thành!
+                            </p>
+</div>
+</div>
+</div>
+<p class="mt-md font-label-md text-label-md text-on-secondary-fixed-variant opacity-80 text-center max-w-[280px]">
+                    High-quality static pose preserving warmth without movement.
+                </p>
+</section>
+</div>
+</main>
+<!-- BottomNavBar is deliberately suppressed to prioritize the Canvas for this specific presentation/showcase view as per the 'Task-Focused / Linear' suppression rule. -->
+</body></html>

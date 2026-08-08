@@ -1,0 +1,255 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#3d4a42",
+                        "secondary": "#1d6a51",
+                        "on-primary-fixed-variant": "#005235",
+                        "on-secondary-container": "#226f55",
+                        "primary-container": "#008559",
+                        "personal-purple": "#8B7CF6",
+                        "text-primary": "#12352A",
+                        "surface-bright": "#f5faf7",
+                        "surface": "#f5faf7",
+                        "text-muted": "#8A9B94",
+                        "surface-container": "#eaefec",
+                        "on-surface": "#171d1b",
+                        "on-tertiary-fixed": "#002112",
+                        "surface-dim": "#d6dbd8",
+                        "care-coral": "#FF7D75",
+                        "outline": "#6d7a71",
+                        "primary": "#006a46",
+                        "secondary-container": "#a4efce",
+                        "on-secondary-fixed": "#002116",
+                        "energy-yellow": "#FFC857",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#002113",
+                        "background": "#f5faf7",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#008656",
+                        "primary-fixed": "#7ff9be",
+                        "text-secondary": "#60766E",
+                        "info": "#247CA8",
+                        "mint-surface": "#EAF9F1",
+                        "warning": "#B7791F",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "surface-container-highest": "#dee4e1",
+                        "surface-variant": "#dee4e1",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bccabf",
+                        "on-tertiary-container": "#f6fff6",
+                        "on-primary-container": "#f6fff6",
+                        "focus-ring": "#68D9A5",
+                        "inverse-on-surface": "#edf2ef",
+                        "primary-fixed-dim": "#62dda3",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface-container-high": "#e4e9e6",
+                        "primary-soft": "#DDF6E9",
+                        "inverse-surface": "#2c3230",
+                        "border-soft": "#D9E9E1",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-secondary": "#ffffff",
+                        "error": "#C64A4A",
+                        "surface-tint": "#006c48",
+                        "surface-container-low": "#f0f5f2",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "secondary-fixed": "#a7f2d1",
+                        "tertiary": "#006a43",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#62dda3",
+                        "success": "#14885F",
+                        "calm-blue": "#58B9E8",
+                        "on-background": "#171d1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "page-padding": "16px",
+                        "card-padding": "16px",
+                        "md": "16px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "label-chip": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-sm": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #F6FBF8;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .bento-card {
+            background-color: #ffffff;
+            border: 1px solid #D9E9E1;
+            box-shadow: 0 4px 12px 0 rgba(20, 163, 111, 0.04);
+            border-radius: 20px;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #0F8E62 0%, #32C789 100%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 0.4; }
+            100% { transform: scale(0.9); opacity: 0.8; }
+        }
+        .coming-soon-badge {
+            background: linear-gradient(135deg, #8B7CF6 0%, #6D5DE6 100%);
+        }
+    </style>
+</head>
+<body class="text-text-primary min-h-screen flex flex-col pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center justify-between px-page-padding h-16 w-full max-w-md mx-auto md:max-w-4xl md:px-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary font-bold cursor-pointer hover:opacity-80 transition-opacity">arrow_back</span>
+<h1 class="font-screen-title text-screen-title text-primary dark:text-primary-fixed-dim">NaBi Wellness</h1>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-border-soft cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="Nabi Assistant Avatar" class="w-full h-full object-cover" data-alt="A warm, engaging, and friendly 3D avatar of a wellness assistant with a gentle smile. The style is modern, approachable, and uses soft, organic lighting. The color palette incorporates subtle greens and warm tones, evoking a sense of trust and health. The background is a simple, clean, off-white studio setup." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrLtEPAb7edGiotlMzauiGuSF8fQsQafxY59G1uNbOwbF17yNO3Dk3TixAsq5vUcOJhfuQ5wIROhOnU7RoPgSzMjBLQu47dQm8nmzeC44JdmJlpr05q-aGL_w1-eoMnFSAIuVu1haaFx3hPwiPiJc1CO5I0jDRx-qupQ3AoyzJsr-M1GVcPpW1YXSnI9KQ0XzivtOq7GRFtFY-wq5CJsePMwmde8Jmjt4T5q4UY9Wf4wes8FMZkWdMng">
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 mt-20 px-page-padding max-w-md mx-auto md:max-w-4xl w-full flex flex-col gap-section-gap">
+<!-- Welcome Hero Section -->
+<section class="flex flex-col gap-md">
+<div class="flex flex-col">
+<h2 class="font-screen-title text-screen-title text-text-primary">Chào buổi sáng, Lan Anh</h2>
+<p class="font-body-base text-text-secondary">Hôm nay bạn cảm thấy thế nào?</p>
+</div>
+<div class="bento-card overflow-hidden relative">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-soft rounded-full -translate-y-1/2 translate-x-1/3 opacity-50"></div>
+<div class="p-card-padding flex items-center justify-between relative z-10">
+<div class="flex flex-col gap-sm">
+<span class="font-label-chip text-label-chip text-text-secondary uppercase tracking-wider">Chỉ số sức khoẻ</span>
+<div class="flex items-end gap-2">
+<span class="font-display-hero text-display-hero text-primary">85</span>
+<span class="font-body-base text-text-secondary mb-1">/ 100</span>
+</div>
+<p class="font-body-sm text-success flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span>
+                            +5 điểm so với tuần trước
+                        </p>
+</div>
+<div class="relative w-24 h-24 flex items-center justify-center">
+<svg class="w-full h-full rotate-[-90deg]" viewBox="0 0 36 36">
+<path class="text-mint-surface" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="85, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined pulse-ring" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Premium Teaser Section (Violet Accents) -->
+<section class="flex flex-col gap-md">
+<div class="flex items-center justify-between">
+<h3 class="font-section-title text-section-title text-text-primary">NaBi Premium</h3>
+<span class="font-label-chip text-label-chip text-personal-purple">Sắp ra mắt</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Premium Card 1 -->
+<div class="bento-card p-card-padding flex flex-col gap-sm relative overflow-hidden border-personal-purple/20 bg-personal-purple/5">
+<div class="absolute top-3 right-3">
+<span class="bg-personal-purple text-white font-label-chip text-[10px] px-2 py-1 rounded-full uppercase tracking-wider">Premium</span>
+</div>
+<div class="w-12 h-12 rounded-full bg-personal-purple/10 flex items-center justify-center text-personal-purple mb-2">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<h4 class="font-cta text-cta text-text-primary">Phân tích Tâm lý Sâu</h4>
+<p class="font-body-sm text-text-secondary line-clamp-2">Nhận diện mẫu cảm xúc phức tạp và gợi ý cân bằng chuyên sâu từ AI.</p>
+</div>
+<!-- Premium Card 2 -->
+<div class="bento-card p-card-padding flex flex-col gap-sm relative overflow-hidden border-personal-purple/20 bg-personal-purple/5">
+<div class="absolute top-3 right-3">
+<span class="bg-personal-purple text-white font-label-chip text-[10px] px-2 py-1 rounded-full uppercase tracking-wider">Premium</span>
+</div>
+<div class="w-12 h-12 rounded-full bg-personal-purple/10 flex items-center justify-center text-personal-purple mb-2">
+<span class="material-symbols-outlined">self_improvement</span>
+</div>
+<h4 class="font-cta text-cta text-text-primary">Kế hoạch Thiền định Cá nhân</h4>
+<p class="font-body-sm text-text-secondary line-clamp-2">Lộ trình rèn luyện tâm trí được tinh chỉnh theo nhịp sinh học của bạn.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md shadow-[0_-4px_20px_0_rgba(20,163,111,0.08)]">
+<div class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 h-20">
+<!-- Active Tab -->
+<button class="flex flex-col items-center justify-center bg-primary-soft dark:bg-on-primary-fixed-variant text-primary dark:text-primary-fixed rounded-full px-4 py-1 hover:text-primary transition-colors scale-[0.975] transition-all duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-chip text-label-chip">Trang chủ</span>
+</button>
+<!-- Inactive Tabs -->
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined mb-1">favorite</span>
+<span class="font-label-chip text-label-chip">Sức khỏe</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined mb-1">face</span>
+<span class="font-label-chip text-label-chip">Nabi</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined mb-1">auto_stories</span>
+<span class="font-label-chip text-label-chip">Nhật ký</span>
+</button>
+<button class="flex flex-col items-center justify-center text-text-muted dark:text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-chip text-label-chip">Hồ sơ</span>
+</button>
+</div>
+</nav>
+</body></html>

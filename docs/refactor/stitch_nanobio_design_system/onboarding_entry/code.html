@@ -1,0 +1,212 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NaBi Wellness - Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "border-soft": "#D9E9E1",
+                        "on-tertiary-fixed": "#002112",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-primary-fixed": "#002113",
+                        "primary-fixed-dim": "#62dda3",
+                        "tertiary": "#006a43",
+                        "inverse-surface": "#2c3230",
+                        "primary-container": "#008559",
+                        "warning": "#B7791F",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "on-error-container": "#93000a",
+                        "text-primary": "#12352A",
+                        "surface-bright": "#f5faf7",
+                        "calm-blue": "#58B9E8",
+                        "focus-ring": "#68D9A5",
+                        "primary": "#006a46",
+                        "primary-soft": "#DDF6E9",
+                        "surface-variant": "#dee4e1",
+                        "personal-purple": "#8B7CF6",
+                        "inverse-on-surface": "#edf2ef",
+                        "outline": "#6d7a71",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "surface": "#f5faf7",
+                        "surface-dim": "#d6dbd8",
+                        "secondary": "#1d6a51",
+                        "secondary-container": "#a4efce",
+                        "surface-container-highest": "#dee4e1",
+                        "on-secondary-container": "#226f55",
+                        "surface-tint": "#006c48",
+                        "on-primary-container": "#f6fff6",
+                        "surface-container": "#eaefec",
+                        "error": "#C64A4A",
+                        "text-secondary": "#60766E",
+                        "outline-variant": "#bccabf",
+                        "tertiary-fixed": "#70fcb7",
+                        "primary-fixed": "#7ff9be",
+                        "tertiary-container": "#008656",
+                        "on-primary-fixed-variant": "#005235",
+                        "care-coral": "#FF7D75",
+                        "energy-yellow": "#FFC857",
+                        "text-muted": "#8A9B94",
+                        "surface-container-low": "#f0f5f2",
+                        "on-secondary-fixed": "#002116",
+                        "surface-container-high": "#e4e9e6",
+                        "background": "#f5faf7",
+                        "secondary-fixed": "#a7f2d1",
+                        "info": "#247CA8",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#62dda3",
+                        "success": "#14885F",
+                        "on-tertiary-container": "#f6fff6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#171d1b",
+                        "on-surface-variant": "#3d4a42",
+                        "on-surface": "#171d1b",
+                        "mint-surface": "#EAF9F1",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "16px",
+                        "xl": "32px",
+                        "xs": "4px",
+                        "xxs": "2px",
+                        "section-gap": "24px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "page-padding": "16px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Roboto"],
+                        "screen-title": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "section-title": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "cta": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #0F8E62 0%, #32C789 100%);
+        }
+        .text-hero-gradient {
+            background: linear-gradient(135deg, #0F8E62 0%, #32C789 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-shadow {
+            box-shadow: 0 8px 20px rgba(20, 163, 111, 0.16);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-base h-screen flex flex-col items-center justify-center overflow-hidden">
+<!-- Main Container -->
+<main class="w-full max-w-md mx-auto h-full flex flex-col relative bg-surface-lowest shadow-2xl overflow-hidden rounded-none sm:rounded-2xl sm:h-[850px] sm:my-auto">
+<!-- Background Pattern -->
+<div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#14A36F 1px, transparent 1px); background-size: 20px 20px;"></div>
+<!-- Top Progress Bar -->
+<div class="z-10 w-full px-page-padding pt-12 pb-4 flex justify-between items-center bg-transparent">
+<button class="text-text-secondary hover:bg-surface-container rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="flex items-center gap-xs text-body-sm font-body-sm text-text-secondary">
+<span class="font-bold text-primary">0</span> <span>/</span> <span>10</span>
+</div>
+<div class="w-10"></div> <!-- Spacer -->
+</div>
+<!-- Content Area -->
+<div class="flex-1 flex flex-col items-center justify-center px-page-padding z-10 w-full mb-20 mt-[-40px]">
+<!-- Hero Image / Mascot -->
+<div class="relative w-64 h-64 mb-section-gap flex items-center justify-center">
+<!-- Soft Glow behind image -->
+<div class="absolute inset-0 bg-primary-soft rounded-full blur-3xl opacity-50"></div>
+<img class="w-full h-full object-contain relative z-10 drop-shadow-xl animate-[pulse_3s_ease-in-out_infinite]" data-alt="A stylized, modern, 3D rendered character of a friendly, abstract wellness companion mascot named Nabi. The mascot features soft, rounded organic shapes primarily in a restorative natural green color palette, specifically incorporating hex #14A36F tones. It is set against a clean, light-mode white background with subtle ambient studio lighting creating a warm, non-judgmental, and approachable feel, perfectly suited for a high-impact hero screen in a modern corporate health app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACajQuN6px7hyrNWx29WO8UA-X3D4wxRUeeyK5Sxlba4WfoPFmUAzNHbx1PG0TOzGTumd5WYeeiOCMkQLI_-o7_Hhxp6Q14L0rm0_dydXFe4xOn8L_wRGwYkyMULcXi3zAlnzLFZGfbR3oRVcmkfeeoKuI7lZDqQ2x0_PgKay1MiLyttt9336MM8Skc1aXoYl-ux-wGbLKd4s-BCzQiTyJLk6yURXae_xIiqMnwIoL1KcBGXd6RatsWQ" style="transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); opacity: 1; transform: translateY(0px);">
+</div>
+<!-- Typography -->
+<div class="text-center max-w-xs space-y-4">
+<h1 class="font-display-hero text-display-hero text-text-primary text-hero-gradient">Chào bạn, mình là Nabi!</h1>
+<p class="font-body-base text-body-base text-text-secondary leading-relaxed">
+                    Cùng mình xây dựng lối sống lành mạnh và khoa học chỉ trong vài phút.
+                </p>
+</div>
+</div>
+<!-- Bottom Action Area -->
+<div class="absolute bottom-0 left-0 w-full p-page-padding bg-surface/90 backdrop-blur-md pb-safe z-20 border-t border-surface-variant">
+<button class="w-full hero-gradient text-on-primary font-cta text-cta py-4 rounded-xl hero-shadow hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span>Bắt đầu ngay</span>
+<span class="material-symbols-outlined text-on-primary" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</main>
+<script>
+        // Simple subtle entrance animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const mascot = document.querySelector('img');
+            const texts = document.querySelectorAll('h1, p');
+            const btn = document.querySelector('button.hero-gradient');
+
+            if(mascot) {
+                mascot.style.opacity = '0';
+                mascot.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    mascot.style.transition = 'all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    mascot.style.opacity = '1';
+                    mascot.style.transform = 'translateY(0)';
+                }, 100);
+            }
+
+            texts.forEach((text, index) => {
+                text.style.opacity = '0';
+                text.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    text.style.transition = 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    text.style.opacity = '1';
+                    text.style.transform = 'translateY(0)';
+                }, 300 + (index * 150));
+            });
+
+             if(btn) {
+                btn.style.opacity = '0';
+                btn.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    btn.style.transition = 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    btn.style.opacity = '1';
+                    btn.style.transform = 'translateY(0)';
+                }, 600);
+            }
+        });
+    </script>
+</body></html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<title>Nabi Wellness App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e8e1db",
+                    "surface-dim": "#dfd9d3",
+                    "error-container": "#ffdad6",
+                    "on-background": "#1d1b18",
+                    "inverse-surface": "#33302c",
+                    "surface-container-highest": "#e8e1db",
+                    "outline": "#707973",
+                    "on-error-container": "#93000a",
+                    "secondary": "#3e6750",
+                    "on-secondary-container": "#426b54",
+                    "primary-container": "#2d6a4f",
+                    "tertiary-container": "#5d605d",
+                    "on-surface-variant": "#404943",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#002112",
+                    "surface-tint": "#2c694e",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#fff8f2",
+                    "primary-fixed-dim": "#95d4b3",
+                    "on-secondary-fixed-variant": "#264f39",
+                    "on-primary-fixed": "#002114",
+                    "primary": "#0f5238",
+                    "on-tertiary-container": "#d9dad7",
+                    "tertiary": "#464846",
+                    "on-primary-container": "#a8e7c5",
+                    "surface-container": "#f3ede7",
+                    "surface": "#fff8f2",
+                    "secondary-fixed-dim": "#a4d1b4",
+                    "on-surface": "#1d1b18",
+                    "tertiary-fixed": "#e2e3df",
+                    "on-tertiary-fixed-variant": "#454745",
+                    "outline-variant": "#bfc9c1",
+                    "on-primary": "#ffffff",
+                    "background": "#fff8f2",
+                    "secondary-container": "#bdeacd",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#b1f0ce",
+                    "surface-container-high": "#ede7e1",
+                    "inverse-on-surface": "#f6f0ea",
+                    "on-primary-fixed-variant": "#0e5138",
+                    "on-secondary": "#ffffff",
+                    "surface-container-low": "#f9f2ec",
+                    "tertiary-fixed-dim": "#c5c7c3",
+                    "secondary-fixed": "#c0edd0",
+                    "inverse-primary": "#95d4b3",
+                    "on-tertiary-fixed": "#1a1c1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "companion-offset": "20px",
+                    "xl": "32px",
+                    "touch-target": "48px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "xs": "4px",
+                    "lg": "24px",
+                    "safe": "env(safe-area-inset-bottom)"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Manrope"
+                    ],
+                    "label-sm": [
+                            "Manrope"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Manrope"
+                    ],
+                    "label-md": [
+                            "Manrope"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .gradient-wash {
+            background: linear-gradient(135deg, var(--tw-colors-background) 0%, var(--tw-colors-surface-container-low) 50%, var(--tw-colors-secondary-container) 100%);
+            opacity: 0.3;
+        }
+        .nabi-bounce {
+            animation: soft-bounce 4s ease-in-out infinite;
+        }
+        @keyframes soft-bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-4px) scale(1.02); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen overflow-hidden font-body-md relative">
+<!-- Gradient Wash Background -->
+<div class="absolute inset-0 gradient-wash pointer-events-none z-0"></div>
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 right-0 z-40 bg-background dark:bg-background text-primary dark:text-primary-fixed flex justify-between items-center w-full px-lg py-sm font-headline-md text-headline-md">
+<div class="flex items-center gap-md hover:opacity-80 transition-opacity">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small, cute, supportive animal mascot avatar in a soft green palette, designed with a modern minimalist aesthetic, set against a solid warm white background, conveying calmness and wellness." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAq-J3CF4QQUnfKqgcSqDz3w88Xr6qOd0kpYRzyi6-WlujrhJKeuzDpPNb53R5T4hAhr0cPzw3jfz_CF-qp-1_SRaq_r1SgglxhHgFzs-waiRlEBf--VTiizrOXWkMDjUDVhA20NqzwriLZU752u1dsiztFYrvjptcmmPMvL3nsyI5ta6Fl9R230905wJWz7R_74x2lDVSsE2LuXrb3OK1dl4MJQWaV6_PSE_dZJjFHm22e0_oxoBLx_w">
+</div>
+<span class="text-primary font-bold">Nabi</span>
+</div>
+<button class="w-touch-target h-touch-target flex items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity rounded-full hover:bg-surface-variant focus:outline-none">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="pt-[72px] pb-[160px] px-lg h-screen overflow-y-auto z-10 relative" id="main-content">
+<!-- Content Cards -->
+<div class="space-y-lg mt-md">
+<div class="bg-surface-container-lowest p-lg rounded-xl border border-secondary-fixed-dim">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-sm">Chào buổi sáng!</h2>
+<p class="text-on-surface-variant">Hôm nay bạn cảm thấy thế nào?</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-xl border border-secondary-fixed-dim">
+<div class="flex items-center gap-md mb-md">
+<div class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined">water_drop</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface">Nước đã uống</h3>
+<p class="font-headline-md text-headline-md text-primary">1.2L / 2L</p>
+</div>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[60%] rounded-full"></div>
+</div>
+</div>
+<!-- Input Field to demonstrate exclusion zone -->
+<div class="mt-xl">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs" for="note">Ghi chú nhanh</label>
+<input class="w-full p-md rounded-lg border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary text-body-md transition-colors shadow-sm outline-none" id="note" placeholder="Hôm nay tôi đã..." type="text">
+</div>
+<div class="h-32"></div> <!-- Spacer -->
+</div>
+</main>
+<!-- Nabi Companion (Action Zone) -->
+<!-- Positioned to respect safe area and bottom nav, with margin for input avoidance -->
+<div class="fixed bottom-[100px] right-lg z-50 flex flex-col items-end gap-sm" id="nabi-container">
+<!-- Speech Bubble -->
+<div class="bg-secondary-container text-on-secondary-container px-md py-sm rounded-2xl rounded-br-none shadow-[0_4px_12px_rgba(45,106,79,0.08)] font-body-md max-w-[200px] opacity-0 translate-y-2 transition-all duration-300" id="nabi-bubble">
+            Đừng quên uống nước nhé!
+        </div>
+<!-- Companion Character -->
+<div class="w-16 h-16 rounded-full shadow-[0_8px_16px_rgba(45,106,79,0.12)] bg-surface-container-lowest flex items-center justify-center nabi-bounce cursor-pointer border border-secondary-fixed overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A highly detailed illustration of a cute, friendly plant-like companion creature, colored in soft mint greens and warm whites. The character is smiling supportively, designed with soft rounded edges, isolated on a clean background, conveying health and tranquility." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAivKI3gPehZ6W-e7Uraj_4l75da1Hpq-WCIU07hE9Tsp3WDxrw7Ujccxw6NirkwlCx4kVuqrcSwrHAyD-fdswULK94LwJrps9gQcDiNYx_3l2t573V3YnvXHTnt0rN6X-7XnzCyvD8zlD2AjX_72pWsuz8l7_42hwN2Q76r7QoFKTrGDsfk7_YCuM_ksLbNyHJQPgLO6r3t5kbdcunpyN28-AjOK96psLh9dxyzisvms04x9qzpA_zEA">
+</div>
+</div>
+<!-- Keyboard Exclusion Zone Visualizer (For demonstration/development purposes only) -->
+<div class="fixed bottom-[80px] left-0 right-0 h-[200px] bg-error/10 pointer-events-none hidden border-t border-error/20 z-30" id="keyboard-zone">
+<div class="p-sm text-error font-label-sm">Keyboard Exclusion Zone</div>
+</div>
+<!-- Bottom Nav Bar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-md pb-safe h-[80px] bg-surface dark:bg-surface-dim shadow-[0_-4px_12px_rgba(45,106,79,0.08)] rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 hover:opacity-80 transition-opacity scale-[1.05]" href="#">
+<span class="material-symbols-outlined mb-xs" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm font-bold text-primary">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-xs" style="font-variation-settings: 'FILL' 0;">favorite</span>
+<span class="font-label-sm text-label-sm">Sức khỏe</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-xs" style="font-variation-settings: 'FILL' 0;">edit_note</span>
+<span class="font-label-sm text-label-sm">Nhật ký</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-xs" style="font-variation-settings: 'FILL' 0;">chat_bubble</span>
+<span class="font-label-sm text-label-sm">Hỗ trợ</span>
+</a>
+</nav>
+<script>
+        // Simple logic to demonstrate Nabi's behavior
+        document.addEventListener('DOMContentLoaded', () => {
+            const nabiBubble = document.getElementById('nabi-bubble');
+            const nabiContainer = document.getElementById('nabi-container');
+            const inputField = document.getElementById('note');
+            const keyboardZone = document.getElementById('keyboard-zone');
+
+            // Show speech bubble shortly after load
+            setTimeout(() => {
+                nabiBubble.classList.remove('opacity-0', 'translate-y-2');
+            }, 1500);
+
+            // Hide bubble after a few seconds
+            setTimeout(() => {
+                 nabiBubble.classList.add('opacity-0', 'translate-y-2');
+            }, 5000);
+
+            // Simulate keyboard appearing and companion hiding
+            inputField.addEventListener('focus', () => {
+                nabiContainer.style.transform = 'translateY(100px) scale(0.8)';
+                nabiContainer.style.opacity = '0';
+                nabiContainer.style.pointerEvents = 'none';
+                
+                // Show exclusion zone for demonstration
+                // keyboardZone.classList.remove('hidden');
+            });
+
+            inputField.addEventListener('blur', () => {
+                nabiContainer.style.transform = 'translateY(0) scale(1)';
+                nabiContainer.style.opacity = '1';
+                nabiContainer.style.pointerEvents = 'auto';
+                
+                // Hide exclusion zone
+                // keyboardZone.classList.add('hidden');
+            });
+        });
+    </script>
+</body></html>

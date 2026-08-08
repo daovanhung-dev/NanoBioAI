@@ -1,0 +1,268 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Chăm sóc nhanh - NaBi Wellness</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "energy-yellow": "#FFC857",
+                      "outline-variant": "#bccabf",
+                      "warning": "#B7791F",
+                      "error": "#C64A4A",
+                      "on-tertiary-fixed": "#002112",
+                      "surface-container-highest": "#dee4e1",
+                      "on-primary-container": "#f6fff6",
+                      "surface-container-low": "#f0f5f2",
+                      "on-error-container": "#93000a",
+                      "info": "#247CA8",
+                      "surface-tint": "#006c48",
+                      "text-muted": "#8A9B94",
+                      "background": "#f5faf7",
+                      "on-tertiary-container": "#f6fff6",
+                      "text-secondary": "#60766E",
+                      "tertiary": "#006a43",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#a7f2d1",
+                      "on-tertiary-fixed-variant": "#005233",
+                      "tertiary-fixed": "#70fcb7",
+                      "on-surface-variant": "#3d4a42",
+                      "on-primary": "#ffffff",
+                      "secondary-container": "#a4efce",
+                      "on-error": "#ffffff",
+                      "primary-soft": "#DDF6E9",
+                      "surface-dim": "#d6dbd8",
+                      "primary": "#006a46",
+                      "outline": "#6d7a71",
+                      "on-secondary-fixed": "#002116",
+                      "primary-fixed-dim": "#62dda3",
+                      "surface-container": "#eaefec",
+                      "primary-fixed": "#7ff9be",
+                      "text-primary": "#12352A",
+                      "inverse-on-surface": "#edf2ef",
+                      "inverse-surface": "#2c3230",
+                      "care-coral": "#FF7D75",
+                      "surface": "#f5faf7",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "surface-variant": "#dee4e1",
+                      "surface-bright": "#f5faf7",
+                      "calm-blue": "#58B9E8",
+                      "secondary": "#1d6a51",
+                      "surface-container-high": "#e4e9e6",
+                      "on-primary-fixed-variant": "#005235",
+                      "border-soft": "#D9E9E1",
+                      "on-surface": "#171d1b",
+                      "tertiary-fixed-dim": "#50df9c",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed-dim": "#8bd5b6",
+                      "mint-surface": "#EAF9F1",
+                      "success": "#14885F",
+                      "personal-purple": "#8B7CF6",
+                      "on-primary-fixed": "#002113",
+                      "on-background": "#171d1b",
+                      "primary-container": "#008559",
+                      "on-secondary-container": "#226f55",
+                      "tertiary-container": "#008656",
+                      "focus-ring": "#68D9A5",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-primary": "#62dda3"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "section-gap": "24px",
+                      "lg": "24px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "xxs": "2px",
+                      "md": "16px",
+                      "card-padding": "16px",
+                      "page-padding": "16px"
+              },
+              "fontFamily": {
+                      "body-base": ["Roboto"],
+                      "body-sm": ["Roboto"],
+                      "cta": ["Roboto"],
+                      "screen-title": ["Roboto"],
+                      "label-chip": ["Roboto"],
+                      "section-title": ["Roboto"],
+                      "display-hero": ["Roboto"]
+              },
+              "fontSize": {
+                      "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "21px", "fontWeight": "400"}],
+                      "cta": ["16px", {"lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600"}],
+                      "screen-title": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700"}],
+                      "label-chip": ["13px", {"lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500"}],
+                      "section-title": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600"}],
+                      "display-hero": ["32px", {"lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+        .pt-safe {
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+        
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        
+        .quick-action-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .quick-action-btn:active {
+            transform: scale(0.96);
+        }
+        
+        .quick-action-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .quick-action-btn:hover::after {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-text-primary min-h-screen flex flex-col font-body-base overflow-x-hidden selection:bg-primary-soft">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 sticky backdrop-blur-md bg-surface/80 dark:bg-surface-dim/80 pt-safe z-50">
+<div class="flex justify-between items-center px-page-padding h-16 w-full z-50">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-center -ml-3 rounded-full hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95 text-primary dark:text-primary-fixed-dim">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="font-screen-title text-screen-title font-display-hero text-display-hero text-primary dark:text-primary-fixed-dim absolute left-1/2 -translate-x-1/2 pointer-events-none">NaBi Wellness</h1>
+<button aria-label="User profile" class="w-12 h-12 flex items-center justify-center -mr-3 rounded-full hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors active:scale-95">
+<img alt="User profile avatar" class="w-8 h-8 rounded-full object-cover border border-border-soft" data-alt="A small, circular profile picture of a young Vietnamese user smiling naturally in soft outdoor lighting, conveying a warm and approachable feeling consistent with a wellness app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCOJq7raab3CNv5OqKaObqB9Z3H42H1de-3_D1_wp6vzNaP0yWqMQJA5IPVIbInOJNJege93quVgrcqFMQlPuQHWXENF4Oz6sOCen0GG4mkWdrxHt88F5R7wvbsUDl_HvGldxVqtWP5L3RADKGXwdHQT3Jeh80HjOPi-t_c8oX3Infe4QuEJWMiYEz79GDkaTKtRSIluqacnE5GKmmYaY_eXRVfgbEQnN0eHKDUxSPegTQkR7Qa77ZmA">
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-page-padding pb-[100px] pt-section-gap flex flex-col gap-section-gap max-w-2xl mx-auto w-full">
+<!-- Header Section -->
+<section class="flex flex-col gap-sm animate-[fadeIn_0.4s_ease-out]">
+<h2 class="font-display-hero text-display-hero text-primary text-center">Chăm sóc nhanh</h2>
+<p class="font-section-title text-section-title text-text-secondary text-center">Bạn cần gì ngay lúc này?</p>
+</section>
+<!-- Nabi Assistant Prompt -->
+<section class="flex items-end gap-md justify-center px-4 animate-[slideUp_0.5s_ease-out_0.1s_both]">
+<div class="w-16 h-16 rounded-full bg-mint-surface flex items-center justify-center shrink-0 border border-primary-soft shadow-sm relative overflow-hidden">
+<img alt="Nabi Mascot" class="w-full h-full object-cover" data-alt="A friendly, minimalist 2D mascot named Nabi. The mascot is a soft, organic shape resembling a stylized sprout or gentle creature in light green tones, looking supportive and eager to help on a clean pastel background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAr4Ko6yj7RC8bGvq_VEoyWoB8Xq7fp0uENp6UNZa8k9_KYb-7nfwXHoj3hF3NNhHxOoXWzWRm3kW3Nmy3SiT7tDb7mZXzsiNfHsenQWhLccYSqNGSZ1u2ZUnfz6AaMwspVJDVyBEqSTIbEXglApVXcT4tN5Bo060LTLQy7MYA5wf41-XQvQTprKuKDX81kxV2_DprvgsSRkvkhW5-V39i65EovXq-80QmsGG1anjTyAcx6jQVXuPCvTA">
+</div>
+<div class="bg-mint-surface rounded-[20px] rounded-bl-sm p-4 border border-border-soft shadow-sm max-w-[240px]">
+<p class="font-body-base text-body-base text-text-primary">Mình sẵn sàng hỗ trợ!</p>
+</div>
+</section>
+<!-- Quick Actions Grid -->
+<section class="bento-grid mt-sm animate-[slideUp_0.6s_ease-out_0.2s_both]">
+<!-- Action 1: Thiền định -->
+<button class="quick-action-btn bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-xl p-5 flex flex-col items-center justify-center gap-3 aspect-square shadow-[0_8px_20px_rgba(20,163,111,0.16)] border border-transparent hover:border-primary-fixed-dim focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-background">
+<div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm mb-1">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">self_improvement</span>
+</div>
+<span class="font-cta text-cta text-center leading-tight">Thiền định<br><span class="text-sm font-normal opacity-90">(5p)</span></span>
+</button>
+<!-- Action 2: Uống nước -->
+<button class="quick-action-btn bg-gradient-to-br from-calm-blue to-info text-white rounded-xl p-5 flex flex-col items-center justify-center gap-3 aspect-square shadow-[0_8px_20px_rgba(88,185,232,0.16)] border border-transparent hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-calm-blue focus:ring-offset-2 focus:ring-offset-background">
+<div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm mb-1">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+</div>
+<span class="font-cta text-cta text-center leading-tight">Uống nước</span>
+</button>
+<!-- Action 3: Ghi lại tâm trạng -->
+<button class="quick-action-btn bg-gradient-to-br from-energy-yellow to-warning text-on-primary-fixed rounded-xl p-5 flex flex-col items-center justify-center gap-3 aspect-square shadow-[0_8px_20px_rgba(255,200,87,0.16)] border border-transparent hover:border-white/40 focus:outline-none focus:ring-2 focus:ring-energy-yellow focus:ring-offset-2 focus:ring-offset-background">
+<div class="w-14 h-14 rounded-full bg-white/30 flex items-center justify-center backdrop-blur-sm mb-1 text-on-primary-fixed">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">mood</span>
+</div>
+<span class="font-cta text-cta text-center leading-tight">Ghi lại<br>tâm trạng</span>
+</button>
+<!-- Action 4: Bài tập giãn cơ -->
+<button class="quick-action-btn bg-gradient-to-br from-personal-purple to-[#6D5DD3] text-white rounded-xl p-5 flex flex-col items-center justify-center gap-3 aspect-square shadow-[0_8px_20px_rgba(139,124,246,0.16)] border border-transparent hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-personal-purple focus:ring-offset-2 focus:ring-offset-background">
+<div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm mb-1">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">accessibility_new</span>
+</div>
+<span class="font-cta text-cta text-center leading-tight">Bài tập<br>giãn cơ</span>
+</button>
+</section>
+<!-- Contextual Supportive Image -->
+<section class="mt-lg rounded-2xl overflow-hidden shadow-sm border border-border-soft h-32 relative animate-[slideUp_0.7s_ease-out_0.3s_both]">
+<img alt="Relaxing environment" class="w-full h-full object-cover absolute inset-0" data-alt="A serene, sunlit corner of a modern Vietnamese apartment featuring healthy green monstera plants, a woven bamboo mat, and soft dappled sunlight filtering through a window, conveying peace, immediate care, and a relaxing wellness environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvH32gopa8lyMpbLIMQqYeR5ir17P5dBeMt8XKucNRqY--5tbEs9YN_gRrHAoDabuKD_9dKSV7VdXnDvUQPTR-8Q4lFEEwXOvHwPyP5m7lT2WjwXYyauxz6grX3B1v-YNhzthL7VVTCaze7mHshQUexkA4RqEJKjTd8m0FrgSg7Qtt3o1hLqyUwfLJpMsn8uiuXAEz7HKPCL7HWoNJyPHcILDWm2N81Y58YpViyAvlm1aWTlhI0QPXZw">
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex items-end p-4">
+<p class="text-white font-label-chip text-label-chip">Dành một chút thời gian cho bản thân.</p>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Hidden on md and above as per instructions, but since this is primarily a mobile view setup, we render it for mobile) -->
+<nav class="fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-4 pb-safe bg-surface/90 dark:bg-surface-container-lowest/90 shadow-[0_-4px_12px_rgba(20,163,111,0.08)] shadow-lg rounded-t-xl backdrop-blur-lg z-50 md:hidden">
+<button aria-label="Trang chủ" class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 w-16 h-16 group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors">home</span>
+<span class="font-label-chip text-label-chip group-hover:text-primary transition-colors">Trang chủ</span>
+</button>
+<!-- Sức khỏe (Active based on "Sức khỏe" closely aligning with "Quick Care" if we consider it immediate health actions, though "Nabi" might also fit. Let's select Sức khỏe as active for this care flow) -->
+<button aria-label="Sức khỏe" class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim relative after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:mt-1 hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 w-16 h-16">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-chip text-label-chip">Sức khỏe</span>
+</button>
+<button aria-label="Nabi" class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 w-16 h-16 group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors">smart_toy</span>
+<span class="font-label-chip text-label-chip group-hover:text-primary transition-colors">Nabi</span>
+</button>
+<button aria-label="Nhật ký" class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 w-16 h-16 group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors">book</span>
+<span class="font-label-chip text-label-chip group-hover:text-primary transition-colors">Nhật ký</span>
+</button>
+<button aria-label="Hồ sơ" class="flex flex-col items-center justify-center text-text-secondary dark:text-text-muted hover:bg-primary-soft/30 dark:hover:bg-primary-container/20 rounded-xl transition-all active:scale-90 transition-transform duration-200 w-16 h-16 group">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors">person</span>
+<span class="font-label-chip text-label-chip group-hover:text-primary transition-colors">Hồ sơ</span>
+</button>
+</nav>
+<style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</body></html>

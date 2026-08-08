@@ -1,0 +1,167 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Xác thực thành công</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#f6fff6",
+                        "tertiary-fixed-dim": "#50df9c",
+                        "surface-variant": "#dee4e1",
+                        "care-coral": "#FF7D75",
+                        "primary-fixed": "#7ff9be",
+                        "warning": "#B7791F",
+                        "surface-container-highest": "#dee4e1",
+                        "primary-container": "#008559",
+                        "secondary-container": "#a4efce",
+                        "surface": "#f5faf7",
+                        "on-primary": "#ffffff",
+                        "calm-blue": "#58B9E8",
+                        "on-tertiary": "#ffffff",
+                        "border-soft": "#D9E9E1",
+                        "on-secondary-container": "#226f55",
+                        "mint-surface": "#EAF9F1",
+                        "surface-bright": "#f5faf7",
+                        "primary-fixed-dim": "#62dda3",
+                        "inverse-surface": "#2c3230",
+                        "on-primary-container": "#f6fff6",
+                        "primary": "#006a46",
+                        "secondary-fixed-dim": "#8bd5b6",
+                        "on-tertiary-fixed-variant": "#005233",
+                        "on-background": "#171d1b",
+                        "on-error-container": "#93000a",
+                        "text-muted": "#8A9B94",
+                        "on-secondary": "#ffffff",
+                        "energy-yellow": "#FFC857",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#70fcb7",
+                        "on-surface": "#171d1b",
+                        "tertiary": "#006a43",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-soft": "#DDF6E9",
+                        "secondary": "#1d6a51",
+                        "on-tertiary-fixed": "#002112",
+                        "text-primary": "#12352A",
+                        "secondary-fixed": "#a7f2d1",
+                        "on-surface-variant": "#3d4a42",
+                        "on-secondary-fixed": "#002116",
+                        "text-secondary": "#60766E",
+                        "background": "#f5faf7",
+                        "outline": "#6d7a71",
+                        "info": "#247CA8",
+                        "outline-variant": "#bccabf",
+                        "on-primary-fixed": "#002113",
+                        "error-container": "#ffdad6",
+                        "error": "#C64A4A",
+                        "tertiary-container": "#008656",
+                        "inverse-primary": "#62dda3",
+                        "surface-container-high": "#e4e9e6",
+                        "surface-container-low": "#f0f5f2",
+                        "on-primary-fixed-variant": "#005235",
+                        "inverse-on-surface": "#edf2ef",
+                        "personal-purple": "#8B7CF6",
+                        "surface-container": "#eaefec",
+                        "success": "#14885F",
+                        "surface-dim": "#d6dbd8",
+                        "surface-tint": "#006c48",
+                        "focus-ring": "#68D9A5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "card-padding": "16px",
+                        "xxs": "2px",
+                        "page-padding": "16px",
+                        "sm": "8px",
+                        "section-gap": "24px",
+                        "xl": "32px",
+                        "xs": "4px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "screen-title": ["Roboto"],
+                        "body-sm": ["Roboto"],
+                        "label-chip": ["Roboto"],
+                        "display-hero": ["Roboto"],
+                        "body-base": ["Roboto"],
+                        "cta": ["Roboto"],
+                        "section-title": ["Roboto"]
+                    },
+                    "fontSize": {
+                        "screen-title": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.4px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+                        "label-chip": ["13px", { "lineHeight": "18px", "letterSpacing": "0.1px", "fontWeight": "500" }],
+                        "display-hero": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.6px", "fontWeight": "700" }],
+                        "body-base": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "cta": ["16px", { "lineHeight": "20px", "letterSpacing": "0.2px", "fontWeight": "600" }],
+                        "section-title": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.2px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .progress-bar-fill {
+            animation: progress 2.5s ease-in-out infinite;
+        }
+        @keyframes progress {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(0); }
+            100% { transform: translateX(100%); }
+        }
+        .breathe-animation {
+            animation: breathe 3s ease-in-out infinite alternate;
+        }
+        @keyframes breathe {
+            0% { transform: scale(0.98); opacity: 0.9; }
+            100% { transform: scale(1.02); opacity: 1; }
+        }
+        .bg-gradient-wash {
+            background: linear-gradient(135deg, #f5faf7 0%, #EAF9F1 50%, #DDF6E9 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-gradient-wash min-h-screen flex items-center justify-center font-body-base text-text-primary overflow-hidden">
+<div class="relative z-10 flex flex-col items-center max-w-md w-full px-page-padding text-center">
+<!-- Illustration Area (Nabi Mascot) -->
+<div class="w-48 h-48 mb-lg relative flex items-center justify-center breathe-animation">
+<div class="absolute inset-0 bg-primary-soft rounded-full opacity-40 blur-xl"></div>
+<!-- Placeholder for Nabi Mascot -->
+<img class="w-full h-full object-contain relative z-10 drop-shadow-md" data-alt="A gentle, abstract 3D illustration of a cute, rounded green mascot character in a meditative or 'thinking' pose, floating slightly. The lighting is soft and ethereal, matching a modern, clean light-mode aesthetic. The color palette focuses on mint greens, soft whites, and a touch of calm blue. The mood is supportive and restorative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfDX1D-5853etBzrNoWv9RPD4dEBrwKOrBc-RkQl55rgB1CLU0gXubH_OImtYdtHhpLxNuiErr4Os9GIDSCFVKPTvKXxGDv1WooeXq02H7En956QzIp665DFG5-33Sa2R-QZHYSLulJ_jndamUDw9nYRqKCnRedH_qN8X8dWV8aMM3vTqvS5aFmTUMoZtHHu0txVjiGIPtqq4kCXW764TkqBPj0BJxu5-v3coeP_OTrHmZ2DbmgHK57Q">
+</div>
+<!-- Copy -->
+<h1 class="font-screen-title text-screen-title text-primary mb-sm">
+            Xác thực thành công
+        </h1>
+<p class="font-body-base text-body-base text-text-secondary mb-xl">
+            Đang đưa bạn trở lại...
+        </p>
+<!-- Progress Bar -->
+<div class="w-full max-w-[200px] h-1 bg-border-soft rounded-full overflow-hidden">
+<div class="w-full h-full bg-gradient-to-r from-[#0F8E62] to-[#32C789] rounded-full progress-bar-fill origin-left"></div>
+</div>
+</div>
+<!-- Decorative Background Elements -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-secondary-fixed opacity-10 rounded-full blur-[100px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary-fixed-dim opacity-10 rounded-full blur-[120px]"></div>
+</div>
+</body></html>
