@@ -101,7 +101,7 @@ class FeaturesHubPage extends StatelessWidget {
         icon: Icons.favorite_rounded,
         color: AppColors.error,
         backgroundColor: AppColors.pastelRose,
-        onTap: () => context.push(V1RoutePaths.healthTracking),
+        onTap: () => context.push(V1RoutePaths.todayTasks),
       ),
       _FeatureAction(
         title: 'Thực đơn theo tuần',
@@ -329,7 +329,9 @@ class _FeatureTile extends StatelessWidget {
                           label: statusLabel!,
                           icon: Icons.schedule_rounded,
                           foregroundColor: action.color,
-                          backgroundColor: AppColors.surface.withValues(alpha: .68),
+                          backgroundColor: AppColors.surface.withValues(
+                            alpha: .68,
+                          ),
                         ),
                       ],
                     ],
@@ -427,7 +429,9 @@ class _AdvancedHealthFeatureTile extends StatelessWidget {
                         foregroundColor: isFree
                             ? AppColors.success
                             : AppColors.tertiary,
-                        backgroundColor: AppColors.surface.withValues(alpha: .72),
+                        backgroundColor: AppColors.surface.withValues(
+                          alpha: .72,
+                        ),
                       ),
                     ],
                   ),
@@ -515,7 +519,10 @@ class _FeatureBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(minHeight: 32),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.pill),

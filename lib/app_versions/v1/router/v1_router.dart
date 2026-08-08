@@ -18,6 +18,7 @@ import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_
 import 'package:nano_app/app_versions/v1/features/community/presentation/pages/community_page.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart';
 import 'package:nano_app/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart';
+import 'package:nano_app/app_versions/v1/features/today_tasks/presentation/pages/today_tasks_page.dart';
 
 import 'v1_route_guards.dart';
 import 'v1_route_paths.dart';
@@ -92,6 +93,13 @@ final v1Routes = <RouteBase>[
     builder: (context, state) => const DailyHealthTrackingPage(),
   ),
 
+  /// Today's Tasks
+  GoRoute(
+    path: V1RoutePaths.todayTasks,
+    name: V1RoutePaths.todayTasks,
+    builder: (context, state) => const TodayTasksPage(),
+  ),
+
   GoRoute(
     path: V1RoutePaths.bodyMetrics,
     name: V1RoutePaths.bodyMetrics,
@@ -134,7 +142,6 @@ final v1Routes = <RouteBase>[
     builder: (context, state) => const AIChatScreen(),
   ),
 
-
   /// AI Voice
   GoRoute(
     path: V1RoutePaths.aiVoice,
@@ -150,7 +157,6 @@ final v1Routes = <RouteBase>[
     redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const NutritionPage(),
   ),
-
 
   GoRoute(
     path: V1RoutePaths.nutritionProfile,

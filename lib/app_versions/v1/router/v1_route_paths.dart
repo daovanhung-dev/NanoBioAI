@@ -10,6 +10,7 @@ abstract class V1RoutePaths {
   static const dashboard = '/dashboard';
 
   static const healthTracking = '/health-tracking';
+  static const todayTasks = '/today-tasks';
   static const bodyMetrics = '/body-metrics';
   static const lifestyleSchedule = '/lifestyle-schedule';
   static const dailyRoutinePreferences = '/daily-routine-preferences';
