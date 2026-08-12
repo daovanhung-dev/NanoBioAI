@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/nabi/providers/nabi_provider.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/features/nabi/data/nabi_asset_catalog.dart';
 import '../../domain/entities/chat_message_entity.dart';
 import '../controllers/ai_chat_controller.dart';
 
@@ -1211,18 +1212,19 @@ class _NamiAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      padding: const EdgeInsets.all(AppSpacing.xxs),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(colors: AppGradients.ai.colors),
-      ),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          shape: BoxShape.circle,
+        color: context.semanticColors.surface,
+        border: Border.all(
+          color: context.semanticColors.primary.withValues(alpha: .22),
         ),
-        padding: const EdgeInsets.all(AppSpacing.xs),
-        child: Container(
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Image.asset(
+        NabiAssetCatalog.staticAssetPath('core/nabi_idle_happy.png'),
+        fit: BoxFit.contain,
+        filterQuality: FilterQuality.medium,
+        errorBuilder: (context, error, stackTrace) => Container(
           decoration: AppDecoration.base(
             gradient: AppGradients.ai,
             shape: BoxShape.circle,

@@ -1,0 +1,1218 @@
+{
+  "asset_contract": {
+    "character_frame_canvas_px": 384,
+    "color_model": "rgba",
+    "effect_frame_canvas_px": 256,
+    "expression_canvas_px": 512,
+    "format": "png",
+    "fps": 30,
+    "frames_per_sequence": 30,
+    "physical_paths_lowercase": true,
+    "static_canvas_px": 512,
+    "transparent_background": true
+  },
+  "assets": [
+    {
+      "category": "core",
+      "expression": "neutral",
+      "filename": "nabi_idle_neutral.png",
+      "id": "nabi_state_001",
+      "number": 1,
+      "path": "core/nabi_idle_neutral.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "core",
+      "expression": "happy",
+      "filename": "nabi_idle_happy.png",
+      "id": "nabi_state_002",
+      "number": 2,
+      "path": "core/nabi_idle_happy.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "core",
+      "expression": "happy",
+      "filename": "nabi_wave.png",
+      "id": "nabi_state_003",
+      "number": 3,
+      "path": "core/nabi_wave.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "core",
+      "expression": "helpful",
+      "filename": "nabi_point_guide.png",
+      "id": "nabi_state_004",
+      "number": 4,
+      "path": "core/nabi_point_guide.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "core",
+      "expression": "attentive",
+      "filename": "nabi_listen.png",
+      "id": "nabi_state_005",
+      "number": 5,
+      "path": "core/nabi_listen.png",
+      "pose": "listen",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "core",
+      "expression": "thinking",
+      "filename": "nabi_think.png",
+      "id": "nabi_state_006",
+      "number": 6,
+      "path": "core/nabi_think.png",
+      "pose": "think",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "core",
+      "expression": "thinking",
+      "filename": "nabi_analyze.png",
+      "id": "nabi_state_007",
+      "number": 7,
+      "path": "core/nabi_analyze.png",
+      "pose": "think",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "core",
+      "expression": "helpful",
+      "filename": "nabi_speak.png",
+      "id": "nabi_state_008",
+      "number": 8,
+      "path": "core/nabi_speak.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "onboarding",
+      "expression": "happy",
+      "filename": "nabi_onboarding_intro.png",
+      "id": "nabi_state_009",
+      "number": 9,
+      "path": "onboarding/nabi_onboarding_intro.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "onboarding",
+      "expression": "helpful",
+      "filename": "nabi_onboarding_basic_info.png",
+      "id": "nabi_state_010",
+      "number": 10,
+      "path": "onboarding/nabi_onboarding_basic_info.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "onboarding",
+      "expression": "helpful",
+      "filename": "nabi_onboarding_body_profile.png",
+      "id": "nabi_state_011",
+      "number": 11,
+      "path": "onboarding/nabi_onboarding_body_profile.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "onboarding",
+      "expression": "attentive",
+      "filename": "nabi_onboarding_lifestyle.png",
+      "id": "nabi_state_012",
+      "number": 12,
+      "path": "onboarding/nabi_onboarding_lifestyle.png",
+      "pose": "listen",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "onboarding",
+      "expression": "helpful",
+      "filename": "nabi_onboarding_goal.png",
+      "id": "nabi_state_013",
+      "number": 13,
+      "path": "onboarding/nabi_onboarding_goal.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "onboarding",
+      "expression": "attentive",
+      "filename": "nabi_onboarding_health_check.png",
+      "id": "nabi_state_014",
+      "number": 14,
+      "path": "onboarding/nabi_onboarding_health_check.png",
+      "pose": "listen",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "onboarding",
+      "expression": "helpful",
+      "filename": "nabi_onboarding_review.png",
+      "id": "nabi_state_015",
+      "number": 15,
+      "path": "onboarding/nabi_onboarding_review.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "onboarding",
+      "expression": "thinking",
+      "filename": "nabi_ai_generating_plan.png",
+      "id": "nabi_state_016",
+      "number": 16,
+      "path": "onboarding/nabi_ai_generating_plan.png",
+      "pose": "think",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "onboarding",
+      "expression": "happy",
+      "filename": "nabi_plan_ready.png",
+      "id": "nabi_state_017",
+      "number": 17,
+      "path": "onboarding/nabi_plan_ready.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "happy",
+      "filename": "nabi_chat_greet.png",
+      "id": "nabi_state_018",
+      "number": 18,
+      "path": "chat/nabi_chat_greet.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "attentive",
+      "filename": "nabi_chat_listen.png",
+      "id": "nabi_state_019",
+      "number": 19,
+      "path": "chat/nabi_chat_listen.png",
+      "pose": "listen",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "thinking",
+      "filename": "nabi_chat_typing.png",
+      "id": "nabi_state_020",
+      "number": 20,
+      "path": "chat/nabi_chat_typing.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "thinking",
+      "filename": "nabi_chat_reasoning.png",
+      "id": "nabi_state_021",
+      "number": 21,
+      "path": "chat/nabi_chat_reasoning.png",
+      "pose": "think",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "curious",
+      "filename": "nabi_chat_clarify.png",
+      "id": "nabi_state_022",
+      "number": 22,
+      "path": "chat/nabi_chat_clarify.png",
+      "pose": "listen",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "happy",
+      "filename": "nabi_chat_meal_tip.png",
+      "id": "nabi_state_023",
+      "number": 23,
+      "path": "chat/nabi_chat_meal_tip.png",
+      "pose": "food",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "happy",
+      "filename": "nabi_chat_exercise_tip.png",
+      "id": "nabi_state_024",
+      "number": 24,
+      "path": "chat/nabi_chat_exercise_tip.png",
+      "pose": "run",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "calm",
+      "filename": "nabi_chat_rest_tip.png",
+      "id": "nabi_state_025",
+      "number": 25,
+      "path": "chat/nabi_chat_rest_tip.png",
+      "pose": "sleep",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "happy",
+      "filename": "nabi_chat_water_tip.png",
+      "id": "nabi_state_026",
+      "number": 26,
+      "path": "chat/nabi_chat_water_tip.png",
+      "pose": "water",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "chat",
+      "expression": "helpful",
+      "filename": "nabi_chat_answer_ready.png",
+      "id": "nabi_state_027",
+      "number": 27,
+      "path": "chat/nabi_chat_answer_ready.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "happy",
+      "filename": "nabi_breakfast.png",
+      "id": "nabi_state_028",
+      "number": 28,
+      "path": "daily/nabi_breakfast.png",
+      "pose": "food",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "happy",
+      "filename": "nabi_lunch.png",
+      "id": "nabi_state_029",
+      "number": 29,
+      "path": "daily/nabi_lunch.png",
+      "pose": "food",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "calm",
+      "filename": "nabi_dinner.png",
+      "id": "nabi_state_030",
+      "number": 30,
+      "path": "daily/nabi_dinner.png",
+      "pose": "food",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "happy",
+      "filename": "nabi_healthy_snack.png",
+      "id": "nabi_state_031",
+      "number": 31,
+      "path": "daily/nabi_healthy_snack.png",
+      "pose": "food",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "happy",
+      "filename": "nabi_drink_water.png",
+      "id": "nabi_state_032",
+      "number": 32,
+      "path": "daily/nabi_drink_water.png",
+      "pose": "water",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "happy",
+      "filename": "nabi_exercise.png",
+      "id": "nabi_state_033",
+      "number": 33,
+      "path": "daily/nabi_exercise.png",
+      "pose": "run",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "happy",
+      "filename": "nabi_walk.png",
+      "id": "nabi_state_034",
+      "number": 34,
+      "path": "daily/nabi_walk.png",
+      "pose": "run",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "happy",
+      "filename": "nabi_stretch.png",
+      "id": "nabi_state_035",
+      "number": 35,
+      "path": "daily/nabi_stretch.png",
+      "pose": "encourage",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "calm",
+      "filename": "nabi_sleep.png",
+      "id": "nabi_state_036",
+      "number": 36,
+      "path": "daily/nabi_sleep.png",
+      "pose": "sleep",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "happy",
+      "filename": "nabi_morning_checkin.png",
+      "id": "nabi_state_037",
+      "number": 37,
+      "path": "daily/nabi_morning_checkin.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "attentive",
+      "filename": "nabi_mood_checkin.png",
+      "id": "nabi_state_038",
+      "number": 38,
+      "path": "daily/nabi_mood_checkin.png",
+      "pose": "listen",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "helpful",
+      "filename": "nabi_body_measure.png",
+      "id": "nabi_state_039",
+      "number": 39,
+      "path": "daily/nabi_body_measure.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "helpful",
+      "filename": "nabi_view_schedule.png",
+      "id": "nabi_state_040",
+      "number": 40,
+      "path": "daily/nabi_view_schedule.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "daily",
+      "expression": "helpful",
+      "filename": "nabi_notification_reminder.png",
+      "id": "nabi_state_041",
+      "number": 41,
+      "path": "daily/nabi_notification_reminder.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "happy",
+      "filename": "nabi_task_complete.png",
+      "id": "nabi_state_042",
+      "number": 42,
+      "path": "progress/nabi_task_complete.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "calm",
+      "filename": "nabi_task_skip_gentle.png",
+      "id": "nabi_state_043",
+      "number": 43,
+      "path": "progress/nabi_task_skip_gentle.png",
+      "pose": "apologize",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "helpful",
+      "filename": "nabi_task_pending.png",
+      "id": "nabi_state_044",
+      "number": 44,
+      "path": "progress/nabi_task_pending.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "happy",
+      "filename": "nabi_day_complete.png",
+      "id": "nabi_state_045",
+      "number": 45,
+      "path": "progress/nabi_day_complete.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "happy",
+      "filename": "nabi_streak_start.png",
+      "id": "nabi_state_046",
+      "number": 46,
+      "path": "progress/nabi_streak_start.png",
+      "pose": "encourage",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "happy",
+      "filename": "nabi_streak_7days.png",
+      "id": "nabi_state_047",
+      "number": 47,
+      "path": "progress/nabi_streak_7days.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "happy",
+      "filename": "nabi_milestone_badge.png",
+      "id": "nabi_state_048",
+      "number": 48,
+      "path": "progress/nabi_milestone_badge.png",
+      "pose": "encourage",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "happy",
+      "filename": "nabi_personal_best.png",
+      "id": "nabi_state_049",
+      "number": 49,
+      "path": "progress/nabi_personal_best.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "encouraging",
+      "filename": "nabi_low_progress_encourage.png",
+      "id": "nabi_state_050",
+      "number": 50,
+      "path": "progress/nabi_low_progress_encourage.png",
+      "pose": "encourage",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "calm",
+      "filename": "nabi_missed_task_remind.png",
+      "id": "nabi_state_051",
+      "number": 51,
+      "path": "progress/nabi_missed_task_remind.png",
+      "pose": "apologize",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "grateful",
+      "filename": "nabi_thank_you.png",
+      "id": "nabi_state_052",
+      "number": 52,
+      "path": "progress/nabi_thank_you.png",
+      "pose": "apologize",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "progress",
+      "expression": "happy",
+      "filename": "nabi_proud_of_you.png",
+      "id": "nabi_state_053",
+      "number": 53,
+      "path": "progress/nabi_proud_of_you.png",
+      "pose": "encourage",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "happy",
+      "filename": "nabi_new_user.png",
+      "id": "nabi_state_054",
+      "number": 54,
+      "path": "engagement/nabi_new_user.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "curious",
+      "filename": "nabi_occasional_user.png",
+      "id": "nabi_state_055",
+      "number": 55,
+      "path": "engagement/nabi_occasional_user.png",
+      "pose": "think",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "happy",
+      "filename": "nabi_regular_user.png",
+      "id": "nabi_state_056",
+      "number": 56,
+      "path": "engagement/nabi_regular_user.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "helpful",
+      "filename": "nabi_daily_user.png",
+      "id": "nabi_state_057",
+      "number": 57,
+      "path": "engagement/nabi_daily_user.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "calm",
+      "filename": "nabi_away_1day.png",
+      "id": "nabi_state_058",
+      "number": 58,
+      "path": "engagement/nabi_away_1day.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "calm",
+      "filename": "nabi_away_3days.png",
+      "id": "nabi_state_059",
+      "number": 59,
+      "path": "engagement/nabi_away_3days.png",
+      "pose": "think",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "calm",
+      "filename": "nabi_away_7days.png",
+      "id": "nabi_state_060",
+      "number": 60,
+      "path": "engagement/nabi_away_7days.png",
+      "pose": "apologize",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "calm",
+      "filename": "nabi_away_14days.png",
+      "id": "nabi_state_061",
+      "number": 61,
+      "path": "engagement/nabi_away_14days.png",
+      "pose": "sleep",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "happy",
+      "filename": "nabi_welcome_back.png",
+      "id": "nabi_state_062",
+      "number": 62,
+      "path": "engagement/nabi_welcome_back.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "engagement",
+      "expression": "helpful",
+      "filename": "nabi_fresh_restart.png",
+      "id": "nabi_state_063",
+      "number": 63,
+      "path": "engagement/nabi_fresh_restart.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "thinking",
+      "filename": "nabi_loading.png",
+      "id": "nabi_state_064",
+      "number": 64,
+      "path": "system/nabi_loading.png",
+      "pose": "think",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "helpful",
+      "filename": "nabi_empty_dashboard.png",
+      "id": "nabi_state_065",
+      "number": 65,
+      "path": "system/nabi_empty_dashboard.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "helpful",
+      "filename": "nabi_no_schedule.png",
+      "id": "nabi_state_066",
+      "number": 66,
+      "path": "system/nabi_no_schedule.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "calm",
+      "filename": "nabi_offline.png",
+      "id": "nabi_state_067",
+      "number": 67,
+      "path": "system/nabi_offline.png",
+      "pose": "listen",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "thinking",
+      "filename": "nabi_syncing.png",
+      "id": "nabi_state_068",
+      "number": 68,
+      "path": "system/nabi_syncing.png",
+      "pose": "think",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "happy",
+      "filename": "nabi_sync_success.png",
+      "id": "nabi_state_069",
+      "number": 69,
+      "path": "system/nabi_sync_success.png",
+      "pose": "complete",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "calm",
+      "filename": "nabi_sync_retry.png",
+      "id": "nabi_state_070",
+      "number": 70,
+      "path": "system/nabi_sync_retry.png",
+      "pose": "apologize",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "helpful",
+      "filename": "nabi_notification_permission.png",
+      "id": "nabi_state_071",
+      "number": 71,
+      "path": "system/nabi_notification_permission.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "helpful",
+      "filename": "nabi_login.png",
+      "id": "nabi_state_072",
+      "number": 72,
+      "path": "system/nabi_login.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "happy",
+      "filename": "nabi_account_connected.png",
+      "id": "nabi_state_073",
+      "number": 73,
+      "path": "system/nabi_account_connected.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "system",
+      "expression": "calm",
+      "filename": "nabi_access_locked.png",
+      "id": "nabi_state_074",
+      "number": 74,
+      "path": "system/nabi_access_locked.png",
+      "pose": "listen",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "helpful",
+      "filename": "nabi_family_plan.png",
+      "id": "nabi_state_075",
+      "number": 75,
+      "path": "future/nabi_family_plan.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "helpful",
+      "filename": "nabi_family_invite.png",
+      "id": "nabi_state_076",
+      "number": 76,
+      "path": "future/nabi_family_invite.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "happy",
+      "filename": "nabi_family_shared_progress.png",
+      "id": "nabi_state_077",
+      "number": 77,
+      "path": "future/nabi_family_shared_progress.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "happy",
+      "filename": "nabi_family_member_joined.png",
+      "id": "nabi_state_078",
+      "number": 78,
+      "path": "future/nabi_family_member_joined.png",
+      "pose": "wave",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "happy",
+      "filename": "nabi_premium_unlocked.png",
+      "id": "nabi_state_079",
+      "number": 79,
+      "path": "future/nabi_premium_unlocked.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "helpful",
+      "filename": "nabi_referral_invite.png",
+      "id": "nabi_state_080",
+      "number": 80,
+      "path": "future/nabi_referral_invite.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "happy",
+      "filename": "nabi_referral_success.png",
+      "id": "nabi_state_081",
+      "number": 81,
+      "path": "future/nabi_referral_success.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "helpful",
+      "filename": "nabi_sales_leaderboard.png",
+      "id": "nabi_state_082",
+      "number": 82,
+      "path": "future/nabi_sales_leaderboard.png",
+      "pose": "guide",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "happy",
+      "filename": "nabi_sales_reward.png",
+      "id": "nabi_state_083",
+      "number": 83,
+      "path": "future/nabi_sales_reward.png",
+      "pose": "encourage",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    },
+    {
+      "category": "future",
+      "expression": "happy",
+      "filename": "nabi_commission_success.png",
+      "id": "nabi_state_084",
+      "number": 84,
+      "path": "future/nabi_commission_success.png",
+      "pose": "celebrate",
+      "size_px": {
+        "height": 512,
+        "width": 512
+      }
+    }
+  ],
+  "character": {
+    "description": "gender-neutral botanical seed spirit; derived from an approved master",
+    "id": "nabi_v2"
+  },
+  "generator": {
+    "name": "generate_nabi_v2_assets.py",
+    "version": "1.0.0"
+  },
+  "master": {
+    "alpha_range": {
+      "max": 255,
+      "min": 0
+    },
+    "approved_pose_anchors": [
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1536,
+          "left": 0,
+          "right": 795,
+          "top": 138
+        },
+        "filename": "nabi_v2_thinking.png",
+        "semantic": "thinking",
+        "sha256": "0069ff0ca3f3d43115d6a52336ea1d6f3d5726ae460d0e5b57a1850e2a28b12a",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": false
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1536,
+          "left": 99,
+          "right": 907,
+          "top": 146
+        },
+        "filename": "nabi_v2_celebrate.png",
+        "semantic": "celebrate",
+        "sha256": "712d53d7d94b68bd6a90a68d0cfddffd2082a37356918f85cf3243e3e0cd8a24",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": true
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1353,
+          "left": 168,
+          "right": 764,
+          "top": 175
+        },
+        "filename": "nabi_v2_calm.png",
+        "semantic": "calm",
+        "sha256": "bd839b50570861ffb927f21e805059fee5481e6e823b2ef5b746f309e5bdc2cd",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": true
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1281,
+          "left": 146,
+          "right": 880,
+          "top": 147
+        },
+        "filename": "nabi_v2_prompt.png",
+        "semantic": "prompt",
+        "sha256": "179faf5125dd10ba6d9db149df8a6051b5902118152bee7cd2b73585c2c2e09c",
+        "source_size_px": {
+          "height": 1537,
+          "width": 1023
+        },
+        "transparent_corners": true
+      }
+    ],
+    "content_bbox": {
+      "bottom": 1287,
+      "left": 147,
+      "right": 905,
+      "top": 155
+    },
+    "filename": "nabi_v2_master.png",
+    "sha256": "9721839816a129559bc17a4026c6072d5e5f5c7a2a1ce5b5d54c2d2451542263",
+    "source_size_px": {
+      "height": 1536,
+      "width": 1024
+    },
+    "transparent_corners": true
+  },
+  "schema_version": "nabi-v2-assets-1.0"
+}

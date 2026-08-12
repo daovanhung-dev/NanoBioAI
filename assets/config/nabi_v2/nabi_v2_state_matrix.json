@@ -1,0 +1,798 @@
+{
+  "asset_contract": {
+    "character_frame_canvas_px": 384,
+    "color_model": "rgba",
+    "effect_frame_canvas_px": 256,
+    "expression_canvas_px": 512,
+    "format": "png",
+    "fps": 30,
+    "frames_per_sequence": 30,
+    "physical_paths_lowercase": true,
+    "static_canvas_px": 512,
+    "transparent_background": true
+  },
+  "character": {
+    "description": "gender-neutral botanical seed spirit; derived from an approved master",
+    "id": "nabi_v2"
+  },
+  "generator": {
+    "name": "generate_nabi_v2_assets.py",
+    "version": "1.0.0"
+  },
+  "master": {
+    "alpha_range": {
+      "max": 255,
+      "min": 0
+    },
+    "approved_pose_anchors": [
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1536,
+          "left": 0,
+          "right": 795,
+          "top": 138
+        },
+        "filename": "nabi_v2_thinking.png",
+        "semantic": "thinking",
+        "sha256": "0069ff0ca3f3d43115d6a52336ea1d6f3d5726ae460d0e5b57a1850e2a28b12a",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": false
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1536,
+          "left": 99,
+          "right": 907,
+          "top": 146
+        },
+        "filename": "nabi_v2_celebrate.png",
+        "semantic": "celebrate",
+        "sha256": "712d53d7d94b68bd6a90a68d0cfddffd2082a37356918f85cf3243e3e0cd8a24",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": true
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1353,
+          "left": 168,
+          "right": 764,
+          "top": 175
+        },
+        "filename": "nabi_v2_calm.png",
+        "semantic": "calm",
+        "sha256": "bd839b50570861ffb927f21e805059fee5481e6e823b2ef5b746f309e5bdc2cd",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": true
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1281,
+          "left": 146,
+          "right": 880,
+          "top": 147
+        },
+        "filename": "nabi_v2_prompt.png",
+        "semantic": "prompt",
+        "sha256": "179faf5125dd10ba6d9db149df8a6051b5902118152bee7cd2b73585c2c2e09c",
+        "source_size_px": {
+          "height": 1537,
+          "width": 1023
+        },
+        "transparent_corners": true
+      }
+    ],
+    "content_bbox": {
+      "bottom": 1287,
+      "left": 147,
+      "right": 905,
+      "top": 155
+    },
+    "filename": "nabi_v2_master.png",
+    "sha256": "9721839816a129559bc17a4026c6072d5e5f5c7a2a1ce5b5d54c2d2451542263",
+    "source_size_px": {
+      "height": 1536,
+      "width": 1024
+    },
+    "transparent_corners": true
+  },
+  "schema_version": "nabi-v2-assets-1.0",
+  "states": [
+    {
+      "asset_path": "core/nabi_idle_neutral.png",
+      "category": "core",
+      "expression": "neutral",
+      "fallback_expression_id": "nabi_exp_001_happy",
+      "pose": "wave",
+      "state_id": "nabi_state_001"
+    },
+    {
+      "asset_path": "core/nabi_idle_happy.png",
+      "category": "core",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_002_happy_closed",
+      "pose": "celebrate",
+      "state_id": "nabi_state_002"
+    },
+    {
+      "asset_path": "core/nabi_wave.png",
+      "category": "core",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_003_sad",
+      "pose": "wave",
+      "state_id": "nabi_state_003"
+    },
+    {
+      "asset_path": "core/nabi_point_guide.png",
+      "category": "core",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_004_pout",
+      "pose": "guide",
+      "state_id": "nabi_state_004"
+    },
+    {
+      "asset_path": "core/nabi_listen.png",
+      "category": "core",
+      "expression": "attentive",
+      "fallback_expression_id": "nabi_exp_005_angry",
+      "pose": "listen",
+      "state_id": "nabi_state_005"
+    },
+    {
+      "asset_path": "core/nabi_think.png",
+      "category": "core",
+      "expression": "thinking",
+      "fallback_expression_id": "nabi_exp_006_cry",
+      "pose": "think",
+      "state_id": "nabi_state_006"
+    },
+    {
+      "asset_path": "core/nabi_analyze.png",
+      "category": "core",
+      "expression": "thinking",
+      "fallback_expression_id": "nabi_exp_007_sleepy",
+      "pose": "think",
+      "state_id": "nabi_state_007"
+    },
+    {
+      "asset_path": "core/nabi_speak.png",
+      "category": "core",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_008_thinking",
+      "pose": "guide",
+      "state_id": "nabi_state_008"
+    },
+    {
+      "asset_path": "onboarding/nabi_onboarding_intro.png",
+      "category": "onboarding",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_009_surprised",
+      "pose": "wave",
+      "state_id": "nabi_state_009"
+    },
+    {
+      "asset_path": "onboarding/nabi_onboarding_basic_info.png",
+      "category": "onboarding",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_010_talking",
+      "pose": "complete",
+      "state_id": "nabi_state_010"
+    },
+    {
+      "asset_path": "onboarding/nabi_onboarding_body_profile.png",
+      "category": "onboarding",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_001_happy",
+      "pose": "guide",
+      "state_id": "nabi_state_011"
+    },
+    {
+      "asset_path": "onboarding/nabi_onboarding_lifestyle.png",
+      "category": "onboarding",
+      "expression": "attentive",
+      "fallback_expression_id": "nabi_exp_002_happy_closed",
+      "pose": "listen",
+      "state_id": "nabi_state_012"
+    },
+    {
+      "asset_path": "onboarding/nabi_onboarding_goal.png",
+      "category": "onboarding",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_003_sad",
+      "pose": "guide",
+      "state_id": "nabi_state_013"
+    },
+    {
+      "asset_path": "onboarding/nabi_onboarding_health_check.png",
+      "category": "onboarding",
+      "expression": "attentive",
+      "fallback_expression_id": "nabi_exp_004_pout",
+      "pose": "listen",
+      "state_id": "nabi_state_014"
+    },
+    {
+      "asset_path": "onboarding/nabi_onboarding_review.png",
+      "category": "onboarding",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_005_angry",
+      "pose": "complete",
+      "state_id": "nabi_state_015"
+    },
+    {
+      "asset_path": "onboarding/nabi_ai_generating_plan.png",
+      "category": "onboarding",
+      "expression": "thinking",
+      "fallback_expression_id": "nabi_exp_006_cry",
+      "pose": "think",
+      "state_id": "nabi_state_016"
+    },
+    {
+      "asset_path": "onboarding/nabi_plan_ready.png",
+      "category": "onboarding",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_007_sleepy",
+      "pose": "complete",
+      "state_id": "nabi_state_017"
+    },
+    {
+      "asset_path": "chat/nabi_chat_greet.png",
+      "category": "chat",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_008_thinking",
+      "pose": "wave",
+      "state_id": "nabi_state_018"
+    },
+    {
+      "asset_path": "chat/nabi_chat_listen.png",
+      "category": "chat",
+      "expression": "attentive",
+      "fallback_expression_id": "nabi_exp_009_surprised",
+      "pose": "listen",
+      "state_id": "nabi_state_019"
+    },
+    {
+      "asset_path": "chat/nabi_chat_typing.png",
+      "category": "chat",
+      "expression": "thinking",
+      "fallback_expression_id": "nabi_exp_010_talking",
+      "pose": "complete",
+      "state_id": "nabi_state_020"
+    },
+    {
+      "asset_path": "chat/nabi_chat_reasoning.png",
+      "category": "chat",
+      "expression": "thinking",
+      "fallback_expression_id": "nabi_exp_001_happy",
+      "pose": "think",
+      "state_id": "nabi_state_021"
+    },
+    {
+      "asset_path": "chat/nabi_chat_clarify.png",
+      "category": "chat",
+      "expression": "curious",
+      "fallback_expression_id": "nabi_exp_002_happy_closed",
+      "pose": "listen",
+      "state_id": "nabi_state_022"
+    },
+    {
+      "asset_path": "chat/nabi_chat_meal_tip.png",
+      "category": "chat",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_003_sad",
+      "pose": "food",
+      "state_id": "nabi_state_023"
+    },
+    {
+      "asset_path": "chat/nabi_chat_exercise_tip.png",
+      "category": "chat",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_004_pout",
+      "pose": "run",
+      "state_id": "nabi_state_024"
+    },
+    {
+      "asset_path": "chat/nabi_chat_rest_tip.png",
+      "category": "chat",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_005_angry",
+      "pose": "sleep",
+      "state_id": "nabi_state_025"
+    },
+    {
+      "asset_path": "chat/nabi_chat_water_tip.png",
+      "category": "chat",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_006_cry",
+      "pose": "water",
+      "state_id": "nabi_state_026"
+    },
+    {
+      "asset_path": "chat/nabi_chat_answer_ready.png",
+      "category": "chat",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_007_sleepy",
+      "pose": "guide",
+      "state_id": "nabi_state_027"
+    },
+    {
+      "asset_path": "daily/nabi_breakfast.png",
+      "category": "daily",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_008_thinking",
+      "pose": "food",
+      "state_id": "nabi_state_028"
+    },
+    {
+      "asset_path": "daily/nabi_lunch.png",
+      "category": "daily",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_009_surprised",
+      "pose": "food",
+      "state_id": "nabi_state_029"
+    },
+    {
+      "asset_path": "daily/nabi_dinner.png",
+      "category": "daily",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_010_talking",
+      "pose": "food",
+      "state_id": "nabi_state_030"
+    },
+    {
+      "asset_path": "daily/nabi_healthy_snack.png",
+      "category": "daily",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_001_happy",
+      "pose": "food",
+      "state_id": "nabi_state_031"
+    },
+    {
+      "asset_path": "daily/nabi_drink_water.png",
+      "category": "daily",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_002_happy_closed",
+      "pose": "water",
+      "state_id": "nabi_state_032"
+    },
+    {
+      "asset_path": "daily/nabi_exercise.png",
+      "category": "daily",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_003_sad",
+      "pose": "run",
+      "state_id": "nabi_state_033"
+    },
+    {
+      "asset_path": "daily/nabi_walk.png",
+      "category": "daily",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_004_pout",
+      "pose": "run",
+      "state_id": "nabi_state_034"
+    },
+    {
+      "asset_path": "daily/nabi_stretch.png",
+      "category": "daily",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_005_angry",
+      "pose": "encourage",
+      "state_id": "nabi_state_035"
+    },
+    {
+      "asset_path": "daily/nabi_sleep.png",
+      "category": "daily",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_006_cry",
+      "pose": "sleep",
+      "state_id": "nabi_state_036"
+    },
+    {
+      "asset_path": "daily/nabi_morning_checkin.png",
+      "category": "daily",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_007_sleepy",
+      "pose": "wave",
+      "state_id": "nabi_state_037"
+    },
+    {
+      "asset_path": "daily/nabi_mood_checkin.png",
+      "category": "daily",
+      "expression": "attentive",
+      "fallback_expression_id": "nabi_exp_008_thinking",
+      "pose": "listen",
+      "state_id": "nabi_state_038"
+    },
+    {
+      "asset_path": "daily/nabi_body_measure.png",
+      "category": "daily",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_009_surprised",
+      "pose": "guide",
+      "state_id": "nabi_state_039"
+    },
+    {
+      "asset_path": "daily/nabi_view_schedule.png",
+      "category": "daily",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_010_talking",
+      "pose": "complete",
+      "state_id": "nabi_state_040"
+    },
+    {
+      "asset_path": "daily/nabi_notification_reminder.png",
+      "category": "daily",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_001_happy",
+      "pose": "guide",
+      "state_id": "nabi_state_041"
+    },
+    {
+      "asset_path": "progress/nabi_task_complete.png",
+      "category": "progress",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_002_happy_closed",
+      "pose": "complete",
+      "state_id": "nabi_state_042"
+    },
+    {
+      "asset_path": "progress/nabi_task_skip_gentle.png",
+      "category": "progress",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_003_sad",
+      "pose": "apologize",
+      "state_id": "nabi_state_043"
+    },
+    {
+      "asset_path": "progress/nabi_task_pending.png",
+      "category": "progress",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_004_pout",
+      "pose": "guide",
+      "state_id": "nabi_state_044"
+    },
+    {
+      "asset_path": "progress/nabi_day_complete.png",
+      "category": "progress",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_005_angry",
+      "pose": "celebrate",
+      "state_id": "nabi_state_045"
+    },
+    {
+      "asset_path": "progress/nabi_streak_start.png",
+      "category": "progress",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_006_cry",
+      "pose": "encourage",
+      "state_id": "nabi_state_046"
+    },
+    {
+      "asset_path": "progress/nabi_streak_7days.png",
+      "category": "progress",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_007_sleepy",
+      "pose": "celebrate",
+      "state_id": "nabi_state_047"
+    },
+    {
+      "asset_path": "progress/nabi_milestone_badge.png",
+      "category": "progress",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_008_thinking",
+      "pose": "encourage",
+      "state_id": "nabi_state_048"
+    },
+    {
+      "asset_path": "progress/nabi_personal_best.png",
+      "category": "progress",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_009_surprised",
+      "pose": "celebrate",
+      "state_id": "nabi_state_049"
+    },
+    {
+      "asset_path": "progress/nabi_low_progress_encourage.png",
+      "category": "progress",
+      "expression": "encouraging",
+      "fallback_expression_id": "nabi_exp_010_talking",
+      "pose": "encourage",
+      "state_id": "nabi_state_050"
+    },
+    {
+      "asset_path": "progress/nabi_missed_task_remind.png",
+      "category": "progress",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_001_happy",
+      "pose": "apologize",
+      "state_id": "nabi_state_051"
+    },
+    {
+      "asset_path": "progress/nabi_thank_you.png",
+      "category": "progress",
+      "expression": "grateful",
+      "fallback_expression_id": "nabi_exp_002_happy_closed",
+      "pose": "apologize",
+      "state_id": "nabi_state_052"
+    },
+    {
+      "asset_path": "progress/nabi_proud_of_you.png",
+      "category": "progress",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_003_sad",
+      "pose": "encourage",
+      "state_id": "nabi_state_053"
+    },
+    {
+      "asset_path": "engagement/nabi_new_user.png",
+      "category": "engagement",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_004_pout",
+      "pose": "wave",
+      "state_id": "nabi_state_054"
+    },
+    {
+      "asset_path": "engagement/nabi_occasional_user.png",
+      "category": "engagement",
+      "expression": "curious",
+      "fallback_expression_id": "nabi_exp_005_angry",
+      "pose": "think",
+      "state_id": "nabi_state_055"
+    },
+    {
+      "asset_path": "engagement/nabi_regular_user.png",
+      "category": "engagement",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_006_cry",
+      "pose": "celebrate",
+      "state_id": "nabi_state_056"
+    },
+    {
+      "asset_path": "engagement/nabi_daily_user.png",
+      "category": "engagement",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_007_sleepy",
+      "pose": "complete",
+      "state_id": "nabi_state_057"
+    },
+    {
+      "asset_path": "engagement/nabi_away_1day.png",
+      "category": "engagement",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_008_thinking",
+      "pose": "wave",
+      "state_id": "nabi_state_058"
+    },
+    {
+      "asset_path": "engagement/nabi_away_3days.png",
+      "category": "engagement",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_009_surprised",
+      "pose": "think",
+      "state_id": "nabi_state_059"
+    },
+    {
+      "asset_path": "engagement/nabi_away_7days.png",
+      "category": "engagement",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_010_talking",
+      "pose": "apologize",
+      "state_id": "nabi_state_060"
+    },
+    {
+      "asset_path": "engagement/nabi_away_14days.png",
+      "category": "engagement",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_001_happy",
+      "pose": "sleep",
+      "state_id": "nabi_state_061"
+    },
+    {
+      "asset_path": "engagement/nabi_welcome_back.png",
+      "category": "engagement",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_002_happy_closed",
+      "pose": "wave",
+      "state_id": "nabi_state_062"
+    },
+    {
+      "asset_path": "engagement/nabi_fresh_restart.png",
+      "category": "engagement",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_003_sad",
+      "pose": "complete",
+      "state_id": "nabi_state_063"
+    },
+    {
+      "asset_path": "system/nabi_loading.png",
+      "category": "system",
+      "expression": "thinking",
+      "fallback_expression_id": "nabi_exp_004_pout",
+      "pose": "think",
+      "state_id": "nabi_state_064"
+    },
+    {
+      "asset_path": "system/nabi_empty_dashboard.png",
+      "category": "system",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_005_angry",
+      "pose": "guide",
+      "state_id": "nabi_state_065"
+    },
+    {
+      "asset_path": "system/nabi_no_schedule.png",
+      "category": "system",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_006_cry",
+      "pose": "complete",
+      "state_id": "nabi_state_066"
+    },
+    {
+      "asset_path": "system/nabi_offline.png",
+      "category": "system",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_007_sleepy",
+      "pose": "listen",
+      "state_id": "nabi_state_067"
+    },
+    {
+      "asset_path": "system/nabi_syncing.png",
+      "category": "system",
+      "expression": "thinking",
+      "fallback_expression_id": "nabi_exp_008_thinking",
+      "pose": "think",
+      "state_id": "nabi_state_068"
+    },
+    {
+      "asset_path": "system/nabi_sync_success.png",
+      "category": "system",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_009_surprised",
+      "pose": "complete",
+      "state_id": "nabi_state_069"
+    },
+    {
+      "asset_path": "system/nabi_sync_retry.png",
+      "category": "system",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_010_talking",
+      "pose": "apologize",
+      "state_id": "nabi_state_070"
+    },
+    {
+      "asset_path": "system/nabi_notification_permission.png",
+      "category": "system",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_001_happy",
+      "pose": "guide",
+      "state_id": "nabi_state_071"
+    },
+    {
+      "asset_path": "system/nabi_login.png",
+      "category": "system",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_002_happy_closed",
+      "pose": "wave",
+      "state_id": "nabi_state_072"
+    },
+    {
+      "asset_path": "system/nabi_account_connected.png",
+      "category": "system",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_003_sad",
+      "pose": "celebrate",
+      "state_id": "nabi_state_073"
+    },
+    {
+      "asset_path": "system/nabi_access_locked.png",
+      "category": "system",
+      "expression": "calm",
+      "fallback_expression_id": "nabi_exp_004_pout",
+      "pose": "listen",
+      "state_id": "nabi_state_074"
+    },
+    {
+      "asset_path": "future/nabi_family_plan.png",
+      "category": "future",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_005_angry",
+      "pose": "wave",
+      "state_id": "nabi_state_075"
+    },
+    {
+      "asset_path": "future/nabi_family_invite.png",
+      "category": "future",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_006_cry",
+      "pose": "guide",
+      "state_id": "nabi_state_076"
+    },
+    {
+      "asset_path": "future/nabi_family_shared_progress.png",
+      "category": "future",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_007_sleepy",
+      "pose": "celebrate",
+      "state_id": "nabi_state_077"
+    },
+    {
+      "asset_path": "future/nabi_family_member_joined.png",
+      "category": "future",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_008_thinking",
+      "pose": "wave",
+      "state_id": "nabi_state_078"
+    },
+    {
+      "asset_path": "future/nabi_premium_unlocked.png",
+      "category": "future",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_009_surprised",
+      "pose": "celebrate",
+      "state_id": "nabi_state_079"
+    },
+    {
+      "asset_path": "future/nabi_referral_invite.png",
+      "category": "future",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_010_talking",
+      "pose": "guide",
+      "state_id": "nabi_state_080"
+    },
+    {
+      "asset_path": "future/nabi_referral_success.png",
+      "category": "future",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_001_happy",
+      "pose": "celebrate",
+      "state_id": "nabi_state_081"
+    },
+    {
+      "asset_path": "future/nabi_sales_leaderboard.png",
+      "category": "future",
+      "expression": "helpful",
+      "fallback_expression_id": "nabi_exp_002_happy_closed",
+      "pose": "guide",
+      "state_id": "nabi_state_082"
+    },
+    {
+      "asset_path": "future/nabi_sales_reward.png",
+      "category": "future",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_003_sad",
+      "pose": "encourage",
+      "state_id": "nabi_state_083"
+    },
+    {
+      "asset_path": "future/nabi_commission_success.png",
+      "category": "future",
+      "expression": "happy",
+      "fallback_expression_id": "nabi_exp_004_pout",
+      "pose": "celebrate",
+      "state_id": "nabi_state_084"
+    }
+  ]
+}

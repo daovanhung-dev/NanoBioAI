@@ -1,0 +1,136 @@
+{
+  "asset_contract": {
+    "character_frame_canvas_px": 384,
+    "color_model": "rgba",
+    "effect_frame_canvas_px": 256,
+    "expression_canvas_px": 512,
+    "format": "png",
+    "fps": 30,
+    "frames_per_sequence": 30,
+    "physical_paths_lowercase": true,
+    "static_canvas_px": 512,
+    "transparent_background": true
+  },
+  "character": {
+    "description": "gender-neutral botanical seed spirit; derived from an approved master",
+    "id": "nabi_v2"
+  },
+  "counts": {
+    "animations": 30,
+    "character_frames": 900,
+    "effect_frames": 210,
+    "effects": 7,
+    "legacy_fallback_expressions": 10,
+    "static_states": 84
+  },
+  "expression_map": "nabi_v2_expression_map.json",
+  "generator": {
+    "name": "generate_nabi_v2_assets.py",
+    "version": "1.0.0"
+  },
+  "master": {
+    "alpha_range": {
+      "max": 255,
+      "min": 0
+    },
+    "approved_pose_anchors": [
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1536,
+          "left": 0,
+          "right": 795,
+          "top": 138
+        },
+        "filename": "nabi_v2_thinking.png",
+        "semantic": "thinking",
+        "sha256": "0069ff0ca3f3d43115d6a52336ea1d6f3d5726ae460d0e5b57a1850e2a28b12a",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": false
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1536,
+          "left": 99,
+          "right": 907,
+          "top": 146
+        },
+        "filename": "nabi_v2_celebrate.png",
+        "semantic": "celebrate",
+        "sha256": "712d53d7d94b68bd6a90a68d0cfddffd2082a37356918f85cf3243e3e0cd8a24",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": true
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1353,
+          "left": 168,
+          "right": 764,
+          "top": 175
+        },
+        "filename": "nabi_v2_calm.png",
+        "semantic": "calm",
+        "sha256": "bd839b50570861ffb927f21e805059fee5481e6e823b2ef5b746f309e5bdc2cd",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": true
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1281,
+          "left": 146,
+          "right": 880,
+          "top": 147
+        },
+        "filename": "nabi_v2_prompt.png",
+        "semantic": "prompt",
+        "sha256": "179faf5125dd10ba6d9db149df8a6051b5902118152bee7cd2b73585c2c2e09c",
+        "source_size_px": {
+          "height": 1537,
+          "width": 1023
+        },
+        "transparent_corners": true
+      }
+    ],
+    "content_bbox": {
+      "bottom": 1287,
+      "left": 147,
+      "right": 905,
+      "top": 155
+    },
+    "filename": "nabi_v2_master.png",
+    "sha256": "9721839816a129559bc17a4026c6072d5e5f5c7a2a1ce5b5d54c2d2451542263",
+    "source_size_px": {
+      "height": 1536,
+      "width": 1024
+    },
+    "transparent_corners": true
+  },
+  "motion_map": "nabi_v2_motion_map.json",
+  "schema_version": "nabi-v2-assets-1.0",
+  "state_matrix": "nabi_v2_state_matrix.json",
+  "static_asset_manifest": "nabi_v2_asset_manifest.json"
+}

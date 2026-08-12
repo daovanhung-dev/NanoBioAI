@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import 'nabi_asset_catalog.dart';
 import '../domain/nabi_animation_type.dart';
 
 class NabiAnimationSpec {
@@ -11,7 +12,7 @@ class NabiAnimationSpec {
     this.frameCount = NabiAssets.defaultFrameCount,
     this.fps = NabiAssets.defaultFps,
     this.loop = true,
-    this.root = NabiAssets.root,
+    this.root = NabiAssetCatalog.spriteRoot,
   });
 
   final NabiAnimationType type;
@@ -26,12 +27,25 @@ class NabiAnimationSpec {
   Duration get duration =>
       Duration(milliseconds: (frameCount * 1000 / fps).round());
 
-  String get framesDirectory =>
-      '$root/01_character/02_30fps_frames/$module/$id';
+  bool get _usesV2PhysicalLayout =>
+      NabiAssetCatalog.v2AssetsEnabled && root == NabiAssetCatalog.v2SpriteRoot;
+
+  String get framesDirectory {
+    if (_usesV2PhysicalLayout) {
+      return '$root/01_character/02_30fps_frames/'
+          '${module.toLowerCase()}/${id.toLowerCase()}';
+    }
+
+    return '$root/01_character/02_30fps_frames/$module/$id';
+  }
 
   String framePath(int frameNumber) {
     final normalized = frameNumber.clamp(1, frameCount).toInt();
     final suffix = normalized.toString().padLeft(4, '0');
+    if (_usesV2PhysicalLayout) {
+      return '$framesDirectory/frame_$suffix.png';
+    }
+
     return '$framesDirectory/${id}_F$suffix.png';
   }
 
@@ -41,7 +55,11 @@ class NabiAnimationSpec {
 abstract final class NabiAssets {
   const NabiAssets._();
 
-  static const root = 'assets/nabi';
+  /// Compatibility alias for the selected sprite bundle root.
+  static const root = NabiAssetCatalog.spriteRoot;
+
+  /// The selected root for static Nabi poses and expression fallbacks.
+  static const staticRoot = NabiAssetCatalog.staticRoot;
   static const defaultFps = 30;
   static const defaultFrameCount = 30;
 
@@ -49,8 +67,7 @@ abstract final class NabiAssets {
     type: NabiAnimationType.idle,
     id: 'NABI_ANIM_001_happy_idle_breathing',
     module: '01_core',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_001_happy.png',
+    staticFallbackAsset: '$staticRoot/core/nabi_idle_happy.png',
   );
 
   static const happy = NabiAnimationSpec(
@@ -58,16 +75,14 @@ abstract final class NabiAssets {
     id: 'NABI_ANIM_003_happy_jump_pop',
     module: '01_core',
     loop: false,
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_002_happy_closed.png',
+    staticFallbackAsset: '$staticRoot/core/nabi_idle_happy.png',
   );
 
   static const sad = NabiAnimationSpec(
     type: NabiAnimationType.sad,
     id: 'NABI_ANIM_006_sad_sigh_slow',
     module: '02_emotion',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_003_sad.png',
+    staticFallbackAsset: '$staticRoot/progress/nabi_low_progress_encourage.png',
   );
 
   static const angry = NabiAnimationSpec(
@@ -75,8 +90,7 @@ abstract final class NabiAssets {
     id: 'NABI_ANIM_010_angry_small_stomp',
     module: '02_emotion',
     loop: false,
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_005_angry.png',
+    staticFallbackAsset: '$staticRoot/system/nabi_sync_retry.png',
   );
 
   static const sulk = NabiAnimationSpec(
@@ -84,40 +98,35 @@ abstract final class NabiAssets {
     id: 'NABI_ANIM_008_pout_cheek_turn',
     module: '02_emotion',
     loop: false,
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_004_pout.png',
+    staticFallbackAsset: '$staticRoot/progress/nabi_missed_task_remind.png',
   );
 
   static const crying = NabiAnimationSpec(
     type: NabiAnimationType.crying,
     id: 'NABI_ANIM_012_cry_big_tears',
     module: '02_emotion',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_006_cry.png',
+    staticFallbackAsset: '$staticRoot/progress/nabi_low_progress_encourage.png',
   );
 
   static const listening = NabiAnimationSpec(
     type: NabiAnimationType.listening,
     id: 'NABI_ANIM_018_listening_ear_bounce',
     module: '03_daily',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_009_surprised.png',
+    staticFallbackAsset: '$staticRoot/core/nabi_listen.png',
   );
 
   static const talking = NabiAnimationSpec(
     type: NabiAnimationType.talking,
     id: 'NABI_ANIM_017_talking_soft',
     module: '03_daily',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_010_talking.png',
+    staticFallbackAsset: '$staticRoot/core/nabi_speak.png',
   );
 
   static const thinking = NabiAnimationSpec(
     type: NabiAnimationType.thinking,
     id: 'NABI_ANIM_016_thinking_bubble',
     module: '03_daily',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_008_thinking.png',
+    staticFallbackAsset: '$staticRoot/core/nabi_think.png',
   );
 
   static const greeting = NabiAnimationSpec(
@@ -125,48 +134,42 @@ abstract final class NabiAssets {
     id: 'NABI_ANIM_002_happy_wave_right',
     module: '01_core',
     loop: false,
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_001_happy.png',
+    staticFallbackAsset: '$staticRoot/core/nabi_wave.png',
   );
 
   static const loading = NabiAnimationSpec(
     type: NabiAnimationType.loading,
     id: 'NABI_ANIM_021_loading_leaf_spin',
     module: '04_system',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_008_thinking.png',
+    staticFallbackAsset: '$staticRoot/system/nabi_loading.png',
   );
 
   static const error = NabiAnimationSpec(
     type: NabiAnimationType.error,
     id: 'NABI_ANIM_022_error_dizzy',
     module: '04_system',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_009_surprised.png',
+    staticFallbackAsset: '$staticRoot/system/nabi_sync_retry.png',
   );
 
   static const cheering = NabiAnimationSpec(
     type: NabiAnimationType.cheering,
     id: 'NABI_ANIM_024_exercise_cheer',
     module: '05_views',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_002_happy_closed.png',
+    staticFallbackAsset: '$staticRoot/daily/nabi_exercise.png',
   );
 
   static const reminder = NabiAnimationSpec(
     type: NabiAnimationType.reminder,
     id: 'NABI_ANIM_015_sleepy_reminder_nod',
     module: '03_daily',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_007_sleepy.png',
+    staticFallbackAsset: '$staticRoot/daily/nabi_notification_reminder.png',
   );
 
   static const membership = NabiAnimationSpec(
     type: NabiAnimationType.membership,
     id: 'NABI_ANIM_026_membership_vip_sparkle',
     module: '05_views',
-    staticFallbackAsset:
-        '$root/01_character/01_static_expressions/NABI_EXP_001_happy.png',
+    staticFallbackAsset: '$staticRoot/future/nabi_premium_unlocked.png',
   );
 
   static const Map<NabiAnimationType, NabiAnimationSpec> specs = {

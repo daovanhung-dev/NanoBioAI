@@ -1,6 +1,6 @@
 /// Tất cả trạng thái biểu cảm của nhân vật Nabi.
 ///
-/// Mỗi state ánh xạ đến một file PNG trong `assets/images/Nabi/`.
+/// Mỗi state ánh xạ đến một PNG lowercase qua catalog chung.
 /// Chỉ [NabiAssetResolver] được phép map state → đường dẫn asset.
 enum NabiVisualState {
   // ── core ──────────────────────────────────────────────────────────────────

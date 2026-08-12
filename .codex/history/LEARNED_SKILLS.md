@@ -4,31 +4,31 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- coding - Coding: 24 worklog(s)
-- docs-context - Context and docs update: 21 worklog(s)
-- bugfix - Direct bugfix: 19 worklog(s)
-- supabase-schema - Supabase schema and RLS: 13 worklog(s)
-- test - Test and verification: 5 worklog(s)
+- coding - Coding: 26 worklog(s)
+- docs-context - Context and docs update: 25 worklog(s)
+- bugfix - Direct bugfix: 21 worklog(s)
+- supabase-schema - Supabase schema and RLS: 14 worklog(s)
+- test - Test and verification: 6 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
+- find-issues - Review and find issues: 2 worklog(s)
 - refactor-scaffold - Scaffold refactor: 2 worklog(s)
 - fix-issues - Fix documented issue: 2 worklog(s)
-- find-issues - Review and find issues: 1 worklog(s)
 - create-todo - Create todo docs: 1 worklog(s)
 
 ## Frequent Modules
 
-- unknown: 10
+- unknown: 14
 - docs/issues, docs/todo: 2
 - authentication: 2
-- docs/DD M01-M19: 2
 - M05 AI / AI Chat / runtime configuration: 2
-- M05 AI / runtime configuration / onboarding: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
+- docs/DD M01-M19: 2
+- M05 AI / runtime configuration / onboarding: 2
+- UI / Theme / NabiCopy, toan bo app surfaces: 2
 - .codex: 2
-- v2 authentication, admin login, Supabase dev seed: 1
-- v1 lifestyle schedule, dashboard, localdb, cloud sync, Supabase docs: 1
-- lib/app_versions/v1/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1: 1
 - v1 onboarding, AppLogger: 1
+- Nabi providers/UI, onboarding UI, shared Nabi widgets, release: 1
+- config/env, app entrypoints, auth/AI env readers: 1
 
 ## Reusable Project Skills
 
@@ -52,10 +52,3 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - End every substantial session with a worklog self-review: output quality, task completion, verification strength, token efficiency, and next-session optimization.
 - After writing the worklog, run the history refresh script so `.codex/history/` and `.codex/task-skills/` learn from the new session.
 - Before starting a task, read the matching canonical `.codex/task-skills/<task-key>.md` after selecting the workflow.
-
-## Learned 2026-08-02 - Nutrition, meal catalog and voice
-
-- Source recipe imports must preserve provenance and keep records ineligible until nutrition/allergen/condition metadata is explicitly approved; never infer clinical fields from prose.
-- AI generation, deterministic fallback and single-meal replacement must share one filtered candidate pool so safety constraints cannot diverge.
-- App-wide accessibility settings need one persisted source-of-truth applied at every MaterialApp surface and combined with system accessibility scaling.
-- Voice AI should reuse the existing AI Chat repository/quota/history boundary, stop native resources on lifecycle changes and discard stale async responses with an operation token.

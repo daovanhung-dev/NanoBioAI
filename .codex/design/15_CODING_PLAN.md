@@ -28,4 +28,4 @@ Require approved backend safety, privacy, cryptography, retention and trusted RP
 
 ## Wave 6 - Cutover
 
-Use `stitchGreenUi` separately from business flags. Cut over only after all 76 Stitch references have recorded visual, dark, accessibility and adaptive evidence; retain rollback for one release before deleting Blue compatibility aliases.
+Use `stitchGreenUi` separately from business flags. Green is the default presentation in every build mode, but that does not mark the cutover complete. Do not call the cutover complete until all 76 Stitch references have recorded visual, dark, accessibility and adaptive evidence; retain `STITCH_GREEN_UI_ENABLED=false` as the Blue rollback for one release before deleting Blue compatibility aliases.

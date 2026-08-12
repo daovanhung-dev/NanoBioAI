@@ -4,6 +4,21 @@ import 'package:nano_app/features/nabi/nabi.dart';
 
 void main() {
   group('NabiVisualAnimationMapper', () {
+    test(
+      'resolves every visual state through the selected lowercase bundle',
+      () {
+        expect(NabiVisualState.values, hasLength(84));
+
+        for (final state in NabiVisualState.values) {
+          final assetPath = NabiAssetResolver.pathFor(state);
+
+          expect(assetPath, startsWith('${NabiAssetCatalog.staticRoot}/'));
+          expect(assetPath, endsWith('.png'));
+          expect(assetPath, assetPath.toLowerCase());
+        }
+      },
+    );
+
     test('maps chat loading, success, and error states', () {
       expect(
         NabiVisualAnimationMapper.fromVisualState(NabiVisualState.chatTyping),

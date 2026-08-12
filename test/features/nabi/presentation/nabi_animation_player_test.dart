@@ -31,4 +31,26 @@ void main() {
     expect(find.byIcon(Icons.auto_awesome_rounded), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('reduced motion holds the selected bundle on its first frame', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: MediaQuery(
+            data: MediaQueryData(disableAnimations: true),
+            child: NabiAnimationPlayer(animationType: NabiAnimationType.idle),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump(const Duration(milliseconds: 1200));
+
+    final image = tester.widget<Image>(find.byType(Image));
+    final provider = image.image as AssetImage;
+    expect(provider.assetName, NabiAssets.idle.firstFramePath);
+    expect(tester.takeException(), isNull);
+  });
 }

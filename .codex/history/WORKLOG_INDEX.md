@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 94
+- Total worklogs: 104
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -102,5 +102,14 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-28 | Supabase schema/seed fixture va smoke test | supabase-schema | Sale/referral, M12 va M14 | [Worklog - Sale A sandbox seed](../../docs/worklog/2026-07-28/002-worklog-sale-a-sandbox-seed.md) |
 | 2026-07-28 | bugfix + test | supabase-schema | Sale/referral dashboard va direct customers | [Worklog - Sale dashboard RPC permission](../../docs/worklog/2026-07-28/003-worklog-sale-dashboard-rpc-permission.md) |
 | 2026-07-31 | coding + Supabase contract + test + DD/docs. | supabase-schema | M13 PAYMENT_MEMBERSHIP và Admin payment queue. | [Worklog - VietQR Vietcombank chờ duyệt thủ công](../../docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md) |
-| 2026-08-02 | coding/supabase-schema/test | coding | onboarding, nutrition profile, meal catalog, AI meal plan, voice AI, SQLite V17 | [Worklog - Hồ sơ dinh dưỡng, catalog món ăn và Voice AI V17](../../docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md) |
-| 2026-08-05 | coding/test-contract/docs | coding | UI, Theme, Motion, Feedback, Nabi, User/V2/V3/Sale/Admin | [Worklog - Coding Nabi Kinetic Aura](../../docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md) |
+| 2026-08-02 | coding / Supabase schema / test authoring / static validation. | supabase-schema | unknown | [Worklog - Hồ sơ dinh dưỡng, catalog món ăn và Voice AI V17](../../docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md) |
+| 2026-08-02 | coding - pha khao sat/checklist/plan, chua coding runtime | docs-context | UI / Theme / NabiCopy, toan bo app surfaces | [Worklog - NaBi Green Wellness UI Planning](../../docs/worklog/2026-08-02/002-worklog-nabi-green-wellness-ui-planning.md) |
+| 2026-08-02 | coding | coding | UI / Theme / NabiCopy, toan bo app surfaces | [Worklog - NaBi Green Wellness UI Refactor](../../docs/worklog/2026-08-02/003-worklog-nabi-green-wellness-ui-refactor.md) |
+| 2026-08-04 | coding | coding | M03 DASHBOARD_SCHEDULE | [Worklog - Dashboard Blue Wellness](../../docs/worklog/2026-08-04/001-worklog-dashboard-blue-wellness.md) |
+| 2026-08-05 | docs-context / UI design audit / coding plan | find-issues | UI, Theme, Motion, Sound, Haptic, Nabi, toàn bộ presentation layer | [Worklog - Nabi Kinetic Aura design toàn bộ UI](../../docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md) |
+| 2026-08-05 | coding / test-contract / docs-context | test | unknown | [Worklog - Coding Nabi Kinetic Aura toàn bộ ứng dụng](../../docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md) |
+| 2026-08-05 | bugfix | bugfix | UI/theme/motion/feedback/Nabi | [Worklog - Fix analyzer regressions sau Nabi Kinetic Aura](../../docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md) |
+| 2026-08-08 | unknown | docs-context | unknown | [Worklog — Tối ưu UI Lịch trình cá nhân](../../docs/worklog/2026-08-08/001-worklog-lifestyle-schedule-ui-optimization.md) |
+| 2026-08-08 | unknown | docs-context | unknown | [Worklog — Stitch Green Wellness foundation và gated UI refactor](../../docs/worklog/2026-08-08/002-worklog-stitch-green-wellness.md) |
+| 2026-08-11 | bugfix | bugfix | Core theme / Green Wellness release presentation | [Worklog - Dong bo giao dien APK release voi flutter run](../../docs/worklog/2026-08-11/001-worklog-build-apk-theme-parity.md) |
+| 2026-08-12 | coding / visual asset integration | docs-context | Nabi companion, V1 presentation, onboarding, AI chat/voice | [Worklog - Nabi v2 botanical asset system](../../docs/worklog/2026-08-12/001-worklog-nabi-v2-asset-system.md) |

@@ -4,6 +4,7 @@ export 'application/nabi_state.dart';
 export 'application/notifications/nabi_notification_engine.dart';
 export 'application/notifications/nabi_notification_controller.dart';
 export 'data/nabi_assets.dart';
+export 'data/nabi_asset_catalog.dart';
 export 'data/nabi_feature_flags.dart';
 export 'data/nabi_view_animation_mapper.dart';
 export 'data/notifications/nabi_notification_local_repositories.dart';

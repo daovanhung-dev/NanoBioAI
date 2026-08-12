@@ -1,5 +1,9 @@
 # Nabi_INTEGRATION_GUIDE
 
+> Nabi v2 uses `NabiAssetCatalog` and lowercase assets in
+> `assets/images/nabi_v2`, `assets/nabi_v2`, and `assets/config/nabi_v2`.
+> V1 remains source-only rollback material and is not a release asset bundle.
+
 ## 1. Khai báo asset
 
 Bổ sung vào `pubspec.yaml` (nếu chưa có):
@@ -7,8 +11,10 @@ Bổ sung vào `pubspec.yaml` (nếu chưa có):
 ```yaml
 flutter:
   assets:
-    - assets/images/Nabi/
-    - assets/config/Nabi/
+    - assets/images/nabi_v2/
+    - assets/config/nabi_v2/
+    - assets/nabi_v2/01_character/01_static_expressions/
+    - assets/nabi_v2/01_character/02_30fps_frames/
 ```
 
 Sau đó chạy `flutter pub get`.

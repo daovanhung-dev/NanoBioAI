@@ -557,3 +557,61 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md :: - Chưa fix: chưa có bằng chứng sandbox/RLS hoặc UAT ngân hàng vì không có môi trường/quyền rollout trong phiên này.
 - docs/worklog/2026-07-31/001-worklog-vietqr-manual-payment-review.md :: - Cần kiểm tra tiếp: apply migration vào sandbox, quét QR, kiểm tra người nhận/số tiền/memo, xác nhận ownership và Admin payments.write, duyệt/từ chối rồi kiểm tra entitlement/audit.
+- docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md :: - `dart format`: SKIPPED — môi trường không có Dart SDK.
+- docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md :: - `flutter analyze`: SKIPPED — môi trường không có Flutter SDK.
+- docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md :: - `flutter test`: SKIPPED — môi trường không có Flutter SDK.
+- docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md :: - `flutter build apk --debug`: SKIPPED — không có Flutter/Android toolchain.
+- docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md :: - Test trên thiết bị thật: SKIPPED — không có thiết bị kết nối.
+- docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md :: - Supabase local/sandbox và RLS multi-user: SKIPPED — không có backend sandbox/config an toàn trong môi trường.
+- docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED — không có PowerShell; history được cập nhật thủ công.
+- docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md :: ## Rủi ro còn mở
+- docs/worklog/2026-08-02/001-worklog-nutrition-meal-catalog-voice-v17.md :: - Điểm chưa tối ưu: task cross-domain lớn; cần một môi trường Flutter khóa version để giảm rủi ro compile API.
+- docs/worklog/2026-08-02/002-worklog-nabi-green-wellness-ui-planning.md :: - Tao ke hoach 12 giai doan, validation ladder, visual matrix, rui ro va gate xac nhan.
+- docs/worklog/2026-08-02/002-worklog-nabi-green-wellness-ui-planning.md :: - Flutter/Dart/PowerShell: SKIPPED - khong co executable trong PATH.
+- docs/worklog/2026-08-02/002-worklog-nabi-green-wellness-ui-planning.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-02/002-worklog-nabi-green-wellness-ui-planning.md :: - Chua fix: chua co Flutter/Dart/PowerShell de analyze/test/build.
+- docs/worklog/2026-08-02/002-worklog-nabi-green-wellness-ui-planning.md :: - Can kiem tra tiep: runtime route, accessibility, reduced-motion, visual matrix, device screenshot.
+- docs/worklog/2026-08-02/003-worklog-nabi-green-wellness-ui-refactor.md :: - Chay controlled codemod va manual repair tren V1/V2/V3/Admin/Sale/Global Nabi/shared.
+- docs/worklog/2026-08-02/003-worklog-nabi-green-wellness-ui-refactor.md :: - Pubspec asset existence: BLOCKED, 57 configured paths missing.
+- docs/worklog/2026-08-02/003-worklog-nabi-green-wellness-ui-refactor.md :: - Flutter format/analyze/test/build/device/visual: SKIPPED, khong co SDK va archive thieu assets.
+- docs/worklog/2026-08-02/003-worklog-nabi-green-wellness-ui-refactor.md :: ## Loi/Rui ro con lai
+- docs/worklog/2026-08-04/001-worklog-dashboard-blue-wellness.md :: - `dart format`: SKIPPED — không có Dart executable.
+- docs/worklog/2026-08-04/001-worklog-dashboard-blue-wellness.md :: - `flutter analyze`: SKIPPED — không có Flutter executable.
+- docs/worklog/2026-08-04/001-worklog-dashboard-blue-wellness.md :: - `flutter test`: SKIPPED — không có Flutter executable.
+- docs/worklog/2026-08-04/001-worklog-dashboard-blue-wellness.md :: - `flutter build apk --debug`: SKIPPED — không có Flutter executable.
+- docs/worklog/2026-08-04/001-worklog-dashboard-blue-wellness.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED — không có PowerShell executable.
+- docs/worklog/2026-08-04/001-worklog-dashboard-blue-wellness.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-08-04/001-worklog-dashboard-blue-wellness.md :: - Chưa fix: visual/device validation chưa thể chạy trong container.
+- docs/worklog/2026-08-04/001-worklog-dashboard-blue-wellness.md :: - Cần kiểm tra tiếp: Flutter analyze/test/build và smoke Android tại các kích thước/text scale mục tiêu.
+- docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: SKIPPED - môi trường không có PowerShell.
+- docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`: SKIPPED - môi trường không có PowerShell; generated history/task-skills chưa được refresh.
+- docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md :: - `git diff --check`: SKIPPED - snapshot giải nén không chứa `.git`.
+- docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md :: - Flutter analyze/test/build: SKIPPED - phiên chỉ thay đổi docs/context, không sửa Dart runtime.
+- docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md :: - Chưa fix:
+- docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md :: - Cần kiểm tra tiếp:
+- docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md :: - `dart format`: SKIPPED - sandbox không có Dart executable; thử tải SDK nhưng direct network bị chặn.
+- docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md :: - `flutter analyze`: SKIPPED - sandbox không có Flutter SDK.
+- docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md :: - `flutter test`: SKIPPED - sandbox không có Flutter SDK; test source đã thêm nhưng chưa chạy.
+- docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md :: - Debug APK/device test: SKIPPED - không có Flutter/native device toolchain.
+- docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md :: - PowerShell integrity/history refresh: SKIPPED - sandbox không có PowerShell.
+- docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md :: - `git diff --check`: SKIPPED - snapshot không có `.git`.
+- docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md :: ## Lỗi/rủi ro
+- docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md :: - Raw color/duration còn tồn tại ở legacy custom UI và service timeout; không thay cơ học ngoài scope để tránh regression.
+- docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md :: - Cleanup/release certification Wave 11: partial, chờ Flutter SDK và device evidence.
+- docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md :: - Sử dụng kết quả `ref.refresh` trong FamilyPlus và ánh xạ trạng thái `failure` thành error feedback.
+- docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md :: - Loại bỏ marker `TODO` trong `AdminLogger.exportLogs` và mô tả đúng trust boundary.
+- docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md :: - `dart format`: SKIPPED - không có Dart executable.
+- docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md :: - `flutter analyze`: SKIPPED - không có Flutter SDK.
+- docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md :: - `flutter test`: SKIPPED - không có Flutter SDK.
+- docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md :: - PowerShell history refresh: SKIPPED - không có PowerShell.
+- docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md :: - Chưa fix: không ghi nhận lỗi ngoài danh sách trong workflow này.
+- docs/worklog/2026-08-05/003-worklog-fix-kinetic-aura-analyzer-regressions.md :: - Cần kiểm tra tiếp: chạy targeted format/analyze/test trên máy phát triển.
+- docs/worklog/2026-08-08/002-worklog-stitch-green-wellness.md :: Tích hợp nền tảng Green Wellness theo 76 cặp Stitch, giữ nguyên business contracts hiện hữu và fail closed cho mọi nghiệp vụ cần DD/Clinical/Privacy approval. Ảnh được dùng để đối chiếu layout, HTML để rút token/typography; runtime và DD luôn quyết định hành vi.
+- docs/worklog/2026-08-08/002-worklog-stitch-green-wellness.md :: - Release không truyền define: Blue fail closed.
+- docs/worklog/2026-08-08/002-worklog-stitch-green-wellness.md :: ## Gate và rủi ro còn lại
+- docs/worklog/2026-08-11/001-worklog-build-apk-theme-parity.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-11/001-worklog-build-apk-theme-parity.md :: - Chua fix: release khong duoc ky la production-ready chi dua tren thay doi palette; visual/accessibility, privacy, license, Supabase va cac acceptance gate khac van mo.
+- docs/worklog/2026-08-11/001-worklog-build-apk-theme-parity.md :: - Can kiem tra tiep: chay ma tran visual 76 surface va release acceptance da duoc ghi trong checklist.
+- docs/worklog/2026-08-12/001-worklog-nabi-v2-asset-system.md :: ## Rủi ro / việc tiếp theo

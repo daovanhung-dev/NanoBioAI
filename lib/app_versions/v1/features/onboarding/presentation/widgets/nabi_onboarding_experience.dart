@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/features/nabi/data/nabi_asset_catalog.dart';
 
 /// Visual foundation for the NaBi Green Wellness onboarding experience.
 class NabiPalette {
@@ -98,26 +99,26 @@ enum NabiOnboardingMood {
 }
 
 extension NabiOnboardingMoodVisual on NabiOnboardingMood {
-  String get assetPath => switch (this) {
-    NabiOnboardingMood.welcome =>
-      'assets/images/nabi/onboarding/nabi_onboarding_intro.png',
-    NabiOnboardingMood.guide =>
-      'assets/images/nabi/onboarding/nabi_onboarding_basic_info.png',
-    NabiOnboardingMood.goal =>
-      'assets/images/nabi/onboarding/nabi_onboarding_goal.png',
-    NabiOnboardingMood.care =>
-      'assets/images/nabi/onboarding/nabi_onboarding_health_check.png',
-    NabiOnboardingMood.lifestyle =>
-      'assets/images/nabi/onboarding/nabi_onboarding_lifestyle.png',
-    NabiOnboardingMood.thinking => 'assets/images/nabi/core/nabi_think.png',
-    NabiOnboardingMood.routine =>
-      'assets/images/nabi/daily/nabi_view_schedule.png',
-    NabiOnboardingMood.consent => 'assets/images/nabi/core/nabi_idle_happy.png',
-    NabiOnboardingMood.review =>
-      'assets/images/nabi/onboarding/nabi_onboarding_review.png',
-    NabiOnboardingMood.celebrate =>
-      'assets/images/nabi/onboarding/nabi_plan_ready.png',
-  };
+  String get assetPath {
+    const root = NabiAssetCatalog.staticRoot;
+    return switch (this) {
+      NabiOnboardingMood.welcome =>
+        '$root/onboarding/nabi_onboarding_intro.png',
+      NabiOnboardingMood.guide =>
+        '$root/onboarding/nabi_onboarding_basic_info.png',
+      NabiOnboardingMood.goal => '$root/onboarding/nabi_onboarding_goal.png',
+      NabiOnboardingMood.care =>
+        '$root/onboarding/nabi_onboarding_health_check.png',
+      NabiOnboardingMood.lifestyle =>
+        '$root/onboarding/nabi_onboarding_lifestyle.png',
+      NabiOnboardingMood.thinking => '$root/core/nabi_think.png',
+      NabiOnboardingMood.routine => '$root/daily/nabi_view_schedule.png',
+      NabiOnboardingMood.consent => '$root/core/nabi_idle_happy.png',
+      NabiOnboardingMood.review =>
+        '$root/onboarding/nabi_onboarding_review.png',
+      NabiOnboardingMood.celebrate => '$root/onboarding/nabi_plan_ready.png',
+    };
+  }
 
   String get message => switch (this) {
     NabiOnboardingMood.welcome => 'Bắt đầu nhé?',

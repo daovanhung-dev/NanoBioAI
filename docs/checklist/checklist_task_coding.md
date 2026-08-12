@@ -171,15 +171,15 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [x] Khóa 90 asset Stitch ở `license_status=unverified`, `runtime_eligible=false`; không hotlink hoặc dùng làm dữ liệu production.
 - [x] Thêm semantic Green tokens, light/dark theme deterministic, Roboto 400/500/600/700 và facade rollback.
 - [x] Áp setting theme cho V1/V2/V3/resolving app; giữ Admin workspace riêng và bổ sung dark compatibility.
-- [x] Đặt `STITCH_GREEN_UI_ENABLED`: debug/profile mặc định Green để QA; release mặc định Blue và chỉ Green khi opt-in tường minh.
+- [x] Đặt `STITCH_GREEN_UI_ENABLED`: Green mặc định ở Debug/Profile/Release để `flutter build apk` có cùng palette với `flutter run`; `false` là rollback Blue trong một release.
 - [x] Sửa baseline `isSelected`, auth fixture/back behavior, Sale duplicate message và AI failed-input UI draft.
 - [x] Thêm route wellness an toàn, Nami Care runtime-only hub, Water Tracking target do người dùng chọn/lưu local và `/v3/familyplus` effective-access gate.
 - [x] Giữ `/health-tracking` là alias và M20-M29 là catalog/placeholder trong khi DD chưa Approved.
 - [x] Targeted evidence đã chạy: Stitch validator, theme/Roboto/flag tests, auth/Sale/AI/router bundle, water/routes, Admin analyze/tests và app-root targeted analyze.
 - [ ] Root chạy formatter cho toàn bộ Dart thay đổi sau merge, full `flutter analyze` và full `flutter test`; ghi số test/kết quả vào worklog.
-- [ ] Root chạy `flutter build apk --debug`, integrity validator và `git diff --check` cuối; ghi artifact/kết quả vào worklog.
+- [x] Root chạy `flutter build apk` (release mặc định Green), artifact `--dart-define=STITCH_GREEN_UI_ENABLED=false` (rollback Blue), integrity validator và `git diff --check` cuối; ghi artifact/kết quả vào worklog (2026-08-11).
 - [ ] Tạo đủ golden light/dark cho 76 surface ở 390×884 và adaptive/accessibility checks 320/360/412/600+.
 - [ ] Chạy behavior/deep-link/offline/payment/quota acceptance, Supabase sandbox/RLS matrix và Android/iOS real-device smoke.
 - [ ] Hoàn tất PO/Tech/QA/Clinical/Privacy approval cho DD còn thiếu; chưa mở health/AI/chat/Sale business flow trước gate.
 - [ ] Xác minh license asset, store health permission policy và FamilyPlus escrow key ceremony trước production acceptance.
-- [ ] Chỉ build release Green với `--dart-define=STITCH_GREEN_UI_ENABLED=true` sau khi đủ gate; giữ `false` làm rollback ít nhất một release.
+- [x] Xác minh release mặc định Green và `flutter run` có cùng palette; giữ `--dart-define=STITCH_GREEN_UI_ENABLED=false` là rollback Blue trong một release (2026-08-11). Các gate acceptance/production-ready ở trên vẫn chưa được đánh dấu đạt.

@@ -1,0 +1,780 @@
+{
+  "animations": [
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/01_core/nabi_anim_001_happy_idle_breathing",
+      "gentle_semantic": "calm_idle_breathing",
+      "id": "nabi_anim_001_happy_idle_breathing",
+      "legacy_id": "NABI_ANIM_001_happy_idle_breathing",
+      "loop": true,
+      "module": "01_core",
+      "motion_profile": "breathe",
+      "spritesheet": "02_spritesheets/01_core/nabi_anim_001_happy_idle_breathing_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/01_core/nabi_anim_002_happy_wave_right",
+      "gentle_semantic": "welcoming_wave",
+      "id": "nabi_anim_002_happy_wave_right",
+      "legacy_id": "NABI_ANIM_002_happy_wave_right",
+      "loop": true,
+      "module": "01_core",
+      "motion_profile": "wave",
+      "spritesheet": "02_spritesheets/01_core/nabi_anim_002_happy_wave_right_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/01_core/nabi_anim_003_happy_jump_pop",
+      "gentle_semantic": "light_upward_energy",
+      "id": "nabi_anim_003_happy_jump_pop",
+      "legacy_id": "NABI_ANIM_003_happy_jump_pop",
+      "loop": true,
+      "module": "01_core",
+      "motion_profile": "hop",
+      "spritesheet": "02_spritesheets/01_core/nabi_anim_003_happy_jump_pop_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/01_core/nabi_anim_004_happy_heart_send",
+      "gentle_semantic": "care_send",
+      "id": "nabi_anim_004_happy_heart_send",
+      "legacy_id": "NABI_ANIM_004_happy_heart_send",
+      "loop": true,
+      "module": "01_core",
+      "motion_profile": "send",
+      "spritesheet": "02_spritesheets/01_core/nabi_anim_004_happy_heart_send_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/01_core/nabi_anim_005_success_confetti_dance",
+      "gentle_semantic": "quiet_celebration",
+      "id": "nabi_anim_005_success_confetti_dance",
+      "legacy_id": "NABI_ANIM_005_success_confetti_dance",
+      "loop": true,
+      "module": "01_core",
+      "motion_profile": "celebrate",
+      "spritesheet": "02_spritesheets/01_core/nabi_anim_005_success_confetti_dance_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/02_emotion/nabi_anim_006_sad_sigh_slow",
+      "gentle_semantic": "care_pause",
+      "id": "nabi_anim_006_sad_sigh_slow",
+      "legacy_id": "NABI_ANIM_006_sad_sigh_slow",
+      "loop": true,
+      "module": "02_emotion",
+      "motion_profile": "care_breathe",
+      "spritesheet": "02_spritesheets/02_emotion/nabi_anim_006_sad_sigh_slow_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/02_emotion/nabi_anim_007_sad_look_down",
+      "gentle_semantic": "gentle_reflection",
+      "id": "nabi_anim_007_sad_look_down",
+      "legacy_id": "NABI_ANIM_007_sad_look_down",
+      "loop": true,
+      "module": "02_emotion",
+      "motion_profile": "care_lower",
+      "spritesheet": "02_spritesheets/02_emotion/nabi_anim_007_sad_look_down_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/02_emotion/nabi_anim_008_pout_cheek_turn",
+      "gentle_semantic": "gentle_pause_turn",
+      "id": "nabi_anim_008_pout_cheek_turn",
+      "legacy_id": "NABI_ANIM_008_pout_cheek_turn",
+      "loop": true,
+      "module": "02_emotion",
+      "motion_profile": "gentle_turn",
+      "spritesheet": "02_spritesheets/02_emotion/nabi_anim_008_pout_cheek_turn_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/02_emotion/nabi_anim_009_pout_cross_arm",
+      "gentle_semantic": "calm_self_hold",
+      "id": "nabi_anim_009_pout_cross_arm",
+      "legacy_id": "NABI_ANIM_009_pout_cross_arm",
+      "loop": true,
+      "module": "02_emotion",
+      "motion_profile": "gentle_hold",
+      "spritesheet": "02_spritesheets/02_emotion/nabi_anim_009_pout_cross_arm_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/02_emotion/nabi_anim_010_angry_small_stomp",
+      "gentle_semantic": "grounding_reset",
+      "id": "nabi_anim_010_angry_small_stomp",
+      "legacy_id": "NABI_ANIM_010_angry_small_stomp",
+      "loop": true,
+      "module": "02_emotion",
+      "motion_profile": "ground",
+      "spritesheet": "02_spritesheets/02_emotion/nabi_anim_010_angry_small_stomp_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/02_emotion/nabi_anim_011_angry_warning_shake",
+      "gentle_semantic": "safety_reminder",
+      "id": "nabi_anim_011_angry_warning_shake",
+      "legacy_id": "NABI_ANIM_011_angry_warning_shake",
+      "loop": true,
+      "module": "02_emotion",
+      "motion_profile": "safety_sway",
+      "spritesheet": "02_spritesheets/02_emotion/nabi_anim_011_angry_warning_shake_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/02_emotion/nabi_anim_012_cry_big_tears",
+      "gentle_semantic": "empathetic_stillness",
+      "id": "nabi_anim_012_cry_big_tears",
+      "legacy_id": "NABI_ANIM_012_cry_big_tears",
+      "loop": true,
+      "module": "02_emotion",
+      "motion_profile": "empathy",
+      "spritesheet": "02_spritesheets/02_emotion/nabi_anim_012_cry_big_tears_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/02_emotion/nabi_anim_013_cry_rub_eye",
+      "gentle_semantic": "self_care_touch",
+      "id": "nabi_anim_013_cry_rub_eye",
+      "legacy_id": "NABI_ANIM_013_cry_rub_eye",
+      "loop": true,
+      "module": "02_emotion",
+      "motion_profile": "self_care",
+      "spritesheet": "02_spritesheets/02_emotion/nabi_anim_013_cry_rub_eye_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/02_emotion/nabi_anim_014_sleepy_yawn",
+      "gentle_semantic": "restful_pause",
+      "id": "nabi_anim_014_sleepy_yawn",
+      "legacy_id": "NABI_ANIM_014_sleepy_yawn",
+      "loop": true,
+      "module": "02_emotion",
+      "motion_profile": "rest",
+      "spritesheet": "02_spritesheets/02_emotion/nabi_anim_014_sleepy_yawn_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/03_daily/nabi_anim_015_sleepy_reminder_nod",
+      "gentle_semantic": "gentle_reminder_nod",
+      "id": "nabi_anim_015_sleepy_reminder_nod",
+      "legacy_id": "NABI_ANIM_015_sleepy_reminder_nod",
+      "loop": true,
+      "module": "03_daily",
+      "motion_profile": "reminder",
+      "spritesheet": "02_spritesheets/03_daily/nabi_anim_015_sleepy_reminder_nod_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/03_daily/nabi_anim_016_thinking_bubble",
+      "gentle_semantic": "thoughtful_wait",
+      "id": "nabi_anim_016_thinking_bubble",
+      "legacy_id": "NABI_ANIM_016_thinking_bubble",
+      "loop": true,
+      "module": "03_daily",
+      "motion_profile": "think",
+      "spritesheet": "02_spritesheets/03_daily/nabi_anim_016_thinking_bubble_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/03_daily/nabi_anim_017_talking_soft",
+      "gentle_semantic": "soft_explanation",
+      "id": "nabi_anim_017_talking_soft",
+      "legacy_id": "NABI_ANIM_017_talking_soft",
+      "loop": true,
+      "module": "03_daily",
+      "motion_profile": "talk",
+      "spritesheet": "02_spritesheets/03_daily/nabi_anim_017_talking_soft_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/03_daily/nabi_anim_018_listening_ear_bounce",
+      "gentle_semantic": "active_listening",
+      "id": "nabi_anim_018_listening_ear_bounce",
+      "legacy_id": "NABI_ANIM_018_listening_ear_bounce",
+      "loop": true,
+      "module": "03_daily",
+      "motion_profile": "listen",
+      "spritesheet": "02_spritesheets/03_daily/nabi_anim_018_listening_ear_bounce_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/03_daily/nabi_anim_019_nod_yes",
+      "gentle_semantic": "affirming_nod",
+      "id": "nabi_anim_019_nod_yes",
+      "legacy_id": "NABI_ANIM_019_nod_yes",
+      "loop": true,
+      "module": "03_daily",
+      "motion_profile": "nod",
+      "spritesheet": "02_spritesheets/03_daily/nabi_anim_019_nod_yes_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/03_daily/nabi_anim_020_shake_no",
+      "gentle_semantic": "kind_boundary",
+      "id": "nabi_anim_020_shake_no",
+      "legacy_id": "NABI_ANIM_020_shake_no",
+      "loop": true,
+      "module": "03_daily",
+      "motion_profile": "decline",
+      "spritesheet": "02_spritesheets/03_daily/nabi_anim_020_shake_no_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/04_system/nabi_anim_021_loading_leaf_spin",
+      "gentle_semantic": "patient_loading",
+      "id": "nabi_anim_021_loading_leaf_spin",
+      "legacy_id": "NABI_ANIM_021_loading_leaf_spin",
+      "loop": true,
+      "module": "04_system",
+      "motion_profile": "load",
+      "spritesheet": "02_spritesheets/04_system/nabi_anim_021_loading_leaf_spin_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/04_system/nabi_anim_022_error_dizzy",
+      "gentle_semantic": "calm_retry",
+      "id": "nabi_anim_022_error_dizzy",
+      "legacy_id": "NABI_ANIM_022_error_dizzy",
+      "loop": true,
+      "module": "04_system",
+      "motion_profile": "retry",
+      "spritesheet": "02_spritesheets/04_system/nabi_anim_022_error_dizzy_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/05_views/nabi_anim_023_meal_scan_food",
+      "gentle_semantic": "meal_guidance",
+      "id": "nabi_anim_023_meal_scan_food",
+      "legacy_id": "NABI_ANIM_023_meal_scan_food",
+      "loop": true,
+      "module": "05_views",
+      "motion_profile": "meal",
+      "spritesheet": "02_spritesheets/05_views/nabi_anim_023_meal_scan_food_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/05_views/nabi_anim_024_exercise_cheer",
+      "gentle_semantic": "movement_encouragement",
+      "id": "nabi_anim_024_exercise_cheer",
+      "legacy_id": "NABI_ANIM_024_exercise_cheer",
+      "loop": true,
+      "module": "05_views",
+      "motion_profile": "cheer",
+      "spritesheet": "02_spritesheets/05_views/nabi_anim_024_exercise_cheer_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/05_views/nabi_anim_025_profile_greeting",
+      "gentle_semantic": "profile_greeting",
+      "id": "nabi_anim_025_profile_greeting",
+      "legacy_id": "NABI_ANIM_025_profile_greeting",
+      "loop": true,
+      "module": "05_views",
+      "motion_profile": "greet",
+      "spritesheet": "02_spritesheets/05_views/nabi_anim_025_profile_greeting_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/05_views/nabi_anim_026_membership_vip_sparkle",
+      "gentle_semantic": "membership_welcome",
+      "id": "nabi_anim_026_membership_vip_sparkle",
+      "legacy_id": "NABI_ANIM_026_membership_vip_sparkle",
+      "loop": true,
+      "module": "05_views",
+      "motion_profile": "premium",
+      "spritesheet": "02_spritesheets/05_views/nabi_anim_026_membership_vip_sparkle_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/05_views/nabi_anim_027_critical_alert_guard",
+      "gentle_semantic": "safety_guard",
+      "id": "nabi_anim_027_critical_alert_guard",
+      "legacy_id": "NABI_ANIM_027_critical_alert_guard",
+      "loop": true,
+      "module": "05_views",
+      "motion_profile": "guard",
+      "spritesheet": "02_spritesheets/05_views/nabi_anim_027_critical_alert_guard_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/05_views/nabi_anim_028_empty_state_peek",
+      "gentle_semantic": "empty_state_invitation",
+      "id": "nabi_anim_028_empty_state_peek",
+      "legacy_id": "NABI_ANIM_028_empty_state_peek",
+      "loop": true,
+      "module": "05_views",
+      "motion_profile": "empty",
+      "spritesheet": "02_spritesheets/05_views/nabi_anim_028_empty_state_peek_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/05_views/nabi_anim_029_onboarding_welcome",
+      "gentle_semantic": "onboarding_welcome",
+      "id": "nabi_anim_029_onboarding_welcome",
+      "legacy_id": "NABI_ANIM_029_onboarding_welcome",
+      "loop": true,
+      "module": "05_views",
+      "motion_profile": "welcome",
+      "spritesheet": "02_spritesheets/05_views/nabi_anim_029_onboarding_welcome_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 384,
+        "width": 384
+      },
+      "frames_path": "01_character/02_30fps_frames/05_views/nabi_anim_030_dashboard_morning",
+      "gentle_semantic": "morning_check_in",
+      "id": "nabi_anim_030_dashboard_morning",
+      "legacy_id": "NABI_ANIM_030_dashboard_morning",
+      "loop": true,
+      "module": "05_views",
+      "motion_profile": "morning",
+      "spritesheet": "02_spritesheets/05_views/nabi_anim_030_dashboard_morning_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    }
+  ],
+  "asset_contract": {
+    "character_frame_canvas_px": 384,
+    "color_model": "rgba",
+    "effect_frame_canvas_px": 256,
+    "expression_canvas_px": 512,
+    "format": "png",
+    "fps": 30,
+    "frames_per_sequence": 30,
+    "physical_paths_lowercase": true,
+    "static_canvas_px": 512,
+    "transparent_background": true
+  },
+  "character": {
+    "description": "gender-neutral botanical seed spirit; derived from an approved master",
+    "id": "nabi_v2"
+  },
+  "effects": [
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 256,
+        "width": 256
+      },
+      "frames_path": "03_effects/01_png_frames/nabi_effect_heart_burst",
+      "gentle_semantic": "care_burst",
+      "id": "nabi_effect_heart_burst",
+      "legacy_id": "NABI_EFFECT_heart_burst",
+      "motion_profile": "care_burst",
+      "spritesheet": "03_effects/02_spritesheets/nabi_effect_heart_burst_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 256,
+        "width": 256
+      },
+      "frames_path": "03_effects/01_png_frames/nabi_effect_sparkle_loop",
+      "gentle_semantic": "soft_sparkle",
+      "id": "nabi_effect_sparkle_loop",
+      "legacy_id": "NABI_EFFECT_sparkle_loop",
+      "motion_profile": "sparkle",
+      "spritesheet": "03_effects/02_spritesheets/nabi_effect_sparkle_loop_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 256,
+        "width": 256
+      },
+      "frames_path": "03_effects/01_png_frames/nabi_effect_tear_drop",
+      "gentle_semantic": "care_drop",
+      "id": "nabi_effect_tear_drop",
+      "legacy_id": "NABI_EFFECT_tear_drop",
+      "motion_profile": "care_drop",
+      "spritesheet": "03_effects/02_spritesheets/nabi_effect_tear_drop_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 256,
+        "width": 256
+      },
+      "frames_path": "03_effects/01_png_frames/nabi_effect_angry_steam",
+      "gentle_semantic": "calm_breath",
+      "id": "nabi_effect_angry_steam",
+      "legacy_id": "NABI_EFFECT_angry_steam",
+      "motion_profile": "calm_breath",
+      "spritesheet": "03_effects/02_spritesheets/nabi_effect_angry_steam_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 256,
+        "width": 256
+      },
+      "frames_path": "03_effects/01_png_frames/nabi_effect_confetti",
+      "gentle_semantic": "leaf_celebration",
+      "id": "nabi_effect_confetti",
+      "legacy_id": "NABI_EFFECT_confetti",
+      "motion_profile": "celebrate",
+      "spritesheet": "03_effects/02_spritesheets/nabi_effect_confetti_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 256,
+        "width": 256
+      },
+      "frames_path": "03_effects/01_png_frames/nabi_effect_warning_pulse",
+      "gentle_semantic": "safety_pulse",
+      "id": "nabi_effect_warning_pulse",
+      "legacy_id": "NABI_EFFECT_warning_pulse",
+      "motion_profile": "safety",
+      "spritesheet": "03_effects/02_spritesheets/nabi_effect_warning_pulse_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    },
+    {
+      "fps": 30,
+      "frame_count": 30,
+      "frame_pattern": "frame_%04d.png",
+      "frame_size_px": {
+        "height": 256,
+        "width": 256
+      },
+      "frames_path": "03_effects/01_png_frames/nabi_effect_leaf_spinner",
+      "gentle_semantic": "leaf_orbit",
+      "id": "nabi_effect_leaf_spinner",
+      "legacy_id": "NABI_EFFECT_leaf_spinner",
+      "motion_profile": "orbit",
+      "spritesheet": "03_effects/02_spritesheets/nabi_effect_leaf_spinner_spritesheet_10x3.png",
+      "spritesheet_columns": 10
+    }
+  ],
+  "generator": {
+    "name": "generate_nabi_v2_assets.py",
+    "version": "1.0.0"
+  },
+  "master": {
+    "alpha_range": {
+      "max": 255,
+      "min": 0
+    },
+    "approved_pose_anchors": [
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1536,
+          "left": 0,
+          "right": 795,
+          "top": 138
+        },
+        "filename": "nabi_v2_thinking.png",
+        "semantic": "thinking",
+        "sha256": "0069ff0ca3f3d43115d6a52336ea1d6f3d5726ae460d0e5b57a1850e2a28b12a",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": false
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1536,
+          "left": 99,
+          "right": 907,
+          "top": 146
+        },
+        "filename": "nabi_v2_celebrate.png",
+        "semantic": "celebrate",
+        "sha256": "712d53d7d94b68bd6a90a68d0cfddffd2082a37356918f85cf3243e3e0cd8a24",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": true
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1353,
+          "left": 168,
+          "right": 764,
+          "top": 175
+        },
+        "filename": "nabi_v2_calm.png",
+        "semantic": "calm",
+        "sha256": "bd839b50570861ffb927f21e805059fee5481e6e823b2ef5b746f309e5bdc2cd",
+        "source_size_px": {
+          "height": 1536,
+          "width": 1024
+        },
+        "transparent_corners": true
+      },
+      {
+        "alpha_range": {
+          "max": 255,
+          "min": 0
+        },
+        "content_bbox": {
+          "bottom": 1281,
+          "left": 146,
+          "right": 880,
+          "top": 147
+        },
+        "filename": "nabi_v2_prompt.png",
+        "semantic": "prompt",
+        "sha256": "179faf5125dd10ba6d9db149df8a6051b5902118152bee7cd2b73585c2c2e09c",
+        "source_size_px": {
+          "height": 1537,
+          "width": 1023
+        },
+        "transparent_corners": true
+      }
+    ],
+    "content_bbox": {
+      "bottom": 1287,
+      "left": 147,
+      "right": 905,
+      "top": 155
+    },
+    "filename": "nabi_v2_master.png",
+    "sha256": "9721839816a129559bc17a4026c6072d5e5f5c7a2a1ce5b5d54c2d2451542263",
+    "source_size_px": {
+      "height": 1536,
+      "width": 1024
+    },
+    "transparent_corners": true
+  },
+  "schema_version": "nabi-v2-assets-1.0"
+}

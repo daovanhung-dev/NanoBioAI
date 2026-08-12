@@ -8,35 +8,44 @@ import 'package:nano_app/core/theme/app_theme.dart';
 import 'package:nano_app/core/theme/tokens/color_tokens.dart';
 
 void main() {
-  test('release cutover is explicit while development defaults to Green', () {
+  test('Green is the default and false remains the explicit Blue rollback', () {
     final source = File(
       'lib/core/theme/app_theme_flags.dart',
     ).readAsStringSync();
-    expect(source, contains('defaultValue: !kReleaseMode'));
-    expect(source, contains('STITCH_GREEN_UI_ENABLED=true'));
+    expect(source, contains('defaultValue: true'));
+    expect(source, contains('STITCH_GREEN_UI_ENABLED=false'));
+    expect(source, isNot(contains('kReleaseMode')));
   });
 
-  test('compile-time cutover selects one internally consistent palette', () {
-    final expectedPrimary = AppTheme.stitchGreenUiEnabled
-        ? const Color(0xFF006A46)
-        : const Color(0xFF2F6FED);
-    final expectedCtaStart = AppTheme.stitchGreenUiEnabled
-        ? const Color(0xFF0F8E62)
-        : const Color(0xFF245CC5);
-    final expectedCtaEnd = AppTheme.stitchGreenUiEnabled
-        ? const Color(0xFF32C789)
-        : const Color(0xFF4D8DF7);
+  test(
+    'compile-time cutover selects the expected internally consistent palette',
+    () {
+      const expectsGreen = bool.fromEnvironment(
+        'STITCH_GREEN_UI_ENABLED',
+        defaultValue: true,
+      );
+      final expectedPrimary = expectsGreen
+          ? const Color(0xFF006A46)
+          : const Color(0xFF2F6FED);
+      final expectedCtaStart = expectsGreen
+          ? const Color(0xFF0F8E62)
+          : const Color(0xFF245CC5);
+      final expectedCtaEnd = expectsGreen
+          ? const Color(0xFF32C789)
+          : const Color(0xFF4D8DF7);
 
-    expect(AppColors.primary, expectedPrimary);
-    expect(AppColorTokens.primary, expectedPrimary);
-    expect(AppGradients.primary.colors, [expectedCtaStart, expectedCtaEnd]);
-    expect(AppTheme.lightTheme.colorScheme.primary, expectedPrimary);
+      expect(AppTheme.stitchGreenUiEnabled, expectsGreen);
+      expect(AppColors.primary, expectedPrimary);
+      expect(AppColorTokens.primary, expectedPrimary);
+      expect(AppGradients.primary.colors, [expectedCtaStart, expectedCtaEnd]);
+      expect(AppTheme.lightTheme.colorScheme.primary, expectedPrimary);
 
-    final expectedDark = ColorScheme.fromSeed(
-      seedColor: expectedPrimary,
-      brightness: Brightness.dark,
-      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-    );
-    expect(AppTheme.darkTheme.colorScheme.primary, expectedDark.primary);
-  });
+      final expectedDark = ColorScheme.fromSeed(
+        seedColor: expectedPrimary,
+        brightness: Brightness.dark,
+        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+      );
+      expect(AppTheme.darkTheme.colorScheme.primary, expectedDark.primary);
+    },
+  );
 }

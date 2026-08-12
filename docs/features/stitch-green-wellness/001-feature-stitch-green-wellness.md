@@ -39,10 +39,10 @@ Các nghiệp vụ sức khỏe, AI, FamilyPlus chat, Sale mở rộng và healt
 
 | Build | Không truyền dart-define | Giá trị tường minh |
 |---|---|---|
-| Debug/Profile | Green bật để QA | `false` quay về Blue; `true` giữ Green |
-| Release | Blue để fail closed | Chỉ `true` mới opt-in Green; `false` là rollback |
+| Debug/Profile | Green mặc định | `false` quay về Blue; `true` giữ Green |
+| Release | Green mặc định, để `flutter build apk` có cùng palette với `flutter run` | `false` là rollback Blue trong một release; `true` giữ Green |
 
-Không phát hành Green toàn hệ thống chỉ dựa trên registry. Release chỉ được opt-in sau khi đủ visual/accessibility/behavior gate và các phê duyệt liên quan.
+Green là default presentation cho mọi build mode để đồng bộ palette; điều này không thay thế các visual/accessibility/behavior gate hay các phê duyệt liên quan. `STITCH_GREEN_UI_ENABLED=false` là đường rollback Blue tạm thời, chỉ có giá trị trong một release.
 
 ### Baseline và surface an toàn
 
@@ -82,5 +82,5 @@ Không phát hành Green toàn hệ thống chỉ dựa trên registry. Release 
 
 - Chạy formatter, full `flutter analyze`, full `flutter test`, architecture/integration suite và `flutter build apk --debug` sau khi merge tất cả lát cắt.
 - Tạo golden light/dark ở 390×884 và adaptive checks 320/360/412/600+, gồm text scale, focus, reduced motion và không overflow.
-- Chỉ opt-in Green cho release khi 76 surface đạt gate; giữ rollback flag ít nhất một release.
+- Release mặc định Green; xác minh `flutter build apk` cho cùng palette với `flutter run`. Giữ `--dart-define=STITCH_GREEN_UI_ENABLED=false` là rollback Blue trong một release; điều này không được xem là evidence gate đã đạt.
 - Không claim production-ready trước clinical/privacy approval, store permission review, asset license check, Supabase/RLS acceptance và escrow key ceremony khi chat được triển khai.

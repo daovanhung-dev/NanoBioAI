@@ -2,25 +2,27 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 21 worklog(s).
+- Generated from 25 worklog(s).
 
 ## When To Read
 
+- Historical task type: unknown (9)
 - Historical task type: docs-context (8)
-- Historical task type: unknown (7)
 - Historical task type: docs (5)
+- Historical task type: coding / visual asset integration (1)
+- Historical task type: coding - pha khao sat/checklist/plan, chua coding runtime (1)
 - Historical task type: docs/context update (1)
 
 ## Common Modules
 
-- unknown: 7
+- unknown: 9
 - .codex: 2
-- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
-- docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
-- .codex, root AGENTS.md, .agents skill bridge: 1
-- docs/checklist, technical debt audit summary: 1
-- docs/prompts/bootstrap-ai-context.md: 1
 - .codex, agent context, docs integrity: 1
+- docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
+- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
+- docs/prompts/bootstrap-ai-context.md: 1
+- UI / Theme / NabiCopy, toan bo app surfaces: 1
+- docs/checklist, technical debt audit summary: 1
 
 ## Work Pattern
 

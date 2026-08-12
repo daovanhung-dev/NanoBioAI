@@ -2,14 +2,16 @@
 
 - Canonical key: find-issues
 - Workflow: .codex/workflows/find-issues.md
-- Generated from 1 worklog(s).
+- Generated from 2 worklog(s).
 
 ## When To Read
 
+- Historical task type: docs-context / UI design audit / coding plan (1)
 - Historical task type: review/audit/docs (1)
 
 ## Common Modules
 
+- UI, Theme, Motion, Sound, Haptic, Nabi, toàn bộ presentation layer: 1
 - toàn dự án, trọng tâm AI, Features Hub, route guard, onboarding logging, release checks: 1
 
 ## Work Pattern
@@ -29,3 +31,4 @@
 ## Source Worklogs
 
 - [Worklog - Release 1.0 bug audit](../../docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md) - toàn dự án, trọng tâm AI, Features Hub, route guard, onboarding logging, release checks
+- [Worklog - Nabi Kinetic Aura design toàn bộ UI](../../docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md) - UI, Theme, Motion, Sound, Haptic, Nabi, toàn bộ presentation layer
