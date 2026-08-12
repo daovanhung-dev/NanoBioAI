@@ -12,9 +12,11 @@ void main() {
         confirmResponse: _request(status: 'pending_review'),
       );
       final accessRefreshes = _AccessRefreshCounter();
+      final projectionRefreshes = _ProjectionRefreshCounter();
       final container = _container(
         repository: repository,
         accessRefreshes: accessRefreshes,
+        projectionRefreshes: projectionRefreshes,
       );
       addTearDown(container.dispose);
 
@@ -31,11 +33,12 @@ void main() {
       expect(request.isPendingReview, isTrue);
       expect(repository.confirmCallCount, 1);
       expect(accessRefreshes.count, 1);
+      expect(projectionRefreshes.count, 0);
     },
   );
 
   test(
-    'refreshes effective access only after the backend returns succeeded',
+    'refreshes trusted access and local projection only after succeeded',
     () async {
       final repository = _SequencePaymentRepository(
         currentResponses: [
@@ -46,9 +49,11 @@ void main() {
         confirmResponse: _request(status: 'pending_review'),
       );
       final accessRefreshes = _AccessRefreshCounter();
+      final projectionRefreshes = _ProjectionRefreshCounter();
       final container = _container(
         repository: repository,
         accessRefreshes: accessRefreshes,
+        projectionRefreshes: projectionRefreshes,
       );
       addTearDown(container.dispose);
 
@@ -63,13 +68,53 @@ void main() {
           .refresh();
       await _flush();
       expect(accessRefreshes.count, 1);
+      expect(projectionRefreshes.count, 0);
 
       await container
           .read(membershipPaymentControllerProvider.notifier)
           .refresh();
       await container.read(effectiveAccessProvider.future);
+      await _flush();
 
       expect(accessRefreshes.count, 2);
+      expect(projectionRefreshes.count, 1);
+    },
+  );
+
+  test(
+    'does not repeat access/projection refresh for the same succeeded payment',
+    () async {
+      final repository = _SequencePaymentRepository(
+        currentResponses: [
+          _request(status: 'succeeded'),
+          _request(status: 'succeeded'),
+        ],
+        confirmResponse: _request(status: 'pending_review'),
+      );
+      final accessRefreshes = _AccessRefreshCounter();
+      final projectionRefreshes = _ProjectionRefreshCounter();
+      final container = _container(
+        repository: repository,
+        accessRefreshes: accessRefreshes,
+        projectionRefreshes: projectionRefreshes,
+      );
+      addTearDown(container.dispose);
+
+      final subscription = container.listen(effectiveAccessProvider, (_, _) {});
+      addTearDown(subscription.close);
+      await container.read(effectiveAccessProvider.future);
+      await container.read(membershipPaymentControllerProvider.future);
+      await _flush();
+      final refreshCountAfterLoad = accessRefreshes.count;
+      expect(projectionRefreshes.count, 1);
+
+      await container
+          .read(membershipPaymentControllerProvider.notifier)
+          .refresh();
+      await _flush();
+
+      expect(accessRefreshes.count, refreshCountAfterLoad);
+      expect(projectionRefreshes.count, 1);
     },
   );
 
@@ -80,9 +125,11 @@ void main() {
       cancelResponse: _request(status: 'cancelled'),
     );
     final accessRefreshes = _AccessRefreshCounter();
+    final projectionRefreshes = _ProjectionRefreshCounter();
     final container = _container(
       repository: repository,
       accessRefreshes: accessRefreshes,
+      projectionRefreshes: projectionRefreshes,
     );
     addTearDown(container.dispose);
 
@@ -100,6 +147,7 @@ void main() {
     expect(request.canCancel, isFalse);
     expect(repository.cancelCallCount, 1);
     expect(accessRefreshes.count, 1);
+    expect(projectionRefreshes.count, 0);
   });
 
   test(
@@ -115,9 +163,11 @@ void main() {
         createError: StateError('MEMBERSHIP_PAYMENT_REQUEST_ALREADY_OPEN'),
       );
       final accessRefreshes = _AccessRefreshCounter();
+      final projectionRefreshes = _ProjectionRefreshCounter();
       final container = _container(
         repository: repository,
         accessRefreshes: accessRefreshes,
+        projectionRefreshes: projectionRefreshes,
       );
       addTearDown(container.dispose);
 
@@ -133,6 +183,7 @@ void main() {
         container.read(membershipPaymentControllerProvider).value?.request?.id,
         'existing-payment',
       );
+      expect(projectionRefreshes.count, 0);
     },
   );
 }
@@ -140,6 +191,7 @@ void main() {
 ProviderContainer _container({
   required MembershipPaymentRepository repository,
   required _AccessRefreshCounter accessRefreshes,
+  required _ProjectionRefreshCounter projectionRefreshes,
 }) {
   return ProviderContainer(
     overrides: [
@@ -147,6 +199,11 @@ ProviderContainer _container({
       membershipPaymentRepositoryProvider.overrideWithValue(repository),
       membershipPaymentPayerProfileRepositoryProvider.overrideWithValue(
         const _PayerProfileRepository(),
+      ),
+      membershipPaymentApprovedProjectionRefreshProvider.overrideWithValue(
+        () async {
+          projectionRefreshes.count++;
+        },
       ),
       effectiveAccessProvider.overrideWith((ref) async {
         accessRefreshes.count++;
@@ -159,6 +216,10 @@ ProviderContainer _container({
 Future<void> _flush() => Future<void>.delayed(Duration.zero);
 
 class _AccessRefreshCounter {
+  int count = 0;
+}
+
+class _ProjectionRefreshCounter {
   int count = 0;
 }
 
@@ -240,8 +301,8 @@ MembershipPaymentRequest _request({
     'status': status,
     'amount_cents': 399000,
     'currency': 'VND',
-    'transfer_reference': 'NB1234567890',
-    'transfer_memo': 'NB1234567890 NGUYEN AN',
+    'transfer_reference': 'NB12AB34CD56EF',
+    'transfer_memo': 'NB12AB34CD56EF',
     'bank_bin': '970436',
     'bank_account_number': '1026806174',
     'bank_account_name': 'LE PHU THACH',

@@ -1,5 +1,11 @@
 const membershipPaymentRoutePath = '/v2/payments';
 
+const membershipTransferReferencePattern = r'^NB[0-9A-F]{12}$';
+
+final RegExp _membershipTransferReferenceRegExp = RegExp(
+  membershipTransferReferencePattern,
+);
+
 abstract final class MembershipUpgradePlan {
   static const plus = 'plus';
   static const familyPlus = 'family_plus';
@@ -12,6 +18,14 @@ String normalizeMembershipUpgradePlan(String? planCode) {
   return normalized == MembershipUpgradePlan.familyPlus
       ? MembershipUpgradePlan.familyPlus
       : MembershipUpgradePlan.plus;
+}
+
+String? normalizeMembershipTransferReference(String? value) {
+  final normalized = value?.trim().toUpperCase();
+  if (normalized == null || normalized.isEmpty) return null;
+  return _membershipTransferReferenceRegExp.hasMatch(normalized)
+      ? normalized
+      : null;
 }
 
 String membershipUpgradeActionLabel(String? planCode) {

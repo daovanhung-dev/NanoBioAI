@@ -68,8 +68,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(QrImageView), findsOneWidget);
-    expect(find.text('NB1234567890'), findsWidgets);
-    expect(find.text('NB1234567890 NGUYEN AN'), findsNothing);
+    expect(find.text('NB12AB34CD56EF'), findsWidgets);
+    expect(find.text('NB12AB34CD56EF NGUYEN AN'), findsNothing);
     expect(find.text('1026806174'), findsOneWidget);
     expect(find.text('Lê Phú Thạch'), findsOneWidget);
     expect(find.text('Nguyễn Thanh An'), findsOneWidget);
@@ -97,7 +97,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Sao chép nội dung'));
     await tester.pump();
-    expect(copiedMemo, 'NB1234567890');
+    expect(copiedMemo, 'NB12AB34CD56EF');
     await tester.tap(confirmButton);
     await tester.pumpAndSettle();
     expect(find.text('Xác nhận đã chuyển khoản'), findsOneWidget);
@@ -107,6 +107,37 @@ void main() {
 
     expect(repository.confirmCallCount, 1);
     expect(find.textContaining('chờ duyệt'), findsWidgets);
+  });
+
+  testWidgets('blocks QR rendering for a non-canonical transfer reference', (
+    tester,
+  ) async {
+    final repository = _FakeMembershipPaymentRepository(
+      currentRequest: _request(
+        status: 'awaiting_transfer',
+        transferReference: 'NB12AB34CD56EG',
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          membershipPaymentCurrentUserIdProvider.overrideWithValue('user-1'),
+          membershipPaymentRepositoryProvider.overrideWithValue(repository),
+          membershipPaymentPayerProfileRepositoryProvider.overrideWithValue(
+            const _FakePayerProfileRepository('Nguyễn Thanh An'),
+          ),
+        ],
+        child: const MaterialApp(home: MembershipPaymentPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(QrImageView), findsNothing);
+    expect(find.text('Đã chuyển khoản'), findsNothing);
+    expect(
+      find.textContaining('Chưa tải đủ thông tin nhận tiền'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('blocks QR creation when the local payer name is blank', (
@@ -192,6 +223,9 @@ void main() {
           membershipPaymentRepositoryProvider.overrideWithValue(repository),
           membershipPaymentPayerProfileRepositoryProvider.overrideWithValue(
             const _FakePayerProfileRepository('Nguyễn Thanh An'),
+          ),
+          membershipPaymentApprovedProjectionRefreshProvider.overrideWithValue(
+            () async {},
           ),
         ],
         child: const MaterialApp(home: MembershipPaymentPage()),
@@ -281,6 +315,7 @@ MembershipPaymentRequest _request({
   String id = 'payment-1',
   String planCode = 'plus',
   String billingCycle = 'monthly',
+  String transferReference = 'NB12AB34CD56EF',
 }) {
   return MembershipPaymentRequest.fromMap({
     'payment_event_id': id,
@@ -289,8 +324,8 @@ MembershipPaymentRequest _request({
     'status': status,
     'amount_cents': 399000,
     'currency': 'VND',
-    'transfer_reference': 'NB1234567890',
-    'transfer_memo': 'NB1234567890 NGUYEN AN',
+    'transfer_reference': transferReference,
+    'transfer_memo': '$transferReference NGUYEN AN',
     'payer_full_name': 'Nguyễn Thanh An',
     'bank_code': 'VCB',
     'bank_name': 'Vietcombank',

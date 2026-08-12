@@ -6,145 +6,175 @@
 |---|---|
 | Module Code | PAYMENT_MEMBERSHIP |
 | BD Module | M13 |
-| Version | v1.3 |
-| Status | Approved - DD docs complete |
-| Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16 |
-| Created Date | 2026-06-28 |
-| Last Updated | 2026-07-31 |
-| Release Scope | Project DD baseline for M01-M19 |
+| Version | v1.4 |
+| Status | Approved - DD docs complete; sandbox/UAT acceptance pending |
+| Source BD | BD-BIOAI-PRODUCT-FLOW-002 + approved M13 VietQR hardening delta 2026-08-12 |
+| Last Updated | 2026-08-12 |
 
 ## 2. Business Goal
-Module này đảm bảo yêu cầu thanh toán VietQR không mở gói trước khi được duyệt, Admin approval có lý do/audit, refund/cancel tạo adjustment thay vì sửa lịch sử.
+
+Hoàn thiện luồng nâng cấp Plus/FamilyPlus qua VietQR mà không tạo gói “VIP” mới. Quyền trả phí chỉ đến từ Supabase sau Finance/Super Admin review thành công.
+
+Luồng chuẩn:
+
+`Chạm giới hạn/quyền -> gợi ý nâng cấp -> QR Vietcombank -> khách xác nhận đã chuyển -> Finance/Super Admin đối chiếu VCB -> duyệt -> quyền gói có hiệu lực`
 
 ## 3. Module Scope
 
 ### In Scope
-- Tạo yêu cầu thanh toán VietQR Vietcombank với mã đối soát do server sinh.
-- Khách xác nhận “Đã chuyển khoản” để chuyển yêu cầu vào hàng chờ duyệt.
-- Admin có quyền payments.write xem thanh thông báo và duyệt/từ chối sau khi tự đối chiếu trong ứng dụng VCB.
-- Kích hoạt/gia hạn entitlement sau approved.
-- Refund/cancel/duplicate handling.
+
+- Shared upgrade CTA cho quota/gate Plus/FamilyPlus hiện có.
+- `/v2/payments?plan=plus|family_plus`, invalid value fallback Plus ở UI.
+- Server-owned price/bank/reference; VietQR memo chỉ chứa mã NB bất biến.
+- Create/get/confirm/cancel owner-scoped payment request.
+- Một open request trên mỗi user với lock + unique constraint.
+- Poll/resume refresh khi chờ duyệt; trusted access + local membership projection refresh sau `succeeded`.
+- Finance/Super-only Admin alert/queue/review, VCB verification confirmation, reason/idempotency/audit.
+- Finite subscription: same-plan renewal, immediate Plus ↔ FamilyPlus switch, calendar month/year.
+- Non-destructive Supabase migration + `config.sql` rebuild contract + acceptance tests.
 
 ### Out of Scope
-- Tích hợp API ngân hàng, webhook, tự động đối soát, hoặc hiển thị số dư ngân hàng.
-- Tải biên lai/chứng từ chuyển khoản.
-- Payout Sale.
-- Provider-specific chargeback integration details beyond the accepted 24h refund/cancel policy.
+
+- Bank API, webhook, balance integration, automatic payment confirmation.
+- Upload receipt/biên lai.
+- Production rollout trong đợt này.
+- Tự sửa/đoán hạn cho legacy paid subscription thiếu `ends_at`.
 
 ## 4. Roles and Permissions
 
-| Role | Permissions in This Module | Limitations |
+| Role | Permission in M13 | Limitation |
 |---|---|---|
-| Member, Admin | Use module features according to BD sections 3, 5, and BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16. | Must not bypass entitlement, ownership, family consent, Sale/Admin scope, or audit rules. |
-| System | Validate state, apply business rules, write events/audit where required. | Must be idempotent and must follow accepted product decisions. |
-| Admin/Super Admin | Operate only where BD grants admin responsibility. | Backend/API must reject missing permission; UI hiding is not sufficient. |
+| Member | Tạo/đọc/xác nhận/hủy request của chính mình. | Không ghi trực tiếp payment/subscription/quota; không tự cấp quyền. |
+| Finance Admin | Xem alert/queue, đối chiếu VCB, approve/reject. | Bắt buộc reason; approve bắt buộc xác nhận reconciliation. |
+| Super Admin | Như Finance Admin. | Bắt buộc cùng backend policy/audit. |
+| Support Admin | Không xem/không review payment. | Backend và UI đều deny. |
+| Content Admin | Không xem/không review payment. | Backend và UI đều deny. |
+| Operations Admin | Không xem/không review payment. | Backend và UI đều deny. |
+| System | Enforce ownership, transition, idempotency, finite access, audit. | Không tin route/local metadata để cấp quyền. |
 
 ## 5. Primary Entities/Data
 
-| Entity ID | Entity | Purpose | Important Attributes | Relationships |
-|---|---|---|---|---|
-| PAYMENT_MEMBERSHIP-E-payment_transaction | Payment Transaction | Giao dịch gói | user, plan, amount, status, transaction reference | Source for entitlement and commission |
-| PAYMENT_MEMBERSHIP-E-payment_approval | Payment Approval | Lịch sử duyệt payment | payment, admin, decision, reason, time | Audit and entitlement source |
-| PAYMENT_MEMBERSHIP-E-membership_entitlement | Membership Entitlement | Quyền gói | plan, start/end, source payment | Used by access gates |
+| Entity | Purpose | Important attributes |
+|---|---|---|
+| Payment Event | Bằng chứng/yêu cầu thanh toán | payer, plan, cycle, amount, status, immutable NB reference, payer snapshot, bank snapshot |
+| Membership Subscription | Nguồn quyền trả phí | plan, status, starts_at, ends_at, current_period_start/end, source payment |
+| Admin Audit Event | Truy vết review | actor, decision, reason, payment, transition, superseded subscriptions, time |
+| Effective User Access | Trusted read-model | current membership plan / product access |
 
 ## 6. States and State Transitions
 
-| Entity / Group | States | Notes |
-|---|---|---|
-| Payment / Entitlement | Payment: awaiting_transfer → pending_review → succeeded hoặc failed; bản ghi pending cũ vẫn để Admin xử lý. Entitlement: pending, active, expired, suspended, cancelled | Chỉ succeeded sau Admin approval mới kích hoạt quyền. |
+### Payment
+
+`awaiting_transfer -> pending_review -> succeeded | failed`
+
+`awaiting_transfer -> canceled` chỉ do owner trước khi xác nhận chuyển khoản.
+
+Legacy `pending` vẫn review được để tương thích migration, nhưng request mới không tạo trạng thái này.
+
+### Subscription
+
+- New purchase: tạo `active` với finite period.
+- Same plan: gia hạn row hiện tại từ expiry còn hiệu lực.
+- Cross plan: cancel/supersede active khác plan ngay lúc duyệt rồi activate plan mới.
+- Legacy active paid + `ends_at IS NULL`: block approval.
 
 ## 7. Business Rules
 
-| ID | Rule | Applied At | Criticality |
-|---|---|---|---|
-| PAYMENT_MEMBERSHIP-BR01 | Không kích hoạt Plus/FamilyPlus chỉ vì khách tạo yêu cầu thanh toán. | Payment creation, approval, entitlement activation, refund/cancel | Mandatory |
-| PAYMENT_MEMBERSHIP-BR02 | Chỉ payment_approved mới làm quyền gói hiệu lực và có thể kích hoạt Sale points. | Payment creation, approval, entitlement activation, refund/cancel | Mandatory |
-| PAYMENT_MEMBERSHIP-BR03 | Mã giao dịch là NB + 12 ký tự hex do Supabase sinh, duy nhất và bất biến. Nội dung chuyển khoản là mã đứng đầu, kèm tên khách chuẩn hóa ASCII không dấu, tối đa 25 ký tự. | Payment creation/retry | Mandatory |
-| PAYMENT_MEMBERSHIP-BR04 | Nút “Đã chuyển khoản” chỉ chuyển awaiting_transfer thành pending_review; không kích hoạt quyền và chỉ được dùng cho yêu cầu của chính khách. | Member confirmation | Mandatory |
-| PAYMENT_MEMBERSHIP-BR05 | Admin phải tự kiểm tra ứng dụng VCB theo mã giao dịch và số tiền trước khi duyệt. Không dùng số dư, webhook hoặc API ngân hàng trong NanoBio. | Admin review | Mandatory |
+| ID | Rule | Criticality |
+|---|---|---|
+| PAYMENT_MEMBERSHIP-BR01 | Create/confirm/pending request không kích hoạt Plus/FamilyPlus. | Mandatory |
+| PAYMENT_MEMBERSHIP-BR02 | Chỉ Admin approve làm payment `succeeded` và tạo/gia hạn/chuyển subscription. Reject không tạo quyền. | Mandatory |
+| PAYMENT_MEMBERSHIP-BR03 | `transfer_reference` phải khớp `^NB[0-9A-F]{12}$`; `transfer_memo = transfer_reference`. Payer name/plan/cycle không nằm trong memo. | Mandatory |
+| PAYMENT_MEMBERSHIP-BR04 | “Đã chuyển khoản” chỉ owner gọi được và chỉ `awaiting_transfer -> pending_review`. | Mandatory |
+| PAYMENT_MEMBERSHIP-BR05 | Chỉ Finance/Super review; approve bắt buộc xác nhận đã đối chiếu mã NB, số tiền, nội dung trong VCB; mọi quyết định có reason/audit. | Mandatory |
+| PAYMENT_MEMBERSHIP-BR06 | Owner chỉ hủy được `awaiting_transfer`; `canceled` replay idempotent; pending_review không hủy được. | Mandatory |
+| PAYMENT_MEMBERSHIP-BR07 | Mỗi payer tối đa một open manual membership request (`awaiting_transfer`/`pending_review`); lock transaction + partial unique index là backstop. | Mandatory |
+| PAYMENT_MEMBERSHIP-BR08 | Tháng = 1 tháng lịch, năm = 1 năm lịch theo `Asia/Ho_Chi_Minh`; same-plan renewal nối từ active `ends_at`; cross-plan switch hiệu lực ngay; legacy thiếu `ends_at` fail closed. | Mandatory |
+| PAYMENT_MEMBERSHIP-BR09 | Client không ghi trực tiếp payment/subscription/quota và không hard-code giá làm nguồn quyết định. | Mandatory |
 
 ## 8. Overall Operational Flow
 
-1. Member chọn gói và chu kỳ tại /v2/payments.
-2. Ứng dụng lấy họ tên từ SQLite theo Supabase user ID; nếu chưa có tên thì hướng dẫn cập nhật hồ sơ và không tạo QR.
-3. Supabase xác thực auth.uid(), tự tính giá theo gói, sinh/trả mã NB, nội dung chuyển khoản và cấu hình nhận tiền Vietcombank (BIN 970436, tài khoản 1026806174, Lê Phú Thạch).
-4. Ứng dụng dựng QR VietQR; khách chuyển tiền và bấm “Đã chuyển khoản”.
-5. Supabase chỉ chuyển trạng thái sang pending_review và lưu thời điểm xác nhận; quyền gói vẫn chưa thay đổi.
-6. Thanh thông báo của Admin có quyền payments.write hiển thị số yêu cầu pending_review. Admin mở hàng chờ, tự đối chiếu VCB theo mã/số tiền/nội dung rồi duyệt hoặc từ chối có lý do.
-7. Chỉ quyết định duyệt mới dùng logic kích hoạt gói hiện có; từ chối không kích hoạt quyền và lý do được trả cho khách.
+1. Gate/quota xác định plan đề xuất và điều hướng bằng shared upgrade helper.
+2. Payment screen chuẩn hóa `plan`; người dùng chọn Plus/FamilyPlus và monthly/yearly.
+3. App đọc họ tên local chỉ để gửi snapshot hiển thị; backend vẫn dùng `auth.uid()` làm owner.
+4. `create_membership_payment_request` lock payer, chặn open request khác, đọc giá/ngân hàng server config, sinh `NB + 12 hex`, đặt memo đúng bằng reference.
+5. UI dựng VietQR từ response server; chỉ mã NB được copy/encode.
+6. Owner có thể hủy khi `awaiting_transfer`, hoặc chuyển tiền và bấm “Đã chuyển khoản” để sang `pending_review`.
+7. Khi pending_review, payment screen refresh khi resume và mỗi 30 giây khi đang mở.
+8. Chỉ Finance/Super thấy alert/queue. Admin xem payer/gói/cycle/amount/reference/confirmed time, tự đối chiếu VCB rồi nhập reason; approve phải tick reconciliation.
+9. Backend review idempotent: reject -> failed; approve -> finite subscription và payment succeeded + audit.
+10. Client thấy `succeeded` thì invalidate trusted effective access; sau đó dùng authenticated cloud-sync hiện có kéo `users.subscription_tier` về SQLite và invalidate Dashboard. Client không tự set plan.
 
 ## 9. Integrations and Dependencies
 
-| Dependency | Type | Purpose | Failure Behavior |
-|---|---|---|---|
-| Auth/Profile | Internal/Supabase planned | Identify actor and ownership. | Block action or request login. |
-| SQLite profile | Internal/local | Provide customer full_name only for transfer-memo display. | Missing name blocks QR creation; local data never establishes payment ownership or access. |
-| VietQR/NAPAS payload | Client-side QR encoding | Present Vietcombank account, amount, reference and ASCII memo for bank transfer. | QR generation failure does not create rights; member can retry the same request. |
-| Membership/Entitlement | Internal/trusted backend planned | Apply Free/Plus/FamilyPlus access and quotas. | Keep previous state; do not grant paid access. |
-| Audit/Security | Cross-cutting | Trace sensitive changes. | Sensitive writes must fail or be queued safely if audit cannot be recorded. |
-| Module-specific dependencies | Internal | MEMBERSHIP_QUOTA: entitlement activation., REFERRAL_DIRECT: source referral., SALE_POINTS: points after approval., ADMIN_OPS/AUDIT_SECURITY: approval/audit. | Follow dependency owner DD and record conflict as an implementation issue or accepted exception. |
+| Dependency | Purpose | Failure Behavior |
+|---|---|---|
+| Supabase Auth | Owner/Admin actor | Fail closed. |
+| System config | Price + Vietcombank recipient | Missing/invalid config blocks create. |
+| SQLite profile | Payer full name prerequisite/display snapshot | Missing name blocks QR creation; không tạo quyền. |
+| Membership entitlement | Trusted access | Pending/cancel/reject không đổi quyền. |
+| Cloud sync + Dashboard | Đồng bộ local subscription label sau succeeded | Trusted effective access vẫn là authority; projection sync retry được. |
+| Admin/Audit | Reconciliation/review trace | Sensitive review must fail if backend policy/audit fails. |
+| VietQR | Client-side QR encoding từ server response | Invalid/non-canonical reference fail closed, không render confirmable QR. |
 
 ## 10. Non-Functional Requirements
 
-| Category | Requirement |
-|---|---|
-| Security | Enforce UI, route, use-case/API, and database/RLS layers for sensitive data and paid/Sale/Admin access. |
-| Data Integrity | Use unique business keys/idempotency for writes, especially payment, quota, point, family, notification, and admin actions. |
-| Privacy | Minimize health, family, payment, and referral data exposure by role. |
-| Observability | Log safe module status, correlation id, actor type, and audit-relevant changes only. |
-| Resilience | Dependency failures must not create duplicate rights, duplicate points, incorrect quota, or partial financial state. |
+- Security: owner scope + Admin role scope + RLS/table grants + RPC validation.
+- Integrity: idempotency + payer lock + unique open-request index + finite subscription periods.
+- Privacy: payer name là display/reconciliation metadata, không nằm trong memo; không lộ raw technical data cho UI không cần thiết.
+- Resilience: projection refresh failure không biến client thành authority; effective access luôn reload từ trusted backend.
+- Auditability: decision, actor, time, reason, reconciliation flag, transition và superseded subscription IDs được lưu/audit.
 
 ## 11. Risks, Assumptions, and Decisions
 
-| ID | Type | Content | Impact | Status |
-|---|---|---|---|---|
-| PAYMENT_MEMBERSHIP-RISK01 | Implementation evidence backlog | Runtime/sandbox evidence, final wireframes, and production acceptance remain outside DD completeness. | Implementation must produce evidence before production release. | Tracked |
-| PAYMENT_MEMBERSHIP-ASSUMPTION01 | Assumption | BD v2.0 plus user decisions from 2026-06-30 are the source of truth; legacy conflicting Sale/Admin logic is not implementation source. | Implementation must migrate or reject old behavior such as Sale tree, tier-2 commission, or 5 percent rules. | Active |
-| PAYMENT_MEMBERSHIP-Q-03 | Answered decision | What is the 10 percent commission base? | Commission is calculated from the listed package price. | Accepted - User decision 2026-06-30 |
-| PAYMENT_MEMBERSHIP-Q-04 | Answered decision | How do package periods and renewals work? | Plus and FamilyPlus support monthly and yearly plans. Early renewal extends from current expiry; late renewal starts from Admin approval time; pending payment never grants rights. | Accepted - User decision 2026-06-30 |
-| PAYMENT_MEMBERSHIP-Q-05 | Answered decision | How are refund, cancel, and chargeback handled after points are credited? | Refund/cancel is allowed only within 24 hours after purchase. Points are reversed immediately in that window. Because conversion is also locked for 24 hours, there is no converted-then-reversed case. | Accepted - User decision 2026-06-30 |
-| PAYMENT_MEMBERSHIP-Q-11 | Answered decision | How is FamilyPlus commission calculated? | FamilyPlus commission is calculated only on the package owner portion. | Accepted - User decision 2026-06-30 |
-| PAYMENT_MEMBERSHIP-Q-17 | Answered decision | Can webhook/trusted recorder approve payments automatically? | All payments and transfers are manually reviewed and manually approved by Admin. Trusted recorder may only create pending evidence; only Admin approval creates payment_approved. | Accepted - User decision 2026-06-30 |
-| PAYMENT_MEMBERSHIP-Q-18 | Answered decision | What is the VietQR payment and approval flow? | Member scans Vietcombank QR, confirms the transfer, then an Admin with payments.write manually compares the reference and amount in VCB before approving or rejecting. No receipt, bank API, webhook, or in-app balance is used. | Accepted - User decision 2026-07-31 |
+| ID | Type | Content | Status |
+|---|---|---|---|
+| PAYMENT_MEMBERSHIP-RISK01 | Acceptance | Supabase sandbox/RLS/two-session concurrency chưa có evidence trong phiên patch này. | Open |
+| PAYMENT_MEMBERSHIP-RISK02 | UAT | Chưa quét/đối soát QR bằng app VCB trong phiên patch này. | Open |
+| PAYMENT_MEMBERSHIP-ASSUMPTION01 | Product | Không webhook/API ngân hàng/upload receipt; manual VCB review là canonical flow. | Active |
+| PAYMENT_MEMBERSHIP-Q18 | Decision | Mã NB là reconciliation key duy nhất và memo duy nhất; Finance/Super review. | Accepted 2026-08-12 |
 
 ## 12. ADR Summary
 
-| ID | Decision | Context | Status |
-|---|---|---|---|
-| PAYMENT_MEMBERSHIP-ADR01 | Approve this module DD as docs-complete and track runtime/sandbox evidence separately. | The user requested DD docs 100 percent without changing runtime code or claiming sandbox evidence. | Accepted |
-| PAYMENT_MEMBERSHIP-ADR02 | Keep accepted product decisions as the module business contract. | Q-01..Q-18 are closed by user decision and recorded in the DD registry. | Accepted |
-| PAYMENT_MEMBERSHIP-ADR03 | Use a server-generated immutable reference and manual VCB review for VietQR payments. | It gives Admin a stable reconciliation key while avoiding bank credentials, balance access, webhooks, and receipt collection. | Accepted |
+| ID | Decision | Status |
+|---|---|---|
+| PAYMENT_MEMBERSHIP-ADR01 | Không tạo plan VIP; chỉ Plus/FamilyPlus. | Accepted |
+| PAYMENT_MEMBERSHIP-ADR02 | Reference-only VietQR memo; payer name tách khỏi transfer content. | Accepted |
+| PAYMENT_MEMBERSHIP-ADR03 | Finance/Super-only payment review cả backend/UI. | Accepted |
+| PAYMENT_MEMBERSHIP-ADR04 | Paid access finite và calendar-based; legacy missing expiry không được đoán. | Accepted |
+| PAYMENT_MEMBERSHIP-ADR05 | Sau approve, client refresh trusted access + existing cloud projection, không tự cấp quyền. | Accepted |
 
 ## 13. Traceability Matrix
 
-| BD/Requirement | Feature | Function | View | API | Test |
-|---|---|---|---|---|---|
-| BD sections 8.2, UC-15 | PAYMENT_MEMBERSHIP-F01 | PAYMENT_MEMBERSHIP-FN01 | PAYMENT_MEMBERSHIP-V01 | PAYMENT_MEMBERSHIP-API01 | PAYMENT_MEMBERSHIP-TC01 |
-| BD sections 8.4, AC-07/AC-08/AC-20/AC-21, UC-16 | PAYMENT_MEMBERSHIP-F02 | PAYMENT_MEMBERSHIP-FN02 | PAYMENT_MEMBERSHIP-V02 | PAYMENT_MEMBERSHIP-API02 | PAYMENT_MEMBERSHIP-TC02 |
+| Requirement | Runtime / SQL | Test evidence source |
+|---|---|---|
+| Shared upgrade route | core membership helper + V1/V2/V3 gates | membership_upgrade_route_test + membership_upgrade_gate_contract_test |
+| Exact NB-only QR | payment model + M13 SQL | membership_payment_test/page_test + Supabase contract/smoke |
+| Cancel/open-request | payment controller/repository + cancel/create RPC | controller tests + rollback SQL smoke |
+| Pending-review refresh | payment page lifecycle/timer | payment page widget test |
+| Trusted access refresh | payment controller + cloud sync + Dashboard provider | payment controller test |
+| Finance/Super-only review | Admin model/UI + reviewer SQL functions | Admin tests + rollback SQL smoke |
+| Renewal/switch/finite period | admin_review_payment | Supabase contract + rollback SQL smoke |
+| RLS/direct writes | grants/RLS | rollback SQL smoke; sandbox execution pending |
 
 ## 14. Approval Checklist
 
-- [x] Scope and out-of-scope reviewed for DD docs completeness.
-- [x] Business rules reviewed for DD docs completeness.
-- [x] UI states reviewed for DD docs completeness.
-- [x] API/schema/RLS contracts documented for implementation planning.
-- [x] Product decisions answered or accepted as explicit implementation policy.
+- [x] Product decisions closed for coding.
+- [x] Source/SQL contract defined.
+- [x] Static/widget/unit test source added for hardening delta.
+- [x] Rollback-only executable SQL acceptance script added.
+- [ ] Run targeted Flutter tests/analyze in a full checkout.
+- [ ] Execute SQL smoke in disposable Supabase local/sandbox.
+- [ ] Run true two-session concurrent create test.
+- [ ] Run VCB QR scan/manual reconciliation UAT.
+- [ ] Production rollout — explicitly out of scope for this iteration.
 
-## 15. Accepted Product Decision Contract
+## 15. Implementation Evidence Backlog
 
-| ID | Accepted Policy | Implementation Contract | Source |
-|---|---|---|---|
-| Q-03 | Commission is calculated from the listed package price. | Commission ledger stores listed_price, commission_rate_version, computed_points, payment_id, and immutable formula version. | User decision 2026-06-30 |
-| Q-04 | Plus and FamilyPlus support monthly and yearly plans. Early renewal extends from current expiry; late renewal starts from Admin approval time; pending payment never grants rights. | Entitlement activation is created only by approved payment and calculates start/end from current active expiry or approval time. | User decision 2026-06-30 |
-| Q-05 | Refund/cancel is allowed only within 24 hours after purchase. Points are reversed immediately in that window. Because conversion is also locked for 24 hours, there is no converted-then-reversed case. | Refund/cancel RPC requires approved payment age <= 24 hours, creates reversal ledger, and blocks conversion while payment is inside the hold window. | User decision 2026-06-30 |
-| Q-11 | FamilyPlus commission is calculated only on the package owner portion. | Payment line items separate owner portion from dependent member portions; commission uses owner portion only. | User decision 2026-06-30 |
-| Q-17 | All payments and transfers are manually reviewed and manually approved by Admin. Trusted recorder may only create pending evidence; only Admin approval creates payment_approved. | Payment write path separates evidence capture from approval; payment_approved requires Admin actor, reason/reference, idempotency, and audit. | User decision 2026-06-30 |
-| Q-18 | Member scans Vietcombank QR, confirms the transfer, then an Admin with payments.write manually compares the reference and amount in VCB before approving or rejecting. No receipt, bank API, webhook, or in-app balance is used. | Supabase creates immutable NB + 12 uppercase hex reference, snapshots the ≤25-character ASCII transfer memo and recipient details, accepts confirmation only from auth.uid(), and activates entitlement only in Admin approval. | User decision 2026-07-31 |
-
-### Implementation Evidence Backlog
-
-| Evidence Area | Required evidence before production acceptance | DD blocker? |
-|---|---|---|
-| Runtime/test/sandbox | Sandbox payment approval, entitlement activation, idempotency, and provider evidence. | No - tracked outside DD completeness |
-| Coding progress | Update only when code, tests, SQL/RPC, or sandbox evidence changes. | No |
-| Production acceptance | Requires implementation workflow evidence and worklog command output. | No |
+| Evidence Area | Required before production acceptance |
+|---|---|
+| Flutter | Targeted format/analyze/test PASS on full checkout. |
+| Supabase | Migration/config execution, RLS/direct-write/reviewer/transition smoke PASS in disposable sandbox. |
+| Concurrency | Two authenticated sessions prove only one open request per payer. |
+| Bank UAT | QR resolves correct VCB account/amount and exact NB-only content; Finance/Super can manually reconcile and approve. |
+| Docs/worklog | Record exact commands/results; keep NB-RISK-001 open until external evidence exists. |

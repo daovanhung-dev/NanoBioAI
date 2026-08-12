@@ -2,76 +2,80 @@
 
 ## 0. Dependency Rules
 
-1. Presentation -> Provider/Controller -> Use case/Service -> Repository -> Datasource/API/DAO.
-2. Presentation must not import SQLite DAO, Supabase raw client, or payment/referral backend directly.
-3. Domain/use-case code must not import UI widgets or BuildContext.
-4. Shared utilities must not contain module-specific business logic.
-5. Secrets, service-role keys, payment evidence, and raw health data must not be hard-coded or committed.
+1. Presentation -> Provider/Controller -> Use case -> Repository -> Datasource/API/DAO.
+2. Presentation does not call SQLite DAO or raw Supabase client directly.
+3. Flutter never contains service-role keys and never creates trusted payment success locally.
+4. Membership/payment/quota authority is Supabase; SQLite is only a local projection/read-model.
+5. Shared upgrade/reference normalization belongs in `lib/core/membership/` and must not import app-version code.
 
 ## 1. Package / External Dependency Registry
 
-| ID | Package / Service | Version / Plan | Source | Purpose | Owner | Security Note |
-|---|---|---|---|---|---|---|
-| PAYMENT_MEMBERSHIP-DEP01 | Supabase / trusted backend | Planned contract | BD sections 13, 14, 17 | Auth, entitlement, RLS, Admin/Sale/payment data as applicable | Backend/Tech Lead | No service-role key in Flutter. |
-| PAYMENT_MEMBERSHIP-DEP02 | Flutter/Riverpod/GoRouter | Existing stack | .codex/AGENTS.md | Presentation, state, navigation | App team | Keep layer boundaries. |
-| PAYMENT_MEMBERSHIP-DEP03 | qr_flutter | Existing package | pubspec.yaml | Render shared pure VietQR payload as QR | App team | Payload has no bank credential or secret. |
+| Dependency | Purpose | Security note |
+|---|---|---|
+| Supabase | Auth, config, payment RPC, subscriptions, effective access, Admin audit | Trusted state; no service role in Flutter. |
+| Riverpod | Controller/provider state and invalidation | No direct entitlement grant. |
+| GoRouter | Canonical upgrade route | Query only selects initial UI plan. |
+| qr_flutter | Render QR payload | Only server-returned canonical NB reference used as transfer content. |
+| sqflite | Local user profile/read-model | Payer name + subscription label only; never payment authority. |
 
-## 2. File Map and Internal Contract
+## 2. Implemented File Map
 
-| File Path | Layer | Responsibility | Allowed Imports | Forbidden Imports | Public Export | Feature / Function |
-|---|---|---|---|---|---|---|
-| planned:lib/app_versions/v2/features/payments/presentation/ | Presentation | Render views and dispatch user actions | Providers, view models, theme tokens, router | DAO, raw Supabase/payment clients, storage models | Screens/widgets | PAYMENT_MEMBERSHIP-Vxx |
-| planned:lib/app_versions/v2/features/payments/application/ | Use case / Service | Orchestrate validation, authorization, business rules | Domain entities, repository interfaces, policies | Widgets, BuildContext, raw SQL/API client | execute(command, actorContext) | PAYMENT_MEMBERSHIP-FNxx |
-| planned:lib/app_versions/v2/features/payments/domain/ | Domain | Entity and policy contracts | Pure Dart/value objects | UI, persistence implementation | Entities/policies | PAYMENT_MEMBERSHIP-E-* |
-| planned:lib/app_versions/v2/features/payments/data/ | Repository/Datasource | Persist/integrate with local/trusted backend | Datasource/API/DAO contracts, mappers | UI widgets/controllers | Repository implementation | PAYMENT_MEMBERSHIP-FNxx |
-| planned:test/ | Test | Unit/integration/widget tests | Public contracts and fakes at correct layer | Production secrets or real payment/webhook payloads | Test fixtures | PAYMENT_MEMBERSHIP-TCxx |
-
-### Implemented VietQR File Map
-
-| File Path | Responsibility |
+| File Path | Layer / Responsibility |
 |---|---|
-| lib/app_versions/v2/features/payments/application/ | Create request, restore current request, confirm transfer and read payer name behind repository boundaries. |
-| lib/app_versions/v2/features/payments/data/ | Read SQLite users.full_name by authenticated ID and call trusted membership-payment RPCs. |
-| lib/app_versions/v2/features/payments/presentation/pages/membership_payment_page.dart | Render package selection, QR, recipient detail, copy action and transfer-confirmation states. |
-| lib/core/payments/viet_qr_payload_builder.dart | Pure VietQR EMV payload and CRC16 builder reused by Member and Admin presentation. |
-| lib/app_versions/admin/features/admin_panel/ | Permission-scoped payment alert, reconciliation detail and review actions. |
+| `lib/core/membership/membership_upgrade_route.dart` | Shared plan normalization, canonical payment route and exact NB reference normalization. |
+| `lib/shared/membership/presentation/membership_upgrade_navigation.dart` | Shared upgrade prompt/navigation. |
+| `lib/app_versions/v2/features/payments/domain/entities/membership_payment_models.dart` | Payment request state + exact QR/copy reference boundary. |
+| `lib/app_versions/v2/features/payments/application/` | Create/get/confirm/cancel use cases and payer-name read use case. |
+| `lib/app_versions/v2/features/payments/data/` | Payment repository/RPC datasource + local payer-profile datasource. |
+| `lib/app_versions/v2/features/payments/providers/membership_payment_providers.dart` | Payment lifecycle, idempotency, succeeded-only trusted/access projection refresh. |
+| `lib/app_versions/v2/features/payments/presentation/pages/membership_payment_page.dart` | Plan/cycle UI, server details, QR/copy, cancel/confirm, poll/resume. |
+| `lib/app_versions/v2/router/v2_router.dart` | Payment route consumes canonical shared plan normalizer. |
+| `lib/app_versions/v3/router/v3_router.dart` | Standalone paid surface consumes same route normalizer. |
+| `lib/app_versions/v2/features/cloud_sync/` | Existing authenticated server -> SQLite projection refresh; includes `subscription_tier`. |
+| `lib/app_versions/v1/features/dashboard/providers/dashboard_provider.dart` | Invalidated after successful trusted projection pull so Dashboard re-reads SQLite. |
+| `lib/app_versions/admin/features/admin_panel/` | Finance/Super-only payment section, queue, reconciliation confirm and mutations. |
+| `docs/supabase/23-membership-payment-hardening.sql` | Non-destructive M13 hardening migration. |
+| `docs/supabase/config.sql` | Disposable local/sandbox rebuild source with matching final contract. |
+| `test/docs/fixtures/supabase_membership_payment_hardening_smoke.sql` | Rollback-only executable SQL acceptance fixture. |
 
-## 3. API / Datasource Dependencies
+## 3. Supabase RPC Contract
 
-| ID | API / Datasource | Method / Event | Request | Response | Used By |
-|---|---|---|---|---|---|
-| PAYMENT_MEMBERSHIP-API01 | `createMembershipPayment` command / `rpc_payment_membership_create_membership_payment` trusted RPC when server-owned state is written | Use-case command handler; RPC only for financial, entitlement, quota, family, Sale, Admin, audit, or sensitive writes | actor_context, command DTO, correlation_id, idempotency_key for writes | Result/Error DTO, safe_user_message, domain_error_code, audit_ref for sensitive writes | PAYMENT_MEMBERSHIP-FN01 |
-| PAYMENT_MEMBERSHIP-API02 | `reviewMembershipPayment` command / `rpc_payment_membership_review_membership_payment` trusted RPC when server-owned state is written | Use-case command handler; RPC only for financial, entitlement, quota, family, Sale, Admin, audit, or sensitive writes | actor_context, command DTO, correlation_id, idempotency_key for writes | Result/Error DTO, safe_user_message, domain_error_code, audit_ref for sensitive writes | PAYMENT_MEMBERSHIP-FN02 |
-| PAYMENT_MEMBERSHIP-API-AUDIT | Audit/event integration | Event after successful sensitive write | correlation_id, actor_id, action, entity_ref, reason, idempotency_key | audit_id, recorded_at, immutable action summary | Functions with side effects |
+### Member
 
-## 4. Entity / Model Dependencies
+- `create_membership_payment_request(plan, cycle, idempotency, payer_full_name)`
+- `get_my_membership_payment_request()`
+- `confirm_my_membership_payment_transfer(payment_event_id)`
+- `cancel_my_membership_payment_request(payment_event_id)`
 
-| Entity / Model | Intended File | Source | Used At |
-|---|---|---|---|
-| PAYMENT_MEMBERSHIP-E-payment_transaction | planned:lib/app_versions/v2/features/payments/domain/ | Payment Transaction | Features/functions/views in this module |
-| PAYMENT_MEMBERSHIP-E-payment_approval | planned:lib/app_versions/v2/features/payments/domain/ | Payment Approval | Features/functions/views in this module |
-| PAYMENT_MEMBERSHIP-E-membership_entitlement | planned:lib/app_versions/v2/features/payments/domain/ | Membership Entitlement | Features/functions/views in this module |
+All are authenticated owner-scoped. Price/bank/reference are server-owned.
 
-## 5. Constants, Config and Feature Flags
+### Admin
 
-| ID | Name | Source | Default | Who Can Change | Used By |
-|---|---|---|---|---|---|
-| PAYMENT_MEMBERSHIP-CFG01 | Module enablement / rollout flag | Planned remote config or backend config | Disabled until release enabled; DD docs approved | Product Owner / Tech Lead | All features |
-| PAYMENT_MEMBERSHIP-CFG02 | Module-specific thresholds or policy | System Configuration entity or Admin managed policy version | Versioned default from accepted DD decisions; disabled only when feature flag is off | Super Admin/Admin role allowed by M16 with audit | Business rules |
+- `admin_get_payment_review_alert()`
+- `admin_list_payments(query, limit)`
+- `admin_review_payment(payment_event_id, decision, reason, idempotency_key, transfer_verified)`
 
-## 6. Documented Dependency Requirements
+Payment review RPCs require Finance/Super reviewer role even if a non-financial Admin holds wildcard legacy permission.
 
-| ID | Requirement | DD docs status | Implementation evidence |
-|---|---|---|---|
-| PAYMENT_MEMBERSHIP-IMP-EV01 | File map is updated when code is implemented. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
-| PAYMENT_MEMBERSHIP-IMP-EV02 | No reverse layer imports. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
-| PAYMENT_MEMBERSHIP-IMP-EV03 | No secrets or production payloads in source/tests/docs. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
-| PAYMENT_MEMBERSHIP-IMP-EV04 | API/schema/RLS contracts are documented before coding. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
-| PAYMENT_MEMBERSHIP-IMP-EV05 | Tests cover permission, business rule, duplicate/retry, and dependency failure. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+## 4. Trusted Projection Refresh
 
-## 7. Implemented VietQR Contract
+`payment succeeded -> invalidate effectiveAccessProvider -> authenticated cloud-sync pull -> SQLite users.subscription_tier -> invalidate dashboardProvider`
 
-- Supabase RPCs: create_membership_payment_request, get_my_membership_payment_request, confirm_my_membership_payment_transfer, admin_list_payments, admin_get_payment_review_alert, and admin_review_payment.
-- SQLite full_name is read behind the payment repository boundary only to form the memo display; Supabase auth.uid() remains the payment identity.
-- The pure shared VietQR payload/CRC builder is reused by payment presentation and Admin rather than copied.
-- Recipient values and transaction reference are server-owned. No service-role key, bank credential, receipt, or balance data is stored in Flutter.
+The client never copies `request.planCode` into SQLite as trusted access. A projection-sync failure leaves trusted effective access authoritative and retryable.
+
+## 5. Test Map
+
+| Test | Coverage |
+|---|---|
+| `test/core/membership/membership_upgrade_route_test.dart` | canonical plan route + exact NB normalizer |
+| `test/core/membership/membership_upgrade_gate_contract_test.dart` | AI/schedule/Plus/FamilyPlus gates use shared route |
+| `test/app_versions/v2/features/payments/membership_payment_test.dart` | domain/reference/idempotency/cancel contracts |
+| `test/app_versions/v2/features/payments/providers/membership_payment_controller_test.dart` | succeeded-only effective-access + projection refresh |
+| `test/app_versions/v2/features/payments/presentation/membership_payment_page_test.dart` | QR/copy/cancel/poll/fail-closed UI |
+| Admin tests | role/reviewer/reconciliation UI payload |
+| `test/docs/supabase_membership_payment_hardening_contract_test.dart` | migration/rebuild/smoke source contract |
+| `test/docs/fixtures/supabase_membership_payment_hardening_smoke.sql` | executable transaction/RLS/review/subscription cases |
+
+## 6. External Acceptance
+
+Still required before production: full-checkout Flutter validation, disposable Supabase execution, true two-session concurrency, and VCB bank-app QR/manual reconciliation UAT.

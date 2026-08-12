@@ -13,6 +13,7 @@ import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
 import 'package:nano_app/app_versions/v3/router/v3_router.dart';
 import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_shell_page.dart';
 
 final v2Routes = <RouteBase>[
@@ -79,7 +80,7 @@ final v2Routes = <RouteBase>[
     path: V2RoutePaths.payments,
     name: V2RoutePaths.payments,
     builder: (context, state) => MembershipPaymentPage(
-      initialPlanCode: _membershipPaymentPlanFromQuery(
+      initialPlanCode: normalizeMembershipUpgradePlan(
         state.uri.queryParameters['plan'],
       ),
     ),
@@ -95,17 +96,6 @@ final v2Routes = <RouteBase>[
     builder: (context, state) => const V2HomePage(),
   ),
 ];
-
-/// The query only selects the initial UI option. The payment request RPC owns
-/// validation, price and entitlement activation; unknown deep links safely
-/// fall back to Plus.
-String _membershipPaymentPlanFromQuery(String? value) {
-  return switch (value?.trim().toLowerCase()) {
-    'family_plus' => 'family_plus',
-    'plus' => 'plus',
-    _ => 'plus',
-  };
-}
 
 final v2RouterProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefreshNotifier();

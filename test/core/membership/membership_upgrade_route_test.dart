@@ -18,6 +18,23 @@ void main() {
     expect(buildMembershipUpgradeRoute(null), '/v2/payments?plan=plus');
   });
 
+  test('accepts only canonical NB plus 12-hex transfer references', () {
+    expect(
+      normalizeMembershipTransferReference('NB12AB34CD56EF'),
+      'NB12AB34CD56EF',
+    );
+    expect(
+      normalizeMembershipTransferReference(' nb12ab34cd56ef '),
+      'NB12AB34CD56EF',
+    );
+    expect(normalizeMembershipTransferReference('NBABC'), isNull);
+    expect(normalizeMembershipTransferReference('NB12AB34CD56E'), isNull);
+    expect(normalizeMembershipTransferReference('NB12AB34CD56EF0'), isNull);
+    expect(normalizeMembershipTransferReference('NB12AB34CD56EG'), isNull);
+    expect(normalizeMembershipTransferReference('PLUS12AB34CD56'), isNull);
+    expect(normalizeMembershipTransferReference(null), isNull);
+  });
+
   testWidgets('upgrade prompt opens payment with its canonical plan', (
     tester,
   ) async {

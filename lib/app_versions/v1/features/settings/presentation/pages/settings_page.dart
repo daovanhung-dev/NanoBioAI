@@ -19,6 +19,7 @@ import 'package:nano_app/app_versions/v1/features/settings/domain/entities/setti
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/guest_account_access_card.dart';
 import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/font_scale_selector.dart';
+import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/membership_upgrade_card.dart';
 import 'package:nano_app/services/supabase/auth/account_security_provider.dart';
 import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_participation_page.dart';
@@ -87,6 +88,15 @@ class SettingsView extends ConsumerWidget {
                       _Header(isLoading: dashboardAsync.isLoading),
                       const SizedBox(height: AppSpacing.sectionSpacing),
                       _ProfileCard(dashboard: dashboard),
+                      const SizedBox(height: AppSpacing.sectionSpacing),
+                      MembershipUpgradeCard(
+                        isAuthenticated: isAuthenticated,
+                        onPressed: () => context.push(
+                          isAuthenticated
+                              ? V2RoutePaths.payments
+                              : AuthRoutePaths.login,
+                        ),
+                      ),
                       if (!isAuthenticated) ...[
                         const SizedBox(height: AppSpacing.sectionSpacing),
                         GuestAccountAccessCard(

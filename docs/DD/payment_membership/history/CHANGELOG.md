@@ -1,52 +1,39 @@
 # CHANGELOG — PAYMENT_MEMBERSHIP / Thanh toán, xác minh và quyền gói
 
-## [v1.3] - 2026-07-31
+## [v1.4] - 2026-08-12
+
 ### Changed
-- Documented the implemented VietQR Vietcombank flow: server-generated immutable NB reference, client QR presentation, member transfer confirmation, and manual VCB reconciliation by an Admin with payments.write.
-- Added the awaiting_transfer → pending_review → succeeded/failed state contract and retained legacy pending records for Admin review.
-- Added the explicit boundary: no receipt upload, bank API, bank-balance display, or webhook; only Admin approval activates a package.
-- Recorded Q-18 and actual member/Admin routes, UI states, and function contracts.
+
+- Hardened VietQR transfer content to the immutable `NB + 12 uppercase hex` reference only; payer name/plan/cycle stay separate metadata/display.
+- Added owner-only cancellation before transfer confirmation and one-open-request-per-user locking/unique constraint contract.
+- Restricted payment alert/queue/review to active `finance_admin` and `super_admin`; Support/Content/Operations are denied even with legacy wildcard permissions.
+- Made approve require explicit VCB reconciliation confirmation and reason; reject still requires reason; review remains idempotent/audited.
+- Documented finite membership periods: same-plan renewal from active expiry, immediate Plus ↔ FamilyPlus switch, calendar month/year in Asia/Ho_Chi_Minh, and fail-closed legacy `ends_at` remediation.
+- Added succeeded-only trusted access + existing cloud projection refresh so Dashboard membership labels reload from Supabase-derived SQLite data instead of client-assigned plan state.
+- Added exact NB/gate/controller/widget contract tests and rollback-only Supabase M13 payment hardening smoke source.
 
 ### Validation
-- Implementation validation is recorded in the feature worklog for this change; Supabase sandbox and bank-app UAT remain production-acceptance evidence.
+
+- This patch contains source and acceptance-test definitions. Full-checkout Flutter execution, Supabase sandbox execution/two-session concurrency and VCB bank-app UAT remain required and must not be claimed as passed without external evidence.
+
+## [v1.3] - 2026-07-31
+### Changed
+- Documented the initial VietQR Vietcombank flow: server-generated immutable NB reference, client QR presentation, member transfer confirmation, and manual VCB reconciliation.
+- Added `awaiting_transfer -> pending_review -> succeeded/failed` and retained legacy pending review compatibility.
+- Added the explicit boundary: no receipt upload, bank API, bank-balance display, or webhook; only Admin approval activates a package.
 
 ## [v1.2] - 2026-06-30
 ### Changed
-- Marked PAYMENT_MEMBERSHIP DD docs as `Approved - DD docs complete`.
-- Separated runtime/test/sandbox evidence into the Implementation Evidence Backlog.
-- Converted unchecked DD requirement lists into documented acceptance/evidence requirement tables without claiming tests were executed.
-
-### Validation
-- Docs-only change; runtime code, SQL, Supabase config, and tests were not changed.
+- Marked PAYMENT_MEMBERSHIP DD docs as approved/docs-complete and separated runtime/sandbox evidence from DD completeness.
 
 ## [v1.1] - 2026-06-30
-### Changed
-- Recorded accepted product decisions Q-03, Q-04, Q-05, Q-11, Q-17 in README, Overall, Import_File, and checklist traceability.
-- Reclassified prior question rows as answered decisions; remaining gaps are implementation evidence, sandbox/RLS/API verification, or planned assets.
-
 ### Decisions
-- Q-03: Commission is calculated from the listed package price.
-- Q-04: Plus and FamilyPlus support monthly and yearly plans. Early renewal extends from current expiry; late renewal starts from Admin approval time; pending payment never grants rights.
-- Q-05: Refund/cancel is allowed only within 24 hours after purchase. Points are reversed immediately in that window. Because conversion is also locked for 24 hours, there is no converted-then-reversed case.
-- Q-11: FamilyPlus commission is calculated only on the package owner portion.
-- Q-17: All payments and transfers are manually reviewed and manually approved by Admin. Trusted recorder may only create pending evidence; only Admin approval creates payment_approved.
-
-### Validation
-- Docs-only change; runtime code was not changed.
+- Q-03 listed-price commission base.
+- Q-04 monthly/yearly renewal policy.
+- Q-05 refund/cancel/chargeback point reversal policy.
+- Q-11 FamilyPlus owner-portion commission.
+- Q-17 manual payment approval.
 
 ## [v1.0] - 2026-06-28
 ### Added
-- Initial DD created from docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), scope BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16.
-- Created README, Overall, List_Features, Function_List, Views, Import_File, diagrams README, assets README, and changelog.
-
-### Impact
-- Affected module: M13 / PAYMENT_MEMBERSHIP.
-- Migration required: No runtime migration in this docs-only pass.
-- Regression test required: Yes when implementation starts; see module test checklist and BD section 17.2.
-
-### Historical Decisions - answered 2026-06-30
-- Q-03: 10% tính trên giá niêm yết hay số tiền thực thu sau giảm giá/voucher/thuế/phí?
-- Q-04: Các gói thanh toán theo tháng, năm hay một lần; gia hạn sớm/trễ xử lý ra sao?
-- Q-05: Hoàn/hủy/chargeback sau khi cộng điểm xử lý thế nào nếu Sale đã đổi điểm?
-- Q-11: FamilyPlus payment tính 10% trên toàn gói hay chỉ phần chủ gói?
-- Q-17: Payment phải duyệt thủ công toàn bộ hay webhook tự động có thể tạo payment_approved?
+- Initial M13 DD from BD-BIOAI-PRODUCT-FLOW-002.

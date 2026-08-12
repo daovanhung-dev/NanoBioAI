@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
+import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
 
 import '../application/cancel_membership_payment_request.dart';
@@ -78,6 +82,21 @@ final readMembershipPaymentPayerNameProvider =
       return ReadMembershipPaymentPayerName(
         repository: ref.watch(membershipPaymentPayerProfileRepositoryProvider),
       );
+    });
+
+/// Reconciles the local read-model after the trusted backend reports that a
+/// payment succeeded. Effective access is invalidated separately and remains
+/// authoritative even if this local projection refresh cannot complete.
+final membershipPaymentApprovedProjectionRefreshProvider =
+    Provider<Future<void> Function()>((ref) {
+      return () async {
+        final outcome = await ref
+            .read(userDataSyncControllerProvider.notifier)
+            .sync(AuthSyncReason.authGateRefresh);
+        if (outcome.isSuccess) {
+          ref.invalidate(dashboardProvider);
+        }
+      };
     });
 
 final membershipPaymentIdempotencyKeyFactoryProvider =
@@ -304,8 +323,19 @@ class MembershipPaymentController
         _accessInvalidatedForPaymentId == paymentId) {
       return;
     }
+
     _accessInvalidatedForPaymentId = paymentId;
     ref.invalidate(effectiveAccessProvider);
+    unawaited(_refreshApprovedMembershipProjectionSafely());
+  }
+
+  Future<void> _refreshApprovedMembershipProjectionSafely() async {
+    try {
+      await ref.read(membershipPaymentApprovedProjectionRefreshProvider)();
+    } catch (_) {
+      // Effective access was already invalidated above. Local projection sync
+      // remains retryable through the normal authenticated cloud-sync flow.
+    }
   }
 }
 

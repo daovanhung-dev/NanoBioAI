@@ -1,3 +1,5 @@
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
+
 class CreateMembershipPaymentRequestCommand {
   final String planCode;
   final String billingCycle;
@@ -12,15 +14,11 @@ class CreateMembershipPaymentRequestCommand {
   });
 }
 
-/// Normalizes an initial payment-plan selection from a route or a feature
-/// upgrade CTA. The backend remains the authority for whether a plan can be
-/// purchased; this only makes deep links safe for the customer UI.
+/// Compatibility wrapper for payment callers. The canonical route/payment plan
+/// normalization lives in core so V2/V3 deep links and the payment form cannot
+/// drift apart.
 String normalizeMembershipPaymentPlanCode(String? value) {
-  return switch (value?.trim().toLowerCase()) {
-    'family_plus' => 'family_plus',
-    'plus' => 'plus',
-    _ => 'plus',
-  };
+  return normalizeMembershipUpgradePlan(value);
 }
 
 class MembershipPaymentRequest {
@@ -113,17 +111,11 @@ class MembershipPaymentRequest {
   /// completed. The server enforces the same ownership/status restriction.
   bool get canCancel => isAwaitingTransfer && id.trim().isNotEmpty;
 
-  /// The VietQR transfer content is deliberately derived from the immutable
-  /// server-issued NB reference, never from free-form metadata. This keeps a
-  /// payer name or plan label out of the QR and copied transfer content even
-  /// if an older response contains a legacy memo.
+  /// VietQR/copy content is derived only from the immutable canonical
+  /// `NB` + 12 uppercase hexadecimal reference. Legacy/free-form memo text is
+  /// never encoded into the QR or copied to the clipboard.
   String? get transferMemoForPayment {
-    final reference = transferReference?.trim().toUpperCase();
-    if (reference == null ||
-        !RegExp(r'^NB[A-Z0-9]{1,23}$').hasMatch(reference)) {
-      return null;
-    }
-    return reference;
+    return normalizeMembershipTransferReference(transferReference);
   }
 
   bool get hasTransferDetails =>

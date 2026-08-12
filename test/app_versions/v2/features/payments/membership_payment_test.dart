@@ -86,8 +86,8 @@ void main() {
       'status': 'pending_review',
       'amount_cents': 399000,
       'currency': 'VND',
-      'transfer_reference': 'NB1234567890',
-      'transfer_memo': 'NB1234567890',
+      'transfer_reference': 'NB12AB34CD56EF',
+      'transfer_memo': 'NB12AB34CD56EF',
       'payer_full_name': 'Nguyễn Thanh An',
       'bank_code': 'VCB',
       'bank_name': 'Vietcombank',
@@ -99,9 +99,9 @@ void main() {
       'review_reason': 'Đã nhận đủ thông tin.',
     });
 
-    expect(request.transferReference, 'NB1234567890');
-    expect(request.transferMemo, 'NB1234567890');
-    expect(request.transferMemoForPayment, 'NB1234567890');
+    expect(request.transferReference, 'NB12AB34CD56EF');
+    expect(request.transferMemo, 'NB12AB34CD56EF');
+    expect(request.transferMemoForPayment, 'NB12AB34CD56EF');
     expect(request.payerFullName, 'Nguyễn Thanh An');
     expect(request.bankName, 'Vietcombank');
     expect(request.bankAccountDisplayName, 'Lê Phú Thạch');
@@ -133,7 +133,7 @@ void main() {
     expect(succeeded.isSucceeded, isTrue);
   });
 
-  test('uses only the NB reference for VietQR content', () {
+  test('uses only the canonical NB reference for VietQR content', () {
     final request = MembershipPaymentRequest.fromMap({
       'payment_event_id': 'payment-1',
       'plan_code': 'plus',
@@ -141,34 +141,46 @@ void main() {
       'status': 'awaiting_transfer',
       'amount_cents': 399000,
       'currency': 'VND',
-      'transfer_reference': 'nb1234567890',
-      'transfer_memo': 'NB1234567890 NGUYEN THANH AN',
+      'transfer_reference': 'nb12ab34cd56ef',
+      'transfer_memo': 'NB12AB34CD56EF NGUYEN THANH AN',
       'bank_bin': '970436',
       'bank_account_number': '1026806174',
       'bank_account_name': 'LE PHU THACH',
     });
 
-    expect(request.transferMemoForPayment, 'NB1234567890');
+    expect(request.transferMemoForPayment, 'NB12AB34CD56EF');
     expect(request.hasTransferDetails, isTrue);
   });
 
-  test('fails closed when the server reference is not an NB code', () {
-    final request = MembershipPaymentRequest.fromMap({
-      'payment_event_id': 'payment-1',
-      'plan_code': 'plus',
-      'billing_cycle': 'monthly',
-      'status': 'awaiting_transfer',
-      'amount_cents': 399000,
-      'currency': 'VND',
-      'transfer_reference': 'NGUYEN AN PLUS',
-      'transfer_memo': 'NB1234567890',
-      'bank_bin': '970436',
-      'bank_account_number': '1026806174',
-      'bank_account_name': 'LE PHU THACH',
-    });
+  test('fails closed when the server reference is not exact NB plus 12 hex', () {
+    for (final invalidReference in [
+      'NBABC',
+      'NB12AB34CD56E',
+      'NB12AB34CD56EF0',
+      'NB12AB34CD56EG',
+      'NGUYEN AN PLUS',
+    ]) {
+      final request = MembershipPaymentRequest.fromMap({
+        'payment_event_id': 'payment-1',
+        'plan_code': 'plus',
+        'billing_cycle': 'monthly',
+        'status': 'awaiting_transfer',
+        'amount_cents': 399000,
+        'currency': 'VND',
+        'transfer_reference': invalidReference,
+        'transfer_memo': 'NB12AB34CD56EF',
+        'bank_bin': '970436',
+        'bank_account_number': '1026806174',
+        'bank_account_name': 'LE PHU THACH',
+      });
 
-    expect(request.transferMemoForPayment, isNull);
-    expect(request.hasTransferDetails, isFalse);
+      expect(
+        request.transferMemoForPayment,
+        isNull,
+        reason: invalidReference,
+      );
+      expect(request.hasTransferDetails, isFalse, reason: invalidReference);
+    }
   });
 
   test('normalizes an invalid payment plan selection to Plus', () {
@@ -222,8 +234,8 @@ class _FakeMembershipPaymentRepository implements MembershipPaymentRepository {
         'status': 'awaiting_transfer',
         'amount_cents': 399000,
         'currency': 'VND',
-        'transfer_reference': 'NB1234567890',
-        'transfer_memo': 'NB1234567890 NGUYEN AN',
+        'transfer_reference': 'NB12AB34CD56EF',
+        'transfer_memo': 'NB12AB34CD56EF NGUYEN AN',
         'bank_bin': '970436',
         'bank_account_number': '1026806174',
         'bank_account_name': 'LE PHU THACH',
