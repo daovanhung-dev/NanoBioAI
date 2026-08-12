@@ -13,6 +13,10 @@ abstract class MembershipPaymentRemoteDatasource {
   Future<Object?> confirmMyMembershipPaymentTransfer({
     required String paymentEventId,
   });
+
+  Future<Object?> cancelMyMembershipPaymentRequest({
+    required String paymentEventId,
+  });
 }
 
 class SupabaseMembershipPaymentRemoteDatasource
@@ -51,6 +55,16 @@ class SupabaseMembershipPaymentRemoteDatasource
   }) {
     return _client().rpc(
       'confirm_my_membership_payment_transfer',
+      params: {'p_payment_event_id': paymentEventId},
+    );
+  }
+
+  @override
+  Future<Object?> cancelMyMembershipPaymentRequest({
+    required String paymentEventId,
+  }) {
+    return _client().rpc(
+      'cancel_my_membership_payment_request',
       params: {'p_payment_event_id': paymentEventId},
     );
   }

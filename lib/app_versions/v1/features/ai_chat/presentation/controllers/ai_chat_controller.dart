@@ -8,29 +8,35 @@ import '../../domain/repositories/ai_chat_repository.dart';
 import '../../providers/ai_chat_providers.dart';
 
 class AIChatState {
+  static const Object _unchanged = Object();
+
   final List<ChatMessageEntity> messages;
   final bool isLoading;
   final String? error;
   final bool canRetry;
+  final bool showPlusUpgrade;
 
   const AIChatState({
     this.messages = const [],
     this.isLoading = false,
     this.error,
     this.canRetry = false,
+    this.showPlusUpgrade = false,
   });
 
   AIChatState copyWith({
     List<ChatMessageEntity>? messages,
     bool? isLoading,
-    String? error,
+    Object? error = _unchanged,
     bool? canRetry,
+    bool? showPlusUpgrade,
   }) {
     return AIChatState(
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
-      error: error,
+      error: identical(error, _unchanged) ? this.error : error as String?,
       canRetry: canRetry ?? this.canRetry,
+      showPlusUpgrade: showPlusUpgrade ?? this.showPlusUpgrade,
     );
   }
 }
@@ -76,6 +82,7 @@ class AIChatController extends Notifier<AIChatState> {
       isLoading: true,
       error: null,
       canRetry: false,
+      showPlusUpgrade: false,
     );
     ref.read(nabiContextProvider.notifier).setChatTyping(typing: true);
 
@@ -89,11 +96,13 @@ class AIChatController extends Notifier<AIChatState> {
       );
       ref.read(nabiContextProvider.notifier).setChatAnswerReady();
     } catch (e) {
+      final isQuotaExceeded = e is UsageQuotaExceededException;
       _failedMessage = trimmed;
       state = state.copyWith(
         isLoading: false,
         error: _messageForSendError(e),
-        canRetry: true,
+        canRetry: !isQuotaExceeded,
+        showPlusUpgrade: isQuotaExceeded,
       );
       ref.read(nabiContextProvider.notifier).setChatFailed();
     }
@@ -103,7 +112,12 @@ class AIChatController extends Notifier<AIChatState> {
     final message = _failedMessage;
     if (state.isLoading || message == null || message.isEmpty) return;
 
-    state = state.copyWith(isLoading: true, error: null, canRetry: false);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      canRetry: false,
+      showPlusUpgrade: false,
+    );
     ref.read(nabiContextProvider.notifier).setChatTyping(typing: true);
 
     try {
@@ -116,11 +130,13 @@ class AIChatController extends Notifier<AIChatState> {
       );
       ref.read(nabiContextProvider.notifier).setChatAnswerReady();
     } catch (error) {
+      final isQuotaExceeded = error is UsageQuotaExceededException;
       _failedMessage = message;
       state = state.copyWith(
         isLoading: false,
         error: _messageForSendError(error),
-        canRetry: true,
+        canRetry: !isQuotaExceeded,
+        showPlusUpgrade: isQuotaExceeded,
       );
       ref.read(nabiContextProvider.notifier).setChatFailed();
     }
@@ -142,7 +158,11 @@ class AIChatController extends Notifier<AIChatState> {
 
   void dismissError() {
     _failedMessage = null;
-    state = state.copyWith(error: null, canRetry: false);
+    state = state.copyWith(
+      error: null,
+      canRetry: false,
+      showPlusUpgrade: false,
+    );
   }
 }
 

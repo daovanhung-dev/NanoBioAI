@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v3/features/familyplus/familyplus.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 
 void main() {
   testWidgets('renders loading state safely', (tester) async {
@@ -35,6 +37,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Dành cho FamilyPlus'), findsOneWidget);
+  });
+
+  testWidgets('locked state opens FamilyPlus payment route', (tester) async {
+    final router = GoRouter(
+      initialLocation: '/family',
+      routes: [
+        GoRoute(
+          path: '/family',
+          builder: (context, state) => const FamilyPlusPage(),
+        ),
+        GoRoute(
+          path: membershipPaymentRoutePath,
+          builder: (context, state) => Scaffold(
+            body: Text(
+              'PAYMENT_DESTINATION:${state.uri.queryParameters['plan']}',
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          familyPlusContextProvider.overrideWith(
+            (ref) async => const FamilyPlusViewModel.locked(),
+          ),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Nâng cấp FamilyPlus'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PAYMENT_DESTINATION:family_plus'), findsOneWidget);
   });
 
   testWidgets('renders empty state safely', (tester) async {

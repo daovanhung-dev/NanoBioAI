@@ -63,7 +63,7 @@ void main() {
       'loads the payment-review alert for an Admin with payments access',
       () async {
         final repository = _FakeAdminRepository(
-          session: _operationsSession(),
+          session: _financeSession(),
           paymentReviewAlert: const AdminPaymentReviewAlert(
             pendingReviewCount: 2,
           ),
@@ -150,6 +150,34 @@ void main() {
         'Tài khoản quản trị chưa được cấp quyền thực hiện thao tác này.',
       );
     });
+
+    test('requires VCB reconciliation confirmation before payment approval',
+        () async {
+      final repository = _FakeAdminRepository(session: _financeSession());
+      final container = _container(repository);
+      addTearDown(container.dispose);
+
+      await container.read(adminControllerProvider.future);
+      await expectLater(
+        container.read(adminControllerProvider.notifier).runMutation(
+              section: AdminPanelSection.payments,
+              action: 'approve',
+              targetId: 'payment-id',
+              reason: 'Đã đối chiếu VCB.',
+            ),
+        throwsA(isA<StateError>()),
+      );
+      expect(repository.mutationCalls, isEmpty);
+
+      await container.read(adminControllerProvider.notifier).runMutation(
+            section: AdminPanelSection.payments,
+            action: 'approve',
+            targetId: 'payment-id',
+            reason: 'Đã đối chiếu VCB.',
+            payload: const {'transfer_verified': true},
+          );
+      expect(repository.mutationCalls.single.payload['transfer_verified'], isTrue);
+    });
   });
 }
 
@@ -163,6 +191,15 @@ AdminSession _operationsSession() {
   return const AdminSession(
     userId: 'operations-admin',
     roles: [AdminRoleCode.operationsAdmin],
+    permissions: {AdminPermissions.wildcard},
+    active: true,
+  );
+}
+
+AdminSession _financeSession() {
+  return const AdminSession(
+    userId: 'finance-admin',
+    roles: [AdminRoleCode.financeAdmin],
     permissions: {AdminPermissions.wildcard},
     active: true,
   );

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/domain/entities/chat_message_entity.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/providers/ai_chat_providers.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/features/nabi/nabi.dart';
+import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
 
 void main() {
   testWidgets('shows and dismisses AI unavailable error banner', (
@@ -47,6 +50,55 @@ void main() {
 
     await tester.pump(const Duration(seconds: 2));
   });
+
+  testWidgets('quota block offers Plus and opens its payment route', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: '/chat',
+      routes: [
+        GoRoute(
+          path: '/chat',
+          builder: (context, state) => const AIChatScreen(),
+        ),
+        GoRoute(
+          path: membershipPaymentRoutePath,
+          builder: (context, state) => Scaffold(
+            body: Text(
+              'PAYMENT_DESTINATION:${state.uri.queryParameters['plan']}',
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          aiChatRepositoryProvider.overrideWithValue(
+            const _QuotaExceededAIChatRepository(),
+          ),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField), 'Nabi ơi');
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nâng cấp Plus'), findsOneWidget);
+    expect(find.text('Thử lại'), findsNothing);
+
+    await tester.tap(find.text('Nâng cấp Plus'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PAYMENT_DESTINATION:plus'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2));
+  });
 }
 
 class _UnavailableAIChatRepository implements AIChatRepository {
@@ -61,5 +113,20 @@ class _UnavailableAIChatRepository implements AIChatRepository {
   @override
   Future<ChatMessageEntity> sendMessage(String message) {
     throw const AIChatUnavailableException();
+  }
+}
+
+class _QuotaExceededAIChatRepository implements AIChatRepository {
+  const _QuotaExceededAIChatRepository();
+
+  @override
+  Future<void> clearHistory() async {}
+
+  @override
+  Future<List<ChatMessageEntity>> getChatHistory() async => const [];
+
+  @override
+  Future<ChatMessageEntity> sendMessage(String message) {
+    throw const UsageQuotaExceededException(UsageQuotaDecision.denied());
   }
 }

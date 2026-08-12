@@ -1,10 +1,8 @@
--- NanoBio / BioAI - VietQR membership payment request and manual review.
--- Run after 03-membership-quota.sql, 05-sale-referral-commission.sql and
--- 11-admin-access-dashboard.sql. New requests use:
--- awaiting_transfer -> pending_review -> succeeded|failed.
---
--- The transfer reference is the only transfer memo. Payer name, plan and
--- billing cycle are persisted as review metadata and are never encoded in QR.
+-- NanoBio / BioAI - M13 VietQR membership payment hardening.
+-- Non-destructive migration for environments that previously applied the
+-- manual membership request contract. Run in sandbox/staging before any
+-- production rollout. It never guesses legacy paid-expiry dates; an active
+-- paid subscription with NULL ends_at blocks approval until remediated.
 
 begin;
 
@@ -868,6 +866,19 @@ begin
     raise exception 'INVALID_PAYMENT_DECISION' using errcode = '22023';
   end if;
 
+  if nullif(btrim(coalesce(p_reason, '')), '') is null then
+    raise exception 'PAYMENT_REVIEW_REASON_REQUIRED' using errcode = '22023';
+  end if;
+
+  if nullif(btrim(coalesce(p_idempotency_key, '')), '') is null then
+    raise exception 'IDEMPOTENCY_KEY_REQUIRED' using errcode = '22023';
+  end if;
+
+  if v_decision = 'approve' and p_transfer_verified is distinct from true then
+    raise exception 'PAYMENT_TRANSFER_RECONCILIATION_REQUIRED'
+      using errcode = '22023';
+  end if;
+
   -- Lock the payer before the payment row so parallel approvals and request
   -- creation serialize on the same user.
   select pe.payer_user_id
@@ -899,19 +910,6 @@ begin
     raise exception 'PAYMENT_ALREADY_REVIEWED' using errcode = '22023';
   end if;
 
-  if nullif(btrim(coalesce(p_reason, '')), '') is null then
-    raise exception 'PAYMENT_REVIEW_REASON_REQUIRED' using errcode = '22023';
-  end if;
-
-  if nullif(btrim(coalesce(p_idempotency_key, '')), '') is null then
-    raise exception 'IDEMPOTENCY_KEY_REQUIRED' using errcode = '22023';
-  end if;
-
-  if v_decision = 'approve' and p_transfer_verified is distinct from true then
-    raise exception 'PAYMENT_TRANSFER_RECONCILIATION_REQUIRED'
-      using errcode = '22023';
-  end if;
-
   -- Historical `pending` payments remain reviewable, but must include the
   -- billing-cycle snapshot required for finite, auditable access periods.
   if v_payment.status not in ('pending_review', 'pending') then
@@ -922,8 +920,7 @@ begin
     v_payment.metadata ->> 'billing_cycle',
     ''
   )));
-  if v_decision = 'approve'
-    and v_billing_cycle not in ('monthly', 'yearly') then
+  if v_billing_cycle not in ('monthly', 'yearly') then
     raise exception 'PAYMENT_BILLING_CYCLE_MISSING' using errcode = '22023';
   end if;
 

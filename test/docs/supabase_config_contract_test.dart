@@ -192,31 +192,47 @@ void main() {
       final module = File(
         'docs/supabase/13-membership-payment-request.sql',
       ).readAsStringSync();
-      final create = _functionBlock(sql, 'create_membership_payment_request');
-      final confirm = _functionBlock(
+      final create = _lastFunctionBlock(
+        sql,
+        'create_membership_payment_request',
+      );
+      final confirm = _lastFunctionBlock(
         sql,
         'confirm_my_membership_payment_transfer',
       );
-      final current = _functionBlock(sql, 'get_my_membership_payment_request');
-      final alert = _functionBlock(sql, 'admin_get_payment_review_alert');
-      final review = _functionBlock(sql, 'admin_review_payment');
+      final cancel = _lastFunctionBlock(
+        sql,
+        'cancel_my_membership_payment_request',
+      );
+      final current = _lastFunctionBlock(
+        sql,
+        'get_my_membership_payment_request',
+      );
+      final alert = _lastFunctionBlock(
+        sql,
+        'admin_get_payment_review_alert',
+      );
+      final review = _lastFunctionBlock(sql, 'admin_review_payment');
 
       for (final token in [
         'transfer_reference text',
         'transfer_memo text',
         'uq_payment_events_transfer_reference',
         r"'^NB[0-9A-F]{12}$'",
-        r"'^[A-Z0-9 ]{1,25}$'",
         "upper(encode(gen_random_bytes(6), 'hex'))",
         'p_payer_full_name text',
+        'payer_full_name text',
+        'can_cancel boolean',
         "'membership_payment_bank'",
         '"bank_bin": "970436"',
         '"bank_account_number": "1026806174"',
         '"bank_account_name": "LE PHU THACH"',
-        '"bank_account_display_name": "Lê Phú Thạch"',
+        r'"bank_account_display_name": "L\u00ea Ph\u00fa Th\u1ea1ch"',
         'confirm_my_membership_payment_transfer',
+        'cancel_my_membership_payment_request',
         'get_my_membership_payment_request',
         'admin_get_payment_review_alert',
+        'uq_payment_events_one_open_manual_membership',
         "'awaiting_transfer'",
         "'pending_review'",
       ]) {
@@ -224,7 +240,9 @@ void main() {
         expect(sql, contains(token), reason: 'config.sql: $token');
       }
 
-      expect(create, contains('25 - length(v_transfer_reference) - 1'));
+      expect(create, contains('v_transfer_memo := v_transfer_reference'));
+      expect(create, contains("'transfer_memo_contract', 'reference_only_v2'"));
+      expect(create, isNot(contains('v_payer_name_ascii')));
       for (final clientControlledField in [
         'p_amount_cents',
         'p_bank_bin',
@@ -236,16 +254,29 @@ void main() {
 
       expect(confirm, contains('payer_user_id = v_user_id'));
       expect(confirm, contains("status = 'pending_review'"));
+      expect(confirm, contains('transfer_memo is distinct from'));
+      expect(cancel, contains('payer_user_id = v_user_id'));
+      expect(cancel, contains("v_payment.status = 'awaiting_transfer'"));
+      expect(cancel, contains("v_payment.status <> 'canceled'"));
       expect(current, contains('pe.payer_user_id = v_user_id'));
       expect(alert, contains("where pe.status = 'pending_review';"));
       expect(
         alert,
-        contains("public.admin_assert_permission('payments.write')"),
+        contains('public.admin_assert_payment_reviewer()'),
       );
       expect(
         review,
         contains("v_payment.status not in ('pending_review', 'pending')"),
       );
+      expect(review, contains('p_transfer_verified boolean'));
+      expect(review, contains('PAYMENT_TRANSFER_RECONCILIATION_REQUIRED'));
+      expect(review, contains('LEGACY_PAID_SUBSCRIPTION_MISSING_ENDS_AT'));
+      expect(review, contains("interval '1 month'"));
+      expect(review, contains("interval '1 year'"));
+      expect(review, contains("at time zone 'Asia/Ho_Chi_Minh'"));
+      expect(review, contains('same_plan_renewal'));
+      expect(review, contains('plan_switch'));
+      expect(review, contains("ms.starts_at + interval '1 microsecond'"));
       expect(review, contains('membership_subscriptions'));
       expect(review, contains('public.admin_write_audit'));
       expect(
@@ -260,6 +291,14 @@ void main() {
           'grant execute on function public.get_my_membership_payment_request()',
         ),
       );
+      expect(
+        sql,
+        contains(
+          'grant execute on function public.cancel_my_membership_payment_request(uuid)',
+        ),
+      );
+      expect(sql, contains('admin_has_payment_reviewer_role'));
+      expect(sql, contains("aur.role_code in ('finance_admin', 'super_admin')"));
     });
 
     test('keeps Admin full-access policy in rebuild file', () {
@@ -467,6 +506,20 @@ String _functionBlock(String sql, String functionName) {
   final end = sql.indexOf('\n\$\$;', start);
   if (end < 0) {
     throw StateError('Cannot locate SQL function end: $functionName');
+  }
+  return sql.substring(start, end);
+}
+
+String _lastFunctionBlock(String sql, String functionName) {
+  const prefix = 'create or replace function public.';
+  final token = '$prefix$functionName';
+  final start = sql.lastIndexOf(token);
+  if (start < 0) {
+    throw StateError('Cannot locate final SQL function: $functionName');
+  }
+  final end = sql.indexOf('\n\$\$;', start);
+  if (end < 0) {
+    throw StateError('Cannot locate final SQL function end: $functionName');
   }
   return sql.substring(start, end);
 }

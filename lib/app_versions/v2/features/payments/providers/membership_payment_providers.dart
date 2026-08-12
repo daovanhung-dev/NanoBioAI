@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
 
+import '../application/cancel_membership_payment_request.dart';
 import '../application/confirm_membership_payment_transfer.dart';
 import '../application/create_membership_payment_request.dart';
 import '../application/load_current_membership_payment_request.dart';
@@ -65,6 +66,13 @@ final confirmMembershipPaymentTransferProvider =
       );
     });
 
+final cancelMembershipPaymentRequestProvider =
+    Provider<CancelMembershipPaymentRequest>((ref) {
+      return CancelMembershipPaymentRequest(
+        repository: ref.watch(membershipPaymentRepositoryProvider),
+      );
+    });
+
 final readMembershipPaymentPayerNameProvider =
     Provider<ReadMembershipPaymentPayerName>((ref) {
       return ReadMembershipPaymentPayerName(
@@ -86,6 +94,14 @@ class MembershipPaymentViewState {
   const MembershipPaymentViewState({this.request, this.payerFullName});
 
   bool get hasPayerFullName => payerFullName?.trim().isNotEmpty == true;
+
+  /// Prefer the server-snapshotted name attached to an existing payment while
+  /// retaining the local profile value for the create-request prerequisite.
+  String? get payerFullNameForDisplay {
+    final snapshot = request?.payerFullName?.trim();
+    if (snapshot != null && snapshot.isNotEmpty) return snapshot;
+    return payerFullName;
+  }
 }
 
 final membershipPaymentControllerProvider =
@@ -99,16 +115,28 @@ class MembershipPaymentController
   String? _idempotencyKey;
   String? _idempotencyPlanCode;
   String? _idempotencyBillingCycle;
+  String? _accessInvalidatedForPaymentId;
 
   @override
   Future<MembershipPaymentViewState> build() {
     return _load(ref.watch(membershipPaymentCurrentUserIdProvider));
   }
 
-  Future<void> refresh() async {
+  Future<void> refresh({bool preserveVisibleStateOnError = false}) async {
     final userId = ref.read(membershipPaymentCurrentUserIdProvider);
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _load(userId));
+    final previousState = state;
+    if (!preserveVisibleStateOnError || previousState.value == null) {
+      state = const AsyncLoading();
+    }
+
+    try {
+      state = AsyncData(await _load(userId));
+    } catch (error, stackTrace) {
+      if (!preserveVisibleStateOnError || previousState.value == null) {
+        state = AsyncError(error, stackTrace);
+      }
+      rethrow;
+    }
   }
 
   Future<MembershipPaymentRequest> createRequest({
@@ -136,20 +164,28 @@ class MembershipPaymentController
     }
 
     final idempotencyKey = _idempotencyKeyFor(planCode, billingCycle);
-    final request = await ref
-        .read(createMembershipPaymentRequestProvider)
-        .execute(
-          CreateMembershipPaymentRequestCommand(
-            planCode: planCode,
-            billingCycle: billingCycle,
-            idempotencyKey: idempotencyKey,
-            payerFullName: payerFullName,
-          ),
-        );
+    MembershipPaymentRequest request;
+    try {
+      request = await ref
+          .read(createMembershipPaymentRequestProvider)
+          .execute(
+            CreateMembershipPaymentRequestCommand(
+              planCode: planCode,
+              billingCycle: billingCycle,
+              idempotencyKey: idempotencyKey,
+              payerFullName: payerFullName,
+            ),
+          );
+    } catch (error, stackTrace) {
+      request = await _loadExistingOpenRequestOrRethrow(
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
     state = AsyncData(
       MembershipPaymentViewState(
         request: request,
-        payerFullName: payerFullName,
+        payerFullName: request.payerFullName ?? payerFullName,
       ),
     );
     _invalidateEffectiveAccessIfSucceeded(request);
@@ -168,10 +204,32 @@ class MembershipPaymentController
     state = AsyncData(
       MembershipPaymentViewState(
         request: request,
-        payerFullName: state.value?.payerFullName,
+        payerFullName: request.payerFullName ?? state.value?.payerFullName,
       ),
     );
     _invalidateEffectiveAccessIfSucceeded(request);
+    return request;
+  }
+
+  Future<MembershipPaymentRequest> cancelRequest() async {
+    final current = state.value?.request;
+    if (current == null || !current.canCancel) {
+      throw const MembershipPaymentException.invalidCancellation();
+    }
+
+    final payerFullName = state.value?.payerFullName;
+    final request = await ref
+        .read(cancelMembershipPaymentRequestProvider)
+        .execute(current.id);
+    state = AsyncData(
+      MembershipPaymentViewState(
+        request: request,
+        payerFullName: request.payerFullName ?? payerFullName,
+      ),
+    );
+    if (request.isTerminal) {
+      _clearIdempotencyKey();
+    }
     return request;
   }
 
@@ -194,7 +252,7 @@ class MembershipPaymentController
     _invalidateEffectiveAccessIfSucceeded(request);
     return MembershipPaymentViewState(
       request: request,
-      payerFullName: payerFullName,
+      payerFullName: request?.payerFullName ?? payerFullName,
     );
   }
 
@@ -220,11 +278,39 @@ class MembershipPaymentController
     _idempotencyBillingCycle = null;
   }
 
+  Future<MembershipPaymentRequest> _loadExistingOpenRequestOrRethrow({
+    required Object error,
+    required StackTrace stackTrace,
+  }) async {
+    if (!_isOpenMembershipPaymentRequestError(error)) {
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+
+    final request = await ref
+        .read(loadCurrentMembershipPaymentRequestProvider)
+        .execute();
+    if (request != null && request.isActive) return request;
+
+    Error.throwWithStackTrace(error, stackTrace);
+  }
+
   void _invalidateEffectiveAccessIfSucceeded(
     MembershipPaymentRequest? request,
   ) {
-    if (request?.isSucceeded == true) {
-      ref.invalidate(effectiveAccessProvider);
+    if (request?.isSucceeded != true) return;
+    final paymentId = request?.id.trim();
+    if (paymentId == null ||
+        paymentId.isEmpty ||
+        _accessInvalidatedForPaymentId == paymentId) {
+      return;
     }
+    _accessInvalidatedForPaymentId = paymentId;
+    ref.invalidate(effectiveAccessProvider);
   }
+}
+
+bool _isOpenMembershipPaymentRequestError(Object error) {
+  return error.toString().toUpperCase().contains(
+    'MEMBERSHIP_PAYMENT_REQUEST_ALREADY_OPEN',
+  );
 }

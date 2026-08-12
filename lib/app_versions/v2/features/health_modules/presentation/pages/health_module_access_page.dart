@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v2/features/health_modules/domain/health_module_access_resolver.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/health_features/health_feature_catalog.dart';
 
@@ -31,35 +32,37 @@ class HealthModuleAccessPage extends ConsumerWidget {
           onRetry: () => _retry(ref),
         ),
         data: (effectiveAccess) {
-        final destination = HealthModuleAccessResolver.resolve(
-          item: item,
-          access: effectiveAccess,
-        );
+          final destination = HealthModuleAccessResolver.resolve(
+            item: item,
+            access: effectiveAccess,
+          );
 
-        return switch (destination) {
-          HealthModuleAccessDestination.loginRequired =>
-            const _HealthModuleRouteForwarder(
-              location: V2RoutePaths.login,
-              message: 'Đang mở trang đăng nhập an toàn...',
+          return switch (destination) {
+            HealthModuleAccessDestination.loginRequired =>
+              const _HealthModuleRouteForwarder(
+                location: V2RoutePaths.login,
+                message: 'Đang mở trang đăng nhập an toàn...',
+              ),
+            HealthModuleAccessDestination.upgradeRequired =>
+              _HealthModuleRouteForwarder(
+                location: buildMembershipUpgradeRoute(
+                  MembershipUpgradePlan.plus,
+                ),
+                message: 'Đang mở lựa chọn nâng cấp gói...',
+              ),
+            HealthModuleAccessDestination.comingSoon => MedicalComingSoonPage(
+              title: item.title,
+              message: item.comingSoonMessage,
+              eyebrow: item.comingSoonEyebrow,
+              icon: item.icon,
+              color: item.color,
+              previewItems: item.previewItems,
             ),
-          HealthModuleAccessDestination.upgradeRequired =>
-            const _HealthModuleRouteForwarder(
-              location: V2RoutePaths.payments,
-              message: 'Đang mở lựa chọn nâng cấp gói...',
-            ),
-          HealthModuleAccessDestination.comingSoon => MedicalComingSoonPage(
-            title: item.title,
-            message: item.comingSoonMessage,
-            eyebrow: item.comingSoonEyebrow,
-            icon: item.icon,
-            color: item.color,
-            previewItems: item.previewItems,
-          ),
-          HealthModuleAccessDestination.unavailable =>
-            _HealthModuleSupportPage.accessUnavailable(
-              key: const ValueKey<String>('health-module-access-unavailable'),
-              onRetry: () => _retry(ref),
-            ),
+            HealthModuleAccessDestination.unavailable =>
+              _HealthModuleSupportPage.accessUnavailable(
+                key: const ValueKey<String>('health-module-access-unavailable'),
+                onRetry: () => _retry(ref),
+              ),
           };
         },
       ),

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
 
 import '../../domain/entities/advanced_tracking_models.dart';
 import '../../providers/advanced_tracking_providers.dart';
@@ -63,12 +65,17 @@ class AdvancedTrackingPage extends ConsumerWidget {
                   message:
                       viewModel.message ??
                       'Nabi sẽ mở lộ trình nâng cao khi gói của bạn sẵn sàng.',
-                  actionLabel: 'Làm mới',
+                  actionLabel: membershipUpgradeActionLabel(
+                    MembershipUpgradePlan.plus,
+                  ),
                   onAction: () async {
                     AppFeedbackService.instance.emit(
                       AppFeedbackType.primaryAction,
                     );
-                    ref.invalidate(advancedTrackingSummaryProvider);
+                    openMembershipUpgrade(
+                      context,
+                      planCode: MembershipUpgradePlan.plus,
+                    );
                   },
                 ),
                 AdvancedTrackingViewStatus.empty => _EmptyGoalState(

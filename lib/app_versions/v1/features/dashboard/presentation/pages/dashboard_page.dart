@@ -20,9 +20,11 @@ import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/app_versions/v1/shared/widgets/ai_chat_fab.dart';
 import 'package:nano_app/core/membership/membership_display_info.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/nabi.dart';
 import 'package:nano_app/services/supabase/cloud_sync/cloud_sync.dart';
+import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   final bool showStandaloneChatButton;
@@ -115,14 +117,23 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         }
         return;
       }
+      if (error is PersonalScheduleQuotaExceededException) {
+        AppFeedbackService.instance.emit(AppFeedbackType.error);
+        await showMembershipUpgradePrompt(
+          context,
+          title: 'Đã dùng hết lượt tạo lịch',
+          message:
+              '${PersonalScheduleQuotaExceededException.userMessage} Nâng cấp Plus để tiếp tục tạo lịch theo nhu cầu của bạn nhé.',
+          planCode: MembershipUpgradePlan.plus,
+        );
+        return;
+      }
       AppFeedbackService.instance.emit(AppFeedbackType.error);
       final message = switch (error) {
         DashboardGenerationAuthRequiredException() =>
           DashboardGenerationAuthRequiredException.userMessage,
         GuestInitialPlanAlreadyUsedException() =>
           GuestInitialPlanAlreadyUsedException.userMessage,
-        PersonalScheduleQuotaExceededException() =>
-          PersonalScheduleQuotaExceededException.userMessage,
         PersonalScheduleQuotaUnavailableException() =>
           PersonalScheduleQuotaUnavailableException.userMessage,
         PersonalScheduleStillActiveException() =>
@@ -243,8 +254,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       error: (error, _) => KeyedSubtree(
         key: const ValueKey('dashboard-error'),
         child: DashboardErrorView(
-        message:
-            'Nabi chưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
+          message:
+              'Nabi chưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
           onRetry: () {
             ref.invalidate(dashboardProvider);
             ref.invalidate(dashboardDynamicProvider);
@@ -261,21 +272,21 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           key: const ValueKey('dashboard-ready'),
           child: DashboardContent(
             dashboard: dashboard,
-          membershipInfo: membershipInfo,
-          dynamicData: dynamicData,
-          isDynamicLoading: dynamicAsync.isLoading,
-          dynamicError: dynamicAsync.hasError
-              ? 'Nabi chưa thể cập nhật một vài tín hiệu mới nhất. Bạn có thể kéo xuống để thử lại nhé.'
-              : null,
-          isGeneratingPlan: generationState.isLoading,
-          onRefresh: _refresh,
-          onGeneratePlan: _generateAdditionalPlan,
-          onCompleteTimelineItem: _completeTimelineItem,
-          onDailyCheckIn: _saveDailyCheckIn,
-          onAddWater: _addWater,
-          onSetWater: _setWater,
-          onSaveWeight: _saveWeight,
-          onViewSchedule: () => context.push(V1RoutePaths.lifestyleSchedule),
+            membershipInfo: membershipInfo,
+            dynamicData: dynamicData,
+            isDynamicLoading: dynamicAsync.isLoading,
+            dynamicError: dynamicAsync.hasError
+                ? 'Nabi chưa thể cập nhật một vài tín hiệu mới nhất. Bạn có thể kéo xuống để thử lại nhé.'
+                : null,
+            isGeneratingPlan: generationState.isLoading,
+            onRefresh: _refresh,
+            onGeneratePlan: _generateAdditionalPlan,
+            onCompleteTimelineItem: _completeTimelineItem,
+            onDailyCheckIn: _saveDailyCheckIn,
+            onAddWater: _addWater,
+            onSetWater: _setWater,
+            onSaveWeight: _saveWeight,
+            onViewSchedule: () => context.push(V1RoutePaths.lifestyleSchedule),
             userDataSyncState: userDataSyncState,
           ),
         );

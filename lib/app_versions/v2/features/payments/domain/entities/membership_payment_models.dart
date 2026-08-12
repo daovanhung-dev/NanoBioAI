@@ -12,6 +12,17 @@ class CreateMembershipPaymentRequestCommand {
   });
 }
 
+/// Normalizes an initial payment-plan selection from a route or a feature
+/// upgrade CTA. The backend remains the authority for whether a plan can be
+/// purchased; this only makes deep links safe for the customer UI.
+String normalizeMembershipPaymentPlanCode(String? value) {
+  return switch (value?.trim().toLowerCase()) {
+    'family_plus' => 'family_plus',
+    'plus' => 'plus',
+    _ => 'plus',
+  };
+}
+
 class MembershipPaymentRequest {
   final String id;
   final String planCode;
@@ -21,6 +32,7 @@ class MembershipPaymentRequest {
   final String currency;
   final String? transferReference;
   final String? transferMemo;
+  final String? payerFullName;
   final String? bankCode;
   final String? bankName;
   final String? bankBin;
@@ -40,6 +52,7 @@ class MembershipPaymentRequest {
     required this.currency,
     this.transferReference,
     this.transferMemo,
+    this.payerFullName,
     this.bankCode,
     this.bankName,
     this.bankBin,
@@ -61,6 +74,7 @@ class MembershipPaymentRequest {
       currency: _readString(map['currency']) ?? 'VND',
       transferReference: _readString(map['transfer_reference']),
       transferMemo: _readString(map['transfer_memo']),
+      payerFullName: _readString(map['payer_full_name']),
       bankCode: _readString(map['bank_code']),
       bankName: _readString(map['bank_name']),
       bankBin: _readString(map['bank_bin']),
@@ -95,12 +109,29 @@ class MembershipPaymentRequest {
 
   bool get canConfirmTransfer => isAwaitingTransfer && id.trim().isNotEmpty;
 
+  /// The customer may cancel only before declaring that the transfer was
+  /// completed. The server enforces the same ownership/status restriction.
+  bool get canCancel => isAwaitingTransfer && id.trim().isNotEmpty;
+
+  /// The VietQR transfer content is deliberately derived from the immutable
+  /// server-issued NB reference, never from free-form metadata. This keeps a
+  /// payer name or plan label out of the QR and copied transfer content even
+  /// if an older response contains a legacy memo.
+  String? get transferMemoForPayment {
+    final reference = transferReference?.trim().toUpperCase();
+    if (reference == null ||
+        !RegExp(r'^NB[A-Z0-9]{1,23}$').hasMatch(reference)) {
+      return null;
+    }
+    return reference;
+  }
+
   bool get hasTransferDetails =>
       amountCents > 0 &&
       bankBin?.trim().isNotEmpty == true &&
       bankAccountNumber?.trim().isNotEmpty == true &&
       bankAccountName?.trim().isNotEmpty == true &&
-      transferMemo?.trim().isNotEmpty == true;
+      transferMemoForPayment != null;
 }
 
 class MembershipPaymentException implements Exception {
@@ -125,6 +156,12 @@ class MembershipPaymentException implements Exception {
     : this(
         'INVALID_TRANSFER_CONFIRMATION',
         'Yêu cầu thanh toán này chưa sẵn sàng để xác nhận chuyển khoản.',
+      );
+
+  const MembershipPaymentException.invalidCancellation()
+    : this(
+        'INVALID_CANCELLATION',
+        'Yêu cầu thanh toán này không còn có thể hủy.',
       );
 
   @override

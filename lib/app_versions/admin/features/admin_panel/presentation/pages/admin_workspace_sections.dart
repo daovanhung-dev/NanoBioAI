@@ -726,6 +726,11 @@ class _PaymentDetails extends StatelessWidget {
         _InfoLine(label: 'Mã giao dịch', value: details.transferReference),
         _InfoLine(label: 'Nội dung chuyển khoản', value: details.transferMemo),
         _InfoLine(label: 'Người chuyển', value: details.payerFullName),
+        _InfoLine(label: 'Gói yêu cầu', value: item.title),
+        _InfoLine(
+          label: 'Chu kỳ',
+          value: _billingCycleLabel(details.billingCycle),
+        ),
         if (details.amountCents != null)
           _InfoLine(
             label: 'Số tiền',
@@ -742,6 +747,14 @@ class _PaymentDetails extends StatelessWidget {
       ],
     );
   }
+}
+
+String? _billingCycleLabel(String? value) {
+  return switch (value?.trim().toLowerCase()) {
+    'monthly' => 'Hàng tháng',
+    'yearly' => 'Hàng năm',
+    _ => value,
+  };
 }
 
 class _PayoutDetails extends StatelessWidget {

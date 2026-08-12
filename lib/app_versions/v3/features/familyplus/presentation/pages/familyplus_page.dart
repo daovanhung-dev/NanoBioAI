@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
 import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 
 import '../../domain/entities/familyplus_models.dart';
@@ -93,6 +95,16 @@ class _FamilyPlusBody extends ConsumerWidget {
             model.message,
             fallback: 'Bạn thử lại sau ít phút.',
           ),
+          actionLabel: membershipUpgradeActionLabel(
+            MembershipUpgradePlan.familyPlus,
+          ),
+          onAction: () {
+            AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+            openMembershipUpgrade(
+              context,
+              planCode: MembershipUpgradePlan.familyPlus,
+            );
+          },
         ),
         FamilyPlusViewStatus.empty => _EmptyFamilyState(
           key: const ValueKey<String>('familyplus-empty'),

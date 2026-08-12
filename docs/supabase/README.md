@@ -120,6 +120,12 @@ doi:
    fixture 19 va gioi han su dung local/sandbox.
 23. `20-dev-sandbox-demo-profile.sql` - profile opt-in rieng de bat tam cac
    rollout demo; khong duoc fold vao rebuild mac dinh.
+24. `23-membership-payment-hardening.sql` - migration khong pha huy cho M13
+   VietQR: memo chi la ma `NB...`, mot request mo/nguoi dung, huy owner-only,
+   Finance/Super review, thoi han goi huu han va audit chuyen Plus/FamilyPlus.
+   Chay va ghi evidence o sandbox/staging truoc; khong day production trong
+   dot rollout nay. Migration dung khi gap paid subscription cu `ends_at` NULL
+   de yeu cau data repair co kiem soat, khong tu doan ngay het han.
 
 Moi thay doi Supabase schema/RLS/RPC/seed/docs phai cap nhat `config.sql` cung
 luc. Neu khong cap nhat duoc, ghi blocker trong worklog va khong claim rebuild

@@ -78,7 +78,11 @@ final v2Routes = <RouteBase>[
   GoRoute(
     path: V2RoutePaths.payments,
     name: V2RoutePaths.payments,
-    builder: (context, state) => const MembershipPaymentPage(),
+    builder: (context, state) => MembershipPaymentPage(
+      initialPlanCode: _membershipPaymentPlanFromQuery(
+        state.uri.queryParameters['plan'],
+      ),
+    ),
   ),
   GoRoute(
     path: V2RoutePaths.wellnessRewards,
@@ -91,6 +95,17 @@ final v2Routes = <RouteBase>[
     builder: (context, state) => const V2HomePage(),
   ),
 ];
+
+/// The query only selects the initial UI option. The payment request RPC owns
+/// validation, price and entitlement activation; unknown deep links safely
+/// fall back to Plus.
+String _membershipPaymentPlanFromQuery(String? value) {
+  return switch (value?.trim().toLowerCase()) {
+    'family_plus' => 'family_plus',
+    'plus' => 'plus',
+    _ => 'plus',
+  };
+}
 
 final v2RouterProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefreshNotifier();

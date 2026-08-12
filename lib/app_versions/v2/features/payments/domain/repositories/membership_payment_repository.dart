@@ -8,4 +8,6 @@ abstract class MembershipPaymentRepository {
   Future<MembershipPaymentRequest?> fetchCurrentRequest();
 
   Future<MembershipPaymentRequest> confirmTransfer(String paymentEventId);
+
+  Future<MembershipPaymentRequest> cancelRequest(String paymentEventId);
 }

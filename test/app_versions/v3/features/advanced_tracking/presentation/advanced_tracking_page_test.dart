@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v3/features/advanced_tracking/advanced_tracking.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 
 void main() {
   testWidgets('renders loading state safely', (tester) async {
@@ -39,6 +41,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Chưa mở cho tài khoản này'), findsOneWidget);
+  });
+
+  testWidgets('locked state opens Plus payment route', (tester) async {
+    final router = GoRouter(
+      initialLocation: '/advanced',
+      routes: [
+        GoRoute(
+          path: '/advanced',
+          builder: (context, state) => const AdvancedTrackingPage(),
+        ),
+        GoRoute(
+          path: membershipPaymentRoutePath,
+          builder: (context, state) => Scaffold(
+            body: Text(
+              'PAYMENT_DESTINATION:${state.uri.queryParameters['plan']}',
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          advancedTrackingSummaryProvider.overrideWith(
+            (ref) async => const AdvancedTrackingViewModel.locked(),
+          ),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Nâng cấp Plus'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PAYMENT_DESTINATION:plus'), findsOneWidget);
   });
 
   testWidgets('renders empty setup state safely', (tester) async {

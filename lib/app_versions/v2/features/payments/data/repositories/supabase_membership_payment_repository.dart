@@ -37,6 +37,14 @@ class SupabaseMembershipPaymentRepository
     );
     return MembershipPaymentRequest.fromMap(_firstMap(response));
   }
+
+  @override
+  Future<MembershipPaymentRequest> cancelRequest(String paymentEventId) async {
+    final response = await datasource.cancelMyMembershipPaymentRequest(
+      paymentEventId: paymentEventId,
+    );
+    return MembershipPaymentRequest.fromMap(_firstMap(response));
+  }
 }
 
 Map<String, Object?> _firstMap(Object? response) {

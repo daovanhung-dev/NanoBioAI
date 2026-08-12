@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/admin_shell_page.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 
@@ -24,12 +24,16 @@ void main() {
         GoRoute(
           path: AdminRoutePaths.dashboard,
           builder: (context, state) =>
-              const AdminShellPage(initialSection: AdminPanelSection.dashboard),
+              const AdminWorkspacePage(
+                initialSection: AdminPanelSection.dashboard,
+              ),
         ),
         GoRoute(
           path: AdminRoutePaths.payments,
           builder: (context, state) =>
-              const AdminShellPage(initialSection: AdminPanelSection.payments),
+              const AdminWorkspacePage(
+                initialSection: AdminPanelSection.payments,
+              ),
         ),
       ],
     );
@@ -51,27 +55,50 @@ void main() {
       greaterThan(alertCallsBeforeTimer),
     );
 
-    expect(find.text('2 yêu cầu thanh toán đang chờ duyệt'), findsOneWidget);
-    expect(find.text('Mở thanh toán'), findsOneWidget);
+    expect(find.text('2 thanh toán đang chờ bạn kiểm tra.'), findsOneWidget);
+    expect(find.text('Mở danh sách'), findsOneWidget);
 
-    await tester.tap(find.text('Mở thanh toán'));
+    await tester.tap(find.text('Mở danh sách'));
     await _pumpAdminFrames(tester);
 
     expect(
       router.routeInformationProvider.value.uri.path,
       AdminRoutePaths.payments,
     );
-    expect(find.text('Đối chiếu chuyển khoản'), findsOneWidget);
+    expect(find.text('Thông tin đối chiếu'), findsOneWidget);
     expect(
       find.textContaining('Mã giao dịch: NB12AB34CD56EF', findRichText: true),
       findsOneWidget,
     );
     expect(
-      find.textContaining('Khách hàng: Nguyễn Văn A', findRichText: true),
+      find.textContaining('Người chuyển: Nguyễn Văn A', findRichText: true),
       findsOneWidget,
     );
     expect(find.text('Duyệt'), findsOneWidget);
     expect(find.text('Từ chối'), findsOneWidget);
+
+    await tester.tap(find.text('Duyệt'));
+    await tester.pump();
+    expect(
+      find.text('Đã đối chiếu giao dịch trong ứng dụng VCB'),
+      findsOneWidget,
+    );
+    expect(find.text('Duyệt thanh toán'), findsOneWidget);
+
+    await tester.enterText(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      ),
+      'Đã đối chiếu mã NB và số tiền trong VCB.',
+    );
+    await tester.tap(find.byType(Checkbox));
+    await tester.pump();
+    await tester.tap(find.text('Duyệt thanh toán'));
+    await _pumpAdminFrames(tester);
+
+    expect(repository.mutationCalls, hasLength(1));
+    expect(repository.mutationCalls.single.payload['transfer_verified'], isTrue);
     expect(tester.takeException(), isNull);
   });
 }
@@ -127,7 +154,7 @@ class _PaymentReviewRepository implements AdminRepository {
         'section': 'payments',
         'created_at': '2026-07-31T08:00:00Z',
         'transfer_reference': 'NB12AB34CD56EF',
-        'transfer_memo': 'NB12AB34CD56EF NGUYEN VAN A',
+        'transfer_memo': 'NB12AB34CD56EF',
         'payer_full_name': 'Nguyễn Văn A',
         'amount_cents': 99000,
         'currency': 'VND',
@@ -143,8 +170,11 @@ class _PaymentReviewRepository implements AdminRepository {
     return const [];
   }
 
+  final mutationCalls = <AdminMutationCommand>[];
+
   @override
   Future<AdminMutationResult> runMutation(AdminMutationCommand command) async {
+    mutationCalls.add(command);
     return const AdminMutationResult(success: true, message: 'ok');
   }
 

@@ -17,9 +17,11 @@ final familyPlusEffectiveAccessProvider =
       final userId = ref.watch(familyPlusCurrentUserIdProvider);
       if (userId == null || userId.trim().isEmpty) return null;
 
-      final access = await ref
-          .watch(effectiveAccessRepositoryProvider)
-          .fetchCurrentAccess();
+      // Share the canonical entitlement provider with checkout. Once a
+      // manually approved payment becomes succeeded, the checkout invalidates
+      // this provider so the covered FamilyPlus screen also rebuilds with the
+      // server-authoritative plan rather than retaining a stale lock.
+      final access = await ref.watch(effectiveAccessProvider.future);
       if (access == null || access.userId.trim() != userId.trim()) return null;
       return access;
     });

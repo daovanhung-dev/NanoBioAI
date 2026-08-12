@@ -124,7 +124,24 @@ class AdminSession {
     return isAdmin && permissions.contains(AdminPermissions.wildcard);
   }
 
+  /// Payment approval is deliberately narrower than the legacy wildcard
+  /// permission model. A Support, Content, or Operations Admin must not gain
+  /// access to the manual Vietcombank review queue merely because their
+  /// historical role mapping contains `*`.
+  bool get canReviewMembershipPayments {
+    final isApprovedReviewer =
+        roles.contains(AdminRoleCode.superAdmin) ||
+        roles.contains(AdminRoleCode.financeAdmin);
+    return isAdmin &&
+        isApprovedReviewer &&
+        (hasWildcardPermission ||
+            permissions.contains(AdminPermissions.paymentsWrite));
+  }
+
   bool hasPermission(String permission) {
+    if (permission == AdminPermissions.paymentsWrite) {
+      return canReviewMembershipPayments;
+    }
     return isAdmin &&
         (hasWildcardPermission || permissions.contains(permission));
   }
@@ -212,6 +229,7 @@ class AdminPaymentReconciliationDetails {
   final String? transferReference;
   final String? transferMemo;
   final String? payerFullName;
+  final String? billingCycle;
   final int? amountCents;
   final String? currency;
   final DateTime? transferConfirmedAt;
@@ -220,6 +238,7 @@ class AdminPaymentReconciliationDetails {
     this.transferReference,
     this.transferMemo,
     this.payerFullName,
+    this.billingCycle,
     this.amountCents,
     this.currency,
     this.transferConfirmedAt,
@@ -229,6 +248,7 @@ class AdminPaymentReconciliationDetails {
     return transferReference != null ||
         transferMemo != null ||
         payerFullName != null ||
+        billingCycle != null ||
         amountCents != null ||
         transferConfirmedAt != null;
   }
@@ -239,6 +259,7 @@ class AdminPaymentReconciliationDetails {
       transferReference: _readString(map['transfer_reference']),
       transferMemo: _readString(map['transfer_memo']),
       payerFullName: _readString(map['payer_full_name']),
+      billingCycle: _readString(map['billing_cycle']),
       amountCents: rawAmount == null ? null : _readInt(rawAmount),
       currency: _readString(map['currency']),
       transferConfirmedAt: _readDate(map['transfer_confirmed_at']),

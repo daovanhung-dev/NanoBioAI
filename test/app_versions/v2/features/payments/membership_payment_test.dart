@@ -87,7 +87,8 @@ void main() {
       'amount_cents': 399000,
       'currency': 'VND',
       'transfer_reference': 'NB1234567890',
-      'transfer_memo': 'NB1234567890 NGUYEN AN',
+      'transfer_memo': 'NB1234567890',
+      'payer_full_name': 'Nguyễn Thanh An',
       'bank_code': 'VCB',
       'bank_name': 'Vietcombank',
       'bank_bin': '970436',
@@ -99,7 +100,9 @@ void main() {
     });
 
     expect(request.transferReference, 'NB1234567890');
-    expect(request.transferMemo, 'NB1234567890 NGUYEN AN');
+    expect(request.transferMemo, 'NB1234567890');
+    expect(request.transferMemoForPayment, 'NB1234567890');
+    expect(request.payerFullName, 'Nguyễn Thanh An');
     expect(request.bankName, 'Vietcombank');
     expect(request.bankAccountDisplayName, 'Lê Phú Thạch');
     expect(request.transferConfirmedAt, DateTime.parse('2026-07-31T10:00:00Z'));
@@ -129,6 +132,74 @@ void main() {
     expect(approved.isSucceeded, isFalse);
     expect(succeeded.isSucceeded, isTrue);
   });
+
+  test('uses only the NB reference for VietQR content', () {
+    final request = MembershipPaymentRequest.fromMap({
+      'payment_event_id': 'payment-1',
+      'plan_code': 'plus',
+      'billing_cycle': 'monthly',
+      'status': 'awaiting_transfer',
+      'amount_cents': 399000,
+      'currency': 'VND',
+      'transfer_reference': 'nb1234567890',
+      'transfer_memo': 'NB1234567890 NGUYEN THANH AN',
+      'bank_bin': '970436',
+      'bank_account_number': '1026806174',
+      'bank_account_name': 'LE PHU THACH',
+    });
+
+    expect(request.transferMemoForPayment, 'NB1234567890');
+    expect(request.hasTransferDetails, isTrue);
+  });
+
+  test('fails closed when the server reference is not an NB code', () {
+    final request = MembershipPaymentRequest.fromMap({
+      'payment_event_id': 'payment-1',
+      'plan_code': 'plus',
+      'billing_cycle': 'monthly',
+      'status': 'awaiting_transfer',
+      'amount_cents': 399000,
+      'currency': 'VND',
+      'transfer_reference': 'NGUYEN AN PLUS',
+      'transfer_memo': 'NB1234567890',
+      'bank_bin': '970436',
+      'bank_account_number': '1026806174',
+      'bank_account_name': 'LE PHU THACH',
+    });
+
+    expect(request.transferMemoForPayment, isNull);
+    expect(request.hasTransferDetails, isFalse);
+  });
+
+  test('normalizes an invalid payment plan selection to Plus', () {
+    expect(normalizeMembershipPaymentPlanCode('family_plus'), 'family_plus');
+    expect(normalizeMembershipPaymentPlanCode('PLUS'), 'plus');
+    expect(normalizeMembershipPaymentPlanCode('vip'), 'plus');
+    expect(normalizeMembershipPaymentPlanCode(null), 'plus');
+  });
+
+  test(
+    'cancels through the payment repository only with a payment id',
+    () async {
+      final repository = _FakeMembershipPaymentRepository();
+      final useCase = CancelMembershipPaymentRequest(repository: repository);
+
+      final result = await useCase.execute('payment-1');
+
+      expect(result.id, 'payment-1');
+      expect(result.normalizedStatus, 'cancelled');
+      expect(
+        () => useCase.execute('  '),
+        throwsA(
+          isA<MembershipPaymentException>().having(
+            (error) => error.code,
+            'code',
+            'INVALID_CANCELLATION',
+          ),
+        ),
+      );
+    },
+  );
 }
 
 class _FakeMembershipPaymentRepository implements MembershipPaymentRepository {
@@ -169,6 +240,18 @@ class _FakeMembershipPaymentRepository implements MembershipPaymentRepository {
       'plan_code': 'plus',
       'billing_cycle': 'monthly',
       'status': 'pending_review',
+      'amount_cents': 399000,
+      'currency': 'VND',
+    });
+  }
+
+  @override
+  Future<MembershipPaymentRequest> cancelRequest(String paymentEventId) async {
+    return MembershipPaymentRequest.fromMap({
+      'payment_event_id': paymentEventId,
+      'plan_code': 'plus',
+      'billing_cycle': 'monthly',
+      'status': 'cancelled',
       'amount_cents': 399000,
       'currency': 'VND',
     });

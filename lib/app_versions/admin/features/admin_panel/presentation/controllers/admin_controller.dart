@@ -180,7 +180,6 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
     if (reason.trim().isEmpty) {
       throw StateError('Cần lý do cho thao tác quản trị.');
     }
-
     final command = AdminMutationCommand(
       section: section,
       action: action,
@@ -205,6 +204,14 @@ class AdminController extends AsyncNotifier<AdminPanelState> {
         ),
       );
       return;
+    }
+
+    if (section == AdminPanelSection.payments &&
+        action == 'approve' &&
+        payload['transfer_verified'] != true) {
+      throw StateError(
+        'Cần xác nhận đã đối chiếu giao dịch Vietcombank trước khi duyệt.',
+      );
     }
 
     final result = await _repository.runMutation(command);

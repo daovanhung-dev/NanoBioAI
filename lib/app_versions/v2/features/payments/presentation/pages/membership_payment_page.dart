@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,18 +11,70 @@ import '../../domain/entities/membership_payment_models.dart';
 import '../../providers/membership_payment_providers.dart';
 
 class MembershipPaymentPage extends ConsumerStatefulWidget {
-  const MembershipPaymentPage({super.key});
+  final String? initialPlanCode;
+
+  const MembershipPaymentPage({super.key, this.initialPlanCode});
 
   @override
   ConsumerState<MembershipPaymentPage> createState() =>
       _MembershipPaymentPageState();
 }
 
-class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
+class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage>
+    with WidgetsBindingObserver {
   String _planCode = 'plus';
   String _billingCycle = 'monthly';
   bool _submitting = false;
+  bool _pendingReviewRefreshInFlight = false;
   String? _message;
+  String? _lastObservedRequestId;
+  String? _lastObservedRequestStatus;
+  Timer? _pendingReviewTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _planCode = normalizeMembershipPaymentPlanCode(widget.initialPlanCode);
+    WidgetsBinding.instance.addObserver(this);
+    ref.listenManual<AsyncValue<MembershipPaymentViewState>>(
+      membershipPaymentControllerProvider,
+      (_, next) => _handlePaymentRequestState(next.value?.request),
+      fireImmediately: true,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant MembershipPaymentPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final previousPlan = normalizeMembershipPaymentPlanCode(
+      oldWidget.initialPlanCode,
+    );
+    final nextPlan = normalizeMembershipPaymentPlanCode(widget.initialPlanCode);
+    if (previousPlan == nextPlan ||
+        ref
+                .read(membershipPaymentControllerProvider)
+                .value
+                ?.request
+                ?.isActive ==
+            true) {
+      return;
+    }
+    setState(() => _planCode = nextPlan);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshPendingReview());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _pendingReviewTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,8 +171,10 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
               const SizedBox(height: AppSpacing.sectionSpacing),
               _PaymentRequestPanel(
                 request: request,
+                payerFullName: viewState?.payerFullNameForDisplay,
                 isSubmitting: _submitting,
                 onConfirmTransfer: _confirmTransfer,
+                onCancelRequest: _cancelRequest,
               ),
             ],
           ],
@@ -136,7 +192,6 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
     });
     try {
       await ref.read(membershipPaymentControllerProvider.notifier).refresh();
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
     } on MembershipPaymentException catch (error) {
       AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (mounted) setState(() => _message = error.safeMessage);
@@ -165,7 +220,6 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
           .read(membershipPaymentControllerProvider.notifier)
           .createRequest(planCode: _planCode, billingCycle: _billingCycle);
       if (mounted) {
-        AppFeedbackService.instance.emit(AppFeedbackType.success);
         setState(() {
           _message = request.isAwaitingTransfer
               ? 'Mã thanh toán đã sẵn sàng. Bạn hãy chuyển khoản rồi xác nhận.'
@@ -220,7 +274,6 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
           .read(membershipPaymentControllerProvider.notifier)
           .confirmTransfer();
       if (mounted) {
-        AppFeedbackService.instance.emit(AppFeedbackType.success);
         setState(
           () => _message =
               'Đã gửi yêu cầu duyệt. Gói sẽ được mở sau khi được duyệt.',
@@ -238,6 +291,113 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage> {
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  Future<void> _cancelRequest() async {
+    if (_submitting) return;
+    final shouldCancel = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hủy yêu cầu thanh toán'),
+        content: const Text(
+          'Bạn có chắc muốn hủy yêu cầu này? Bạn chỉ có thể hủy trước khi xác nhận đã chuyển khoản.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Giữ yêu cầu'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Hủy yêu cầu'),
+          ),
+        ],
+      ),
+    );
+    if (shouldCancel != true || !mounted) return;
+
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    setState(() {
+      _submitting = true;
+      _message = null;
+    });
+    try {
+      await ref
+          .read(membershipPaymentControllerProvider.notifier)
+          .cancelRequest();
+      if (mounted) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+        setState(
+          () => _message =
+              'Yêu cầu thanh toán đã được hủy. Bạn có thể tạo yêu cầu mới khi sẵn sàng.',
+        );
+      }
+    } on MembershipPaymentException catch (error) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
+      if (mounted) setState(() => _message = error.safeMessage);
+    } catch (_) {
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
+      if (mounted) {
+        setState(
+          () => _message = 'Chưa hủy được yêu cầu thanh toán. Bạn hãy thử lại.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  void _syncPendingReviewPolling(MembershipPaymentRequest? request) {
+    if (request?.isPendingReview != true) {
+      _pendingReviewTimer?.cancel();
+      _pendingReviewTimer = null;
+      return;
+    }
+    if (_pendingReviewTimer != null) return;
+    _pendingReviewTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => unawaited(_refreshPendingReview()),
+    );
+  }
+
+  void _handlePaymentRequestState(MembershipPaymentRequest? request) {
+    final requestId = request?.id.trim();
+    final status = request?.normalizedStatus;
+    final changedToSucceeded =
+        requestId != null &&
+        requestId.isNotEmpty &&
+        requestId == _lastObservedRequestId &&
+        status == 'succeeded' &&
+        _lastObservedRequestStatus != 'succeeded';
+    _lastObservedRequestId = requestId;
+    _lastObservedRequestStatus = status;
+    if (changedToSucceeded) {
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
+    }
+    _syncPendingReviewPolling(request);
+  }
+
+  Future<void> _refreshPendingReview() async {
+    if (!mounted || _submitting || _pendingReviewRefreshInFlight) return;
+    final request = ref
+        .read(membershipPaymentControllerProvider)
+        .value
+        ?.request;
+    if (request?.isPendingReview != true) {
+      _syncPendingReviewPolling(request);
+      return;
+    }
+
+    _pendingReviewRefreshInFlight = true;
+    try {
+      await ref
+          .read(membershipPaymentControllerProvider.notifier)
+          .refresh(preserveVisibleStateOnError: true);
+    } catch (_) {
+      // Background refresh intentionally preserves the usable payment state.
+    } finally {
+      _pendingReviewRefreshInFlight = false;
     }
   }
 }
@@ -287,21 +447,23 @@ class _PlanSelector extends StatelessWidget {
 
 class _PaymentRequestPanel extends StatelessWidget {
   final MembershipPaymentRequest request;
+  final String? payerFullName;
   final bool isSubmitting;
   final Future<void> Function() onConfirmTransfer;
+  final Future<void> Function() onCancelRequest;
 
   const _PaymentRequestPanel({
     required this.request,
+    required this.payerFullName,
     required this.isSubmitting,
     required this.onConfirmTransfer,
+    required this.onCancelRequest,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    final transferMemo = VietQrPayloadBuilder.normalizeTransferMemo(
-      request.transferMemo,
-    );
+    final transferMemo = request.transferMemoForPayment;
     final qrPayload = request.hasTransferDetails
         ? VietQrPayloadBuilder.build(
             bankBin: request.bankBin,
@@ -340,12 +502,13 @@ class _PaymentRequestPanel extends StatelessWidget {
             'Số tiền: ${_formatMoney(request.amountCents, request.currency)}',
             style: AppTextStyles.heading4,
           ),
-          if (request.transferReference != null) ...[
+          if (payerFullName?.trim().isNotEmpty == true) ...[
             const SizedBox(height: AppSpacing.md),
-            _DetailRow(
-              label: 'Mã giao dịch',
-              value: request.transferReference!,
-            ),
+            _DetailRow(label: 'Họ và tên', value: payerFullName!),
+          ],
+          if (transferMemo != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            _DetailRow(label: 'Mã đối soát', value: transferMemo),
           ],
           if (request.isAwaitingTransfer) ...[
             const SizedBox(height: AppSpacing.md),
@@ -378,7 +541,7 @@ class _PaymentRequestPanel extends StatelessWidget {
                   request.normalizedStatus == 'rejected',
             ),
           ],
-          if (qrPayload != null) ...[
+          if (request.isAwaitingTransfer && qrPayload != null) ...[
             const SizedBox(height: AppSpacing.sectionSpacing),
             Center(
               child: Semantics(
@@ -425,6 +588,17 @@ class _PaymentRequestPanel extends StatelessWidget {
               message:
                   'Chưa tải đủ thông tin nhận tiền. Bạn hãy làm mới trước khi chuyển khoản.',
               isError: true,
+            ),
+          ],
+          if (request.canCancel) ...[
+            const SizedBox(height: AppSpacing.sectionSpacing),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: isSubmitting ? null : onCancelRequest,
+                icon: const Icon(Icons.cancel_outlined),
+                label: const Text('Hủy yêu cầu'),
+              ),
             ),
           ],
           if (request.canConfirmTransfer && qrPayload != null) ...[

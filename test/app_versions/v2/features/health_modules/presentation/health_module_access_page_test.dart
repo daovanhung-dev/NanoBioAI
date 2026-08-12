@@ -6,6 +6,7 @@ import 'package:nano_app/app_versions/v2/features/health_modules/health_modules.
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/membership_entitlement.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/medical_ui.dart';
 
 void main() {
@@ -61,6 +62,10 @@ void main() {
     expect(
       router.routeInformationProvider.value.uri.path,
       V2RoutePaths.payments,
+    );
+    expect(
+      router.routeInformationProvider.value.uri.queryParameters['plan'],
+      MembershipUpgradePlan.plus,
     );
     expect(find.text('UPGRADE_DESTINATION'), findsOneWidget);
   });

@@ -71,19 +71,14 @@ void main() {
       expect(session.hasPermission(AdminPermissions.pointsWrite), isTrue);
     });
 
-    test('maps operations admin wildcard to all Admin mutations', () {
+    test('hides payment review from Support even with a legacy wildcard', () {
       final session = _session(
         roles: const [AdminRoleCode.supportAdmin],
         permissions: const {AdminPermissions.wildcard},
       );
 
-      for (final section in AdminPanelSection.values) {
-        expect(
-          session.canAccessSection(section),
-          isTrue,
-          reason: section.value,
-        );
-      }
+      expect(session.canAccessSection(AdminPanelSection.users), isTrue);
+      expect(session.canAccessSection(AdminPanelSection.payments), isFalse);
       expect(
         session.canRunMutation(
           const AdminMutationCommand(
@@ -94,7 +89,7 @@ void main() {
             idempotencyKey: 'payment-id-1',
           ),
         ),
-        isTrue,
+        isFalse,
       );
     });
 
@@ -145,7 +140,7 @@ void main() {
       );
 
       expect(operations.canRunMutation(saleCommand), isTrue);
-      expect(operations.canRunMutation(paymentCommand), isTrue);
+      expect(operations.canRunMutation(paymentCommand), isFalse);
       expect(
         adminPermissionForMutation(saleCommand),
         AdminPermissions.salesWrite,
@@ -166,8 +161,38 @@ void main() {
         expect(session.roles, contains(AdminRoleCode.contentAdmin));
         expect(session.roles, contains(AdminRoleCode.operationsAdmin));
         expect(session.hasWildcardPermission, isTrue);
+        expect(session.hasPermission(AdminPermissions.paymentsWrite), isFalse);
       },
     );
+
+    test('allows only Finance and Super Admins to review payments', () {
+      for (final role in const [
+        AdminRoleCode.superAdmin,
+        AdminRoleCode.financeAdmin,
+      ]) {
+        final session = _session(
+          roles: [role],
+          permissions: const {AdminPermissions.paymentsWrite},
+        );
+        expect(session.canAccessSection(AdminPanelSection.payments), isTrue);
+      }
+
+      for (final role in const [
+        AdminRoleCode.supportAdmin,
+        AdminRoleCode.contentAdmin,
+        AdminRoleCode.operationsAdmin,
+      ]) {
+        final session = _session(
+          roles: [role],
+          permissions: const {AdminPermissions.paymentsWrite},
+        );
+        expect(
+          session.canAccessSection(AdminPanelSection.payments),
+          isFalse,
+          reason: role.value,
+        );
+      }
+    });
 
     test('does not treat read-only sections as mutation surfaces', () {
       final dashboardAdmin = _session(
@@ -315,9 +340,17 @@ void main() {
         targetId: 'payment-id',
         reason: 'Provider payment verified.',
         idempotencyKey: 'payments-approve-1',
+        payload: {'transfer_verified': true},
       );
 
       expect(adminRpcFunctionFor(command), 'admin_review_payment');
+      expect(adminRpcParamsFor(command), {
+        'p_reason': 'Provider payment verified.',
+        'p_idempotency_key': 'payments-approve-1',
+        'p_payment_event_id': 'payment-id',
+        'p_decision': 'approve',
+        'p_transfer_verified': true,
+      });
     });
 
     test('maps manual Sale point adjustment to audited RPC', () {
@@ -413,8 +446,9 @@ void main() {
           'section': 'payments',
           'created_at': '2026-07-31T08:00:00Z',
           'transfer_reference': 'NB12AB34CD56EF',
-          'transfer_memo': 'NB12AB34CD56EF NGUYEN VAN A',
+          'transfer_memo': 'NB12AB34CD56EF',
           'payer_full_name': 'Nguyễn Văn A',
+          'billing_cycle': 'monthly',
           'amount_cents': 99000,
           'currency': 'VND',
           'transfer_confirmed_at': '2026-07-31T08:12:00Z',
@@ -423,8 +457,9 @@ void main() {
         final details = item.paymentReconciliation;
         expect(details, isNotNull);
         expect(details!.transferReference, 'NB12AB34CD56EF');
-        expect(details.transferMemo, 'NB12AB34CD56EF NGUYEN VAN A');
+        expect(details.transferMemo, 'NB12AB34CD56EF');
         expect(details.payerFullName, 'Nguyễn Văn A');
+        expect(details.billingCycle, 'monthly');
         expect(details.amountCents, 99000);
         expect(details.currency, 'VND');
         expect(

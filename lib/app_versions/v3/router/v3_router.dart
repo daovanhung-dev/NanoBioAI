@@ -2,11 +2,13 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v2/features/auth/auth.dart';
+import 'package:nano_app/app_versions/v2/features/payments/payments.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/app_versions/v3/features/advanced_tracking/advanced_tracking.dart';
 import 'package:nano_app/app_versions/v3/features/familyplus/familyplus.dart';
 import 'package:nano_app/app_versions/v3/features/home/presentation/pages/v3_home_page.dart';
 import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 
 final v3Routes = <RouteBase>[
   GoRoute(
@@ -32,6 +34,15 @@ final v3StandaloneRoutes = <RouteBase>[
     path: V2RoutePaths.login,
     name: V2RoutePaths.login,
     builder: (context, state) => const V2LoginPage(),
+  ),
+  GoRoute(
+    path: V2RoutePaths.payments,
+    name: V2RoutePaths.payments,
+    builder: (context, state) => MembershipPaymentPage(
+      initialPlanCode: normalizeMembershipUpgradePlan(
+        state.uri.queryParameters['plan'],
+      ),
+    ),
   ),
   GoRoute(
     path: V1RoutePaths.lifestyleSchedule,

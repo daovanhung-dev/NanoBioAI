@@ -72,6 +72,69 @@ void main() {
       expect(accessRefreshes.count, 2);
     },
   );
+
+  test('cancels an awaiting transfer without refreshing paid access', () async {
+    final repository = _SequencePaymentRepository(
+      currentResponses: [_request(status: 'awaiting_transfer')],
+      confirmResponse: _request(status: 'pending_review'),
+      cancelResponse: _request(status: 'cancelled'),
+    );
+    final accessRefreshes = _AccessRefreshCounter();
+    final container = _container(
+      repository: repository,
+      accessRefreshes: accessRefreshes,
+    );
+    addTearDown(container.dispose);
+
+    final subscription = container.listen(effectiveAccessProvider, (_, _) {});
+    addTearDown(subscription.close);
+    await container.read(effectiveAccessProvider.future);
+    await container.read(membershipPaymentControllerProvider.future);
+
+    final request = await container
+        .read(membershipPaymentControllerProvider.notifier)
+        .cancelRequest();
+    await _flush();
+
+    expect(request.normalizedStatus, 'cancelled');
+    expect(request.canCancel, isFalse);
+    expect(repository.cancelCallCount, 1);
+    expect(accessRefreshes.count, 1);
+  });
+
+  test(
+    'opens the server-reported active request after a create race',
+    () async {
+      final existingRequest = _request(
+        status: 'awaiting_transfer',
+        id: 'existing-payment',
+      );
+      final repository = _SequencePaymentRepository(
+        currentResponses: [null, existingRequest],
+        confirmResponse: _request(status: 'pending_review'),
+        createError: StateError('MEMBERSHIP_PAYMENT_REQUEST_ALREADY_OPEN'),
+      );
+      final accessRefreshes = _AccessRefreshCounter();
+      final container = _container(
+        repository: repository,
+        accessRefreshes: accessRefreshes,
+      );
+      addTearDown(container.dispose);
+
+      await container.read(membershipPaymentControllerProvider.future);
+      final request = await container
+          .read(membershipPaymentControllerProvider.notifier)
+          .createRequest(planCode: 'plus', billingCycle: 'monthly');
+
+      expect(repository.createCallCount, 1);
+      expect(repository.fetchCurrentRequestCallCount, 2);
+      expect(request.id, 'existing-payment');
+      expect(
+        container.read(membershipPaymentControllerProvider).value?.request?.id,
+        'existing-payment',
+      );
+    },
+  );
 }
 
 ProviderContainer _container({
@@ -110,12 +173,19 @@ class _PayerProfileRepository
 class _SequencePaymentRepository implements MembershipPaymentRepository {
   final List<MembershipPaymentRequest?> currentResponses;
   final MembershipPaymentRequest confirmResponse;
+  final MembershipPaymentRequest? cancelResponse;
+  final Object? createError;
   int _currentReadIndex = 0;
   int confirmCallCount = 0;
+  int cancelCallCount = 0;
+  int createCallCount = 0;
+  int fetchCurrentRequestCallCount = 0;
 
   _SequencePaymentRepository({
     required this.currentResponses,
     required this.confirmResponse,
+    this.cancelResponse,
+    this.createError,
   });
 
   @override
@@ -127,9 +197,17 @@ class _SequencePaymentRepository implements MembershipPaymentRepository {
   }
 
   @override
+  Future<MembershipPaymentRequest> cancelRequest(String paymentEventId) async {
+    cancelCallCount++;
+    return cancelResponse ?? _request(status: 'cancelled', id: paymentEventId);
+  }
+
+  @override
   Future<MembershipPaymentRequest> createRequest(
     CreateMembershipPaymentRequestCommand command,
   ) async {
+    createCallCount++;
+    if (createError != null) throw createError!;
     return _request(
       status: 'awaiting_transfer',
       id: 'created-payment',
@@ -140,6 +218,7 @@ class _SequencePaymentRepository implements MembershipPaymentRepository {
 
   @override
   Future<MembershipPaymentRequest?> fetchCurrentRequest() async {
+    fetchCurrentRequestCallCount++;
     final index = _currentReadIndex;
     _currentReadIndex++;
     return currentResponses[index < currentResponses.length

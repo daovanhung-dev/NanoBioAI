@@ -383,16 +383,28 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
   ) async {
     if (_runningTargetId != null) return;
 
-    final reason = await showDialog<String>(
+    final confirmation = await showDialog<_AdminActionConfirmation>(
       context: context,
       barrierDismissible: false,
-      builder: (context) =>
-          _AdminReasonDialog(action: action, itemTitle: item.title),
+      builder: (context) => _AdminReasonDialog(
+        action: action,
+        itemTitle: item.title,
+        requiresTransferVerification:
+            section == AdminPanelSection.payments && action.key == 'approve',
+      ),
     );
-    if (reason == null || reason.trim().isEmpty || !mounted) return;
+    if (confirmation == null ||
+        confirmation.reason.trim().isEmpty ||
+        !mounted) {
+      return;
+    }
 
     setState(() => _runningTargetId = item.id);
     final payload = <String, Object?>{};
+
+    if (section == AdminPanelSection.payments && action.key == 'approve') {
+      payload['transfer_verified'] = confirmation.transferVerified;
+    }
 
     try {
       if (section == AdminPanelSection.saleConversions &&
@@ -412,7 +424,7 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
             section: section,
             action: action.key,
             targetId: item.id,
-            reason: reason,
+            reason: confirmation.reason,
             payload: payload,
           );
       if (!mounted) return;

@@ -100,13 +100,20 @@ void main() {
           'admin_get_payment_review_alert',
           'pending_review_count integer',
           "where pe.status = 'pending_review';",
-          "public.admin_assert_permission('payments.write')",
+          'admin_assert_payment_reviewer',
+          'admin_has_payment_reviewer_role',
+          "aur.role_code in ('finance_admin', 'super_admin')",
           'drop function if exists public.admin_list_payments(text, integer);',
           'transfer_reference text',
           'transfer_memo text',
           'payer_full_name text',
+          'billing_cycle text',
           'transfer_confirmed_at timestamptz',
           "v_payment.status not in ('pending_review', 'pending')",
+          'p_transfer_verified boolean',
+          'PAYMENT_TRANSFER_RECONCILIATION_REQUIRED',
+          'cancel_my_membership_payment_request',
+          'uq_payment_events_one_open_manual_membership',
           "when pe.status = 'pending_review' then 0",
           "when pe.status = 'pending' then 1",
         ]) {
@@ -115,6 +122,36 @@ void main() {
         }
       },
     );
+
+    test('keeps M13 hardening migration non-destructive and rebuild-synced', () {
+      final migration = File(
+        'docs/supabase/23-membership-payment-hardening.sql',
+      ).readAsStringSync();
+      final config = File('docs/supabase/config.sql').readAsStringSync();
+      final readme = File('docs/supabase/README.md').readAsStringSync();
+
+      for (final token in [
+        'begin;',
+        'commit;',
+        'cancel_my_membership_payment_request',
+        'p_transfer_verified boolean',
+        'LEGACY_PAID_SUBSCRIPTION_MISSING_ENDS_AT',
+        'same_plan_renewal',
+        'plan_switch',
+        "at time zone 'Asia/Ho_Chi_Minh'",
+        "ms.starts_at + interval '1 microsecond'",
+        'admin_has_payment_reviewer_role',
+        'uq_payment_events_one_open_manual_membership',
+      ]) {
+        expect(migration, contains(token), reason: 'migration: $token');
+        expect(config, contains(token), reason: 'config.sql: $token');
+      }
+
+      expect(migration, isNot(contains('drop schema')));
+      expect(migration, isNot(contains('truncate table auth.users')));
+      expect(readme, contains('23-membership-payment-hardening.sql'));
+      expect(readme, contains('sandbox/staging'));
+    });
 
     test('declares non-destructive unified role-surface migration', () {
       final migration = File(

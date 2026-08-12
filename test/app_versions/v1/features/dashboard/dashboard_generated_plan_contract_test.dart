@@ -13,4 +13,15 @@ void main() {
     expect(source, contains('appendAfterExisting: true'));
     expect(source, isNot(contains('appendAfterExisting: false')));
   });
+
+  test('schedule quota block offers the shared Plus upgrade prompt', () {
+    final source = File(
+      'lib/app_versions/v1/features/dashboard/presentation/pages/'
+      'dashboard_page.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('PersonalScheduleQuotaExceededException'));
+    expect(source, contains('showMembershipUpgradePrompt('));
+    expect(source, contains('MembershipUpgradePlan.plus'));
+  });
 }

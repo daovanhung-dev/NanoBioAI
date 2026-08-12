@@ -1,10 +1,25 @@
 part of 'admin_workspace_page.dart';
 
+class _AdminActionConfirmation {
+  final String reason;
+  final bool transferVerified;
+
+  const _AdminActionConfirmation({
+    required this.reason,
+    this.transferVerified = false,
+  });
+}
+
 class _AdminReasonDialog extends StatefulWidget {
   final AdminActionPresentation action;
   final String itemTitle;
+  final bool requiresTransferVerification;
 
-  const _AdminReasonDialog({required this.action, required this.itemTitle});
+  const _AdminReasonDialog({
+    required this.action,
+    required this.itemTitle,
+    this.requiresTransferVerification = false,
+  });
 
   @override
   State<_AdminReasonDialog> createState() => _AdminReasonDialogState();
@@ -12,6 +27,7 @@ class _AdminReasonDialog extends StatefulWidget {
 
 class _AdminReasonDialogState extends State<_AdminReasonDialog> {
   final _controller = TextEditingController();
+  var _transferVerified = false;
 
   @override
   void dispose() {
@@ -21,7 +37,9 @@ class _AdminReasonDialogState extends State<_AdminReasonDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final valid = _controller.text.trim().isNotEmpty;
+    final valid =
+        _controller.text.trim().isNotEmpty &&
+        (!widget.requiresTransferVerification || _transferVerified);
     final danger = widget.action.danger;
     final colors = context.adminColors;
 
@@ -72,6 +90,30 @@ class _AdminReasonDialogState extends State<_AdminReasonDialog> {
                 alignLabelWithHint: true,
               ),
             ),
+            if (widget.requiresTransferVerification) ...[
+              const SizedBox(height: 8),
+              CheckboxListTile(
+                value: _transferVerified,
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                onChanged: (value) {
+                  setState(() => _transferVerified = value ?? false);
+                },
+                title: Text(
+                  'Đã đối chiếu giao dịch trong ứng dụng VCB',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: colors.text,
+                  ),
+                ),
+                subtitle: Text(
+                  'Tôi xác nhận mã NB, số tiền và nội dung chuyển khoản khớp yêu cầu này.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: colors.textSecondary,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -88,7 +130,12 @@ class _AdminReasonDialogState extends State<_AdminReasonDialog> {
                 )
               : null,
           onPressed: valid
-              ? () => Navigator.of(context).pop(_controller.text.trim())
+              ? () => Navigator.of(context).pop(
+                  _AdminActionConfirmation(
+                    reason: _controller.text.trim(),
+                    transferVerified: _transferVerified,
+                  ),
+                )
               : null,
           icon: Icon(widget.action.icon, size: 18),
           label: Text(widget.action.confirmLabel),

@@ -7,8 +7,10 @@ import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/app_versions/v1/features/nabi/providers/nabi_provider.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
+import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/data/nabi_asset_catalog.dart';
+import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
 import '../../domain/entities/chat_message_entity.dart';
 import '../controllers/ai_chat_controller.dart';
 
@@ -160,6 +162,17 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
                                   .retryLastMessage();
                             }
                           : null,
+                      onUpgrade: state.showPlusUpgrade
+                          ? () {
+                              AppFeedbackService.instance.emit(
+                                AppFeedbackType.primaryAction,
+                              );
+                              openMembershipUpgrade(
+                                context,
+                                planCode: MembershipUpgradePlan.plus,
+                              );
+                            }
+                          : null,
                       onDismiss: () {
                         ref
                             .read(aiChatControllerProvider.notifier)
@@ -237,6 +250,7 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
 class _ChatErrorBanner extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
+  final VoidCallback? onUpgrade;
   final VoidCallback onDismiss;
 
   const _ChatErrorBanner({
@@ -244,6 +258,7 @@ class _ChatErrorBanner extends StatelessWidget {
     required this.message,
     required this.onDismiss,
     this.onRetry,
+    this.onUpgrade,
   });
 
   @override
@@ -276,7 +291,12 @@ class _ChatErrorBanner extends StatelessWidget {
                   ),
                 ),
               ),
-              if (onRetry != null)
+              if (onUpgrade != null)
+                TextButton(
+                  onPressed: onUpgrade,
+                  child: const Text('Nâng cấp Plus'),
+                )
+              else if (onRetry != null)
                 TextButton(onPressed: onRetry, child: const Text('Thử lại')),
               IconButton(
                 onPressed: onDismiss,

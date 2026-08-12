@@ -156,6 +156,11 @@ Map<String, Object?> adminRpcParamsFor(AdminMutationCommand command) {
         ...base,
         'p_payment_event_id': command.targetId,
         'p_decision': command.action,
+        // The review RPC independently rejects an approval unless this is
+        // true. It is set only after the Finance/Super Admin confirms the
+        // Vietcombank reconciliation checklist in the workspace.
+        if (command.action == 'approve' || command.action == 'reject')
+          'p_transfer_verified': command.payload['transfer_verified'] == true,
       };
     case AdminPanelSection.sales:
       return {
