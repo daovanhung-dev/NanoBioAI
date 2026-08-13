@@ -1,5 +1,3 @@
-import 'package:nano_app/core/membership/membership_upgrade_route.dart';
-
 class CreateMembershipPaymentRequestCommand {
   final String planCode;
   final String billingCycle;
@@ -14,11 +12,15 @@ class CreateMembershipPaymentRequestCommand {
   });
 }
 
-/// Compatibility wrapper for payment callers. The canonical route/payment plan
-/// normalization lives in core so V2/V3 deep links and the payment form cannot
-/// drift apart.
+/// Normalizes an initial payment-plan selection from a route or a feature
+/// upgrade CTA. The backend remains the authority for whether a plan can be
+/// purchased; this only makes deep links safe for the customer UI.
 String normalizeMembershipPaymentPlanCode(String? value) {
-  return normalizeMembershipUpgradePlan(value);
+  return switch (value?.trim().toLowerCase()) {
+    'family_plus' => 'family_plus',
+    'plus' => 'plus',
+    _ => 'plus',
+  };
 }
 
 class MembershipPaymentRequest {
@@ -91,6 +93,11 @@ class MembershipPaymentRequest {
 
   bool get isPendingReview => normalizedStatus == 'pending_review';
 
+  bool get isLegacyPending => const {
+    'pending',
+    'requested',
+  }.contains(normalizedStatus);
+
   bool get isSucceeded => normalizedStatus == 'succeeded';
 
   bool get isTerminal => const {
@@ -103,7 +110,11 @@ class MembershipPaymentRequest {
     'paid',
   }.contains(normalizedStatus);
 
-  bool get isActive => !isTerminal;
+  /// Only the two states owned by the current VietQR customer flow may block
+  /// creation of another request. Historical `pending`/`requested` rows remain
+  /// visible for reconciliation, but they do not expose QR/confirm/cancel
+  /// actions and therefore must not dead-lock a customer checkout.
+  bool get isActive => isAwaitingTransfer || isPendingReview;
 
   bool get canConfirmTransfer => isAwaitingTransfer && id.trim().isNotEmpty;
 
@@ -111,11 +122,17 @@ class MembershipPaymentRequest {
   /// completed. The server enforces the same ownership/status restriction.
   bool get canCancel => isAwaitingTransfer && id.trim().isNotEmpty;
 
-  /// VietQR/copy content is derived only from the immutable canonical
-  /// `NB` + 12 uppercase hexadecimal reference. Legacy/free-form memo text is
-  /// never encoded into the QR or copied to the clipboard.
+  /// The VietQR transfer content is deliberately derived from the immutable
+  /// server-issued NB reference, never from free-form metadata. This keeps a
+  /// payer name or plan label out of the QR and copied transfer content even
+  /// if an older response contains a legacy memo.
   String? get transferMemoForPayment {
-    return normalizeMembershipTransferReference(transferReference);
+    final reference = transferReference?.trim().toUpperCase();
+    if (reference == null ||
+        !RegExp(r'^NB[A-Z0-9]{1,23}$').hasMatch(reference)) {
+      return null;
+    }
+    return reference;
   }
 
   bool get hasTransferDetails =>

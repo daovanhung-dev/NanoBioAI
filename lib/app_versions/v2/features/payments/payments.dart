@@ -4,6 +4,7 @@ export 'application/create_membership_payment_request.dart';
 export 'application/load_current_membership_payment_request.dart';
 export 'application/read_membership_payment_payer_name.dart';
 export 'data/datasources/membership_payment_payer_profile_local_datasource.dart';
+export 'data/datasources/membership_payment_payer_profile_remote_datasource.dart';
 export 'data/datasources/membership_payment_remote_datasource.dart';
 export 'data/repositories/sqlite_membership_payment_payer_profile_repository.dart';
 export 'data/repositories/supabase_membership_payment_repository.dart';

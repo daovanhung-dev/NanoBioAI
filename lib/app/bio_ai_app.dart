@@ -14,7 +14,7 @@ class BioAIApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authIdentity = ref.watch(v2AuthChangesProvider);
+    final authState = ref.watch(v2AuthControllerProvider);
     final currentUserId = ref.watch(currentAuthUserIdProvider);
     final requestedSurface = ref.watch(appSurfaceControllerProvider);
     final experiencePreferences =
@@ -32,8 +32,13 @@ class BioAIApp extends ConsumerWidget {
       }
     });
 
+    // Root surface identity follows the resolved AuthController state instead
+    // of the timing of Supabase.onAuthStateChange. During the first release
+    // login, keep a neutral resolving surface while AuthController finalizes
+    // the authenticated route rather than remounting the login app.
     if (ref.watch(authBackendAvailabilityProvider).isReady &&
-        authIdentity.isLoading) {
+        authState.isLoading &&
+        authState.value == null) {
       return _AccessResolvingApp(
         key: const ValueKey('auth-identity-resolving'),
         preferences: experiencePreferences,
