@@ -18,14 +18,15 @@ class SupabaseMembershipPaymentRepository
       idempotencyKey: command.idempotencyKey,
       payerFullName: command.payerFullName,
     );
-    return MembershipPaymentRequest.fromMap(_firstMap(response));
+    return _validateCreateResponse(_parseRequiredRequest(response));
   }
 
   @override
   Future<MembershipPaymentRequest?> fetchCurrentRequest() async {
     final response = await datasource.getMyMembershipPaymentRequest();
     final map = _firstMapOrNull(response);
-    return map == null ? null : MembershipPaymentRequest.fromMap(map);
+    if (map == null) return null;
+    return MembershipPaymentRequest.fromMap(map);
   }
 
   @override
@@ -35,7 +36,7 @@ class SupabaseMembershipPaymentRepository
     final response = await datasource.confirmMyMembershipPaymentTransfer(
       paymentEventId: paymentEventId,
     );
-    return MembershipPaymentRequest.fromMap(_firstMap(response));
+    return _parseRequiredRequest(response);
   }
 
   @override
@@ -43,12 +44,33 @@ class SupabaseMembershipPaymentRepository
     final response = await datasource.cancelMyMembershipPaymentRequest(
       paymentEventId: paymentEventId,
     );
-    return MembershipPaymentRequest.fromMap(_firstMap(response));
+    return _parseRequiredRequest(response);
   }
 }
 
-Map<String, Object?> _firstMap(Object? response) {
-  return _firstMapOrNull(response) ?? const {};
+MembershipPaymentRequest _validateCreateResponse(
+  MembershipPaymentRequest request,
+) {
+  if (request.id.trim().isEmpty) {
+    throw const MembershipPaymentException.invalidServerPaymentPayload();
+  }
+
+  // A newly created request should either be ready for transfer or be an
+  // already-open request returned idempotently by Supabase. Only the transfer
+  // state requires a complete QR payload.
+  if (request.isAwaitingTransfer && !request.hasTransferDetails) {
+    throw const MembershipPaymentException.invalidServerPaymentPayload();
+  }
+
+  return request;
+}
+
+MembershipPaymentRequest _parseRequiredRequest(Object? response) {
+  final map = _firstMapOrNull(response);
+  if (map == null || map.isEmpty) {
+    throw const MembershipPaymentException.invalidServerPaymentPayload();
+  }
+  return MembershipPaymentRequest.fromMap(map);
 }
 
 Map<String, Object?>? _firstMapOrNull(Object? response) {

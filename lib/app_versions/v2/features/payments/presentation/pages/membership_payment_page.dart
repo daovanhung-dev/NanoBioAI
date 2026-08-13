@@ -83,7 +83,6 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage>
     final viewState = paymentState.value;
     final request = viewState?.request;
     final isInitialLoading = paymentState.isLoading && viewState == null;
-    final hasPayerName = viewState?.hasPayerFullName == true;
     final hasActiveRequest = request?.isActive == true;
 
     return MedicalPageScaffold(
@@ -120,17 +119,9 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage>
             ],
             if (paymentState.hasError) ...[
               const SizedBox(height: AppSpacing.md),
-              _FeedbackCard(
-                message:
-                    'Chưa tải được yêu cầu thanh toán. Bạn hãy thử làm mới.',
-                isError: true,
-              ),
-            ],
-            if (!isInitialLoading && !hasPayerName) ...[
-              const SizedBox(height: AppSpacing.md),
               const _FeedbackCard(
                 message:
-                    'Bạn cần cập nhật họ và tên trong hồ sơ trước khi tạo mã thanh toán.',
+                    'Chưa tải được yêu cầu thanh toán. Bạn vẫn có thể thử tạo mã mới hoặc làm mới trang.',
                 isError: true,
               ),
             ],
@@ -139,7 +130,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage>
               _PlanSelector(
                 planCode: _planCode,
                 billingCycle: _billingCycle,
-                isDisabled: _submitting || isInitialLoading || !hasPayerName,
+                isDisabled: _submitting || isInitialLoading,
                 onPlanChanged: (value) {
                   AppFeedbackService.instance.emit(AppFeedbackType.selection);
                   setState(() => _planCode = value ?? _planCode);
@@ -151,7 +142,7 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage>
               ),
               const SizedBox(height: AppSpacing.sectionSpacing),
               FilledButton.icon(
-                onPressed: _submitting || isInitialLoading || !hasPayerName
+                onPressed: _submitting || isInitialLoading
                     ? null
                     : _createRequest,
                 icon: _submitting
@@ -219,12 +210,21 @@ class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage>
       final request = await ref
           .read(membershipPaymentControllerProvider.notifier)
           .createRequest(planCode: _planCode, billingCycle: _billingCycle);
-      if (mounted) {
-        setState(() {
-          _message = request.isAwaitingTransfer
-              ? 'Mã thanh toán đã sẵn sàng. Bạn hãy chuyển khoản rồi xác nhận.'
-              : 'Yêu cầu thanh toán đã được cập nhật.';
-        });
+      if (!mounted) return;
+
+      if (request.canRenderVietQr) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+        setState(
+          () => _message =
+              'Mã thanh toán đã sẵn sàng. Bạn hãy chuyển đúng số tiền và nội dung hiển thị.',
+        );
+      } else if (request.isPendingReview) {
+        setState(
+          () => _message =
+              'Yêu cầu trước của bạn đang chờ duyệt. Không tạo thêm mã mới.',
+        );
+      } else {
+        setState(() => _message = 'Yêu cầu thanh toán đã được cập nhật.');
       }
     } on MembershipPaymentException catch (error) {
       AppFeedbackService.instance.emit(AppFeedbackType.error);
@@ -464,7 +464,7 @@ class _PaymentRequestPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
     final transferMemo = request.transferMemoForPayment;
-    final qrPayload = request.hasTransferDetails
+    final qrPayload = request.canRenderVietQr
         ? VietQrPayloadBuilder.build(
             bankBin: request.bankBin,
             accountNumber: request.bankAccountNumber,
@@ -586,7 +586,7 @@ class _PaymentRequestPanel extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             const _FeedbackCard(
               message:
-                  'Chưa tải đủ thông tin nhận tiền. Bạn hãy làm mới trước khi chuyển khoản.',
+                  'Máy chủ chưa trả đủ thông tin để tạo mã thanh toán. Hãy làm mới trước khi chuyển khoản.',
               isError: true,
             ),
           ],

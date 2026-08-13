@@ -1,14 +1,14 @@
-/// Builds EMVCo/VietQR-compatible transfer payloads from server-supplied
-/// beneficiary details. It intentionally contains no bank configuration.
+/// Builds the VietQR/NAPAS EMV payload from trusted server-supplied payment
+/// details. No receiving-account or payment-reference configuration lives in
+/// this class.
 class VietQrPayloadBuilder {
   static const int maxTransferMemoLength = 25;
   static const int maxAccountNameLength = 25;
+  static final RegExp _bankBinPattern = RegExp(r'^[0-9]{6}$');
+  static final RegExp _accountNumberPattern = RegExp(r'^[0-9]{4,32}$');
 
   const VietQrPayloadBuilder._();
 
-  /// Returns a QR payload when all required, server-supplied values are
-  /// available. A missing value returns null instead of creating a QR code
-  /// that could direct a payment with incomplete information.
   static String? build({
     required String? bankBin,
     required String? accountNumber,
@@ -20,37 +20,43 @@ class VietQrPayloadBuilder {
     final normalizedAccountNumber = _requiredText(accountNumber);
     final normalizedAccountName = normalizeAccountName(accountName);
     final normalizedMemo = normalizeTransferMemo(transferMemo);
+
     if (normalizedBankBin == null ||
+        !_bankBinPattern.hasMatch(normalizedBankBin) ||
         normalizedAccountNumber == null ||
+        !_accountNumberPattern.hasMatch(normalizedAccountNumber) ||
         normalizedAccountName == null ||
         normalizedMemo == null ||
         amount <= 0) {
       return null;
     }
 
-    final beneficiary =
-        _emv('00', normalizedBankBin) + _emv('01', normalizedAccountNumber);
+    // VietQR merchant-account information (ID 38):
+    // 00 = NAPAS AID, 01 = consumer account information (BIN + account),
+    // 02 = transfer service code QRIBFTTA.
+    final consumerAccount =
+        _emv('00', normalizedBankBin) +
+        _emv('01', normalizedAccountNumber);
     final merchantAccount =
-        '${_emv('00', 'A000000727')}'
-        '${_emv('01', beneficiary)}'
-        '${_emv('02', 'QRIBFTTA')}';
+        _emv('00', 'A000000727') +
+        _emv('01', consumerAccount) +
+        _emv('02', 'QRIBFTTA');
     final additionalData = _emv('08', normalizedMemo);
-    final raw =
-        '${_emv('00', '01')}'
-        '${_emv('01', '12')}'
-        '${_emv('38', merchantAccount)}'
-        '${_emv('53', '704')}'
-        '${_emv('54', amount.toString())}'
-        '${_emv('58', 'VN')}'
-        '${_emv('59', normalizedAccountName)}'
-        '${_emv('62', additionalData)}'
+
+    final withoutCrc =
+        _emv('00', '01') +
+        _emv('01', '12') +
+        _emv('38', merchantAccount) +
+        _emv('53', '704') +
+        _emv('54', amount.toString()) +
+        _emv('58', 'VN') +
+        _emv('59', normalizedAccountName) +
+        _emv('62', additionalData) +
         '6304';
-    return '$raw${crc16Ccitt(raw)}';
+
+    return '$withoutCrc${crc16Ccitt(withoutCrc)}';
   }
 
-  /// VietQR/NAPAS transfer content is limited to printable ASCII in this
-  /// product flow. The backend owns the canonical memo; this is a defensive
-  /// client-side safeguard before encoding it into a QR payload.
   static String? normalizeTransferMemo(String? value) {
     return _ascii(value, maxLength: maxTransferMemoLength);
   }
@@ -59,6 +65,7 @@ class VietQrPayloadBuilder {
     return _ascii(value, maxLength: maxAccountNameLength);
   }
 
+  /// CRC-16/CCITT-FALSE used by EMV QR payloads.
   static String crc16Ccitt(String input) {
     var crc = 0xFFFF;
     for (final unit in input.codeUnits) {
@@ -69,6 +76,14 @@ class VietQrPayloadBuilder {
       }
     }
     return crc.toRadixString(16).toUpperCase().padLeft(4, '0');
+  }
+
+  static bool hasValidCrc(String payload) {
+    if (payload.length < 8 || !payload.contains('6304')) return false;
+    final body = payload.substring(0, payload.length - 4);
+    final checksum = payload.substring(payload.length - 4).toUpperCase();
+    return RegExp(r'^[0-9A-F]{4}$').hasMatch(checksum) &&
+        crc16Ccitt(body) == checksum;
   }
 
   static String _emv(String id, String value) {

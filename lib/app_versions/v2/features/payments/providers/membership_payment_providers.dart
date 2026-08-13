@@ -84,9 +84,6 @@ final readMembershipPaymentPayerNameProvider =
       );
     });
 
-/// Reconciles the local read-model after the trusted backend reports that a
-/// payment succeeded. Effective access is invalidated separately and remains
-/// authoritative even if this local projection refresh cannot complete.
 final membershipPaymentApprovedProjectionRefreshProvider =
     Provider<Future<void> Function()>((ref) {
       return () async {
@@ -114,8 +111,8 @@ class MembershipPaymentViewState {
 
   bool get hasPayerFullName => payerFullName?.trim().isNotEmpty == true;
 
-  /// Prefer the server-snapshotted name attached to an existing payment while
-  /// retaining the local profile value for the create-request prerequisite.
+  /// The payer name is display-only. QR creation never depends on this value;
+  /// Supabase reads the authenticated profile and snapshots it server-side.
   String? get payerFullNameForDisplay {
     final snapshot = request?.payerFullName?.trim();
     if (snapshot != null && snapshot.isNotEmpty) return snapshot;
@@ -175,12 +172,11 @@ class MembershipPaymentController
       throw const MembershipPaymentException.authRequired();
     }
 
-    final payerFullName = await ref
-        .read(readMembershipPaymentPayerNameProvider)
-        .execute(userId);
-    if (payerFullName == null || payerFullName.trim().isEmpty) {
-      throw const MembershipPaymentException.missingPayerName();
-    }
+    // Compatibility only: the existing use case still expects a non-empty
+    // display name, but the remote datasource deliberately does not send it.
+    // No profile read is allowed to gate the create-RPC path.
+    final payerFullName =
+        state.value?.payerFullNameForDisplay ?? 'NanoBio Member';
 
     final idempotencyKey = _idempotencyKeyFor(planCode, billingCycle);
     MembershipPaymentRequest request;
@@ -201,10 +197,11 @@ class MembershipPaymentController
         stackTrace: stackTrace,
       );
     }
+
     state = AsyncData(
       MembershipPaymentViewState(
         request: request,
-        payerFullName: request.payerFullName ?? payerFullName,
+        payerFullName: request.payerFullName ?? state.value?.payerFullName,
       ),
     );
     _invalidateEffectiveAccessIfSucceeded(request);
@@ -259,19 +256,19 @@ class MembershipPaymentController
       return const MembershipPaymentViewState();
     }
 
-    final payerFullName = await ref
-        .read(readMembershipPaymentPayerNameProvider)
-        .execute(normalizedUserId);
+    // The payment RPC/read model is the only required source for this page.
+    // Local/remote profile reads are intentionally not part of payment loading.
     final request = await ref
         .read(loadCurrentMembershipPaymentRequestProvider)
         .execute();
+
     if (request?.isTerminal == true) {
       _clearIdempotencyKey();
     }
     _invalidateEffectiveAccessIfSucceeded(request);
     return MembershipPaymentViewState(
       request: request,
-      payerFullName: request?.payerFullName ?? payerFullName,
+      payerFullName: request?.payerFullName,
     );
   }
 
@@ -296,6 +293,7 @@ class MembershipPaymentController
     _idempotencyPlanCode = null;
     _idempotencyBillingCycle = null;
   }
+
 
   Future<MembershipPaymentRequest> _loadExistingOpenRequestOrRethrow({
     required Object error,
@@ -338,6 +336,7 @@ class MembershipPaymentController
     }
   }
 }
+
 
 bool _isOpenMembershipPaymentRequestError(Object error) {
   return error.toString().toUpperCase().contains(

@@ -2,6 +2,10 @@ class CreateMembershipPaymentRequestCommand {
   final String planCode;
   final String billingCycle;
   final String idempotencyKey;
+
+  /// Legacy/display-only compatibility field. The M13 v2 remote datasource
+  /// does not send this value to Supabase; the backend reads the authenticated
+  /// user's profile itself.
   final String payerFullName;
 
   const CreateMembershipPaymentRequestCommand({
@@ -12,9 +16,6 @@ class CreateMembershipPaymentRequestCommand {
   });
 }
 
-/// Normalizes an initial payment-plan selection from a route or a feature
-/// upgrade CTA. The backend remains the authority for whether a plan can be
-/// purchased; this only makes deep links safe for the customer UI.
 String normalizeMembershipPaymentPlanCode(String? value) {
   return switch (value?.trim().toLowerCase()) {
     'family_plus' => 'family_plus',
@@ -24,6 +25,10 @@ String normalizeMembershipPaymentPlanCode(String? value) {
 }
 
 class MembershipPaymentRequest {
+  static final RegExp canonicalTransferReferencePattern = RegExp(
+    r'^NB[0-9A-F]{12}$',
+  );
+
   final String id;
   final String planCode;
   final String billingCycle;
@@ -71,7 +76,7 @@ class MembershipPaymentRequest {
       billingCycle: _readString(map['billing_cycle']) ?? '',
       status: _readString(map['status']) ?? 'pending',
       amountCents: _readInt(map['amount_cents']),
-      currency: _readString(map['currency']) ?? 'VND',
+      currency: _readString(map['currency']) ?? '',
       transferReference: _readString(map['transfer_reference']),
       transferMemo: _readString(map['transfer_memo']),
       payerFullName: _readString(map['payer_full_name']),
@@ -110,37 +115,39 @@ class MembershipPaymentRequest {
     'paid',
   }.contains(normalizedStatus);
 
-  /// Only the two states owned by the current VietQR customer flow may block
-  /// creation of another request. Historical `pending`/`requested` rows remain
-  /// visible for reconciliation, but they do not expose QR/confirm/cancel
-  /// actions and therefore must not dead-lock a customer checkout.
   bool get isActive => isAwaitingTransfer || isPendingReview;
 
-  bool get canConfirmTransfer => isAwaitingTransfer && id.trim().isNotEmpty;
+  bool get canConfirmTransfer =>
+      isAwaitingTransfer && id.trim().isNotEmpty && hasTransferDetails;
 
-  /// The customer may cancel only before declaring that the transfer was
-  /// completed. The server enforces the same ownership/status restriction.
   bool get canCancel => isAwaitingTransfer && id.trim().isNotEmpty;
 
-  /// The VietQR transfer content is deliberately derived from the immutable
-  /// server-issued NB reference, never from free-form metadata. This keeps a
-  /// payer name or plan label out of the QR and copied transfer content even
-  /// if an older response contains a legacy memo.
   String? get transferMemoForPayment {
     final reference = transferReference?.trim().toUpperCase();
     if (reference == null ||
-        !RegExp(r'^NB[A-Z0-9]{1,23}$').hasMatch(reference)) {
+        !canonicalTransferReferencePattern.hasMatch(reference)) {
       return null;
     }
     return reference;
   }
 
-  bool get hasTransferDetails =>
-      amountCents > 0 &&
-      bankBin?.trim().isNotEmpty == true &&
-      bankAccountNumber?.trim().isNotEmpty == true &&
-      bankAccountName?.trim().isNotEmpty == true &&
-      transferMemoForPayment != null;
+  bool get hasTransferDetails {
+    final normalizedBin = bankBin?.trim();
+    final normalizedAccountNumber = bankAccountNumber?.trim();
+    final normalizedAccountName = bankAccountName?.trim();
+
+    return amountCents > 0 &&
+        currency.trim().toUpperCase() == 'VND' &&
+        normalizedBin != null &&
+        RegExp(r'^[0-9]{6}$').hasMatch(normalizedBin) &&
+        normalizedAccountNumber != null &&
+        RegExp(r'^[0-9]{4,32}$').hasMatch(normalizedAccountNumber) &&
+        normalizedAccountName != null &&
+        normalizedAccountName.isNotEmpty &&
+        transferMemoForPayment != null;
+  }
+
+  bool get canRenderVietQr => isAwaitingTransfer && hasTransferDetails;
 }
 
 class MembershipPaymentException implements Exception {
@@ -155,10 +162,18 @@ class MembershipPaymentException implements Exception {
   const MembershipPaymentException.authRequired()
     : this('AUTH_REQUIRED', 'Cần đăng nhập để tạo yêu cầu thanh toán.');
 
+  // Kept for source compatibility with older tests/callers. M13 v2 no longer
+  // blocks QR creation on a mobile-side payer-name prerequisite.
   const MembershipPaymentException.missingPayerName()
     : this(
         'MISSING_PAYER_NAME',
         'Bạn cần cập nhật họ và tên trong hồ sơ trước khi tạo mã thanh toán.',
+      );
+
+  const MembershipPaymentException.invalidServerPaymentPayload()
+    : this(
+        'PAYMENT_QR_PAYLOAD_INVALID',
+        'Máy chủ chưa trả đủ thông tin để tạo mã thanh toán. Bạn hãy thử lại.',
       );
 
   const MembershipPaymentException.invalidTransferConfirmation()
