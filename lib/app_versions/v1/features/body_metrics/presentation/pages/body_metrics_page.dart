@@ -1,26 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 
 import '../../domain/entities/basic_health_calculator_models.dart';
+import '../../domain/entities/body_metrics_personal_context.dart';
 import '../../domain/services/basic_health_calculator.dart';
+import '../../domain/services/body_metrics_projection_policy.dart';
+import '../../providers/body_metrics_providers.dart';
 
-class BodyMetricsPage extends StatefulWidget {
+class BodyMetricsPage extends ConsumerStatefulWidget {
   const BodyMetricsPage({super.key});
 
   @override
-  State<BodyMetricsPage> createState() => _BodyMetricsPageState();
+  ConsumerState<BodyMetricsPage> createState() => _BodyMetricsPageState();
 }
 
-class _BodyMetricsPageState extends State<BodyMetricsPage> {
+class _BodyMetricsPageState extends ConsumerState<BodyMetricsPage> {
   final _heightController = TextEditingController();
   final _weightController = TextEditingController();
   final _ageController = TextEditingController();
-  BasicHealthSex _sex = BasicHealthSex.female;
-  BasicHealthActivityLevel _activity = BasicHealthActivityLevel.light;
+  BasicHealthSex? _sex;
+  BasicHealthActivityLevel? _activity;
   BasicHealthReport? _report;
+  BodyMetricsThirtyDayScenario? _scenario;
+  BodyMetricsAiInsight? _aiInsight;
   String? _error;
+  bool _didPrefill = false;
+  bool _analyzing = false;
 
   @override
   void dispose() {
@@ -32,18 +40,23 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final personalContext = ref.watch(bodyMetricsPersonalContextProvider);
+    personalContext.whenData(_queuePrefill);
+
     return NamiCareScaffold(
       title: 'Cơ thể của bạn',
       subtitle:
-          'Nabi giúp bạn ước tính nhanh các chỉ số cơ bản, nhẹ nhàng và rõ ràng.',
+          'Nabi dùng hồ sơ, thực đơn và lịch chăm sóc của bạn để tính chỉ số hiện tại và phân tích xu hướng sau một tháng.',
       badge: 'CHỈ SỐ CƠ THỂ',
       icon: Icons.monitor_weight_rounded,
       gradient: AppGradients.primary,
       children: [
+        _ProfileDataBanner(personalContext: personalContext),
+        const SizedBox(height: AppSpacing.sectionSpacing),
         const NamiCareSectionTitle(
-          title: 'Tính BMI, BMR/RMR và TDEE',
+          title: 'Dữ liệu cơ thể hiện tại',
           subtitle:
-              'Nhập số đo hiện tại để xem gợi ý tham khảo cho ngày hôm nay.',
+              'Nabi tự điền từ hồ sơ gần nhất. Bạn vẫn có thể chỉnh lại số đo trước khi phân tích.',
         ),
         const SizedBox(height: AppSpacing.md),
         NamiCareSurfaceCard(
@@ -68,6 +81,7 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
               ),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<BasicHealthSex>(
+                key: ValueKey('body-metrics-sex-${_sex?.code ?? 'unset'}'),
                 initialValue: _sex,
                 decoration: _inputDecoration(
                   'Giới tính sinh học',
@@ -87,6 +101,9 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
               ),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<BasicHealthActivityLevel>(
+                key: ValueKey(
+                  'body-metrics-activity-${_activity?.code ?? 'unset'}',
+                ),
                 initialValue: _activity,
                 decoration: _inputDecoration(
                   'Mức vận động',
@@ -105,12 +122,28 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
                 },
               ),
               const SizedBox(height: AppSpacing.md),
+              Text(
+                'Khi bạn chọn Phân tích cơ thể, Nabi sẽ gửi các chỉ số wellness tổng hợp và bối cảnh kế hoạch tới dịch vụ AI để diễn giải. Không gửi ảnh minh chứng hoặc nhật ký thô.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: context.semanticColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: _calculate,
-                  icon: const Icon(Icons.calculate_rounded),
-                  label: const Text('Tính chỉ số'),
+                  onPressed: _analyzing ? null : _calculateAndAnalyze,
+                  icon: _analyzing
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.auto_awesome_rounded),
+                  label: Text(
+                    _analyzing ? 'Nabi đang phân tích...' : 'Phân tích cơ thể',
+                  ),
                 ),
               ),
             ],
@@ -135,7 +168,20 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
                       padding: const EdgeInsets.only(
                         top: AppSpacing.sectionSpacing,
                       ),
-                      child: _ReportCard(report: _report!),
+                      child: Column(
+                        children: [
+                          _ReportCard(report: _report!),
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          if (_scenario != null)
+                            _ThirtyDayScenarioCard(
+                              report: _report!,
+                              scenario: _scenario!,
+                            ),
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          if (_aiInsight != null)
+                            _AiInsightCard(insight: _aiInsight!),
+                        ],
+                      ),
                     )
                   : const SizedBox.shrink(
                       key: ValueKey('body-metrics-idle'),
@@ -145,33 +191,87 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
         const NamiCareEmptyState(
           icon: Icons.medical_information_rounded,
           color: AppColors.primary,
-          title: 'Thông tin tham khảo',
-          message: 'Chỉ số chỉ để tham khảo, không thay thế tư vấn y khoa.',
+          title: 'Ước tính tham khảo',
+          message:
+              'Các chỉ số và dự báo chỉ mô tả xu hướng chăm sóc sức khỏe, không phải chẩn đoán, điều trị hay cam kết kết quả sau một tháng.',
         ),
       ],
     );
   }
 
-  void _calculate() {
+  void _queuePrefill(BodyMetricsPersonalContext? context) {
+    if (_didPrefill || context == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _didPrefill) return;
+      _didPrefill = true;
+      _heightController.text = _formatInput(context.heightCm);
+      _weightController.text = _formatInput(context.weightKg);
+      _ageController.text = context.ageYears?.toString() ?? '';
+      setState(() {
+        _sex = context.sex;
+        _activity = context.activityLevel;
+      });
+    });
+  }
+
+  Future<void> _calculateAndAnalyze() async {
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    setState(() {
+      _analyzing = true;
+      _error = null;
+      _aiInsight = null;
+    });
     try {
+      final sex = _sex;
+      final activity = _activity;
+      if (sex == null) {
+        throw const BasicHealthCalculatorException(
+          'Vui lòng chọn giới tính sinh học để tính BMR/RMR chính xác hơn.',
+        );
+      }
+      if (activity == null) {
+        throw const BasicHealthCalculatorException(
+          'Vui lòng chọn mức vận động hiện tại.',
+        );
+      }
       final input = BasicHealthInput(
         heightCm: _parseDouble(_heightController.text),
         weightKg: _parseDouble(_weightController.text),
         ageYears: _parseInt(_ageController.text),
-        sex: _sex,
-        activityLevel: _activity,
+        sex: sex,
+        activityLevel: activity,
       );
       final report = BasicHealthCalculator.calculate(input);
+      BodyMetricsPersonalContext? context;
+      try {
+        context = await ref.read(bodyMetricsPersonalContextProvider.future);
+      } catch (_) {
+        // Calculator output is still valid when local context cannot be loaded.
+      }
+      final scenario = BodyMetricsProjectionPolicy.build(
+        report: report,
+        context: context,
+      );
+      final insight = await ref.read(bodyMetricsAiServiceProvider).analyze(
+            report: report,
+            scenario: scenario,
+            dataCompleteness: context?.dataCompleteness ?? 0,
+          );
+      if (!mounted) return;
       setState(() {
         _report = report;
+        _scenario = scenario;
+        _aiInsight = insight;
         _error = null;
       });
       AppFeedbackService.instance.emit(AppFeedbackType.success);
     } on BasicHealthCalculatorException catch (error) {
       AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      if (!mounted) return;
       setState(() {
         _report = null;
+        _scenario = null;
+        _aiInsight = null;
         _error = vietnameseSystemUiText(
           error.message,
           fallback: 'Nabi chưa thể tính chỉ số lúc này. Bạn thử lại nhé.',
@@ -179,10 +279,15 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
       });
     } catch (_) {
       AppFeedbackService.instance.emit(AppFeedbackType.warning);
+      if (!mounted) return;
       setState(() {
         _report = null;
-        _error = 'Vui lòng nhập đầy đủ chiều cao, cân nặng và tuổi.';
+        _scenario = null;
+        _aiInsight = null;
+        _error = 'Vui lòng kiểm tra chiều cao, cân nặng và tuổi.';
       });
+    } finally {
+      if (mounted) setState(() => _analyzing = false);
     }
   }
 
@@ -202,6 +307,12 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
     return parsed;
   }
 
+  String _formatInput(double? value) {
+    if (value == null) return '';
+    if (value == value.roundToDouble()) return value.toInt().toString();
+    return value.toStringAsFixed(1);
+  }
+
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
@@ -209,6 +320,50 @@ class _BodyMetricsPageState extends State<BodyMetricsPage> {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
+    );
+  }
+}
+
+class _ProfileDataBanner extends StatelessWidget {
+  final AsyncValue<BodyMetricsPersonalContext?> personalContext;
+
+  const _ProfileDataBanner({required this.personalContext});
+
+  @override
+  Widget build(BuildContext context) {
+    return personalContext.when(
+      loading: () => const NamiCareInfoTile(
+        icon: Icons.sync_rounded,
+        color: AppColors.info,
+        title: 'Đang đọc hồ sơ của bạn',
+        subtitle: 'Nabi đang lấy số đo và kế hoạch gần nhất trên thiết bị.',
+      ),
+      error: (_, __) => const NamiCareInfoTile(
+        icon: Icons.edit_note_rounded,
+        color: AppColors.warning,
+        title: 'Bạn có thể nhập số đo thủ công',
+        subtitle: 'Nabi chưa đọc được hồ sơ lúc này.',
+      ),
+      data: (data) {
+        if (data == null || !data.hasProfileMetrics) {
+          return const NamiCareInfoTile(
+            icon: Icons.person_add_alt_1_rounded,
+            color: AppColors.warning,
+            title: 'Hồ sơ cơ thể chưa đầy đủ',
+            subtitle:
+                'Bạn nhập số đo bên dưới; Nabi sẽ không tự tạo dữ liệu còn thiếu.',
+          );
+        }
+        final source = data.weightFromRecentTracking
+            ? 'Cân nặng được ưu tiên từ lần theo dõi gần nhất.'
+            : 'Số đo được lấy từ hồ sơ sức khỏe gần nhất.';
+        return NamiCareInfoTile(
+          icon: Icons.verified_user_rounded,
+          color: AppColors.success,
+          title: 'Đã dùng dữ liệu cá nhân của bạn',
+          subtitle: source,
+        );
+      },
     );
   }
 }
@@ -249,7 +404,13 @@ class _ReportCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return NamiCareSurfaceCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const NamiCareSectionTitle(
+            title: 'Cơ thể hiện tại',
+            subtitle: 'Các chỉ số được tính bằng công thức wellness đã version hóa.',
+          ),
+          const SizedBox(height: AppSpacing.md),
           _MetricRow(
             icon: Icons.favorite_rounded,
             color: AppColors.success,
@@ -285,6 +446,111 @@ class _ReportCard extends StatelessWidget {
             subtitle:
                 '${vietnameseUiText(report.sleepGuidance)} ${vietnameseUiText(report.activityGuidance)}',
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThirtyDayScenarioCard extends StatelessWidget {
+  final BasicHealthReport report;
+  final BodyMetricsThirtyDayScenario scenario;
+
+  const _ThirtyDayScenarioCard({required this.report, required this.scenario});
+
+  @override
+  Widget build(BuildContext context) {
+    final energyLabel = switch (scenario.energyDirection) {
+      BodyMetricsEnergyDirection.belowMaintenance =>
+        'Thực đơn đang thấp hơn mức năng lượng duy trì ước tính',
+      BodyMetricsEnergyDirection.nearMaintenance =>
+        'Thực đơn đang gần mức năng lượng duy trì ước tính',
+      BodyMetricsEnergyDirection.aboveMaintenance =>
+        'Thực đơn đang cao hơn mức năng lượng duy trì ước tính',
+      BodyMetricsEnergyDirection.unknown =>
+        'Chưa đủ ngày thực đơn để so với mức năng lượng duy trì',
+    };
+    return NamiCareSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const NamiCareSectionTitle(
+            title: 'Kịch bản sau 30 ngày',
+            subtitle:
+                'Giả định bạn duy trì thực đơn và lịch chăm sóc đang có trong NanoBio.',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          NamiCareInfoTile(
+            icon: Icons.restaurant_menu_rounded,
+            color: AppColors.secondary,
+            title: energyLabel,
+            subtitle: scenario.averagePlannedCalories == null
+                ? 'Nabi chưa có đủ dữ liệu năng lượng từ thực đơn.'
+                : '${scenario.plannedMealDays} ngày thực đơn, trung bình ${scenario.averagePlannedCalories!.round()} kcal/ngày; TDEE hiện tại ${report.tdeeKcal} kcal/ngày.',
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          NamiCareInfoTile(
+            icon: Icons.event_available_rounded,
+            color: AppColors.primary,
+            title: '${scenario.plannedScheduleItems} nhiệm vụ chăm sóc trong dữ liệu 30 ngày',
+            subtitle:
+                'Trong đó có ${scenario.plannedExerciseItems} nhiệm vụ vận động được Nabi dùng làm bối cảnh xu hướng.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AiInsightCard extends StatelessWidget {
+  final BodyMetricsAiInsight insight;
+
+  const _AiInsightCard({required this.insight});
+
+  @override
+  Widget build(BuildContext context) {
+    return NamiCareSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          NamiCareSectionTitle(
+            title: 'Nabi phân tích',
+            subtitle: insight.generatedByAi
+                ? 'AI diễn giải dữ liệu đã được app tính và tổng hợp; AI không tự tạo số đo.'
+                : 'Phần tính toán vẫn hoạt động dù AI tạm thời chưa sẵn sàng.',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          NamiCareInfoTile(
+            icon: Icons.person_search_rounded,
+            color: AppColors.info,
+            title: 'Hiện tại',
+            subtitle: insight.currentStatus,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          NamiCareInfoTile(
+            icon: Icons.trending_up_rounded,
+            color: AppColors.success,
+            title: 'Nếu duy trì trong 30 ngày',
+            subtitle: insight.afterThirtyDays,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          NamiCareInfoTile(
+            icon: Icons.analytics_outlined,
+            color: AppColors.tertiary,
+            title: 'Độ tin cậy: ${insight.confidence}',
+            subtitle: insight.factors.isEmpty
+                ? 'Nabi sẽ phân tích sâu hơn khi dữ liệu thực đơn và lịch chăm sóc đầy đủ hơn.'
+                : insight.factors.join(' • '),
+          ),
+          if (insight.assumptions.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            NamiCareInfoTile(
+              icon: Icons.rule_rounded,
+              color: AppColors.warning,
+              title: 'Giả định',
+              subtitle: insight.assumptions.join(' • '),
+            ),
+          ],
         ],
       ),
     );

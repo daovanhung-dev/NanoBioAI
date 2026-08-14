@@ -85,11 +85,7 @@ class _ScheduleTimelineRow extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _TimelineRail(
-            meta: meta,
-            status: status,
-            isLast: isLast,
-          ),
+          _TimelineRail(meta: meta, status: status, isLast: isLast),
           const SizedBox(width: AppSpacingTokens.itemSpacingLarge),
           Expanded(
             child: ScheduleItemCard(
@@ -100,7 +96,7 @@ class _ScheduleTimelineRow extends ConsumerWidget {
               status: status,
               canToggle: canToggle,
               highlighted: highlighted,
-              onToggle: canToggle ? () => _toggle(context, ref) : null,
+              onToggle: canToggle ? () => _toggle(ref) : null,
             ),
           ),
         ],
@@ -108,37 +104,8 @@ class _ScheduleTimelineRow extends ConsumerWidget {
     );
   }
 
-  Future<void> _toggle(BuildContext context, WidgetRef ref) async {
-    final controller = ref.read(lifestyleScheduleControllerProvider.notifier);
-    final result = await controller.toggleItem(item);
-    if (result != LifestyleScheduleToggleResult.requiresNoRewardConfirmation ||
-        !context.mounted) {
-      return;
-    }
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Tiếp tục mà không nhận điểm?'),
-        content: const Text(
-          'Ảnh vẫn được lưu, nhưng nhiệm vụ này không cộng 10 Điểm chăm sóc.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Để sau'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Chụp ảnh không nhận điểm'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      await controller.toggleItem(item, allowWithoutReward: true);
-    }
+  Future<void> _toggle(WidgetRef ref) async {
+    await ref.read(lifestyleScheduleControllerProvider.notifier).toggleItem(item);
   }
 }
 
@@ -189,7 +156,6 @@ class _TimelineRail extends StatelessWidget {
     );
   }
 }
-
 
 Color _timelineStatusColor(
   BuildContext context,

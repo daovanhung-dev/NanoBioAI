@@ -17,7 +17,6 @@ enum LifestyleScheduleToggleResult {
   completed,
   undone,
   cancelled,
-  requiresNoRewardConfirmation,
   pendingRewardSync,
   blocked,
   ignored,
@@ -104,9 +103,8 @@ class LifestyleScheduleController
   }
 
   Future<LifestyleScheduleToggleResult> toggleItem(
-    LifestyleScheduleItemEntity item, {
-    bool allowWithoutReward = false,
-  }) async {
+    LifestyleScheduleItemEntity item,
+  ) async {
     final current = state.whenOrNull(data: (value) => value);
     if (current == null || !_busyItemIds.add(item.id)) {
       return LifestyleScheduleToggleResult.ignored;
@@ -140,16 +138,23 @@ class LifestyleScheduleController
       }
 
       if (nextCompleted) {
+        // Invariant: camera proof is only allowed after the trusted backend has
+        // reserved a reward attempt. This removes the old path where a user
+        // could capture proof, complete the task, but permanently receive 0 pts.
         try {
           remoteAttempt = await _rewardGateway.beginCompletion(
             scheduleItemId: item.id,
             idempotencyKey: 'begin:${item.id}:v1',
           );
         } on ScheduleRewardException catch (error) {
-          if (!error.canContinueWithoutReward) rethrow;
-          if (!allowWithoutReward) {
-            return LifestyleScheduleToggleResult.requiresNoRewardConfirmation;
-          }
+          state = AsyncData(
+            current.copyWith(
+              lastErrorMessage:
+                  '${error.message} Nabi chưa mở camera để bạn không mất 10 Điểm chăm sóc.',
+              clearEncouragement: true,
+            ),
+          );
+          return LifestyleScheduleToggleResult.blocked;
         }
 
         completionProofPath = await ref
@@ -166,7 +171,7 @@ class LifestyleScheduleController
           state = AsyncData(
             current.copyWith(
               lastErrorMessage:
-                  'Cửa sổ hoàn thành đã kết thúc khi camera đóng. Nabi chưa đánh dấu nhiệm vụ này.',
+                  'Cửa sổ hoàn thành đã kết thúc khi camera đóng. Nabi chưa đánh dấu nhiệm vụ này và chưa cộng điểm.',
               clearEncouragement: true,
             ),
           );
@@ -191,7 +196,7 @@ class LifestyleScheduleController
         completionProofCloudObjectPath: remoteAttempt?.storagePath,
       );
       localCommitted = true;
-      var proofs = await _repository.getCompletionProofs();
+      final proofs = await _repository.getCompletionProofs();
       final items = current.summary.items
           .map((existing) => existing.id == updated.id ? updated : existing)
           .toList();
@@ -208,15 +213,13 @@ class LifestyleScheduleController
           clearError: true,
         ),
       );
-      if (nextCompleted && remoteAttempt != null) {
+      if (nextCompleted) {
         return _uploadAndFinalize(
-          attempt: remoteAttempt,
+          attempt: remoteAttempt!,
           completionProofPath: completionProofPath!,
         );
       }
-      return nextCompleted
-          ? LifestyleScheduleToggleResult.completed
-          : LifestyleScheduleToggleResult.undone;
+      return LifestyleScheduleToggleResult.undone;
     } catch (error) {
       if (completionProofPath != null && !localCommitted) {
         await ref
@@ -254,10 +257,17 @@ class LifestyleScheduleController
         uploadStatus: ScheduleProofUploadStatuses.uploaded,
         rewardStatus: ScheduleProofRewardStatuses.pending,
       );
-      await _rewardGateway.finalizeCompletion(
+      final finalized = await _rewardGateway.finalizeCompletion(
         attempt: attempt,
         idempotencyKey: 'finalize:${attempt.attemptId}:v1',
       );
+      if (finalized.pointsDelta <= 0) {
+        throw const ScheduleRewardException(
+          ScheduleRewardErrorCode.unknown,
+          'Ảnh đã được ghi nhận nhưng hệ thống chưa xác nhận Điểm chăm sóc.',
+          canContinueWithoutReward: false,
+        );
+      }
       await _updateAttemptProof(
         attempt,
         uploadStatus: ScheduleProofUploadStatuses.uploaded,
@@ -281,8 +291,8 @@ class LifestyleScheduleController
       );
       await _refreshProofProjection(
         message: permanent
-            ? 'Nhiệm vụ và ảnh đã được lưu, nhưng lần này không đủ điều kiện cộng 10 Điểm chăm sóc.'
-            : 'Nhiệm vụ và ảnh đã được lưu. Điểm chăm sóc đang chờ đồng bộ khi có mạng.',
+            ? '${error.message} Ảnh đã được lưu để Nabi hỗ trợ đối chiếu; nhiệm vụ chưa được coi là đã nhận điểm.'
+            : 'Nhiệm vụ và ảnh đã được lưu. 10 Điểm chăm sóc đang chờ đồng bộ khi có mạng.',
       );
       return LifestyleScheduleToggleResult.pendingRewardSync;
     } catch (_) {
@@ -295,7 +305,7 @@ class LifestyleScheduleController
       );
       await _refreshProofProjection(
         message:
-            'Nhiệm vụ và ảnh đã được lưu. Điểm chăm sóc đang chờ đồng bộ khi có mạng.',
+            'Nhiệm vụ và ảnh đã được lưu. 10 Điểm chăm sóc đang chờ đồng bộ khi có mạng.',
       );
       return LifestyleScheduleToggleResult.pendingRewardSync;
     }
@@ -334,10 +344,13 @@ class LifestyleScheduleController
             );
           }
         }
-        await _rewardGateway.finalizeCompletion(
+        final finalized = await _rewardGateway.finalizeCompletion(
           attempt: attempt,
           idempotencyKey: 'finalize:${attempt.attemptId}:v1',
         );
+        if (finalized.pointsDelta <= 0) {
+          continue;
+        }
         await _updateAttemptProof(
           attempt,
           uploadStatus: ScheduleProofUploadStatuses.uploaded,
@@ -345,7 +358,6 @@ class LifestyleScheduleController
         );
       } on ScheduleRewardException catch (error) {
         final permanent =
-            error.code == ScheduleRewardErrorCode.windowClosed ||
             error.code == ScheduleRewardErrorCode.invalidProof ||
             error.code == ScheduleRewardErrorCode.eligibilityUnavailable;
         if (permanent) {

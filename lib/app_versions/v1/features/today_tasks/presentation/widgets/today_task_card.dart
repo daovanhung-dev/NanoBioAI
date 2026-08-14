@@ -154,15 +154,7 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
     setState(() => _isUpdating = true);
     try {
       final controller = ref.read(lifestyleScheduleControllerProvider.notifier);
-      var result = await controller.toggleItem(task);
-      if (!mounted) return;
-
-      if (result ==
-          LifestyleScheduleToggleResult.requiresNoRewardConfirmation) {
-        final confirmed = await _confirmCompletionWithoutReward();
-        if (!mounted || confirmed != true) return;
-        result = await controller.toggleItem(task, allowWithoutReward: true);
-      }
+      final result = await controller.toggleItem(task);
       if (!mounted) return;
       _showToggleResult(result);
     } finally {
@@ -170,41 +162,17 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
     }
   }
 
-  Future<bool?> _confirmCompletionWithoutReward() {
-    return showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Hoàn thành không cộng điểm?'),
-        content: const Text(
-          'Nabi chưa thể xác nhận điều kiện cộng Điểm chăm sóc lúc này. '
-          'Bạn vẫn có thể lưu nhiệm vụ đã hoàn thành.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Để sau'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Vẫn hoàn thành'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showToggleResult(LifestyleScheduleToggleResult result) {
     final message = switch (result) {
       LifestyleScheduleToggleResult.completed =>
-        'Bạn đã hoàn thành nhiệm vụ này.',
+        'Bạn đã hoàn thành nhiệm vụ và Nabi đã xác nhận Điểm chăm sóc.',
       LifestyleScheduleToggleResult.undone => 'Đã hoàn tác nhiệm vụ.',
       LifestyleScheduleToggleResult.cancelled =>
         'Bạn chưa chọn ảnh minh chứng.',
-      LifestyleScheduleToggleResult.requiresNoRewardConfirmation => null,
       LifestyleScheduleToggleResult.pendingRewardSync =>
-        'Nhiệm vụ đã lưu. Điểm chăm sóc sẽ đồng bộ khi có mạng.',
+        'Ảnh đã lưu. 10 Điểm chăm sóc sẽ đồng bộ khi có mạng.',
       LifestyleScheduleToggleResult.blocked =>
-        'Nhiệm vụ chưa thể cập nhật trong thời gian này.',
+        'Nabi chưa mở camera hoặc chưa cập nhật nhiệm vụ để bạn không bị mất điểm.',
       LifestyleScheduleToggleResult.ignored => null,
     };
 
@@ -310,7 +278,7 @@ class _TaskWindowHint extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = switch (status) {
       CompletionWindowStatus.open =>
-        'Đang trong thời gian xác nhận. Bạn có thể hoàn thành và thêm ảnh minh chứng.',
+        'Đang trong thời gian xác nhận. Bạn có thể hoàn thành, chụp ảnh minh chứng và nhận Điểm chăm sóc.',
       CompletionWindowStatus.waiting =>
         'Nhiệm vụ sẽ mở khi đến ${task.startTime}.',
       CompletionWindowStatus.locked =>
