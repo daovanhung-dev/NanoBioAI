@@ -1,0 +1,6 @@
+c36b5ed8ac8e39ada6cfd4526ea098f88829cacf4e694595e867b1fa67c2cbee  ./README.md
+a3e78d03a9cd449b14502540c41e57b5b2d068027ec08a8f540ecf87a0179144  ./docs/supabase/validate_meal_catalog.sql
+19681f96e4e6f36cc894930d573e26a72eefe71785321187c43818651cd96ab1  ./tools/__pycache__/sync_meal_catalog_sql.cpython-313.pyc
+79b60ed5e45121073a35cc689d61c80ed07d2c819c0cb98b491923bf19b4a56f  ./tools/sync_meal_catalog_sql.py
+d7a832a6465b3050b3d27b2d564e89c3868a8b210c5a4428cc70de3682adfffa  ./validation/REPORT.md
+deb933b96781982585244e6980176e69e9da7c2b1664085d7aff9ef1eee20273  ./validation/TEST_RESULTS.txt

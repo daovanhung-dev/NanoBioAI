@@ -1,0 +1,21 @@
+Validation performed 2026-08-14:
+
+1. python -m py_compile tools/sync_meal_catalog_sql.py
+   PASS
+
+2. Synthetic source-fidelity test
+   - parsed Markdown
+   - regenerated meal_catalog SQL
+   - escaped apostrophes safely
+   - preserved nutrition zero sentinels with missing-source status
+   - preserved final transaction commit
+   PASS
+
+3. Idempotency
+   - first sync updated fixture
+   - --check passed
+   - second sync produced no changes
+   PASS
+
+Repository network note:
+Direct git clone was unavailable in the execution container because github.com DNS resolution failed. Current repository files, schema, source, importer, validator, and history were inspected through the connected GitHub API.
