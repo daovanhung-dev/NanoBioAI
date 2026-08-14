@@ -1,25 +1,15 @@
 # NanoBio AI Chat Fix — Patch Manifest
 
-## Runtime source
+Baseline: `daovanhung-dev/NanoBioAI`, branch `main`, inspected 2026-08-14.
 
-- `lib/app_versions/v1/services/ai/ai_exceptions.dart`
-- `lib/app_versions/v1/services/ai/gemini_rest_client.dart`
-- `lib/app_versions/v1/services/ai/ai_chat_service.dart`
-- `lib/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository_impl.dart`
-- `lib/app_versions/v1/features/ai_chat/presentation/controllers/ai_chat_controller.dart`
+## Files to apply
 
-## Secure launch/build tooling
+| Path | Action | Purpose |
+|---|---|---|
+| `android/app/build.gradle.kts` | Replace | Make Gemini native fallback work for all Android build types and robust dotenv syntax. |
+| `test/core/config/android_private_runtime_config_contract_test.dart` | Add | Regression contract for runtime key injection. |
+| `lib/app_versions/v1/services/ai/README_FIX.md` | Replace | Document root cause, runtime resolution and rebuild requirement. |
+| `docs/worklog/2026-08-14/001-worklog-fix-ai-chat-android-runtime-config.md` | Add | Engineering evidence/worklog. |
 
-- `tools/prepare_dart_defines.ps1`
-- `tools/run_ai_chat.ps1`
-- `tools/build_ai_chat_apk.ps1`
-- `tools/test_gemini_connection.ps1`
-- `.env.example`
-
-## Tests and documentation
-
-- `test/app_versions/v1/services/ai/gemini_rest_client_test.dart`
-- `test/app_versions/v1/services/ai/ai_chat_service_test.dart`
-- `docs/AI_CHAT_API_FIX.md`
-
-`.env` thật không nằm trong gói bàn giao.
+`NanoBioAI_ai_chat_fix.patch` contains the same source changes as a unified patch.
+No `.env`, API key, token, raw Gemini payload or user health data is included.
