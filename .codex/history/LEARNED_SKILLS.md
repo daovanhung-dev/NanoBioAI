@@ -4,11 +4,11 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- coding - Coding: 26 worklog(s)
-- docs-context - Context and docs update: 25 worklog(s)
-- bugfix - Direct bugfix: 21 worklog(s)
+- docs-context - Context and docs update: 30 worklog(s)
+- coding - Coding: 28 worklog(s)
+- bugfix - Direct bugfix: 23 worklog(s)
 - supabase-schema - Supabase schema and RLS: 14 worklog(s)
-- test - Test and verification: 6 worklog(s)
+- test - Test and verification: 7 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - find-issues - Review and find issues: 2 worklog(s)
 - refactor-scaffold - Scaffold refactor: 2 worklog(s)
@@ -17,18 +17,18 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 14
-- docs/issues, docs/todo: 2
+- unknown: 19
 - authentication: 2
-- M05 AI / AI Chat / runtime configuration: 2
+- docs/issues, docs/todo: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
-- docs/DD M01-M19: 2
+- M05 AI / AI Chat / runtime configuration: 2
 - M05 AI / runtime configuration / onboarding: 2
+- docs/DD M01-M19: 2
 - UI / Theme / NabiCopy, toan bo app surfaces: 2
 - .codex: 2
-- v1 onboarding, AppLogger: 1
-- Nabi providers/UI, onboarding UI, shared Nabi widgets, release: 1
-- config/env, app entrypoints, auth/AI env readers: 1
+- M05 Authentication / App bootstrap config: 1
+- UI/UX dùng chung cho V1, V2, V3, Sale và Admin: 1
+- M05 AUTH_PROFILE_SYNC, Settings Guest entry, authenticated Android build.: 1
 
 ## Reusable Project Skills
 

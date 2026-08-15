@@ -1,15 +1,38 @@
-# NanoBio AI Chat Fix — Patch Manifest
+# NanoBioAI Gradle Fix Patch
 
-Baseline: `daovanhung-dev/NanoBioAI`, branch `main`, inspected 2026-08-14.
+Target repository: `daovanhung-dev/NanoBioAI`
+Target branch inspected: `main`
+Date: `2026-08-15`
 
-## Files to apply
+## Root cause
 
-| Path | Action | Purpose |
-|---|---|---|
-| `android/app/build.gradle.kts` | Replace | Make Gemini native fallback work for all Android build types and robust dotenv syntax. |
-| `test/core/config/android_private_runtime_config_contract_test.dart` | Add | Regression contract for runtime key injection. |
-| `lib/app_versions/v1/services/ai/README_FIX.md` | Replace | Document root cause, runtime resolution and rebuild requirement. |
-| `docs/worklog/2026-08-14/001-worklog-fix-ai-chat-android-runtime-config.md` | Add | Engineering evidence/worklog. |
+Flutter runtime reports the project Android toolchain is below its supported minimums: Gradle `8.12.0`, AGP `8.9.1`, and Kotlin `2.1.0`.
 
-`NanoBioAI_ai_chat_fix.patch` contains the same source changes as a unified patch.
-No `.env`, API key, token, raw Gemini payload or user health data is included.
+## Functional change
+
+```text
+android/gradle/wrapper/gradle-wrapper.properties
+  gradle-8.12-all.zip -> gradle-8.14-all.zip
+android/settings.gradle.kts
+  AGP 8.9.1 -> 8.11.1
+  Kotlin 2.1.0 -> 2.2.20
+```
+
+`android.newDsl=false` and `android.builtInKotlin=false` remain unchanged.
+
+## Files in this patch
+
+- `android/gradle/wrapper/gradle-wrapper.properties`
+- `android/settings.gradle.kts`
+- `docs/fixbug/android-build-toolchain-compatibility/001-fixbug-android-build-toolchain-compatibility.md`
+- `docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md`
+- `PATCH_MANIFEST.md`
+- `README_APPLY.md`
+
+## Validation status
+
+- Patch content check: PASS
+- ZIP integrity: PASS
+- `flutter analyze --suggestions`: PASS
+- `flutter build apk --debug --no-pub`: PASS
+- `flutter run`: PASS on device `220333QPG`

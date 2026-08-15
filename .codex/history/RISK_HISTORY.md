@@ -615,3 +615,50 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-11/001-worklog-build-apk-theme-parity.md :: - Chua fix: release khong duoc ky la production-ready chi dua tren thay doi palette; visual/accessibility, privacy, license, Supabase va cac acceptance gate khac van mo.
 - docs/worklog/2026-08-11/001-worklog-build-apk-theme-parity.md :: - Can kiem tra tiep: chay ma tran visual 76 surface va release acceptance da duoc ghi trong checklist.
 - docs/worklog/2026-08-12/001-worklog-nabi-v2-asset-system.md :: ## Rủi ro / việc tiếp theo
+- docs/worklog/2026-08-12/002-worklog-m13-vietqr-closure.md :: - Payment model/widget/controller: exact QR/copy, fail-closed invalid reference, cancellation, 30s/resume poll, succeeded-only trusted access + local projection refresh, no duplicate refresh.
+- docs/worklog/2026-08-12/002-worklog-m13-vietqr-closure.md :: - Documented user cancel, one-open-request, finite month/year periods, same-plan renewal, immediate cross-plan switch, legacy missing-expiry fail-closed, and trusted projection refresh.
+- docs/worklog/2026-08-12/002-worklog-m13-vietqr-closure.md :: ### BLOCKED / not claimed
+- docs/worklog/2026-08-12/002-worklog-m13-vietqr-closure.md :: - `dart format`, `flutter analyze`, `flutter test`: Flutter/Dart executables are unavailable in the artifact runtime and the repository cannot be cloned because outbound GitHub DNS is blocked.
+- docs/worklog/2026-08-12/002-worklog-m13-vietqr-closure.md :: - VCB QR scan/manual reconciliation: requires bank-app UAT; no real transfer is performed by automation.
+- docs/worklog/2026-08-12/002-worklog-m13-vietqr-closure.md :: 5. Scan a generated QR in VCB and manually reconcile as Finance/Super Admin.
+- docs/worklog/2026-08-12/002-worklog-m13-vietqr-closure.md :: - Bang chung kiem chung: source inspection against live `main`, local static contract checks, exact file manifest; Flutter/Supabase/VCB execution blocked as recorded above.
+- docs/worklog/2026-08-12/003-worklog-settings-membership-upgrade-entry.md :: - Loading/error/unknown: fail closed, khong tu suy dien la Free.
+- docs/worklog/2026-08-12/003-worklog-settings-membership-upgrade-entry.md :: - Chat luong dau ra: tot - thay doi nho, fail-closed, tai su dung route contract va theme primitive hien co.
+- docs/worklog/2026-08-13/002-worklog-m13-qr-rebuild.md :: - Restored strict `^NB&#91;0-9A-F&#93;{12}$` validation and fail-closed server response
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - Chuyển reward flow sang fail-closed trước camera: bắt buộc `beginCompletion` thành công; sau ảnh, upload/finalize hoặc pending reconciliation.
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - Xác định `wellness_rewards_rollout` seed đang false và RPC fail-closed khi flag false; giữ nguyên default-off release guardrail, cập nhật proof reconciliation source và thêm migration activation opt-in cho môi trường hiện hữu sau acceptance.
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - Thêm Gemini Body Metrics AI service với model fallback, timeout, JSON schema validation, no-new-number policy và medical-claim rejection.
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - `dart format ...`: SKIPPED - runtime hiện tại không có Dart SDK.
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - `flutter analyze ...`: SKIPPED - runtime hiện tại không có Flutter SDK.
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - `flutter test ...`: SKIPPED - runtime hiện tại không có Flutter SDK.
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - Supabase sandbox apply/RLS/device camera smoke: SKIPPED - runtime không có verified target project/credentials/device.
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - GitHub branch/write: FAIL/BLOCKED - GitHub App trả HTTP 403; remote `main` không bị sửa.
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - Chua fix:
+- docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md :: - Can kiem tra tiep:
+- docs/worklog/2026-08-14/001-worklog-fix-ai-chat-android-runtime-config.md :: The retry action reproduces the same failure.
+- docs/worklog/2026-08-14/001-worklog-fix-ai-chat-android-runtime-config.md :: parser check; Flutter/device verification blocked by environment.
+- docs/worklog/2026-08-14/001-worklog-meal-plan-pdf-images.md :: - Verification strength: source/image integrity verified locally; Flutter compile gates environment-blocked.
+- docs/worklog/2026-08-15/001-worklog-meal-plan-images.md :: - `git clone --depth 1 ...`: FAIL - runtime khong resolve duoc `github.com`; source duoc doi chieu qua GitHub connector.
+- docs/worklog/2026-08-15/001-worklog-meal-plan-images.md :: - `dart format`: SKIPPED - Dart khong co trong runtime.
+- docs/worklog/2026-08-15/001-worklog-meal-plan-images.md :: - `flutter analyze/test`: SKIPPED - Flutter khong co trong runtime.
+- docs/worklog/2026-08-15/001-worklog-meal-plan-images.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-15/001-worklog-meal-plan-images.md :: - Chua fix: can chay extractor tren PDF duoc mount de sinh 123 WebP truoc khi delivery duoc goi la hoan tat.
+- docs/worklog/2026-08-15/001-worklog-meal-plan-images.md :: - Can kiem tra tiep: chay extractor, asset-integrity test va Flutter targeted gates sau khi PDF duoc mount.
+- docs/worklog/2026-08-15/001-worklog-meal-plan-images.md :: - Chat luong dau ra: tot o source contract va fail-closed; khong tao anh gia khi thieu source binary.
+- docs/worklog/2026-08-15/002-worklog-android-build-toolchain-compatibility.md :: - `flutter build apk --debug`: SKIPPED - moi truong tao patch khong co checkout Flutter/Android runtime day du.
+- docs/worklog/2026-08-15/002-worklog-android-build-toolchain-compatibility.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED - khong co local repository checkout day du trong runtime nay.
+- docs/worklog/2026-08-15/002-worklog-android-build-toolchain-compatibility.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-15/002-worklog-android-build-toolchain-compatibility.md :: - Chua fix: Khong co bang chung ve loi tiep theo cho den khi chay build tren may dev.
+- docs/worklog/2026-08-15/002-worklog-android-build-toolchain-compatibility.md :: - Can kiem tra tiep: JDK 17, `flutter analyze --suggestions`, `flutter build apk --debug`, `flutter run`.
+- docs/worklog/2026-08-15/002-worklog-android-gradle-minimum-version.md :: - `flutter analyze --suggestions`: SKIPPED - moi truong patch khong co Flutter SDK.
+- docs/worklog/2026-08-15/002-worklog-android-gradle-minimum-version.md :: - `flutter build apk --debug`: SKIPPED - moi truong patch khong co Flutter SDK va khong co full working tree.
+- docs/worklog/2026-08-15/002-worklog-android-gradle-minimum-version.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED - goi xuat la patch ZIP, khong co full repository/PowerShell runtime de regenerate history an toan.
+- docs/worklog/2026-08-15/002-worklog-android-gradle-minimum-version.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-15/002-worklog-android-gradle-minimum-version.md :: - Chua fix: khong co loi Android thu hai duoc xac nhan trong task nay.
+- docs/worklog/2026-08-15/002-worklog-android-gradle-minimum-version.md :: - Can kiem tra tiep: chay native build tren may dev sau khi ap dung patch de xac nhan toolchain local va dependency cache.
+- docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md :: - `flutter build apk --debug`: TIMEOUT - lan chay dau cham trong native setup va Kotlin cache.
+- docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL - validator bao stale backticked Supabase paths da co san trong `.codex`; khong lien quan Android patch.
+- docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md :: - Chua fix: Khong co loi build blocking nao sau khi build lai.
+- docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md :: - Can kiem tra tiep: Flutter se som bo canh bao ho tro cac phien ban toolchain cu hon; nang len major tiep theo trong mot dot rieng.

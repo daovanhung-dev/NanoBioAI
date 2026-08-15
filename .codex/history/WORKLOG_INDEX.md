@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 104
+- Total worklogs: 114
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -113,3 +113,13 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-08 | unknown | docs-context | unknown | [Worklog — Stitch Green Wellness foundation và gated UI refactor](../../docs/worklog/2026-08-08/002-worklog-stitch-green-wellness.md) |
 | 2026-08-11 | bugfix | bugfix | Core theme / Green Wellness release presentation | [Worklog - Dong bo giao dien APK release voi flutter run](../../docs/worklog/2026-08-11/001-worklog-build-apk-theme-parity.md) |
 | 2026-08-12 | coding / visual asset integration | docs-context | Nabi companion, V1 presentation, onboarding, AI chat/voice | [Worklog - Nabi v2 botanical asset system](../../docs/worklog/2026-08-12/001-worklog-nabi-v2-asset-system.md) |
+| 2026-08-12 | unknown | docs-context | unknown | [Worklog - M13 VietQR hardening closure](../../docs/worklog/2026-08-12/002-worklog-m13-vietqr-closure.md) |
+| 2026-08-12 | unknown | docs-context | unknown | [Worklog — Settings membership upgrade entry](../../docs/worklog/2026-08-12/003-worklog-settings-membership-upgrade-entry.md) |
+| 2026-08-13 | unknown | docs-context | unknown | [Worklog 002 - M13 QR rebuild](../../docs/worklog/2026-08-13/002-worklog-m13-qr-rebuild.md) |
+| 2026-08-13 | coding | coding | M03 Dashboard/Schedule reward delta; M04 Basic Health Calculator scoped AI interpretation | [Worklog - Reward proof + personalized Body Metrics AI](../../docs/worklog/2026-08-13/003-worklog-reward-body-metrics-ai.md) |
+| 2026-08-14 | unknown | docs-context | unknown | [001-worklog-fix-ai-chat-android-runtime-config](../../docs/worklog/2026-08-14/001-worklog-fix-ai-chat-android-runtime-config.md) |
+| 2026-08-14 | unknown | docs-context | unknown | [Worklog — Meal plan PDF images](../../docs/worklog/2026-08-14/001-worklog-meal-plan-pdf-images.md) |
+| 2026-08-15 | coding | coding | V1 Meal Plan / UI | [Worklog - Gan anh mon an vao Meal Plan](../../docs/worklog/2026-08-15/001-worklog-meal-plan-images.md) |
+| 2026-08-15 | Bug fix / Android build toolchain | test | android/ | [Worklog - Android build toolchain compatibility](../../docs/worklog/2026-08-15/002-worklog-android-build-toolchain-compatibility.md) |
+| 2026-08-15 | bugfix | bugfix | Android build toolchain / Gradle Wrapper | [Worklog - Fix Android Gradle minimum version](../../docs/worklog/2026-08-15/002-worklog-android-gradle-minimum-version.md) |
+| 2026-08-15 | bugfix | bugfix | Android build toolchain | [Worklog - Android build toolchain Kotlin compatibility](../../docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md) |

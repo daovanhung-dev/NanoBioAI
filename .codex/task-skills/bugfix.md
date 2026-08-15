@@ -2,11 +2,11 @@
 
 - Canonical key: bugfix
 - Workflow: .codex/workflows/bugfix.md
-- Generated from 21 worklog(s).
+- Generated from 23 worklog(s).
 
 ## When To Read
 
-- Historical task type: bugfix (18)
+- Historical task type: bugfix (20)
 - Historical task type: fix (1)
 - Historical task type: fix flow dữ liệu (1)
 - Historical task type: fix UI/copy (1)
@@ -15,12 +15,12 @@
 
 - M05 AI / AI Chat / runtime configuration: 2
 - M05 AI / runtime configuration / onboarding: 2
-- M01 Onboarding, M05 AI, M11 FamilyPlus automated-only và: 1
 - M05 Authentication / App bootstrap config: 1
-- M05 AI / Meal / Exercise / AI Chat / runtime config: 1
-- UI/theme/motion/feedback/Nabi: 1
-- Core theme / Green Wellness release presentation: 1
 - M05 AI / onboarding / Gemini authentication: 1
+- M05 AI / Meal / Exercise / AI Chat / runtime config: 1
+- Android build toolchain / Gradle Wrapper: 1
+- Android build toolchain: 1
+- Core theme / Green Wellness release presentation: 1
 
 ## Work Pattern
 

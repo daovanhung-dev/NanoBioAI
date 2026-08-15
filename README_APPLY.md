@@ -1,20 +1,22 @@
-# Apply NanoBio AI Chat fix
+# Apply patch
 
-Apply this package at the root of a current `daovanhung-dev/NanoBioAI` checkout.
+Giai nen ZIP vao root du an `nano_app` / `NanoBioAI` va cho phep ghi de file trung ten.
 
-## Option 1 — copy files
+Sau do chay:
 
-Copy the repository-relative files from this ZIP over the checkout.
-
-## Option 2 — patch
-
-```bash
-git apply NanoBioAI_ai_chat_fix.patch
+```powershell
+flutter clean
+flutter pub get
+flutter analyze --suggestions
+flutter build apk --debug
+flutter run
 ```
 
-Then run the targeted validation commands listed in the worklog.
+Bo thay doi Android gom:
 
-For the first Android smoke test, fully stop/rebuild the app rather than using
-hot reload, because `BuildConfig.GEMINI_API_KEY` is generated at build time.
+```text
+android/gradle/wrapper/gradle-wrapper.properties
+android/settings.gradle.kts
+```
 
-Do not add `.env` to source control or to the ZIP.
+`settings.gradle.kts` nang AGP len `8.11.1` va Kotlin len `2.2.20`; Gradle Wrapper nang len `8.14` de dap ung Flutter toolchain.

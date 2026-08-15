@@ -88,7 +88,7 @@ class FeaturesHubPage extends StatelessWidget {
   List<_FeatureAction> _currentFeatures(BuildContext context) {
     return [
       _FeatureAction(
-        title: 'Nami Care',
+        title: 'Nabi Care',
         subtitle: 'Mở các công cụ chăm sóc đã sẵn sàng.',
         icon: Icons.health_and_safety_rounded,
         color: AppColors.primary,
