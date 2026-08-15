@@ -1,45 +1,31 @@
-# NanoBio — Meal catalog source-fidelity patch
+# NanoBio bugfix package - 2026-08-15
 
-## Mục tiêu
+This package fixes the concrete analyzer errors/warnings reported after the Meal Plan image integration without mass-editing valid `RegExp` code.
 
-Khóa dữ liệu `public.meal_catalog` trong `docs/supabase/seed_data.sql` theo đúng nguồn:
+## Apply
 
-`docs/note/Suc_Khoe_Tu_Nha_Bep_Thuc_Don_Theo_Tung_Muc.md`
+From PowerShell:
 
-Source contract hiện tại: **163 công thức / 64 chủ đề / 11 chương**.
-
-## File trong bản vá
-
-- `tools/sync_meal_catalog_sql.py`: parse Markdown và tái sinh toàn bộ block `meal_catalog` deterministic.
-- `docs/supabase/validate_meal_catalog.sql`: assertion chạy sau `setup.sql` + `seed_data.sql`.
-- `validation/REPORT.md`: bằng chứng/phạm vi kiểm tra trong phiên này.
-
-## Cách áp vào repository
-
-Đặt hai file đúng đường dẫn tương ứng, sau đó ở repository root chạy:
-
-```bash
-python tools/sync_meal_catalog_sql.py
-python tools/sync_meal_catalog_sql.py --check
-python tools/validate_meal_catalog.py
+```powershell
+python .\apply_fix.py D:\Project\NanoBio\nano_app
 ```
 
-Sau khi rebuild Supabase local/sandbox bằng `setup.sql` + `seed_data.sql`, chạy thêm:
+The installer creates a timestamped `.nanobio_fix_backup_*` directory before modifying project files.
 
-```bash
-psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f docs/supabase/validate_meal_catalog.sql
+## Validate
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\validate_after_apply.ps1 D:\Project\NanoBio\nano_app
 ```
 
-## Quy tắc fidelity
+If VS Code still shows `RegExp is deprecated` on normal constructor usage while command-line analysis does not, refresh project packages and restart the Dart analysis server:
 
-Tool chỉ lấy từ Markdown các trường: chương, chủ đề, mô tả chủ đề, tên món, trang PDF, nguyên liệu, cách làm, công dụng, thứ tự, và hash nguồn. Không tự sửa những điểm bất thường trong tài liệu nguồn.
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\refresh_dart_analysis.ps1 D:\Project\NanoBio\nano_app
+```
 
-Các trường dinh dưỡng không có trong Markdown **không được coi là dữ liệu dinh dưỡng thật**. SQL/SQLite NanoBio hiện dùng `0` làm sentinel kỹ thuật; các row nguồn vẫn bắt buộc có:
+Then run **Dart: Restart Analysis Server** from the VS Code command palette.
 
-- `nutrition_status = 'missing_source_data'`
-- `constraint_metadata_status = 'awaiting_professional_review'`
-- `metadata_status = 'source_imported'`
-- `is_plan_eligible = false`
-- `meal_type = 'unclassified'`
+## Important Meal Plan behavior
 
-Điều này giữ tương thích với local SQLite (`NOT NULL DEFAULT 0`) mà không biến số 0 thành metadata đã được duyệt.
+The resolver still uses an exact verified asset allow-list. Unknown dishes do not fuzzy-match to a similar image. Legacy `MealPhoto` call sites receive a guaranteed-missing sentinel asset path so their existing `errorBuilder` renders the neutral placeholder.

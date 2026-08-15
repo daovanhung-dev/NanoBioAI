@@ -3,25 +3,44 @@ import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/utils/m
 
 void main() {
   group('MealImageResolver', () {
-    test('normalizes Vietnamese meal names deterministically', () {
+    test('resolves verified Vietnamese dish names exactly', () {
       expect(
-        MealImageResolver.slugFor('CANH THỊT BÒ RAU CẢI BÓ XÔI'),
-        'canh_thit_bo_rau_cai_bo_xoi',
+        MealImageResolver.resolveAssetPath('Canh bí đao nấu tôm'),
+        'assets/images/meals/pdf_health_book/canh_bi_dao_nau_tom.webp',
       );
       expect(
-        MealImageResolver.slugFor('Cháo thịt bò – bí đỏ'),
-        'chao_thit_bo_bi_do',
+        MealImageResolver.resolveAssetPath('SÚP KHOAI TÂY VÀ CAROT'),
+        'assets/images/meals/pdf_health_book/sup_khoai_tay_va_carot.webp',
       );
       expect(
-        MealImageResolver.slugFor('  Sinh tố cà rốt và dứa  '),
-        'sinh_to_ca_rot_va_dua',
+        MealImageResolver.resolveAssetPath('Trà hoa cúc mật ong'),
+        'assets/images/meals/pdf_health_book/tra_hoa_cuc_mat_ong.webp',
       );
     });
 
-    test('builds a local WebP asset path', () {
+    test('keeps canonical slug normalization deterministic', () {
       expect(
-        MealImageResolver.assetPathForName('Trà gừng và mật ong'),
-        'assets/images/meals/pdf_health_book/tra_gung_va_mat_ong.webp',
+        MealImageResolver.slugFor('  Sinh tố cần tây và táo!  '),
+        'sinh_to_can_tay_va_tao',
+      );
+      expect(
+        MealImageResolver.canonicalSlug('Canh cá chép nấu rau cần'),
+        'canh_ca_chep_nau_rau_can',
+      );
+    });
+
+    test('never guesses an image for an unknown meal', () {
+      expect(MealImageResolver.resolveAssetPath('Món hoàn toàn mới'), isNull);
+      expect(
+        MealImageResolver.assetPathForName('Món hoàn toàn mới'),
+        'assets/images/meals/pdf_health_book/__unknown_meal__.webp',
+      );
+    });
+
+    test('compatibility API returns the same exact verified path', () {
+      expect(
+        MealImageResolver.assetPathForName('Canh bí đao nấu tôm'),
+        MealImageResolver.resolveAssetPath('Canh bí đao nấu tôm'),
       );
     });
   });

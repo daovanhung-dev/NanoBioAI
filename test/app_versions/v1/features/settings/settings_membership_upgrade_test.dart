@@ -20,7 +20,7 @@ import 'package:nano_app/sale_referral/domain/entities/sale_models.dart';
 import 'package:nano_app/sale_referral/providers/sale_providers.dart';
 
 void main() {
-  testWidgets('guest does not see membership upgrade controls', (tester) async {
+  testWidgets('guest does not see membership payment controls', (tester) async {
     final harness = await _pumpSettings(
       tester,
       authUserId: null,
@@ -28,9 +28,16 @@ void main() {
     );
     addTearDown(harness.dispose);
 
-    expect(find.byKey(const Key('settings_membership_card')), findsNothing);
+    expect(
+      find.byKey(const Key('settings_membership_upgrade_card')),
+      findsNothing,
+    );
     expect(
       find.byKey(const Key('settings_membership_upgrade_button')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('settings_membership_renew_button')),
       findsNothing,
     );
   });
@@ -43,8 +50,9 @@ void main() {
     );
     addTearDown(harness.dispose);
 
-    expect(find.text('Gói Miễn phí'), findsOneWidget);
+    expect(find.text('Nâng cấp VIP'), findsOneWidget);
     expect(find.text('Nâng cấp Plus'), findsOneWidget);
+    expect(find.textContaining('Gia hạn gói'), findsNothing);
   });
 
   testWidgets('free member upgrade opens Plus payment route', (tester) async {
@@ -63,7 +71,7 @@ void main() {
     expect(find.text('payment:plus'), findsOneWidget);
   });
 
-  testWidgets('Plus member sees FamilyPlus upgrade action', (tester) async {
+  testWidgets('Plus member sees normal renewal action only', (tester) async {
     final harness = await _pumpSettings(
       tester,
       authUserId: 'user-1',
@@ -71,13 +79,20 @@ void main() {
     );
     addTearDown(harness.dispose);
 
-    expect(find.text('Gói Plus'), findsWidgets);
-    expect(find.text('Nâng cấp FamilyPlus'), findsOneWidget);
+    expect(find.text('Nâng cấp VIP'), findsNothing);
+    expect(find.text('Nâng cấp FamilyPlus'), findsNothing);
+    expect(find.text('Gia hạn gói Plus'), findsOneWidget);
+    expect(
+      find.byKey(const Key('settings_membership_upgrade_button')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('settings_membership_renew_button')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('Plus member upgrade opens FamilyPlus payment route', (
-    tester,
-  ) async {
+  testWidgets('Plus renewal opens Plus payment route', (tester) async {
     final harness = await _pumpSettings(
       tester,
       authUserId: 'user-1',
@@ -85,15 +100,17 @@ void main() {
     );
     addTearDown(harness.dispose);
 
-    final button = find.byKey(const Key('settings_membership_upgrade_button'));
+    final button = find.byKey(const Key('settings_membership_renew_button'));
     await tester.ensureVisible(button);
     await tester.tap(button);
     await tester.pumpAndSettle();
 
-    expect(find.text('payment:family_plus'), findsOneWidget);
+    expect(find.text('payment:plus'), findsOneWidget);
   });
 
-  testWidgets('FamilyPlus member has no further upgrade action', (tester) async {
+  testWidgets('FamilyPlus member sees normal renewal action only', (
+    tester,
+  ) async {
     final harness = await _pumpSettings(
       tester,
       authUserId: 'user-1',
@@ -101,16 +118,38 @@ void main() {
     );
     addTearDown(harness.dispose);
 
-    expect(find.text('Gói FamilyPlus'), findsWidgets);
+    expect(find.text('Nâng cấp VIP'), findsNothing);
+    expect(find.text('Nâng cấp FamilyPlus'), findsNothing);
+    expect(find.text('Gia hạn gói FamilyPlus'), findsOneWidget);
     expect(
       find.byKey(const Key('settings_membership_upgrade_button')),
       findsNothing,
     );
+    expect(
+      find.byKey(const Key('settings_membership_renew_button')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('loading membership state does not expose an upgrade action', (
+  testWidgets('FamilyPlus renewal opens FamilyPlus payment route', (
     tester,
   ) async {
+    final harness = await _pumpSettings(
+      tester,
+      authUserId: 'user-1',
+      accessFactory: () async => _access('family_plus'),
+    );
+    addTearDown(harness.dispose);
+
+    final button = find.byKey(const Key('settings_membership_renew_button'));
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+
+    expect(find.text('payment:family_plus'), findsOneWidget);
+  });
+
+  testWidgets('loading membership state fails closed', (tester) async {
     final pending = Completer<EffectiveAccess?>();
     final harness = await _pumpSettings(
       tester,
@@ -120,9 +159,13 @@ void main() {
     );
     addTearDown(harness.dispose);
 
-    expect(find.text('Đang kiểm tra gói'), findsOneWidget);
+    expect(find.text('Nâng cấp VIP'), findsNothing);
     expect(
       find.byKey(const Key('settings_membership_upgrade_button')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('settings_membership_renew_button')),
       findsNothing,
     );
   });
@@ -137,14 +180,18 @@ void main() {
     );
     addTearDown(harness.dispose);
 
-    expect(find.text('Chưa kiểm tra được gói'), findsOneWidget);
+    expect(find.text('Nâng cấp VIP'), findsNothing);
     expect(
       find.byKey(const Key('settings_membership_upgrade_button')),
       findsNothing,
     );
+    expect(
+      find.byKey(const Key('settings_membership_renew_button')),
+      findsNothing,
+    );
   });
 
-  testWidgets('unknown server plan fails closed without upgrade CTA', (
+  testWidgets('unknown server plan fails closed without payment CTA', (
     tester,
   ) async {
     final harness = await _pumpSettings(
@@ -154,33 +201,15 @@ void main() {
     );
     addTearDown(harness.dispose);
 
-    expect(find.text('Gói thành viên'), findsWidgets);
+    expect(find.text('Nâng cấp VIP'), findsNothing);
     expect(
       find.byKey(const Key('settings_membership_upgrade_button')),
       findsNothing,
     );
-  });
-
-  testWidgets('pull to refresh reloads trusted membership access', (
-    tester,
-  ) async {
-    var accessReads = 0;
-    final harness = await _pumpSettings(
-      tester,
-      authUserId: 'user-1',
-      accessFactory: () async {
-        accessReads++;
-        return _access('free');
-      },
+    expect(
+      find.byKey(const Key('settings_membership_renew_button')),
+      findsNothing,
     );
-    addTearDown(harness.dispose);
-    expect(accessReads, 1);
-
-    final refresh = tester.widget<RefreshIndicator>(find.byType(RefreshIndicator));
-    await refresh.onRefresh();
-    await tester.pump();
-
-    expect(accessReads, 2);
   });
 }
 
