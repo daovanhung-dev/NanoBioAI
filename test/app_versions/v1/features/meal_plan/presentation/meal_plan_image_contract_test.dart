@@ -9,6 +9,6 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains("presentation/widgets/meal_photo.dart"));
-    expect(RegExp(r'MealPhoto\s*\(').allMatches(source).length, greaterThanOrEqualTo(2));
+    expect('MealPhoto('.allMatches(source).length, greaterThanOrEqualTo(2));
   });
 }

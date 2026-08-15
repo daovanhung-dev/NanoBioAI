@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal_plan_entity.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/controllers/meal_plan_controller.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/widgets/meal_photo.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN PAGE
@@ -922,6 +923,13 @@ class _MealPlanCardState extends ConsumerState<_MealPlanCard> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            MealPhoto(
+                              meal: meal,
+                              height: 176,
+                              borderRadius: ui.radiusLg,
+                            ),
+                            SizedBox(height: ui.cardGap),
+
                             // Header row
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1185,6 +1193,12 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
                         icon: const Icon(Icons.close_rounded),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  MealPhoto(
+                    meal: meal,
+                    height: 220,
+                    borderRadius: AppRadius.xl,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Wrap(

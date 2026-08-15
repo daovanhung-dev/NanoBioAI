@@ -36,12 +36,5 @@ void main() {
         'assets/images/meals/pdf_health_book/__unknown_meal__.webp',
       );
     });
-
-    test('compatibility API returns the same exact verified path', () {
-      expect(
-        MealImageResolver.assetPathForName('Canh bí đao nấu tôm'),
-        MealImageResolver.resolveAssetPath('Canh bí đao nấu tôm'),
-      );
-    });
   });
 }

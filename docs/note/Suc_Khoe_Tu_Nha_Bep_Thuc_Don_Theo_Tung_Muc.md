@@ -4079,3 +4079,134 @@ Cải xoăn giàu canxi, hạt chia chứa omega-3 giúp tăng cường sức kh
 Đậu nành và vừng đen giàu canxi, kẽm, giúp nuôi dưỡng xương khớp, làm chậm quá trình tăng sinh xương bất thường.
 
 ---
+
+## Phụ lục kỹ thuật: Hiển thị ảnh món ăn trong thực đơn tuần
+
+Phần này mô tả cách ứng dụng NanoBio liên kết **tên món ăn** trong dữ liệu thực đơn với ảnh món tương ứng và cách hiển thị ảnh trên giao diện thực đơn tuần. Nội dung công thức, nguyên liệu, cách làm và công dụng ở các phần phía trên không bị thay đổi.
+
+### 1. Vị trí ảnh món ăn
+
+Ảnh món ăn được đặt tại:
+
+```text
+assets/images/meals/pdf_health_book/
+```
+
+Ảnh dùng định dạng `.webp`. Tên file phải được chuẩn hóa từ tên món, ví dụ:
+
+```text
+Canh bí đao nấu tôm
+-> canh_bi_dao_nau_tom.webp
+
+Sinh tố cần tây và táo
+-> sinh_to_can_tay_va_tao.webp
+```
+
+Không dùng fuzzy matching hoặc ảnh gần giống để thay thế một món khác. Nếu không có file đã được xác minh, giao diện phải hiển thị placeholder trung tính thay vì ảnh sai món.
+
+### 2. Resolver ánh xạ tên món sang ảnh
+
+File xử lý:
+
+```text
+lib/app_versions/v1/features/meal_plan/presentation/utils/meal_image_resolver.dart
+```
+
+Luồng xử lý:
+
+1. Nhận `meal.mealName`.
+2. Chuẩn hóa về chữ thường.
+3. Loại dấu tiếng Việt và chuyển `đ` thành `d`.
+4. Chuyển ký tự phân cách thành `_`.
+5. Tạo tên file `<canonical_slug>.webp`.
+6. Chỉ trả về đường dẫn nếu file nằm trong danh sách asset đã xác minh.
+7. Nếu không có ảnh tương ứng, trả về sentinel để `MealPhoto` kích hoạt fallback.
+
+Ví dụ:
+
+```dart
+MealImageResolver.resolveAssetPath('Canh bí đao nấu tôm');
+// assets/images/meals/pdf_health_book/canh_bi_dao_nau_tom.webp
+```
+
+### 3. Widget hiển thị ảnh
+
+Widget dùng chung:
+
+```text
+lib/app_versions/v1/features/meal_plan/presentation/widgets/meal_photo.dart
+```
+
+`MealPhoto` nhận trực tiếp `MealPlanEntity`, lấy ảnh thông qua `MealImageResolver`, hiển thị bằng `Image.asset` và có `errorBuilder` để xử lý trường hợp asset không tồn tại hoặc không tải được.
+
+### 4. Hiển thị ảnh trên card thực đơn tuần
+
+File giao diện:
+
+```text
+lib/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart
+```
+
+Mỗi `_MealPlanCard` hiển thị ảnh trước phần tiêu đề món:
+
+```dart
+MealPhoto(
+  meal: meal,
+  height: 176,
+  borderRadius: ui.radiusLg,
+),
+```
+
+Ảnh dùng toàn bộ chiều rộng vùng nội dung card, giữ `BoxFit.cover`, bo góc theo token giao diện và không làm thay đổi logic hoàn thành/đổi món.
+
+### 5. Hiển thị ảnh trong trang chi tiết món
+
+Trong `_MealDetailSheet`, ảnh món được dùng lại ngay dưới phần tên món:
+
+```dart
+MealPhoto(
+  meal: meal,
+  height: 220,
+  borderRadius: AppRadius.xl,
+),
+```
+
+Nhờ dùng cùng `MealPhoto`, card và detail luôn tuân theo một quy tắc mapping và fallback duy nhất.
+
+### 6. Quy trình thêm ảnh cho món mới
+
+Khi bổ sung món mới:
+
+1. Kiểm tra tên món canonical trong nguồn dữ liệu/công thức.
+2. Tạo slug bằng cùng quy tắc của `MealImageResolver.canonicalSlug`.
+3. Lưu ảnh WebP tại `assets/images/meals/pdf_health_book/<slug>.webp`.
+4. Thêm chính xác `<slug>.webp` vào `_knownAssetFiles` trong `meal_image_resolver.dart`.
+5. Không tạo alias cho món khác nếu chưa xác minh hai tên thực sự là cùng một món.
+6. Chạy test resolver và test contract của Meal Plan.
+
+### 7. Kiểm tra sau khi thay đổi
+
+Chạy các lệnh sau từ root dự án:
+
+```powershell
+dart format lib/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart `
+  test/app_versions/v1/features/meal_plan/presentation/meal_plan_image_contract_test.dart `
+  test/app_versions/v1/features/meal_plan/presentation/utils/meal_image_resolver_test.dart
+
+flutter analyze lib/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart `
+  lib/app_versions/v1/features/meal_plan/presentation/widgets/meal_photo.dart `
+  lib/app_versions/v1/features/meal_plan/presentation/utils/meal_image_resolver.dart
+
+flutter test test/app_versions/v1/features/meal_plan/presentation/meal_plan_image_contract_test.dart
+flutter test test/app_versions/v1/features/meal_plan/presentation/utils/meal_image_resolver_test.dart
+```
+
+### 8. Tiêu chí nghiệm thu
+
+- Mỗi card món ăn trong thực đơn tuần có vùng ảnh.
+- Món có asset đã xác minh hiển thị đúng ảnh theo tên canonical.
+- Món chưa có ảnh không được lấy ảnh của món gần giống.
+- Detail sheet hiển thị cùng ảnh với card.
+- Nếu file ảnh lỗi hoặc thiếu, giao diện vẫn hoạt động và hiển thị placeholder.
+- Các thao tác xem chi tiết, đổi món và trạng thái hoàn thành vẫn hoạt động như trước.
+
