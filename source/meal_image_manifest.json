@@ -1,0 +1,1442 @@
+[
+  {
+    "page_number": 6,
+    "recipe_order": 1,
+    "meal_name": "CANH THỊT BÒ RAU CẢI BÓ XÔI",
+    "slug": "canh_thit_bo_rau_cai_bo_xoi",
+    "image_page_number": 6,
+    "image_xref": 2871,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_thit_bo_rau_cai_bo_xoi.webp"
+  },
+  {
+    "page_number": 6,
+    "recipe_order": 2,
+    "meal_name": "Sinh tố chuối và hạt điều",
+    "slug": "sinh_to_chuoi_va_hat_dieu",
+    "image_page_number": 6,
+    "image_xref": 2873,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_chuoi_va_hat_dieu.webp"
+  },
+  {
+    "page_number": 6,
+    "recipe_order": 3,
+    "meal_name": "CHÁO HẠT SEN ĐẬU XANH",
+    "slug": "chao_hat_sen_dau_xanh",
+    "image_page_number": 6,
+    "image_xref": 2872,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_hat_sen_dau_xanh.webp"
+  },
+  {
+    "page_number": 7,
+    "recipe_order": 1,
+    "meal_name": "CANH NẤM ĐÔNG CÔ VÀ RAU NGÓT",
+    "slug": "canh_nam_dong_co_va_rau_ngot",
+    "image_page_number": 7,
+    "image_xref": 2900,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_nam_dong_co_va_rau_ngot.webp"
+  },
+  {
+    "page_number": 7,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ CẦN TÂY VÀ TÁO",
+    "slug": "sinh_to_can_tay_va_tao",
+    "image_page_number": 7,
+    "image_xref": 2899,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_can_tay_va_tao.webp"
+  },
+  {
+    "page_number": 7,
+    "recipe_order": 3,
+    "meal_name": "TRÀ HOA CÚC MẬT ONG",
+    "slug": "tra_hoa_cuc_mat_ong",
+    "image_page_number": 7,
+    "image_xref": 2915,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_hoa_cuc_mat_ong.webp"
+  },
+  {
+    "page_number": 8,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CHUỐI VÀ HẠT ĐIỀU",
+    "slug": "sinh_to_chuoi_va_hat_dieu",
+    "image_page_number": 8,
+    "image_xref": 2926,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_chuoi_va_hat_dieu.webp"
+  },
+  {
+    "page_number": 8,
+    "recipe_order": 2,
+    "meal_name": "CANH ĐU ĐỦ HẦM SƯỜN NON",
+    "slug": "canh_du_du_ham_suon_non",
+    "image_page_number": 8,
+    "image_xref": 2927,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_du_du_ham_suon_non.webp"
+  },
+  {
+    "page_number": 8,
+    "recipe_order": 3,
+    "meal_name": "TRÀ GỪNG VÀ MẬT ONG",
+    "slug": "tra_gung_va_mat_ong",
+    "image_page_number": 8,
+    "image_xref": 2944,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_gung_va_mat_ong.webp"
+  },
+  {
+    "page_number": 9,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CẦN TÂY VÀ TÁO",
+    "slug": "sinh_to_can_tay_va_tao",
+    "image_page_number": 9,
+    "image_xref": 2953,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_can_tay_va_tao.webp"
+  },
+  {
+    "page_number": 9,
+    "recipe_order": 2,
+    "meal_name": "CANH RONG BIỂN VÀ ĐẬU HŨ",
+    "slug": "canh_rong_bien_va_dau_hu",
+    "image_page_number": 9,
+    "image_xref": 2954,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rong_bien_va_dau_hu.webp"
+  },
+  {
+    "page_number": 9,
+    "recipe_order": 3,
+    "meal_name": "TRÀ XANH VÀ BẠC HÀ",
+    "slug": "tra_xanh_va_bac_ha",
+    "image_page_number": 9,
+    "image_xref": 2964,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_xanh_va_bac_ha.webp"
+  },
+  {
+    "page_number": 10,
+    "recipe_order": 1,
+    "meal_name": "Canh cà chua nấu trứng gà",
+    "slug": "canh_ca_chua_nau_trung_ga",
+    "image_page_number": 10,
+    "image_xref": 2973,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_chua_nau_trung_ga.webp"
+  },
+  {
+    "page_number": 10,
+    "recipe_order": 2,
+    "meal_name": "Nước ép dưa hấu và lá bạc hà",
+    "slug": "nuoc_ep_dua_hau_va_la_bac_ha",
+    "image_page_number": 10,
+    "image_xref": 2974,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_dua_hau_va_la_bac_ha.webp"
+  },
+  {
+    "page_number": 11,
+    "recipe_order": 3,
+    "meal_name": "Cháo đậu đỏ và hạt sen",
+    "slug": "chao_dau_do_va_hat_sen",
+    "image_page_number": 11,
+    "image_xref": 2979,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_dau_do_va_hat_sen.webp"
+  },
+  {
+    "page_number": 11,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ BƠ VÀ HẠT ÓC CHÓ",
+    "slug": "sinh_to_bo_va_hat_oc_cho",
+    "image_page_number": 11,
+    "image_xref": 2980,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_bo_va_hat_oc_cho.webp"
+  },
+  {
+    "page_number": 12,
+    "recipe_order": 2,
+    "meal_name": "TRÀ HOA CÚC VÀ BẠC HÀ",
+    "slug": "tra_hoa_cuc_va_bac_ha",
+    "image_page_number": 12,
+    "image_xref": 2986,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_hoa_cuc_va_bac_ha.webp"
+  },
+  {
+    "page_number": 12,
+    "recipe_order": 3,
+    "meal_name": "SALAD RAU DIẾP CÁ VÀ QUẢ ÓC CHÓ",
+    "slug": "salad_rau_diep_ca_va_qua_oc_cho",
+    "image_page_number": 12,
+    "image_xref": 2987,
+    "asset_path": "assets/images/meals/pdf_health_book/salad_rau_diep_ca_va_qua_oc_cho.webp"
+  },
+  {
+    "page_number": 12,
+    "recipe_order": 1,
+    "meal_name": "CANH RAU MỒNG TƠI VỚI ĐẬU PHỤ",
+    "slug": "canh_rau_mong_toi_voi_dau_phu",
+    "image_page_number": 12,
+    "image_xref": 2988,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_mong_toi_voi_dau_phu.webp"
+  },
+  {
+    "page_number": 13,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP CAM VÀ CHANH",
+    "slug": "nuoc_ep_cam_va_chanh",
+    "image_page_number": 13,
+    "image_xref": 2993,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_cam_va_chanh.webp"
+  },
+  {
+    "page_number": 13,
+    "recipe_order": 1,
+    "meal_name": "CANH CÁ HỒI VỚI CẢI BÓ XÔI",
+    "slug": "canh_ca_hoi_voi_cai_bo_xoi",
+    "image_page_number": 13,
+    "image_xref": 2994,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_hoi_voi_cai_bo_xoi.webp"
+  },
+  {
+    "page_number": 14,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ CÀ RỐT VÀ DỨA",
+    "slug": "sinh_to_ca_rot_va_dua",
+    "image_page_number": 14,
+    "image_xref": 3000,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_ca_rot_va_dua.webp"
+  },
+  {
+    "page_number": 14,
+    "recipe_order": 1,
+    "meal_name": "CANH CẢI XANH VỚI TÔM",
+    "slug": "canh_cai_xanh_voi_tom",
+    "image_page_number": 14,
+    "image_xref": 2999,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_cai_xanh_voi_tom.webp"
+  },
+  {
+    "page_number": 14,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP DƯA HẤU VÀ BẠC HÀ",
+    "slug": "nuoc_ep_dua_hau_va_bac_ha",
+    "image_page_number": 14,
+    "image_xref": 3001,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_dua_hau_va_bac_ha.webp"
+  },
+  {
+    "page_number": 15,
+    "recipe_order": 1,
+    "meal_name": "CANH GÀ NẤU RAU CẢI THẢO",
+    "slug": "canh_ga_nau_rau_cai_thao",
+    "image_page_number": 15,
+    "image_xref": 3008,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ga_nau_rau_cai_thao.webp"
+  },
+  {
+    "page_number": 15,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP CAM VÀ BẠC HÀ",
+    "slug": "nuoc_ep_cam_va_bac_ha",
+    "image_page_number": 15,
+    "image_xref": 3009,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_cam_va_bac_ha.webp"
+  },
+  {
+    "page_number": 16,
+    "recipe_order": 1,
+    "meal_name": "CANH RAU DỀN ĐỎ VỚI TÔM",
+    "slug": "canh_rau_den_do_voi_tom",
+    "image_page_number": 16,
+    "image_xref": 3014,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_den_do_voi_tom.webp"
+  },
+  {
+    "page_number": 16,
+    "recipe_order": 1,
+    "meal_name": "CANH CÁ CHÉP NẤU RAU CẦN",
+    "slug": "canh_ca_chep_nau_rau_can",
+    "image_page_number": 16,
+    "image_xref": 3015,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_chep_nau_rau_can.webp"
+  },
+  {
+    "page_number": 17,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CAM VÀ GỪNG",
+    "slug": "sinh_to_cam_va_gung",
+    "image_page_number": 17,
+    "image_xref": 3023,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_cam_va_gung.webp"
+  },
+  {
+    "page_number": 17,
+    "recipe_order": 2,
+    "meal_name": "CANH GÀ NẤU NẤM",
+    "slug": "canh_ga_nau_nam",
+    "image_page_number": 18,
+    "image_xref": 3028,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ga_nau_nam.webp"
+  },
+  {
+    "page_number": 18,
+    "recipe_order": 3,
+    "meal_name": "TRÀ CHANH MẬT ONG",
+    "slug": "tra_chanh_mat_ong",
+    "image_page_number": 18,
+    "image_xref": 3029,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_chanh_mat_ong.webp"
+  },
+  {
+    "page_number": 18,
+    "recipe_order": 1,
+    "meal_name": "CANH GÀ HẦM THUỐC BẮC",
+    "slug": "canh_ga_ham_thuoc_bac",
+    "image_page_number": 18,
+    "image_xref": 3030,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ga_ham_thuoc_bac.webp"
+  },
+  {
+    "page_number": 19,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ CAM VÀ GỪNG",
+    "slug": "sinh_to_cam_va_gung",
+    "image_page_number": 19,
+    "image_xref": 3037,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_cam_va_gung.webp"
+  },
+  {
+    "page_number": 19,
+    "recipe_order": 3,
+    "meal_name": "TRÀ XANH VÀ BẠC HÀ",
+    "slug": "tra_xanh_va_bac_ha",
+    "image_page_number": 19,
+    "image_xref": 3038,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_xanh_va_bac_ha.webp"
+  },
+  {
+    "page_number": 19,
+    "recipe_order": 1,
+    "meal_name": "Canh nấm đông cô và rong biển",
+    "slug": "canh_nam_dong_co_va_rong_bien",
+    "image_page_number": 19,
+    "image_xref": 3039,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_nam_dong_co_va_rong_bien.webp"
+  },
+  {
+    "page_number": 20,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ RAU BINA VÀ DƯA CHUỘT",
+    "slug": "sinh_to_rau_bina_va_dua_chuot",
+    "image_page_number": 20,
+    "image_xref": 3046,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_rau_bina_va_dua_chuot.webp"
+  },
+  {
+    "page_number": 20,
+    "recipe_order": 3,
+    "meal_name": "TRÀ GỪNG VÀ MẬT ONG",
+    "slug": "tra_gung_va_mat_ong",
+    "image_page_number": 20,
+    "image_xref": 3047,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_gung_va_mat_ong.webp"
+  },
+  {
+    "page_number": 20,
+    "recipe_order": 1,
+    "meal_name": "Cháo khoai lang tím và gạo lứt",
+    "slug": "chao_khoai_lang_tim_va_gao_lut",
+    "image_page_number": 20,
+    "image_xref": 3048,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_khoai_lang_tim_va_gao_lut.webp"
+  },
+  {
+    "page_number": 21,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ BƠ VÀ SỮA CHUA",
+    "slug": "sinh_to_bo_va_sua_chua",
+    "image_page_number": 21,
+    "image_xref": 3053,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_bo_va_sua_chua.webp"
+  },
+  {
+    "page_number": 21,
+    "recipe_order": 3,
+    "meal_name": "CANH BÍ ĐỎ NẤU THỊT GÀ",
+    "slug": "canh_bi_do_nau_thit_ga",
+    "image_page_number": 21,
+    "image_xref": 3054,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_bi_do_nau_thit_ga.webp"
+  },
+  {
+    "page_number": 21,
+    "recipe_order": 1,
+    "meal_name": "CHÁO YẾN MẠCH VÀ THỊT GÀ",
+    "slug": "chao_yen_mach_va_thit_ga",
+    "image_page_number": 21,
+    "image_xref": 3055,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_yen_mach_va_thit_ga.webp"
+  },
+  {
+    "page_number": 22,
+    "recipe_order": 2,
+    "meal_name": "SÚP KHOAI TÂY VÀ CAROT",
+    "slug": "sup_khoai_tay_va_carot",
+    "image_page_number": 22,
+    "image_xref": 3063,
+    "asset_path": "assets/images/meals/pdf_health_book/sup_khoai_tay_va_carot.webp"
+  },
+  {
+    "page_number": 22,
+    "recipe_order": 3,
+    "meal_name": "SINH TỐ KHOAI LANG VÀ NGHỆ",
+    "slug": "sinh_to_khoai_lang_va_nghe",
+    "image_page_number": 22,
+    "image_xref": 3064,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_khoai_lang_va_nghe.webp"
+  },
+  {
+    "page_number": 22,
+    "recipe_order": 1,
+    "meal_name": "CHÁO GÀ VÀ HẠT SEN",
+    "slug": "chao_ga_va_hat_sen",
+    "image_page_number": 22,
+    "image_xref": 3062,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_ga_va_hat_sen.webp"
+  },
+  {
+    "page_number": 23,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ XOÀI SỮA CHUA",
+    "slug": "sinh_to_xoai_sua_chua",
+    "image_page_number": 23,
+    "image_xref": 3073,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_xoai_sua_chua.webp"
+  },
+  {
+    "page_number": 23,
+    "recipe_order": 3,
+    "meal_name": "CANH RAU CẦN TÂY VÀ CÀ RỐT",
+    "slug": "canh_rau_can_tay_va_ca_rot",
+    "image_page_number": 23,
+    "image_xref": 3071,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_can_tay_va_ca_rot.webp"
+  },
+  {
+    "page_number": 23,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ RAU BINA VÀ DƯA CHUỘT",
+    "slug": "sinh_to_rau_bina_va_dua_chuot",
+    "image_page_number": 23,
+    "image_xref": 3072,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_rau_bina_va_dua_chuot.webp"
+  },
+  {
+    "page_number": 24,
+    "recipe_order": 2,
+    "meal_name": "CANH NẤM HƯƠNG VÀ ĐẬU HŨ",
+    "slug": "canh_nam_huong_va_dau_hu",
+    "image_page_number": 24,
+    "image_xref": 3080,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_nam_huong_va_dau_hu.webp"
+  },
+  {
+    "page_number": 24,
+    "recipe_order": 3,
+    "meal_name": "TRÀ XANH VÀ BẠC HÀ",
+    "slug": "tra_xanh_va_bac_ha",
+    "image_page_number": 24,
+    "image_xref": 3081,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_xanh_va_bac_ha.webp"
+  },
+  {
+    "page_number": 25,
+    "recipe_order": 1,
+    "meal_name": "SÚP CHUỐI XANH",
+    "slug": "sup_chuoi_xanh",
+    "image_page_number": 25,
+    "image_xref": 3090,
+    "asset_path": "assets/images/meals/pdf_health_book/sup_chuoi_xanh.webp"
+  },
+  {
+    "page_number": 25,
+    "recipe_order": 2,
+    "meal_name": "CANH RAU SAM",
+    "slug": "canh_rau_sam",
+    "image_page_number": 25,
+    "image_xref": 3089,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_sam.webp"
+  },
+  {
+    "page_number": 25,
+    "recipe_order": 3,
+    "meal_name": "CANH RAU MÁ VÀ CÀ RỐT",
+    "slug": "canh_rau_ma_va_ca_rot",
+    "image_page_number": 25,
+    "image_xref": 3088,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_ma_va_ca_rot.webp"
+  },
+  {
+    "page_number": 26,
+    "recipe_order": 1,
+    "meal_name": "CHÁO GẠO LỨT VỚI ĐẬU XANH",
+    "slug": "chao_gao_lut_voi_dau_xanh",
+    "image_page_number": 26,
+    "image_xref": 3096,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_gao_lut_voi_dau_xanh.webp"
+  },
+  {
+    "page_number": 26,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP DƯA HẤU VÀ GỪNG",
+    "slug": "nuoc_ep_dua_hau_va_gung",
+    "image_page_number": 26,
+    "image_xref": 3097,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_dua_hau_va_gung.webp"
+  },
+  {
+    "page_number": 26,
+    "recipe_order": 3,
+    "meal_name": "CANH RAU MÁ CỦ DỀN",
+    "slug": "canh_rau_ma_cu_den",
+    "image_page_number": 26,
+    "image_xref": 3099,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_ma_cu_den.webp"
+  },
+  {
+    "page_number": 27,
+    "recipe_order": 1,
+    "meal_name": "CANH CÁ LÓC NẤU RAU CẦN",
+    "slug": "canh_ca_loc_nau_rau_can",
+    "image_page_number": 27,
+    "image_xref": 3106,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_loc_nau_rau_can.webp"
+  },
+  {
+    "page_number": 27,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP CÀ RỐT VÀ CỦ CẢI ĐỎ",
+    "slug": "nuoc_ep_ca_rot_va_cu_cai_do",
+    "image_page_number": 27,
+    "image_xref": 3107,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_ca_rot_va_cu_cai_do.webp"
+  },
+  {
+    "page_number": 28,
+    "recipe_order": 3,
+    "meal_name": "Canh đậu bắp nấu nấm rơm",
+    "slug": "canh_dau_bap_nau_nam_rom",
+    "image_page_number": 28,
+    "image_xref": 3115,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_dau_bap_nau_nam_rom.webp"
+  },
+  {
+    "page_number": 28,
+    "recipe_order": 1,
+    "meal_name": "CHÁO BỘT GẠO VỚI HẠT CHIA",
+    "slug": "chao_bot_gao_voi_hat_chia",
+    "image_page_number": 28,
+    "image_xref": 3114,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_bot_gao_voi_hat_chia.webp"
+  },
+  {
+    "page_number": 29,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP MẬT ONG VÀ CHANH",
+    "slug": "nuoc_ep_mat_ong_va_chanh",
+    "image_page_number": 29,
+    "image_xref": 3120,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_mat_ong_va_chanh.webp"
+  },
+  {
+    "page_number": 29,
+    "recipe_order": 3,
+    "meal_name": "CANH MỒNG TƠI NẤU CUA",
+    "slug": "canh_mong_toi_nau_cua",
+    "image_page_number": 29,
+    "image_xref": 3121,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_mong_toi_nau_cua.webp"
+  },
+  {
+    "page_number": 30,
+    "recipe_order": 1,
+    "meal_name": "CANH CỦ CẢI VÀ RAU CẢI BÓ XÔI",
+    "slug": "canh_cu_cai_va_rau_cai_bo_xoi",
+    "image_page_number": 30,
+    "image_xref": 3128,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_cu_cai_va_rau_cai_bo_xoi.webp"
+  },
+  {
+    "page_number": 30,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ CÀ RỐT VÀ CỦ DỀN",
+    "slug": "sinh_to_ca_rot_va_cu_den",
+    "image_page_number": 30,
+    "image_xref": 3129,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_ca_rot_va_cu_den.webp"
+  },
+  {
+    "page_number": 30,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ RAU BINA VÀ DƯA CHUỘT",
+    "slug": "sinh_to_rau_bina_va_dua_chuot",
+    "image_page_number": 30,
+    "image_xref": 3130,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_rau_bina_va_dua_chuot.webp"
+  },
+  {
+    "page_number": 31,
+    "recipe_order": 2,
+    "meal_name": "CANH NẤM HƯƠNG VÀ ĐẬU HŨ",
+    "slug": "canh_nam_huong_va_dau_hu",
+    "image_page_number": 31,
+    "image_xref": 3137,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_nam_huong_va_dau_hu.webp"
+  },
+  {
+    "page_number": 31,
+    "recipe_order": 3,
+    "meal_name": "TRÀ XANH VÀ BẠC HÀ",
+    "slug": "tra_xanh_va_bac_ha",
+    "image_page_number": 31,
+    "image_xref": 3138,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_xanh_va_bac_ha.webp"
+  },
+  {
+    "page_number": 32,
+    "recipe_order": 1,
+    "meal_name": "NƯỚC ÉP KHỔ QUA VÀ TÁO XANH",
+    "slug": "nuoc_ep_kho_qua_va_tao_xanh",
+    "image_page_number": 32,
+    "image_xref": 3147,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_kho_qua_va_tao_xanh.webp"
+  },
+  {
+    "page_number": 32,
+    "recipe_order": 2,
+    "meal_name": "CANH BÍ ĐAO VÀ NẤM",
+    "slug": "canh_bi_dao_va_nam",
+    "image_page_number": 32,
+    "image_xref": 3145,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_bi_dao_va_nam.webp"
+  },
+  {
+    "page_number": 32,
+    "recipe_order": 3,
+    "meal_name": "TRÀ LÁ XOÀI",
+    "slug": "tra_la_xoai",
+    "image_page_number": 32,
+    "image_xref": 3146,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_la_xoai.webp"
+  },
+  {
+    "page_number": 33,
+    "recipe_order": 1,
+    "meal_name": "CANH ĐẬU ĐEN VÀ RONG BIỂN",
+    "slug": "canh_dau_den_va_rong_bien",
+    "image_page_number": 33,
+    "image_xref": 3152,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_dau_den_va_rong_bien.webp"
+  },
+  {
+    "page_number": 33,
+    "recipe_order": 2,
+    "meal_name": "SALAD CẢI BÓ XÔI VÀ QUẢ BƠ",
+    "slug": "salad_cai_bo_xoi_va_qua_bo",
+    "image_page_number": 33,
+    "image_xref": 3153,
+    "asset_path": "assets/images/meals/pdf_health_book/salad_cai_bo_xoi_va_qua_bo.webp"
+  },
+  {
+    "page_number": 33,
+    "recipe_order": 3,
+    "meal_name": "TRÀ GỪNG NGHỆ MẬT ONG",
+    "slug": "tra_gung_nghe_mat_ong",
+    "image_page_number": 33,
+    "image_xref": 3154,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_gung_nghe_mat_ong.webp"
+  },
+  {
+    "page_number": 34,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ DƯA HẤU VÀ DƯA CHUỘT",
+    "slug": "sinh_to_dua_hau_va_dua_chuot",
+    "image_page_number": 34,
+    "image_xref": 3162,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_dua_hau_va_dua_chuot.webp"
+  },
+  {
+    "page_number": 34,
+    "recipe_order": 2,
+    "meal_name": "CANH RAU CẦN TÂY VÀ CÀ RỐT",
+    "slug": "canh_rau_can_tay_va_ca_rot",
+    "image_page_number": 34,
+    "image_xref": 3160,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_can_tay_va_ca_rot.webp"
+  },
+  {
+    "page_number": 34,
+    "recipe_order": 3,
+    "meal_name": "TRÀ GỪNG VÀ MẬT ONG",
+    "slug": "tra_gung_va_mat_ong",
+    "image_page_number": 34,
+    "image_xref": 3161,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_gung_va_mat_ong.webp"
+  },
+  {
+    "page_number": 35,
+    "recipe_order": 1,
+    "meal_name": "SÚP BÍ ĐỎ HẠT SEN",
+    "slug": "sup_bi_do_hat_sen",
+    "image_page_number": 35,
+    "image_xref": 3167,
+    "asset_path": "assets/images/meals/pdf_health_book/sup_bi_do_hat_sen.webp"
+  },
+  {
+    "page_number": 35,
+    "recipe_order": 2,
+    "meal_name": "CHÁO GẠO LỨT ĐẬU ĐEN",
+    "slug": "chao_gao_lut_dau_den",
+    "image_page_number": 35,
+    "image_xref": 3168,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_gao_lut_dau_den.webp"
+  },
+  {
+    "page_number": 35,
+    "recipe_order": 3,
+    "meal_name": "SINH TỐ DƯA HẤU VÀ BẠC HÀ",
+    "slug": "sinh_to_dua_hau_va_bac_ha",
+    "image_page_number": 35,
+    "image_xref": 3169,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_dua_hau_va_bac_ha.webp"
+  },
+  {
+    "page_number": 36,
+    "recipe_order": 1,
+    "meal_name": "Nước ép bưởi và táo đỏ",
+    "slug": "nuoc_ep_buoi_va_tao_do",
+    "image_page_number": 36,
+    "image_xref": 3175,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_buoi_va_tao_do.webp"
+  },
+  {
+    "page_number": 36,
+    "recipe_order": 2,
+    "meal_name": "CANH RAU CẦN TÂY VÀ CÀ RỐT",
+    "slug": "canh_rau_can_tay_va_ca_rot",
+    "image_page_number": 36,
+    "image_xref": 3174,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_can_tay_va_ca_rot.webp"
+  },
+  {
+    "page_number": 36,
+    "recipe_order": 3,
+    "meal_name": "TRÀ CAM THẢO VÀ QUẾ",
+    "slug": "tra_cam_thao_va_que",
+    "image_page_number": 36,
+    "image_xref": 3176,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_cam_thao_va_que.webp"
+  },
+  {
+    "page_number": 37,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ ĐU ĐỦ VÀ SỮA CHUA",
+    "slug": "sinh_to_du_du_va_sua_chua",
+    "image_page_number": 37,
+    "image_xref": 3182,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_du_du_va_sua_chua.webp"
+  },
+  {
+    "page_number": 37,
+    "recipe_order": 2,
+    "meal_name": "CANH GÀ HẦM THUỐC BẮC",
+    "slug": "canh_ga_ham_thuoc_bac",
+    "image_page_number": 37,
+    "image_xref": 3181,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ga_ham_thuoc_bac.webp"
+  },
+  {
+    "page_number": 38,
+    "recipe_order": 3,
+    "meal_name": "TRÀ NHÂN SÂM VÀ MẬT ONG",
+    "slug": "tra_nhan_sam_va_mat_ong",
+    "image_page_number": 38,
+    "image_xref": 3189,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_nhan_sam_va_mat_ong.webp"
+  },
+  {
+    "page_number": 38,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CHUỐI VÀ DÂU TÂY",
+    "slug": "sinh_to_chuoi_va_dau_tay",
+    "image_page_number": 38,
+    "image_xref": 3190,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_chuoi_va_dau_tay.webp"
+  },
+  {
+    "page_number": 38,
+    "recipe_order": 2,
+    "meal_name": "CANH GÀ HẦM THUỐC BẮC",
+    "slug": "canh_ga_ham_thuoc_bac",
+    "image_page_number": 38,
+    "image_xref": 3191,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ga_ham_thuoc_bac.webp"
+  },
+  {
+    "page_number": 39,
+    "recipe_order": 3,
+    "meal_name": "TRÀ NHÂN SÂM VÀ MẬT ONG",
+    "slug": "tra_nhan_sam_va_mat_ong",
+    "image_page_number": 39,
+    "image_xref": 3198,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_nhan_sam_va_mat_ong.webp"
+  },
+  {
+    "page_number": 39,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CHUỐI VÀ HẠT ĐIỀU",
+    "slug": "sinh_to_chuoi_va_hat_dieu",
+    "image_page_number": 39,
+    "image_xref": 3199,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_chuoi_va_hat_dieu.webp"
+  },
+  {
+    "page_number": 39,
+    "recipe_order": 2,
+    "meal_name": "CANH HÀU VÀ RAU CẦN TÂY",
+    "slug": "canh_hau_va_rau_can_tay",
+    "image_page_number": 39,
+    "image_xref": 3200,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_hau_va_rau_can_tay.webp"
+  },
+  {
+    "page_number": 40,
+    "recipe_order": 3,
+    "meal_name": "TRÀ NHÂN SÂM VÀ MẬT ONG",
+    "slug": "tra_nhan_sam_va_mat_ong",
+    "image_page_number": 40,
+    "image_xref": 3207,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_nhan_sam_va_mat_ong.webp"
+  },
+  {
+    "page_number": 40,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ DIẾP CÁ VÀ NHA ĐAM",
+    "slug": "sinh_to_diep_ca_va_nha_dam",
+    "image_page_number": 40,
+    "image_xref": 3208,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_diep_ca_va_nha_dam.webp"
+  },
+  {
+    "page_number": 40,
+    "recipe_order": 2,
+    "meal_name": "CANH NẤM HƯƠNG VÀ ĐẬU HŨ",
+    "slug": "canh_nam_huong_va_dau_hu",
+    "image_page_number": 41,
+    "image_xref": 3215,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_nam_huong_va_dau_hu.webp"
+  },
+  {
+    "page_number": 41,
+    "recipe_order": 5,
+    "meal_name": "SỮA NGHỆ HẠT SEN",
+    "slug": "sua_nghe_hat_sen",
+    "image_page_number": 41,
+    "image_xref": 3216,
+    "asset_path": "assets/images/meals/pdf_health_book/sua_nghe_hat_sen.webp"
+  },
+  {
+    "page_number": 41,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ LÁ TRẦU KHÔNG VÀ DỨA",
+    "slug": "sinh_to_la_trau_khong_va_dua",
+    "image_page_number": 41,
+    "image_xref": 3217,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_la_trau_khong_va_dua.webp"
+  },
+  {
+    "page_number": 42,
+    "recipe_order": 2,
+    "meal_name": "CANH GÀ HẦM THUỐC BẮC",
+    "slug": "canh_ga_ham_thuoc_bac",
+    "image_page_number": 42,
+    "image_xref": 3225,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ga_ham_thuoc_bac.webp"
+  },
+  {
+    "page_number": 42,
+    "recipe_order": 3,
+    "meal_name": "TRÀ NHÂN SÂM VÀ MẬT ONG",
+    "slug": "tra_nhan_sam_va_mat_ong",
+    "image_page_number": 42,
+    "image_xref": 3226,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_nhan_sam_va_mat_ong.webp"
+  },
+  {
+    "page_number": 43,
+    "recipe_order": 1,
+    "meal_name": "CANH RAU MỒNG TƠI VÀ ĐẬU HŨ",
+    "slug": "canh_rau_mong_toi_va_dau_hu",
+    "image_page_number": 43,
+    "image_xref": 3233,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_mong_toi_va_dau_hu.webp"
+  },
+  {
+    "page_number": 43,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ CAM VÀ CHANH",
+    "slug": "sinh_to_cam_va_chanh",
+    "image_page_number": 43,
+    "image_xref": 3234,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_cam_va_chanh.webp"
+  },
+  {
+    "page_number": 44,
+    "recipe_order": 1,
+    "meal_name": "CANH CÁ CHÉP VÀ RAU CẦN",
+    "slug": "canh_ca_chep_va_rau_can",
+    "image_page_number": 44,
+    "image_xref": 3241,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_chep_va_rau_can.webp"
+  },
+  {
+    "page_number": 45,
+    "recipe_order": 1,
+    "meal_name": "CANH GÀ NẤU RAU NGÓT",
+    "slug": "canh_ga_nau_rau_ngot",
+    "image_page_number": 45,
+    "image_xref": 3249,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ga_nau_rau_ngot.webp"
+  },
+  {
+    "page_number": 45,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ CÀ RỐT VÀ DỨA",
+    "slug": "sinh_to_ca_rot_va_dua",
+    "image_page_number": 45,
+    "image_xref": 3250,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_ca_rot_va_dua.webp"
+  },
+  {
+    "page_number": 46,
+    "recipe_order": 1,
+    "meal_name": "CANH CÀ RỐT VỚI HẠT SEN",
+    "slug": "canh_ca_rot_voi_hat_sen",
+    "image_page_number": 46,
+    "image_xref": 3257,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_rot_voi_hat_sen.webp"
+  },
+  {
+    "page_number": 46,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP DƯA HẤU VÀ LÁ BẠC HÀ",
+    "slug": "nuoc_ep_dua_hau_va_la_bac_ha",
+    "image_page_number": 46,
+    "image_xref": 3258,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_dua_hau_va_la_bac_ha.webp"
+  },
+  {
+    "page_number": 47,
+    "recipe_order": 1,
+    "meal_name": "CANH CÁ LÓC NẤU RAU CẢI",
+    "slug": "canh_ca_loc_nau_rau_cai",
+    "image_page_number": 47,
+    "image_xref": 3265,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_loc_nau_rau_cai.webp"
+  },
+  {
+    "page_number": 47,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ BƠ VÀ DỨA",
+    "slug": "sinh_to_bo_va_dua",
+    "image_page_number": 47,
+    "image_xref": 3266,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_bo_va_dua.webp"
+  },
+  {
+    "page_number": 47,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CHUỐI VÀ HẠT ĐIỀU",
+    "slug": "sinh_to_chuoi_va_hat_dieu",
+    "image_page_number": 47,
+    "image_xref": 3267,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_chuoi_va_hat_dieu.webp"
+  },
+  {
+    "page_number": 48,
+    "recipe_order": 2,
+    "meal_name": "CANH HÀU VÀ RAU CẦN TÂY",
+    "slug": "canh_hau_va_rau_can_tay",
+    "image_page_number": 48,
+    "image_xref": 3274,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_hau_va_rau_can_tay.webp"
+  },
+  {
+    "page_number": 48,
+    "recipe_order": 3,
+    "meal_name": "TRÀ NHÂN SÂM VÀ MẬT ONG",
+    "slug": "tra_nhan_sam_va_mat_ong",
+    "image_page_number": 48,
+    "image_xref": 3275,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_nhan_sam_va_mat_ong.webp"
+  },
+  {
+    "page_number": 49,
+    "recipe_order": 1,
+    "meal_name": "CHÁO HÀU BIỂN VÀ HẠT SEN",
+    "slug": "chao_hau_bien_va_hat_sen",
+    "image_page_number": 49,
+    "image_xref": 3282,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_hau_bien_va_hat_sen.webp"
+  },
+  {
+    "page_number": 49,
+    "recipe_order": 2,
+    "meal_name": "CANH THỊT BÒ NẤU NGỌC TRÚC VÀ KỶ TỬ",
+    "slug": "canh_thit_bo_nau_ngoc_truc_va_ky_tu",
+    "image_page_number": 49,
+    "image_xref": 3283,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_thit_bo_nau_ngoc_truc_va_ky_tu.webp"
+  },
+  {
+    "page_number": 50,
+    "recipe_order": 1,
+    "meal_name": "TRỨNG GÀ HẤP MẬT ONG",
+    "slug": "trung_ga_hap_mat_ong",
+    "image_page_number": 50,
+    "image_xref": 3290,
+    "asset_path": "assets/images/meals/pdf_health_book/trung_ga_hap_mat_ong.webp"
+  },
+  {
+    "page_number": 50,
+    "recipe_order": 2,
+    "meal_name": "CHÁO HÀNH TÍA TÔ",
+    "slug": "chao_hanh_tia_to",
+    "image_page_number": 50,
+    "image_xref": 3291,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_hanh_tia_to.webp"
+  },
+  {
+    "page_number": 51,
+    "recipe_order": 1,
+    "meal_name": "CANH CÁ LÓC NẤU RAU MỒNG TƠI",
+    "slug": "canh_ca_loc_nau_rau_mong_toi",
+    "image_page_number": 51,
+    "image_xref": 3298,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_loc_nau_rau_mong_toi.webp"
+  },
+  {
+    "page_number": 51,
+    "recipe_order": 2,
+    "meal_name": "ĐẬU NÀNH HẦM LẠC (ĐẬU PHỘNG)",
+    "slug": "dau_nanh_ham_lac_dau_phong",
+    "image_page_number": 51,
+    "image_xref": 3299,
+    "asset_path": "assets/images/meals/pdf_health_book/dau_nanh_ham_lac_dau_phong.webp"
+  },
+  {
+    "page_number": 52,
+    "recipe_order": 1,
+    "meal_name": "CANH ĐẬU ĐỎ NẤU GÀ",
+    "slug": "canh_dau_do_nau_ga",
+    "image_page_number": 52,
+    "image_xref": 3308,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_dau_do_nau_ga.webp"
+  },
+  {
+    "page_number": 52,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ CAM VÀ CỦ DỀN",
+    "slug": "sinh_to_cam_va_cu_den",
+    "image_page_number": 52,
+    "image_xref": 3306,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_cam_va_cu_den.webp"
+  },
+  {
+    "page_number": 52,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CAM VÀ CÀ RỐT",
+    "slug": "sinh_to_cam_va_ca_rot",
+    "image_page_number": 52,
+    "image_xref": 3307,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_cam_va_ca_rot.webp"
+  },
+  {
+    "page_number": 53,
+    "recipe_order": 2,
+    "meal_name": "CANH NẤM HƯƠNG VÀ GÀ",
+    "slug": "canh_nam_huong_va_ga",
+    "image_page_number": 53,
+    "image_xref": 3315,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_nam_huong_va_ga.webp"
+  },
+  {
+    "page_number": 53,
+    "recipe_order": 3,
+    "meal_name": "TRÀ GỪNG VÀ CHANH",
+    "slug": "tra_gung_va_chanh",
+    "image_page_number": 53,
+    "image_xref": 3316,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_gung_va_chanh.webp"
+  },
+  {
+    "page_number": 54,
+    "recipe_order": 1,
+    "meal_name": "TRÀ GỪNG VÀ MẬT ONG",
+    "slug": "tra_gung_va_mat_ong",
+    "image_page_number": 54,
+    "image_xref": 3323,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_gung_va_mat_ong.webp"
+  },
+  {
+    "page_number": 54,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ CÀ RỐT VÀ DỨA",
+    "slug": "sinh_to_ca_rot_va_dua",
+    "image_page_number": 54,
+    "image_xref": 3324,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_ca_rot_va_dua.webp"
+  },
+  {
+    "page_number": 54,
+    "recipe_order": 1,
+    "meal_name": "NƯỚC ÉP DƯA HẤU VÀ BẠC HÀ",
+    "slug": "nuoc_ep_dua_hau_va_bac_ha",
+    "image_page_number": 54,
+    "image_xref": 3325,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_dua_hau_va_bac_ha.webp"
+  },
+  {
+    "page_number": 55,
+    "recipe_order": 2,
+    "meal_name": "CANH CÀ RỐT HẦM XƯƠNG",
+    "slug": "canh_ca_rot_ham_xuong",
+    "image_page_number": 55,
+    "image_xref": 3332,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_rot_ham_xuong.webp"
+  },
+  {
+    "page_number": 55,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CÀ RỐT – CÀ CHUA",
+    "slug": "sinh_to_ca_rot_ca_chua",
+    "image_page_number": 55,
+    "image_xref": 3333,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_ca_rot_ca_chua.webp"
+  },
+  {
+    "page_number": 56,
+    "recipe_order": 2,
+    "meal_name": "CANH RAU NGÓT NẤU THỊT BĂM",
+    "slug": "canh_rau_ngot_nau_thit_bam",
+    "image_page_number": 56,
+    "image_xref": 3341,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_ngot_nau_thit_bam.webp"
+  },
+  {
+    "page_number": 56,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CÀ RỐT VÀ DỨA",
+    "slug": "sinh_to_ca_rot_va_dua",
+    "image_page_number": 56,
+    "image_xref": 3340,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_ca_rot_va_dua.webp"
+  },
+  {
+    "page_number": 57,
+    "recipe_order": 2,
+    "meal_name": "CANH RAU DỀN ĐỎ VỚI HẠT SEN",
+    "slug": "canh_rau_den_do_voi_hat_sen",
+    "image_page_number": 57,
+    "image_xref": 3348,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_den_do_voi_hat_sen.webp"
+  },
+  {
+    "page_number": 57,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ RAU MÁ VÀ DƯA CHUỘT",
+    "slug": "sinh_to_rau_ma_va_dua_chuot",
+    "image_page_number": 57,
+    "image_xref": 3349,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_rau_ma_va_dua_chuot.webp"
+  },
+  {
+    "page_number": 57,
+    "recipe_order": 2,
+    "meal_name": "CANH BÍ ĐAO NẤU TÔM",
+    "slug": "canh_bi_dao_nau_tom",
+    "image_page_number": 57,
+    "image_xref": 3350,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_bi_dao_nau_tom.webp"
+  },
+  {
+    "page_number": 58,
+    "recipe_order": 3,
+    "meal_name": "SALAD RAU DIẾP CÁ VÀ CÀ CHUA",
+    "slug": "salad_rau_diep_ca_va_ca_chua",
+    "image_page_number": 58,
+    "image_xref": 3356,
+    "asset_path": "assets/images/meals/pdf_health_book/salad_rau_diep_ca_va_ca_chua.webp"
+  },
+  {
+    "page_number": 58,
+    "recipe_order": 1,
+    "meal_name": "CANH CÁ LÓC NẤU RAU MỒNG TƠI",
+    "slug": "canh_ca_loc_nau_rau_mong_toi",
+    "image_page_number": 58,
+    "image_xref": 3357,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_loc_nau_rau_mong_toi.webp"
+  },
+  {
+    "page_number": 59,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ ĐU ĐỦ – SỮA CHUA",
+    "slug": "sinh_to_du_du_sua_chua",
+    "image_page_number": 59,
+    "image_xref": 3364,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_du_du_sua_chua.webp"
+  },
+  {
+    "page_number": 59,
+    "recipe_order": 3,
+    "meal_name": "CANH CÀ CHUA NẤU ĐẬU PHỤ",
+    "slug": "canh_ca_chua_nau_dau_phu",
+    "image_page_number": 59,
+    "image_xref": 3365,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_chua_nau_dau_phu.webp"
+  },
+  {
+    "page_number": 60,
+    "recipe_order": 1,
+    "meal_name": "CANH RAU CỦ CẢI VỚI TÔM",
+    "slug": "canh_rau_cu_cai_voi_tom",
+    "image_page_number": 60,
+    "image_xref": 3371,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_cu_cai_voi_tom.webp"
+  },
+  {
+    "page_number": 60,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP CÀ RỐT VÀ CỦ DỀN",
+    "slug": "nuoc_ep_ca_rot_va_cu_den",
+    "image_page_number": 60,
+    "image_xref": 3372,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_ca_rot_va_cu_den.webp"
+  },
+  {
+    "page_number": 60,
+    "recipe_order": 3,
+    "meal_name": "TRÀ GỪNG – QUẾ – MẬT ONG",
+    "slug": "tra_gung_que_mat_ong",
+    "image_page_number": 60,
+    "image_xref": 3373,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_gung_que_mat_ong.webp"
+  },
+  {
+    "page_number": 61,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ XOÀI HẠNH NHÂN",
+    "slug": "sinh_to_xoai_hanh_nhan",
+    "image_page_number": 61,
+    "image_xref": 3381,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_xoai_hanh_nhan.webp"
+  },
+  {
+    "page_number": 61,
+    "recipe_order": 2,
+    "meal_name": "CHÁO KHOAI LANG HẠT ĐIỀU",
+    "slug": "chao_khoai_lang_hat_dieu",
+    "image_page_number": 61,
+    "image_xref": 3380,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_khoai_lang_hat_dieu.webp"
+  },
+  {
+    "page_number": 61,
+    "recipe_order": 3,
+    "meal_name": "CANH BÍ ĐỎ NẤU THỊT GÀ",
+    "slug": "canh_bi_do_nau_thit_ga",
+    "image_page_number": 62,
+    "image_xref": 3388,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_bi_do_nau_thit_ga.webp"
+  },
+  {
+    "page_number": 62,
+    "recipe_order": 1,
+    "meal_name": "CHÁO BỘT GẠO VỚI HẠT SEN",
+    "slug": "chao_bot_gao_voi_hat_sen",
+    "image_page_number": 62,
+    "image_xref": 3389,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_bot_gao_voi_hat_sen.webp"
+  },
+  {
+    "page_number": 62,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP CAM VÀ CHANH",
+    "slug": "nuoc_ep_cam_va_chanh",
+    "image_page_number": 62,
+    "image_xref": 3390,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_cam_va_chanh.webp"
+  },
+  {
+    "page_number": 63,
+    "recipe_order": 1,
+    "meal_name": "CHÁO THỊT BÒ – BÍ ĐỎ",
+    "slug": "chao_thit_bo_bi_do",
+    "image_page_number": 63,
+    "image_xref": 3398,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_thit_bo_bi_do.webp"
+  },
+  {
+    "page_number": 63,
+    "recipe_order": 2,
+    "meal_name": "CHÁO GẠO LỨT VỚI ĐẬU XANH",
+    "slug": "chao_gao_lut_voi_dau_xanh",
+    "image_page_number": 63,
+    "image_xref": 3397,
+    "asset_path": "assets/images/meals/pdf_health_book/chao_gao_lut_voi_dau_xanh.webp"
+  },
+  {
+    "page_number": 64,
+    "recipe_order": 1,
+    "meal_name": "NƯỚC ÉP DỪA TƯƠI",
+    "slug": "nuoc_ep_dua_tuoi",
+    "image_page_number": 64,
+    "image_xref": 3405,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_dua_tuoi.webp"
+  },
+  {
+    "page_number": 64,
+    "recipe_order": 2,
+    "meal_name": "CANH RAU NGÓT VỚI TÔM",
+    "slug": "canh_rau_ngot_voi_tom",
+    "image_page_number": 64,
+    "image_xref": 3406,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_ngot_voi_tom.webp"
+  },
+  {
+    "page_number": 65,
+    "recipe_order": 1,
+    "meal_name": "CANH CỦ CẢI VỚI RAU CẢI BÓ XÔI",
+    "slug": "canh_cu_cai_voi_rau_cai_bo_xoi",
+    "image_page_number": 65,
+    "image_xref": 3413,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_cu_cai_voi_rau_cai_bo_xoi.webp"
+  },
+  {
+    "page_number": 65,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ CAM VÀ BẠC HÀ",
+    "slug": "sinh_to_cam_va_bac_ha",
+    "image_page_number": 65,
+    "image_xref": 3414,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_cam_va_bac_ha.webp"
+  },
+  {
+    "page_number": 66,
+    "recipe_order": 1,
+    "meal_name": "SALAD DẦU Ô LIU VÀ HẠT CHIA",
+    "slug": "salad_dau_o_liu_va_hat_chia",
+    "image_page_number": 66,
+    "image_xref": 3422,
+    "asset_path": "assets/images/meals/pdf_health_book/salad_dau_o_liu_va_hat_chia.webp"
+  },
+  {
+    "page_number": 66,
+    "recipe_order": 2,
+    "meal_name": "NƯỚC ÉP DƯA HẤU VÀ LÁ HƯỚNG DƯƠNG",
+    "slug": "nuoc_ep_dua_hau_va_la_huong_duong",
+    "image_page_number": 66,
+    "image_xref": 3423,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_ep_dua_hau_va_la_huong_duong.webp"
+  },
+  {
+    "page_number": 67,
+    "recipe_order": 1,
+    "meal_name": "CANH XƯƠNG HẦM ĐU ĐỦ",
+    "slug": "canh_xuong_ham_du_du",
+    "image_page_number": 67,
+    "image_xref": 3430,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_xuong_ham_du_du.webp"
+  },
+  {
+    "page_number": 67,
+    "recipe_order": 2,
+    "meal_name": "SINH TỐ SỮA HẠT ĐIỀU VÀ CHUỐI",
+    "slug": "sinh_to_sua_hat_dieu_va_chuoi",
+    "image_page_number": 67,
+    "image_xref": 3431,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_sua_hat_dieu_va_chuoi.webp"
+  },
+  {
+    "page_number": 67,
+    "recipe_order": 3,
+    "meal_name": "SALAD CẢI XOĂN VÀ HẠT CHIA",
+    "slug": "salad_cai_xoan_va_hat_chia",
+    "image_page_number": 67,
+    "image_xref": 3432,
+    "asset_path": "assets/images/meals/pdf_health_book/salad_cai_xoan_va_hat_chia.webp"
+  },
+  {
+    "page_number": 68,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ DỨA VÀ GỪNG",
+    "slug": "sinh_to_dua_va_gung",
+    "image_page_number": 68,
+    "image_xref": 3439,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_dua_va_gung.webp"
+  },
+  {
+    "page_number": 68,
+    "recipe_order": 2,
+    "meal_name": "CANH CÁ HỒI VÀ BÔNG CẢI XANH",
+    "slug": "canh_ca_hoi_va_bong_cai_xanh",
+    "image_page_number": 68,
+    "image_xref": 3440,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_ca_hoi_va_bong_cai_xanh.webp"
+  },
+  {
+    "page_number": 68,
+    "recipe_order": 3,
+    "meal_name": "TRÀ XANH VÀ BẠC HÀ",
+    "slug": "tra_xanh_va_bac_ha",
+    "image_page_number": 68,
+    "image_xref": 3441,
+    "asset_path": "assets/images/meals/pdf_health_book/tra_xanh_va_bac_ha.webp"
+  },
+  {
+    "page_number": 69,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ CHUỐI HẠT ĐIỀU",
+    "slug": "sinh_to_chuoi_hat_dieu",
+    "image_page_number": 69,
+    "image_xref": 3448,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_chuoi_hat_dieu.webp"
+  },
+  {
+    "page_number": 69,
+    "recipe_order": 2,
+    "meal_name": "CANH XƯƠNG HẦM ĐU ĐỦ",
+    "slug": "canh_xuong_ham_du_du",
+    "image_page_number": 69,
+    "image_xref": 3449,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_xuong_ham_du_du.webp"
+  },
+  {
+    "page_number": 70,
+    "recipe_order": 1,
+    "meal_name": "SINH TỐ SỮA HẠT ĐIỀU VÀ CHUỐI",
+    "slug": "sinh_to_sua_hat_dieu_va_chuoi",
+    "image_page_number": 70,
+    "image_xref": 3457,
+    "asset_path": "assets/images/meals/pdf_health_book/sinh_to_sua_hat_dieu_va_chuoi.webp"
+  },
+  {
+    "page_number": 70,
+    "recipe_order": 2,
+    "meal_name": "CANH RAU CẢI XOĂN VÀ HẠT CHIA",
+    "slug": "canh_rau_cai_xoan_va_hat_chia",
+    "image_page_number": 70,
+    "image_xref": 3458,
+    "asset_path": "assets/images/meals/pdf_health_book/canh_rau_cai_xoan_va_hat_chia.webp"
+  },
+  {
+    "page_number": 71,
+    "recipe_order": 3,
+    "meal_name": "NƯỚC HẠT ĐẬU NÀNH – VỪNG ĐEN",
+    "slug": "nuoc_hat_dau_nanh_vung_den",
+    "image_page_number": 71,
+    "image_xref": 3463,
+    "asset_path": "assets/images/meals/pdf_health_book/nuoc_hat_dau_nanh_vung_den.webp"
+  }
+]
