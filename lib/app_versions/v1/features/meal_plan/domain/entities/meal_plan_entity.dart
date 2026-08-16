@@ -14,6 +14,14 @@ class MealPlanEntity {
     required this.fat,
     required this.fiber,
     required this.waterMl,
+    this.sugarG,
+    this.saturatedFatG,
+    this.sodiumMg,
+    this.cholesterolMg,
+    this.potassiumMg,
+    this.calciumMg,
+    this.ironMg,
+    this.nutritionStatus = '',
     required this.mealOrder,
     this.startTime = '',
     this.endTime = '',
@@ -50,6 +58,14 @@ class MealPlanEntity {
   final double fat;
   final double fiber;
   final int waterMl;
+  final double? sugarG;
+  final double? saturatedFatG;
+  final double? sodiumMg;
+  final double? cholesterolMg;
+  final double? potassiumMg;
+  final double? calciumMg;
+  final double? ironMg;
+  final String nutritionStatus;
   final int mealOrder;
   final String startTime;
   final String endTime;
@@ -74,9 +90,7 @@ class MealPlanEntity {
   final String updatedAt;
 
   bool get hasRecipeDetails =>
-      ingredients.isNotEmpty ||
-      cookingSteps.isNotEmpty ||
-      cookingInstructions.trim().isNotEmpty;
+      ingredients.isNotEmpty || cookingSteps.isNotEmpty || cookingInstructions.trim().isNotEmpty;
 
   MealPlanEntity copyWith({
     String? id,
@@ -91,6 +105,14 @@ class MealPlanEntity {
     double? fat,
     double? fiber,
     int? waterMl,
+    double? sugarG,
+    double? saturatedFatG,
+    double? sodiumMg,
+    double? cholesterolMg,
+    double? potassiumMg,
+    double? calciumMg,
+    double? ironMg,
+    String? nutritionStatus,
     int? mealOrder,
     String? startTime,
     String? endTime,
@@ -113,43 +135,48 @@ class MealPlanEntity {
     bool? aiGenerated,
     String? createdAt,
     String? updatedAt,
-  }) {
-    return MealPlanEntity(
-      id: id ?? this.id,
-      userId: userId ?? this.userId,
-      planDate: planDate ?? this.planDate,
-      mealType: mealType ?? this.mealType,
-      mealName: mealName ?? this.mealName,
-      description: description ?? this.description,
-      calories: calories ?? this.calories,
-      protein: protein ?? this.protein,
-      carbs: carbs ?? this.carbs,
-      fat: fat ?? this.fat,
-      fiber: fiber ?? this.fiber,
-      waterMl: waterMl ?? this.waterMl,
-      mealOrder: mealOrder ?? this.mealOrder,
-      startTime: startTime ?? this.startTime,
-      endTime: endTime ?? this.endTime,
-      cookingInstructions: cookingInstructions ?? this.cookingInstructions,
-      catalogCode: catalogCode ?? this.catalogCode,
-      servingSize: servingSize ?? this.servingSize,
-      topicCode: topicCode ?? this.topicCode,
-      topicName: topicName ?? this.topicName,
-      ingredients: ingredients ?? this.ingredients,
-      cookingSteps: cookingSteps ?? this.cookingSteps,
-      benefits: benefits ?? this.benefits,
-      allergenTags: allergenTags ?? this.allergenTags,
-      conditionTags: conditionTags ?? this.conditionTags,
-      provenanceSource: provenanceSource ?? this.provenanceSource,
-      sourceHash: sourceHash ?? this.sourceHash,
-      catalogSchemaVersion:
-          catalogSchemaVersion ?? this.catalogSchemaVersion,
-      replacementCount: replacementCount ?? this.replacementCount,
-      catalogDetail: catalogDetail ?? this.catalogDetail,
-      isCompleted: isCompleted ?? this.isCompleted,
-      aiGenerated: aiGenerated ?? this.aiGenerated,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
+  }) => MealPlanEntity(
+        id: id ?? this.id,
+        userId: userId ?? this.userId,
+        planDate: planDate ?? this.planDate,
+        mealType: mealType ?? this.mealType,
+        mealName: mealName ?? this.mealName,
+        description: description ?? this.description,
+        calories: calories ?? this.calories,
+        protein: protein ?? this.protein,
+        carbs: carbs ?? this.carbs,
+        fat: fat ?? this.fat,
+        fiber: fiber ?? this.fiber,
+        waterMl: waterMl ?? this.waterMl,
+        sugarG: sugarG ?? this.sugarG,
+        saturatedFatG: saturatedFatG ?? this.saturatedFatG,
+        sodiumMg: sodiumMg ?? this.sodiumMg,
+        cholesterolMg: cholesterolMg ?? this.cholesterolMg,
+        potassiumMg: potassiumMg ?? this.potassiumMg,
+        calciumMg: calciumMg ?? this.calciumMg,
+        ironMg: ironMg ?? this.ironMg,
+        nutritionStatus: nutritionStatus ?? this.nutritionStatus,
+        mealOrder: mealOrder ?? this.mealOrder,
+        startTime: startTime ?? this.startTime,
+        endTime: endTime ?? this.endTime,
+        cookingInstructions: cookingInstructions ?? this.cookingInstructions,
+        catalogCode: catalogCode ?? this.catalogCode,
+        servingSize: servingSize ?? this.servingSize,
+        topicCode: topicCode ?? this.topicCode,
+        topicName: topicName ?? this.topicName,
+        ingredients: ingredients ?? this.ingredients,
+        cookingSteps: cookingSteps ?? this.cookingSteps,
+        benefits: benefits ?? this.benefits,
+        allergenTags: allergenTags ?? this.allergenTags,
+        conditionTags: conditionTags ?? this.conditionTags,
+        provenanceSource: provenanceSource ?? this.provenanceSource,
+        sourceHash: sourceHash ?? this.sourceHash,
+        catalogSchemaVersion: catalogSchemaVersion ?? this.catalogSchemaVersion,
+        replacementCount: replacementCount ?? this.replacementCount,
+        catalogDetail: catalogDetail ?? this.catalogDetail,
+        isCompleted: isCompleted ?? this.isCompleted,
+        aiGenerated: aiGenerated ?? this.aiGenerated,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
 }

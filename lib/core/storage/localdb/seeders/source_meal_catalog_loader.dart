@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 import '../models/ai_catalog_models.dart';
+import 'meal_nutrition_estimator.dart';
 
 class SourceMealCatalogLoader {
   const SourceMealCatalogLoader._();
@@ -28,6 +29,7 @@ class SourceMealCatalogLoader {
             timestamp: timestamp,
           ),
         )
+        .map(MealNutritionEstimator.enrichIfMissing)
         .toList(growable: false);
   }
 }

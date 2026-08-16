@@ -5,40 +5,15 @@ import 'meal_plan_model.dart';
 class MealPlanAiNormalizer {
   static const mealsPerDay = 5;
   static const forbiddenAiTextFields = {
-    'meal_name',
-    'description',
-    'cooking_instructions',
-    'title',
-    'unit',
-    'encouragement',
+    'meal_name', 'description', 'cooking_instructions', 'title', 'unit', 'encouragement',
   };
 
   static const mealSlots = [
-    MealPlanSlot(
-      type: 'breakfast',
-      order: 1,
-      startTime: '07:00',
-      endTime: '07:30',
-    ),
-    MealPlanSlot(
-      type: 'morning_snack',
-      order: 2,
-      startTime: '09:30',
-      endTime: '09:45',
-    ),
+    MealPlanSlot(type: 'breakfast', order: 1, startTime: '07:00', endTime: '07:30'),
+    MealPlanSlot(type: 'morning_snack', order: 2, startTime: '09:30', endTime: '09:45'),
     MealPlanSlot(type: 'lunch', order: 3, startTime: '12:00', endTime: '12:45'),
-    MealPlanSlot(
-      type: 'afternoon_snack',
-      order: 4,
-      startTime: '15:30',
-      endTime: '15:45',
-    ),
-    MealPlanSlot(
-      type: 'dinner',
-      order: 5,
-      startTime: '18:30',
-      endTime: '19:15',
-    ),
+    MealPlanSlot(type: 'afternoon_snack', order: 4, startTime: '15:30', endTime: '15:45'),
+    MealPlanSlot(type: 'dinner', order: 5, startTime: '18:30', endTime: '19:15'),
   ];
 
   const MealPlanAiNormalizer();
@@ -59,7 +34,6 @@ class MealPlanAiNormalizer {
       usedCodeCounts: const {},
     );
     final byDayAndType = <int, Map<String, Map<String, dynamic>>>{};
-
     for (final item in validItems) {
       final day = item['day'] as int;
       final mealType = item['meal_type'] as String;
@@ -71,22 +45,13 @@ class MealPlanAiNormalizer {
     for (var day = 1; day <= days; day++) {
       final date = _dateKey(startDate.add(Duration(days: day - 1)));
       final dayItems = byDayAndType[day];
-      if (dayItems == null) {
-        throw FormatException('Missing meal day $day');
-      }
-
+      if (dayItems == null) throw FormatException('Missing meal day $day');
       for (final slot in mealSlots) {
         final map = dayItems[slot.type];
-        if (map == null) {
-          throw FormatException('Expected meal_type ${slot.type} for $date');
-        }
-
+        if (map == null) throw FormatException('Expected meal_type ${slot.type} for $date');
         final catalogItem = catalogByCode[map['meal_code']];
-        if (catalogItem == null) {
-          throw FormatException('Unknown meal_code: ${map['meal_code']}');
-        }
-
-        final portionFactor = _portionFactor(map['portion_level']);
+        if (catalogItem == null) throw FormatException('Unknown meal_code: ${map['meal_code']}');
+        final factor = _portionFactor(map['portion_level']);
         result.add(
           MealPlanModel(
             id: 'meal_${userId}_${date}_${slot.order}',
@@ -95,12 +60,20 @@ class MealPlanAiNormalizer {
             mealType: slot.type,
             mealName: catalogItem.mealName,
             description: catalogItem.description,
-            calories: (catalogItem.calories * portionFactor).round(),
-            protein: _scaled(catalogItem.protein, portionFactor),
-            carbs: _scaled(catalogItem.carbs, portionFactor),
-            fat: _scaled(catalogItem.fat, portionFactor),
-            fiber: _scaled(catalogItem.fiber, portionFactor),
-            waterMl: catalogItem.waterMl,
+            calories: (catalogItem.calories * factor).round(),
+            protein: _scaled(catalogItem.protein, factor),
+            carbs: _scaled(catalogItem.carbs, factor),
+            fat: _scaled(catalogItem.fat, factor),
+            fiber: _scaled(catalogItem.fiber, factor),
+            waterMl: (catalogItem.waterMl * factor).round(),
+            sugarG: _scaledNullable(catalogItem.sugarG, factor),
+            saturatedFatG: _scaledNullable(catalogItem.saturatedFatG, factor),
+            sodiumMg: _scaledNullable(catalogItem.sodiumMg, factor),
+            cholesterolMg: _scaledNullable(catalogItem.cholesterolMg, factor),
+            potassiumMg: _scaledNullable(catalogItem.potassiumMg, factor),
+            calciumMg: _scaledNullable(catalogItem.calciumMg, factor),
+            ironMg: _scaledNullable(catalogItem.ironMg, factor),
+            nutritionStatus: catalogItem.nutritionStatus,
             mealOrder: slot.order,
             startTime: slot.startTime,
             endTime: slot.endTime,
@@ -125,7 +98,6 @@ class MealPlanAiNormalizer {
         );
       }
     }
-
     return result;
   }
 
@@ -138,61 +110,39 @@ class MealPlanAiNormalizer {
   }) {
     final expectedCount = days * mealsPerDay;
     if (items.length != expectedCount) {
-      throw FormatException(
-        'Meal AI response must contain exactly $expectedCount meals',
-      );
+      throw FormatException('Meal AI response must contain exactly $expectedCount meals');
     }
-
     final catalogByCode = catalog.mealsByCode;
     final counts = Map<String, int>.from(usedCodeCounts);
     final byDayAndType = <int, Map<String, Map<String, dynamic>>>{};
-
     for (final item in items) {
-      if (item is! Map) {
-        throw const FormatException('Meal AI item must be an object');
-      }
-
+      if (item is! Map) throw const FormatException('Meal AI item must be an object');
       final map = Map<String, dynamic>.from(item);
       _rejectForbiddenTextFields(map, label: 'Meal AI item');
-
       final day = _readInt(map['day']);
       final endDay = startDay + days - 1;
       if (day < startDay || day > endDay) {
-        throw FormatException(
-          'Meal AI day must be between $startDay and $endDay',
-        );
+        throw FormatException('Meal AI day must be between $startDay and $endDay');
       }
-
       final mealType = _readString(map['meal_type']).toLowerCase();
       final slot = _slotForType(mealType);
-      if (slot == null) {
-        throw FormatException('Unsupported meal_type: $mealType');
-      }
-
+      if (slot == null) throw FormatException('Unsupported meal_type: $mealType');
       final mealCode = _readString(map['meal_code']).toLowerCase();
       final catalogItem = catalogByCode[mealCode];
-      if (catalogItem == null) {
-        throw FormatException('Unknown meal_code: $mealCode');
-      }
-      if (catalogItem.mealType != mealType &&
-          catalogItem.mealType != 'unclassified') {
+      if (catalogItem == null) throw FormatException('Unknown meal_code: $mealCode');
+      if (catalogItem.mealType != mealType && catalogItem.mealType != 'unclassified') {
         throw FormatException('meal_code $mealCode is not valid for $mealType');
       }
-
       final dayItems = byDayAndType.putIfAbsent(day, () => {});
-      if (dayItems.containsKey(mealType)) {
-        throw FormatException('Duplicate meal_type for day $day: $mealType');
-      }
+      if (dayItems.containsKey(mealType)) throw FormatException('Duplicate meal_type for day $day: $mealType');
       if (dayItems.values.any((entry) => entry['meal_code'] == mealCode)) {
         throw FormatException('Duplicate meal_code for day $day: $mealCode');
       }
-
       final nextCount = (counts[mealCode] ?? 0) + 1;
       if (nextCount > 2 && _hasLessUsedAlternative(catalog, mealType, counts)) {
         throw FormatException('Meal code repeated too often: $mealCode');
       }
       counts[mealCode] = nextCount;
-
       dayItems[mealType] = {
         'day': day,
         'meal_type': mealType,
@@ -201,22 +151,16 @@ class MealPlanAiNormalizer {
         'priority': _readOptionalInt(map['priority']) ?? slot.order,
       };
     }
-
     final result = <Map<String, dynamic>>[];
     for (var day = startDay; day < startDay + days; day++) {
       final dayItems = byDayAndType[day];
-      if (dayItems == null) {
-        throw FormatException('Missing meal day $day');
-      }
+      if (dayItems == null) throw FormatException('Missing meal day $day');
       for (final slot in mealSlots) {
         final item = dayItems[slot.type];
-        if (item == null) {
-          throw FormatException('Expected meal_type ${slot.type} for day $day');
-        }
+        if (item == null) throw FormatException('Expected meal_type ${slot.type} for day $day');
         result.add(item);
       }
     }
-
     return result;
   }
 
@@ -228,7 +172,6 @@ class MealPlanAiNormalizer {
   }) {
     final counts = Map<String, int>.from(usedCodeCounts);
     final result = <Map<String, dynamic>>[];
-
     for (var day = startDay; day < startDay + days; day++) {
       final dayCodes = <String>{};
       for (final slot in mealSlots) {
@@ -244,7 +187,6 @@ class MealPlanAiNormalizer {
         });
       }
     }
-
     return result;
   }
 
@@ -255,45 +197,23 @@ class MealPlanAiNormalizer {
     Set<String> dayCodes,
   ) {
     final candidates = catalog.mealsForType(mealType);
-    if (candidates.isEmpty) {
-      throw FormatException('Meal catalog has no items for $mealType');
-    }
-
+    if (candidates.isEmpty) throw FormatException('Meal catalog has no items for $mealType');
     final sorted = [...candidates]
       ..sort((a, b) {
-        final countCompare = (usedCodeCounts[a.code] ?? 0).compareTo(
-          usedCodeCounts[b.code] ?? 0,
-        );
-        if (countCompare != 0) return countCompare;
-        return a.code.compareTo(b.code);
+        final c = (usedCodeCounts[a.code] ?? 0).compareTo(usedCodeCounts[b.code] ?? 0);
+        return c != 0 ? c : a.code.compareTo(b.code);
       });
-
-    return sorted.firstWhere(
-      (item) => !dayCodes.contains(item.code),
-      orElse: () => sorted.first,
-    );
+    return sorted.firstWhere((item) => !dayCodes.contains(item.code), orElse: () => sorted.first);
   }
 
-  static void _rejectForbiddenTextFields(
-    Map<String, dynamic> map, {
-    required String label,
-  }) {
+  static void _rejectForbiddenTextFields(Map<String, dynamic> map, {required String label}) {
     for (final field in forbiddenAiTextFields) {
-      if (map.containsKey(field)) {
-        throw FormatException('$label must not contain "$field"');
-      }
+      if (map.containsKey(field)) throw FormatException('$label must not contain "$field"');
     }
   }
 
-  static bool _hasLessUsedAlternative(
-    AiCatalogBundle catalog,
-    String mealType,
-    Map<String, int> counts,
-  ) {
-    return catalog
-        .mealsForType(mealType)
-        .any((item) => (counts[item.code] ?? 0) < 2);
-  }
+  static bool _hasLessUsedAlternative(AiCatalogBundle catalog, String type, Map<String, int> counts) =>
+      catalog.mealsForType(type).any((item) => (counts[item.code] ?? 0) < 2);
 
   static MealPlanSlot? _slotForType(String mealType) {
     for (final slot in mealSlots) {
@@ -302,53 +222,34 @@ class MealPlanAiNormalizer {
     return null;
   }
 
-  static String _readString(Object? value) {
-    return value?.toString().trim() ?? '';
-  }
-
+  static String _readString(Object? value) => value?.toString().trim() ?? '';
   static int _readInt(Object? value) {
     final parsed = _readOptionalInt(value);
-    if (parsed == null) {
-      throw FormatException('Expected integer value, got $value');
-    }
+    if (parsed == null) throw FormatException('Expected integer value, got $value');
     return parsed;
   }
-
-  static int? _readOptionalInt(Object? value) {
-    return switch (value) {
-      final int n => n,
-      final num n => n.toInt(),
-      final String s => int.tryParse(s.trim()),
-      _ => null,
-    };
-  }
-
-  static String _normalizePortionLevel(Object? value) {
-    final text = _readString(value).toLowerCase();
-    return switch (text) {
-      'small' || 'low' || 'light' => 'small',
-      'large' || 'high' => 'large',
-      _ => 'standard',
-    };
-  }
-
-  static double _portionFactor(Object? value) {
-    return switch (_normalizePortionLevel(value)) {
-      'small' => 0.85,
-      'large' => 1.15,
-      _ => 1.0,
-    };
-  }
-
-  static double _scaled(double value, double factor) {
-    return double.parse((value * factor).toStringAsFixed(1));
-  }
-
-  static String _dateKey(DateTime value) {
-    final month = value.month.toString().padLeft(2, '0');
-    final day = value.day.toString().padLeft(2, '0');
-    return '${value.year}-$month-$day';
-  }
+  static int? _readOptionalInt(Object? value) => switch (value) {
+        final int n => n,
+        final num n => n.toInt(),
+        final String s => int.tryParse(s.trim()),
+        _ => null,
+      };
+  static String _normalizePortionLevel(Object? value) => switch (_readString(value).toLowerCase()) {
+        'small' || 'low' || 'light' => 'small',
+        'large' || 'high' => 'large',
+        _ => 'standard',
+      };
+  static double _portionFactor(Object? value) => switch (_normalizePortionLevel(value)) {
+        'small' => 0.85,
+        'large' => 1.15,
+        _ => 1.0,
+      };
+  static double _scaled(double value, double factor) =>
+      double.parse((value * factor).toStringAsFixed(1));
+  static double? _scaledNullable(double? value, double factor) =>
+      value == null ? null : _scaled(value, factor);
+  static String _dateKey(DateTime value) =>
+      '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 }
 
 class MealPlanSlot {
@@ -356,11 +257,5 @@ class MealPlanSlot {
   final int order;
   final String startTime;
   final String endTime;
-
-  const MealPlanSlot({
-    required this.type,
-    required this.order,
-    required this.startTime,
-    required this.endTime,
-  });
+  const MealPlanSlot({required this.type, required this.order, required this.startTime, required this.endTime});
 }

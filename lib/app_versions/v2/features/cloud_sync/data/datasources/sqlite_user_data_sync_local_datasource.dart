@@ -7,6 +7,7 @@ import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/user_data_snapshot.dart';
+import 'meal_plan_nutrition_sync_columns.dart';
 import 'user_data_sync_datasource_contracts.dart';
 import 'user_data_sync_tables.dart';
 
@@ -193,10 +194,13 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
     required Map<String, Object?> source,
     required String targetUserId,
   }) {
-    final allowedColumns = UserDataSyncTables.localColumnsByTable[table];
-    if (allowedColumns == null) {
+    final baseColumns = UserDataSyncTables.localColumnsByTable[table];
+    if (baseColumns == null) {
       throw StateError('Unsupported local sync table: $table');
     }
+    final allowedColumns = table == 'meal_plans'
+        ? <String>{...baseColumns, ...mealPlanNutritionSyncColumns}
+        : baseColumns;
 
     final row = <String, Object?>{};
     for (final entry in source.entries) {

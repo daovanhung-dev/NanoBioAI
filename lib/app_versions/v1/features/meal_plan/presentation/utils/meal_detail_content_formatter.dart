@@ -1,234 +1,245 @@
-import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal_catalog_detail_entity.dart';
-import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal_plan_entity.dart';
+import '../../domain/entities/meal_catalog_detail_entity.dart';
+import '../../domain/entities/meal_plan_entity.dart';
 
 class MealDetailContent {
   const MealDetailContent({
     required this.mealName,
-    required this.topicName,
     required this.description,
-    required this.ingredients,
-    required this.cookingSteps,
-    required this.benefits,
+    required this.topicName,
     required this.servingSize,
-    required this.allergenTags,
-    required this.avoidConditionTags,
-    required this.sourceLabel,
-    required this.showNutrition,
     required this.calories,
     required this.protein,
     required this.carbs,
     required this.fat,
     required this.fiber,
     required this.waterMl,
+    required this.sugarG,
+    required this.saturatedFatG,
+    required this.sodiumMg,
+    required this.cholesterolMg,
+    required this.potassiumMg,
+    required this.calciumMg,
+    required this.ironMg,
+    required this.nutritionStatus,
+    required this.nutritionLabel,
+    required this.showNutrition,
+    required this.ingredients,
+    required this.cookingSteps,
+    required this.benefits,
+    required this.allergenTags,
+    required this.avoidConditionTags,
+    required this.sourceLabel,
   });
 
   final String mealName;
-  final String topicName;
   final String description;
-  final List<String> ingredients;
-  final List<String> cookingSteps;
-  final String benefits;
+  final String topicName;
   final String servingSize;
-  final List<String> allergenTags;
-  final List<String> avoidConditionTags;
-  final String sourceLabel;
-  final bool showNutrition;
   final int calories;
   final double protein;
   final double carbs;
   final double fat;
   final double fiber;
   final int waterMl;
+  final double? sugarG;
+  final double? saturatedFatG;
+  final double? sodiumMg;
+  final double? cholesterolMg;
+  final double? potassiumMg;
+  final double? calciumMg;
+  final double? ironMg;
+  final String nutritionStatus;
+  final String nutritionLabel;
+  final bool showNutrition;
+  final List<String> ingredients;
+  final List<String> cookingSteps;
+  final String benefits;
+  final List<String> allergenTags;
+  final List<String> avoidConditionTags;
+  final String sourceLabel;
 
-  bool get hasWarnings => allergenTags.isNotEmpty || avoidConditionTags.isNotEmpty;
   bool get hasRecipe => ingredients.isNotEmpty || cookingSteps.isNotEmpty;
+  bool get hasWarnings => allergenTags.isNotEmpty || avoidConditionTags.isNotEmpty;
+  bool get isEstimated => nutritionStatus == 'estimated_from_ingredients';
 }
 
 abstract final class MealDetailContentFormatter {
   static MealDetailContent fromMeal(MealPlanEntity meal) {
     final detail = meal.catalogDetail;
-    final mealName = _firstNonEmpty([detail?.mealName, meal.mealName]);
-    final topicName = _firstNonEmpty([detail?.healthTopicName, meal.topicName]);
-    final description = _description(detail, meal);
-    final ingredients = _dedupeLines(
-      detail != null && detail.ingredients.isNotEmpty
-          ? detail.ingredients
-          : meal.ingredients,
-      sanitizeIngredient: true,
-    );
-    final cookingSteps = _cookingSteps(detail, meal);
-    final benefits = _firstNonEmpty([detail?.benefits, meal.benefits]);
-    final servingSize = _firstNonEmpty([detail?.servingSize, meal.servingSize]);
-    final allergenTags = _dedupeLines(
-      detail != null && detail.allergenTags.isNotEmpty
-          ? detail.allergenTags
-          : meal.allergenTags,
-    );
-    final avoidConditionTags = _dedupeLines(
-      detail != null && detail.avoidConditionTags.isNotEmpty
-          ? detail.avoidConditionTags
-          : meal.conditionTags,
-    );
+    final detailStatus = detail?.nutritionStatus.trim() ?? '';
+    final snapshotStatus = meal.nutritionStatus.trim();
+    final useCatalogNutrition =
+        detail != null && detailStatus != 'missing_source_data';
 
-    final nutritionMissing = detail != null &&
-        detail.nutritionStatus.trim().toLowerCase() == 'missing_source_data';
-    final calories = detail?.calories ?? meal.calories;
-    final protein = detail?.protein ?? meal.protein;
-    final carbs = detail?.carbs ?? meal.carbs;
-    final fat = detail?.fat ?? meal.fat;
-    final fiber = detail?.fiber ?? meal.fiber;
-    final waterMl = detail?.waterMl ?? meal.waterMl;
-    final hasPositiveNutrition = calories > 0 ||
-        protein > 0 ||
-        carbs > 0 ||
-        fat > 0 ||
-        fiber > 0 ||
-        waterMl > 0;
+    final calories = useCatalogNutrition ? detail.calories : meal.calories;
+    final protein = useCatalogNutrition ? detail.protein : meal.protein;
+    final carbs = useCatalogNutrition ? detail.carbs : meal.carbs;
+    final fat = useCatalogNutrition ? detail.fat : meal.fat;
+    final fiber = useCatalogNutrition ? detail.fiber : meal.fiber;
+    final waterMl = useCatalogNutrition ? detail.waterMl : meal.waterMl;
+    final sugarG = useCatalogNutrition ? detail.sugarG : meal.sugarG;
+    final saturatedFatG =
+        useCatalogNutrition ? detail.saturatedFatG : meal.saturatedFatG;
+    final sodiumMg = useCatalogNutrition ? detail.sodiumMg : meal.sodiumMg;
+    final cholesterolMg =
+        useCatalogNutrition ? detail.cholesterolMg : meal.cholesterolMg;
+    final potassiumMg =
+        useCatalogNutrition ? detail.potassiumMg : meal.potassiumMg;
+    final calciumMg = useCatalogNutrition ? detail.calciumMg : meal.calciumMg;
+    final ironMg = useCatalogNutrition ? detail.ironMg : meal.ironMg;
+    final effectiveStatus = detailStatus.isNotEmpty && useCatalogNutrition
+        ? detailStatus
+        : snapshotStatus.isNotEmpty
+            ? snapshotStatus
+            : _hasAnyNutrition(
+                calories: calories,
+                protein: protein,
+                carbs: carbs,
+                fat: fat,
+                fiber: fiber,
+                sugarG: sugarG,
+                saturatedFatG: saturatedFatG,
+                sodiumMg: sodiumMg,
+                cholesterolMg: cholesterolMg,
+                potassiumMg: potassiumMg,
+                calciumMg: calciumMg,
+                ironMg: ironMg,
+              )
+                ? 'snapshot'
+                : 'missing_source_data';
+
+    final ingredients = _preferList(detail?.ingredients, meal.ingredients);
+    final cookingSteps = _preferList(
+      detail?.cookingSteps,
+      meal.cookingSteps.isNotEmpty
+          ? meal.cookingSteps
+          : _parseInstructions(meal.cookingInstructions),
+    );
 
     return MealDetailContent(
-      mealName: mealName,
-      topicName: topicName,
-      description: description,
-      ingredients: ingredients,
-      cookingSteps: cookingSteps,
-      benefits: benefits,
-      servingSize: servingSize,
-      allergenTags: allergenTags,
-      avoidConditionTags: avoidConditionTags,
-      sourceLabel: _sourceLabel(detail, meal),
-      showNutrition: !nutritionMissing && hasPositiveNutrition,
+      mealName: _prefer(detail?.mealName, meal.mealName),
+      description: _prefer(detail?.description, meal.description),
+      topicName: _prefer(detail?.healthTopicName, meal.topicName),
+      servingSize: _prefer(detail?.servingSize, meal.servingSize),
       calories: calories,
       protein: protein,
       carbs: carbs,
       fat: fat,
       fiber: fiber,
       waterMl: waterMl,
+      sugarG: sugarG,
+      saturatedFatG: saturatedFatG,
+      sodiumMg: sodiumMg,
+      cholesterolMg: cholesterolMg,
+      potassiumMg: potassiumMg,
+      calciumMg: calciumMg,
+      ironMg: ironMg,
+      nutritionStatus: effectiveStatus,
+      nutritionLabel: effectiveStatus == 'estimated_from_ingredients'
+          ? 'Dinh dưỡng ước tính • 1 khẩu phần'
+          : 'Dinh dưỡng • 1 khẩu phần',
+      showNutrition: effectiveStatus != 'missing_source_data' &&
+          _hasAnyNutrition(
+            calories: calories,
+            protein: protein,
+            carbs: carbs,
+            fat: fat,
+            fiber: fiber,
+            sugarG: sugarG,
+            saturatedFatG: saturatedFatG,
+            sodiumMg: sodiumMg,
+            cholesterolMg: cholesterolMg,
+            potassiumMg: potassiumMg,
+            calciumMg: calciumMg,
+            ironMg: ironMg,
+          ),
+      ingredients: ingredients,
+      cookingSteps: cookingSteps,
+      benefits: _prefer(detail?.benefits, meal.benefits),
+      allergenTags: _preferList(detail?.allergenTags, meal.allergenTags),
+      avoidConditionTags: _preferList(
+        detail?.avoidConditionTags,
+        meal.conditionTags,
+      ),
+      sourceLabel: _sourceLabel(detail, meal),
     );
   }
 
-  static String _description(
-    MealCatalogDetailEntity? detail,
-    MealPlanEntity meal,
-  ) {
-    final description = _firstNonEmpty([detail?.description, meal.description]);
-    if (description.isEmpty) return '';
-
-    final topicDescription = detail?.healthTopicDescription.trim() ?? '';
-    if (topicDescription.isNotEmpty &&
-        _normalizedText(description) == _normalizedText(topicDescription)) {
-      return '';
-    }
-
-    return description;
+  static String _prefer(String? primary, String fallback) {
+    final value = primary?.trim() ?? '';
+    return value.isNotEmpty ? value : fallback.trim();
   }
 
-  static List<String> _cookingSteps(
-    MealCatalogDetailEntity? detail,
-    MealPlanEntity meal,
-  ) {
-    if (detail != null && detail.cookingSteps.isNotEmpty) {
-      return _dedupeLines(detail.cookingSteps);
-    }
-    if (meal.cookingSteps.isNotEmpty) {
-      return _dedupeLines(meal.cookingSteps);
-    }
-
-    final raw = _firstNonEmpty([
-      detail?.cookingInstructions,
-      meal.cookingInstructions,
-    ]);
-    return parseCookingInstructions(raw);
-  }
-
-  static List<String> parseCookingInstructions(String value) {
-    var normalized = value
-        .replaceAll('\r\n', '\n')
-        .replaceAll('\r', '\n')
-        .replaceAll(RegExp(r'\n{2,}'), '\n')
-        .trim();
-    if (normalized.isEmpty) return const [];
-
-    normalized = normalized.replaceAllMapped(
-      RegExp(r'\s+(?=(?:bước\s*)?\d+[\.)\-:]\s*)', caseSensitive: false),
-      (_) => '\n',
-    );
-
-    final values = normalized
-        .split('\n')
-        .expand((line) => line.split(RegExp(r'\s*[;•]\s*')))
-        .map(_removeStepPrefix)
-        .where((line) => line.isNotEmpty)
+  static List<String> _preferList(List<String>? primary, List<String> fallback) {
+    final values = primary
+            ?.map((value) => value.trim())
+            .where((value) => value.isNotEmpty)
+            .toList(growable: false) ??
+        const <String>[];
+    if (values.isNotEmpty) return values;
+    return fallback
+        .map((value) => value.trim())
+        .where((value) => value.isNotEmpty)
         .toList(growable: false);
-
-    return _dedupeLines(values);
   }
+
+  static List<String> _parseInstructions(String value) => value
+      .replaceAll('\r', '\n')
+      .split(RegExp(r'[\n;•]+'))
+      .map(
+        (line) => line.trim().replaceFirst(
+              RegExp(
+                r'^(?:bước\s*)?\d+[\.)\-:]?\s*',
+                caseSensitive: false,
+              ),
+              '',
+            ),
+      )
+      .where((line) => line.isNotEmpty)
+      .toList(growable: false);
 
   static String _sourceLabel(
     MealCatalogDetailEntity? detail,
     MealPlanEntity meal,
   ) {
-    final source = _firstNonEmpty([detail?.sourceName, meal.provenanceSource]);
-    if (source.isEmpty) return '';
-
-    var label = source.trim();
-    if (label == 'Suc_Khoe_Tu_Nha_Bep_Thuc_Don_Theo_Tung_Muc.md') {
-      label = 'Sức Khỏe Từ Nhà Bếp';
-    } else {
-      label = label
-          .replaceFirst(RegExp(r'\.(md|pdf|txt)$', caseSensitive: false), '')
-          .replaceAll('_', ' ')
-          .replaceAll(RegExp(r'\s+'), ' ')
-          .trim();
+    if (detail != null) {
+      final parts = <String>[
+        detail.sourceName.trim(),
+        if (detail.sourceChapter.trim().isNotEmpty) detail.sourceChapter.trim(),
+        if (detail.sourceTopic.trim().isNotEmpty) detail.sourceTopic.trim(),
+        if (detail.sourcePage != null) 'trang ${detail.sourcePage}',
+      ].where((value) => value.isNotEmpty).toList(growable: false);
+      if (parts.isNotEmpty) return parts.join(' • ');
     }
-
-    final page = detail?.sourcePage;
-    if (page != null && page > 0) {
-      return '$label • Trang $page';
-    }
-    return label;
+    return meal.provenanceSource.trim();
   }
 
-  static List<String> _dedupeLines(
-    Iterable<String> values, {
-    bool sanitizeIngredient = false,
-  }) {
-    final seen = <String>{};
-    final result = <String>[];
-    for (final value in values) {
-      var text = value.replaceAll(RegExp(r'\s+'), ' ').trim();
-      if (sanitizeIngredient) {
-        text = text.replaceFirst(RegExp(r'\s+:\s*$'), '').trim();
-      }
-      if (text.isEmpty) continue;
-      final key = _normalizedText(text);
-      if (!seen.add(key)) continue;
-      result.add(text);
-    }
-    return List<String>.unmodifiable(result);
-  }
+  static bool _hasAnyNutrition({
+    required int calories,
+    required double protein,
+    required double carbs,
+    required double fat,
+    required double fiber,
+    required double? sugarG,
+    required double? saturatedFatG,
+    required double? sodiumMg,
+    required double? cholesterolMg,
+    required double? potassiumMg,
+    required double? calciumMg,
+    required double? ironMg,
+  }) =>
+      calories > 0 ||
+      protein > 0 ||
+      carbs > 0 ||
+      fat > 0 ||
+      fiber > 0 ||
+      _positive(sugarG) ||
+      _positive(saturatedFatG) ||
+      _positive(sodiumMg) ||
+      _positive(cholesterolMg) ||
+      _positive(potassiumMg) ||
+      _positive(calciumMg) ||
+      _positive(ironMg);
 
-  static String _removeStepPrefix(String value) {
-    return value
-        .trim()
-        .replaceFirst(
-          RegExp(r'^(?:bước\s*)?\d+[\.)\-:]?\s*', caseSensitive: false),
-          '',
-        )
-        .replaceFirst(RegExp(r'^[-–—]\s*'), '')
-        .trim();
-  }
-
-  static String _firstNonEmpty(Iterable<String?> values) {
-    for (final value in values) {
-      final text = value?.trim() ?? '';
-      if (text.isNotEmpty) return text;
-    }
-    return '';
-  }
-
-  static String _normalizedText(String value) => value
-      .trim()
-      .toLowerCase()
-      .replaceAll(RegExp(r'[–—−]'), '-')
-      .replaceAll(RegExp(r'\s+'), ' ');
+  static bool _positive(double? value) => value != null && value > 0;
 }

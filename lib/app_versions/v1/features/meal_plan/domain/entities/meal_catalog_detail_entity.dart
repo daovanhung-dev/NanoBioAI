@@ -11,6 +11,13 @@ class MealCatalogDetailEntity {
     required this.fat,
     required this.fiber,
     required this.waterMl,
+    this.sugarG,
+    this.saturatedFatG,
+    this.sodiumMg,
+    this.cholesterolMg,
+    this.potassiumMg,
+    this.calciumMg,
+    this.ironMg,
     required this.healthTopicCode,
     required this.healthTopicName,
     required this.healthTopicDescription,
@@ -47,6 +54,13 @@ class MealCatalogDetailEntity {
   final double fat;
   final double fiber;
   final int waterMl;
+  final double? sugarG;
+  final double? saturatedFatG;
+  final double? sodiumMg;
+  final double? cholesterolMg;
+  final double? potassiumMg;
+  final double? calciumMg;
+  final double? ironMg;
   final String healthTopicCode;
   final String healthTopicName;
   final String healthTopicDescription;

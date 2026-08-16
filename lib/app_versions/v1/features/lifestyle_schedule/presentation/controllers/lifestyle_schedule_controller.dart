@@ -243,7 +243,7 @@ class LifestyleScheduleController
         if (remoteAttempt == null) {
           return LifestyleScheduleToggleResult.completed;
         }
-        return _uploadAndFinalize(
+        return await _uploadAndFinalize(
           attempt: remoteAttempt,
           completionProofPath: completionProofPath!,
         );

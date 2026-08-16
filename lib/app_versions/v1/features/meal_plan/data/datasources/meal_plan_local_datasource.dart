@@ -15,20 +15,14 @@ import '../models/meal_plan_model.dart';
 
 class NoMealReplacementAvailableException implements Exception {
   const NoMealReplacementAvailableException();
-
-  static const userMessage =
-      'Nabi chưa tìm thấy món thay thế phù hợp với hồ sơ của bạn.';
-
+  static const userMessage = 'Nabi chưa tìm thấy món thay thế phù hợp với hồ sơ của bạn.';
   @override
   String toString() => userMessage;
 }
 
 class MealReplacementNotAllowedException implements Exception {
   const MealReplacementNotAllowedException();
-
-  static const userMessage =
-      'Món này không còn phù hợp để thay thế. Bạn chọn món khác nhé.';
-
+  static const userMessage = 'Món này không còn phù hợp để thay thế. Bạn chọn món khác nhé.';
   @override
   String toString() => userMessage;
 }
@@ -42,30 +36,18 @@ class MealPlanLocalDatasource {
   final Database? databaseOverride;
   final MealCandidateSelector candidateSelector;
 
-  Future<Database> _db() async {
-    final override = databaseOverride;
-    if (override != null) return override;
-    return DatabaseService.database;
-  }
+  Future<Database> _db() async => databaseOverride ?? DatabaseService.database;
 
-  Future<List<MealPlanModel>> getMealByWeeks() async {
-    final db = await _db();
-    return MealPlansDao(db).getAll();
-  }
+  Future<List<MealPlanModel>> getMealByWeeks() async =>
+      MealPlansDao(await _db()).getAll();
 
   Future<List<MealPlanEntity>> getMealEntitiesByWeeks() async {
     final db = await _db();
     final meals = await MealPlansDao(db).getAll();
     if (meals.isEmpty) return const [];
-
-    final catalog = await AiCatalogDao(db).getActiveMeals(
-      planEligibleOnly: false,
-    );
+    final catalog = await AiCatalogDao(db).getActiveMeals(planEligibleOnly: false);
     final index = _MealCatalogIndex(catalog);
-
-    return meals
-        .map((meal) => _hydrateMealEntity(meal, index))
-        .toList(growable: false);
+    return meals.map((meal) => _hydrateMealEntity(meal, index)).toList(growable: false);
   }
 
   Future<void> completeMealById(String id) async {
@@ -74,32 +56,22 @@ class MealPlanLocalDatasource {
     LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
   }
 
-  Future<List<MealReplacementCandidateEntity>> getReplacementCandidates(
-    String mealId,
-  ) async {
+  Future<List<MealReplacementCandidateEntity>> getReplacementCandidates(String mealId) async {
     final db = await _db();
     final current = await _loadReplaceableMeal(db, mealId);
     final userId = _requireOwner(current);
-    final profile = await NutritionProfileLocalDatasource(
-      databaseOverride: db,
-    ).load(userId);
-    final catalog = await AiCatalogDao(db).getActiveMeals(
-      planEligibleOnly: false,
-    );
+    final profile = await NutritionProfileLocalDatasource(databaseOverride: db).load(userId);
+    final catalog = await AiCatalogDao(db).getActiveMeals(planEligibleOnly: false);
     final candidates = candidateSelector.eligibleMeals(
       catalog: catalog,
       profile: profile,
       mealType: current.mealType,
       excludedCodes: {current.catalogCode},
     );
-
     final result = candidates.map(_replacementCandidateFromModel).toList();
     result.sort((left, right) {
-      final nameCompare = left.mealName.toLowerCase().compareTo(
-        right.mealName.toLowerCase(),
-      );
-      if (nameCompare != 0) return nameCompare;
-      return left.code.compareTo(right.code);
+      final byName = left.mealName.toLowerCase().compareTo(right.mealName.toLowerCase());
+      return byName != 0 ? byName : left.code.compareTo(right.code);
     });
     return result;
   }
@@ -111,25 +83,17 @@ class MealPlanLocalDatasource {
     final db = await _db();
     final current = await _loadReplaceableMeal(db, mealId);
     final userId = _requireOwner(current);
-    final replacement = await AiCatalogDao(db).getMealByCode(
-      catalogCode.trim(),
-    );
-    if (replacement == null) {
-      throw const MealReplacementNotAllowedException();
-    }
+    final replacement = await AiCatalogDao(db).getMealByCode(catalogCode.trim());
+    if (replacement == null) throw const MealReplacementNotAllowedException();
 
-    final profile = await NutritionProfileLocalDatasource(
-      databaseOverride: db,
-    ).load(userId);
+    final profile = await NutritionProfileLocalDatasource(databaseOverride: db).load(userId);
     final eligible = candidateSelector.eligibleMeals(
       catalog: [replacement],
       profile: profile,
       mealType: current.mealType,
       excludedCodes: {current.catalogCode},
     );
-    if (eligible.isEmpty) {
-      throw const MealReplacementNotAllowedException();
-    }
+    if (eligible.isEmpty) throw const MealReplacementNotAllowedException();
 
     final now = DateTime.now().toIso8601String();
     final updated = _applyReplacement(
@@ -137,7 +101,6 @@ class MealPlanLocalDatasource {
       replacement: replacement,
       updatedAt: now,
     );
-
     await db.transaction((transaction) async {
       await MealPlansDao(transaction).update(updated);
       await transaction.update(
@@ -151,7 +114,6 @@ class MealPlanLocalDatasource {
         whereArgs: [LifestyleScheduleSourceTypes.mealPlan, current.id],
       );
     });
-
     return updated.toEntity().copyWith(
       catalogDetail: _catalogDetailFromModel(replacement),
     );
@@ -160,31 +122,20 @@ class MealPlanLocalDatasource {
   @Deprecated('Use getReplacementCandidates + replaceMealByCatalogCode.')
   Future<MealPlanEntity> replaceMealById(String id) async {
     final candidates = await getReplacementCandidates(id);
-    if (candidates.isEmpty) {
-      throw const NoMealReplacementAvailableException();
-    }
-    return replaceMealByCatalogCode(
-      mealId: id,
-      catalogCode: candidates.first.code,
-    );
+    if (candidates.isEmpty) throw const NoMealReplacementAvailableException();
+    return replaceMealByCatalogCode(mealId: id, catalogCode: candidates.first.code);
   }
 
   Future<MealPlanModel> _loadReplaceableMeal(Database db, String mealId) async {
     final current = await MealPlansDao(db).getById(mealId);
-    if (current == null) {
-      throw StateError('Meal plan not found.');
-    }
-    if (current.isCompleted) {
-      throw StateError('Completed meals cannot be replaced.');
-    }
+    if (current == null) throw StateError('Meal plan not found.');
+    if (current.isCompleted) throw StateError('Completed meals cannot be replaced.');
     return current;
   }
 
   String _requireOwner(MealPlanModel current) {
     final userId = current.userId?.trim() ?? '';
-    if (userId.isEmpty) {
-      throw StateError('Meal plan owner is missing.');
-    }
+    if (userId.isEmpty) throw StateError('Meal plan owner is missing.');
     return userId;
   }
 
@@ -192,117 +143,112 @@ class MealPlanLocalDatasource {
     required MealPlanModel current,
     required MealCatalogItemModel replacement,
     required String updatedAt,
-  }) {
-    return current.copyWith(
-      mealName: replacement.mealName,
-      description: replacement.description,
-      calories: replacement.calories,
-      protein: replacement.protein,
-      carbs: replacement.carbs,
-      fat: replacement.fat,
-      fiber: replacement.fiber,
-      waterMl: replacement.waterMl,
-      cookingInstructions: replacement.cookingInstructions,
-      catalogCode: replacement.code,
-      servingSize: replacement.servingSize,
-      topicCode: replacement.healthTopicCode,
-      topicName: replacement.healthTopicName,
-      ingredients: replacement.ingredients,
-      cookingSteps: replacement.cookingSteps,
-      benefits: replacement.benefits,
-      allergenTags: replacement.allergenTags,
-      conditionTags: replacement.avoidConditionTags,
-      provenanceSource: replacement.sourceName,
-      sourceHash: replacement.sourceHash,
-      catalogSchemaVersion: replacement.version,
-      replacementCount: current.replacementCount + 1,
-      aiGenerated: false,
-      updatedAt: updatedAt,
-    );
-  }
+  }) => current.copyWith(
+        mealName: replacement.mealName,
+        description: replacement.description,
+        calories: replacement.calories,
+        protein: replacement.protein,
+        carbs: replacement.carbs,
+        fat: replacement.fat,
+        fiber: replacement.fiber,
+        waterMl: replacement.waterMl,
+        sugarG: replacement.sugarG,
+        saturatedFatG: replacement.saturatedFatG,
+        sodiumMg: replacement.sodiumMg,
+        cholesterolMg: replacement.cholesterolMg,
+        potassiumMg: replacement.potassiumMg,
+        calciumMg: replacement.calciumMg,
+        ironMg: replacement.ironMg,
+        nutritionStatus: replacement.nutritionStatus,
+        cookingInstructions: replacement.cookingInstructions,
+        catalogCode: replacement.code,
+        servingSize: replacement.servingSize,
+        topicCode: replacement.healthTopicCode,
+        topicName: replacement.healthTopicName,
+        ingredients: replacement.ingredients,
+        cookingSteps: replacement.cookingSteps,
+        benefits: replacement.benefits,
+        allergenTags: replacement.allergenTags,
+        conditionTags: replacement.avoidConditionTags,
+        provenanceSource: replacement.sourceName,
+        sourceHash: replacement.sourceHash,
+        catalogSchemaVersion: replacement.version,
+        replacementCount: current.replacementCount + 1,
+        aiGenerated: false,
+        updatedAt: updatedAt,
+      );
 
-  MealReplacementCandidateEntity _replacementCandidateFromModel(
-    MealCatalogItemModel item,
-  ) {
-    return MealReplacementCandidateEntity(
-      code: item.code,
-      mealType: item.mealType,
-      mealName: item.mealName,
-      description: item.description,
-      calories: item.calories,
-      servingSize: item.servingSize,
-      healthTopicName: item.healthTopicName,
-    );
-  }
+  MealReplacementCandidateEntity _replacementCandidateFromModel(MealCatalogItemModel item) =>
+      MealReplacementCandidateEntity(
+        code: item.code,
+        mealType: item.mealType,
+        mealName: item.mealName,
+        description: item.description,
+        calories: item.calories,
+        servingSize: item.servingSize,
+        healthTopicName: item.healthTopicName,
+      );
 
-  MealPlanEntity _hydrateMealEntity(
-    MealPlanModel meal,
-    _MealCatalogIndex catalog,
-  ) {
-    final match = catalog.resolve(
-      catalogCode: meal.catalogCode,
-      mealName: meal.mealName,
-    );
+  MealPlanEntity _hydrateMealEntity(MealPlanModel meal, _MealCatalogIndex catalog) {
+    final match = catalog.resolve(catalogCode: meal.catalogCode, mealName: meal.mealName);
     return meal.toEntity().copyWith(
       catalogDetail: match == null ? null : _catalogDetailFromModel(match),
     );
   }
 
-  MealCatalogDetailEntity _catalogDetailFromModel(MealCatalogItemModel item) {
-    return MealCatalogDetailEntity(
-      code: item.code,
-      mealType: item.mealType,
-      mealName: item.mealName,
-      description: item.description,
-      cookingInstructions: item.cookingInstructions,
-      calories: item.calories,
-      protein: item.protein,
-      carbs: item.carbs,
-      fat: item.fat,
-      fiber: item.fiber,
-      waterMl: item.waterMl,
-      healthTopicCode: item.healthTopicCode,
-      healthTopicName: item.healthTopicName,
-      healthTopicDescription: item.healthTopicDescription,
-      chapterNumber: item.chapterNumber,
-      chapterName: item.chapterName,
-      ingredients: item.ingredients,
-      cookingSteps: item.cookingSteps,
-      benefits: item.benefits,
-      servingSize: item.servingSize,
-      allergenTags: item.allergenTags,
-      avoidConditionTags: item.avoidConditionTags,
-      nutritionStatus: item.nutritionStatus,
-      constraintMetadataStatus: item.constraintMetadataStatus,
-      metadataStatus: item.metadataStatus,
-      isPlanEligible: item.isPlanEligible,
-      sourceName: item.sourceName,
-      sourcePage: item.sourcePage,
-      sourceChapter: item.sourceChapter,
-      sourceTopic: item.sourceTopic,
-      sourceRecipeOrder: item.sourceRecipeOrder,
-      sourceHash: item.sourceHash,
-      version: item.version,
-      isActive: item.isActive,
-    );
-  }
+  MealCatalogDetailEntity _catalogDetailFromModel(MealCatalogItemModel item) =>
+      MealCatalogDetailEntity(
+        code: item.code,
+        mealType: item.mealType,
+        mealName: item.mealName,
+        description: item.description,
+        cookingInstructions: item.cookingInstructions,
+        calories: item.calories,
+        protein: item.protein,
+        carbs: item.carbs,
+        fat: item.fat,
+        fiber: item.fiber,
+        waterMl: item.waterMl,
+        sugarG: item.sugarG,
+        saturatedFatG: item.saturatedFatG,
+        sodiumMg: item.sodiumMg,
+        cholesterolMg: item.cholesterolMg,
+        potassiumMg: item.potassiumMg,
+        calciumMg: item.calciumMg,
+        ironMg: item.ironMg,
+        healthTopicCode: item.healthTopicCode,
+        healthTopicName: item.healthTopicName,
+        healthTopicDescription: item.healthTopicDescription,
+        chapterNumber: item.chapterNumber,
+        chapterName: item.chapterName,
+        ingredients: item.ingredients,
+        cookingSteps: item.cookingSteps,
+        benefits: item.benefits,
+        servingSize: item.servingSize,
+        allergenTags: item.allergenTags,
+        avoidConditionTags: item.avoidConditionTags,
+        nutritionStatus: item.nutritionStatus,
+        constraintMetadataStatus: item.constraintMetadataStatus,
+        metadataStatus: item.metadataStatus,
+        isPlanEligible: item.isPlanEligible,
+        sourceName: item.sourceName,
+        sourcePage: item.sourcePage,
+        sourceChapter: item.sourceChapter,
+        sourceTopic: item.sourceTopic,
+        sourceRecipeOrder: item.sourceRecipeOrder,
+        sourceHash: item.sourceHash,
+        version: item.version,
+        isActive: item.isActive,
+      );
 
-  String _scheduleTitle(MealPlanModel meal) {
-    switch (meal.mealType.trim().toLowerCase()) {
-      case 'breakfast':
-        return 'Ăn sáng: ${meal.mealName}';
-      case 'morning_snack':
-        return 'Bữa phụ sáng: ${meal.mealName}';
-      case 'lunch':
-        return 'Ăn trưa: ${meal.mealName}';
-      case 'afternoon_snack':
-        return 'Bữa phụ chiều: ${meal.mealName}';
-      case 'dinner':
-        return 'Ăn tối: ${meal.mealName}';
-      default:
-        return 'Dùng bữa: ${meal.mealName}';
-    }
-  }
+  String _scheduleTitle(MealPlanModel meal) => switch (meal.mealType.trim().toLowerCase()) {
+        'breakfast' => 'Ăn sáng: ${meal.mealName}',
+        'morning_snack' => 'Bữa phụ sáng: ${meal.mealName}',
+        'lunch' => 'Ăn trưa: ${meal.mealName}',
+        'afternoon_snack' => 'Bữa phụ chiều: ${meal.mealName}',
+        'dinner' => 'Ăn tối: ${meal.mealName}',
+        _ => 'Dùng bữa: ${meal.mealName}',
+      };
 }
 
 class _MealCatalogIndex {
@@ -316,42 +262,31 @@ class _MealCatalogIndex {
   final Map<String, MealCatalogItemModel> _byCode;
   final Map<String, MealCatalogItemModel> _byUniqueName;
 
-  MealCatalogItemModel? resolve({
-    required String catalogCode,
-    required String mealName,
-  }) {
+  MealCatalogItemModel? resolve({required String catalogCode, required String mealName}) {
     final code = catalogCode.trim();
     if (code.isNotEmpty) {
       final byCode = _byCode[code];
       if (byCode != null) return byCode;
     }
-
     final normalizedName = _normalizeCatalogName(mealName);
-    if (normalizedName.isEmpty) return null;
-    return _byUniqueName[normalizedName];
+    return normalizedName.isEmpty ? null : _byUniqueName[normalizedName];
   }
 
-  static Map<String, MealCatalogItemModel> _buildUniqueNameIndex(
-    List<MealCatalogItemModel> items,
-  ) {
+  static Map<String, MealCatalogItemModel> _buildUniqueNameIndex(List<MealCatalogItemModel> items) {
     final buckets = <String, List<MealCatalogItemModel>>{};
     for (final item in items) {
       final key = _normalizeCatalogName(item.mealName);
-      if (key.isEmpty) continue;
-      buckets.putIfAbsent(key, () => <MealCatalogItemModel>[]).add(item);
+      if (key.isNotEmpty) buckets.putIfAbsent(key, () => []).add(item);
     }
-
-    return <String, MealCatalogItemModel>{
+    return {
       for (final entry in buckets.entries)
         if (entry.value.length == 1) entry.key: entry.value.single,
     };
   }
 }
 
-String _normalizeCatalogName(String value) {
-  return value
-      .trim()
-      .toLowerCase()
-      .replaceAll(RegExp(r'[–—−]'), '-')
-      .replaceAll(RegExp(r'\s+'), ' ');
-}
+String _normalizeCatalogName(String value) => value
+    .trim()
+    .toLowerCase()
+    .replaceAll(RegExp(r'[–—−]'), '-')
+    .replaceAll(RegExp(r'\s+'), ' ');

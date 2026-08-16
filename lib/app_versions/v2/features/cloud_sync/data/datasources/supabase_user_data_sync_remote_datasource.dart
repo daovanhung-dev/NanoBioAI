@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/user_data_snapshot.dart';
+import 'meal_plan_nutrition_sync_columns.dart';
 import 'user_data_sync_datasource_contracts.dart';
 import 'user_data_sync_tables.dart';
 
@@ -98,14 +99,21 @@ class SupabaseUserDataSyncRemoteDatasource
     return {'user': _cloudUpdateRow('users', snapshot.user!), 'tables': tables};
   }
 
+  Set<String> _allowedCloudColumns(String table) {
+    final baseColumns = UserDataSyncTables.cloudColumnsByTable[table];
+    if (baseColumns == null) {
+      throw StateError('Unsupported cloud sync table: $table');
+    }
+    return table == 'meal_plans'
+        ? <String>{...baseColumns, ...mealPlanNutritionSyncColumns}
+        : baseColumns;
+  }
+
   Map<String, Object?> _cloudUpdateRow(
     String table,
     Map<String, Object?> source,
   ) {
-    final allowedColumns = UserDataSyncTables.cloudColumnsByTable[table];
-    if (allowedColumns == null) {
-      throw StateError('Unsupported cloud sync table: $table');
-    }
+    final allowedColumns = _allowedCloudColumns(table);
 
     final row = <String, Object?>{};
     for (final entry in source.entries) {
@@ -126,10 +134,7 @@ class SupabaseUserDataSyncRemoteDatasource
     String authUserId,
     Map<String, String> idMap,
   ) {
-    final allowedColumns = UserDataSyncTables.cloudColumnsByTable[table];
-    if (allowedColumns == null) {
-      throw StateError('Unsupported cloud sync table: $table');
-    }
+    final allowedColumns = _allowedCloudColumns(table);
 
     final isRequestLedger = table == 'personal_schedule_ai_requests';
     final oldId = _readNonEmptyString(
