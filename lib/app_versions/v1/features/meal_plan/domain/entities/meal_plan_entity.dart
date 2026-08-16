@@ -1,3 +1,5 @@
+import 'meal_catalog_detail_entity.dart';
+
 class MealPlanEntity {
   const MealPlanEntity({
     required this.id,
@@ -29,6 +31,7 @@ class MealPlanEntity {
     this.sourceHash = '',
     this.catalogSchemaVersion = 1,
     this.replacementCount = 0,
+    this.catalogDetail,
     required this.isCompleted,
     required this.aiGenerated,
     required this.createdAt,
@@ -64,6 +67,7 @@ class MealPlanEntity {
   final String sourceHash;
   final int catalogSchemaVersion;
   final int replacementCount;
+  final MealCatalogDetailEntity? catalogDetail;
   final bool isCompleted;
   final bool aiGenerated;
   final String createdAt;
@@ -104,6 +108,7 @@ class MealPlanEntity {
     String? sourceHash,
     int? catalogSchemaVersion,
     int? replacementCount,
+    MealCatalogDetailEntity? catalogDetail,
     bool? isCompleted,
     bool? aiGenerated,
     String? createdAt,
@@ -140,6 +145,7 @@ class MealPlanEntity {
       catalogSchemaVersion:
           catalogSchemaVersion ?? this.catalogSchemaVersion,
       replacementCount: replacementCount ?? this.replacementCount,
+      catalogDetail: catalogDetail ?? this.catalogDetail,
       isCompleted: isCompleted ?? this.isCompleted,
       aiGenerated: aiGenerated ?? this.aiGenerated,
       createdAt: createdAt ?? this.createdAt,

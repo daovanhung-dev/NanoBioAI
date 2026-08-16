@@ -218,7 +218,7 @@ class AuthenticatedUserDataSyncRepositoryImpl
       );
       await AppPrefs.clearPendingGuestUserId();
       await AppPrefs.clearPendingGuestSyncDecision();
-      return _complete(
+      return await _complete(
         userId: authUserId,
         reason: reason,
         snapshot: cloudSnapshot,
@@ -279,7 +279,7 @@ class AuthenticatedUserDataSyncRepositoryImpl
         userId: authUserId,
         snapshot: cloudSnapshot,
       );
-      return _complete(
+      return await _complete(
         userId: authUserId,
         reason: reason,
         snapshot: cloudSnapshot,

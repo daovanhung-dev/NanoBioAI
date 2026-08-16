@@ -11,7 +11,7 @@ class AiCatalogDao {
   const AiCatalogDao(this.db);
 
   Future<AiCatalogBundle> loadActiveBundle() async {
-    final meals = await getActiveMeals();
+    final meals = await getActiveMeals(planEligibleOnly: false);
     final exercises = await getActiveExercises();
     final scheduleTasks = await getActiveScheduleTasks();
     return AiCatalogBundle(
@@ -23,7 +23,7 @@ class AiCatalogDao {
 
   Future<List<MealCatalogItemModel>> getActiveMeals({
     String? mealType,
-    bool planEligibleOnly = true,
+    bool planEligibleOnly = false,
   }) async {
     final clauses = <String>['is_active = ?'];
     final arguments = <Object?>[1];
@@ -32,8 +32,11 @@ class AiCatalogDao {
       arguments.add(1);
     }
     if (mealType != null && mealType.trim().isNotEmpty) {
-      clauses.add('meal_type = ?');
-      arguments.add(mealType.trim().toLowerCase());
+      final normalizedType = mealType.trim().toLowerCase();
+      clauses.add('(meal_type = ? OR meal_type = ?)');
+      arguments
+        ..add(normalizedType)
+        ..add('unclassified');
     }
     final maps = await db.query(
       MealCatalogTable.tableName,
@@ -97,6 +100,23 @@ class AiCatalogDao {
       );
     }
     await batch.commit(noResult: true);
+  }
+
+  Future<void> replaceMeals(List<MealCatalogItemModel> items) async {
+    await db.transaction((txn) async {
+      await txn.delete(MealCatalogTable.tableName);
+      if (items.isEmpty) return;
+
+      final batch = txn.batch();
+      for (final item in items) {
+        batch.insert(
+          MealCatalogTable.tableName,
+          item.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
   }
 
   Future<void> upsertExercises(List<ExerciseCatalogItemModel> items) async {

@@ -17,6 +17,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart';
 
 final generatedPlanServiceProvider = Provider<GeneratedPlanService>((ref) {
   return GeneratedPlanService(
@@ -43,6 +44,7 @@ class DashboardController extends AsyncNotifier<void> {
   }) async {
     AppLogger.action(_tag, 'Generate weekly meal plan');
     requireAuthenticatedGeneratedPlanUser(currentSupabaseUserIdOrNull());
+    await _refreshRequiredSupabaseMealCatalog();
 
     final repository = ref.read(dashboardRepositoryProvider);
     final resolvedStartDate = startDate ?? _tomorrow();
@@ -87,6 +89,7 @@ class DashboardController extends AsyncNotifier<void> {
 
     state = const AsyncLoading<void>();
     try {
+      await _refreshRequiredSupabaseMealCatalog();
       final result = await ref
           .read(generatedPlanServiceProvider)
           .generateNextPlan(
@@ -108,6 +111,14 @@ class DashboardController extends AsyncNotifier<void> {
     } catch (error, stackTrace) {
       state = AsyncError<void>(error, stackTrace);
       rethrow;
+    }
+  }
+
+  Future<void> _refreshRequiredSupabaseMealCatalog() async {
+    final count =
+        await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
+    if (count <= 0) {
+      throw StateError('Supabase meal_catalog has no active meals.');
     }
   }
 

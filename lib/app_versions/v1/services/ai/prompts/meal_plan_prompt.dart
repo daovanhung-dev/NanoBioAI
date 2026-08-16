@@ -30,7 +30,7 @@ Schema mỗi object:
 {
   "day": 1,
   "meal_type": "breakfast",
-  "meal_code": "br_oat_egg",
+  "meal_code": "src_example",
   "portion_level": "standard",
   "priority": 1
 }
@@ -38,7 +38,9 @@ Schema mỗi object:
 Quy tắc:
 - day phải là số từ $startDay đến $endDay.
 - Mỗi ngày bắt buộc đủ 5 meal_type theo thứ tự: breakfast, morning_snack, lunch, afternoon_snack, dinner.
-- meal_code phải nằm trong danh sách allowed đúng meal_type.
+- meal_code chỉ được lấy từ danh sách Supabase được cung cấp bên dưới.
+- Món có meal_type = unclassified được phép dùng cho bất kỳ meal_type nào; bạn tự quyết định slot phù hợp dựa trên hồ sơ người dùng và tên/mã món.
+- Món đã có meal_type cụ thể chỉ được dùng đúng meal_type đó.
 - Không tự tạo meal_code mới.
 - Không trả về meal_name, description, cooking_instructions, title, unit hoặc encouragement.
 - portion_level chỉ dùng một trong: small, standard, large.
@@ -47,7 +49,7 @@ Quy tắc:
 Mã đã dùng trước đó:
 ${usedMealCodes.isEmpty ? 'Không có' : usedMealCodes.join(', ')}
 
-Allowed meal codes:
+Allowed Supabase meal codes:
 ${_allowedMealCodes(catalog)}
 
 Hồ sơ người dùng:
@@ -66,12 +68,18 @@ Hồ sơ người dùng:
   static String _allowedMealCodes(List<MealCatalogItemModel> catalog) {
     final buffer = StringBuffer();
     for (final slot in MealPlanAiNormalizer.mealSlots) {
-      final codes =
-          catalog
-              .where((item) => item.mealType == slot.type)
-              .map((item) => item.code)
-              .toList()
-            ..sort();
+      final codes = catalog
+          .where(
+            (item) =>
+                item.isActive &&
+                (item.mealType == slot.type ||
+                    item.mealType == 'unclassified'),
+          )
+          .map((item) => item.code)
+          .where((code) => code.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
       buffer.writeln('- ${slot.type}: ${codes.join(', ')}');
     }
     return buffer.toString().trim();

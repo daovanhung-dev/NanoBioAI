@@ -27,9 +27,11 @@ class HealthModuleAccessPage extends ConsumerWidget {
           key: ValueKey<String>('health-module-access-loading'),
           child: _HealthModuleSupportPage.loading(),
         ),
-        error: (_, __) => _HealthModuleSupportPage.accessUnavailable(
+        error: (_, __) => KeyedSubtree(
           key: const ValueKey<String>('health-module-access-error'),
-          onRetry: () => _retry(ref),
+          child: _HealthModuleSupportPage.accessUnavailable(
+            onRetry: () => _retry(ref),
+          ),
         ),
         data: (effectiveAccess) {
           final destination = HealthModuleAccessResolver.resolve(
@@ -58,11 +60,12 @@ class HealthModuleAccessPage extends ConsumerWidget {
               color: item.color,
               previewItems: item.previewItems,
             ),
-            HealthModuleAccessDestination.unavailable =>
-              _HealthModuleSupportPage.accessUnavailable(
-                key: const ValueKey<String>('health-module-access-unavailable'),
+            HealthModuleAccessDestination.unavailable => KeyedSubtree(
+              key: const ValueKey<String>('health-module-access-unavailable'),
+              child: _HealthModuleSupportPage.accessUnavailable(
                 onRetry: () => _retry(ref),
               ),
+            ),
           };
         },
       ),
@@ -128,40 +131,33 @@ class _HealthModuleSupportPage extends StatelessWidget {
   final bool showProgress;
 
   const _HealthModuleSupportPage({
-    super.key,
     required this.title,
     required this.message,
     required this.icon,
-    this.onRetry,
     this.showProgress = false,
-  });
+  }) : onRetry = null;
 
   const _HealthModuleSupportPage.loading()
-    : this(
-        title: 'Đang kiểm tra quyền truy cập',
-        message: 'Nabi đang xác nhận gói của bạn từ hệ thống an toàn.',
-        icon: Icons.verified_user_outlined,
-        showProgress: true,
-      );
+    : title = 'Đang kiểm tra quyền truy cập',
+      message = 'Nabi đang xác nhận gói của bạn từ hệ thống an toàn.',
+      icon = Icons.verified_user_outlined,
+      onRetry = null,
+      showProgress = true;
 
   const _HealthModuleSupportPage.notFound()
-    : this(
-        title: 'Không tìm thấy chức năng',
-        message: 'Mục bạn vừa mở không nằm trong danh mục sức khỏe hiện tại.',
-        icon: Icons.search_off_rounded,
-      );
+    : title = 'Không tìm thấy chức năng',
+      message = 'Mục bạn vừa mở không nằm trong danh mục sức khỏe hiện tại.',
+      icon = Icons.search_off_rounded,
+      onRetry = null,
+      showProgress = false;
 
   const _HealthModuleSupportPage.accessUnavailable({
-    Key? key,
-    required VoidCallback onRetry,
-  }) : this(
-         key: key,
-         title: 'Chưa kiểm tra được quyền truy cập',
-         message:
-             'Nabi chưa xác nhận được gói của bạn nên chức năng vẫn được khóa an toàn.',
-         icon: Icons.lock_clock_outlined,
-         onRetry: onRetry,
-       );
+    required this.onRetry,
+  }) : title = 'Chưa kiểm tra được quyền truy cập',
+       message =
+           'Nabi chưa xác nhận được gói của bạn nên chức năng vẫn được khóa an toàn.',
+       icon = Icons.lock_clock_outlined,
+       showProgress = false;
 
   @override
   Widget build(BuildContext context) {

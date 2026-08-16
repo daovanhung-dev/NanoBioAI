@@ -23,7 +23,7 @@ void main() {
 
   tearDown(() => database.close());
 
-  test('updates meal snapshot and linked timeline in one transaction', () async {
+  test('lists safe candidates then replaces the exact code selected by user', () async {
     const current = MealPlanModel(
       id: 'meal-1',
       userId: 'user-1',
@@ -44,28 +44,78 @@ void main() {
       createdAt: '2026-08-02T00:00:00Z',
       updatedAt: '2026-08-02T00:00:00Z',
     );
-    const replacement = MealCatalogItemModel(
-      code: 'new-code',
+    const breakfast = MealCatalogItemModel(
+      code: 'breakfast-code',
       mealType: 'breakfast',
-      mealName: 'Món mới',
-      description: 'Mô tả mới',
-      cookingInstructions: 'Bước mới',
+      mealName: 'Món sáng',
+      description: 'Mô tả sáng',
+      cookingInstructions: 'Bước sáng',
       calories: 320,
       protein: 12,
       carbs: 42,
       fat: 9,
       fiber: 5,
       waterMl: 100,
-      ingredients: <String>['Nguyên liệu mới'],
-      cookingSteps: <String>['Bước mới'],
-      sourceName: 'Nguồn tham khảo',
-      sourceHash: 'hash-new',
+      createdAt: '2026-08-02T00:00:00Z',
+      updatedAt: '2026-08-02T00:00:00Z',
+    );
+    const unclassified = MealCatalogItemModel(
+      code: 'source-recipe-code',
+      mealType: 'unclassified',
+      mealName: 'Cháo thịt bò bí đỏ',
+      description: 'Mô tả từ Supabase',
+      cookingInstructions: 'Nấu cháo. Thêm thịt bò và bí đỏ.',
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0,
+      waterMl: 0,
+      ingredients: <String>['Gạo', 'Thịt bò', 'Bí đỏ'],
+      cookingSteps: <String>['Nấu cháo', 'Thêm thịt bò và bí đỏ'],
+      sourceName: 'Sức Khỏe Từ Nhà Bếp',
+      sourceHash: 'hash-source',
+      isPlanEligible: false,
+      metadataStatus: 'source_imported',
+      constraintMetadataStatus: 'awaiting_professional_review',
+      createdAt: '2026-08-02T00:00:00Z',
+      updatedAt: '2026-08-02T00:00:00Z',
+    );
+    const fixture = MealCatalogItemModel(
+      code: 'fixture-meal-breakfast-v1',
+      mealType: 'breakfast',
+      mealName: 'Fixture balanced breakfast',
+      description: 'Synthetic fixture',
+      cookingInstructions: 'Fixture instructions',
+      calories: 420,
+      protein: 22,
+      carbs: 54,
+      fat: 10,
+      fiber: 6,
+      waterMl: 300,
+      createdAt: '2026-08-02T00:00:00Z',
+      updatedAt: '2026-08-02T00:00:00Z',
+    );
+    const dinner = MealCatalogItemModel(
+      code: 'dinner-only',
+      mealType: 'dinner',
+      mealName: 'Món tối',
+      description: 'Không thuộc bữa sáng',
+      cookingInstructions: 'Nấu',
+      calories: 400,
+      protein: 20,
+      carbs: 40,
+      fat: 12,
+      fiber: 4,
+      waterMl: 200,
       createdAt: '2026-08-02T00:00:00Z',
       updatedAt: '2026-08-02T00:00:00Z',
     );
 
     await database.insert(MealPlansTable.tableName, current.toMap());
-    await database.insert(MealCatalogTable.tableName, replacement.toMap());
+    for (final item in [breakfast, unclassified, fixture, dinner]) {
+      await database.insert(MealCatalogTable.tableName, item.toMap());
+    }
     await database.insert(LifestyleScheduleItemsTable.tableName, {
       'id': 'schedule-1',
       'user_id': 'user-1',
@@ -79,21 +129,31 @@ void main() {
       'updated_at': '2026-08-02T00:00:00Z',
     });
 
-    final updated = await MealPlanLocalDatasource(
-      databaseOverride: database,
-    ).replaceMealById('meal-1');
+    final datasource = MealPlanLocalDatasource(databaseOverride: database);
+    final candidates = await datasource.getReplacementCandidates('meal-1');
+    expect(
+      candidates.map((item) => item.code).toSet(),
+      equals(<String>{'breakfast-code', 'source-recipe-code'}),
+    );
 
-    expect(updated.catalogCode, 'new-code');
-    expect(updated.mealName, 'Món mới');
+    final updated = await datasource.replaceMealByCatalogCode(
+      mealId: 'meal-1',
+      catalogCode: 'source-recipe-code',
+    );
+
+    expect(updated.catalogCode, 'source-recipe-code');
+    expect(updated.mealName, 'Cháo thịt bò bí đỏ');
     expect(updated.replacementCount, 1);
-    expect(updated.sourceHash, 'hash-new');
+    expect(updated.aiGenerated, isFalse);
+    expect(updated.sourceHash, 'hash-source');
+    expect(updated.ingredients, <String>['Gạo', 'Thịt bò', 'Bí đỏ']);
 
     final timeline = await database.query(
       LifestyleScheduleItemsTable.tableName,
       where: 'id = ?',
       whereArgs: <Object?>['schedule-1'],
     );
-    expect(timeline.single['title'], 'Ăn sáng: Món mới');
-    expect(timeline.single['description'], 'Mô tả mới');
+    expect(timeline.single['title'], 'Ăn sáng: Cháo thịt bò bí đỏ');
+    expect(timeline.single['description'], 'Mô tả từ Supabase');
   });
 }

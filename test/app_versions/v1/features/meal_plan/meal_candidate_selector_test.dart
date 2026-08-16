@@ -6,21 +6,26 @@ import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 void main() {
   const selector = MealCandidateSelector();
 
-  test('excludes unapproved and non-plan-eligible recipes', () {
+  test('full-plan generation keeps active Supabase meals except fixtures', () {
     final candidates = selector.eligibleMeals(
       catalog: <MealCatalogItemModel>[
         _meal(code: 'approved'),
         _meal(code: 'draft', metadataStatus: 'pending_review'),
         _meal(code: 'reference', isPlanEligible: false),
+        _meal(code: 'unclassified', mealType: 'unclassified'),
+        _meal(code: 'fixture-meal-breakfast-v1'),
+        _meal(code: 'inactive', isActive: false),
       ],
       profile: NutritionProfileEntity.empty('user-1'),
-      mealType: 'breakfast',
     );
 
-    expect(candidates.map((item) => item.code), orderedEquals(['approved']));
+    expect(
+      candidates.map((item) => item.code),
+      orderedEquals(['approved', 'draft', 'reference', 'unclassified']),
+    );
   });
 
-  test('excludes allergy and current meal from replacement pool', () {
+  test('slot-scoped replacement accepts unclassified and keeps allergy guard', () {
     final profile = NutritionProfileEntity.empty('user-1').copyWith(
       restrictions: const <FoodRestrictionEntity>[
         FoodRestrictionEntity(type: 'allergy', itemName: 'đậu phộng'),
@@ -31,7 +36,8 @@ void main() {
       catalog: <MealCatalogItemModel>[
         _meal(code: 'current'),
         _meal(code: 'peanut', ingredients: const ['Đậu phộng rang']),
-        _meal(code: 'safe'),
+        _meal(code: 'wrong-slot', mealType: 'dinner'),
+        _meal(code: 'wildcard', mealType: 'unclassified'),
       ],
       profile: profile,
       mealType: 'breakfast',
@@ -39,10 +45,10 @@ void main() {
       replacementCount: 0,
     );
 
-    expect(replacement?.code, 'safe');
+    expect(replacement?.code, 'wildcard');
   });
 
-  test('excludes condition-tag conflict', () {
+  test('slot-scoped replacement excludes condition-tag conflict', () {
     final profile = NutritionProfileEntity.empty('user-1').copyWith(
       currentStatus: 'Đang bị trào ngược dạ dày',
     );
@@ -65,14 +71,16 @@ void main() {
 
 MealCatalogItemModel _meal({
   required String code,
+  String mealType = 'breakfast',
   String metadataStatus = 'approved',
   bool isPlanEligible = true,
+  bool isActive = true,
   List<String> ingredients = const [],
   List<String> avoidConditionTags = const [],
 }) {
   return MealCatalogItemModel(
     code: code,
-    mealType: 'breakfast',
+    mealType: mealType,
     mealName: 'Món $code',
     description: 'Mô tả',
     cookingInstructions: 'Chế biến',
@@ -88,6 +96,7 @@ MealCatalogItemModel _meal({
     metadataStatus: metadataStatus,
     constraintMetadataStatus: metadataStatus,
     isPlanEligible: isPlanEligible,
+    isActive: isActive,
     createdAt: '2026-08-02T00:00:00Z',
     updatedAt: '2026-08-02T00:00:00Z',
   );

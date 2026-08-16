@@ -24,8 +24,6 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
       return const AuthRouteState.unauthenticated();
     }
 
-    // Supabase auth events invalidate/re-resolve this controller. They are a
-    // trigger, not a second source of truth for root app identity.
     ref.watch(v2AuthChangesProvider);
     await _trySyncAfterAuth(
       AuthSyncReason.authGateRefresh,
@@ -41,8 +39,6 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
   }
 
   Future<AuthRouteState> refresh() async {
-    final previousState = state;
-    state = const AsyncLoading<AuthRouteState>().copyWithPrevious(previousState);
     final availability = ref.read(authBackendAvailabilityProvider);
     if (!availability.isReady) {
       const nextState = AuthRouteState.unauthenticated();
@@ -113,9 +109,7 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
           .read(userDataSyncControllerProvider.notifier)
           .sync(AuthSyncReason.signOutPreflight)
           .timeout(flushTimeout);
-    } catch (_) {
-      // The durable marker stays queued. UI decides whether to force sign-out.
-    }
+    } catch (_) {}
     final pending = await UserDataSyncOutbox.shared
         .pendingCountForCurrentUser();
 
@@ -128,8 +122,6 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
       );
     }
 
-    final previousState = state;
-    state = const AsyncLoading<AuthRouteState>().copyWithPrevious(previousState);
     try {
       await NotificationBootstrap.clearGeneratedReminders();
     } catch (error, stackTrace) {
@@ -165,10 +157,6 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
   }) async {
     _ensureAuthBackendReady();
     final previousState = state;
-    // Preserve the last resolved route while the mutation runs. This keeps the
-    // login page mounted for an unauthenticated account (so validation/errors
-    // are not lost) and keeps an authenticated surface stable during refreshes.
-    state = const AsyncLoading<AuthRouteState>().copyWithPrevious(previousState);
 
     try {
       final result = await action(_repository);

@@ -69,7 +69,6 @@ void main() {
         'can_use_user_app',
         "app_access_mode in ('user', 'both')",
         'revoke update (app_access_mode)',
-
         'get_admin_dashboard_summary',
         'admin_search_users',
         'admin_get_payment_review_alert',
@@ -260,10 +259,7 @@ void main() {
       expect(cancel, contains("v_payment.status <> 'canceled'"));
       expect(current, contains('pe.payer_user_id = v_user_id'));
       expect(alert, contains("where pe.status = 'pending_review';"));
-      expect(
-        alert,
-        contains('public.admin_assert_payment_reviewer()'),
-      );
+      expect(alert, contains('public.admin_assert_payment_reviewer()'));
       expect(
         review,
         contains("v_payment.status not in ('pending_review', 'pending')"),
@@ -496,18 +492,6 @@ bool _hasUnqualifiedDashboardStatusFilter(String block) {
     r'(\bwhere|\band|\bfilter\s*\(\s*where)\s+status\b',
     caseSensitive: false,
   ).hasMatch(withoutLineComments);
-}
-
-String _functionBlock(String sql, String functionName) {
-  final start = sql.indexOf('create or replace function public.$functionName');
-  if (start < 0) {
-    throw StateError('Cannot locate SQL function: $functionName');
-  }
-  final end = sql.indexOf('\n\$\$;', start);
-  if (end < 0) {
-    throw StateError('Cannot locate SQL function end: $functionName');
-  }
-  return sql.substring(start, end);
 }
 
 String _lastFunctionBlock(String sql, String functionName) {

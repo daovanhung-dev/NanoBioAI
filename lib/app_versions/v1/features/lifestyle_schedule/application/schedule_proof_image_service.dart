@@ -35,7 +35,7 @@ class ScheduleProofImageService {
        _now = now ?? DateTime.now;
 
   Future<String?> captureProofForItem(String itemId) async {
-    final image = await imagePickerService.pickFromCamera();
+    final image = await imagePickerService.pickFromCameraWithPermissionFeedback();
     if (image == null) return null;
 
     final validationError = await imagePickerService.getValidationError(image);

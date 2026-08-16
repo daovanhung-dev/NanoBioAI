@@ -8,10 +8,8 @@ import '../../tokens/component_tokens.dart';
 import '../../tokens/spacing_tokens.dart';
 import '../../app_text_styles.dart';
 
-/// Loading state variants for different loading patterns.
 enum LoadingVariant { spinner, skeleton, shimmer }
 
-/// Consistent loading surface with reduced-motion support.
 class LoadingState extends StatefulWidget {
   const LoadingState({super.key, required this.variant, this.message});
 
@@ -40,7 +38,8 @@ class _LoadingStateState extends State<LoadingState>
   void didChangeDependencies() {
     super.didChangeDependencies();
     final reduceMotion =
-        AppMotionScope.reduceMotionOf(context) || !TickerMode.of(context);
+        AppMotionScope.reduceMotionOf(context) ||
+        !TickerMode.valuesOf(context).enabled;
     if (_reduceMotion == reduceMotion && _controller.isAnimating) {
       return;
     }

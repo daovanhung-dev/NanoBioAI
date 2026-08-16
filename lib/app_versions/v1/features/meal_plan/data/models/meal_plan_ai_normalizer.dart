@@ -174,7 +174,8 @@ class MealPlanAiNormalizer {
       if (catalogItem == null) {
         throw FormatException('Unknown meal_code: $mealCode');
       }
-      if (catalogItem.mealType != mealType) {
+      if (catalogItem.mealType != mealType &&
+          catalogItem.mealType != 'unclassified') {
         throw FormatException('meal_code $mealCode is not valid for $mealType');
       }
 

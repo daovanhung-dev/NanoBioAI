@@ -5,7 +5,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
 
-enum ImagePickerFailureKind { pick, save }
+enum ImagePickerFailureKind { pick, save, permission }
+
+typedef PermissionRequest = Future<PermissionStatus> Function();
 
 /// Lỗi có kiểu và thông điệp an toàn để tầng giao diện có thể hiển thị.
 class ImagePickerServiceException implements Exception {
@@ -25,7 +27,15 @@ class ImagePickerServiceException implements Exception {
 
 /// Service for handling image picking from camera/gallery with validation
 class ImagePickerService {
-  final ImagePicker _picker = ImagePicker();
+  ImagePickerService({
+    ImagePicker? picker,
+    PermissionRequest? cameraPermissionRequest,
+  }) : _picker = picker ?? ImagePicker(),
+       _cameraPermissionRequest =
+           cameraPermissionRequest ?? _requestCameraPermission;
+
+  final ImagePicker _picker;
+  final PermissionRequest _cameraPermissionRequest;
 
   /// Maximum allowed image file size in bytes (5MB)
   static const int maxFileSizeBytes = 5 * 1024 * 1024;
@@ -33,27 +43,53 @@ class ImagePickerService {
   /// Allowed image formats
   static const List<String> allowedFormats = ['png', 'jpg', 'jpeg'];
 
-  /// Pick image from camera
-  /// Requests camera permission before opening camera
-  /// Returns XFile if successful, null if cancelled or permission denied
-  Future<XFile?> pickFromCamera() async {
+  static Future<PermissionStatus> _requestCameraPermission() {
+    return Permission.camera.request();
+  }
+
+  /// Pick image from camera.
+  ///
+  /// Keeps the legacy `null` result when permission is denied so existing
+  /// callers outside the schedule proof flow keep their current contract.
+  Future<XFile?> pickFromCamera() {
+    return _pickFromCamera(reportPermissionFailure: false);
+  }
+
+  /// Pick image from camera for flows where permission denial must be visible.
+  Future<XFile?> pickFromCameraWithPermissionFeedback() {
+    return _pickFromCamera(reportPermissionFailure: true);
+  }
+
+  Future<XFile?> _pickFromCamera({
+    required bool reportPermissionFailure,
+  }) async {
     try {
-      // Request camera permission
-      final permissionStatus = await Permission.camera.request();
+      final permissionStatus = await _cameraPermissionRequest();
 
       if (permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
-        return null;
+        if (!reportPermissionFailure) return null;
+        if (permissionStatus.isPermanentlyDenied) {
+          throw const ImagePickerServiceException(
+            kind: ImagePickerFailureKind.permission,
+            userMessage:
+                'NanoBio chưa có quyền máy ảnh. Bạn mở Cài đặt > Ứng dụng > NanoBio > Quyền và bật Máy ảnh rồi thử lại nhé.',
+          );
+        }
+        throw const ImagePickerServiceException(
+          kind: ImagePickerFailureKind.permission,
+          userMessage:
+              'Bạn cần cho phép NanoBio sử dụng máy ảnh để chụp minh chứng hoàn thành nhiệm vụ.',
+        );
       }
 
-      // Open camera
-      final XFile? image = await _picker.pickImage(
+      return await _picker.pickImage(
         source: ImageSource.camera,
         maxWidth: 1920,
         maxHeight: 1920,
         imageQuality: 85,
       );
-
-      return image;
+    } on ImagePickerServiceException {
+      rethrow;
     } catch (error) {
       throw ImagePickerServiceException(
         kind: ImagePickerFailureKind.pick,
@@ -69,14 +105,12 @@ class ImagePickerService {
   /// Returns XFile if successful, null if cancelled or permission denied
   Future<XFile?> pickFromGallery() async {
     try {
-      // Request photo library permission
       final permissionStatus = await Permission.photos.request();
 
       if (permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
         return null;
       }
 
-      // Open gallery
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1920,
@@ -100,7 +134,6 @@ class ImagePickerService {
   /// Returns true if valid, false otherwise
   Future<bool> validateImage(XFile file) async {
     try {
-      // Check file format
       final extension = path
           .extension(file.path)
           .toLowerCase()
@@ -109,15 +142,13 @@ class ImagePickerService {
         return false;
       }
 
-      // Check file size
       final fileSize = await file.length();
       if (fileSize > maxFileSizeBytes) {
         return false;
       }
 
       return true;
-    } catch (e) {
-      // Log error if needed
+    } catch (_) {
       return false;
     }
   }
@@ -131,23 +162,19 @@ class ImagePickerService {
     String filenamePrefix = 'avatar',
   }) async {
     try {
-      // Get app documents directory
       final directory = await getApplicationDocumentsDirectory();
 
-      // Create target subdirectory if it doesn't exist
       final targetDir = Directory('${directory.path}/$directoryName');
       if (!await targetDir.exists()) {
         await targetDir.create(recursive: true);
       }
 
-      // Generate unique filename using timestamp
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final extension = path.extension(file.path);
       final filename =
           '${_safeFilenamePrefix(filenamePrefix)}_$timestamp$extension';
       final filePath = '${targetDir.path}/$filename';
 
-      // Copy file to destination
       final File sourceFile = File(file.path);
       await sourceFile.copy(filePath);
 
@@ -174,7 +201,6 @@ class ImagePickerService {
   /// Returns error message if invalid, null if valid
   Future<String?> getValidationError(XFile file) async {
     try {
-      // Check file format
       final extension = path
           .extension(file.path)
           .toLowerCase()
@@ -183,7 +209,6 @@ class ImagePickerService {
         return 'Định dạng ảnh chưa phù hợp. Bạn chỉ có thể dùng ảnh PNG hoặc JPEG.';
       }
 
-      // Check file size
       final fileSize = await file.length();
       if (fileSize > maxFileSizeBytes) {
         final fileSizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);

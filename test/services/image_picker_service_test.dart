@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nano_app/services/image_picker/image_picker_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   late ImagePickerService service;
@@ -13,10 +14,6 @@ void main() {
 
   group('ImagePickerService - validateImage', () {
     test('should return true for valid PNG image under 5MB', () async {
-      // Note: This is a basic test structure
-      // In real scenario, we would need to create mock XFile objects
-      // For now, we're testing the validation logic conceptually
-
       expect(ImagePickerService.allowedFormats.contains('png'), isTrue);
       expect(ImagePickerService.maxFileSizeBytes, equals(5 * 1024 * 1024));
     });
@@ -30,6 +27,62 @@ void main() {
 
     test('should have max file size of 5MB', () {
       expect(ImagePickerService.maxFileSizeBytes, equals(5 * 1024 * 1024));
+    });
+  });
+
+  group('ImagePickerService - camera permission', () {
+    test('legacy camera call keeps null behavior when permission is denied', () async {
+      final deniedService = ImagePickerService(
+        cameraPermissionRequest: () async => PermissionStatus.denied,
+      );
+
+      expect(await deniedService.pickFromCamera(), isNull);
+    });
+
+    test('denied camera permission throws a visible typed error', () async {
+      final deniedService = ImagePickerService(
+        cameraPermissionRequest: () async => PermissionStatus.denied,
+      );
+
+      await expectLater(
+        deniedService.pickFromCameraWithPermissionFeedback(),
+        throwsA(
+          isA<ImagePickerServiceException>()
+              .having(
+                (error) => error.kind,
+                'kind',
+                ImagePickerFailureKind.permission,
+              )
+              .having(
+                (error) => error.userMessage,
+                'message',
+                contains('cho phép NanoBio sử dụng máy ảnh'),
+              ),
+        ),
+      );
+    });
+
+    test('permanently denied camera permission guides user to Settings', () async {
+      final deniedService = ImagePickerService(
+        cameraPermissionRequest: () async => PermissionStatus.permanentlyDenied,
+      );
+
+      await expectLater(
+        deniedService.pickFromCameraWithPermissionFeedback(),
+        throwsA(
+          isA<ImagePickerServiceException>()
+              .having(
+                (error) => error.kind,
+                'kind',
+                ImagePickerFailureKind.permission,
+              )
+              .having(
+                (error) => error.userMessage,
+                'message',
+                contains('Cài đặt'),
+              ),
+        ),
+      );
     });
   });
 
@@ -82,8 +135,8 @@ void main() {
     });
 
     test('should have all required methods', () {
-      // Verify the service has the required methods
       expect(service.pickFromCamera, isA<Function>());
+      expect(service.pickFromCameraWithPermissionFeedback, isA<Function>());
       expect(service.pickFromGallery, isA<Function>());
       expect(service.validateImage, isA<Function>());
       expect(service.saveImageLocally, isA<Function>());

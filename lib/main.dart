@@ -40,6 +40,7 @@ Future<void> main() async {
         ),
         onboardingCompletionCallbackProvider.overrideWith((ref) {
           return () async {
+            await _refreshRequiredMealCatalog(authBackendAvailability);
             final result = await ref
                 .read(generatedPlanServiceProvider)
                 .generateInitialGuestPlan(days: 7);
@@ -105,6 +106,21 @@ Future<void> _startPostLaunchServices(
   }
 
   await _startNotificationsSafely();
+}
+
+Future<void> _refreshRequiredMealCatalog(
+  AuthBackendAvailability authBackendAvailability,
+) async {
+  if (!authBackendAvailability.isReady) {
+    throw StateError(
+      'Supabase is required because meal generation only uses Supabase meal_catalog.',
+    );
+  }
+  final refreshed =
+      await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
+  if (refreshed <= 0) {
+    throw StateError('Supabase meal_catalog has no active meals.');
+  }
 }
 
 Future<void> _refreshMealCatalogSafely() async {

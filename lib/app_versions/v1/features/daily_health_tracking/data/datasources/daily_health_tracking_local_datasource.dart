@@ -133,7 +133,7 @@ class DailyHealthTrackingLocalDatasource {
         throw StateError('Daily health task not found');
       }
 
-      return updateTask(
+      return await updateTask(
         task.toEntity().copyWith(
           currentValue: task.targetValue,
           isCompleted: true,

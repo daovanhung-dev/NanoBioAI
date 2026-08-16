@@ -37,14 +37,6 @@ class SyncOutboxMutation {
   });
 }
 
-/// Makes SQLite user-data writes durable first, then mirrors them to Supabase.
-///
-/// Version 12 installs SQLite triggers for every user-owned table. A trigger
-/// places a dirty marker in [sync_outbox] inside the same transaction as the
-/// original write. The default drain uses one complete snapshot per user so
-/// all related data is uploaded consistently and deleted records are reflected
-/// as well. Network failure never rolls back the local action; it schedules a
-/// retry instead.
 class UserDataSyncOutbox {
   static const _tag = 'SYNC_OUTBOX';
   static const _pendingStatuses = ['pending', 'failed', 'syncing'];
@@ -111,16 +103,10 @@ class UserDataSyncOutbox {
     return shared.drainPending(database: database);
   }
 
-  /// Requests an immediate, non-blocking snapshot drain after a committed
-  /// user-owned SQLite write. The SQLite outbox remains the source of
-  /// durability: when the user is signed out or the network is unavailable,
-  /// the dirty marker stays queued for the refresher/retry path.
   static void requestImmediateDrain({Database? database}) {
     unawaited(shared.drainPending(database: database));
   }
 
-  /// Backward-compatible API for code paths that explicitly enqueue a write.
-  /// Most application writes are now enqueued by SQLite triggers automatically.
   Future<void> enqueueUpsert({
     required String tableName,
     required String recordId,
@@ -220,15 +206,13 @@ class UserDataSyncOutbox {
       if (mutations.isEmpty) return 0;
 
       if (mutationPusher != null) {
-        return _drainMutationsIndividually(db, mutations);
+        return await _drainMutationsIndividually(db, mutations);
       }
 
       try {
         await _pushFullSnapshot(userId, db);
         var drained = 0;
         for (final mutation in mutations) {
-          // A write that happened while the RPC was in-flight has a newer
-          // updated_at and must remain queued for the next complete snapshot.
           drained += await db.delete(
             SyncOutboxSchema.outboxTable,
             where: 'id = ? AND updated_at = ?',
@@ -281,8 +265,6 @@ class UserDataSyncOutbox {
       final claimed = await db.update(
         SyncOutboxSchema.outboxTable,
         {'status': 'syncing', 'updated_at': syncingUpdatedAt},
-        // Do not claim a mutation that has been replaced by a newer local
-        // write after this drain read it.
         where: 'id = ? AND updated_at = ?',
         whereArgs: [mutation.id, mutation.updatedAt],
       );
@@ -301,8 +283,6 @@ class UserDataSyncOutbox {
 
       try {
         await mutationPusher!(syncingMutation);
-        // A local write may have occurred while the remote operation was in
-        // flight. Delete only the exact version acknowledged by the pusher.
         final deleted = await db.delete(
           SyncOutboxSchema.outboxTable,
           where: 'id = ? AND updated_at = ?',
@@ -343,9 +323,6 @@ class UserDataSyncOutbox {
       databaseOverride: db,
     ).readSnapshot(userId);
     if (snapshot == null || !snapshot.hasUser) {
-      // Never acknowledge and delete dirty markers unless the exact local
-      // snapshot that produced them can be reconstructed. Keeping the outbox
-      // row allows a later repair/retry instead of silently losing a change.
       throw StateError('Dữ liệu trên thiết bị chưa sẵn sàng để đồng bộ.');
     }
 
@@ -429,8 +406,6 @@ class UserDataSyncOutbox {
             .toIso8601String(),
         'updated_at': timestamp.toIso8601String(),
       },
-      // Do not turn a newer local write into a delayed retry when an older
-      // in-flight attempt fails.
       where: 'id = ? AND updated_at = ?',
       whereArgs: [mutation.id, mutation.updatedAt],
     );

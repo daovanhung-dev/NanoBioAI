@@ -30,9 +30,19 @@ class SupabaseMealCatalogRemoteDatasource {
 
     return response
         .map((row) => MealCatalogItemModel.fromMap(row))
-        .where((item) => item.code.isNotEmpty && item.mealName.isNotEmpty)
+        .where(
+          (item) =>
+              item.isActive &&
+              item.code.isNotEmpty &&
+              item.mealName.isNotEmpty &&
+              !_isFixtureCode(item.code),
+        )
         .toList(growable: false);
   }
+}
+
+bool _isFixtureCode(String code) {
+  return code.trim().toLowerCase().startsWith('fixture-');
 }
 
 class MealCatalogCacheRefreshService {
@@ -42,10 +52,12 @@ class MealCatalogCacheRefreshService {
 
   Future<int> refresh() async {
     final remoteItems = await remoteDatasource.fetchActiveCatalog();
-    if (remoteItems.isEmpty) return 0;
-
     final database = await DatabaseService.database;
-    await AiCatalogDao(database).upsertMeals(remoteItems);
+
+    // Supabase is the single source of truth for meals. Replace the complete
+    // local meal cache so stale bundled/removed/inactive rows cannot leak into
+    // AI generation.
+    await AiCatalogDao(database).replaceMeals(remoteItems);
     return remoteItems.length;
   }
 

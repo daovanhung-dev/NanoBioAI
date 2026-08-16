@@ -5,6 +5,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/enti
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/controllers/lifestyle_schedule_state.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/widgets/schedule_date_selector.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/widgets/schedule_day_header.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/widgets/schedule_item_card.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/widgets/schedule_progress_summary.dart';
 
 void main() {
@@ -76,6 +77,33 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(selected, DateTime(2026, 8, 9));
+  });
+
+  testWidgets('open schedule completion action receives tap', (tester) async {
+    var tapCount = 0;
+    final item = _item(id: 'lunch', startTime: '12:30');
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ScheduleItemCard(
+            item: item,
+            categoryIcon: Icons.restaurant_rounded,
+            categoryColor: Colors.teal,
+            categoryLabel: 'Bữa ăn',
+            status: CompletionWindowStatus.open,
+            canToggle: true,
+            highlighted: false,
+            onToggle: () => tapCount++,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.radio_button_unchecked_rounded));
+    await tester.pump();
+
+    expect(tapCount, 1);
   });
 }
 

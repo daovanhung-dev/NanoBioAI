@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/core/feedback/feedback.dart';
+import 'package:nano_app/services/image_picker/image_picker_service.dart';
 
+import '../../application/schedule_proof_image_service.dart';
+import '../../application/schedule_reward_eligibility_reconciler.dart';
+import '../../application/schedule_reward_online_gateway.dart';
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
 import '../../domain/entities/schedule_completion_proof_entity.dart';
-import '../../domain/entities/lifestyle_schedule_summary_entity.dart';
 import '../../domain/repositories/lifestyle_schedule_repository.dart';
 import '../../domain/services/lifestyle_schedule_window_policy.dart';
 import '../../domain/services/schedule_completion_exception.dart';
-import '../../application/schedule_proof_image_service.dart';
-import '../../application/schedule_reward_online_gateway.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
 import 'lifestyle_schedule_state.dart';
-import 'package:nano_app/core/feedback/feedback.dart';
 
 enum LifestyleScheduleToggleResult {
   completed,
@@ -26,14 +27,21 @@ class LifestyleScheduleController
     extends AsyncNotifier<LifestyleScheduleState> {
   late final LifestyleScheduleRepository _repository;
   late final ScheduleRewardOnlineGateway _rewardGateway;
+  late final ScheduleRewardEligibilityReconciler _eligibilityReconciler;
   late final DateTime Function() _now;
   final Set<String> _busyItemIds = <String>{};
+
+  bool get hasActiveCompletionFlow => _busyItemIds.isNotEmpty;
 
   @override
   Future<LifestyleScheduleState> build() async {
     _repository = ref.read(lifestyleScheduleRepositoryProvider);
     _rewardGateway = ref.read(scheduleRewardOnlineGatewayProvider);
+    _eligibilityReconciler = ref.read(
+      scheduleRewardEligibilityReconcilerProvider,
+    );
     _now = ref.read(lifestyleScheduleClockProvider);
+
     final summary = await _repository.getWeekSchedule();
     final proofs = await _repository.getCompletionProofs();
     final selectedDate = _defaultSelectedDate(summary.availableDates);
@@ -45,9 +53,11 @@ class LifestyleScheduleController
   }
 
   Future<void> refresh() async {
+    if (hasActiveCompletionFlow) return;
     final current = state.whenOrNull(data: (value) => value);
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
+      await _reconcileRewardEligibilitySafely();
       final summary = await _repository.getWeekSchedule(
         anchorDate: current?.selectedDate,
       );
@@ -112,10 +122,12 @@ class LifestyleScheduleController
 
     final nextCompleted = !item.isCompleted;
     String? completionProofPath;
+    String? localOnlyCompletionMessage;
     var localCommitted = false;
     ScheduleRewardCompletionAttempt? remoteAttempt;
     try {
-      final windowStatus = item.completionStatusAt(_now());
+      final now = _now();
+      final windowStatus = item.completionStatusAt(now);
       if (item.scheduledAt == null) {
         state = AsyncData(
           current.copyWith(
@@ -127,7 +139,7 @@ class LifestyleScheduleController
         return LifestyleScheduleToggleResult.blocked;
       }
       if (windowStatus != CompletionWindowStatus.open &&
-          !(item.isCompleted && item.isWithinCompletionWindow(_now()))) {
+          !(item.isCompleted && item.isWithinCompletionWindow(now))) {
         final message = windowStatus == CompletionWindowStatus.waiting
             ? 'Nhiệm vụ chưa đến giờ thực hiện. Bạn quay lại đúng giờ nhé.'
             : 'Nhiệm vụ đã hết thời gian thực hiện và được khóa.';
@@ -138,31 +150,15 @@ class LifestyleScheduleController
       }
 
       if (nextCompleted) {
-        // Invariant: camera proof is only allowed after the trusted backend has
-        // reserved a reward attempt. This removes the old path where a user
-        // could capture proof, complete the task, but permanently receive 0 pts.
-        try {
-          remoteAttempt = await _rewardGateway.beginCompletion(
-            scheduleItemId: item.id,
-            idempotencyKey: 'begin:${item.id}:v1',
-          );
-        } on ScheduleRewardException catch (error) {
-          state = AsyncData(
-            current.copyWith(
-              lastErrorMessage:
-                  '${error.message} Nabi chưa mở camera để bạn không mất 10 Điểm chăm sóc.',
-              clearEncouragement: true,
-            ),
-          );
-          return LifestyleScheduleToggleResult.blocked;
-        }
-
+        // Camera is the first user-facing action after a valid tap. Reward
+        // availability must never make the completion button feel unresponsive.
         completionProofPath = await ref
             .read(scheduleProofImageServiceProvider)
             .captureProofForItem(item.id);
         if (completionProofPath == null) {
           return LifestyleScheduleToggleResult.cancelled;
         }
+
         if (!item.isWithinCompletionWindow(_now())) {
           await ref
               .read(scheduleProofImageServiceProvider)
@@ -176,6 +172,41 @@ class LifestyleScheduleController
             ),
           );
           return LifestyleScheduleToggleResult.blocked;
+        }
+
+        if (_rewardGateway.hasAuthenticatedUser) {
+          // Eligibility may have been generated while offline. Reconcile only
+          // after proof capture so a slow network never blocks opening camera.
+          await _reconcileRewardEligibilitySafely();
+          try {
+            remoteAttempt = await _rewardGateway.beginCompletion(
+              scheduleItemId: item.id,
+              idempotencyKey: 'begin:${item.id}:v1',
+            );
+          } on ScheduleRewardException catch (error) {
+            if (!error.canContinueWithoutReward) {
+              await ref
+                  .read(scheduleProofImageServiceProvider)
+                  .deleteProof(completionProofPath);
+              completionProofPath = null;
+              state = AsyncData(
+                current.copyWith(
+                  lastErrorMessage: error.message,
+                  clearEncouragement: true,
+                ),
+              );
+              return LifestyleScheduleToggleResult.blocked;
+            }
+            localOnlyCompletionMessage = _localOnlyCompletionMessage(error);
+          } catch (_) {
+            localOnlyCompletionMessage =
+                'Ảnh vẫn được lưu trên thiết bị và nhiệm vụ vẫn có thể hoàn thành. '
+                'Lần này chưa có Điểm chăm sóc vì kết nối xác nhận phần thưởng chưa sẵn sàng.';
+          }
+        } else {
+          localOnlyCompletionMessage =
+              'Ảnh sẽ được lưu trên thiết bị và nhiệm vụ vẫn được hoàn thành. '
+              'Bạn cần đăng nhập và có kết nối mạng trước khi làm nhiệm vụ để nhận Điểm chăm sóc.';
         }
       } else {
         final activeProof = _activeProofFor(item.id, current.completionProofs);
@@ -196,31 +227,49 @@ class LifestyleScheduleController
         completionProofCloudObjectPath: remoteAttempt?.storagePath,
       );
       localCommitted = true;
-      final proofs = await _repository.getCompletionProofs();
-      final items = current.summary.items
-          .map((existing) => existing.id == updated.id ? updated : existing)
-          .toList();
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
-      state = AsyncData(
-        current.copyWith(
-          summary: LifestyleScheduleSummaryEntity(
-            userId: current.summary.userId,
-            fullName: current.summary.fullName,
-            items: items,
-          ),
-          completionProofs: proofs,
-          lastEncouragement: updated.isCompleted ? updated.encouragement : null,
-          clearError: true,
-        ),
+
+      // The system camera resumes the app before this method returns. Always
+      // rebuild the visible schedule from SQLite after the transaction instead
+      // of mutating the pre-camera snapshot captured at method entry.
+      await _reloadAuthoritativeProjection(
+        fallback: current,
+        encouragement: updated.isCompleted
+            ? localOnlyCompletionMessage ?? updated.encouragement
+            : null,
+        clearError: true,
       );
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
       if (nextCompleted) {
+        if (remoteAttempt == null) {
+          return LifestyleScheduleToggleResult.completed;
+        }
         return _uploadAndFinalize(
-          attempt: remoteAttempt!,
+          attempt: remoteAttempt,
           completionProofPath: completionProofPath!,
         );
       }
       return LifestyleScheduleToggleResult.undone;
     } catch (error) {
+      if (error is ScheduleCompletionException &&
+          error.code == ScheduleCompletionErrorCode.alreadyCompleted &&
+          nextCompleted) {
+        // A lifecycle refresh or an earlier idempotent attempt may already have
+        // committed this item. Treat that state as success, discard only the
+        // newly captured orphan image, and reload SQLite as the source of truth.
+        if (completionProofPath != null && !localCommitted) {
+          await ref
+              .read(scheduleProofImageServiceProvider)
+              .deleteProof(completionProofPath);
+          completionProofPath = null;
+        }
+        await _reloadAuthoritativeProjection(
+          fallback: current,
+          encouragement: 'Nhiệm vụ đã được ghi nhận hoàn thành.',
+          clearError: true,
+        );
+        return LifestyleScheduleToggleResult.completed;
+      }
+
       if (completionProofPath != null && !localCommitted) {
         await ref
             .read(scheduleProofImageServiceProvider)
@@ -228,6 +277,7 @@ class LifestyleScheduleController
       }
       final message = switch (error) {
         ScheduleProofException() => error.message,
+        ImagePickerServiceException() => error.userMessage,
         ScheduleCompletionException() => error.message,
         ScheduleRewardException() => error.message,
         _ => 'Nabi chưa thể cập nhật nhiệm vụ lúc này. Mình thử lại sau nhé.',
@@ -273,7 +323,11 @@ class LifestyleScheduleController
         uploadStatus: ScheduleProofUploadStatuses.uploaded,
         rewardStatus: ScheduleProofRewardStatuses.confirmed,
       );
-      await _refreshProofProjection(clearError: true);
+      await _refreshProofProjection(
+        clearError: true,
+        encouragement:
+            'Đã hoàn thành! +${finalized.pointsDelta} Điểm chăm sóc đã được đồng bộ.',
+      );
       return LifestyleScheduleToggleResult.completed;
     } on ScheduleRewardException catch (error) {
       final permanent =
@@ -312,8 +366,13 @@ class LifestyleScheduleController
   }
 
   Future<void> reconcilePendingRewards() async {
+    if (hasActiveCompletionFlow) return;
     if (state.whenOrNull(data: (value) => value) == null) return;
     if (!_rewardGateway.hasAuthenticatedUser) return;
+
+    // Keep server eligibility projection warm before retrying proof/finalize.
+    await _reconcileRewardEligibilitySafely();
+
     final proofs = await _repository.getCompletionProofs();
     for (final proof in proofs) {
       if (proof.isReversed ||
@@ -376,6 +435,29 @@ class LifestyleScheduleController
     await _refreshProofProjection();
   }
 
+  Future<void> _reconcileRewardEligibilitySafely() async {
+    if (!_rewardGateway.hasAuthenticatedUser) return;
+    try {
+      await _eligibilityReconciler.registerPendingFutureSchedules();
+    } catch (_) {
+      // Eligibility registration is best-effort. The completion path decides
+      // whether to continue as local-only based on beginCompletion result.
+    }
+  }
+
+  String _localOnlyCompletionMessage(ScheduleRewardException error) {
+    if (error.code == ScheduleRewardErrorCode.authenticationRequired) {
+      return 'Ảnh đã được lưu trên thiết bị và nhiệm vụ vẫn được hoàn thành. '
+          'Bạn cần đăng nhập và có kết nối mạng trước khi làm nhiệm vụ để nhận Điểm chăm sóc.';
+    }
+    if (error.code == ScheduleRewardErrorCode.eligibilityUnavailable) {
+      return 'Ảnh đã được lưu trên thiết bị và nhiệm vụ vẫn được hoàn thành. '
+          'Nhiệm vụ này chưa có xác nhận đủ điều kiện nhận Điểm chăm sóc.';
+    }
+    return 'Ảnh đã được lưu trên thiết bị và nhiệm vụ vẫn được hoàn thành. '
+        'Lần này chưa có Điểm chăm sóc vì kết nối xác nhận phần thưởng chưa sẵn sàng.';
+  }
+
   Future<void> _updateAttemptProof(
     ScheduleRewardCompletionAttempt attempt, {
     required String uploadStatus,
@@ -412,9 +494,34 @@ class LifestyleScheduleController
     }
   }
 
+  Future<void> _reloadAuthoritativeProjection({
+    required LifestyleScheduleState fallback,
+    String? encouragement,
+    String? message,
+    bool clearError = false,
+  }) async {
+    final summary = await _repository.getWeekSchedule(
+      anchorDate: fallback.selectedDate,
+    );
+    final proofs = await _repository.getCompletionProofs();
+    final latest = state.whenOrNull(data: (value) => value) ?? fallback;
+    state = AsyncData(
+      latest.copyWith(
+        summary: summary,
+        selectedDate: fallback.selectedDate,
+        completionProofs: proofs,
+        lastEncouragement: encouragement,
+        lastErrorMessage: message,
+        clearEncouragement: encouragement == null,
+        clearError: clearError || message == null,
+      ),
+    );
+  }
+
   Future<void> _refreshProofProjection({
     String? message,
     bool clearError = false,
+    String? encouragement,
   }) async {
     final current = state.whenOrNull(data: (value) => value);
     if (current == null) return;
@@ -423,6 +530,7 @@ class LifestyleScheduleController
       current.copyWith(
         completionProofs: proofs,
         lastErrorMessage: message,
+        lastEncouragement: encouragement,
         clearError: clearError || message == null,
       ),
     );

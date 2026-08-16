@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application/schedule_proof_image_service.dart';
 import 'package:nano_app/services/image_picker/image_picker_service.dart';
 import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   late Directory root;
@@ -51,6 +52,32 @@ void main() {
     expect(decoded.height, 960);
     expect(decoded.exif.isEmpty, isTrue);
     expect(await saved.length(), lessThanOrEqualTo(5 * 1024 * 1024));
+  });
+
+  test('camera permission denial is surfaced for schedule proof flow', () async {
+    final proofService = ScheduleProofImageService(
+      imagePickerService: ImagePickerService(
+        cameraPermissionRequest: () async => PermissionStatus.denied,
+      ),
+      rootDirectory: () async => root,
+    );
+
+    await expectLater(
+      proofService.captureProofForItem('schedule-1'),
+      throwsA(
+        isA<ImagePickerServiceException>()
+            .having(
+              (error) => error.kind,
+              'kind',
+              ImagePickerFailureKind.permission,
+            )
+            .having(
+              (error) => error.userMessage,
+              'message',
+              contains('cho phép NanoBio sử dụng máy ảnh'),
+            ),
+      ),
+    );
   });
 
   test('deleteProof only deletes app-relative proof', () async {

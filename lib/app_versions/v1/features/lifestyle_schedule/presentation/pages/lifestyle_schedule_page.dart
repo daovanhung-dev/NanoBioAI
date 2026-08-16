@@ -62,6 +62,12 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
     if (state != AppLifecycleState.resumed) return;
     if (mounted) setState(() {});
     final controller = ref.read(lifestyleScheduleControllerProvider.notifier);
+
+    // Returning from the system camera also emits `resumed`. Do not let that
+    // lifecycle callback race the in-flight completion transaction and replace
+    // the freshly committed SQLite state with a stale pre-camera snapshot.
+    if (controller.hasActiveCompletionFlow) return;
+
     unawaited(() async {
       await controller.refresh();
       await controller.reconcilePendingRewards();

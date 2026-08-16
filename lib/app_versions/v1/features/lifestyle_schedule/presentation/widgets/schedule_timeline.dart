@@ -4,7 +4,6 @@ import 'package:nano_app/core/theme/design_system.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
-import '../controllers/lifestyle_schedule_controller.dart';
 import 'schedule_item_card.dart';
 
 class ScheduleTimeline extends StatelessWidget {

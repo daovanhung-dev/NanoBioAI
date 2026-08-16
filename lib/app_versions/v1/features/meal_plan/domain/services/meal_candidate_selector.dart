@@ -11,6 +11,7 @@ class MealCandidateSelector {
     Set<String> excludedCodes = const {},
   }) {
     final normalizedType = mealType?.trim().toLowerCase() ?? '';
+    final isSlotScopedSelection = normalizedType.isNotEmpty;
     final restrictions = profile.restrictions
         .where((item) => item.isActive)
         .map((item) => _normalize(item.itemName))
@@ -24,15 +25,20 @@ class MealCandidateSelector {
     }..removeWhere((item) => item.isEmpty);
 
     final candidates = catalog.where((meal) {
-      if (!meal.isActive || !meal.isPlanEligible) return false;
-      if (meal.metadataStatus != 'approved' ||
-          meal.constraintMetadataStatus != 'approved') {
-        return false;
-      }
-      if (normalizedType.isNotEmpty && meal.mealType != normalizedType) {
-        return false;
-      }
+      if (!meal.isActive) return false;
+      if (_isFixtureCode(meal.code)) return false;
       if (excludedCodes.contains(meal.code)) return false;
+
+      // Full-plan generation intentionally forwards every active Supabase meal
+      // to the AI. The user's health profile is part of the prompt, so catalog
+      // approval/eligibility flags do not remove codes before AI analysis.
+      if (!isSlotScopedSelection) return true;
+
+      // Manual replacement remains slot-aware and keeps local safety checks.
+      if (meal.mealType != normalizedType &&
+          meal.mealType != 'unclassified') {
+        return false;
+      }
       if (_conflictsWithRestrictions(meal, restrictions)) return false;
       if (_conflictsWithConditions(meal, conditionTokens)) return false;
       return true;
@@ -96,6 +102,11 @@ class MealCandidateSelector {
       }
     }
     return false;
+  }
+
+
+  bool _isFixtureCode(String code) {
+    return code.trim().toLowerCase().startsWith('fixture-');
   }
 
   String _normalize(String value) {

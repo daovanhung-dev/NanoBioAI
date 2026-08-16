@@ -25,7 +25,12 @@ class AiCatalogBundle {
 
   List<MealCatalogItemModel> mealsForType(String mealType) {
     final type = mealType.trim().toLowerCase();
-    return meals.where((item) => item.mealType == type).toList(growable: false);
+    return meals
+        .where(
+          (item) =>
+              item.mealType == type || item.mealType == 'unclassified',
+        )
+        .toList(growable: false);
   }
 }
 

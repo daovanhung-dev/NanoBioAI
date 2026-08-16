@@ -31,28 +31,28 @@ class VietQrPayloadBuilder {
       return null;
     }
 
-    // VietQR merchant-account information (ID 38):
-    // 00 = NAPAS AID, 01 = consumer account information (BIN + account),
-    // 02 = transfer service code QRIBFTTA.
-    final consumerAccount =
-        _emv('00', normalizedBankBin) +
-        _emv('01', normalizedAccountNumber);
-    final merchantAccount =
-        _emv('00', 'A000000727') +
-        _emv('01', consumerAccount) +
-        _emv('02', 'QRIBFTTA');
+    final consumerAccount = <String>[
+      _emv('00', normalizedBankBin),
+      _emv('01', normalizedAccountNumber),
+    ].join();
+    final merchantAccount = <String>[
+      _emv('00', 'A000000727'),
+      _emv('01', consumerAccount),
+      _emv('02', 'QRIBFTTA'),
+    ].join();
     final additionalData = _emv('08', normalizedMemo);
 
-    final withoutCrc =
-        _emv('00', '01') +
-        _emv('01', '12') +
-        _emv('38', merchantAccount) +
-        _emv('53', '704') +
-        _emv('54', amount.toString()) +
-        _emv('58', 'VN') +
-        _emv('59', normalizedAccountName) +
-        _emv('62', additionalData) +
-        '6304';
+    final withoutCrc = <String>[
+      _emv('00', '01'),
+      _emv('01', '12'),
+      _emv('38', merchantAccount),
+      _emv('53', '704'),
+      _emv('54', amount.toString()),
+      _emv('58', 'VN'),
+      _emv('59', normalizedAccountName),
+      _emv('62', additionalData),
+      '6304',
+    ].join();
 
     return '$withoutCrc${crc16Ccitt(withoutCrc)}';
   }
@@ -65,7 +65,6 @@ class VietQrPayloadBuilder {
     return _ascii(value, maxLength: maxAccountNameLength);
   }
 
-  /// CRC-16/CCITT-FALSE used by EMV QR payloads.
   static String crc16Ccitt(String input) {
     var crc = 0xFFFF;
     for (final unit in input.codeUnits) {
