@@ -90,6 +90,7 @@ flutter:
     - assets/
     - assets/data/
     - assets/images/
+    - assets/images/meals/pdf_health_book/
     - assets/icons/
     - assets/icons/custom/
     - assets/icons/filled/

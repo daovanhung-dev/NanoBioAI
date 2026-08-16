@@ -18,26 +18,43 @@ class MealPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetPath = MealImageResolver.assetPathFor(meal);
+    final assetPath = MealImageResolver.resolveAssetPath(meal.mealName);
     final radius = BorderRadius.circular(borderRadius);
+
+    if (assetPath == null) {
+      return _buildFramedPhoto(
+        radius: radius,
+        child: _MealPhotoFallback(mealName: meal.mealName),
+      );
+    }
 
     return Semantics(
       image: true,
       label: 'Ảnh món ${meal.mealName}',
-      child: ClipRRect(
-        borderRadius: radius,
-        child: SizedBox(
-          width: double.infinity,
-          height: height,
-          child: Image.asset(
-            assetPath,
-            fit: BoxFit.cover,
-            filterQuality: FilterQuality.medium,
-            errorBuilder: (context, error, stackTrace) => _MealPhotoFallback(
-              mealName: meal.mealName,
-            ),
+      child: _buildFramedPhoto(
+        radius: radius,
+        child: Image.asset(
+          assetPath,
+          fit: BoxFit.cover,
+          filterQuality: FilterQuality.medium,
+          errorBuilder: (context, error, stackTrace) => _MealPhotoFallback(
+            mealName: meal.mealName,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFramedPhoto({
+    required BorderRadius radius,
+    required Widget child,
+  }) {
+    return ClipRRect(
+      borderRadius: radius,
+      child: SizedBox(
+        width: double.infinity,
+        height: height,
+        child: child,
       ),
     );
   }
@@ -50,32 +67,35 @@ class _MealPhotoFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExcludeSemantics(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: context.semanticColors.primarySoft,
-        ),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.cardPadding),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.restaurant_rounded,
-                  color: context.semanticColors.primary,
-                  size: 34,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Chưa có ảnh món ăn',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: context.semanticColors.textSecondary,
-                    fontWeight: FontWeight.w600,
+    return Semantics(
+      label: 'Chưa có ảnh món $mealName',
+      child: ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: context.semanticColors.primarySoft,
+          ),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.cardPadding),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.restaurant_rounded,
+                    color: context.semanticColors.primary,
+                    size: 34,
                   ),
-                ),
-              ],
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Chưa có ảnh món ăn',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: context.semanticColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
