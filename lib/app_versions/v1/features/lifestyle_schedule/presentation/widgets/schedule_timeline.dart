@@ -4,6 +4,8 @@ import 'package:nano_app/core/theme/design_system.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
+import '../controllers/lifestyle_schedule_controller.dart';
+import '../pages/lifestyle_schedule_item_detail_page.dart';
 import 'schedule_item_card.dart';
 
 class ScheduleTimeline extends StatelessWidget {
@@ -12,11 +14,13 @@ class ScheduleTimeline extends StatelessWidget {
     required this.items,
     required this.focusedItemId,
     required this.focusedItemKey,
+    this.onOpenDetail,
   });
 
   final List<LifestyleScheduleItemEntity> items;
   final String? focusedItemId;
   final GlobalKey focusedItemKey;
+  final ValueChanged<LifestyleScheduleItemEntity>? onOpenDetail;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +38,7 @@ class ScheduleTimeline extends StatelessWidget {
       children: [
         const SectionHeader(
           title: 'Dòng thời gian',
-          subtitle: 'Các mốc được sắp theo giờ để bạn dễ theo dõi.',
+          subtitle: 'Chạm vào một mốc để xem đầy đủ thông tin nhiệm vụ.',
         ),
         const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
         ...List.generate(items.length, (index) {
@@ -53,6 +57,7 @@ class ScheduleTimeline extends StatelessWidget {
               meta: _ScheduleMeta.from(item.category, item.sourceType),
               isLast: index == items.length - 1,
               highlighted: item.id == focusedItemId,
+              onOpenDetail: onOpenDetail,
             ),
           );
         }),
@@ -67,12 +72,14 @@ class _ScheduleTimelineRow extends ConsumerWidget {
     required this.meta,
     required this.isLast,
     required this.highlighted,
+    required this.onOpenDetail,
   });
 
   final LifestyleScheduleItemEntity item;
   final _ScheduleMeta meta;
   final bool isLast;
   final bool highlighted;
+  final ValueChanged<LifestyleScheduleItemEntity>? onOpenDetail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -87,18 +94,39 @@ class _ScheduleTimelineRow extends ConsumerWidget {
           _TimelineRail(meta: meta, status: status, isLast: isLast),
           const SizedBox(width: AppSpacingTokens.itemSpacingLarge),
           Expanded(
-            child: ScheduleItemCard(
-              item: item,
-              categoryIcon: meta.icon,
-              categoryColor: meta.color,
-              categoryLabel: meta.label,
-              status: status,
-              canToggle: canToggle,
-              highlighted: highlighted,
-              onToggle: canToggle ? () => _toggle(ref) : null,
+            child: Semantics(
+              button: true,
+              hint: 'Mở chi tiết nhiệm vụ',
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _openDetail(context),
+                child: ScheduleItemCard(
+                  item: item,
+                  categoryIcon: meta.icon,
+                  categoryColor: meta.color,
+                  categoryLabel: meta.label,
+                  status: status,
+                  canToggle: canToggle,
+                  highlighted: highlighted,
+                  onToggle: canToggle ? () => _toggle(ref) : null,
+                ),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _openDetail(BuildContext context) async {
+    if (onOpenDetail != null) {
+      onOpenDetail!(item);
+      return;
+    }
+    AppFeedbackService.instance.emit(AppFeedbackType.selection);
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => LifestyleScheduleItemDetailPage(initialItem: item),
       ),
     );
   }

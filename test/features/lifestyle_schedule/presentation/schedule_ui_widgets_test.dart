@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/lifestyle_schedule_summary_entity.dart';
@@ -7,6 +8,8 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentatio
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/widgets/schedule_day_header.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/widgets/schedule_item_card.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/widgets/schedule_progress_summary.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/widgets/schedule_timeline.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 
 void main() {
   testWidgets('schedule header keeps date and completion summary glanceable', (
@@ -81,20 +84,24 @@ void main() {
 
   testWidgets('open schedule completion action receives tap', (tester) async {
     var tapCount = 0;
+    var detailTapCount = 0;
     final item = _item(id: 'lunch', startTime: '12:30');
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: ScheduleItemCard(
-            item: item,
-            categoryIcon: Icons.restaurant_rounded,
-            categoryColor: Colors.teal,
-            categoryLabel: 'Bữa ăn',
-            status: CompletionWindowStatus.open,
-            canToggle: true,
-            highlighted: false,
-            onToggle: () => tapCount++,
+          body: GestureDetector(
+            onTap: () => detailTapCount++,
+            child: ScheduleItemCard(
+              item: item,
+              categoryIcon: Icons.restaurant_rounded,
+              categoryColor: Colors.teal,
+              categoryLabel: 'Bữa ăn',
+              status: CompletionWindowStatus.open,
+              canToggle: true,
+              highlighted: false,
+              onToggle: () => tapCount++,
+            ),
           ),
         ),
       ),
@@ -104,6 +111,39 @@ void main() {
     await tester.pump();
 
     expect(tapCount, 1);
+    expect(detailTapCount, 0);
+  });
+
+  testWidgets('tapping schedule card opens detail action', (tester) async {
+    LifestyleScheduleItemEntity? openedItem;
+    final item = _item(id: 'detail', startTime: '12:30');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          lifestyleScheduleClockProvider.overrideWithValue(
+            () => DateTime(2026, 8, 8, 12, 40),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ScheduleTimeline(
+                items: [item],
+                focusedItemId: null,
+                focusedItemKey: GlobalKey(),
+                onOpenDetail: (value) => openedItem = value,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Nhiệm vụ detail'));
+    await tester.pump();
+
+    expect(openedItem?.id, 'detail');
   });
 }
 
