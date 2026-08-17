@@ -8,6 +8,7 @@ class LifestyleScheduleSourceTypes {
   static const exerciseTask = 'exercise_task';
   static const dailyHealthTask = 'daily_health_task';
   static const aiSchedule = 'ai_schedule';
+  static const manualHealthTask = 'manual_health_task';
 }
 
 class LifestyleScheduleCategories {
@@ -18,6 +19,7 @@ class LifestyleScheduleCategories {
   static const mind = 'mind';
   static const brain = 'brain';
   static const sleep = 'sleep';
+  static const metric = 'metric';
 }
 
 class LifestyleScheduleItemEntity {
@@ -82,6 +84,9 @@ class LifestyleScheduleItemEntity {
 
   bool get isExerciseTask =>
       sourceType == LifestyleScheduleSourceTypes.exerciseTask;
+
+  bool get isManualHealthTask =>
+      sourceType == LifestyleScheduleSourceTypes.manualHealthTask;
 
   bool get isQuantitative => targetValue > 1;
 

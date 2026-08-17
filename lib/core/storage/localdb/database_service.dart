@@ -7,6 +7,7 @@ import 'package:nano_app/core/storage/localdb/tables/health_score_ledgers_table.
 import 'package:nano_app/core/storage/localdb/tables/lifestyle_schedule_items_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/schedule_health_checkin_outbox_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_rewards_cache_tables.dart';
 import 'package:nano_app/core/storage/localdb/tables/nabi_notification_tables.dart';
@@ -32,6 +33,7 @@ import 'tables/notifications_table.dart';
 import 'tables/survey_answers_table.dart';
 import 'migrations/migration_manager.dart';
 import 'migrations/migration_v18.dart';
+import 'migrations/migration_v19.dart';
 import 'seeders/ai_catalog_seeder.dart';
 
 class DatabaseService {
@@ -63,12 +65,14 @@ class DatabaseService {
         if (oldVersion < 18 && newVersion >= 18) {
           await MigrationV18.run(db);
         }
+        if (oldVersion < 19 && newVersion >= 19) {
+          await MigrationV19.run(db);
+        }
       },
       onOpen: (db) async {
         await db.execute('PRAGMA foreign_keys = OFF');
-        // Defensive repair for installations that may have opened a v18 DB
-        // created by an interrupted/partial upgrade.
         await MigrationV18.ensureSchema(db);
+        await MigrationV19.ensureSchema(db);
       },
     );
   }
@@ -96,6 +100,9 @@ class DatabaseService {
     await db.execute(ScheduleCompletionProofsTable.createUserDateIndex);
     await db.execute(ScheduleCompletionProofsTable.createScheduleIndex);
     await db.execute(ScheduleCompletionProofsTable.createEligibilityIndex);
+    await db.execute(ScheduleHealthCheckInOutboxTable.createTable);
+    await db.execute(ScheduleHealthCheckInOutboxTable.createPendingIndex);
+    await db.execute(ScheduleHealthCheckInOutboxTable.createScheduleIndex);
     for (final statement in wellnessRewardCacheSchema) {
       await db.execute(statement);
     }

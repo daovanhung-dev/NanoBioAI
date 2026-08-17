@@ -1,7 +1,7 @@
 import '../entities/lifestyle_schedule_item_entity.dart';
 
 class DailyScheduleScoreService {
-  static const formulaVersion = 'daily_schedule_equal_v1_2026_07';
+  static const formulaVersion = 'daily_schedule_equal_v2_2026_08';
   static const wellnessProgramCode = 'wellness_schedule_v1';
   static const wellnessSourceType = 'lifestyle_schedule_item';
 
@@ -12,7 +12,15 @@ class DailyScheduleScoreService {
     required String scheduleDate,
     required DateTime now,
   }) {
-    final dueItems = items
+    // M03/M08 integrity rule: user-authored manual tasks remain useful for
+    // daily planning and rewards but never alter the official Health Score.
+    final scoreEligibleItems = items
+        .where(
+          (item) =>
+              item.sourceType != LifestyleScheduleSourceTypes.manualHealthTask,
+        )
+        .toList(growable: false);
+    final dueItems = scoreEligibleItems
         .where(
           (item) => _isDue(item: item, scheduleDate: scheduleDate, now: now),
         )

@@ -1,10 +1,14 @@
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/manual_health_task_draft.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/lifestyle_schedule_window_policy.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_health_action_type.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/schedule_health_action_policy.dart';
 import 'package:nano_app/core/storage/localdb/daos/notifications_dao.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/models/notification_model.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
-import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/daos/lifestyle_schedule_items_dao.dart';
-import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
-import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/lifestyle_schedule_window_policy.dart';
 import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -30,8 +34,8 @@ class ReminderScheduleService {
     required this.scheduler,
     ActiveReminderSubjectReader? activeSubjectUserId,
     DateTime Function()? now,
-  }) : activeSubjectUserId = activeSubjectUserId ?? _noActiveSubject,
-       _now = now ?? DateTime.now;
+  })  : activeSubjectUserId = activeSubjectUserId ?? _noActiveSubject,
+        _now = now ?? DateTime.now;
 
   factory ReminderScheduleService.fromDatabase({
     required Database db,
@@ -139,14 +143,11 @@ class ReminderScheduleService {
           notification.sourceId != null &&
           activeSourceIds.contains(notification.sourceId);
 
-      // Every pending row for the active subject is replaced by this refresh.
-      // Rows from another subject or a removed source must also be cancelled so
-      // an account switch or a deleted task cannot leave an OS reminder behind.
       final cleanupReason = !isActiveSubject
           ? 'other_subject'
           : sourceStillExists
-          ? 'refresh'
-          : 'stale_source';
+              ? 'refresh'
+              : 'stale_source';
       AppLogger.info(_tag, 'Clear pending reminder reason=$cleanupReason');
       await _cancelAndDelete(notification);
     }
@@ -164,9 +165,6 @@ class ReminderScheduleService {
           error,
           stackTrace,
         );
-        // Keep the pending row so a later refresh can retry the OS cancel.
-        // Deleting it here would lose the durable cleanup signal while the
-        // stale notification may still be scheduled by the platform.
         return;
       }
     }
@@ -249,6 +247,11 @@ class ReminderScheduleService {
   }
 
   _ReminderCandidate? _scheduleItemCandidate(LifestyleScheduleItemModel item) {
+    if (item.sourceType == LifestyleScheduleSourceTypes.manualHealthTask) {
+      final metadata = ManualHealthTaskMetadata.tryParse(item.sourceId);
+      if (metadata?.reminderEnabled == false) return null;
+    }
+
     final scheduledAt = _scheduledAt(item);
     if (scheduledAt == null) return null;
 
@@ -259,9 +262,13 @@ class ReminderScheduleService {
     final bodySource = item.description.trim().isNotEmpty
         ? item.description
         : item.encouragement;
+    final action = ScheduleHealthActionPolicy.forItem(item.toEntity());
+    final fallbackBody = action == ScheduleHealthActionType.photoProof
+        ? 'Mở ứng dụng để chụp ảnh và cập nhật tiến độ hôm nay.'
+        : 'Mở ứng dụng để cập nhật mốc chăm sóc sức khỏe hôm nay.';
     final body = vietnameseSystemUiText(
       bodySource,
-      fallback: 'Mở ứng dụng để chụp ảnh và cập nhật tiến độ hôm nay.',
+      fallback: fallbackBody,
     );
 
     return _ReminderCandidate(

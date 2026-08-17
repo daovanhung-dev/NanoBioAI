@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/design_system.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
+import '../../domain/entities/schedule_health_action_type.dart';
+import '../../domain/services/schedule_health_action_policy.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
+import '../pages/lifestyle_schedule_health_action_page.dart';
 import '../pages/lifestyle_schedule_item_detail_page.dart';
 import 'schedule_item_card.dart';
 
@@ -37,7 +40,8 @@ class ScheduleTimeline extends StatelessWidget {
       children: [
         const SectionHeader(
           title: 'Dòng thời gian',
-          subtitle: 'Chạm vào một mốc để xem đầy đủ thông tin nhiệm vụ.',
+          subtitle:
+              'Chạm vào một mốc để xem hướng dẫn và cách ghi nhận phù hợp.',
         ),
         const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
         ...List.generate(items.length, (index) {
@@ -107,7 +111,7 @@ class _ScheduleTimelineRow extends ConsumerWidget {
                   status: status,
                   canToggle: canToggle,
                   highlighted: highlighted,
-                  onToggle: canToggle ? () => _toggle(ref) : null,
+                  onToggle: canToggle ? () => _toggle(context, ref) : null,
                 ),
               ),
             ),
@@ -123,15 +127,39 @@ class _ScheduleTimelineRow extends ConsumerWidget {
       return;
     }
     AppFeedbackService.instance.emit(AppFeedbackType.selection);
+    final action = ScheduleHealthActionPolicy.forItem(item);
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
-        builder: (_) => LifestyleScheduleItemDetailPage(initialItem: item),
+        builder: (_) => action == ScheduleHealthActionType.photoProof
+            ? LifestyleScheduleItemDetailPage(initialItem: item)
+            : LifestyleScheduleHealthActionPage(initialItem: item),
       ),
     );
   }
 
-  Future<void> _toggle(WidgetRef ref) async {
-    await ref.read(lifestyleScheduleControllerProvider.notifier).toggleItem(item);
+  Future<void> _toggle(BuildContext context, WidgetRef ref) async {
+    final action = ScheduleHealthActionPolicy.forItem(item);
+    if (action == ScheduleHealthActionType.photoProof) {
+      await ref.read(lifestyleScheduleControllerProvider.notifier).toggleItem(item);
+      return;
+    }
+
+    if (!item.isCompleted && ScheduleHealthActionPolicy.requiresInput(action)) {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => LifestyleScheduleHealthActionPage(initialItem: item),
+        ),
+      );
+      return;
+    }
+
+    final result = item.isCompleted
+        ? await ref.read(dailyHealthHubControllerProvider).undoTask(item)
+        : await ref.read(dailyHealthHubControllerProvider).completeTask(item: item);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result.message)),
+    );
   }
 }
 
@@ -243,6 +271,11 @@ class _ScheduleMeta {
         icon: Icons.bedtime_rounded,
         color: AppColorTokens.primaryHover,
         label: 'Giấc ngủ',
+      ),
+      LifestyleScheduleCategories.metric => const _ScheduleMeta(
+        icon: Icons.monitor_weight_outlined,
+        color: AppColorTokens.success,
+        label: 'Chỉ số',
       ),
       _ => const _ScheduleMeta(
         icon: Icons.checklist_rounded,

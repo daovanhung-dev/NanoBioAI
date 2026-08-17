@@ -10,6 +10,7 @@ import 'package:nano_app/core/theme/medical_ui.dart';
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
 import '../../providers/lifestyle_schedule_provider.dart';
 import '../controllers/lifestyle_schedule_state.dart';
+import '../widgets/daily_health_hub_panel.dart';
 import '../widgets/schedule_date_selector.dart';
 import '../widgets/schedule_day_header.dart';
 import '../widgets/schedule_feedback_banner.dart';
@@ -47,6 +48,9 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
             .read(lifestyleScheduleControllerProvider.notifier)
             .reconcilePendingRewards(),
       );
+      unawaited(
+        ref.read(dailyHealthHubControllerProvider).reconcilePendingRewards(),
+      );
     });
   }
 
@@ -63,14 +67,12 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
     if (mounted) setState(() {});
     final controller = ref.read(lifestyleScheduleControllerProvider.notifier);
 
-    // Returning from the system camera also emits `resumed`. Do not let that
-    // lifecycle callback race the in-flight completion transaction and replace
-    // the freshly committed SQLite state with a stale pre-camera snapshot.
     if (controller.hasActiveCompletionFlow) return;
 
     unawaited(() async {
       await controller.refresh();
       await controller.reconcilePendingRewards();
+      await ref.read(dailyHealthHubControllerProvider).reconcilePendingRewards();
     }());
   }
 
@@ -94,12 +96,11 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
           ? AppColorTokens.darkBackground
           : AppColorTokens.background,
       appBar: AppBar(
-        title: const Text('Lịch trình cá nhân'),
+        title: const Text('Ngày của tôi'),
         actions: [
           IconButton(
             tooltip: 'Tùy chỉnh nhịp sinh hoạt',
-            onPressed: () =>
-                context.push(V1RoutePaths.dailyRoutinePreferences),
+            onPressed: () => context.push(V1RoutePaths.dailyRoutinePreferences),
             icon: const Icon(Icons.tune_rounded),
           ),
         ],
@@ -284,6 +285,8 @@ class _ScheduleReadyContent extends ConsumerWidget {
                             unawaited(controller.selectDate(date));
                           },
                         ),
+                        const SizedBox(height: AppSpacingTokens.sectionSpacing),
+                        DailyHealthHubPanel(state: state),
                         const SizedBox(height: AppSpacingTokens.sectionSpacing),
                         if (expanded)
                           Row(

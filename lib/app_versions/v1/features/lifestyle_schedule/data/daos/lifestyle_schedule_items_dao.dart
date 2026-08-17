@@ -39,7 +39,7 @@ class LifestyleScheduleItemsDao {
       LifestyleScheduleItemsTable.tableName,
       where: 'user_id = ? AND schedule_date = ?',
       whereArgs: [userId, scheduleDate],
-      orderBy: 'sort_order ASC, start_time ASC',
+      orderBy: 'start_time ASC, sort_order ASC',
     );
     return maps.map(LifestyleScheduleItemModel.fromMap).toList();
   }
@@ -53,7 +53,7 @@ class LifestyleScheduleItemsDao {
       LifestyleScheduleItemsTable.tableName,
       where: 'user_id = ? AND schedule_date >= ? AND schedule_date <= ?',
       whereArgs: [userId, startDate, endDate],
-      orderBy: 'schedule_date ASC, sort_order ASC, start_time ASC',
+      orderBy: 'schedule_date ASC, start_time ASC, sort_order ASC',
     );
     return maps.map(LifestyleScheduleItemModel.fromMap).toList();
   }
@@ -61,7 +61,7 @@ class LifestyleScheduleItemsDao {
   Future<List<LifestyleScheduleItemModel>> getAll() async {
     final maps = await db.query(
       LifestyleScheduleItemsTable.tableName,
-      orderBy: 'schedule_date ASC, sort_order ASC, start_time ASC',
+      orderBy: 'schedule_date ASC, start_time ASC, sort_order ASC',
     );
     return maps.map(LifestyleScheduleItemModel.fromMap).toList();
   }
@@ -74,7 +74,7 @@ class LifestyleScheduleItemsDao {
       LifestyleScheduleItemsTable.tableName,
       where: 'user_id = ?',
       whereArgs: [normalizedUserId],
-      orderBy: 'schedule_date ASC, sort_order ASC, start_time ASC',
+      orderBy: 'schedule_date ASC, start_time ASC, sort_order ASC',
     );
     return maps.map(LifestyleScheduleItemModel.fromMap).toList();
   }
@@ -109,6 +109,27 @@ class LifestyleScheduleItemsDao {
       },
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<void> deleteBySource({
+    required String userId,
+    required String sourceType,
+    required String sourceId,
+    String? fromDate,
+  }) async {
+    final where = StringBuffer(
+      'user_id = ? AND source_type = ? AND source_id = ?',
+    );
+    final args = <Object?>[userId, sourceType, sourceId];
+    if (fromDate != null && fromDate.trim().isNotEmpty) {
+      where.write(' AND schedule_date >= ?');
+      args.add(fromDate.trim());
+    }
+    await db.delete(
+      LifestyleScheduleItemsTable.tableName,
+      where: where.toString(),
+      whereArgs: args,
     );
   }
 

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_health_action_type.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/schedule_health_action_policy.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/controllers/lifestyle_schedule_controller.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_health_action_page.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_item_detail_page.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/controllers/meal_plan_controller.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/providers/meal_plan_provider.dart';
@@ -26,6 +30,7 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
   @override
   Widget build(BuildContext context) {
     final status = task.completionStatusAt(widget.now);
+    final action = ScheduleHealthActionPolicy.forItem(task);
     final presentation = _TaskStatusPresentation.from(
       status,
       context.semanticColors,
@@ -47,7 +52,7 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               MedicalIconBadge(
-                icon: presentation.icon,
+                icon: _actionIcon(action),
                 color: presentation.color,
                 backgroundColor: presentation.color.withValues(alpha: .10),
               ),
@@ -59,9 +64,8 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
                     Text(
                       task.title,
                       style: AppTextStyles.heading4.copyWith(
-                        decoration: task.isCompleted
-                            ? TextDecoration.lineThrough
-                            : null,
+                        decoration:
+                            task.isCompleted ? TextDecoration.lineThrough : null,
                         color: task.isCompleted
                             ? context.semanticColors.textSecondary
                             : context.semanticColors.textPrimary,
@@ -99,7 +103,12 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
             ),
           ],
           const SizedBox(height: AppSpacing.md),
-          _TaskWindowHint(task: task, status: status, now: widget.now),
+          _TaskWindowHint(
+            task: task,
+            status: status,
+            now: widget.now,
+            action: action,
+          ),
           const SizedBox(height: AppSpacing.md),
           Wrap(
             spacing: AppSpacing.sm,
@@ -107,28 +116,32 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
             children: [
               FilledButton.icon(
                 onPressed: canToggle && !_isUpdating && !_isReplacingMeal
-                    ? _toggleCompletion
+                    ? () => _handlePrimary(action)
                     : null,
                 icon: _isUpdating
                     ? const SizedBox.square(
                         dimension: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Icon(task.isCompleted ? Icons.undo_rounded : Icons.check),
+                    : Icon(
+                        task.isCompleted
+                            ? Icons.undo_rounded
+                            : _actionPrimaryIcon(action),
+                      ),
                 label: Text(
                   _isUpdating
                       ? 'Đang cập nhật'
                       : task.isCompleted
-                      ? 'Hoàn tác'
-                      : 'Hoàn thành',
+                          ? 'Hoàn tác'
+                          : _primaryLabel(action),
                 ),
               ),
               if (task.isMealLinked)
                 OutlinedButton.icon(
                   onPressed:
                       !_isUpdating && !_isReplacingMeal && !task.isCompleted
-                      ? _replaceMeal
-                      : null,
+                          ? _replaceMeal
+                          : null,
                   icon: _isReplacingMeal
                       ? const SizedBox.square(
                           dimension: 18,
@@ -149,30 +162,60 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
     );
   }
 
-  Future<void> _toggleCompletion() async {
+  Future<void> _handlePrimary(ScheduleHealthActionType action) async {
     if (_isUpdating) return;
+
+    if (!task.isCompleted &&
+        action != ScheduleHealthActionType.photoProof &&
+        ScheduleHealthActionPolicy.requiresInput(action)) {
+      await _openHealthAction();
+      return;
+    }
+
     setState(() => _isUpdating = true);
     try {
-      final controller = ref.read(lifestyleScheduleControllerProvider.notifier);
-      final result = await controller.toggleItem(task);
+      if (action == ScheduleHealthActionType.photoProof) {
+        final result = await ref
+            .read(lifestyleScheduleControllerProvider.notifier)
+            .toggleItem(task);
+        if (!mounted) return;
+        _showPhotoToggleResult(result);
+        return;
+      }
+
+      final result = task.isCompleted
+          ? await ref.read(dailyHealthHubControllerProvider).undoTask(task)
+          : await ref
+              .read(dailyHealthHubControllerProvider)
+              .completeTask(item: task);
       if (!mounted) return;
-      _showToggleResult(result);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message)),
+      );
     } finally {
       if (mounted) setState(() => _isUpdating = false);
     }
   }
 
-  void _showToggleResult(LifestyleScheduleToggleResult result) {
+  Future<void> _openHealthAction() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => LifestyleScheduleHealthActionPage(initialItem: task),
+      ),
+    );
+  }
+
+  void _showPhotoToggleResult(LifestyleScheduleToggleResult result) {
     final message = switch (result) {
       LifestyleScheduleToggleResult.completed =>
-        'Bạn đã hoàn thành nhiệm vụ và Nabi đã xác nhận Điểm chăm sóc.',
+        'Bạn đã hoàn thành nhiệm vụ và hệ thống đã xác nhận Điểm chăm sóc.',
       LifestyleScheduleToggleResult.undone => 'Đã hoàn tác nhiệm vụ.',
       LifestyleScheduleToggleResult.cancelled =>
         'Bạn chưa chọn ảnh minh chứng.',
       LifestyleScheduleToggleResult.pendingRewardSync =>
-        'Ảnh đã lưu. 10 Điểm chăm sóc sẽ đồng bộ khi có mạng.',
+        'Ảnh đã lưu. Điểm chăm sóc sẽ đồng bộ khi có mạng.',
       LifestyleScheduleToggleResult.blocked =>
-        'Nabi chưa mở camera hoặc chưa cập nhật nhiệm vụ để bạn không bị mất điểm.',
+        'Nabi chưa thể cập nhật nhiệm vụ này lúc này.',
       LifestyleScheduleToggleResult.ignored => null,
     };
 
@@ -180,9 +223,9 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
       AppFeedbackService.instance.emit(AppFeedbackType.error);
     }
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     }
   }
 
@@ -215,49 +258,13 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
     }
   }
 
-  void _showDetails() {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            AppSpacing.sm,
-            AppSpacing.lg,
-            AppSpacing.xl,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(task.title, style: AppTextStyles.heading3),
-              const SizedBox(height: AppSpacing.md),
-              _DetailLine(
-                icon: Icons.schedule_rounded,
-                label: 'Thời gian',
-                value: _timeRange(task),
-              ),
-              if (task.description.trim().isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md),
-                _DetailLine(
-                  icon: Icons.notes_rounded,
-                  label: 'Hướng dẫn',
-                  value: task.description.trim(),
-                ),
-              ],
-              if (task.targetValue > 0) ...[
-                const SizedBox(height: AppSpacing.md),
-                _DetailLine(
-                  icon: Icons.flag_outlined,
-                  label: 'Mục tiêu',
-                  value:
-                      '${_formatTarget(task.targetValue)} ${task.unit.trim()}',
-                ),
-              ],
-            ],
-          ),
-        ),
+  Future<void> _showDetails() async {
+    final action = ScheduleHealthActionPolicy.forItem(task);
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => action == ScheduleHealthActionType.photoProof
+            ? LifestyleScheduleItemDetailPage(initialItem: task)
+            : LifestyleScheduleHealthActionPage(initialItem: task),
       ),
     );
   }
@@ -268,25 +275,28 @@ class _TaskWindowHint extends StatelessWidget {
     required this.task,
     required this.status,
     required this.now,
+    required this.action,
   });
 
   final LifestyleScheduleItemEntity task;
   final CompletionWindowStatus status;
   final DateTime now;
+  final ScheduleHealthActionType action;
 
   @override
   Widget build(BuildContext context) {
+    final completionCopy = action == ScheduleHealthActionType.photoProof
+        ? 'Bạn có thể chụp ảnh minh chứng để xác nhận.'
+        : 'Bạn có thể ghi nhận theo hướng dẫn của nhiệm vụ.';
     final text = switch (status) {
-      CompletionWindowStatus.open =>
-        'Đang trong thời gian xác nhận. Bạn có thể hoàn thành, chụp ảnh minh chứng và nhận Điểm chăm sóc.',
+      CompletionWindowStatus.open => completionCopy,
       CompletionWindowStatus.waiting =>
         'Nhiệm vụ sẽ mở khi đến ${task.startTime}.',
       CompletionWindowStatus.locked =>
         'Thời gian xác nhận đã kết thúc. Kết quả được giữ nguyên.',
-      CompletionWindowStatus.completed =>
-        task.isWithinCompletionWindow(now)
-            ? 'Đã hoàn thành. Bạn vẫn có thể hoàn tác trong cửa sổ hiện tại.'
-            : 'Đã hoàn thành và kết quả đã được khóa.',
+      CompletionWindowStatus.completed => task.isWithinCompletionWindow(now)
+          ? 'Đã hoàn thành. Bạn vẫn có thể hoàn tác trong cửa sổ hiện tại.'
+          : 'Đã hoàn thành và kết quả đã được khóa.',
     };
     final color = switch (status) {
       CompletionWindowStatus.open => context.semanticColors.primary,
@@ -310,49 +320,6 @@ class _TaskWindowHint extends StatelessWidget {
         text,
         style: AppTextStyles.bodySmall.copyWith(color: color, height: 1.4),
       ),
-    );
-  }
-}
-
-class _DetailLine extends StatelessWidget {
-  const _DetailLine({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        MedicalIconBadge(
-          icon: icon,
-          color: context.semanticColors.primary,
-          backgroundColor: context.semanticColors.primarySoft,
-          size: 40,
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: context.semanticColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(value, style: AppTextStyles.bodyMedium),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
@@ -397,11 +364,34 @@ class _TaskStatusPresentation {
   }
 }
 
+IconData _actionIcon(ScheduleHealthActionType action) => switch (action) {
+      ScheduleHealthActionType.photoProof => Icons.photo_camera_rounded,
+      ScheduleHealthActionType.quickComplete => Icons.check_circle_outline,
+      ScheduleHealthActionType.hydration => Icons.water_drop_rounded,
+      ScheduleHealthActionType.moodStress => Icons.mood_rounded,
+      ScheduleHealthActionType.sleepCheckIn => Icons.bedtime_rounded,
+      ScheduleHealthActionType.weightCheckIn => Icons.monitor_weight_outlined,
+    };
+
+IconData _actionPrimaryIcon(ScheduleHealthActionType action) => switch (action) {
+      ScheduleHealthActionType.photoProof => Icons.photo_camera_rounded,
+      ScheduleHealthActionType.hydration => Icons.water_drop_rounded,
+      ScheduleHealthActionType.moodStress => Icons.mood_rounded,
+      ScheduleHealthActionType.sleepCheckIn => Icons.bedtime_rounded,
+      ScheduleHealthActionType.weightCheckIn => Icons.monitor_weight_outlined,
+      ScheduleHealthActionType.quickComplete => Icons.check_rounded,
+    };
+
+String _primaryLabel(ScheduleHealthActionType action) => switch (action) {
+      ScheduleHealthActionType.photoProof => 'Chụp ảnh',
+      ScheduleHealthActionType.hydration => 'Ghi nhận nước',
+      ScheduleHealthActionType.moodStress => 'Check-in cảm xúc',
+      ScheduleHealthActionType.sleepCheckIn => 'Ghi nhận ngủ',
+      ScheduleHealthActionType.weightCheckIn => 'Ghi cân nặng',
+      ScheduleHealthActionType.quickComplete => 'Hoàn thành',
+    };
+
 String _timeRange(LifestyleScheduleItemEntity task) {
   final endTime = task.endTime.trim();
   return endTime.isEmpty ? task.startTime : '${task.startTime} – $endTime';
-}
-
-String _formatTarget(double value) {
-  return value % 1 == 0 ? value.toStringAsFixed(0) : value.toStringAsFixed(1);
 }
