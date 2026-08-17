@@ -11,7 +11,7 @@ import 'app_shadows.dart';
 import 'app_spacing.dart';
 import 'app_text_styles.dart';
 
-/// Shared visual shell for the calm, trustworthy NaBi Green Wellness experience.
+/// Shared visual shell for the calm, trustworthy Nabi Blue Wellness experience.
 class MedicalPageScaffold extends StatelessWidget {
   final Widget body;
   final PreferredSizeWidget? appBar;

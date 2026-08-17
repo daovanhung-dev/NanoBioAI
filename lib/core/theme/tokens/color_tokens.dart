@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../app_colors.dart';
 
-/// Legacy layer-2 static mapping for NaBi Green Wellness.
+/// Legacy layer-2 static mapping for Nabi Blue Wellness.
 @immutable
 class AppColorTokens {
   const AppColorTokens._();

@@ -1,4 +1,4 @@
-# Coding Plan - Stitch Green Wellness
+# Coding Plan - Blue Wellness
 
 Each wave requires state parity, visual hierarchy, adaptive layout, motion/feedback, accessibility QA and targeted tests. UI work must not invent business behavior.
 
@@ -8,7 +8,7 @@ Fix contradictory contracts, refresh the canonical surface/route registry and re
 
 ## Wave 1 - Foundation, assets and shell
 
-Introduce context-aware semantic colors, deterministic light/dark themes, Roboto, spacing/radius/elevation/focus/reduced-motion primitives and controlled Stitch asset provenance. Keep compatibility facades only for staged migration. Admin remains an independent workspace theme.
+Introduce context-aware semantic colors, deterministic light/dark Blue themes, Roboto, spacing/radius/elevation/focus/reduced-motion primitives and controlled Stitch asset provenance. Keep Green compatibility facades only for staged rollback. Admin remains an independent workspace theme.
 
 ## Wave 2 - Existing Stitch-referenced UI
 
@@ -28,4 +28,4 @@ Require approved backend safety, privacy, cryptography, retention and trusted RP
 
 ## Wave 6 - Cutover
 
-Use `stitchGreenUi` separately from business flags. Green is the default presentation in every build mode, but that does not mark the cutover complete. Do not call the cutover complete until all 76 Stitch references have recorded visual, dark, accessibility and adaptive evidence; retain `STITCH_GREEN_UI_ENABLED=false` as the Blue rollback for one release before deleting Blue compatibility aliases.
+Use `stitchGreenUi` separately from business flags. Blue is the default presentation in every build mode, but that does not mark the cutover complete. Do not call the cutover complete until all 76 Stitch references have recorded visual, dark, accessibility and adaptive evidence; retain `STITCH_GREEN_UI_ENABLED=true` as the Green compatibility rollback until its removal is explicitly approved.

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_theme_flags.dart';
 
-/// Backward-compatible static facade for NaBi Green Wellness.
+/// Backward-compatible static facade for Nabi Blue Wellness.
 ///
 /// New presentation code should prefer `AppSemanticColors` from the active
 /// theme. These constants remain available while existing consumers migrate.
@@ -12,7 +12,7 @@ class AppColors {
 
   static const bool stitchGreenUiEnabled = AppThemeFlags.stitchGreenUiEnabled;
 
-  // NaBi Green Wellness brand.
+  // Nabi Blue Wellness brand. Green remains a wellness/success accent.
   static const Color primary = stitchGreenUiEnabled
       ? Color(0xFF006A46)
       : Color(0xFF2F6FED);
@@ -30,7 +30,7 @@ class AppColors {
       : Color(0xFFF4F8FF);
   static const Color brandAccent = stitchGreenUiEnabled
       ? Color(0xFF14A36F)
-      : Color(0xFF2F6FED);
+      : Color(0xFF14A36F);
   static const Color ctaStart = stitchGreenUiEnabled
       ? Color(0xFF0F8E62)
       : Color(0xFF245CC5);
@@ -38,15 +38,19 @@ class AppColors {
       ? Color(0xFF32C789)
       : Color(0xFF4D8DF7);
 
-  // Supporting accents. They never compete with the dominant green.
+  // Supporting accents. Green is the health/leaf accent under Blue Wellness.
   static const Color secondary = stitchGreenUiEnabled
       ? Color(0xFF58B9E8)
-      : Color(0xFF38A9E8);
+      : Color(0xFF14A36F);
   static const Color secondaryDark = stitchGreenUiEnabled
       ? Color(0xFF247CA8)
-      : Color(0xFF1977A8);
-  static const Color secondaryLight = Color(0xFF9DDCF5);
-  static const Color secondarySoft = Color(0xFFE7F6FD);
+      : Color(0xFF0F6F4D);
+  static const Color secondaryLight = stitchGreenUiEnabled
+      ? Color(0xFF9DDCF5)
+      : Color(0xFF62DDA3);
+  static const Color secondarySoft = stitchGreenUiEnabled
+      ? Color(0xFFE7F6FD)
+      : Color(0xFFE0F6EB);
   static const Color tertiary = stitchGreenUiEnabled
       ? Color(0xFF8B7CF6)
       : Color(0xFF8174E8);
@@ -54,10 +58,14 @@ class AppColors {
   static const Color clinicalNavy = stitchGreenUiEnabled
       ? Color(0xFF12352A)
       : Color(0xFF102A43);
-  static const Color wellnessMint = primary;
+  static const Color wellnessGreen = Color(0xFF14A36F);
+  static const Color wellnessGreenDark = Color(0xFF0F6F4D);
+  static const Color wellnessGreenLight = Color(0xFF62DDA3);
+  static const Color wellnessGreenSoft = Color(0xFFE0F6EB);
+  static const Color wellnessMint = wellnessGreen;
 
   static const Color energyYellow = Color(0xFFFFC857);
-  static const Color calmBlue = secondary;
+  static const Color calmBlue = Color(0xFF38A9E8);
   static const Color careCoral = Color(0xFFFF7D75);
   static const Color personalPurple = tertiary;
   static const Color nabiSkinTint = Color(0xFFFDE8E7);
@@ -108,8 +116,7 @@ class AppColors {
       ? Color(0xFFFFFFFF)
       : Color(0xFFFCFDFF);
 
-  // Frozen Green Wellness dark fallbacks. AppTheme derives its ColorScheme
-  // deterministically from [primary] using Material 3 fidelity.
+  // Frozen Blue Wellness dark defaults with a retained Green rollback branch.
   static const Color darkBackground = stitchGreenUiEnabled
       ? Color(0xFF0E1512)
       : Color(0xFF07172B);
@@ -197,9 +204,18 @@ class AppColors {
   static const Color overlay = stitchGreenUiEnabled
       ? Color(0x5212352A)
       : Color(0x52102A43);
+  static const Color overlayGradient = stitchGreenUiEnabled
+      ? Color(0x9912352A)
+      : Color(0x99102A43);
+  static const Color overlayTransparent = stitchGreenUiEnabled
+      ? Color(0x0012352A)
+      : Color(0x00102A43);
   static const Color overlayStrong = stitchGreenUiEnabled
       ? Color(0x8012352A)
       : Color(0x80102A43);
+  static const Color shadow = stitchGreenUiEnabled
+      ? Color(0x2412352A)
+      : Color(0x24102A43);
   static const Color scrim = stitchGreenUiEnabled
       ? Color(0x6612352A)
       : Color(0x66102A43);
@@ -237,8 +253,8 @@ class AppColors {
       : Color(0xFF315678);
 
   // Navigation and icon colors.
-  static const Color icon = Color(0xFF60766E);
-  static const Color iconSecondary = Color(0xFF8A9B94);
+  static const Color icon = textSecondary;
+  static const Color iconSecondary = textMuted;
   static const Color iconDisabled = textDisabled;
   static const Color darkIcon = darkTextSecondary;
   static const Color darkIconSecondary = darkTextMuted;
@@ -263,7 +279,7 @@ class AppColors {
   static const LinearGradient successGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [brandAccent, ctaEnd],
+    colors: [success, wellnessGreen],
   );
 
   // Backward-compatible aliases.

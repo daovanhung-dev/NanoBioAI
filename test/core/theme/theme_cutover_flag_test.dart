@@ -8,12 +8,12 @@ import 'package:nano_app/core/theme/app_theme.dart';
 import 'package:nano_app/core/theme/tokens/color_tokens.dart';
 
 void main() {
-  test('Green is the default and false remains the explicit Blue rollback', () {
+  test('Blue is the default and true enables the explicit Green rollback', () {
     final source = File(
       'lib/core/theme/app_theme_flags.dart',
     ).readAsStringSync();
-    expect(source, contains('defaultValue: true'));
-    expect(source, contains('STITCH_GREEN_UI_ENABLED=false'));
+    expect(source, contains('defaultValue: false'));
+    expect(source, contains('STITCH_GREEN_UI_ENABLED=true'));
     expect(source, isNot(contains('kReleaseMode')));
   });
 
@@ -22,7 +22,7 @@ void main() {
     () {
       const expectsGreen = bool.fromEnvironment(
         'STITCH_GREEN_UI_ENABLED',
-        defaultValue: true,
+        defaultValue: false,
       );
       final expectedPrimary = expectsGreen
           ? const Color(0xFF006A46)

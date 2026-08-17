@@ -36,7 +36,7 @@ class AppSpacing {
   // SEMANTIC SPACING
   // ============================================================
 
-  // Green Wellness follows a 4/8 rhythm with a 16 dp mobile page gutter and
+  // Blue Wellness follows a 4/8 rhythm with a 16 dp mobile page gutter and
   // 24 dp separation between major sections.
   static const double pagePadding = 16;
   static const double pagePaddingLarge = 24;

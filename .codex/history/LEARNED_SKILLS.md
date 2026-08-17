@@ -4,11 +4,11 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- docs-context - Context and docs update: 30 worklog(s)
-- coding - Coding: 28 worklog(s)
+- docs-context - Context and docs update: 36 worklog(s)
+- coding - Coding: 29 worklog(s)
 - bugfix - Direct bugfix: 23 worklog(s)
-- supabase-schema - Supabase schema and RLS: 14 worklog(s)
-- test - Test and verification: 7 worklog(s)
+- supabase-schema - Supabase schema and RLS: 15 worklog(s)
+- test - Test and verification: 8 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - find-issues - Review and find issues: 2 worklog(s)
 - refactor-scaffold - Scaffold refactor: 2 worklog(s)
@@ -17,18 +17,18 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 19
-- authentication: 2
+- unknown: 25
 - docs/issues, docs/todo: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
+- authentication: 2
 - M05 AI / AI Chat / runtime configuration: 2
-- M05 AI / runtime configuration / onboarding: 2
 - docs/DD M01-M19: 2
 - UI / Theme / NabiCopy, toan bo app surfaces: 2
+- M05 AI / runtime configuration / onboarding: 2
 - .codex: 2
-- M05 Authentication / App bootstrap config: 1
+- M05 AI / Meal / Exercise / AI Chat / runtime config: 1
+- v2 authentication: 1
 - UI/UX dùng chung cho V1, V2, V3, Sale và Admin: 1
-- M05 AUTH_PROFILE_SYNC, Settings Guest entry, authenticated Android build.: 1
 
 ## Reusable Project Skills
 

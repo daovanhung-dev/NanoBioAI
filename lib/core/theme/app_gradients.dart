@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Named gradients for the NaBi Green Wellness visual language.
+/// Named gradients for the Nabi Blue Wellness visual language.
 ///
 /// Gradients are reserved for hero, primary CTA, celebration and focused
 /// progress. Routine data cards should remain solid surfaces.
@@ -65,7 +65,7 @@ class AppGradients {
   );
 
   static const LinearGradient success = LinearGradient(
-    colors: [AppColors.brandAccent, AppColors.ctaEnd],
+    colors: [AppColors.success, AppColors.wellnessGreen],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -121,25 +121,25 @@ class AppGradients {
   );
 
   static const LinearGradient overlayTop = LinearGradient(
-    colors: [Color(0x9912352A), Color(0x0012352A)],
+    colors: [AppColors.overlayGradient, AppColors.overlayTransparent],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient overlayBottom = LinearGradient(
-    colors: [Color(0x0012352A), Color(0xB312352A)],
+    colors: [AppColors.overlayTransparent, AppColors.overlayStrong],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
   static const LinearGradient overlayLeft = LinearGradient(
-    colors: [Color(0x9912352A), Color(0x0012352A)],
+    colors: [AppColors.overlayGradient, AppColors.overlayTransparent],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
 
   static const LinearGradient overlayRight = LinearGradient(
-    colors: [Color(0x0012352A), Color(0x9912352A)],
+    colors: [AppColors.overlayTransparent, AppColors.overlayGradient],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
@@ -177,7 +177,7 @@ class AppGradients {
   );
 
   static const LinearGradient glassDark = LinearGradient(
-    colors: [Color(0xCC202724), Color(0x99171D1B)],
+    colors: [AppColors.darkSurfaceElevated, AppColors.darkSurface],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

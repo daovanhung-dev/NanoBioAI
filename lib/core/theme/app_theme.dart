@@ -42,7 +42,7 @@ class AppTheme {
       onSurfaceVariant: AppColors.textSecondary,
       outline: AppColors.outline,
       outlineVariant: AppColors.borderLight,
-      shadow: Color(0x2412352A),
+      shadow: AppColors.shadow,
       scrim: AppColors.scrim,
       inverseSurface: AppColors.primaryDark,
       onInverseSurface: AppColors.textInverse,
@@ -127,7 +127,7 @@ class AppTheme {
         color: AppColors.card,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shadowColor: const Color(0x1212352A),
+        shadowColor: AppColors.shadow,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.card),

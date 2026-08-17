@@ -2,26 +2,45 @@ import 'package:flutter/material.dart';
 
 import 'app_theme_flags.dart';
 
-/// Soft, green-tinted depth system. Heavy black drop shadows are intentionally
-/// avoided so cards remain calm and lightweight.
+/// Soft brand-tinted depth system. Heavy black drop shadows are intentionally
+/// avoided so cards remain calm and lightweight in either compatibility mode.
 @immutable
 class AppShadows {
   const AppShadows._();
 
+  static const Color _xsTint = AppThemeFlags.stitchGreenUiEnabled
+      ? Color(0x0F12352A)
+      : Color(0x0F102A43);
+  static const Color _smTint = AppThemeFlags.stitchGreenUiEnabled
+      ? Color(0x1212352A)
+      : Color(0x12102A43);
+  static const Color _mdTint = AppThemeFlags.stitchGreenUiEnabled
+      ? Color(0x1712352A)
+      : Color(0x17102A43);
+  static const Color _lgTint = AppThemeFlags.stitchGreenUiEnabled
+      ? Color(0x1C12352A)
+      : Color(0x1C102A43);
+  static const Color _xlTint = AppThemeFlags.stitchGreenUiEnabled
+      ? Color(0x2412352A)
+      : Color(0x24102A43);
+  static const Color _glassTint = AppThemeFlags.stitchGreenUiEnabled
+      ? Color(0x1412352A)
+      : Color(0x14102A43);
+
   static const List<BoxShadow> xs = [
-    BoxShadow(color: Color(0x0F12352A), blurRadius: 4, offset: Offset(0, 1)),
+    BoxShadow(color: _xsTint, blurRadius: 4, offset: Offset(0, 1)),
   ];
   static const List<BoxShadow> sm = [
-    BoxShadow(color: Color(0x1212352A), blurRadius: 10, offset: Offset(0, 3)),
+    BoxShadow(color: _smTint, blurRadius: 10, offset: Offset(0, 3)),
   ];
   static const List<BoxShadow> md = [
-    BoxShadow(color: Color(0x1712352A), blurRadius: 18, offset: Offset(0, 6)),
+    BoxShadow(color: _mdTint, blurRadius: 18, offset: Offset(0, 6)),
   ];
   static const List<BoxShadow> lg = [
-    BoxShadow(color: Color(0x1C12352A), blurRadius: 28, offset: Offset(0, 10)),
+    BoxShadow(color: _lgTint, blurRadius: 28, offset: Offset(0, 10)),
   ];
   static const List<BoxShadow> xl = [
-    BoxShadow(color: Color(0x2412352A), blurRadius: 40, offset: Offset(0, 16)),
+    BoxShadow(color: _xlTint, blurRadius: 40, offset: Offset(0, 16)),
   ];
 
   static const List<BoxShadow> card = sm;
@@ -52,7 +71,7 @@ class AppShadows {
     ),
   ];
   static const List<BoxShadow> floating = [
-    BoxShadow(color: Color(0x2412352A), blurRadius: 24, offset: Offset(0, 10)),
+    BoxShadow(color: _xlTint, blurRadius: 24, offset: Offset(0, 10)),
   ];
   static const List<BoxShadow> focus = [
     BoxShadow(
@@ -64,7 +83,7 @@ class AppShadows {
     ),
   ];
   static const List<BoxShadow> divider = [
-    BoxShadow(color: Color(0x0F12352A), blurRadius: 1, offset: Offset(0, 1)),
+    BoxShadow(color: _xsTint, blurRadius: 1, offset: Offset(0, 1)),
   ];
   static const List<BoxShadow> primary = [
     BoxShadow(
@@ -79,7 +98,7 @@ class AppShadows {
     BoxShadow(
       color: AppThemeFlags.stitchGreenUiEnabled
           ? Color(0x3358B9E8)
-          : Color(0x3338A9E8),
+          : Color(0x3314A36F),
       blurRadius: 22,
       offset: Offset(0, 8),
     ),
@@ -93,13 +112,15 @@ class AppShadows {
   static const List<BoxShadow> danger = [
     BoxShadow(color: Color(0x33FF7D75), blurRadius: 22, offset: Offset(0, 8)),
   ];
-  static const List<BoxShadow> info = secondary;
+  static const List<BoxShadow> info = [
+    BoxShadow(color: Color(0x3338A9E8), blurRadius: 22, offset: Offset(0, 8)),
+  ];
   static const List<BoxShadow> glass = [
-    BoxShadow(color: Color(0x1412352A), blurRadius: 24, offset: Offset(0, 8)),
+    BoxShadow(color: _glassTint, blurRadius: 24, offset: Offset(0, 8)),
   ];
   static const List<BoxShadow> neumorphismLight = [
     BoxShadow(color: Color(0x12FFFFFF), blurRadius: 12, offset: Offset(-4, -4)),
-    BoxShadow(color: Color(0x1412352A), blurRadius: 12, offset: Offset(4, 4)),
+    BoxShadow(color: _glassTint, blurRadius: 12, offset: Offset(4, 4)),
   ];
   static const List<BoxShadow> neumorphismDark = [
     BoxShadow(color: Color(0x66000000), blurRadius: 14, offset: Offset(5, 5)),

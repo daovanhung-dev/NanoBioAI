@@ -48,7 +48,7 @@ class ShadowFoundation {
   /// **Use cases:** Default cards, chips, small floating elements
   static const List<BoxShadow> shadowSm = [
     BoxShadow(
-      color: Color(0x1212352A), // 8% opacity
+      color: Color(0x12102A43), // 8% opacity
       blurRadius: 6,
       offset: Offset(0, 2),
     ),
@@ -63,7 +63,7 @@ class ShadowFoundation {
   /// **Use cases:** Elevated cards, dropdown menus, floating action buttons
   static const List<BoxShadow> shadowMd = [
     BoxShadow(
-      color: Color(0x1712352A), // 10% opacity
+      color: Color(0x17102A43), // 10% opacity
       blurRadius: 12,
       offset: Offset(0, 4),
     ),
@@ -78,7 +78,7 @@ class ShadowFoundation {
   /// **Use cases:** Dialogs, modals, bottom sheets, prominent overlays
   static const List<BoxShadow> shadowLg = [
     BoxShadow(
-      color: Color(0x1C12352A), // 15% opacity
+      color: Color(0x1C102A43), // 15% opacity
       blurRadius: 20,
       offset: Offset(0, 8),
     ),

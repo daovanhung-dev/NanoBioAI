@@ -4,7 +4,7 @@ import 'design_system.dart';
 /// Design System Demo Page
 ///
 /// This page demonstrates all primitive components and tokens from the
-/// NaBi Green Wellness design system. Use this as a visual reference and testing ground
+/// Nabi Blue Wellness design system. Use this as a visual reference and testing ground.
 /// for the new design system.
 ///
 /// **To view this page:**
@@ -36,7 +36,7 @@ class _DesignSystemDemoPageState extends State<DesignSystemDemoPage> {
       theme: _isDarkMode ? _buildDarkTheme() : _buildLightTheme(),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Bản xem trước NaBi Green Wellness'),
+          title: const Text('Bản xem trước Nabi Blue Wellness'),
           actions: [
             IconButton(
               icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),

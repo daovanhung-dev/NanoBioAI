@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 114
+- Total worklogs: 123
 - Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -123,3 +123,12 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-15 | Bug fix / Android build toolchain | test | android/ | [Worklog - Android build toolchain compatibility](../../docs/worklog/2026-08-15/002-worklog-android-build-toolchain-compatibility.md) |
 | 2026-08-15 | bugfix | bugfix | Android build toolchain / Gradle Wrapper | [Worklog - Fix Android Gradle minimum version](../../docs/worklog/2026-08-15/002-worklog-android-gradle-minimum-version.md) |
 | 2026-08-15 | bugfix | bugfix | Android build toolchain | [Worklog - Android build toolchain Kotlin compatibility](../../docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md) |
+| 2026-08-15 | coding | coding | V1 Meal Plan / Presentation | [Worklog - Meal Plan image wiring direct source](../../docs/worklog/2026-08-15/004-worklog-meal-plan-image-wiring-direct.md) |
+| 2026-08-15 | unknown | docs-context | unknown | [Worklog - Meal image compatibility and analyzer cleanup](../../docs/worklog/2026-08-15/meal-image-analyzer-bugfix.md) |
+| 2026-08-16 | coding + data validation | supabase-schema | V1 Meal Plan / meal catalog / local meal assets | [Worklog - Đồng bộ thực đơn và ảnh Meal Plan](../../docs/worklog/2026-08-16/001-worklog-meal-catalog-image-sync.md) |
+| 2026-08-16 | unknown | docs-context | unknown | [Worklog - Fix nút hoàn thành lịch trình không mở camera](../../docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-camera-completion-fix.md) |
+| 2026-08-16 | unknown | docs-context | unknown | [Worklog - Lifestyle Schedule proof va reward completion flow](../../docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-proof-reward-flow.md) |
+| 2026-08-16 | unknown | docs-context | unknown | [Worklog - Fix Lifestyle Schedule camera resume race](../../docs/worklog/2026-08-16/003-worklog-lifestyle-schedule-camera-resume-race.md) |
+| 2026-08-16 | unknown | docs-context | unknown | [Worklog — Lifestyle Schedule item detail](../../docs/worklog/2026-08-16/004-worklog-lifestyle-schedule-item-detail.md) |
+| 2026-08-16 | unknown | docs-context | unknown | [Worklog — Daily Health Hub / Ngày của tôi](../../docs/worklog/2026-08-16/005-worklog-daily-health-hub.md) |
+| 2026-08-17 | coding / asset generation / docs / test | test | UI / Theme / NabiCopy, Nabi v2 asset bundle | [Worklog - Nabi Blue va Blue Wellness cutover](../../docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md) |

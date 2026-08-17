@@ -1,4 +1,4 @@
-/// NaBi Green Wellness Design System - Layer 3 Export
+/// Nabi Blue Wellness Design System - Layer 3 Export
 ///
 /// This file exports the complete three-layer token architecture and primitive
 /// component library for the NanoBio application experience.

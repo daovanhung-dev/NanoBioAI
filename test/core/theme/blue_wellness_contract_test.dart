@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,22 +13,24 @@ import 'package:nano_app/core/theme/primitives/chip.dart';
 import 'package:nano_app/core/theme/primitives/states/loading_state.dart';
 
 void main() {
-  group('NaBi Green Wellness tokens', () {
+  group('Nabi Blue Wellness tokens', () {
     test('canonical palette matches the approved design source', () {
-      expect(AppColors.primary, const Color(0xFF006A46));
-      expect(AppColors.primaryDark, const Color(0xFF075E45));
-      expect(AppColors.primaryLight, const Color(0xFF62DDA3));
-      expect(AppColors.primarySoft, const Color(0xFFDDF6E9));
-      expect(AppColors.primarySubtle, const Color(0xFFEAF9F1));
+      expect(AppColors.primary, const Color(0xFF2F6FED));
+      expect(AppColors.primaryDark, const Color(0xFF1746A2));
+      expect(AppColors.primaryLight, const Color(0xFF6EA8FE));
+      expect(AppColors.primarySoft, const Color(0xFFE8F1FF));
+      expect(AppColors.primarySubtle, const Color(0xFFF4F8FF));
       expect(AppColors.brandAccent, const Color(0xFF14A36F));
-      expect(AppColors.background, const Color(0xFFF5FAF7));
-      expect(AppColors.textPrimary, const Color(0xFF12352A));
-      expect(AppColors.textSecondary, const Color(0xFF60766E));
-      expect(AppColors.border, const Color(0xFFD9E9E1));
-      expect(AppColors.focusRing, const Color(0xFF68D9A5));
+      expect(AppColors.secondary, const Color(0xFF14A36F));
+      expect(AppColors.wellnessGreen, const Color(0xFF14A36F));
+      expect(AppColors.background, const Color(0xFFF7FAFF));
+      expect(AppColors.textPrimary, const Color(0xFF15253D));
+      expect(AppColors.textSecondary, const Color(0xFF5B6B82));
+      expect(AppColors.border, const Color(0xFFDCE6F4));
+      expect(AppColors.focusRing, const Color(0xFF7DB2FF));
       expect(AppGradients.primary.colors, const [
-        Color(0xFF0F8E62),
-        Color(0xFF32C789),
+        Color(0xFF245CC5),
+        Color(0xFF4D8DF7),
       ]);
     });
 
@@ -53,7 +56,7 @@ void main() {
 
     test('dark scheme is a deterministic Material 3 fidelity snapshot', () {
       final expected = ColorScheme.fromSeed(
-        seedColor: const Color(0xFF006A46),
+        seedColor: const Color(0xFF2F6FED),
         brightness: Brightness.dark,
         dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
       );
@@ -74,7 +77,7 @@ void main() {
       );
     });
 
-    test('layout tokens meet the Green Wellness geometry contract', () {
+    test('layout tokens meet the Blue Wellness geometry contract', () {
       expect(AppSpacing.pagePadding, 16);
       expect(AppSpacing.sectionSpacing, 24);
       expect(AppSpacing.touchTargetMin, 48);
@@ -101,7 +104,7 @@ void main() {
     );
 
     final semantics = tester.getSemantics(find.byType(AppChip));
-    expect(semantics.flagsCollection.isSelected, isTrue);
+    expect(semantics.flagsCollection.isSelected, Tristate.isTrue);
     expect(
       tester.getSize(find.byType(AppChip)).height,
       greaterThanOrEqualTo(48),
@@ -153,7 +156,7 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: 'Feature UI must consume semantic Green Wellness tokens.',
+        reason: 'Feature UI must consume semantic Blue Wellness tokens.',
       );
     },
   );

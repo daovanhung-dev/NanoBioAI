@@ -4,13 +4,13 @@ import 'package:flutter/foundation.dart';
 final class AppThemeFlags {
   const AppThemeFlags._();
 
-  /// Compile-time rollback switch for the Green Wellness cutover.
+  /// Compile-time compatibility switch for the former Green Wellness theme.
   ///
-  /// Every build defaults to the Green Wellness palette. Passing
-  /// `--dart-define=STITCH_GREEN_UI_ENABLED=false` remains the one-release
-  /// rollback path to the previous Blue Wellness palette.
+  /// Every build defaults to Blue Wellness. Passing
+  /// `--dart-define=STITCH_GREEN_UI_ENABLED=true` enables the retained Green
+  /// Wellness rollback palette without changing product behavior.
   static const bool stitchGreenUiEnabled = bool.fromEnvironment(
     'STITCH_GREEN_UI_ENABLED',
-    defaultValue: true,
+    defaultValue: false,
   );
 }

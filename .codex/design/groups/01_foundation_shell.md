@@ -2,13 +2,14 @@
 
 App composition, router, navigation, theme/motion scope and global feedback. Preserve app-surface selection and redirect semantics.
 
-## Green Wellness foundation contract
+## Blue Wellness foundation contract
 
-- Consumer/Sale seed: `#006A46`; accent `#14A36F`; CTA `#0F8E62 -> #32C789`.
-- Light canvas `#F5FAF7`, text `#12352A`, mint surface `#EAF9F1`.
+- Consumer/Sale seed: `#2F6FED`; wellness accent `#14A36F`; CTA `#245CC5 -> #4D8DF7`.
+- Light canvas `#F7FAFF`, text `#15253D`, soft blue surface `#F4F8FF`.
+- Blue owns brand/navigation/CTA; green owns leaf/health/success/nutrition/positive progress.
 - Roboto weights 400/500/600/700; page gutter 16; input/card/sheet radii 14/20/28.
 - Expose light and deterministic Material 3 fidelity dark schemes through semantic theme roles.
-- Preserve the static facade only during migration; new presentation reads context-aware semantic colors.
+- Preserve the static facade only during migration; new presentation reads context-aware semantic colors. `STITCH_GREEN_UI_ENABLED=true` is rollback compatibility.
 - Apply safe area, keyboard/focus, 48 dp targets, text scale and reduced-motion settings at the app shell.
 - Admin keeps its independent workspace palette and lower-motion density while sharing typography, accessibility and dark compatibility.
 

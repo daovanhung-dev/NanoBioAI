@@ -1,11 +1,12 @@
-# NanoBio Stitch Green Wellness - Master Design
+# NanoBio Blue Wellness - Master Design
 
-The filename remains stable for project links. The target language is **Stitch Green Wellness** for consumer and Sale surfaces.
+The filename remains stable for project links. The target language is **Blue Wellness** for consumer and Sale surfaces; historical Stitch Green references govern layout, not the active palette.
 
 ## Authority formula
 
 - Stitch `screen.png`: layout, hierarchy and composition.
-- Stitch `code.html`: typography and token intent.
+- Stitch `code.html`: typography and non-color token intent.
+- Blue Wellness tokens: brand, navigation, CTA and surface color authority.
 - Approved DD and current runtime: business rules, access, data and state transitions.
 - Admin: independent operational workspace theme, not a Stitch redesign.
 
@@ -19,12 +20,12 @@ The filename remains stable for project links. The target language is **Stitch G
 
 ## Signature tokens
 
-- Primary `#006A46`; supporting accent `#14A36F`.
-- Primary CTA gradient `#0F8E62` to `#32C789`.
-- Light background `#F5FAF7`; primary text `#12352A`; mint surface `#EAF9F1`.
+- Primary `#2F6FED`; supporting wellness accent `#14A36F`.
+- Primary CTA gradient `#245CC5` to `#4D8DF7`.
+- Light background `#F7FAFF`; primary text `#15253D`; blue surface `#F4F8FF`.
 - Compact page gutter 16 dp; input radius 14 dp; card radius 20 dp; sheet radius 28 dp.
 - Roboto 400/500/600/700 is bundled and deterministic.
-- Dark mode is a frozen Material 3 fidelity scheme derived from seed `#006A46`; it is not device dynamic color and requires contrast snapshots.
+- Dark mode is a frozen Material 3 fidelity scheme derived from seed `#2F6FED`; it is not device dynamic color and requires contrast snapshots.
 
 ## Experience principles
 
@@ -36,4 +37,4 @@ Never show payment, reward, access, plan generation, AI output or save success b
 
 ## Release invariant
 
-The `stitchGreenUi` cutover cannot be called complete until all 76 Stitch references have classification and light/dark/adaptive/accessibility evidence. Module business flags remain separate, and missing DD/clinical/privacy approval fails closed to an honest placeholder.
+The Blue Wellness cutover cannot be called complete until all 76 Stitch references have classification and light/dark/adaptive/accessibility evidence. `stitchGreenUi` remains a separate compatibility flag, module business flags remain separate, and missing DD/clinical/privacy approval fails closed to an honest placeholder.

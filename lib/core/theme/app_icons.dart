@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// ============================================================
 /// APP ICONS
 /// ------------------------------------------------------------
-/// Centralized scalable icon system for NaBi Green Wellness
+/// Centralized scalable icon system for Nabi Blue Wellness.
 /// - Backward compatible
 /// - AI-first architecture ready
 /// - Modern semantic naming

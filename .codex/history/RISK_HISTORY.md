@@ -662,3 +662,54 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md :: ## Loi/Rui ro
 - docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md :: - Chua fix: Khong co loi build blocking nao sau khi build lai.
 - docs/worklog/2026-08-15/003-worklog-android-build-toolchain-compatibility-kotlin.md :: - Can kiem tra tiep: Flutter se som bo canh bao ho tro cac phien ban toolchain cu hon; nang len major tiep theo trong mot dot rieng.
+- docs/worklog/2026-08-15/004-worklog-meal-plan-image-wiring-direct.md :: - Giu co che exact-match/fail-closed cua `MealImageResolver`; khong fuzzy-match anh sai mon.
+- docs/worklog/2026-08-15/004-worklog-meal-plan-image-wiring-direct.md :: - `dart format`: SKIPPED - Dart SDK khong co trong runtime sandbox.
+- docs/worklog/2026-08-15/004-worklog-meal-plan-image-wiring-direct.md :: - `flutter analyze/test`: SKIPPED - Flutter SDK khong co trong runtime sandbox.
+- docs/worklog/2026-08-15/004-worklog-meal-plan-image-wiring-direct.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-15/004-worklog-meal-plan-image-wiring-direct.md :: - Chua fix: khong mo rong danh sach asset/resolver; asset moi can duoc xac minh rieng truoc khi them.
+- docs/worklog/2026-08-15/004-worklog-meal-plan-image-wiring-direct.md :: - Can kiem tra tiep: chay targeted Flutter analyze/test tren may co Flutter SDK.
+- docs/worklog/2026-08-15/meal-image-analyzer-bugfix.md :: - Flutter analyze/test: blocked in artifact sandbox because Flutter/Dart executables are unavailable.
+- docs/worklog/2026-08-15/meal-image-analyzer-bugfix.md :: - Direct `git clone`: blocked by sandbox DNS; current repository source was inspected via connected GitHub access.
+- docs/worklog/2026-08-16/001-worklog-meal-catalog-image-sync.md :: - `python tools/sync_meal_catalog_sql.py --check`: SKIPPED trong runtime này vì GitHub checkout không materialize được do DNS; static source audit cho thấy seed hiện được sinh bởi canonical sync tool.
+- docs/worklog/2026-08-16/001-worklog-meal-catalog-image-sync.md :: - `flutter analyze` / `flutter test`: SKIPPED trong runtime này vì không có full checkout/Flutter SDK materialized; targeted tests được bàn giao để chạy trên checkout dự án.
+- docs/worklog/2026-08-16/001-worklog-meal-catalog-image-sync.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED vì không có full checkout/PowerShell project context trong runtime artifact.
+- docs/worklog/2026-08-16/001-worklog-meal-catalog-image-sync.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-08-16/001-worklog-meal-catalog-image-sync.md :: - Cần kiểm tra tiếp: chạy `python tools/validate_meal_sync.py`, targeted Flutter test/analyze và mở Meal Plan trên thiết bị sau khi chép các file vào checkout thật.
+- docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-camera-completion-fix.md :: - Blocker nằm trong controller: reward `beginCompletion()` chạy trước camera và có thể return `blocked`.
+- docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-camera-completion-fix.md :: - Camera permission denied đang trả `null`, trùng với semantic của thao tác cancel và tạo silent failure.
+- docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-proof-reward-flow.md :: `LifestyleScheduleController.toggleItem()` truoc day bat buoc `beginCompletion()` thanh cong truoc khi mo camera. Moi `ScheduleRewardException`, ke ca cac loi co `canContinueWithoutReward=true` nhu mat mang, het session hoac eligibility chua san sang, deu return `blocked` ngay lap tuc. Dieu nay trai voi BD da Approved: Guest/offline van duoc chup anh va hoan thanh local, chi khong nhan Diem cham soc co the doi qua.
+- docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-proof-reward-flow.md :: - Giu fail-closed voi loi nghiep vu khong duoc phep tiep tuc: task chua mo/da het han/proof invalid theo backend.
+- docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-proof-reward-flow.md :: - khong return `blocked` truoc camera;
+- docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-proof-reward-flow.md :: - `dart format`: BLOCKED - container khong co executable `dart`.
+- docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-proof-reward-flow.md :: - `flutter analyze`: BLOCKED - container khong co executable `flutter`.
+- docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-proof-reward-flow.md :: - `flutter test`: BLOCKED - container khong co executable `flutter`.
+- docs/worklog/2026-08-16/002-worklog-lifestyle-schedule-proof-reward-flow.md :: - Clone GitHub bang `git clone`: BLOCKED do container khong resolve duoc `github.com`; source duoc doc tu GitHub connector tren `main` va file thay doi duoc tao local de dong goi.
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - Manual health tasks support once/daily/weekdays/weekends recurrence over the current 7-day schedule horizon and optional reminders.
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - Manual tasks are excluded from the official Daily Schedule / M08 score denominator to prevent user-created task farming from distorting Health Score.
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - Manual rewarded completions are capped server-side; the client never writes the wellness ledger.
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - manual task create/edit/delete;
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: The UI now presents a “Ngày của tôi” panel above the timeline with current health snapshot, quick actions, manual task entry, and a short Nabi insight.
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: ### Manual tasks
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: Manual schedule items reuse the existing `lifestyle_schedule_items` schema with:
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - `source_type = manual_health_task`;
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: `DailyScheduleScoreService` moved to `daily_schedule_equal_v2_2026_08` and excludes `manual_health_task` from the score denominator. Generated/approved schedule tasks continue to drive the official daily score.
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: Manual tasks reuse the existing reminder scheduler. The scheduler now:
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - respects the manual task reminder flag;
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - manual task daily reward cap;
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: Because the current `setup.sql` mobile snapshot function treats generated schedule reward eligibility + active JPEG proof as authoritative, the migration wraps `sync_my_mobile_snapshot(jsonb)` and overlays structured `schedule_health_checkins` after the canonical base sync. This preserves generated typed completions and completed manual tasks without weakening the photo-proof contract.
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - manual task exclusion from Daily Schedule score;
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - manual recurrence/local persistence;
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - manual reminder opt-out and non-camera reminder copy;
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - Supabase migration static contract: PASS for RPCs, RLS, write revocation, manual eligibility policy, snapshot wrapper, and unchanged JPEG proof contract.
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: - manual reminder on/off;
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: The requested source implementation is complete in the scoped change package. Production acceptance remains blocked by unavailable Flutter and Supabase sandbox tooling, not by intentionally omitted source behavior.
+- docs/worklog/2026-08-16/005-worklog-daily-health-hub.md :: Start with targeted Flutter tests and sandbox SQL acceptance from this exact file set. Do not reopen broad project context unless a failing test demonstrates a cross-domain dependency.
+- docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Ket thuc: 10:50:03 (partial, dang cho xac nhan image CLI fallback)
+- docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Built-in image generation neutral master: PARTIAL - visual dung, output RGB thay vi RGBA.
+- docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Built-in background extraction: FAIL contract - van la RGB, khong co alpha channel.
+- docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL do baseline dang tham chieu cac file `docs/supabase/*` khong ton tai; khong lien quan den thay doi theme/Nabi cua phien nay.
+- docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Chua fix: 5 master RGBA Nabi Blue chua duoc tao; vi vay bundle derivative van la identity ivory cu va chua duoc regenerate.
+- docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Chua fix: `.codex` integrity baseline con stale path den `docs/supabase/README.md`, `config.sql` va `11-admin-access-dashboard.sql`; task nay khong duoc phep tai tao Supabase docs.
+- docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Can kiem tra tiep: can user xac nhan CLI/API image fallback voi `OPENAI_API_KEY` da cau hinh, hoac cung cap 5 master RGBA da tach nen. Sau do regenerate/validate bundle, build APK, verify release assets va visual QA.
+- docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Muc do hoan thanh task: partial; theme cutover hoan tat va co bang chung, asset cutover chua duoc phep chuyen sang CLI fallback.

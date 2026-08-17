@@ -2,17 +2,18 @@
 
 - Canonical key: supabase-schema
 - Workflow: .codex/workflows/supabase-schema.md
-- Generated from 14 worklog(s).
+- Generated from 15 worklog(s).
 
 ## When To Read
 
+- Historical task type: Supabase schema/seed fixture va smoke test (1)
 - Historical task type: Mo rong fixture Supabase local/sandbox, tai lieu va contract test. (1)
 - Historical task type: coding/bugfix/test/docs (1)
-- Historical task type: coding + Supabase schema draft + Admin UI + tests + docs (1)
-- Historical task type: Supabase schema/seed fixture va smoke test (1)
+- Historical task type: bugfix + test (1)
+- Historical task type: coding + data validation (1)
 - Historical task type: coding / Supabase schema / test authoring / static validation. (1)
 - Historical task type: coding + Supabase contract + test + DD/docs. (1)
-- Historical task type: bugfix + test (1)
+- Historical task type: coding + Supabase schema draft + Admin UI + tests + docs (1)
 - Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)
 - Historical task type: docs-context / audit checklist (1)
 - Historical task type: docs/coding (1)
@@ -24,13 +25,13 @@
 ## Common Modules
 
 - unknown: 2
-- Auth, subscription/quota, FamilyPlus, Sale, Admin, Wellness/reward, Nabi va Storage proof.: 1
-- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
+- Sale/referral, M12 va M14: 1
 - M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M09 SCHEDULE_NOTIFICATIONS, M15 ADMIN_DASHBOARD: 1
+- Auth, subscription/quota, FamilyPlus, Sale, Admin, Wellness/reward, Nabi va Storage proof.: 1
+- V1 Meal Plan / meal catalog / local meal assets: 1
 - M13 PAYMENT_MEMBERSHIP và Admin payment queue.: 1
 - Sale/referral dashboard va direct customers: 1
-- Sale/referral, M12 va M14: 1
-- Admin app, Supabase Admin, Sale direct-only: 1
+- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
 
 ## Work Pattern
 

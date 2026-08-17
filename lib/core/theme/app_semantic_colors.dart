@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_theme_flags.dart';
 
-/// Context-aware Green Wellness colors used by presentation code.
+/// Context-aware Blue Wellness colors used by presentation code.
 ///
 /// [AppColors] remains the compatibility facade for legacy consumers. New UI
 /// should read this extension from `Theme.of(context)` so light and dark modes
@@ -61,7 +61,7 @@ final class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
 
   static const Color seed = AppColors.primary;
 
-  /// Exact light palette approved by the Stitch Green Wellness source.
+  /// Active compile-time light palette. Blue Wellness is the default.
   static const AppSemanticColors light = AppSemanticColors(
     primary: AppColors.primary,
     primaryDark: AppColors.primaryDark,
@@ -111,14 +111,14 @@ final class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     scrim: AppColors.scrim,
   );
 
-  /// Literal Material 3 fidelity snapshots generated from the Green and
-  /// one-release rollback seeds.
+  /// Literal Material 3 fidelity snapshots generated from the Blue default
+  /// and retained Green compatibility seeds.
   ///
   /// Keeping the generated values in source prevents an SDK algorithm update
   /// from silently changing production colors or golden screenshots.
   static const ColorScheme darkColorScheme = AppThemeFlags.stitchGreenUiEnabled
       ? _greenDarkColorScheme
-      : _legacyBlueDarkColorScheme;
+      : _blueDarkColorScheme;
 
   static const ColorScheme _greenDarkColorScheme = ColorScheme(
     brightness: Brightness.dark,
@@ -170,7 +170,7 @@ final class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     surfaceTint: Color(0xFF82D8AB),
   );
 
-  static const ColorScheme _legacyBlueDarkColorScheme = ColorScheme(
+  static const ColorScheme _blueDarkColorScheme = ColorScheme(
     brightness: Brightness.dark,
     primary: Color(0xFFB1C5FF),
     onPrimary: Color(0xFF002C72),
@@ -227,16 +227,19 @@ final class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     ctaEnd: const Color(0xFF32C789),
   );
 
-  static final AppSemanticColors legacyBlueDark = _fromDarkScheme(
-    _legacyBlueDarkColorScheme,
-    brandAccent: const Color(0xFF2F6FED),
+  static final AppSemanticColors blueDark = _fromDarkScheme(
+    _blueDarkColorScheme,
+    brandAccent: const Color(0xFF14A36F),
     ctaStart: const Color(0xFF245CC5),
     ctaEnd: const Color(0xFF4D8DF7),
   );
 
+  @Deprecated('Use blueDark; Blue Wellness is no longer a rollback palette.')
+  static final AppSemanticColors legacyBlueDark = blueDark;
+
   static final AppSemanticColors dark = AppThemeFlags.stitchGreenUiEnabled
       ? greenDark
-      : legacyBlueDark;
+      : blueDark;
 
   final Color primary;
   final Color primaryDark;
@@ -313,8 +316,7 @@ final class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       tertiary: scheme.tertiary,
       tertiarySoft: scheme.tertiaryContainer,
       clinicalNavy: scheme.inverseSurface,
-      // Success remains green even when the one-release Blue rollback palette
-      // supplies the active primary scheme.
+      // Success remains green under both the Blue default and Green rollback.
       success: const Color(0xFF82D8AB),
       successSoft: const Color(0xFF164C37),
       warning: const Color(0xFFF4C77A),

@@ -5,19 +5,19 @@ import 'package:nano_app/core/theme/app_semantic_colors.dart';
 
 void main() {
   group('semantic contrast contract', () {
-    test('Green and Blue frozen dark mappings keep brand content readable', () {
+    test('Blue and Green frozen dark mappings keep brand content readable', () {
       final mappings = [
         (
-          name: 'Green',
-          colors: AppSemanticColors.greenDark,
-          hero: const [Color(0xFF075E45), Color(0xFF006A46)],
+          name: 'Blue',
+          colors: AppSemanticColors.blueDark,
+          hero: const [Color(0xFF1746A2), Color(0xFF2F6FED)],
           brandAccent: const Color(0xFF14A36F),
         ),
         (
-          name: 'Blue rollback',
-          colors: AppSemanticColors.legacyBlueDark,
-          hero: const [Color(0xFF1746A2), Color(0xFF2F6FED)],
-          brandAccent: const Color(0xFF2F6FED),
+          name: 'Green rollback',
+          colors: AppSemanticColors.greenDark,
+          hero: const [Color(0xFF075E45), Color(0xFF006A46)],
+          brandAccent: const Color(0xFF14A36F),
         ),
       ];
 
@@ -43,9 +43,9 @@ void main() {
       }
     });
 
-    test('success remains green and readable through Blue rollback', () {
+    test('success remains green and readable in Blue Wellness', () {
       final green = AppSemanticColors.greenDark;
-      final blue = AppSemanticColors.legacyBlueDark;
+      final blue = AppSemanticColors.blueDark;
 
       expect(green.success, const Color(0xFF82D8AB));
       expect(blue.success, green.success);
