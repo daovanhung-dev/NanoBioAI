@@ -95,7 +95,6 @@ class OnboardingState {
       birthYear > 1900 &&
       occupation.trim().isNotEmpty;
 
-  // These sections are optional in the current persisted business contract.
   bool get canContinueGoals => true;
   bool get canContinueConditions => true;
   bool get canContinueLifestyle => true;
@@ -116,8 +115,7 @@ class OnboardingState {
 
   bool get canContinueCurrentStep => canContinueStep(currentStep);
 
-  bool get canSave =>
-      canContinueBasicInfo && routineConfirmed && agreed;
+  bool get canSave => canContinueBasicInfo && routineConfirmed && agreed;
 
   OnboardingEntity toEntity() {
     return OnboardingEntity(
@@ -224,8 +222,7 @@ class OnboardingController extends Notifier<OnboardingState> {
     return const OnboardingState();
   }
 
-  OnboardingRepository get _repository =>
-      ref.read(onboardingRepositoryProvider);
+  OnboardingRepository get _repository => ref.read(onboardingRepositoryProvider);
 
   void nextStep() {
     if (!state.canContinueCurrentStep) {
@@ -248,7 +245,6 @@ class OnboardingController extends Notifier<OnboardingState> {
     AppLogger.navigation(_tag, _stepName(oldStep), _stepName(newStep));
 
     state = state.copyWith(currentStep: newStep);
-
     AppLogger.info(
       _tag,
       'Entered Step ${newStep + 1} - ${_stepTitle(newStep)}',
@@ -263,12 +259,9 @@ class OnboardingController extends Notifier<OnboardingState> {
 
     final oldStep = state.currentStep;
     final newStep = state.currentStep - 1;
-
     AppLogger.action(_tag, 'Back Button Clicked');
     AppLogger.navigation(_tag, _stepName(oldStep), _stepName(newStep));
-
     state = state.copyWith(currentStep: newStep);
-
     AppLogger.info(
       _tag,
       'Entered Step ${newStep + 1} - ${_stepTitle(newStep)}',
@@ -278,21 +271,16 @@ class OnboardingController extends Notifier<OnboardingState> {
   void goToStep(int step) {
     final safeStep = step.clamp(0, OnboardingCatalog.totalSteps - 1).toInt();
     final oldStep = state.currentStep;
-
     AppLogger.action(_tag, 'Jump to Step ${safeStep + 1}');
     AppLogger.navigation(_tag, _stepName(oldStep), _stepName(safeStep));
-
     state = state.copyWith(currentStep: safeStep);
-
     AppLogger.info(
       _tag,
       'Entered Step ${safeStep + 1} - ${_stepTitle(safeStep)}',
     );
   }
 
-  String _stepName(int step) {
-    return 'OnboardingStep${step + 1}';
-  }
+  String _stepName(int step) => 'OnboardingStep${step + 1}';
 
   String _stepTitle(int step) {
     const titles = [
@@ -328,9 +316,7 @@ class OnboardingController extends Notifier<OnboardingState> {
         error is StateError;
   }
 
-  String _safeErrorName(Object error) {
-    return error.runtimeType.toString();
-  }
+  String _safeErrorName(Object error) => error.runtimeType.toString();
 
   void updateEmail(String value) {
     _logFieldPresence('email', value);
@@ -450,16 +436,13 @@ class OnboardingController extends Notifier<OnboardingState> {
   void toggleGoal(String code) {
     final items = [...state.goals];
     final action = items.contains(code) ? 'removed' : 'added';
-
     if (items.contains(code)) {
       items.remove(code);
     } else {
       items.add(code);
     }
-
     _logSelectionCount('selectedGoals', items.length);
     AppLogger.info(_tag, 'Goal selection $action');
-
     state = state.copyWith(goals: items);
   }
 
@@ -492,16 +475,13 @@ class OnboardingController extends Notifier<OnboardingState> {
   void toggleHabit(String code) {
     final items = [...state.habits];
     final action = items.contains(code) ? 'removed' : 'added';
-
     if (items.contains(code)) {
       items.remove(code);
     } else {
       items.add(code);
     }
-
     _logSelectionCount('selectedHabits', items.length);
     AppLogger.info(_tag, 'Habit selection $action');
-
     state = state.copyWith(habits: items);
   }
 
@@ -509,7 +489,6 @@ class OnboardingController extends Notifier<OnboardingState> {
     AppLogger.separator(_tag);
     AppLogger.action(_tag, 'Submit Button Clicked');
 
-    // Validation checks
     if (!state.agreed) {
       AppLogger.validation(
         _tag,
@@ -517,7 +496,6 @@ class OnboardingController extends Notifier<OnboardingState> {
         false,
         reason: 'User must agree to terms',
       );
-
       AppLogger.error(
         _tag,
         'Onboarding Completed With Error',
@@ -525,7 +503,6 @@ class OnboardingController extends Notifier<OnboardingState> {
           'Bạn cần đồng ý với điều khoản để mình có thể tiếp tục đồng hành cùng bạn.',
         ),
       );
-
       throw StateError(
         'Bạn cần đồng ý với điều khoản để mình có thể tiếp tục đồng hành cùng bạn.',
       );
@@ -546,8 +523,7 @@ class OnboardingController extends Notifier<OnboardingState> {
       if (state.gender.trim().isEmpty) missingFields.add('gender');
       if (state.birthYear <= 1900) missingFields.add('birthYear');
       if (state.occupation.trim().isEmpty) missingFields.add('occupation');
-
-      AppLogger.info(_tag, 'Missing fields: ${missingFields.join(', ')}');
+      AppLogger.info(_tag, 'Missing required field count=${missingFields.length}');
 
       AppLogger.error(
         _tag,
@@ -556,7 +532,6 @@ class OnboardingController extends Notifier<OnboardingState> {
           'Mình vẫn còn thiếu vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.',
         ),
       );
-
       throw StateError(
         'Mình vẫn còn thiếu vài thông tin bắt buộc. Bạn kiểm tra lại giúp mình nhé.',
       );
@@ -572,54 +547,58 @@ class OnboardingController extends Notifier<OnboardingState> {
       return;
     }
 
-    AppLogger.info(_tag, 'Starting onboarding save process...');
+    AppLogger.info(_tag, 'Starting onboarding save process');
     state = state.copyWith(isSaving: true);
+
+    var profileSaved = false;
+    var preferencesSaved = false;
+    var planGenerated = false;
+    var completionMarked = false;
+    var completionPreferenceSaved = false;
 
     try {
       final entity = state.toEntity();
-      AppLogger.info(_tag, 'Saving onboarding profile...');
-      AppLogger.info(_tag, 'Goals: ${entity.goals.length} selected');
-      AppLogger.info(_tag, 'Conditions: ${entity.conditions.length} selected');
-      AppLogger.info(_tag, 'Habits: ${entity.habits.length} selected');
+      AppLogger.info(_tag, 'Saving onboarding profile');
+      AppLogger.info(_tag, 'Goal selection count=${entity.goals.length}');
+      AppLogger.info(
+        _tag,
+        'Condition selection count=${entity.conditions.length}',
+      );
+      AppLogger.info(_tag, 'Habit selection count=${entity.habits.length}');
 
       await _repository.save(entity);
+      profileSaved = true;
       AppLogger.success(_tag, 'Onboarding profile saved successfully');
 
       await ref
           .read(dailyRoutinePreferencesRepositoryProvider)
           .saveForCurrentUser(state.routinePreferences);
+      preferencesSaved = true;
       AppLogger.success(_tag, 'Daily routine preferences saved successfully');
 
       AppLogger.info(_tag, 'Generating onboarding meal plan and daily tasks');
-      final onCompletionCallback = ref.read(
-        onboardingCompletionCallbackProvider,
-      );
+      final onCompletionCallback = ref.read(onboardingCompletionCallbackProvider);
       var generatedPlan = false;
       var generationSource = PlanGenerationSource.unknown;
       try {
         final completionResult = await onCompletionCallback();
         generatedPlan = completionResult.generatedInitialPlan;
+        planGenerated = generatedPlan;
         generationSource = completionResult.generationSource;
       } on AIOverloadedException {
         rethrow;
-      } catch (error, stackTrace) {
+      } catch (error) {
         if (AIAuthenticationException.matches(error)) {
           AppLogger.error(
             _tag,
             'Initial plan generation authentication failed',
             error,
-            stackTrace,
           );
           throw const OnboardingInitialPlanException(
             AIAuthenticationException.userMessage,
           );
         }
-        AppLogger.error(
-          _tag,
-          'Initial plan generation failed',
-          error,
-          stackTrace,
-        );
+        AppLogger.error(_tag, 'Initial plan generation failed', error);
         throw const OnboardingInitialPlanException();
       }
 
@@ -630,9 +609,11 @@ class OnboardingController extends Notifier<OnboardingState> {
 
       AppLogger.info(_tag, 'Marking local onboarding record complete');
       await _repository.markCompleted();
+      completionMarked = true;
 
       AppLogger.info(_tag, 'Setting onboarding completed flag');
       await AppPrefs.setOnboardingCompleted(true);
+      completionPreferenceSaved = true;
       AppLogger.success(_tag, 'Onboarding completed flag set');
 
       final savedLog = generationSource.isBasicSuggestion
@@ -644,40 +625,37 @@ class OnboardingController extends Notifier<OnboardingState> {
         initialPlanGenerationSource: generationSource,
       );
 
-      // Log completion summary
       final duration = DateTime.now().difference(_startTime!);
       AppLogger.separator(_tag);
       AppLogger.success(_tag, 'Onboarding Completed Successfully');
-
       AppLogger.summary(_tag, 'ONBOARDING_SUMMARY', {
         'Total Steps': OnboardingCatalog.totalSteps,
         'Completed Steps': OnboardingCatalog.totalSteps,
-        'Duration': '${duration.inMinutes}m ${duration.inSeconds % 60}s',
+        'Duration Seconds': duration.inSeconds,
         'Goals Count': entity.goals.length,
         'Conditions Count': entity.conditions.length,
         'Habits Count': entity.habits.length,
-        'Allergy Data': entity.hasAllergy ? 'provided' : 'empty',
-        'Treatment Data': entity.hasTreatment ? 'provided' : 'empty',
-        'Saved To Database': true,
-        'Meal Plan Generated': generatedPlan,
-        'Daily Health Tasks Generated': generatedPlan,
+        'Profile Saved': profileSaved,
+        'Routine Preferences Saved': preferencesSaved,
+        'Plan Generated': planGenerated,
+        'Completion Marked': completionMarked,
+        'Completion Preference Saved': completionPreferenceSaved,
         'Plan Generation Source': generationSource.storageValue,
       });
       AppLogger.separator(_tag);
-    } catch (e, st) {
-      final expectedError = _isExpectedSaveError(e);
+    } catch (error) {
+      final expectedError = _isExpectedSaveError(error);
       AppLogger.error(
         _tag,
-        'Save onboarding failed',
-        _safeErrorName(e),
-        expectedError ? null : st,
+        expectedError ? 'Expected onboarding save failure' : 'Onboarding save failure',
+        error,
       );
 
-      final message = e is AIOverloadedException
+      final message = error is AIOverloadedException
           ? AIOverloadedException.userMessage
-          : e is GuestInitialPlanAlreadyUsedException
+          : error is GuestInitialPlanAlreadyUsedException
           ? GuestInitialPlanAlreadyUsedException.userMessage
-          : e is OnboardingInitialPlanException
+          : error is OnboardingInitialPlanException
           ? OnboardingInitialPlanException.userMessage
           : 'Mình chưa thể lưu hồ sơ lúc này. Bạn thử lại sau một chút nhé.';
 
@@ -687,12 +665,16 @@ class OnboardingController extends Notifier<OnboardingState> {
       AppLogger.error(
         _tag,
         'Onboarding Completed With Error',
-        _safeErrorName(e),
+        error,
       );
       AppLogger.summary(_tag, 'ONBOARDING_SUMMARY', {
         'Status': 'Failed',
-        'Error Type': _safeErrorName(e),
-        'Saved To Database': false,
+        'Error Type': _safeErrorName(error),
+        'Profile Saved': profileSaved,
+        'Routine Preferences Saved': preferencesSaved,
+        'Plan Generated': planGenerated,
+        'Completion Marked': completionMarked,
+        'Completion Preference Saved': completionPreferenceSaved,
       });
       AppLogger.separator(_tag);
 

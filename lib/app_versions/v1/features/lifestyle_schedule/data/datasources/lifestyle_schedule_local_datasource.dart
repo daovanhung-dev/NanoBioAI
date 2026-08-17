@@ -72,23 +72,24 @@ class LifestyleScheduleLocalDatasource {
   }
 
   Future<LifestyleScheduleSummaryEntity> getWeekSchedule({
+    String? userId,
     DateTime? anchorDate,
   }) async {
     final db = await _db();
-    final user = await _fetchLatestUser(db);
-    final userId = user['id'].toString();
-    final fullName = user['full_name']?.toString() ?? 'ban';
+    final normalizedUserId = await _resolveScheduleUserId(db, userId);
+    final user = await _fetchUserById(db, normalizedUserId);
+    final fullName = user['full_name']?.toString() ?? 'bạn';
     final start = _dateOnly(anchorDate ?? _now());
     final end = start.add(const Duration(days: 6));
 
     final items = await LifestyleScheduleItemsDao(db).getByDateRange(
-      userId: userId,
+      userId: normalizedUserId,
       startDate: _dateKey(start),
       endDate: _dateKey(end),
     );
 
     return LifestyleScheduleSummaryEntity(
-      userId: userId,
+      userId: normalizedUserId,
       fullName: fullName,
       items: items.map((item) => item.toEntity()).toList(),
     );
@@ -127,6 +128,7 @@ class LifestyleScheduleLocalDatasource {
   }
 
   Future<LifestyleScheduleItemEntity> updateItemCompletion({
+    String? userId,
     required LifestyleScheduleItemEntity item,
     required bool isCompleted,
     String? completionProofPath,
@@ -136,6 +138,18 @@ class LifestyleScheduleLocalDatasource {
     String? completionProofCloudObjectPath,
   }) async {
     final db = await _db();
+    final normalizedUserId = await _resolveScheduleUserId(
+      db,
+      userId,
+      preferredUserId: item.userId,
+    );
+    if (item.userId?.trim() != normalizedUserId) {
+      throw const ScheduleCompletionException(
+        ScheduleCompletionErrorCode.notFound,
+        'Nabi chưa tìm thấy nhiệm vụ này trong hồ sơ đang mở.',
+      );
+    }
+
     final nowDate = _now();
     final proofPath = completionProofPath?.trim();
     if (isCompleted && (proofPath == null || proofPath.isEmpty)) {
@@ -147,7 +161,10 @@ class LifestyleScheduleLocalDatasource {
     final now = nowDate.toIso8601String();
     final updated = await db.transaction((transaction) async {
       final scheduleDao = LifestyleScheduleItemsDao(transaction);
-      final currentModel = await scheduleDao.getById(item.id);
+      final currentModel = await scheduleDao.getByIdForUser(
+        id: item.id,
+        userId: normalizedUserId,
+      );
       if (currentModel == null) {
         throw const ScheduleCompletionException(
           ScheduleCompletionErrorCode.notFound,
@@ -180,7 +197,16 @@ class LifestyleScheduleLocalDatasource {
         clearCompletionProof: !isCompleted,
         updatedAt: now,
       );
-      await scheduleDao.update(LifestyleScheduleItemModel.fromEntity(next));
+      final scheduleUpdated = await scheduleDao.updateForUser(
+        item: LifestyleScheduleItemModel.fromEntity(next),
+        userId: normalizedUserId,
+      );
+      if (scheduleUpdated != 1) {
+        throw const ScheduleCompletionException(
+          ScheduleCompletionErrorCode.notFound,
+          'Nabi chưa tìm thấy nhiệm vụ này trong hồ sơ đang mở.',
+        );
+      }
 
       final proofDao = ScheduleCompletionProofsDao(transaction);
       if (isCompleted) {
@@ -188,7 +214,7 @@ class LifestyleScheduleLocalDatasource {
         await proofDao.insert(
           ScheduleCompletionProofModel(
             id: 'proof_${current.id}_${nowDate.microsecondsSinceEpoch}',
-            userId: current.userId,
+            userId: normalizedUserId,
             scheduleItemId: current.id,
             rewardEligibilityId: normalizedEligibilityId,
             completionAttemptId: _nonEmpty(completionAttemptId),
@@ -212,14 +238,13 @@ class LifestyleScheduleLocalDatasource {
             updatedAt: now,
           ),
         );
-        final projectionUserId = _nonEmpty(current.userId);
-        if (normalizedEligibilityId != null && projectionUserId != null) {
+        if (normalizedEligibilityId != null) {
           await _ensureRewardEligibilityProjection(transaction);
           await transaction.insert(
             ScheduleRewardEligibilityCacheTable.tableName,
             {
               'schedule_item_id': current.id,
-              'user_id': projectionUserId,
+              'user_id': normalizedUserId,
               'eligibility_id': normalizedEligibilityId,
               'request_id': null,
               'status': 'completion_pending',
@@ -234,30 +259,32 @@ class LifestyleScheduleLocalDatasource {
         final activeProof = await proofDao.getLatestActiveForSchedule(
           current.id,
         );
-        if (activeProof != null) {
+        if (activeProof != null && activeProof.userId == normalizedUserId) {
           await proofDao.markReversed(id: activeProof.id, reversedAt: now);
           if (activeProof.rewardEligibilityId != null) {
             await _ensureRewardEligibilityProjection(transaction);
             await transaction.update(
               ScheduleRewardEligibilityCacheTable.tableName,
               {'status': 'reversed', 'synced_at': now},
-              where: 'schedule_item_id = ?',
-              whereArgs: [current.id],
+              where: 'schedule_item_id = ? AND user_id = ?',
+              whereArgs: [current.id, normalizedUserId],
             );
           }
         }
       }
 
       if (current.isMealLinked) {
-        await MealPlansDao(
-          transaction,
-        ).updateCompleted(id: current.sourceId!, isCompleted: isCompleted);
+        await MealPlansDao(transaction).updateCompletedForUser(
+          id: current.sourceId!,
+          userId: normalizedUserId,
+          isCompleted: isCompleted,
+        );
       }
 
       if (current.isDailyTaskLinked) {
         final taskDao = DailyHealthTasksDao(transaction);
         final task = await taskDao.getById(current.sourceId!);
-        if (task != null) {
+        if (task != null && task.userId == normalizedUserId) {
           await taskDao.updateTask(
             task.copyWith(
               currentValue: isCompleted ? task.targetValue : 0,
@@ -278,13 +305,18 @@ class LifestyleScheduleLocalDatasource {
 
   Future<LifestyleScheduleItemEntity> completeItemById(
     String id, {
+    String? userId,
     String? completionProofPath,
     String? rewardEligibilityId,
     String? completionAttemptId,
     String? completionProofCloudObjectPath,
   }) async {
     final db = await _db();
-    final item = await LifestyleScheduleItemsDao(db).getById(id);
+    final normalizedUserId = await _resolveScheduleUserId(db, userId);
+    final item = await LifestyleScheduleItemsDao(db).getByIdForUser(
+      id: id,
+      userId: normalizedUserId,
+    );
     if (item == null) {
       throw const ScheduleCompletionException(
         ScheduleCompletionErrorCode.notFound,
@@ -293,6 +325,7 @@ class LifestyleScheduleLocalDatasource {
     }
 
     return updateItemCompletion(
+      userId: normalizedUserId,
       item: item.toEntity(),
       isCompleted: true,
       completionProofPath: completionProofPath,
@@ -302,13 +335,17 @@ class LifestyleScheduleLocalDatasource {
     );
   }
 
-  Future<List<ScheduleCompletionProofModel>> getCompletionProofs() async {
+  Future<List<ScheduleCompletionProofModel>> getCompletionProofs({
+    String? userId,
+  }) async {
     final db = await _db();
-    final user = await _fetchLatestUser(db);
-    return ScheduleCompletionProofsDao(db).getByUser(user['id'].toString());
+    final normalizedUserId = await _resolveProofUserId(db, userId);
+    if (normalizedUserId == null) return const [];
+    return ScheduleCompletionProofsDao(db).getByUser(normalizedUserId);
   }
 
   Future<void> updateCompletionProofRemoteState({
+    String? userId,
     required String proofId,
     String? rewardEligibilityId,
     String? completionAttemptId,
@@ -317,10 +354,17 @@ class LifestyleScheduleLocalDatasource {
     String? rewardStatus,
   }) async {
     final db = await _db();
+    final normalizedUserId = await _resolveProofUserId(db, userId);
+    if (normalizedUserId == null) {
+      throw StateError('Active subject is required for completion proof changes.');
+    }
     final updatedAt = _now().toUtc().toIso8601String();
     await db.transaction((txn) async {
       final proofDao = ScheduleCompletionProofsDao(txn);
       final proof = await proofDao.getById(proofId);
+      if (proof == null || proof.userId != normalizedUserId) {
+        throw StateError('Completion proof not found for active subject.');
+      }
       await proofDao.updateRemoteState(
         id: proofId,
         rewardEligibilityId: rewardEligibilityId,
@@ -330,7 +374,7 @@ class LifestyleScheduleLocalDatasource {
         rewardStatus: rewardStatus,
         updatedAt: updatedAt,
       );
-      if (proof != null && rewardStatus != null) {
+      if (rewardStatus != null) {
         await _ensureRewardEligibilityProjection(txn);
         await txn.update(
           ScheduleRewardEligibilityCacheTable.tableName,
@@ -339,15 +383,23 @@ class LifestyleScheduleLocalDatasource {
             'status': rewardStatus,
             'synced_at': updatedAt,
           },
-          where: 'schedule_item_id = ?',
-          whereArgs: [proof.scheduleItemId],
+          where: 'schedule_item_id = ? AND user_id = ?',
+          whereArgs: [proof.scheduleItemId, normalizedUserId],
         );
       }
     });
   }
 
-  Future<Map<String, Object?>> _fetchLatestUser(Database db) async {
-    final users = await db.query('users', orderBy: 'created_at DESC', limit: 1);
+  Future<Map<String, Object?>> _fetchUserById(
+    Database db,
+    String userId,
+  ) async {
+    final users = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
     if (users.isEmpty) {
       throw StateError('Nabi chưa tìm thấy hồ sơ phù hợp để mở lịch chăm sóc.');
     }
@@ -514,6 +566,69 @@ class LifestyleScheduleLocalDatasource {
     }
   }
 
+
+  Future<String> _resolveScheduleUserId(
+    Database db,
+    String? explicitUserId, {
+    String? preferredUserId,
+  }) async {
+    final explicit = explicitUserId?.trim();
+    if (explicit != null && explicit.isNotEmpty) return explicit;
+
+    final owners = await _distinctOwners(db, 'lifestyle_schedule_items');
+    if (owners.length > 1) {
+      throw StateError('Active subject is required when multiple schedules exist.');
+    }
+    if (owners.length == 1) {
+      final owner = owners.single;
+      final preferred = preferredUserId?.trim();
+      if (preferred != null && preferred.isNotEmpty && preferred != owner) {
+        throw StateError('Schedule item does not belong to the active subject.');
+      }
+      return owner;
+    }
+
+    final preferred = preferredUserId?.trim();
+    if (preferred != null && preferred.isNotEmpty) return preferred;
+
+    final users = await _distinctOwners(db, 'users', column: 'id');
+    if (users.length == 1) return users.single;
+    throw StateError('Active subject is missing.');
+  }
+
+  Future<String?> _resolveProofUserId(Database db, String? explicitUserId) async {
+    final explicit = explicitUserId?.trim();
+    if (explicit != null && explicit.isNotEmpty) return explicit;
+
+    final owners = await _distinctOwners(db, 'schedule_completion_proofs');
+    if (owners.isEmpty) return null;
+    if (owners.length == 1) return owners.single;
+    throw StateError('Active subject is required when multiple proof owners exist.');
+  }
+
+  Future<List<String>> _distinctOwners(
+    Database db,
+    String table, {
+    String column = 'user_id',
+  }) async {
+    const allowedTables = {
+      'lifestyle_schedule_items',
+      'schedule_completion_proofs',
+      'users',
+    };
+    if (!allowedTables.contains(table) || (column != 'user_id' && column != 'id')) {
+      throw ArgumentError('Unsupported local identity projection.');
+    }
+    final rows = await db.rawQuery(
+      "SELECT DISTINCT $column AS owner_id FROM $table "
+      "WHERE $column IS NOT NULL AND TRIM($column) <> '' LIMIT 2",
+    );
+    return rows
+        .map((row) => row['owner_id']?.toString().trim() ?? '')
+        .where((value) => value.isNotEmpty)
+        .toList(growable: false);
+  }
+
   String? _nonEmpty(String? value) {
     final text = value?.trim();
     return text == null || text.isEmpty ? null : text;
@@ -522,7 +637,7 @@ class LifestyleScheduleLocalDatasource {
   bool _isAbsolutePath(String value) {
     final normalized = value.trim();
     return normalized.startsWith('/') ||
-        normalized.startsWith(r'\') ||
+        normalized.startsWith(r'\\') ||
         RegExp(r'^[A-Za-z]:[\\/]').hasMatch(normalized);
   }
 

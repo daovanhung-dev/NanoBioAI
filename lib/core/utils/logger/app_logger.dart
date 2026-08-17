@@ -1,44 +1,26 @@
 import 'package:flutter/foundation.dart';
 
-/// AppLogger - Centralized logging system for debugging and monitoring
+/// Centralized debug logger with privacy-safe defaults.
 ///
-/// Usage:
-/// ```dart
-/// AppLogger.info('TAG', 'Information message');
-/// AppLogger.success('TAG', 'Success message');
-/// AppLogger.warning('TAG', 'Warning message');
-/// AppLogger.error('TAG', 'Error message', error, stackTrace);
-/// ```
+/// User identifiers, health-derived values, raw exceptions, stack traces and
+/// arbitrary form values are intentionally not emitted.
 class AppLogger {
   AppLogger._();
 
   static const _enableLogging = kDebugMode;
 
-  /// Log informational messages
-  /// Format: [TAG][INFO] message
   static void info(String tag, String message) {
-    if (!_enableLogging) return;
-    debugPrint('[$tag][INFO] $message');
+    _print(tag, 'INFO', message);
   }
 
-  /// Log success messages
-  /// Format: [TAG][SUCCESS] message
   static void success(String tag, String message) {
-    if (!_enableLogging) return;
-    debugPrint('[$tag][SUCCESS] $message');
+    _print(tag, 'SUCCESS', message);
   }
 
-  /// Log warning messages
-  /// Format: [TAG][WARNING] message
   static void warning(String tag, String message) {
-    if (!_enableLogging) return;
-    debugPrint('[$tag][WARNING] $message');
+    _print(tag, 'WARNING', message);
   }
 
-  /// Log error messages with optional error object and stack trace
-  /// Format: [TAG][ERROR] message
-  ///         Error: error
-  ///         StackTrace: stackTrace
   static void error(
     String tag,
     String message, [
@@ -46,21 +28,14 @@ class AppLogger {
     StackTrace? stackTrace,
   ]) {
     if (!_enableLogging) return;
-
-    debugPrint('[$tag][ERROR] $message');
-
+    debugPrint('[$tag][ERROR] ${_redactMessage(message)}');
     if (error != null) {
-      debugPrint('Error: $error');
+      debugPrint('ErrorType: ${error.runtimeType}');
     }
-
-    if (stackTrace != null) {
-      debugPrint('StackTrace:\n$stackTrace');
-    }
+    // Stack traces are intentionally suppressed. They frequently contain
+    // request URLs, local paths or upstream payload fragments.
   }
 
-  /// Log validation results
-  /// Format: [TAG][VALIDATION] field - status
-  ///         Reason: reason (if failed)
   static void validation(
     String tag,
     String field,
@@ -68,73 +43,142 @@ class AppLogger {
     String? reason,
   }) {
     if (!_enableLogging) return;
-
     final status = passed ? 'Passed' : 'Failed';
-    debugPrint('[$tag][VALIDATION] $field - $status');
-
+    debugPrint('[$tag][VALIDATION] ${_safeLabel(field)} - $status');
     if (!passed && reason != null) {
-      debugPrint('Reason: $reason');
+      debugPrint('Reason: ${_redactMessage(reason)}');
     }
   }
 
-  /// Log form data changes
-  /// Format: [TAG][FORM] field = value
   static void form(String tag, String field, dynamic value) {
     if (!_enableLogging) return;
-    debugPrint('[$tag][FORM] $field = $value');
+    debugPrint(
+      '[$tag][FORM] ${_safeLabel(field)} = ${_safeFormValue(value)}',
+    );
   }
 
-  /// Log navigation events
-  /// Format: [TAG][ROUTER] from → to
   static void navigation(String tag, String from, String to) {
     if (!_enableLogging) return;
-    debugPrint('[$tag][ROUTER] Navigate: $from → $to');
+    debugPrint(
+      '[$tag][ROUTER] Navigate: ${_redactMessage(from)} → ${_redactMessage(to)}',
+    );
   }
 
-  /// Log provider state changes
-  /// Format: [TAG][PROVIDER] description
   static void provider(String tag, String description) {
-    if (!_enableLogging) return;
-    debugPrint('[$tag][PROVIDER] $description');
+    _print(tag, 'PROVIDER', description);
   }
 
-  /// Log database operations
-  /// Format: [TAG][LOCAL_DB] operation
   static void database(String tag, String operation) {
-    if (!_enableLogging) return;
-    debugPrint('[$tag][LOCAL_DB] $operation');
+    _print(tag, 'LOCAL_DB', operation);
   }
 
-  /// Log API/Supabase operations
-  /// Format: [TAG][SUPABASE] operation
   static void supabase(String tag, String operation) {
-    if (!_enableLogging) return;
-    debugPrint('[$tag][SUPABASE] $operation');
+    _print(tag, 'SUPABASE', operation);
   }
 
-  /// Log user actions
-  /// Format: [TAG] action
   static void action(String tag, String action) {
     if (!_enableLogging) return;
-    debugPrint('[$tag] $action');
+    debugPrint('[$tag] ${_redactMessage(action)}');
   }
 
-  /// Log summary/statistics
-  /// Format: [TAG][SUMMARY] title
-  ///         - item1: value1
-  ///         - item2: value2
   static void summary(String tag, String title, Map<String, dynamic> data) {
     if (!_enableLogging) return;
-
-    debugPrint('[$tag][SUMMARY] $title');
+    debugPrint('[$tag][SUMMARY] ${_safeLabel(title)}');
     data.forEach((key, value) {
-      debugPrint('  - $key: $value');
+      debugPrint('  - ${_safeLabel(key)}: ${_safeSummaryValue(key, value)}');
     });
   }
 
-  /// Log separator line for visual clarity
   static void separator([String tag = 'LOG']) {
     if (!_enableLogging) return;
     debugPrint('[$tag] ${'=' * 60}');
+  }
+
+  static void _print(String tag, String level, String message) {
+    if (!_enableLogging) return;
+    debugPrint('[$tag][$level] ${_redactMessage(message)}');
+  }
+
+  static String _safeFormValue(Object? value) {
+    final text = value?.toString().trim() ?? '';
+    if (text == 'provided' ||
+        text == 'empty' ||
+        text == 'accepted' ||
+        text == 'not_accepted') {
+      return text;
+    }
+    if (RegExp(r'^count=\d+$').hasMatch(text)) return text;
+    return 'updated';
+  }
+
+  static String _safeSummaryValue(String key, Object? value) {
+    if (_isSensitiveKey(key)) return '[REDACTED]';
+    if (value is bool) return value.toString();
+    if (value is num && _isSafeCounterKey(key)) return value.toString();
+
+    final text = value?.toString().trim() ?? '';
+    if (text.isEmpty) return 'empty';
+    if (_isSafeStatusKey(key) && _isSafeStatusToken(text)) {
+      return text;
+    }
+    return 'recorded';
+  }
+
+  static bool _isSafeCounterKey(String key) {
+    final normalized = key.toLowerCase();
+    return normalized.contains('count') ||
+        normalized.contains('total steps') ||
+        normalized.contains('completed steps');
+  }
+
+  static bool _isSafeStatusKey(String key) {
+    final normalized = key.toLowerCase();
+    return normalized.contains('status') ||
+        normalized.contains('type') ||
+        normalized.contains('source');
+  }
+
+  static bool _isSafeStatusToken(String value) {
+    return RegExp(r'^[A-Za-z0-9_. -]{1,80}$').hasMatch(value);
+  }
+
+  static bool _isSensitiveKey(String key) {
+    return RegExp(
+      r'(user|subject|email|phone|token|secret|password|path|payload|prompt|response|score|bmi|weight|height|condition|medication|treatment|allergy|health)',
+      caseSensitive: false,
+    ).hasMatch(key);
+  }
+
+  static String _safeLabel(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return 'event';
+    return trimmed.length <= 80 ? trimmed : '${trimmed.substring(0, 77)}...';
+  }
+
+  static String _redactMessage(String message) {
+    var result = message;
+    result = result.replaceAll(
+      RegExp(r'[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}', caseSensitive: false),
+      '[REDACTED_EMAIL]',
+    );
+    result = result.replaceAll(
+      RegExp(r'\+?\d[\d .-]{7,}\d'),
+      '[REDACTED_NUMBER]',
+    );
+    result = result.replaceAll(
+      RegExp(
+        r'\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b',
+        caseSensitive: false,
+      ),
+      '[REDACTED_ID]',
+    );
+    result = result.replaceAllMapped(
+      RegExp(
+        r'\b(user(?:_?id)?|subject(?:_?id)?|email|phone|token|secret|password|path|payload|prompt|response|score|bmi|weight|height)\s*[:=]\s*([^\s,;]+)',
+        caseSensitive: false,
+      ),
+      (match) => '${match.group(1)}=[REDACTED]',
+    );
+    return result;
   }
 }

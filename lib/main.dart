@@ -40,7 +40,7 @@ Future<void> main() async {
         ),
         onboardingCompletionCallbackProvider.overrideWith((ref) {
           return () async {
-            await _refreshRequiredMealCatalog(authBackendAvailability);
+            await _prepareMealCatalogForOnboarding(authBackendAvailability);
             final result = await ref
                 .read(generatedPlanServiceProvider)
                 .generateInitialGuestPlan(days: 7);
@@ -84,9 +84,11 @@ Future<AuthBackendAvailability> _initializeSupabaseIfConfigured() async {
         ),
       );
     },
-    onInitializationError: (error, stackTrace) {
-      debugPrint('$_bootstrapTag: Supabase initialization failed: $error');
-      debugPrintStack(stackTrace: stackTrace);
+    onInitializationError: (error, _) {
+      debugPrint(
+        '$_bootstrapTag: Supabase initialization failed; '
+        'errorType=${error.runtimeType}',
+      );
     },
   );
 
@@ -108,19 +110,29 @@ Future<void> _startPostLaunchServices(
   await _startNotificationsSafely();
 }
 
-Future<void> _refreshRequiredMealCatalog(
+Future<void> _prepareMealCatalogForOnboarding(
   AuthBackendAvailability authBackendAvailability,
 ) async {
-  if (!authBackendAvailability.isReady) {
-    throw StateError(
-      'Supabase is required because meal generation only uses Supabase meal_catalog.',
-    );
+  if (authBackendAvailability.isReady) {
+    try {
+      final refreshed =
+          await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
+      if (refreshed > 0) return;
+    } catch (error) {
+      debugPrint(
+        '$_bootstrapTag: onboarding meal catalog refresh deferred; '
+        'errorType=${error.runtimeType}',
+      );
+    }
   }
-  final refreshed =
-      await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
-  if (refreshed <= 0) {
-    throw StateError('Supabase meal_catalog has no active meals.');
+
+  if (await MealCatalogCacheRefreshService.hasUsableLocalCatalog()) {
+    return;
   }
+
+  throw StateError(
+    'Nabi chưa có dữ liệu thực đơn phù hợp để tạo lịch đầu tiên.',
+  );
 }
 
 Future<void> _refreshMealCatalogSafely() async {
@@ -153,8 +165,10 @@ Future<void> _startNotificationsSafely() async {
             NotificationBootstrap.scheduleGeneratedReminders,
       ),
     ).start();
-  } catch (error, stackTrace) {
-    debugPrint('$_bootstrapTag: Notification startup failed: $error');
-    debugPrintStack(stackTrace: stackTrace);
+  } catch (error) {
+    debugPrint(
+      '$_bootstrapTag: Notification startup failed; '
+      'errorType=${error.runtimeType}',
+    );
   }
 }

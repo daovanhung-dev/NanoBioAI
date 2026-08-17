@@ -7,53 +7,34 @@ class MealPlansDao {
 
   MealPlansDao(this.db);
 
-  // =========================================================
-  // INSERT
-  // =========================================================
-
   Future<void> insert(MealPlanModel model) async {
     await db.insert(
       'meal_plans',
-
       model.toMap(),
-
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
-  // =========================================================
-  // INSERT MANY
-  // =========================================================
-
   Future<void> insertMany(List<MealPlanModel> meals) async {
     final batch = db.batch();
-
     for (final meal in meals) {
       batch.insert(
         'meal_plans',
-
         meal.toMap(),
-
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
-
     await batch.commit(noResult: true);
   }
 
-  // =========================================================
-  // GET ALL
-  // =========================================================
-
+  /// Administrative/testing helper only. User-facing flows must use a
+  /// user-scoped query.
   Future<List<MealPlanModel>> getAll() async {
     final maps = await db.query(
       'meal_plans',
       orderBy: 'plan_date ASC, meal_order ASC',
     );
-
-    return maps.map((map) {
-      return MealPlanModel.fromMap(map);
-    }).toList();
+    return maps.map(MealPlanModel.fromMap).toList();
   }
 
   Future<MealPlanModel?> getById(String id) async {
@@ -63,49 +44,42 @@ class MealPlansDao {
       whereArgs: [id],
       limit: 1,
     );
-
     if (maps.isEmpty) return null;
     return MealPlanModel.fromMap(maps.first);
   }
 
-  // =========================================================
-  // GET BY USER
-  // =========================================================
+  Future<MealPlanModel?> getByIdForUser({
+    required String id,
+    required String userId,
+  }) async {
+    final maps = await db.query(
+      'meal_plans',
+      where: 'id = ? AND user_id = ?',
+      whereArgs: [id, userId],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return MealPlanModel.fromMap(maps.first);
+  }
 
   Future<List<MealPlanModel>> getByUserId(String userId) async {
     final maps = await db.query(
       'meal_plans',
-
       where: 'user_id = ?',
-
       whereArgs: [userId],
-
       orderBy: 'plan_date ASC, meal_order ASC',
     );
-
-    return maps.map((map) {
-      return MealPlanModel.fromMap(map);
-    }).toList();
+    return maps.map(MealPlanModel.fromMap).toList();
   }
-
-  // =========================================================
-  // GET BY DATE
-  // =========================================================
 
   Future<List<MealPlanModel>> getByDate(String planDate) async {
     final maps = await db.query(
       'meal_plans',
-
       where: 'plan_date = ?',
-
       whereArgs: [planDate],
-
       orderBy: 'meal_order ASC',
     );
-
-    return maps.map((map) {
-      return MealPlanModel.fromMap(map);
-    }).toList();
+    return maps.map(MealPlanModel.fromMap).toList();
   }
 
   Future<List<MealPlanModel>> getByUserIdAndDateRange({
@@ -119,63 +93,52 @@ class MealPlansDao {
       whereArgs: [userId, startDate, endDate],
       orderBy: 'plan_date ASC, meal_order ASC',
     );
-
-    return maps.map((map) {
-      return MealPlanModel.fromMap(map);
-    }).toList();
+    return maps.map(MealPlanModel.fromMap).toList();
   }
-
-  // =========================================================
-  // UPDATE
-  // =========================================================
 
   Future<void> update(MealPlanModel model) async {
     await db.update(
       'meal_plans',
-
       model.toMap(),
-
       where: 'id = ?',
-
       whereArgs: [model.id],
     );
   }
 
-  // =========================================================
-  // UPDATE COMPLETE STATUS
-  // =========================================================
-
   Future<void> updateCompleted({
     required String id,
-
     required bool isCompleted,
   }) async {
     await db.update(
       'meal_plans',
-
       {
         'is_completed': isCompleted ? 1 : 0,
-
         'updated_at': DateTime.now().toIso8601String(),
       },
-
       where: 'id = ?',
-
       whereArgs: [id],
     );
   }
 
-  // =========================================================
-  // DELETE
-  // =========================================================
+  Future<int> updateCompletedForUser({
+    required String id,
+    required String userId,
+    required bool isCompleted,
+  }) {
+    return db.update(
+      'meal_plans',
+      {
+        'is_completed': isCompleted ? 1 : 0,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ? AND user_id = ?',
+      whereArgs: [id, userId],
+    );
+  }
 
   Future<void> delete(String id) async {
     await db.delete('meal_plans', where: 'id = ?', whereArgs: [id]);
   }
-
-  // =========================================================
-  // DELETE ALL USER MEALS
-  // =========================================================
 
   Future<void> deleteByUserId(String userId) async {
     await db.delete('meal_plans', where: 'user_id = ?', whereArgs: [userId]);

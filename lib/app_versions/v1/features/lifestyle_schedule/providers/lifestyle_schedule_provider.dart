@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
+import 'package:nano_app/core/access/local_subject_resolver.dart';
+import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/services/image_picker/image_picker_provider.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 import '../application/schedule_health_checkin_reward_gateway.dart';
 import '../application/schedule_proof_image_service.dart';
@@ -28,10 +31,21 @@ final lifestyleScheduleLocalDatasourceProvider =
   return LifestyleScheduleLocalDatasource();
 });
 
+final lifestyleScheduleSubjectResolverProvider = Provider<LocalSubjectResolver>((
+  ref,
+) {
+  return LocalSubjectResolver(
+    currentActorId: currentSupabaseUserIdOrNull,
+    pendingGuestUserId: AppPrefs.pendingGuestUserId,
+  );
+});
+
 final lifestyleScheduleRepositoryProvider =
     Provider<LifestyleScheduleRepository>((ref) {
+  final subjectResolver = ref.read(lifestyleScheduleSubjectResolverProvider);
   return LifestyleScheduleRepositoryImpl(
     datasource: ref.read(lifestyleScheduleLocalDatasourceProvider),
+    resolveSubjectId: subjectResolver.resolve,
   );
 });
 
@@ -105,7 +119,8 @@ final dailyHealthHubControllerProvider = Provider<DailyHealthHubController>((
     refreshSchedule: () async {
       await ref.read(lifestyleScheduleControllerProvider.notifier).refresh();
     },
-    rescheduleReminders: () => NotificationBootstrap.scheduleGeneratedReminders(),
+    rescheduleReminders: () =>
+        NotificationBootstrap.scheduleGeneratedReminders(),
     invalidateSnapshot: (date) {
       ref.invalidate(dailyHealthSnapshotProvider(date));
     },

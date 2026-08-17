@@ -2,7 +2,6 @@ abstract class V1RoutePaths {
   static const splash = '/';
   static const login = '/login';
   static const register = '/register';
-  static const forgotPassword = '/forgot-password';
 
   static const onboarding = '/onboarding';
   static const onboardingEntry = '/start';
@@ -29,16 +28,7 @@ abstract class V1RoutePaths {
 
   static const aiChat = '/ai-chat';
   static const aiVoice = '/ai-voice';
-  static const aiAnalysis = '/ai-analysis';
-
-  static const foodScanner = '/food-scanner';
-
-  static const goals = '/goals';
 
   static const profile = '/profile';
-  static const settings = '/settings';
-
   static const community = '/community';
-
-  static const admin = '/admin';
 }

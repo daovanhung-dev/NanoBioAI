@@ -24,11 +24,14 @@ class OnboardingLocalDatasource {
   Future<String> saveOnboarding(
     OnboardingEntity entity, {
     String? userIdOverride,
+    String? existingGuestUserId,
   }) async {
     AppLogger.database(_tag, 'Start saving onboarding to SQLite');
     AppLogger.info(_tag, 'Converting entity to model');
 
     final model = OnboardingModel.fromEntity(entity);
+    final authenticatedUserId = _nonEmpty(userIdOverride);
+    final durableGuestUserId = _nonEmpty(existingGuestUserId);
 
     final db = await _db();
     AppLogger.database(_tag, 'Database connection acquired');
@@ -40,25 +43,14 @@ class OnboardingLocalDatasource {
     try {
       await db.transaction((txn) async {
         AppLogger.database(_tag, 'Transaction started');
-
-        /// =========================
-        /// USER
-        /// =========================
         AppLogger.database(_tag, 'Querying existing user');
 
-        final users = userIdOverride != null
-            ? await txn.query(
-                'users',
-                where: 'id = ?',
-                whereArgs: [userIdOverride],
-                limit: 1,
-              )
-            : await txn.query(
-                'users',
-                where: 'email = ? OR phone = ?',
-                whereArgs: [model.email, model.phone],
-                limit: 1,
-              );
+        final users = await _findExistingUser(
+          txn,
+          model,
+          authenticatedUserId: authenticatedUserId,
+          durableGuestUserId: durableGuestUserId,
+        );
 
         if (users.isNotEmpty) {
           userId = users.first['id'] as String;
@@ -68,8 +60,8 @@ class OnboardingLocalDatasource {
           await txn.update(
             'users',
             {
-              'email': model.email,
-              'phone': model.phone,
+              'email': _nonEmpty(model.email),
+              'phone': _nonEmpty(model.phone),
               'full_name': model.fullName,
               'gender': model.gender,
               'birth_year': model.birthYear,
@@ -86,18 +78,21 @@ class OnboardingLocalDatasource {
           AppLogger.success(_tag, 'User record updated successfully');
         } else {
           final generatedId =
-              userIdOverride ??
-              DateTime.now().millisecondsSinceEpoch.toString();
+              authenticatedUserId ??
+              durableGuestUserId ??
+              DateTime.now().microsecondsSinceEpoch.toString();
           AppLogger.database(_tag, 'New onboarding user, generating local ID');
 
           await txn.insert('users', {
             'id': generatedId,
-            'email': model.email.isEmpty ? null : model.email,
-            'phone': model.phone.isEmpty ? null : model.phone,
+            'email': _nonEmpty(model.email),
+            'phone': _nonEmpty(model.phone),
             'full_name': model.fullName,
             'gender': model.gender,
             'birth_year': model.birthYear,
-            'product_access_status': userIdOverride == null ? 'guest' : 'free',
+            'product_access_status': authenticatedUserId == null
+                ? 'guest'
+                : 'free',
             'onboarding_status': 'in_progress',
             'created_at': now,
             'updated_at': now,
@@ -108,75 +103,31 @@ class OnboardingLocalDatasource {
         }
 
         AppLogger.info(_tag, 'Onboarding local user resolved');
-
-        /// =========================
-        /// DELETE OLD
-        /// =========================
         AppLogger.database(_tag, 'Deleting old health data for user');
 
-        await txn.delete(
+        for (final table in const [
           'health_profiles',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        );
-
-        await txn.delete(
           'health_goals',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        );
-
-        await txn.delete(
           'health_conditions',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        );
-
-        await txn.delete(
           'lifestyle_habits',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        );
-
-        await txn.delete(
           'food_allergies',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        );
-
-        await txn.delete(
           'medical_treatments',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        );
-
-        await txn.delete(
           'survey_answers',
-          where: 'user_id = ?',
-          whereArgs: [userId],
-        );
+        ]) {
+          await txn.delete(table, where: 'user_id = ?', whereArgs: [userId]);
+        }
 
         AppLogger.success(_tag, 'Old health data deleted');
-
-        /// =========================
-        /// HEALTH PROFILE
-        /// =========================
-        AppLogger.database(_tag, 'Insert health_profiles');
 
         await txn.insert(
           'health_profiles',
           _healthProfileRow(model, userId, now),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
-
         AppLogger.success(_tag, 'Health profile inserted');
 
-        /// =========================
-        /// GOALS
-        /// =========================
         final goalRows = _goalRows(model, userId, now);
         AppLogger.database(_tag, 'Insert ${goalRows.length} health_goals');
-
         for (final row in goalRows) {
           await txn.insert(
             'health_goals',
@@ -184,18 +135,13 @@ class OnboardingLocalDatasource {
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
         }
-
         AppLogger.success(_tag, '${goalRows.length} goals inserted');
 
-        /// =========================
-        /// CONDITIONS
-        /// =========================
         final conditionRows = _conditionRows(model, userId, now);
         AppLogger.database(
           _tag,
           'Insert ${conditionRows.length} health_conditions',
         );
-
         for (final row in conditionRows) {
           await txn.insert(
             'health_conditions',
@@ -203,64 +149,39 @@ class OnboardingLocalDatasource {
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
         }
-
         AppLogger.success(_tag, '${conditionRows.length} conditions inserted');
-
-        /// =========================
-        /// LIFESTYLE
-        /// =========================
-        AppLogger.database(_tag, 'Insert lifestyle_habits');
 
         await txn.insert(
           'lifestyle_habits',
           _lifestyleRow(model, userId, now),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
-
         AppLogger.success(_tag, 'Lifestyle habits inserted');
 
-        /// =========================
-        /// ALLERGY
-        /// =========================
-
         if (model.hasAllergy) {
-          AppLogger.database(_tag, 'Insert food_allergies');
-
           await txn.insert(
             'food_allergies',
             _allergyRow(model, userId, now),
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
-
           AppLogger.success(_tag, 'Food allergy inserted');
         } else {
           AppLogger.info(_tag, 'No allergy data to insert');
         }
 
-        /// =========================
-        /// TREATMENT
-        /// =========================
-
         if (model.hasTreatment) {
-          AppLogger.database(_tag, 'Insert medical_treatments');
-
           await txn.insert(
             'medical_treatments',
             _treatmentRow(model, userId, now),
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
-
           AppLogger.success(_tag, 'Medical treatment inserted');
         } else {
           AppLogger.info(_tag, 'No treatment data to insert');
         }
 
-        /// =========================
-        /// SURVEY
-        /// =========================
         final surveyRows = _surveyRows(model, userId, now);
         AppLogger.database(_tag, 'Insert ${surveyRows.length} survey_answers');
-
         for (final row in surveyRows) {
           await txn.insert(
             'survey_answers',
@@ -276,10 +197,55 @@ class OnboardingLocalDatasource {
       AppLogger.success(_tag, 'Onboarding data saved to SQLite successfully');
       AppLogger.info(_tag, 'Onboarding local data committed');
       return userId;
-    } catch (e, st) {
-      AppLogger.error(_tag, 'Failed to save onboarding to SQLite', e, st);
+    } catch (error) {
+      AppLogger.error(_tag, 'Failed to save onboarding to SQLite', error);
       rethrow;
     }
+  }
+
+  Future<List<Map<String, Object?>>> _findExistingUser(
+    DatabaseExecutor txn,
+    OnboardingModel model, {
+    required String? authenticatedUserId,
+    required String? durableGuestUserId,
+  }) async {
+    if (authenticatedUserId != null) {
+      return txn.query(
+        'users',
+        where: 'id = ?',
+        whereArgs: [authenticatedUserId],
+        limit: 1,
+      );
+    }
+
+    if (durableGuestUserId != null) {
+      return txn.query(
+        'users',
+        where: 'id = ?',
+        whereArgs: [durableGuestUserId],
+        limit: 1,
+      );
+    }
+
+    final email = _nonEmpty(model.email);
+    final phone = _nonEmpty(model.phone);
+    if (email == null && phone == null) return const [];
+
+    if (email != null && phone != null) {
+      return txn.query(
+        'users',
+        where: 'email = ? OR phone = ?',
+        whereArgs: [email, phone],
+        limit: 1,
+      );
+    }
+
+    return txn.query(
+      'users',
+      where: email != null ? 'email = ?' : 'phone = ?',
+      whereArgs: [email ?? phone],
+      limit: 1,
+    );
   }
 
   Future<void> markOnboardingCompleted(String userId) async {
@@ -299,6 +265,11 @@ class OnboardingLocalDatasource {
       whereArgs: [normalizedUserId],
     );
     LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
+  }
+
+  String? _nonEmpty(String? value) {
+    final text = value?.trim();
+    return text == null || text.isEmpty ? null : text;
   }
 
   Map<String, Object?> _healthProfileRow(
@@ -384,36 +355,22 @@ class OnboardingLocalDatasource {
     String userId,
     String now,
   ) {
-    bool has(String code) {
-      return model.habits.contains(code);
-    }
+    bool has(String code) => model.habits.contains(code);
 
     return {
       'user_id': userId,
       'skip_breakfast': has('skip_breakfast') ? 1 : 0,
-
       'eat_late': has('eat_late') ? 1 : 0,
-
       'eat_sweet': has('eat_sweet') ? 1 : 0,
-
       'eat_oily': has('eat_oily') ? 1 : 0,
-
       'low_vegetable': has('low_vegetable') ? 1 : 0,
-
       'low_water': has('low_water') ? 1 : 0,
-
       'fast_food': has('fast_food') ? 1 : 0,
-
       'alcohol': has('alcohol') ? 1 : 0,
-
       'coffee_high': has('coffee_high') ? 1 : 0,
-
       'sleep_quality': model.sleepQuality,
-
       'activity_level': model.activityLevel,
-
       'water_per_day': model.waterPerDay,
-
       'created_at': now,
     };
   }
@@ -426,11 +383,9 @@ class OnboardingLocalDatasource {
     return {
       'user_id': userId,
       'allergy_name': model.allergyName.trim(),
-
       'note': model.allergyNote.trim().isEmpty
           ? null
           : model.allergyNote.trim(),
-
       'created_at': now,
     };
   }
@@ -442,24 +397,19 @@ class OnboardingLocalDatasource {
   ) {
     final note = [
       model.treatmentNote.trim(),
-
       if (model.medicationName.trim().isNotEmpty)
         'Thuốc: ${model.medicationName.trim()}',
     ].where((e) => e.isNotEmpty).join(' | ');
 
     return {
       'user_id': userId,
-
       'treatment_name': model.treatmentName.trim().isEmpty
           ? 'Đang điều trị'
           : model.treatmentName.trim(),
-
       'medication_name': model.medicationName.trim().isEmpty
           ? null
           : model.medicationName.trim(),
-
       'note': note.isEmpty ? null : note,
-
       'created_at': now,
     };
   }
@@ -476,35 +426,30 @@ class OnboardingLocalDatasource {
         'answer_value': model.fullName,
         'created_at': now,
       },
-
       {
         'user_id': userId,
         'question_code': 'email',
         'answer_value': model.email,
         'created_at': now,
       },
-
       {
         'user_id': userId,
         'question_code': 'phone',
         'answer_value': model.phone,
         'created_at': now,
       },
-
       {
         'user_id': userId,
         'question_code': 'gender',
         'answer_value': model.gender,
         'created_at': now,
       },
-
       {
         'user_id': userId,
         'question_code': 'birth_year',
         'answer_value': model.birthYear.toString(),
         'created_at': now,
       },
-
       {
         'user_id': userId,
         'question_code': 'concern_text',

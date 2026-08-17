@@ -151,7 +151,7 @@ class DailyHealthHubController {
               'Nhiệm vụ đã hoàn thành. Điểm chăm sóc đang chờ hệ thống xác nhận.',
         );
       }
-      return _syncRewardAttempt(updated, attempt, userFacing: true);
+      return await _syncRewardAttempt(updated, attempt, userFacing: true);
     } catch (error) {
       return DailyHealthHubActionResult(
         succeeded: false,

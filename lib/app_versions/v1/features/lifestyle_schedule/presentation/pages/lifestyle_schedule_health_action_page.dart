@@ -160,7 +160,7 @@ class _LifestyleScheduleHealthActionPageState
           child: Column(
             children: [
               DropdownButtonFormField<String>(
-                value: _mood,
+                initialValue: _mood,
                 decoration: const InputDecoration(labelText: 'Cảm xúc'),
                 items: const [
                   DropdownMenuItem(value: 'very_good', child: Text('Rất tốt')),

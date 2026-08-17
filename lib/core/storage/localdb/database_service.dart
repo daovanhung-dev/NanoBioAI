@@ -34,6 +34,7 @@ import 'tables/survey_answers_table.dart';
 import 'migrations/migration_manager.dart';
 import 'migrations/migration_v18.dart';
 import 'migrations/migration_v19.dart';
+import 'migrations/migration_v20.dart';
 import 'seeders/ai_catalog_seeder.dart';
 
 class DatabaseService {
@@ -55,7 +56,16 @@ class DatabaseService {
       path,
       version: DatabaseVersion.currentVersion,
       onConfigure: (db) async {
-        await db.execute('PRAGMA foreign_keys = OFF');
+        // Legacy databases can contain orphan rows because releases <=19 ran
+        // with FK enforcement disabled. Keep enforcement off only for that
+        // upgrade transaction so v20 can repair those rows first. Fresh/v20
+        // databases enable FK immediately.
+        final existingVersion = await db.getVersion();
+        await db.execute(
+          existingVersion == 0 || existingVersion >= 20
+              ? 'PRAGMA foreign_keys = ON'
+              : 'PRAGMA foreign_keys = OFF',
+        );
       },
       onCreate: (db, version) async {
         await _createTables(db);
@@ -68,11 +78,17 @@ class DatabaseService {
         if (oldVersion < 19 && newVersion >= 19) {
           await MigrationV19.run(db);
         }
+        if (oldVersion < 20 && newVersion >= 20) {
+          await MigrationV20.run(db);
+        }
       },
       onOpen: (db) async {
-        await db.execute('PRAGMA foreign_keys = OFF');
+        await db.execute('PRAGMA foreign_keys = ON');
         await MigrationV18.ensureSchema(db);
         await MigrationV19.ensureSchema(db);
+        if (await db.getVersion() >= 20) {
+          await MigrationV20.assertIntegrity(db);
+        }
       },
     );
   }

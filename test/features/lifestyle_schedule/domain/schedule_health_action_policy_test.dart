@@ -74,7 +74,7 @@ void main() {
   });
 
   test('repeat generation is bounded to seven-day horizon', () {
-    const draft = ManualHealthTaskDraft(
+    final draft = ManualHealthTaskDraft(
       firstDate: _FixedDate.monday,
       startTime: '09:00',
       title: 'Nghỉ mắt',
@@ -91,7 +91,7 @@ void main() {
   });
 
   test('manual tasks can never request photo proof action', () {
-    const draft = ManualHealthTaskDraft(
+    final draft = ManualHealthTaskDraft(
       firstDate: _FixedDate.monday,
       startTime: '09:00',
       title: 'Tự chụp ảnh',

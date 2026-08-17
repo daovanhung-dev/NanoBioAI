@@ -31,6 +31,20 @@ class LifestyleScheduleItemsDao {
     return LifestyleScheduleItemModel.fromMap(maps.first);
   }
 
+  Future<LifestyleScheduleItemModel?> getByIdForUser({
+    required String id,
+    required String userId,
+  }) async {
+    final maps = await db.query(
+      LifestyleScheduleItemsTable.tableName,
+      where: 'id = ? AND user_id = ?',
+      whereArgs: [id, userId],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return LifestyleScheduleItemModel.fromMap(maps.first);
+  }
+
   Future<List<LifestyleScheduleItemModel>> getByDate({
     required String userId,
     required String scheduleDate,
@@ -85,6 +99,18 @@ class LifestyleScheduleItemsDao {
       item.toMap(),
       where: 'id = ?',
       whereArgs: [item.id],
+    );
+  }
+
+  Future<int> updateForUser({
+    required LifestyleScheduleItemModel item,
+    required String userId,
+  }) {
+    return db.update(
+      LifestyleScheduleItemsTable.tableName,
+      item.toMap(),
+      where: 'id = ? AND user_id = ?',
+      whereArgs: [item.id, userId],
     );
   }
 

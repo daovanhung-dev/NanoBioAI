@@ -12,9 +12,10 @@
 
 ## Rules
 
-- Current version: `DatabaseVersion.currentVersion = 17`.
+- Current version: `DatabaseVersion.currentVersion = 20`.
 - Schema changes require version bump, migration, table/model/DAO updates, onCreate update, datasource/repository updates, and tests.
 - Do not edit released migrations unless explicitly required and safe.
+- Foreign-key enforcement is enabled at runtime; migrations must repair legacy violations before claiming upgrade safety.
 - UI never calls DAO or SQLite directly.
 - Date/time queries need explicit format/timezone decisions.
 

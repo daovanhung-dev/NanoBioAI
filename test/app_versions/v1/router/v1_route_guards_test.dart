@@ -15,13 +15,16 @@ void main() {
         V1RoutePaths.menu,
         V1RoutePaths.mealPlan,
         V1RoutePaths.healthTracking,
+        V1RoutePaths.todayTasks,
         V1RoutePaths.waterTracking,
         V1RoutePaths.weeklySummary,
         V1RoutePaths.personalGoals,
         V1RoutePaths.quickCare,
         V1RoutePaths.gentleCare,
         V1RoutePaths.namiCare,
+        V1RoutePaths.bodyMetrics,
         V1RoutePaths.lifestyleSchedule,
+        V1RoutePaths.dailyRoutinePreferences,
         V1RoutePaths.sleepTracking,
         V1RoutePaths.stressTracking,
         AuthRoutePaths.login,
@@ -38,7 +41,9 @@ void main() {
     test('blocks guest routes outside V1 baseline', () {
       for (final path in [
         V1RoutePaths.aiChat,
+        V1RoutePaths.aiVoice,
         V1RoutePaths.nutrition,
+        V1RoutePaths.nutritionProfile,
         V1RoutePaths.profile,
         V1RoutePaths.community,
         V2RoutePaths.home,
@@ -50,6 +55,15 @@ void main() {
           reason: '$path should require auth/access before opening',
         );
       }
+    });
+
+    test('registered V1 route contract contains only live route paths', () {
+      expect(V1RouteGuards.registeredV1Paths, contains(V1RoutePaths.dashboard));
+      expect(V1RouteGuards.registeredV1Paths, contains(V1RoutePaths.aiChat));
+      expect(V1RouteGuards.registeredV1Paths, contains(V1RoutePaths.community));
+      expect(V1RouteGuards.registeredV1Paths, isNot(contains('/settings')));
+      expect(V1RouteGuards.registeredV1Paths, isNot(contains('/admin')));
+      expect(V1RouteGuards.registeredV1Paths, isNot(contains('/food-scanner')));
     });
   });
 }

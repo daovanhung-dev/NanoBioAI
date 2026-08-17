@@ -106,7 +106,7 @@ class _DailyHealthQuickCheckInSheetState
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DropdownButtonFormField<String>(
-              value: _mood,
+              initialValue: _mood,
               decoration: const InputDecoration(labelText: 'Cảm xúc hiện tại'),
               items: const [
                 DropdownMenuItem(value: 'very_good', child: Text('Rất tốt')),

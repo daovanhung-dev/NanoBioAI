@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/router/router.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_guards.dart';
 import 'package:nano_app/app_versions/v2/features/auth/auth.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/app_versions/v2/features/health_scoring/health_scoring.dart';
@@ -15,6 +16,7 @@ import 'package:nano_app/app_versions/v3/router/v3_router.dart';
 import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
 import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_shell_page.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 final v2Routes = <RouteBase>[
   GoRoute(
@@ -121,6 +123,15 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
         return V2RoutePaths.authGate;
       }
 
+      final isSignedIn =
+          currentSupabaseUserIdOrNull() != null ||
+          routeState?.status == AuthRouteStatus.authenticatedReady;
+      final v1GuestRedirect = V2RouteGuards.redirectForV1Guest(
+        path,
+        isSignedIn: isSignedIn,
+      );
+      if (v1GuestRedirect != null) return v1GuestRedirect;
+
       if (!isProtected) return null;
       if (syncState.status == UserDataSyncStatus.awaitingConsent ||
           syncState.status == UserDataSyncStatus.syncing) {
@@ -150,6 +161,14 @@ abstract class V2RouteGuards {
     V3RoutePaths.advancedTracking,
     V3RoutePaths.familyPlus,
   };
+
+  static String? redirectForV1Guest(
+    String path, {
+    required bool isSignedIn,
+  }) {
+    if (isSignedIn || !V1RouteGuards.isRegisteredV1Path(path)) return null;
+    return V1RouteGuards.guestRedirectForPath(path);
+  }
 
   static bool isProtectedPath(String path) {
     final normalizedPath = path.trim();

@@ -100,13 +100,29 @@ class MealCatalogCacheRefreshService {
 
   Future<int> refresh() async {
     final remoteItems = await remoteDatasource.fetchActiveCatalog();
-    final database = await DatabaseService.database;
+    if (remoteItems.isEmpty) {
+      // A transient empty response must never destroy the bundled/cached
+      // catalog used by guest onboarding.
+      return 0;
+    }
 
-    // Supabase is the single source of truth for meals. Replace the complete
-    // local meal cache so stale bundled/removed/inactive rows cannot leak into
-    // AI generation.
+    final database = await DatabaseService.database;
     await AiCatalogDao(database).replaceMeals(remoteItems);
     return remoteItems.length;
+  }
+
+  static Future<bool> hasUsableLocalCatalog() async {
+    final database = await DatabaseService.database;
+    final items = await AiCatalogDao(
+      database,
+    ).getActiveMeals(planEligibleOnly: true);
+    return items.any(
+      (item) =>
+          item.isActive &&
+          item.isPlanEligible &&
+          item.code.trim().isNotEmpty &&
+          item.mealName.trim().isNotEmpty,
+    );
   }
 
   static Future<int> refreshFromInitializedSupabase() {

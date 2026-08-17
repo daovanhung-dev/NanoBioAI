@@ -36,8 +36,7 @@ class _ManualHealthPreset {
     required this.label,
     required this.title,
     required this.description,
-    this.action = ScheduleHealthActionType.quickComplete,
-  });
+  }) : action = ScheduleHealthActionType.quickComplete;
 }
 
 class ManualHealthTaskSheet extends ConsumerStatefulWidget {
@@ -187,7 +186,7 @@ class _ManualHealthTaskSheetState extends ConsumerState<ManualHealthTaskSheet> {
                 const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
               ],
               DropdownButtonFormField<ScheduleHealthActionType>(
-                value: _action,
+                initialValue: _action,
                 decoration: const InputDecoration(labelText: 'Cách ghi nhận'),
                 items: _allowedActions
                     .map(
@@ -252,7 +251,7 @@ class _ManualHealthTaskSheetState extends ConsumerState<ManualHealthTaskSheet> {
               ),
               const SizedBox(height: AppSpacingTokens.itemSpacingLarge),
               DropdownButtonFormField<String>(
-                value: _repeat,
+                initialValue: _repeat,
                 decoration: const InputDecoration(labelText: 'Lặp lại'),
                 items: const [
                   DropdownMenuItem(

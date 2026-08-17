@@ -28,25 +28,28 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   Future<void> save(OnboardingEntity entity) async {
     try {
       final authUserId = _resolvedAuthenticatedSubjectId();
+      final existingGuestUserId = authUserId == null
+          ? await AppPrefs.pendingGuestUserId()
+          : null;
 
-      // SQLite is always written first. Version 12 database triggers create an
-      // outbox marker in this same local transaction; authenticated sessions
-      // then upload one complete snapshot. This avoids a partially completed
-      // cloud onboarding record before the first AI schedule is generated.
       AppLogger.info(_tag, 'Saving onboarding to local datasource first');
       final localUserId = await localDatasource.saveOnboarding(
         entity,
         userIdOverride: authUserId,
+        existingGuestUserId: existingGuestUserId,
       );
 
       if (authUserId == null) {
+        // Persist immediately after the first successful local transaction.
+        // Any downstream AI/network failure can now retry against this exact
+        // guest row instead of resolving identity from nullable email/phone.
         await AppPrefs.setPendingGuestUserId(localUserId);
       } else {
         await AppPrefs.clearPendingGuestUserId();
       }
       AppLogger.success(_tag, 'Local onboarding draft saved successfully');
-    } catch (e, st) {
-      AppLogger.error(_tag, 'Repository save failed', e, st);
+    } catch (error) {
+      AppLogger.error(_tag, 'Repository save failed', error);
       rethrow;
     }
   }
@@ -66,10 +69,6 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
     await localDatasource.markOnboardingCompleted(userId);
     AppLogger.success(_tag, 'Local onboarding status marked completed');
-
-    // The local datasource emits a post-commit sync signal. At app startup,
-    // the root composition maps that signal to the authenticated Supabase
-    // outbox without making V1 depend on the cloud-sync implementation.
   }
 
   String? _resolvedAuthenticatedSubjectId() {
