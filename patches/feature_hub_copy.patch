@@ -1,0 +1,15 @@
+diff --git a/lib/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart b/lib/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart
+--- a/lib/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart
++++ b/lib/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart
+@@
+-      _FeatureAction(
+-        title: 'Chỉ số cơ thể',
+-        subtitle: 'Xem các chỉ số cơ bản, dễ hiểu.',
++      _FeatureAction(
++        title: 'Sức khỏe của bạn',
++        subtitle: 'Theo dõi cơ thể, dinh dưỡng, giấc ngủ và xu hướng sức khỏe.',
+         icon: Icons.monitor_weight_rounded,
+         color: AppColors.info,
+         backgroundColor: AppColors.pastelSky,
+         onTap: () => context.push(V1RoutePaths.bodyMetrics),
+       ),

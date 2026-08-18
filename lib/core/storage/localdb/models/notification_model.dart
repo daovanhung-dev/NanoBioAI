@@ -128,8 +128,10 @@ class NotificationModel {
 
 class NotificationActionStatuses {
   static const pending = 'pending';
+  static const deferred = 'deferred';
   static const done = 'done';
   static const opened = 'opened';
+  // Legacy persisted value retained for old rows only.
   static const skipped = 'skipped';
   static const permissionDenied = 'permission_denied';
   static const scheduleFailed = 'schedule_failed';

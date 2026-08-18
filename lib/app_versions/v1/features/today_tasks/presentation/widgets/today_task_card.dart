@@ -7,8 +7,9 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentatio
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_health_action_page.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_item_detail_page.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal_replacement_entities.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/controllers/meal_plan_controller.dart';
-import 'package:nano_app/app_versions/v1/features/meal_plan/providers/meal_plan_provider.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/widgets/meal_replacement_picker.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 class TodayTaskCard extends ConsumerStatefulWidget {
@@ -235,16 +236,24 @@ class _TodayTaskCardState extends ConsumerState<TodayTaskCard> {
 
     setState(() => _isReplacingMeal = true);
     try {
-      await ref
-          .read(mealPlanControllerProvider.notifier)
-          .replaceMealById(sourceId);
-      await ref.read(lifestyleScheduleControllerProvider.notifier).refresh();
-      ref.invalidate(getMealPlanProvider);
-      if (!mounted) return;
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nabi đã đổi sang món phù hợp khác.')),
+      final controller = ref.read(mealPlanControllerProvider.notifier);
+      final result = await showMealReplacementPicker(
+        context: context,
+        candidatesFuture: controller.loadReplacementCandidates(sourceId),
+        onConfirm: (candidate) => controller.replaceMealByCatalogCode(
+          mealId: sourceId,
+          catalogCode: candidate.code,
+        ),
       );
+      if (result == null || !mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
+      final message = switch (result.syncStatus) {
+        MealReplacementSyncStatus.synced => 'Đã đổi món và đồng bộ.',
+        MealReplacementSyncStatus.pending =>
+          'Đã đổi món. Dữ liệu sẽ được đồng bộ khi kết nối ổn định.',
+        MealReplacementSyncStatus.localOnly => 'Đã đổi món trên thiết bị.',
+      };
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } catch (_) {
       if (!mounted) return;
       AppFeedbackService.instance.emit(AppFeedbackType.error);

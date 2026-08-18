@@ -31,13 +31,7 @@ class _DailyRoutinePreferencesPageState
             key: ValueKey('daily-routine-loading'),
             child: CircularProgressIndicator(),
           ),
-          error: (_, __) => _EditorBody(
-            key: const ValueKey('daily-routine-fallback'),
-            preferences: _draft ?? DailyRoutinePreferences.defaults(),
-            saving: _saving,
-            onChanged: (value) => setState(() => _draft = value),
-            onSave: _save,
-          ),
+          error: (_, __) => _DailyRoutineLoadError(onRetry: _retry),
           data: (saved) {
             final preferences =
                 _draft ?? saved ?? DailyRoutinePreferences.defaults();
@@ -54,11 +48,17 @@ class _DailyRoutinePreferencesPageState
     );
   }
 
+  void _retry() {
+    setState(() => _draft = null);
+    ref.invalidate(dailyRoutinePreferencesProvider);
+  }
+
   Future<void> _save() async {
+    final loaded = ref.read(dailyRoutinePreferencesProvider);
+    if (loaded.isLoading || loaded.hasError) return;
+
     final preferences =
-        _draft ??
-        ref.read(dailyRoutinePreferencesProvider).value ??
-        DailyRoutinePreferences.defaults();
+        _draft ?? loaded.value ?? DailyRoutinePreferences.defaults();
     final errors = preferences.validate();
     if (errors.isNotEmpty) {
       AppFeedbackService.instance.emit(AppFeedbackType.warning);
@@ -88,6 +88,52 @@ class _DailyRoutinePreferencesPageState
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+}
+
+class _DailyRoutineLoadError extends StatelessWidget {
+  const _DailyRoutineLoadError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      key: const ValueKey('daily-routine-error'),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.pagePadding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 44,
+              color: context.semanticColors.error,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Nabi chưa đọc được lịch cá nhân',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.heading3,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Dữ liệu hiện có vẫn được giữ nguyên. Bạn thử tải lại trước khi chỉnh sửa nhé.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: context.semanticColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Thử lại'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

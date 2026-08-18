@@ -36,7 +36,6 @@ class NotificationsDao {
       NotificationsTable.tableName,
       orderBy: defaultOrderBy,
     );
-
     return maps.map(NotificationModel.fromMap).toList();
   }
 
@@ -47,7 +46,6 @@ class NotificationsDao {
       whereArgs: [id],
       limit: 1,
     );
-
     if (maps.isEmpty) return null;
     return NotificationModel.fromMap(maps.first);
   }
@@ -59,7 +57,6 @@ class NotificationsDao {
       whereArgs: [userId],
       orderBy: defaultOrderBy,
     );
-
     return maps.map(NotificationModel.fromMap).toList();
   }
 
@@ -70,7 +67,6 @@ class NotificationsDao {
       whereArgs: [userId, 0],
       orderBy: defaultOrderBy,
     );
-
     return maps.map(NotificationModel.fromMap).toList();
   }
 
@@ -85,7 +81,6 @@ class NotificationsDao {
       whereArgs: [userId, date],
       orderBy: defaultOrderBy,
     );
-
     return maps.map(NotificationModel.fromMap).toList();
   }
 
@@ -96,7 +91,6 @@ class NotificationsDao {
       whereArgs: [notificationId],
       limit: 1,
     );
-
     if (maps.isEmpty) return null;
     return NotificationModel.fromMap(maps.first);
   }
@@ -106,7 +100,6 @@ class NotificationsDao {
     required List<String> sourceIds,
   }) async {
     if (sourceIds.isEmpty) return [];
-
     final placeholders = List.filled(sourceIds.length, '?').join(', ');
     final maps = await db.query(
       NotificationsTable.tableName,
@@ -115,19 +108,51 @@ class NotificationsDao {
           'AND source_id IN ($placeholders)',
       whereArgs: [sourceType, NotificationActionStatuses.pending, ...sourceIds],
     );
-
     return maps.map(NotificationModel.fromMap).toList();
   }
 
   Future<List<NotificationModel>> getPendingBySourceType(
     String sourceType,
   ) async {
+    return getBySourceTypeAndStatuses(
+      sourceType: sourceType,
+      statuses: const [NotificationActionStatuses.pending],
+    );
+  }
+
+  Future<List<NotificationModel>> getDeferredBySourceType(
+    String sourceType,
+  ) async {
+    return getBySourceTypeAndStatuses(
+      sourceType: sourceType,
+      statuses: const [NotificationActionStatuses.deferred],
+    );
+  }
+
+  Future<List<NotificationModel>> getActionableBySourceType(
+    String sourceType,
+  ) async {
+    return getBySourceTypeAndStatuses(
+      sourceType: sourceType,
+      statuses: const [
+        NotificationActionStatuses.pending,
+        NotificationActionStatuses.deferred,
+      ],
+    );
+  }
+
+  Future<List<NotificationModel>> getBySourceTypeAndStatuses({
+    required String sourceType,
+    required List<String> statuses,
+  }) async {
+    if (statuses.isEmpty) return const [];
+    final placeholders = List.filled(statuses.length, '?').join(', ');
     final maps = await db.query(
       NotificationsTable.tableName,
-      where: 'source_type = ? AND action_status = ?',
-      whereArgs: [sourceType, NotificationActionStatuses.pending],
+      where: 'source_type = ? AND action_status IN ($placeholders)',
+      whereArgs: [sourceType, ...statuses],
+      orderBy: defaultOrderBy,
     );
-
     return maps.map(NotificationModel.fromMap).toList();
   }
 
@@ -136,7 +161,6 @@ class NotificationsDao {
     required List<String> sourceIds,
   }) async {
     if (sourceIds.isEmpty) return;
-
     final placeholders = List.filled(sourceIds.length, '?').join(', ');
     await db.delete(
       NotificationsTable.tableName,
@@ -170,6 +194,28 @@ class NotificationsDao {
         'responded_at': respondedAt,
         'updated_at': updatedAt,
         'is_read': isRead ? 1 : 0,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> updateDeferredSchedule({
+    required String id,
+    required String scheduledAt,
+    required String payload,
+    required String respondedAt,
+    required String updatedAt,
+  }) async {
+    await db.update(
+      NotificationsTable.tableName,
+      {
+        'action_status': NotificationActionStatuses.deferred,
+        'scheduled_at': scheduledAt,
+        'payload': payload,
+        'responded_at': respondedAt,
+        'updated_at': updatedAt,
+        'is_read': 1,
       },
       where: 'id = ?',
       whereArgs: [id],

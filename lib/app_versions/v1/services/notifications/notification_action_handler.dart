@@ -14,15 +14,18 @@ import 'notification_constants.dart';
 import 'notification_payload.dart';
 import 'notification_navigation_coordinator.dart';
 import 'active_notification_subject.dart';
+import 'reminder_notification_scheduler.dart';
 
 class NotificationActionHandler {
   static const _tag = 'NOTIFICATION_ACTION_HANDLER';
+  static const deferDuration = Duration(minutes: 30);
 
   final NotificationsDao notificationsDao;
   final MealPlansDao mealPlansDao;
   final DailyHealthTasksDao dailyHealthTasksDao;
   final LifestyleScheduleItemsDao lifestyleScheduleItemsDao;
   final LifestyleScheduleLocalDatasource lifestyleScheduleDatasource;
+  final ReminderNotificationScheduler scheduler;
   final Database? database;
   final ActiveNotificationSubjectReader _activeSubjectUserId;
   final DateTime Function() _now;
@@ -33,6 +36,7 @@ class NotificationActionHandler {
     required this.dailyHealthTasksDao,
     required this.lifestyleScheduleItemsDao,
     required this.lifestyleScheduleDatasource,
+    required this.scheduler,
     this.database,
     ActiveNotificationSubjectReader? activeSubjectUserId,
     DateTime Function()? now,
@@ -40,7 +44,10 @@ class NotificationActionHandler {
            activeSubjectUserId ?? resolveActiveNotificationSubject,
        _now = now ?? DateTime.now;
 
-  factory NotificationActionHandler.fromDatabase(Database db) {
+  factory NotificationActionHandler.fromDatabase(
+    Database db, {
+    required ReminderNotificationScheduler scheduler,
+  }) {
     final now = DateTime.now;
     return NotificationActionHandler(
       notificationsDao: NotificationsDao(db),
@@ -51,15 +58,18 @@ class NotificationActionHandler {
         databaseOverride: db,
         now: now,
       ),
+      scheduler: scheduler,
       database: db,
       activeSubjectUserId: resolveActiveNotificationSubject,
       now: now,
     );
   }
 
-  static Future<NotificationActionHandler> create() async {
+  static Future<NotificationActionHandler> create({
+    required ReminderNotificationScheduler scheduler,
+  }) async {
     final db = await DatabaseService.database;
-    return NotificationActionHandler.fromDatabase(db);
+    return NotificationActionHandler.fromDatabase(db, scheduler: scheduler);
   }
 
   Future<void> handleResponse(NotificationResponse response) {
@@ -104,8 +114,7 @@ class NotificationActionHandler {
         return;
       }
 
-      final respondedAt = _now().toIso8601String();
-      if (notification.actionStatus != NotificationActionStatuses.pending) {
+      if (!_isActionableStatus(notification.actionStatus)) {
         AppLogger.info(
           _tag,
           'Ignore already handled notification id=${notification.id}',
@@ -113,6 +122,15 @@ class NotificationActionHandler {
         return;
       }
 
+      // A defer rewrites scheduledAt/payload. A duplicated callback from the
+      // notification that was already deferred must not push it another 30m.
+      if (notification.actionStatus == NotificationActionStatuses.deferred &&
+          !_matchesCurrentDelivery(parsedPayload, notification)) {
+        AppLogger.info(_tag, 'Ignore stale deferred notification response');
+        return;
+      }
+
+      final respondedAt = _now().toIso8601String();
       final sourceType = parsedPayload.sourceType.isNotEmpty
           ? parsedPayload.sourceType
           : notification.sourceType ?? '';
@@ -157,19 +175,17 @@ class NotificationActionHandler {
         return;
       }
 
-      if (normalizedActionId == NotificationActionIds.skipped) {
-        await notificationsDao.updateActionStatus(
-          id: notification.id,
-          actionStatus: NotificationActionStatuses.skipped,
+      if (normalizedActionId == NotificationActionIds.defer) {
+        await _deferNotification(
+          notification: notification,
+          payload: parsedPayload,
           respondedAt: respondedAt,
-          updatedAt: respondedAt,
         );
-        LocalUserDataSyncDispatcher.requestImmediateSync(database: database);
         return;
       }
 
       // Notification chỉ mở ứng dụng. Mọi hoàn thành lịch đều phải đi qua
-      // camera và transaction trong LifestyleScheduleLocalDatasource.
+      // camera/check-in và transaction của source schedule tương ứng.
       await notificationsDao.updateActionStatus(
         id: notification.id,
         actionStatus: NotificationActionStatuses.opened,
@@ -188,6 +204,68 @@ class NotificationActionHandler {
         stackTrace,
       );
     }
+  }
+
+  Future<void> _deferNotification({
+    required NotificationModel notification,
+    required NotificationPayload payload,
+    required String respondedAt,
+  }) async {
+    final notificationId = notification.notificationId;
+    if (notificationId == null) {
+      await _recordActionFailure(
+        notification: notification,
+        respondedAt: respondedAt,
+      );
+      return;
+    }
+
+    final deferredAt = _now().add(deferDuration);
+    final deferredAtText = deferredAt.toIso8601String();
+    final deferredPayload = NotificationPayload(
+      payloadVersion: payload.payloadVersion,
+      notificationId: notificationId,
+      sourceType: payload.sourceType,
+      sourceId: payload.sourceId,
+      scheduledAt: deferredAtText,
+      subjectUserId: payload.subjectUserId ?? notification.userId,
+      actorUserId: payload.actorUserId,
+      familyPackageId: payload.familyPackageId,
+      correlationId: payload.correlationId ?? notification.id,
+    ).toJsonString();
+
+    await notificationsDao.updateDeferredSchedule(
+      id: notification.id,
+      scheduledAt: deferredAtText,
+      payload: deferredPayload,
+      respondedAt: respondedAt,
+      updatedAt: respondedAt,
+    );
+
+    try {
+      await scheduler.scheduleReminder(
+        id: notificationId,
+        title: notification.title,
+        body: notification.body,
+        scheduledAt: deferredAt,
+        payload: deferredPayload,
+      );
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        _tag,
+        'Failed to schedule deferred reminder',
+        error,
+        stackTrace,
+      );
+      await notificationsDao.updateActionStatus(
+        id: notification.id,
+        actionStatus: NotificationActionStatuses.scheduleFailed,
+        respondedAt: respondedAt,
+        updatedAt: _now().toIso8601String(),
+      );
+    }
+
+    LocalUserDataSyncDispatcher.requestImmediateSync(database: database);
   }
 
   bool _payloadMatchesNotification(
@@ -215,6 +293,20 @@ class NotificationActionHandler {
       return false;
     }
     return true;
+  }
+
+  bool _matchesCurrentDelivery(
+    NotificationPayload payload,
+    NotificationModel notification,
+  ) {
+    final rowScheduledAt = notification.scheduledAt?.trim();
+    final payloadScheduledAt = payload.scheduledAt.trim();
+    if (rowScheduledAt == null ||
+        rowScheduledAt.isEmpty ||
+        payloadScheduledAt.isEmpty) {
+      return true;
+    }
+    return rowScheduledAt == payloadScheduledAt;
   }
 
   Future<bool> _sourceMatchesSubject({
@@ -278,9 +370,14 @@ class NotificationActionHandler {
     return text == null || text.isEmpty ? null : text;
   }
 
+  bool _isActionableStatus(String status) {
+    return status == NotificationActionStatuses.pending ||
+        status == NotificationActionStatuses.deferred;
+  }
+
   bool _isSupportedAction(String? actionId) {
     return actionId == NotificationActionIds.openSchedule ||
-        actionId == NotificationActionIds.skipped;
+        actionId == NotificationActionIds.defer;
   }
 
   String _normalizeActionId(String? actionId) {
@@ -291,6 +388,11 @@ class NotificationActionHandler {
         rawActionId.isEmpty ||
         rawActionId == NotificationActionIds.done) {
       return NotificationActionIds.openSchedule;
+    }
+    // Legacy releases used `skipped` for the copy "Để sau". Preserve old
+    // delivered notifications while converging runtime semantics on defer.
+    if (rawActionId == NotificationActionIds.skipped) {
+      return NotificationActionIds.defer;
     }
     return rawActionId;
   }

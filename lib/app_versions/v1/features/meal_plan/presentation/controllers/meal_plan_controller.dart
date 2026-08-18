@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/providers/lifestyle_schedule_provider.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal_plan_entity.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal_replacement_entities.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/repositories/meal_plan_repository.dart';
@@ -8,6 +10,14 @@ final mealPlanControllerProvider =
     AsyncNotifierProvider<MealPlanController, List<MealPlanEntity>>(
       MealPlanController.new,
     );
+
+final mealMutationDependentsInvalidatorProvider = Provider<void Function()>((ref) {
+  return () {
+    ref.invalidate(getMealPlanProvider);
+    ref.invalidate(lifestyleScheduleControllerProvider);
+    ref.invalidate(dashboardDynamicProvider);
+  };
+});
 
 class MealPlanController extends AsyncNotifier<List<MealPlanEntity>> {
   late final MealPlanRepository _repository;
@@ -41,14 +51,19 @@ class MealPlanController extends AsyncNotifier<List<MealPlanEntity>> {
       mealId: mealId,
       catalogCode: catalogCode,
     );
-    state = AsyncData(await _fetchMealPlans());
+    await _refreshMealMutationDependents();
     return result;
   }
 
   @Deprecated('Use loadReplacementCandidates + replaceMealByCatalogCode.')
   Future<MealPlanEntity> replaceMealById(String id) async {
     final updated = await _repository.replaceMealById(id);
-    state = AsyncData(await _fetchMealPlans());
+    await _refreshMealMutationDependents();
     return updated;
+  }
+
+  Future<void> _refreshMealMutationDependents() async {
+    ref.read(mealMutationDependentsInvalidatorProvider)();
+    state = await AsyncValue.guard(_fetchMealPlans);
   }
 }

@@ -1,0 +1,34 @@
+# Apply this as an additive documentation index update after copying
+# Health_Dashboard_Delta_2026_08.md into docs/DD/basic_health_calculators/.
+# Exact surrounding text may differ by branch, so this patch is intentionally
+# represented as insertion snippets rather than claiming a blind merge.
+
+README.md
++ ## Health Dashboard delta 2026-08
++ See `Health_Dashboard_Delta_2026_08.md` for the implemented read-only current-user dashboard contract.
+
+Overall.md
++ Runtime delta: current-user read-only health dashboard, >50 deterministic metrics, 7d/30d analytics, 5/15-stage AI interpretation.
+
+List_Features.md
++ F03 Personal Health Snapshot
++ F04 Health Metric & Trend Analytics
++ F05 Nabi Health Analysis (Free 5 / Paid 15)
++ F06 Personalized Improvement Plan
++ F07 Data Quality & Formula Versioning
+
+Function_List.md
++ loadBodyMetricsHealthSnapshot
++ calculateBodyMetricsHealthReport
++ resolveBodyMetricsProductAccess
++ analyzeBodyMetricsWithNabi
++ validateBodyMetricsAiStage
+
+Views.md
++ BodyMetricsPage becomes read-only health dashboard. Inline profile editing is removed.
+
+Import_File.md
++ New body_metrics entities/services/application/widgets and shared `lib/services/access/` files are listed in Health_Dashboard_Delta_2026_08.md.
+
+history/CHANGELOG.md
++ 2026-08-18: Body Metrics health dashboard implementation delta. See `CHANGELOG_BODY_METRICS_20260818.md`.

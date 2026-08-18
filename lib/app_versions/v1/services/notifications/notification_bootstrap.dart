@@ -47,17 +47,10 @@ class NotificationBootstrap {
   static Future<void> _initializeOnce() async {
     try {
       WidgetsFlutterBinding.ensureInitialized();
-
       await _initializeTimezone();
       await _scheduler.initialize();
-
-      // Mark initialization complete before restoring a launch action. The
-      // response handler calls initialize() again, and must not await this
-      // in-flight future recursively.
       _initialized = true;
-
       await _handleLaunchResponseOnce();
-
       AppLogger.info(_tag, 'Notification bootstrap initialized');
     } finally {
       _initializing = null;
@@ -86,20 +79,17 @@ class NotificationBootstrap {
     String? subjectUserId,
   }) async {
     await initialize();
-
     final service = await ReminderScheduleService.create(
       scheduler: _scheduler,
       activeSubjectUserId: () => resolveActiveNotificationSubject(
         requestedSubjectUserId: subjectUserId,
       ),
     );
-
     await service.scheduleGeneratedReminders();
   }
 
   static Future<void> clearGeneratedReminders({String? subjectUserId}) async {
     await initialize();
-
     final service = await ReminderScheduleService.create(scheduler: _scheduler);
     await service.clearPendingReminders(
       subjectUserId: await resolveActiveNotificationSubject(
@@ -113,8 +103,9 @@ class NotificationBootstrap {
   ) async {
     try {
       await initialize();
-
-      final handler = await NotificationActionHandler.create();
+      final handler = await NotificationActionHandler.create(
+        scheduler: _scheduler,
+      );
       await handler.handleResponse(response);
     } catch (error, stackTrace) {
       AppLogger.error(
@@ -128,11 +119,8 @@ class NotificationBootstrap {
 
   static Future<void> _initializeTimezone() async {
     if (_timezoneInitialized) return;
-
     tz_data.initializeTimeZones();
-
     final timezoneName = await _resolveTimezoneName();
-
     try {
       tz.setLocalLocation(tz.getLocation(timezoneName));
     } catch (error, stackTrace) {
@@ -141,21 +129,16 @@ class NotificationBootstrap {
         'Unknown timezone "$timezoneName". Fallback to $_fallbackTimezone. Error: $error',
       );
       debugPrint(stackTrace.toString());
-
       tz.setLocalLocation(tz.getLocation(_fallbackTimezone));
     }
-
     _timezoneInitialized = true;
   }
 
   static Future<String> _resolveTimezoneName() async {
     if (kIsWeb) return _fallbackTimezone;
-
     try {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
-
       final identifier = timezoneInfo.identifier.trim();
-
       if (identifier.isEmpty) {
         AppLogger.warning(
           _tag,
@@ -163,7 +146,6 @@ class NotificationBootstrap {
         );
         return _fallbackTimezone;
       }
-
       return identifier;
     } catch (error, stackTrace) {
       AppLogger.warning(
@@ -171,7 +153,6 @@ class NotificationBootstrap {
         'Cannot resolve device timezone. Fallback to $_fallbackTimezone. Error: $error',
       );
       debugPrint(stackTrace.toString());
-
       return _fallbackTimezone;
     }
   }

@@ -186,7 +186,8 @@ class NabiNotificationController
   Future<void> dismiss() async {
     final occurrence = state.occurrence;
     final uiContext = state.uiContext;
-    if (occurrence == null || uiContext == null) return;
+    if (occurrence == null || uiContext == null || state.busy) return;
+    state = state.copyWith(busy: true);
     await ref.read(nabiNotificationStateRepositoryProvider).updateStatus(
       occurrenceId: occurrence.id,
       status: NabiNotificationStatus.cancelled,
@@ -196,13 +197,18 @@ class NabiNotificationController
       occurrence: occurrence,
       uiContext: uiContext,
     );
-    state = state.copyWith(clearNotification: true, collapsed: false);
+    state = state.copyWith(
+      clearNotification: true,
+      collapsed: false,
+      busy: false,
+    );
   }
 
   Future<void> defer() async {
     final occurrence = state.occurrence;
     final uiContext = state.uiContext;
-    if (occurrence == null || uiContext == null) return;
+    if (occurrence == null || uiContext == null || state.busy) return;
+    state = state.copyWith(busy: true);
     final deferredUntil = DateTime.now().add(const Duration(hours: 24));
     await ref.read(nabiNotificationStateRepositoryProvider).updateStatus(
       occurrenceId: occurrence.id,
@@ -215,18 +221,65 @@ class NabiNotificationController
       uiContext: uiContext,
       resultCode: 'deferred',
     );
-    state = state.copyWith(clearNotification: true, collapsed: false);
+    state = state.copyWith(
+      clearNotification: true,
+      collapsed: false,
+      busy: false,
+    );
   }
 
   Future<void> activatePrimary() async {
     final definition = state.definition;
     final occurrence = state.occurrence;
     final uiContext = state.uiContext;
-    if (definition == null || occurrence == null || uiContext == null) return;
-    state = state.copyWith(busy: true);
-    final opened = await ref
-        .read(nabiNotificationNavigationGatewayProvider)
-        .open(definition.primaryDestination);
+    if (definition == null ||
+        occurrence == null ||
+        uiContext == null ||
+        state.busy) {
+      return;
+    }
+    await _activateDestination(
+      destination: definition.primaryDestination,
+      occurrence: occurrence,
+      uiContext: uiContext,
+      successEventName: 'nabi_notification_primary_clicked',
+    );
+  }
+
+  Future<void> activateSecondary() async {
+    if (state.busy) return;
+    final destination = state.definition?.secondaryDestination;
+    if (destination == null || destination.actionKey == 'defer') {
+      await defer();
+      return;
+    }
+    final occurrence = state.occurrence;
+    final uiContext = state.uiContext;
+    if (occurrence == null || uiContext == null) return;
+    await _activateDestination(
+      destination: destination,
+      occurrence: occurrence,
+      uiContext: uiContext,
+      successEventName: 'nabi_notification_secondary_clicked',
+    );
+  }
+
+  Future<void> _activateDestination({
+    required NabiNotificationDestination destination,
+    required NabiNotificationOccurrence occurrence,
+    required NabiUiContext uiContext,
+    required String successEventName,
+  }) async {
+    if (state.busy) return;
+    state = state.copyWith(busy: true, clearError: true);
+    var opened = false;
+    try {
+      opened = await ref
+          .read(nabiNotificationNavigationGatewayProvider)
+          .open(destination);
+    } catch (_) {
+      opened = false;
+    }
     await ref.read(nabiNotificationStateRepositoryProvider).updateStatus(
       occurrenceId: occurrence.id,
       status: opened
@@ -235,9 +288,7 @@ class NabiNotificationController
       errorCode: opened ? null : 'destination_invalid',
     );
     await _track(
-      eventName: opened
-          ? 'nabi_notification_primary_clicked'
-          : 'nabi_notification_failed',
+      eventName: opened ? successEventName : 'nabi_notification_failed',
       occurrence: occurrence,
       uiContext: uiContext,
       resultCode: opened ? 'opened' : 'destination_invalid',
@@ -248,27 +299,6 @@ class NabiNotificationController
       errorCode: opened ? null : 'destination_invalid',
       clearError: opened,
     );
-  }
-
-  Future<void> activateSecondary() async {
-    final destination = state.definition?.secondaryDestination;
-    if (destination == null || destination.actionKey == 'defer') {
-      await defer();
-      return;
-    }
-    final occurrence = state.occurrence;
-    final uiContext = state.uiContext;
-    if (occurrence == null || uiContext == null) return;
-    final opened = await ref
-        .read(nabiNotificationNavigationGatewayProvider)
-        .open(destination);
-    await _track(
-      eventName: 'nabi_notification_secondary_clicked',
-      occurrence: occurrence,
-      uiContext: uiContext,
-      resultCode: opened ? 'opened' : 'destination_invalid',
-    );
-    if (opened) state = state.copyWith(clearNotification: true);
   }
 
   Future<void> _track({

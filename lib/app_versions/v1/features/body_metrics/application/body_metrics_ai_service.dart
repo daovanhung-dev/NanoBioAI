@@ -9,11 +9,22 @@ import '../domain/entities/body_metrics_personal_context.dart';
 
 typedef BodyMetricsTextGenerator = Future<String> Function(String prompt);
 
+/// Thin text-generation adapter. Business orchestration, stage validation and
+/// paid/free policy live outside this class so tests can inject a fake generator.
 class BodyMetricsAiService {
   final BodyMetricsTextGenerator? textGenerator;
 
   const BodyMetricsAiService({this.textGenerator});
 
+  Future<String> generateStage(String prompt) async {
+    if (textGenerator != null) {
+      return textGenerator!(prompt).timeout(const Duration(seconds: 20));
+    }
+    return _generateWithGemini(prompt).timeout(const Duration(seconds: 25));
+  }
+
+  /// Compatibility path for the legacy M04 page/tests. New code uses the
+  /// multi-stage orchestrator.
   Future<BodyMetricsAiInsight> analyze({
     required BasicHealthReport report,
     required BodyMetricsThirtyDayScenario scenario,
@@ -27,18 +38,18 @@ class BodyMetricsAiService {
             'Hãy dùng thực đơn và lịch trình thêm vài ngày để Nabi có đủ dữ liệu cho dự báo xu hướng.',
       );
     }
-
-    final prompt = _buildPrompt(
-      report: report,
-      scenario: scenario,
-      dataCompleteness: dataCompleteness,
-    );
-
+    final prompt = '''
+Bạn là Nabi, trợ lý wellness. Chỉ diễn giải dữ liệu app đã tính; không chẩn đoán, không kê thuốc, không phát minh số liệu.
+BMI category: ${report.bmiCategory}
+Formula version: ${report.formulaVersion}
+Data completeness bucket: ${dataCompleteness >= .75 ? 'cao' : dataCompleteness >= .45 ? 'vua' : 'thap'}
+Plan data available: ${scenario.hasEnoughPlanData}
+Không xuất chữ số trong narrative.
+Trả JSON: {"current_status":"...","after_thirty_days":"...","confidence":"thap|vua|cao","factors":["..."],"assumptions":["..."]}
+''';
     try {
-      final raw = textGenerator != null
-          ? await textGenerator!(prompt).timeout(const Duration(seconds: 20))
-          : await _generateWithGemini(prompt);
-      return _parseAndValidate(raw);
+      final raw = await generateStage(prompt);
+      return _parseLegacy(raw);
     } catch (_) {
       return const BodyMetricsAiInsight.unavailable();
     }
@@ -54,22 +65,22 @@ class BodyMetricsAiService {
       baseUrl: AppEnv.maybeString('GEMINI_BASE_URL'),
     );
     Object? lastError;
-    for (final model in _modelCandidates()) {
+    for (final model in _modelCandidates().take(3)) {
       try {
         return await client
             .generateText(
               model: model,
               contents: [GeminiContent.user(prompt)],
               systemInstruction:
-                  'Bạn là Nabi, trợ lý wellness. Chỉ diễn giải dữ liệu đã cung cấp; không chẩn đoán, không kê thuốc, không phát minh số liệu.',
+                  'Bạn là Nabi, trợ lý wellness. Chỉ dùng dữ liệu được cung cấp; không chẩn đoán, không kê thuốc, không đổi điều trị, không phát minh số.',
               generationConfig: const GeminiGenerationConfig(
-                maxOutputTokens: 650,
+                maxOutputTokens: 1000,
                 temperature: 0.2,
                 topP: 0.85,
                 responseMimeType: 'application/json',
               ),
             )
-            .timeout(const Duration(seconds: 20));
+            .timeout(const Duration(seconds: 10));
       } catch (error) {
         lastError = error;
       }
@@ -98,112 +109,53 @@ class BodyMetricsAiService {
   List<String?> _csv(String? value) =>
       value?.split(',').map((entry) => entry.trim()).toList() ?? const [];
 
-  String _buildPrompt({
-    required BasicHealthReport report,
-    required BodyMetricsThirtyDayScenario scenario,
-    required double dataCompleteness,
-  }) {
-    final energyDirection = switch (scenario.energyDirection) {
-      BodyMetricsEnergyDirection.belowMaintenance => 'thấp hơn mức duy trì',
-      BodyMetricsEnergyDirection.nearMaintenance => 'gần mức duy trì',
-      BodyMetricsEnergyDirection.aboveMaintenance => 'cao hơn mức duy trì',
-      BodyMetricsEnergyDirection.unknown => 'chưa đủ dữ liệu',
-    };
-    return '''
-Phân tích wellness dựa CHỈ trên dữ liệu tổng hợp sau.
-- BMI do app tính: ${report.bmi}
-- Nhóm BMI: ${report.bmiCategory}
-- BMR do app tính: ${report.bmrKcal} kcal/ngày
-- RMR do app tính: ${report.rmrKcal} kcal/ngày
-- TDEE do app tính: ${report.tdeeKcal} kcal/ngày
-- Nước tham khảo do app tính: ${report.hydrationMl} ml/ngày
-- Phiên bản công thức: ${report.formulaVersion}
-- Hướng năng lượng của thực đơn so với TDEE: $energyDirection
-- Số ngày có thực đơn: ${scenario.plannedMealDays}
-- Số nhiệm vụ chăm sóc: ${scenario.plannedScheduleItems}
-- Số nhiệm vụ vận động: ${scenario.plannedExerciseItems}
-- Mức đầy đủ dữ liệu: ${(dataCompleteness * 100).round()} phần trăm
-
-Yêu cầu:
-1. Viết tiếng Việt, ngắn, không phán xét.
-2. Không đưa ra chẩn đoán, điều trị, thuốc hoặc cam kết kết quả.
-3. Không xuất BẤT KỲ chữ số nào trong các trường văn bản. App sẽ hiển thị số liệu xác định ở nơi khác.
-4. Dự báo chỉ là xu hướng nếu người dùng duy trì thực đơn và lịch chăm sóc hiện tại.
-5. Trả đúng JSON object:
-{
-  "current_status": "...",
-  "after_thirty_days": "...",
-  "confidence": "thap|vua|cao",
-  "factors": ["..."],
-  "assumptions": ["..."]
-}
-''';
-  }
-
-  BodyMetricsAiInsight _parseAndValidate(String raw) {
+  BodyMetricsAiInsight _parseLegacy(String raw) {
     final cleaned = raw
         .replaceAll(RegExp(r'^```(?:json)?\s*', caseSensitive: false), '')
         .replaceAll(RegExp(r'\s*```$'), '')
         .trim();
     final decoded = jsonDecode(cleaned);
     if (decoded is! Map) throw const FormatException('AI body metrics payload is not an object');
-    final map = decoded.map((key, value) => MapEntry(key.toString(), value));
-    final current = _safeNarrative(map['current_status']);
-    final after = _safeNarrative(map['after_thirty_days']);
-    final confidence = _confidence(map['confidence']);
-    final factors = _safeList(map['factors']);
-    final assumptions = _safeList(map['assumptions']);
-    return BodyMetricsAiInsight(
-      currentStatus: current,
-      afterThirtyDays: after,
-      confidence: confidence,
-      factors: factors,
-      assumptions: assumptions,
-      generatedByAi: true,
-    );
-  }
-
-  String _safeNarrative(Object? value) {
-    final text = value?.toString().trim() ?? '';
-    if (text.length < 12 || text.length > 420) {
-      throw const FormatException('Invalid body metrics narrative length');
+    String narrative(Object? value) {
+      final text = value?.toString().trim() ?? '';
+      if (text.length < 8 || text.length > 420 || RegExp(r'\d').hasMatch(text)) {
+        throw const FormatException('Unsafe legacy narrative');
+      }
+      final normalized = text.toLowerCase();
+      const blocked = <String>[
+        'bạn mắc',
+        'được chẩn đoán',
+        'chẩn đoán là',
+        'cần điều trị',
+        'hãy dùng thuốc',
+        'ngừng thuốc',
+        'tăng liều',
+        'giảm liều',
+        'đổi thuốc',
+        'kê thuốc',
+        'chắc chắn sẽ',
+        'cam kết',
+      ];
+      if (blocked.any(normalized.contains)) {
+        throw const FormatException('Unsafe legacy medical claim');
+      }
+      return text;
     }
-    if (RegExp(r'\d').hasMatch(text)) {
-      throw const FormatException('AI invented or repeated numeric content');
-    }
-    final normalized = text.toLowerCase();
-    const blocked = [
-      'được chẩn đoán',
-      'bạn mắc',
-      'có bệnh',
-      'cần điều trị',
-      'hãy điều trị',
-      'kê thuốc',
-      'hãy dùng thuốc',
-      'chắc chắn sẽ',
-      'cam kết kết quả',
-    ];
-    if (blocked.any(normalized.contains)) {
-      throw const FormatException('Unsafe medical claim');
-    }
-    return text;
-  }
-
-  List<String> _safeList(Object? value) {
-    if (value is! List) return const [];
-    final result = <String>[];
-    for (final item in value.take(5)) {
-      final text = _safeNarrative(item);
-      result.add(text);
-    }
-    return result;
-  }
-
-  String _confidence(Object? value) {
-    return switch (value?.toString().trim().toLowerCase()) {
+    List<String> list(Object? value) => value is List
+        ? value.take(5).map(narrative).toList(growable: false)
+        : const [];
+    final confidence = switch (decoded['confidence']?.toString().trim().toLowerCase()) {
       'cao' => 'cao',
       'vua' || 'vừa' => 'vừa',
       _ => 'thấp',
     };
+    return BodyMetricsAiInsight(
+      currentStatus: narrative(decoded['current_status']),
+      afterThirtyDays: narrative(decoded['after_thirty_days']),
+      confidence: confidence,
+      factors: list(decoded['factors']),
+      assumptions: list(decoded['assumptions']),
+      generatedByAi: true,
+    );
   }
 }

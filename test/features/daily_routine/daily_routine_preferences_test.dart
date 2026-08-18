@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/data/datasources/daily_routine_preferences_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository_impl.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/services/schedule_timing_resolver.dart';
+import 'package:nano_app/core/access/local_subject_resolver.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
 import 'package:nano_app/core/storage/localdb/tables/survey_answers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/users_table.dart';
@@ -80,7 +82,6 @@ void main() {
     });
     final datasource = DailyRoutinePreferencesLocalDatasource(
       databaseOverride: db,
-      currentUserId: () => 'user-1',
       now: () => DateTime.utc(2026, 7, 15),
     );
 
@@ -98,5 +99,62 @@ void main() {
     expect(rows, hasLength(1));
     expect(rows.single['question_code'], DailyRoutinePreferences.questionCode);
     expect(outbox, isNotEmpty);
+  });
+
+  test('canonical resolver uses durable guest instead of storage recency', () async {
+    final resolver = LocalSubjectResolver(
+      currentActorId: () => null,
+      pendingGuestUserId: () async => 'guest-a',
+    );
+
+    expect(await resolver.resolve(), 'guest-a');
+  });
+
+  test('canonical resolver fails closed when local subject is ambiguous', () async {
+    final resolver = LocalSubjectResolver(
+      currentActorId: () => null,
+      pendingGuestUserId: () async => null,
+    );
+
+    await expectLater(
+      resolver.resolve(),
+      throwsA(isA<LocalSubjectResolutionException>()),
+    );
+  });
+
+  test('current-user repository save targets resolved durable guest', () async {
+    final db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
+    addTearDown(db.close);
+    await db.execute(UsersTable.createTable);
+    await db.execute(SurveyAnswersTable.createTable);
+    await SyncOutboxSchema.create(db);
+    await db.insert('users', {
+      'id': 'guest-a',
+      'created_at': '2026-07-15T00:00:00.000Z',
+    });
+    await db.insert('users', {
+      'id': 'newer-user-b',
+      'created_at': '2026-07-16T00:00:00.000Z',
+    });
+
+    final datasource = DailyRoutinePreferencesLocalDatasource(
+      databaseOverride: db,
+      now: () => DateTime.utc(2026, 7, 17),
+    );
+    final repository = DailyRoutinePreferencesRepositoryImpl(
+      datasource: datasource,
+      resolveSubjectId: () async => 'guest-a',
+    );
+
+    await repository.saveForCurrentUser(DailyRoutinePreferences.defaults());
+
+    final rows = await db.query(
+      'survey_answers',
+      columns: ['user_id'],
+      where: 'question_code = ?',
+      whereArgs: [DailyRoutinePreferences.questionCode],
+    );
+    expect(rows, hasLength(1));
+    expect(rows.single['user_id'], 'guest-a');
   });
 }

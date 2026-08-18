@@ -20,6 +20,7 @@ import 'package:nano_app/app_versions/v1/services/notifications/notification_act
 import 'package:nano_app/app_versions/v1/services/notifications/notification_constants.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_payload.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_navigation_coordinator.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/reminder_notification_scheduler.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -29,6 +30,7 @@ void main() {
   late MealPlansDao mealPlansDao;
   late LifestyleScheduleItemsDao scheduleItemsDao;
   late NotificationActionHandler handler;
+  late _FakeReminderScheduler scheduler;
   late int syncRequests;
   late List<Uri> navigatedUris;
 
@@ -52,6 +54,7 @@ void main() {
     notificationsDao = NotificationsDao(db);
     mealPlansDao = MealPlansDao(db);
     scheduleItemsDao = LifestyleScheduleItemsDao(db);
+    scheduler = _FakeReminderScheduler();
     syncRequests = 0;
     navigatedUris = [];
     NotificationNavigationCoordinator.resetForTest();
@@ -68,6 +71,7 @@ void main() {
         databaseOverride: db,
         now: () => fixedNow,
       ),
+      scheduler: scheduler,
       database: db,
       activeSubjectUserId: () async => 'user-1',
       now: () => fixedNow,
@@ -178,7 +182,7 @@ void main() {
     );
   });
 
-  test('skipped records response without completing schedule source', () async {
+  test('defer reschedules 30 minutes and keeps source pending', () async {
     await scheduleItemsDao.upsertMany([
       _schedule(
         id: 'schedule-2',
@@ -195,20 +199,168 @@ void main() {
     );
 
     await handler.handleAction(
-      actionId: NotificationActionIds.skipped,
+      actionId: NotificationActionIds.defer,
       notificationId: 201,
       payload: _payload(notificationId: 201, sourceId: 'schedule-2'),
     );
 
     final notification = await notificationsDao.getByNotificationId(201);
     final schedule = await scheduleItemsDao.getById('schedule-2');
+    final healthScoreRows = await db.query('health_score_ledgers');
+    final wellnessPointRows = await db.query('wellness_point_ledgers');
 
     expect(notification, isNotNull);
-    expect(notification!.actionStatus, NotificationActionStatuses.skipped);
+    expect(notification!.actionStatus, NotificationActionStatuses.deferred);
+    expect(notification.scheduledAt, '2026-06-17T07:45:00.000');
     expect(notification.isRead, isTrue);
     expect(schedule!.isCompleted, isFalse);
+    expect(healthScoreRows, isEmpty);
+    expect(wellnessPointRows, isEmpty);
+    expect(scheduler.scheduled, hasLength(1));
+    expect(scheduler.scheduled.single.scheduledAt, fixedNow.add(const Duration(minutes: 30)));
     expect(syncRequests, 1);
     expect(navigatedUris, isEmpty);
+  });
+
+  test('legacy skipped action is normalized to defer', () async {
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-legacy-skip',
+        sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+        sourceId: '',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-legacy-skip',
+        notificationId: 202,
+        sourceId: 'schedule-legacy-skip',
+      ),
+    );
+
+    await handler.handleAction(
+      actionId: NotificationActionIds.skipped,
+      notificationId: 202,
+      payload: _payload(notificationId: 202, sourceId: 'schedule-legacy-skip'),
+    );
+
+    final notification = await notificationsDao.getByNotificationId(202);
+    expect(notification!.actionStatus, NotificationActionStatuses.deferred);
+    expect(notification.scheduledAt, '2026-06-17T07:45:00.000');
+    expect(scheduler.scheduled, hasLength(1));
+  });
+
+  test('duplicated stale defer callback does not extend snooze again', () async {
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-defer-idempotent',
+        sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+        sourceId: '',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-defer-idempotent',
+        notificationId: 203,
+        sourceId: 'schedule-defer-idempotent',
+      ),
+    );
+    final originalPayload = _payload(
+      notificationId: 203,
+      sourceId: 'schedule-defer-idempotent',
+    );
+
+    await handler.handleAction(
+      actionId: NotificationActionIds.defer,
+      notificationId: 203,
+      payload: originalPayload,
+    );
+    await handler.handleAction(
+      actionId: NotificationActionIds.defer,
+      notificationId: 203,
+      payload: originalPayload,
+    );
+
+    final notification = await notificationsDao.getByNotificationId(203);
+    expect(notification!.scheduledAt, '2026-06-17T07:45:00.000');
+    expect(scheduler.scheduled, hasLength(1));
+    expect(syncRequests, 1);
+  });
+
+  test('deferred delivery can be deferred again from its current payload', () async {
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-redefer',
+        sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+        sourceId: '',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-redefer',
+        notificationId: 204,
+        sourceId: 'schedule-redefer',
+      ),
+    );
+    await handler.handleAction(
+      actionId: NotificationActionIds.defer,
+      notificationId: 204,
+      payload: _payload(notificationId: 204, sourceId: 'schedule-redefer'),
+    );
+    final first = await notificationsDao.getByNotificationId(204);
+
+    final secondHandler = NotificationActionHandler(
+      notificationsDao: notificationsDao,
+      mealPlansDao: mealPlansDao,
+      dailyHealthTasksDao: DailyHealthTasksDao(db),
+      lifestyleScheduleItemsDao: scheduleItemsDao,
+      lifestyleScheduleDatasource: LifestyleScheduleLocalDatasource(
+        databaseOverride: db,
+        now: () => fixedNow.add(const Duration(minutes: 30)),
+      ),
+      scheduler: scheduler,
+      database: db,
+      activeSubjectUserId: () async => 'user-1',
+      now: () => fixedNow.add(const Duration(minutes: 30)),
+    );
+    await secondHandler.handleAction(
+      actionId: NotificationActionIds.defer,
+      notificationId: 204,
+      payload: first!.payload,
+    );
+
+    final second = await notificationsDao.getByNotificationId(204);
+    expect(second!.scheduledAt, '2026-06-17T08:15:00.000');
+    expect(scheduler.scheduled, hasLength(2));
+  });
+
+  test('defer scheduling failure is persisted without completing source', () async {
+    scheduler.throwOnSchedule = true;
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-defer-failure',
+        sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+        sourceId: '',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-defer-failure',
+        notificationId: 205,
+        sourceId: 'schedule-defer-failure',
+      ),
+    );
+
+    await handler.handleAction(
+      actionId: NotificationActionIds.defer,
+      notificationId: 205,
+      payload: _payload(notificationId: 205, sourceId: 'schedule-defer-failure'),
+    );
+
+    final notification = await notificationsDao.getByNotificationId(205);
+    final schedule = await scheduleItemsDao.getById('schedule-defer-failure');
+    expect(notification!.actionStatus, NotificationActionStatuses.scheduleFailed);
+    expect(schedule!.isCompleted, isFalse);
   });
 
   test('handled action is idempotent on retry', () async {
@@ -288,94 +440,83 @@ void main() {
     expect(syncRequests, 1);
   });
 
-  test(
-    'old account notification is rejected after active account changes',
-    () async {
-      await scheduleItemsDao.upsertMany([
-        _schedule(
-          id: 'schedule-user-a',
-          sourceType: LifestyleScheduleSourceTypes.aiSchedule,
-          sourceId: '',
-        ),
-      ]);
-      await notificationsDao.insert(
-        _notification(
-          id: 'n-user-a',
-          notificationId: 214,
-          sourceId: 'schedule-user-a',
-        ),
-      );
-      final switchedAccountHandler = NotificationActionHandler(
-        notificationsDao: notificationsDao,
-        mealPlansDao: mealPlansDao,
-        dailyHealthTasksDao: DailyHealthTasksDao(db),
-        lifestyleScheduleItemsDao: scheduleItemsDao,
-        lifestyleScheduleDatasource: LifestyleScheduleLocalDatasource(
-          databaseOverride: db,
-          now: () => fixedNow,
-        ),
-        database: db,
-        activeSubjectUserId: () async => 'user-2',
-        now: () => fixedNow,
-      );
-
-      await switchedAccountHandler.handleAction(
-        actionId: NotificationActionIds.openSchedule,
+  test('old account notification is rejected after active account changes', () async {
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-user-a',
+        sourceType: LifestyleScheduleSourceTypes.aiSchedule,
+        sourceId: '',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-user-a',
         notificationId: 214,
-        payload: _payload(notificationId: 214, sourceId: 'schedule-user-a'),
-      );
+        sourceId: 'schedule-user-a',
+      ),
+    );
+    final switchedAccountHandler = NotificationActionHandler(
+      notificationsDao: notificationsDao,
+      mealPlansDao: mealPlansDao,
+      dailyHealthTasksDao: DailyHealthTasksDao(db),
+      lifestyleScheduleItemsDao: scheduleItemsDao,
+      lifestyleScheduleDatasource: LifestyleScheduleLocalDatasource(
+        databaseOverride: db,
+        now: () => fixedNow,
+      ),
+      scheduler: scheduler,
+      database: db,
+      activeSubjectUserId: () async => 'user-2',
+      now: () => fixedNow,
+    );
 
-      final notification = await notificationsDao.getByNotificationId(214);
-      final schedule = await scheduleItemsDao.getById('schedule-user-a');
+    await switchedAccountHandler.handleAction(
+      actionId: NotificationActionIds.openSchedule,
+      notificationId: 214,
+      payload: _payload(notificationId: 214, sourceId: 'schedule-user-a'),
+    );
 
-      expect(
-        notification!.actionStatus,
-        NotificationActionStatuses.actionFailed,
-      );
-      expect(schedule!.isCompleted, isFalse);
-      expect(navigatedUris, isEmpty);
-      expect(syncRequests, 1);
-    },
-  );
+    final notification = await notificationsDao.getByNotificationId(214);
+    final schedule = await scheduleItemsDao.getById('schedule-user-a');
 
-  test(
-    'source owner mismatch records failure without completing source',
-    () async {
-      await mealPlansDao.insert(_meal(id: 'meal-owner', userId: 'user-2'));
-      await scheduleItemsDao.upsertMany([
-        _schedule(
-          id: 'schedule-owner',
-          userId: 'user-2',
-          sourceType: LifestyleScheduleSourceTypes.mealPlan,
-          sourceId: 'meal-owner',
-        ),
-      ]);
-      await notificationsDao.insert(
-        _notification(
-          id: 'n-owner',
-          notificationId: 213,
-          sourceId: 'schedule-owner',
-        ),
-      );
+    expect(notification!.actionStatus, NotificationActionStatuses.actionFailed);
+    expect(schedule!.isCompleted, isFalse);
+    expect(navigatedUris, isEmpty);
+    expect(syncRequests, 1);
+  });
 
-      await handler.handleAction(
-        actionId: NotificationActionIds.openSchedule,
+  test('source owner mismatch records failure without completing source', () async {
+    await mealPlansDao.insert(_meal(id: 'meal-owner', userId: 'user-2'));
+    await scheduleItemsDao.upsertMany([
+      _schedule(
+        id: 'schedule-owner',
+        userId: 'user-2',
+        sourceType: LifestyleScheduleSourceTypes.mealPlan,
+        sourceId: 'meal-owner',
+      ),
+    ]);
+    await notificationsDao.insert(
+      _notification(
+        id: 'n-owner',
         notificationId: 213,
-        payload: _payload(notificationId: 213, sourceId: 'schedule-owner'),
-      );
+        sourceId: 'schedule-owner',
+      ),
+    );
 
-      final notification = await notificationsDao.getByNotificationId(213);
-      final schedule = await scheduleItemsDao.getById('schedule-owner');
-      final meal = await mealPlansDao.getById('meal-owner');
+    await handler.handleAction(
+      actionId: NotificationActionIds.openSchedule,
+      notificationId: 213,
+      payload: _payload(notificationId: 213, sourceId: 'schedule-owner'),
+    );
 
-      expect(
-        notification!.actionStatus,
-        NotificationActionStatuses.actionFailed,
-      );
-      expect(schedule!.isCompleted, isFalse);
-      expect(meal!.isCompleted, isFalse);
-    },
-  );
+    final notification = await notificationsDao.getByNotificationId(213);
+    final schedule = await scheduleItemsDao.getById('schedule-owner');
+    final meal = await mealPlansDao.getById('meal-owner');
+
+    expect(notification!.actionStatus, NotificationActionStatuses.actionFailed);
+    expect(schedule!.isCompleted, isFalse);
+    expect(meal!.isCompleted, isFalse);
+  });
 
   test('done with missing schedule source records action failure', () async {
     await notificationsDao.insert(
@@ -393,7 +534,6 @@ void main() {
     );
 
     final notification = await notificationsDao.getByNotificationId(401);
-
     expect(notification, isNotNull);
     expect(notification!.actionStatus, NotificationActionStatuses.actionFailed);
     expect(notification.isRead, isTrue);
@@ -420,7 +560,6 @@ void main() {
     );
 
     final notification = await notificationsDao.getByNotificationId(402);
-
     expect(notification, isNotNull);
     expect(notification!.actionStatus, NotificationActionStatuses.actionFailed);
     expect(notification.isRead, isTrue);
@@ -441,11 +580,54 @@ void main() {
     );
 
     final notification = await notificationsDao.getByNotificationId(301);
-
     expect(notification, isNotNull);
     expect(notification!.actionStatus, NotificationActionStatuses.pending);
     expect(notification.isRead, isFalse);
   });
+}
+
+class _FakeReminderScheduler implements ReminderNotificationScheduler {
+  final List<_ScheduledReminder> scheduled = [];
+  bool throwOnSchedule = false;
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<bool> requestPermissions() async => true;
+
+  @override
+  Future<void> scheduleReminder({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledAt,
+    required String payload,
+  }) async {
+    if (throwOnSchedule) throw StateError('schedule failed');
+    scheduled.add(
+      _ScheduledReminder(
+        id: id,
+        scheduledAt: scheduledAt,
+        payload: payload,
+      ),
+    );
+  }
+
+  @override
+  Future<void> cancel(int id) async {}
+}
+
+class _ScheduledReminder {
+  const _ScheduledReminder({
+    required this.id,
+    required this.scheduledAt,
+    required this.payload,
+  });
+
+  final int id;
+  final DateTime scheduledAt;
+  final String payload;
 }
 
 NotificationModel _notification({

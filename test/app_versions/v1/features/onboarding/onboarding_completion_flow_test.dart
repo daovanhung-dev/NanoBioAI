@@ -322,9 +322,10 @@ class _CapturingOnboardingLocalDatasource extends OnboardingLocalDatasource {
   Future<String> saveOnboarding(
     OnboardingEntity entity, {
     String? userIdOverride,
+    String? existingGuestUserId,
   }) async {
     savedUserIdOverride = userIdOverride;
-    return userIdOverride ?? 'guest-1';
+    return userIdOverride ?? existingGuestUserId ?? 'guest-1';
   }
 
   @override

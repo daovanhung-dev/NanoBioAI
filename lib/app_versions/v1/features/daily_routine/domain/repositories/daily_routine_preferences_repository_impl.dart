@@ -1,12 +1,29 @@
+import 'package:nano_app/core/access/local_subject_resolver.dart';
+import 'package:nano_app/core/storage/localdb/app_prefs.dart';
+import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+
 import '../../data/datasources/daily_routine_preferences_local_datasource.dart';
 import '../entities/daily_routine_preferences.dart';
 import 'daily_routine_preferences_repository.dart';
 
+typedef DailyRoutineSubjectIdResolver = Future<String> Function();
+
 class DailyRoutinePreferencesRepositoryImpl
     implements DailyRoutinePreferencesRepository {
   final DailyRoutinePreferencesLocalDatasource datasource;
+  final DailyRoutineSubjectIdResolver resolveSubjectId;
 
-  const DailyRoutinePreferencesRepositoryImpl({required this.datasource});
+  const DailyRoutinePreferencesRepositoryImpl({
+    required this.datasource,
+    this.resolveSubjectId = _defaultResolveSubjectId,
+  });
+
+  static Future<String> _defaultResolveSubjectId() {
+    return LocalSubjectResolver(
+      currentActorId: currentSupabaseUserIdOrNull,
+      pendingGuestUserId: AppPrefs.pendingGuestUserId,
+    ).resolve();
+  }
 
   @override
   Future<DailyRoutinePreferences?> loadForUser(String userId) {
@@ -15,8 +32,7 @@ class DailyRoutinePreferencesRepositoryImpl
 
   @override
   Future<DailyRoutinePreferences?> loadForCurrentUser() async {
-    final userId = await datasource.resolveCurrentUserId();
-    return userId == null ? null : datasource.loadForUser(userId);
+    return datasource.loadForUser(await resolveSubjectId());
   }
 
   @override
@@ -26,8 +42,6 @@ class DailyRoutinePreferencesRepositoryImpl
 
   @override
   Future<void> saveForCurrentUser(DailyRoutinePreferences preferences) async {
-    final userId = await datasource.resolveCurrentUserId();
-    if (userId == null) throw StateError('Missing current routine user');
-    await datasource.saveForUser(userId, preferences);
+    await datasource.saveForUser(await resolveSubjectId(), preferences);
   }
 }

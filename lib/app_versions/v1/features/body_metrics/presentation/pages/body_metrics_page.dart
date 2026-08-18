@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 
-import '../../domain/entities/basic_health_calculator_models.dart';
-import '../../domain/entities/body_metrics_personal_context.dart';
-import '../../domain/services/basic_health_calculator.dart';
-import '../../domain/services/body_metrics_projection_policy.dart';
+import '../../domain/entities/body_metrics_health_metric.dart';
+import '../../domain/entities/body_metrics_health_snapshot.dart';
 import '../../providers/body_metrics_providers.dart';
+import '../widgets/body_metrics_hero.dart';
+import '../widgets/body_metrics_trend_card.dart';
+import '../widgets/health_action_plan_card.dart';
+import '../widgets/health_data_gap_card.dart';
+import '../widgets/health_metric_section.dart';
+import '../widgets/nabi_health_analysis_card.dart';
 
 class BodyMetricsPage extends ConsumerStatefulWidget {
   const BodyMetricsPage({super.key});
@@ -18,387 +23,159 @@ class BodyMetricsPage extends ConsumerStatefulWidget {
 }
 
 class _BodyMetricsPageState extends ConsumerState<BodyMetricsPage> {
-  final _heightController = TextEditingController();
-  final _weightController = TextEditingController();
-  final _ageController = TextEditingController();
-  BasicHealthSex? _sex;
-  BasicHealthActivityLevel? _activity;
-  BasicHealthReport? _report;
-  BodyMetricsThirtyDayScenario? _scenario;
-  BodyMetricsAiInsight? _aiInsight;
-  String? _error;
-  bool _didPrefill = false;
-  bool _analyzing = false;
-
   @override
-  void dispose() {
-    _heightController.dispose();
-    _weightController.dispose();
-    _ageController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(bodyMetricsControllerProvider.notifier).load());
   }
 
   @override
   Widget build(BuildContext context) {
-    final personalContext = ref.watch(bodyMetricsPersonalContextProvider);
-    personalContext.whenData(_queuePrefill);
-
+    final state = ref.watch(bodyMetricsControllerProvider);
     return NamiCareScaffold(
-      title: 'Cơ thể của bạn',
+      title: 'Sức khỏe của bạn',
       subtitle:
-          'Nabi dùng hồ sơ, thực đơn và lịch chăm sóc của bạn để tính chỉ số hiện tại và phân tích xu hướng sau một tháng.',
-      badge: 'CHỈ SỐ CƠ THỂ',
-      icon: Icons.monitor_weight_rounded,
+          'Theo dõi cơ thể, dinh dưỡng, giấc ngủ, vận động và xu hướng từ chính dữ liệu của bạn.',
+      badge: 'CHỈ SỐ SỨC KHỎE',
+      icon: Icons.health_and_safety_rounded,
       gradient: AppGradients.primary,
       children: [
-        _ProfileDataBanner(personalContext: personalContext),
-        const SizedBox(height: AppSpacing.sectionSpacing),
-        const NamiCareSectionTitle(
-          title: 'Dữ liệu cơ thể hiện tại',
-          subtitle:
-              'Nabi tự điền từ hồ sơ gần nhất. Bạn vẫn có thể chỉnh lại số đo trước khi phân tích.',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        NamiCareSurfaceCard(
-          child: Column(
-            children: [
-              _NumberField(
-                controller: _heightController,
-                label: 'Chiều cao (cm)',
-                icon: Icons.height_rounded,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              _NumberField(
-                controller: _weightController,
-                label: 'Cân nặng (kg)',
-                icon: Icons.monitor_weight_rounded,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              _NumberField(
-                controller: _ageController,
-                label: 'Tuổi',
-                icon: Icons.cake_rounded,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              DropdownButtonFormField<BasicHealthSex>(
-                key: ValueKey('body-metrics-sex-${_sex?.code ?? 'unset'}'),
-                initialValue: _sex,
-                decoration: _inputDecoration(
-                  'Giới tính sinh học',
-                  Icons.person_rounded,
-                ),
-                items: BasicHealthSex.values
-                    .map(
-                      (item) => DropdownMenuItem(
-                        value: item,
-                        child: Text(vietnameseUiText(item.label)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _sex = value);
-                },
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              DropdownButtonFormField<BasicHealthActivityLevel>(
-                key: ValueKey(
-                  'body-metrics-activity-${_activity?.code ?? 'unset'}',
-                ),
-                initialValue: _activity,
-                decoration: _inputDecoration(
-                  'Mức vận động',
-                  Icons.directions_walk_rounded,
-                ),
-                items: BasicHealthActivityLevel.values
-                    .map(
-                      (item) => DropdownMenuItem(
-                        value: item,
-                        child: Text(vietnameseUiText(item.label)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _activity = value);
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Khi bạn chọn Phân tích cơ thể, Nabi sẽ gửi các chỉ số wellness tổng hợp và bối cảnh kế hoạch tới dịch vụ AI để diễn giải. Không gửi ảnh minh chứng hoặc nhật ký thô.',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: context.semanticColors.textSecondary,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _analyzing ? null : _calculateAndAnalyze,
-                  icon: _analyzing
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.auto_awesome_rounded),
-                  label: Text(
-                    _analyzing ? 'Nabi đang phân tích...' : 'Phân tích cơ thể',
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        AppStateSwitcher(
-          alignment: Alignment.topCenter,
-          child: _error != null
-              ? Padding(
-                  key: const ValueKey('body-metrics-error'),
-                  padding: const EdgeInsets.only(top: AppSpacing.md),
-                  child: NamiCareEmptyState(
-                    icon: Icons.info_outline_rounded,
-                    color: AppColors.warning,
-                    title: 'Cần kiểm tra lại số liệu',
-                    message: _error!,
-                  ),
-                )
-              : _report != null
-                  ? Padding(
-                      key: const ValueKey('body-metrics-report'),
-                      padding: const EdgeInsets.only(
-                        top: AppSpacing.sectionSpacing,
-                      ),
-                      child: Column(
-                        children: [
-                          _ReportCard(report: _report!),
-                          const SizedBox(height: AppSpacing.sectionSpacing),
-                          if (_scenario != null)
-                            _ThirtyDayScenarioCard(
-                              report: _report!,
-                              scenario: _scenario!,
-                            ),
-                          const SizedBox(height: AppSpacing.sectionSpacing),
-                          if (_aiInsight != null)
-                            _AiInsightCard(insight: _aiInsight!),
-                        ],
-                      ),
-                    )
-                  : const SizedBox.shrink(
-                      key: ValueKey('body-metrics-idle'),
-                    ),
-        ),
-        const SizedBox(height: AppSpacing.sectionSpacing),
-        const NamiCareEmptyState(
-          icon: Icons.medical_information_rounded,
-          color: AppColors.primary,
-          title: 'Ước tính tham khảo',
-          message:
-              'Các chỉ số và dự báo chỉ mô tả xu hướng chăm sóc sức khỏe, không phải chẩn đoán, điều trị hay cam kết kết quả sau một tháng.',
-        ),
+        if (state.status == BodyMetricsStatus.loadingData ||
+            state.status == BodyMetricsStatus.calculating)
+          const _LoadingCard()
+        else if (state.snapshot == null || state.report == null)
+          _ErrorCard(
+            message: state.error ?? 'Nabi chưa có đủ dữ liệu để mở bảng sức khỏe.',
+            onRetry: () => ref.read(bodyMetricsControllerProvider.notifier).load(),
+          )
+        else
+          ..._dashboard(context, state),
       ],
     );
   }
 
-  void _queuePrefill(BodyMetricsPersonalContext? context) {
-    if (_didPrefill || context == null) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _didPrefill) return;
-      _didPrefill = true;
-      _heightController.text = _formatInput(context.heightCm);
-      _weightController.text = _formatInput(context.weightKg);
-      _ageController.text = context.ageYears?.toString() ?? '';
-      setState(() {
-        _sex = context.sex;
-        _activity = context.activityLevel;
-      });
-    });
-  }
-
-  Future<void> _calculateAndAnalyze() async {
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    setState(() {
-      _analyzing = true;
-      _error = null;
-      _aiInsight = null;
-    });
-    try {
-      final sex = _sex;
-      final activity = _activity;
-      if (sex == null) {
-        throw const BasicHealthCalculatorException(
-          'Vui lòng chọn giới tính sinh học để tính BMR/RMR chính xác hơn.',
-        );
-      }
-      if (activity == null) {
-        throw const BasicHealthCalculatorException(
-          'Vui lòng chọn mức vận động hiện tại.',
-        );
-      }
-      final input = BasicHealthInput(
-        heightCm: _parseDouble(_heightController.text),
-        weightKg: _parseDouble(_weightController.text),
-        ageYears: _parseInt(_ageController.text),
-        sex: sex,
-        activityLevel: activity,
-      );
-      final report = BasicHealthCalculator.calculate(input);
-      BodyMetricsPersonalContext? context;
-      try {
-        context = await ref.read(bodyMetricsPersonalContextProvider.future);
-      } catch (_) {
-        // Calculator output is still valid when local context cannot be loaded.
-      }
-      final scenario = BodyMetricsProjectionPolicy.build(
-        report: report,
-        context: context,
-      );
-      final insight = await ref.read(bodyMetricsAiServiceProvider).analyze(
-            report: report,
-            scenario: scenario,
-            dataCompleteness: context?.dataCompleteness ?? 0,
-          );
-      if (!mounted) return;
-      setState(() {
-        _report = report;
-        _scenario = scenario;
-        _aiInsight = insight;
-        _error = null;
-      });
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
-    } on BasicHealthCalculatorException catch (error) {
-      AppFeedbackService.instance.emit(AppFeedbackType.warning);
-      if (!mounted) return;
-      setState(() {
-        _report = null;
-        _scenario = null;
-        _aiInsight = null;
-        _error = vietnameseSystemUiText(
-          error.message,
-          fallback: 'Nabi chưa thể tính chỉ số lúc này. Bạn thử lại nhé.',
-        );
-      });
-    } catch (_) {
-      AppFeedbackService.instance.emit(AppFeedbackType.warning);
-      if (!mounted) return;
-      setState(() {
-        _report = null;
-        _scenario = null;
-        _aiInsight = null;
-        _error = 'Vui lòng kiểm tra chiều cao, cân nặng và tuổi.';
-      });
-    } finally {
-      if (mounted) setState(() => _analyzing = false);
-    }
-  }
-
-  double _parseDouble(String value) {
-    final parsed = double.tryParse(value.replaceAll(',', '.').trim());
-    if (parsed == null) {
-      throw const BasicHealthCalculatorException('Vui lòng nhập số hợp lệ.');
-    }
-    return parsed;
-  }
-
-  int _parseInt(String value) {
-    final parsed = int.tryParse(value.trim());
-    if (parsed == null) {
-      throw const BasicHealthCalculatorException('Vui lòng nhập số hợp lệ.');
-    }
-    return parsed;
-  }
-
-  String _formatInput(double? value) {
-    if (value == null) return '';
-    if (value == value.roundToDouble()) return value.toInt().toString();
-    return value.toStringAsFixed(1);
-  }
-
-  InputDecoration _inputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.md),
+  List<Widget> _dashboard(BuildContext context, BodyMetricsState state) {
+    final snapshot = state.snapshot!;
+    final report = state.report!;
+    final aiStages = state.totalAiStages > 0 ? state.totalAiStages : 5;
+    final synthesis = state.aiBundle?.synthesis;
+    return [
+      BodyMetricsHero(snapshot: snapshot, report: report, aiStageCount: aiStages),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      _ReadOnlyProfileCard(snapshot: snapshot),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthMetricSection(
+        title: 'Tổng quan cơ thể',
+        subtitle: 'Dữ liệu đo và chỉ số tính toán được hiển thị tách biệt với nhận định AI.',
+        icon: Icons.monitor_weight_rounded,
+        metrics: report.category(BodyMetricsMetricCategory.body),
       ),
-    );
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthMetricSection(
+        title: 'Năng lượng',
+        subtitle: 'Ước tính deterministic từ hồ sơ, mức vận động và dữ liệu thực đơn.',
+        icon: Icons.local_fire_department_rounded,
+        metrics: report.category(BodyMetricsMetricCategory.energy),
+      ),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthMetricSection(
+        title: 'Dinh dưỡng',
+        subtitle: 'Macro, chất xơ và vi chất từ các ngày thực đơn có dữ liệu.',
+        icon: Icons.restaurant_rounded,
+        metrics: report.category(BodyMetricsMetricCategory.nutrition),
+      ),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthMetricSection(
+        title: 'Nước',
+        subtitle: 'Trung bình và xu hướng ghi nhận, không nội suy ngày thiếu.',
+        icon: Icons.water_drop_rounded,
+        metrics: report.category(BodyMetricsMetricCategory.hydration),
+      ),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthMetricSection(
+        title: 'Ngủ & phục hồi',
+        subtitle: 'Dựa trên thời lượng ngủ, stress và mood đã ghi nhận.',
+        icon: Icons.bedtime_rounded,
+        metrics: report.category(BodyMetricsMetricCategory.recovery),
+      ),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthMetricSection(
+        title: 'Vận động',
+        subtitle: 'Bước chân và vùng HR chỉ là ước tính wellness.',
+        icon: Icons.directions_walk_rounded,
+        metrics: report.category(BodyMetricsMetricCategory.activity),
+      ),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthMetricSection(
+        title: 'Dữ liệu đo chuyên sâu',
+        subtitle: 'HR, SpO₂, huyết áp và đường huyết chỉ hiển thị observation; Nabi không phân loại bệnh từ đây.',
+        icon: Icons.monitor_heart_outlined,
+        metrics: report.category(BodyMetricsMetricCategory.observation),
+      ),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthMetricSection(
+        title: 'Mức thực hiện kế hoạch',
+        subtitle: 'Theo dõi completion, không dùng làm điểm sức khỏe.',
+        icon: Icons.fact_check_outlined,
+        metrics: report.category(BodyMetricsMetricCategory.adherence),
+      ),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthMetricSection(
+        title: 'Chất lượng dữ liệu',
+        subtitle: 'Đây là độ đầy đủ/freshness dữ liệu, không phải điểm sức khỏe.',
+        icon: Icons.data_usage_rounded,
+        metrics: report.category(BodyMetricsMetricCategory.dataQuality),
+      ),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      BodyMetricsTrendCard(snapshot: snapshot),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      _ContextCard(snapshot: snapshot),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      NabiHealthAnalysisCard(
+        analyzing: state.status == BodyMetricsStatus.analyzing,
+        currentStage: state.currentAiStage,
+        totalStages: state.totalAiStages,
+        stageId: state.currentStageId,
+        bundle: state.aiBundle,
+        onAnalyze: () => ref.read(bodyMetricsControllerProvider.notifier).analyze(),
+      ),
+      if (synthesis != null) ...[
+        const SizedBox(height: AppSpacing.sectionSpacing),
+        HealthActionPlanCard(synthesis: synthesis),
+      ],
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      HealthDataGapCard(gaps: report.dataGaps),
+      const SizedBox(height: AppSpacing.sectionSpacing),
+      const NamiCareEmptyState(
+        icon: Icons.medical_information_outlined,
+        color: AppColors.primary,
+        title: 'Lưu ý an toàn',
+        message:
+            'Các chỉ số là công cụ wellness tham khảo. Nabi không chẩn đoán, không kê thuốc, không đổi liều và không thay thế đánh giá của chuyên gia y tế.',
+      ),
+    ];
   }
 }
 
-class _ProfileDataBanner extends StatelessWidget {
-  final AsyncValue<BodyMetricsPersonalContext?> personalContext;
-
-  const _ProfileDataBanner({required this.personalContext});
+class _LoadingCard extends StatelessWidget {
+  const _LoadingCard();
 
   @override
   Widget build(BuildContext context) {
-    return personalContext.when(
-      loading: () => const NamiCareInfoTile(
-        icon: Icons.sync_rounded,
-        color: AppColors.info,
-        title: 'Đang đọc hồ sơ của bạn',
-        subtitle: 'Nabi đang lấy số đo và kế hoạch gần nhất trên thiết bị.',
-      ),
-      error: (_, __) => const NamiCareInfoTile(
-        icon: Icons.edit_note_rounded,
-        color: AppColors.warning,
-        title: 'Bạn có thể nhập số đo thủ công',
-        subtitle: 'Nabi chưa đọc được hồ sơ lúc này.',
-      ),
-      data: (data) {
-        if (data == null || !data.hasProfileMetrics) {
-          return const NamiCareInfoTile(
-            icon: Icons.person_add_alt_1_rounded,
-            color: AppColors.warning,
-            title: 'Hồ sơ cơ thể chưa đầy đủ',
-            subtitle:
-                'Bạn nhập số đo bên dưới; Nabi sẽ không tự tạo dữ liệu còn thiếu.',
-          );
-        }
-        final source = data.weightFromRecentTracking
-            ? 'Cân nặng được ưu tiên từ lần theo dõi gần nhất.'
-            : 'Số đo được lấy từ hồ sơ sức khỏe gần nhất.';
-        return NamiCareInfoTile(
-          icon: Icons.verified_user_rounded,
-          color: AppColors.success,
-          title: 'Đã dùng dữ liệu cá nhân của bạn',
-          subtitle: source,
-        );
-      },
+    return const NamiCareInfoTile(
+      icon: Icons.sync_rounded,
+      color: AppColors.info,
+      title: 'Nabi đang tổng hợp dữ liệu',
+      subtitle: 'Đang đọc hồ sơ hiện tại và dữ liệu sức khỏe gần đây.',
     );
   }
 }
 
-class _NumberField extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
-  final IconData icon;
+class _ErrorCard extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
 
-  const _NumberField({
-    required this.controller,
-    required this.label,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-      ),
-    );
-  }
-}
-
-class _ReportCard extends StatelessWidget {
-  final BasicHealthReport report;
-
-  const _ReportCard({required this.report});
+  const _ErrorCard({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -406,45 +183,17 @@ class _ReportCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const NamiCareSectionTitle(
-            title: 'Cơ thể hiện tại',
-            subtitle: 'Các chỉ số được tính bằng công thức wellness đã version hóa.',
+          NamiCareEmptyState(
+            icon: Icons.info_outline_rounded,
+            color: AppColors.warning,
+            title: 'Chưa thể mở dữ liệu sức khỏe',
+            message: message,
           ),
           const SizedBox(height: AppSpacing.md),
-          _MetricRow(
-            icon: Icons.favorite_rounded,
-            color: AppColors.success,
-            title: 'BMI',
-            value: '${report.bmi} - ${vietnameseUiText(report.bmiCategory)}',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _MetricRow(
-            icon: Icons.local_fire_department_rounded,
-            color: AppColors.warning,
-            title: 'BMR/RMR',
-            value: '${report.bmrKcal}/${report.rmrKcal} kcal',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _MetricRow(
-            icon: Icons.bolt_rounded,
-            color: AppColors.secondary,
-            title: 'TDEE',
-            value: '${report.tdeeKcal} kcal/ngày',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _MetricRow(
-            icon: Icons.water_drop_rounded,
-            color: AppColors.info,
-            title: 'Nước gợi ý',
-            value: '${report.hydrationMl} ml/ngày',
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          NamiCareInfoTile(
-            icon: Icons.bedtime_rounded,
-            color: AppColors.primary,
-            title: 'Giấc ngủ và vận động',
-            subtitle:
-                '${vietnameseUiText(report.sleepGuidance)} ${vietnameseUiText(report.activityGuidance)}',
+          OutlinedButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Thử lại'),
           ),
         ],
       ),
@@ -452,103 +201,36 @@ class _ReportCard extends StatelessWidget {
   }
 }
 
-class _ThirtyDayScenarioCard extends StatelessWidget {
-  final BasicHealthReport report;
-  final BodyMetricsThirtyDayScenario scenario;
+class _ReadOnlyProfileCard extends StatelessWidget {
+  final BodyMetricsHealthSnapshot snapshot;
 
-  const _ThirtyDayScenarioCard({required this.report, required this.scenario});
+  const _ReadOnlyProfileCard({required this.snapshot});
 
   @override
   Widget build(BuildContext context) {
-    final energyLabel = switch (scenario.energyDirection) {
-      BodyMetricsEnergyDirection.belowMaintenance =>
-        'Thực đơn đang thấp hơn mức năng lượng duy trì ước tính',
-      BodyMetricsEnergyDirection.nearMaintenance =>
-        'Thực đơn đang gần mức năng lượng duy trì ước tính',
-      BodyMetricsEnergyDirection.aboveMaintenance =>
-        'Thực đơn đang cao hơn mức năng lượng duy trì ước tính',
-      BodyMetricsEnergyDirection.unknown =>
-        'Chưa đủ ngày thực đơn để so với mức năng lượng duy trì',
-    };
+    String value(Object? value, String unit) => value == null ? 'Chưa có dữ liệu' : '$value $unit'.trim();
     return NamiCareSurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const NamiCareSectionTitle(
-            title: 'Kịch bản sau 30 ngày',
-            subtitle:
-                'Giả định bạn duy trì thực đơn và lịch chăm sóc đang có trong NanoBio.',
+            title: 'Dữ liệu sức khỏe của bạn',
+            subtitle: 'Read-only tại màn này. Muốn thay đổi, hãy cập nhật tại feature sở hữu dữ liệu.',
           ),
           const SizedBox(height: AppSpacing.md),
-          NamiCareInfoTile(
-            icon: Icons.restaurant_menu_rounded,
-            color: AppColors.secondary,
-            title: energyLabel,
-            subtitle: scenario.averagePlannedCalories == null
-                ? 'Nabi chưa có đủ dữ liệu năng lượng từ thực đơn.'
-                : '${scenario.plannedMealDays} ngày thực đơn, trung bình ${scenario.averagePlannedCalories!.round()} kcal/ngày; TDEE hiện tại ${report.tdeeKcal} kcal/ngày.',
-          ),
+          NamiCareInfoTile(icon: Icons.height_rounded, color: AppColors.info, title: 'Chiều cao', subtitle: value(snapshot.heightCm, 'cm')),
           const SizedBox(height: AppSpacing.sm),
-          NamiCareInfoTile(
-            icon: Icons.event_available_rounded,
-            color: AppColors.primary,
-            title: '${scenario.plannedScheduleItems} nhiệm vụ chăm sóc trong dữ liệu 30 ngày',
-            subtitle:
-                'Trong đó có ${scenario.plannedExerciseItems} nhiệm vụ vận động được Nabi dùng làm bối cảnh xu hướng.',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AiInsightCard extends StatelessWidget {
-  final BodyMetricsAiInsight insight;
-
-  const _AiInsightCard({required this.insight});
-
-  @override
-  Widget build(BuildContext context) {
-    return NamiCareSurfaceCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          NamiCareSectionTitle(
-            title: 'Nabi phân tích',
-            subtitle: insight.generatedByAi
-                ? 'AI diễn giải dữ liệu đã được app tính và tổng hợp; AI không tự tạo số đo.'
-                : 'Phần tính toán vẫn hoạt động dù AI tạm thời chưa sẵn sàng.',
-          ),
-          const SizedBox(height: AppSpacing.md),
-          NamiCareInfoTile(
-            icon: Icons.person_search_rounded,
-            color: AppColors.info,
-            title: 'Hiện tại',
-            subtitle: insight.currentStatus,
-          ),
+          NamiCareInfoTile(icon: Icons.monitor_weight_rounded, color: AppColors.info, title: 'Cân nặng hiện tại', subtitle: value(snapshot.currentWeightKg, 'kg')),
           const SizedBox(height: AppSpacing.sm),
-          NamiCareInfoTile(
-            icon: Icons.trending_up_rounded,
-            color: AppColors.success,
-            title: 'Nếu duy trì trong 30 ngày',
-            subtitle: insight.afterThirtyDays,
-          ),
+          NamiCareInfoTile(icon: Icons.cake_outlined, color: AppColors.info, title: 'Tuổi', subtitle: value(snapshot.ageYears, '')),
           const SizedBox(height: AppSpacing.sm),
-          NamiCareInfoTile(
-            icon: Icons.analytics_outlined,
-            color: AppColors.tertiary,
-            title: 'Độ tin cậy: ${insight.confidence}',
-            subtitle: insight.factors.isEmpty
-                ? 'Nabi sẽ phân tích sâu hơn khi dữ liệu thực đơn và lịch chăm sóc đầy đủ hơn.'
-                : insight.factors.join(' • '),
-          ),
-          if (insight.assumptions.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.sm),
-            NamiCareInfoTile(
-              icon: Icons.rule_rounded,
-              color: AppColors.warning,
-              title: 'Giả định',
-              subtitle: insight.assumptions.join(' • '),
+          NamiCareInfoTile(icon: Icons.directions_walk_rounded, color: AppColors.info, title: 'Mức vận động', subtitle: snapshot.activityLevel?.label ?? 'Chưa có dữ liệu'),
+          if (snapshot.heightCm == null || snapshot.currentWeightKg == null || snapshot.ageYears == null || snapshot.activityLevel == null) ...[
+            const SizedBox(height: AppSpacing.md),
+            OutlinedButton.icon(
+              onPressed: () => context.push(V1RoutePaths.profile),
+              icon: const Icon(Icons.manage_accounts_outlined),
+              label: const Text('Cập nhật hồ sơ'),
             ),
           ],
         ],
@@ -557,27 +239,55 @@ class _AiInsightCard extends StatelessWidget {
   }
 }
 
-class _MetricRow extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String value;
+class _ContextCard extends StatelessWidget {
+  final BodyMetricsHealthSnapshot snapshot;
 
-  const _MetricRow({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.value,
-  });
+  const _ContextCard({required this.snapshot});
 
   @override
   Widget build(BuildContext context) {
-    return NamiCareInfoTile(
-      icon: icon,
-      color: color,
-      title: title,
-      subtitle: 'Nabi dùng chỉ số này để gợi ý xu hướng chăm sóc phù hợp hơn.',
-      trailing: value,
+    final conditions = snapshot.declaredConditions.map((item) => item.name).toList();
+    final goals = snapshot.activeGoals.map((item) => item.name).toList();
+    final treatments = snapshot.treatments
+        .expand((item) => [item.treatmentName, item.medicationName])
+        .whereType<String>()
+        .toList();
+    return NamiCareSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const NamiCareSectionTitle(
+            title: 'Bối cảnh cá nhân',
+            subtitle: 'Chỉ dùng những tình trạng/mục tiêu mà người dùng đã khai báo.',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _ContextRow(title: 'Tình trạng đã khai báo', items: conditions),
+          _ContextRow(title: 'Mục tiêu đang hoạt động', items: goals),
+          _ContextRow(title: 'Dị ứng đã khai báo', items: snapshot.allergies),
+          _ContextRow(title: 'Điều trị/thuốc đã khai báo', items: treatments),
+          _ContextRow(title: 'Thói quen đang ghi nhận', items: snapshot.lifestyle?.activeFlags ?? const []),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContextRow extends StatelessWidget {
+  final String title;
+  final List<String> items;
+
+  const _ContextRow({required this.title, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: NamiCareInfoTile(
+        icon: Icons.label_outline_rounded,
+        color: AppColors.secondary,
+        title: title,
+        subtitle: items.isEmpty ? 'Không có mục nào được khai báo.' : items.join(' • '),
+      ),
     );
   }
 }

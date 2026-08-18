@@ -34,8 +34,8 @@ class ReminderScheduleService {
     required this.scheduler,
     ActiveReminderSubjectReader? activeSubjectUserId,
     DateTime Function()? now,
-  })  : activeSubjectUserId = activeSubjectUserId ?? _noActiveSubject,
-        _now = now ?? DateTime.now;
+  }) : activeSubjectUserId = activeSubjectUserId ?? _noActiveSubject,
+       _now = now ?? DateTime.now;
 
   factory ReminderScheduleService.fromDatabase({
     required Database db,
@@ -72,6 +72,10 @@ class ReminderScheduleService {
         ? const <LifestyleScheduleItemModel>[]
         : await scheduleItemsDao.getAllByUserId(subjectUserId);
 
+    await _refreshDeferredReminders(
+      activeSubjectUserId: subjectUserId,
+      items: items,
+    );
     await _clearPendingForRefresh(
       activeSubjectUserId: subjectUserId,
       activeSourceIds: items.map((item) => item.id).toSet(),
@@ -87,7 +91,7 @@ class ReminderScheduleService {
 
     final candidates = items
         .where((item) => !item.isCompleted)
-        .map(_scheduleItemCandidate)
+        .map((item) => _scheduleItemCandidate(item))
         .whereType<_ReminderCandidate>()
         .where((candidate) => candidate.scheduledAt.isAfter(_now()))
         .toList();
@@ -113,16 +117,107 @@ class ReminderScheduleService {
 
   Future<void> clearPendingReminders({String? subjectUserId}) async {
     final activeSubject = _activeSubjectId(subjectUserId);
-    final pending = await notificationsDao.getPendingBySourceType(
+    final actionable = await notificationsDao.getActionableBySourceType(
       ReminderSourceTypes.lifestyleScheduleItem,
     );
 
-    for (final notification in pending) {
+    for (final notification in actionable) {
       if (activeSubject != null &&
           !_matchesSubject(notification.userId, activeSubject)) {
         continue;
       }
       await _cancelAndDelete(notification);
+    }
+  }
+
+  Future<void> _refreshDeferredReminders({
+    required String? activeSubjectUserId,
+    required List<LifestyleScheduleItemModel> items,
+  }) async {
+    final deferred = await notificationsDao.getDeferredBySourceType(
+      ReminderSourceTypes.lifestyleScheduleItem,
+    );
+    if (deferred.isEmpty) return;
+
+    final itemById = {for (final item in items) item.id: item};
+    for (final notification in deferred) {
+      final isActiveSubject =
+          activeSubjectUserId != null &&
+          _matchesSubject(notification.userId, activeSubjectUserId);
+      final sourceId = notification.sourceId?.trim();
+      final item = sourceId == null || sourceId.isEmpty
+          ? null
+          : itemById[sourceId];
+
+      if (!isActiveSubject || item == null || item.isCompleted) {
+        await _cancelAndDelete(notification);
+        continue;
+      }
+
+      final deferredAt = DateTime.tryParse(notification.scheduledAt ?? '');
+      if (deferredAt == null) {
+        await notificationsDao.updateActionStatus(
+          id: notification.id,
+          actionStatus: NotificationActionStatuses.scheduleFailed,
+          updatedAt: _now().toIso8601String(),
+          respondedAt: notification.respondedAt,
+        );
+        continue;
+      }
+
+      // If delivery time is already due/past, the OS notification may already
+      // be visible. Keep it actionable rather than scheduling a duplicate.
+      if (!deferredAt.isAfter(_now())) continue;
+
+      final candidate = _scheduleItemCandidate(
+        item,
+        scheduledAtOverride: deferredAt,
+      );
+      if (candidate == null || notification.notificationId == null) {
+        await _cancelAndDelete(notification);
+        continue;
+      }
+
+      final payload = NotificationPayload(
+        notificationId: notification.notificationId!,
+        sourceType: candidate.sourceType,
+        sourceId: candidate.sourceId,
+        scheduledAt: deferredAt.toIso8601String(),
+        subjectUserId: candidate.subjectUserId,
+        actorUserId: candidate.userId,
+        correlationId: notification.id,
+      ).toJsonString();
+      final updated = notification.copyWith(
+        title: candidate.title,
+        body: candidate.body,
+        scheduledAt: deferredAt.toIso8601String(),
+        payload: payload,
+        updatedAt: _now().toIso8601String(),
+      );
+      await notificationsDao.update(updated);
+
+      try {
+        await scheduler.scheduleReminder(
+          id: notification.notificationId!,
+          title: candidate.title,
+          body: candidate.body,
+          scheduledAt: deferredAt,
+          payload: payload,
+        );
+      } catch (error, stackTrace) {
+        AppLogger.error(
+          _tag,
+          'Failed to refresh deferred reminder',
+          error,
+          stackTrace,
+        );
+        await notificationsDao.updateActionStatus(
+          id: notification.id,
+          actionStatus: NotificationActionStatuses.scheduleFailed,
+          respondedAt: notification.respondedAt,
+          updatedAt: _now().toIso8601String(),
+        );
+      }
     }
   }
 
@@ -161,7 +256,7 @@ class ReminderScheduleService {
       } catch (error, stackTrace) {
         AppLogger.error(
           _tag,
-          'Failed to cancel a pending reminder',
+          'Failed to cancel an actionable reminder',
           error,
           stackTrace,
         );
@@ -195,13 +290,11 @@ class ReminderScheduleService {
         candidate,
       ).copyWith(actionStatus: actionStatus, updatedAt: updatedAt);
     }).toList();
-
     await notificationsDao.insertMany(rows);
   }
 
   Future<void> _scheduleCandidate(_ReminderCandidate candidate) async {
     final notification = _notificationFor(candidate);
-
     try {
       await notificationsDao.insert(notification);
       await scheduler.scheduleReminder(
@@ -246,13 +339,16 @@ class ReminderScheduleService {
     );
   }
 
-  _ReminderCandidate? _scheduleItemCandidate(LifestyleScheduleItemModel item) {
+  _ReminderCandidate? _scheduleItemCandidate(
+    LifestyleScheduleItemModel item, {
+    DateTime? scheduledAtOverride,
+  }) {
     if (item.sourceType == LifestyleScheduleSourceTypes.manualHealthTask) {
       final metadata = ManualHealthTaskMetadata.tryParse(item.sourceId);
       if (metadata?.reminderEnabled == false) return null;
     }
 
-    final scheduledAt = _scheduledAt(item);
+    final scheduledAt = scheduledAtOverride ?? _scheduledAt(item);
     if (scheduledAt == null) return null;
 
     final title = vietnameseSystemUiText(

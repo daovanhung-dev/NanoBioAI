@@ -7,9 +7,7 @@ import 'notification_constants.dart';
 
 abstract class ReminderNotificationScheduler {
   Future<void> initialize();
-
   Future<bool> requestPermissions();
-
   Future<void> scheduleReminder({
     required int id,
     required String title,
@@ -17,7 +15,6 @@ abstract class ReminderNotificationScheduler {
     required DateTime scheduledAt,
     required String payload,
   });
-
   Future<void> cancel(int id);
 }
 
@@ -32,11 +29,9 @@ class LocalReminderNotificationScheduler
        _onBackgroundResponse = onBackgroundResponse;
 
   static const _tag = 'LOCAL_REMINDER_SCHEDULER';
-
   final FlutterLocalNotificationsPlugin _plugin;
   final void Function(NotificationResponse response)? _onForegroundResponse;
   final void Function(NotificationResponse response)? _onBackgroundResponse;
-
   bool _initialized = false;
 
   FlutterLocalNotificationsPlugin get plugin => _plugin;
@@ -44,11 +39,7 @@ class LocalReminderNotificationScheduler
   @override
   Future<void> initialize() async {
     if (_initialized) return;
-
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
-
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     final darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -63,26 +54,23 @@ class LocalReminderNotificationScheduler
               options: {DarwinNotificationActionOption.foreground},
             ),
             DarwinNotificationAction.plain(
-              NotificationActionIds.skipped,
+              NotificationActionIds.defer,
               'Để sau',
             ),
           ],
         ),
       ],
     );
-
     final settings = InitializationSettings(
       android: androidSettings,
       iOS: darwinSettings,
       macOS: darwinSettings,
     );
-
     await _plugin.initialize(
       settings,
       onDidReceiveNotificationResponse: _onForegroundResponse,
       onDidReceiveBackgroundNotificationResponse: _onBackgroundResponse,
     );
-
     _initialized = true;
     AppLogger.info(_tag, 'Local notification plugin initialized');
   }
@@ -90,39 +78,27 @@ class LocalReminderNotificationScheduler
   @override
   Future<bool> requestPermissions() async {
     await initialize();
-
     if (kIsWeb) return true;
-
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         final androidPlugin = _plugin
             .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin
             >();
-
         final result = await androidPlugin?.requestNotificationsPermission();
         if (!(result ?? true)) return false;
-
         await _requestExactAlarmAccess(androidPlugin);
-
         return result ?? true;
-
       case TargetPlatform.iOS:
         final result = await _plugin
-            .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin
-            >()
+            .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
             ?.requestPermissions(alert: true, badge: true, sound: true);
         return result ?? true;
-
       case TargetPlatform.macOS:
         final result = await _plugin
-            .resolvePlatformSpecificImplementation<
-              MacOSFlutterLocalNotificationsPlugin
-            >()
+            .resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>()
             ?.requestPermissions(alert: true, badge: true, sound: true);
         return result ?? true;
-
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
@@ -140,19 +116,14 @@ class LocalReminderNotificationScheduler
       );
       return;
     }
-
     try {
-      final canScheduleExact = await androidPlugin
-          .canScheduleExactNotifications();
-
+      final canScheduleExact = await androidPlugin.canScheduleExactNotifications();
       if (canScheduleExact ?? false) return;
-
       final granted = await androidPlugin.requestExactAlarmsPermission();
       if (granted ?? false) {
         AppLogger.info(_tag, 'Android exact alarm access granted');
         return;
       }
-
       AppLogger.warning(
         _tag,
         'Android exact alarm access was not granted. Reminders will use inexact delivery.',
@@ -174,9 +145,7 @@ class LocalReminderNotificationScheduler
     required String payload,
   }) async {
     await initialize();
-
     final now = DateTime.now();
-
     if (!scheduledAt.isAfter(now)) {
       AppLogger.warning(
         _tag,
@@ -184,9 +153,7 @@ class LocalReminderNotificationScheduler
       );
       return;
     }
-
     final androidScheduleMode = await _resolveAndroidScheduleMode();
-
     await _plugin.zonedSchedule(
       id,
       title,
@@ -208,7 +175,7 @@ class LocalReminderNotificationScheduler
               cancelNotification: true,
             ),
             AndroidNotificationAction(
-              NotificationActionIds.skipped,
+              NotificationActionIds.defer,
               'Để sau',
               showsUserInterface: false,
               cancelNotification: true,
@@ -225,7 +192,6 @@ class LocalReminderNotificationScheduler
       androidScheduleMode: androidScheduleMode,
       payload: payload,
     );
-
     AppLogger.info(
       _tag,
       'Scheduled reminder id=$id at=${scheduledAt.toIso8601String()}',
@@ -236,12 +202,10 @@ class LocalReminderNotificationScheduler
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return AndroidScheduleMode.inexactAllowWhileIdle;
     }
-
     final androidPlugin = _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
-
     if (androidPlugin == null) {
       AppLogger.warning(
         _tag,
@@ -249,15 +213,11 @@ class LocalReminderNotificationScheduler
       );
       return AndroidScheduleMode.inexactAllowWhileIdle;
     }
-
     try {
-      final canScheduleExact = await androidPlugin
-          .canScheduleExactNotifications();
-
+      final canScheduleExact = await androidPlugin.canScheduleExactNotifications();
       if (canScheduleExact ?? false) {
         return AndroidScheduleMode.exactAllowWhileIdle;
       }
-
       AppLogger.warning(
         _tag,
         'Exact alarm access is not available. Falling back to inexact reminders.',
@@ -268,7 +228,6 @@ class LocalReminderNotificationScheduler
         'Cannot check exact alarm access. Falling back to inexact reminders. Error: $error',
       );
     }
-
     return AndroidScheduleMode.inexactAllowWhileIdle;
   }
 

@@ -38,10 +38,11 @@ class _FakeReplacementDatasource extends MealPlanLocalDatasource {
   Future<MealPlanEntity> replaceMealByCatalogCode({
     required String mealId,
     required String catalogCode,
+    String? userId,
   }) async {
     return MealPlanEntity(
       id: mealId,
-      userId: 'user-1',
+      userId: userId ?? 'user-1',
       planDate: '2026-08-16',
       mealType: 'breakfast',
       mealName: 'Món mới',
