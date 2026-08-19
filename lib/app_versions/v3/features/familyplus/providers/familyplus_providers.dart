@@ -75,21 +75,20 @@ final familyPlusContextProvider =
       }
     });
 
+final familyPlusCommandsProvider = Provider<FamilyPlusCommands>((ref) {
+  return FamilyPlusCommands(
+    repository: ref.read(familyPlusRepositoryProvider),
+    invalidateContext: () => ref.invalidate(familyPlusContextProvider),
+  );
+});
+
+/// Backward-compatible command provider. The command itself is single-flight,
+/// so button double-taps or two presentation entry points share one request and
+/// one idempotency key until that request settles.
 final familyPlusCreateDefaultGroupProvider = Provider<Future<void> Function()>((
   ref,
 ) {
-  return () async {
-    final key = _idempotencyKey('family-group');
-    await ref
-        .read(familyPlusRepositoryProvider)
-        .upsertGroup(
-          FamilyPlusUpsertGroupCommand(
-            displayName: 'Gia đình của tôi',
-            idempotencyKey: key,
-          ),
-        );
-    ref.invalidate(familyPlusContextProvider);
-  };
+  return ref.watch(familyPlusCommandsProvider).createDefaultGroup;
 });
 
 final familyPlusSwitchSubjectProvider =
@@ -100,6 +99,45 @@ final familyPlusSwitchSubjectProvider =
             .switchSubjectContext(context, requestedSubjectId: subjectId);
       };
     });
+
+class FamilyPlusCommands {
+  FamilyPlusCommands({
+    required FamilyPlusRepository repository,
+    required void Function() invalidateContext,
+  }) : _repository = repository,
+       _invalidateContext = invalidateContext;
+
+  final FamilyPlusRepository _repository;
+  final void Function() _invalidateContext;
+
+  Future<void>? _createGroupInFlight;
+  String? _createGroupIdempotencyKey;
+
+  Future<void> createDefaultGroup() {
+    final existing = _createGroupInFlight;
+    if (existing != null) return existing;
+
+    final key = _createGroupIdempotencyKey ??= _idempotencyKey('family-group');
+    final future = _runCreateDefaultGroup(key);
+    _createGroupInFlight = future;
+    return future;
+  }
+
+  Future<void> _runCreateDefaultGroup(String key) async {
+    try {
+      await _repository.upsertGroup(
+        FamilyPlusUpsertGroupCommand(
+          displayName: 'Gia đình của tôi',
+          idempotencyKey: key,
+        ),
+      );
+      _invalidateContext();
+    } finally {
+      _createGroupInFlight = null;
+      _createGroupIdempotencyKey = null;
+    }
+  }
+}
 
 String _idempotencyKey(String prefix) {
   return '$prefix-${DateTime.now().toUtc().microsecondsSinceEpoch}';

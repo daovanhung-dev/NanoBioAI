@@ -10,6 +10,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/widgets
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/widgets/states/dashboard_state_widgets.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/providers/main_navigation_state_provider.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_horizon.dart';
 import 'package:nano_app/app_versions/v1/features/nabi/presentation/widgets/nabi_floating_overlay.dart';
@@ -40,18 +41,23 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   Timer? _scheduleStatusTimer;
   final Set<String> _busyTimelineItems = <String>{};
 
+  bool get _isVisibleInMainShell =>
+      widget.showStandaloneChatButton || ref.read(mainNavigationIndexProvider) == 0;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _scheduleStatusTimer = Timer.periodic(const Duration(seconds: 15), (_) {
-      if (mounted) ref.invalidate(dashboardDynamicProvider);
+      if (mounted && _isVisibleInMainShell) {
+        ref.invalidate(dashboardDynamicProvider);
+      }
     });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed && _isVisibleInMainShell) {
       ref.invalidate(dashboardDynamicProvider);
     }
   }
@@ -83,9 +89,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         PlanGenerationSource.localFallback || PlanGenerationSource.unknown =>
           'Nabi đã thêm lịch gợi ý cơ bản 7 ngày. Khi dịch vụ sẵn sàng, bạn có thể tạo lại để nhận gợi ý cá nhân hơn nhé.',
       };
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } catch (error) {
       if (!mounted) return;
       if (error is DailyRoutinePreferencesRequiredException) {
@@ -144,9 +148,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         _ =>
           'Nabi chưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',
       };
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -168,9 +170,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           queryParameters: {'item': sourceId},
         ).toString(),
       );
-      if (mounted) {
-        ref.invalidate(dashboardDynamicProvider);
-      }
+      if (mounted) ref.invalidate(dashboardDynamicProvider);
     } finally {
       _busyTimelineItems.remove(item.id);
     }

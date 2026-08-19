@@ -53,14 +53,14 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
               key: ValueKey<String>('sale-participation-loading'),
               child: CircularProgressIndicator(),
             ),
-            error: (_, __) => _BuildTermsBody(
-              key: const ValueKey<String>('sale-participation-fallback'),
-              authenticated: authenticated,
-              accepted: _accepted,
-              submitting: _submitting,
-              state: SaleState.none,
-              onAcceptedChanged: _setAccepted,
-              onSubmit: _submit,
+            error: (_, __) => _SaleStateLoadError(
+              key: const ValueKey<String>('sale-participation-error'),
+              onRetry: () {
+                AppFeedbackService.instance.emit(
+                  AppFeedbackType.primaryAction,
+                );
+                ref.invalidate(saleStateProvider);
+              },
             ),
             data: (state) => _BuildTermsBody(
               key: ValueKey<String>('sale-participation-${state.status.name}'),
@@ -130,6 +130,58 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+}
+
+class _SaleStateLoadError extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _SaleStateLoadError({super.key, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.pagePadding),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: MedicalSurfaceCard(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.cloud_off_rounded,
+                  size: 48,
+                  color: colors.warning,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Chưa kiểm tra được trạng thái cộng tác viên',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.heading3,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Nabi chưa thể xác nhận trạng thái tài khoản lúc này. Mình sẽ không hiển thị hành động tham gia cho đến khi kiểm tra lại thành công.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: colors.textSecondary,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sectionSpacing),
+                FilledButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Thử lại'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

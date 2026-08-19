@@ -14,7 +14,7 @@ class WelcomeStep extends ConsumerWidget {
     final controller = ref.read(onboardingProvider.notifier);
     return OnboardingStepShell(
       stepIndex: 0,
-      title: 'Chào bạn, mình là NaBi',
+      title: 'Chào bạn, mình là Nabi',
       subtitle: 'Mình cùng tạo lộ trình phù hợp nhé.',
       showBack: false,
       showCompanion: false,
@@ -49,7 +49,7 @@ class WelcomeStep extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      '2–3 phút để NaBi hiểu bạn',
+                      '2–3 phút để Nabi hiểu bạn',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.heading4.copyWith(
                         color: AppColors.textInverse,
@@ -109,15 +109,15 @@ class WelcomeStep extends ConsumerWidget {
 }
 
 class _WelcomeBenefit extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
   const _WelcomeBenefit({
     required this.icon,
     required this.label,
     required this.color,
   });
+
+  final IconData icon;
+  final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {

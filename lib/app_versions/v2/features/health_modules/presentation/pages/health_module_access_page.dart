@@ -16,9 +16,7 @@ class HealthModuleAccessPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final item = healthFeatureByModuleId(moduleId);
-    if (item == null) {
-      return const _HealthModuleSupportPage.notFound();
-    }
+    if (item == null) return const _HealthModuleSupportPage.notFound();
 
     final access = ref.watch(effectiveAccessProvider);
     return AppStateSwitcher(
@@ -38,7 +36,6 @@ class HealthModuleAccessPage extends ConsumerWidget {
             item: item,
             access: effectiveAccess,
           );
-
           return switch (destination) {
             HealthModuleAccessDestination.loginRequired =>
               const _HealthModuleRouteForwarder(
@@ -84,6 +81,9 @@ class HealthModuleAccessPage extends ConsumerWidget {
   }
 }
 
+/// Pushes auth/upgrade on top of the access page instead of replacing it.
+/// Returning from the destination therefore restores the original module intent
+/// and lets this page resolve trusted access again.
 class _HealthModuleRouteForwarder extends StatefulWidget {
   final String location;
   final String message;
@@ -107,8 +107,11 @@ class _HealthModuleRouteForwarderState
     super.didChangeDependencies();
     if (_scheduled) return;
     _scheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.pushReplacement(widget.location);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await context.push(widget.location);
+      if (!mounted) return;
+      setState(() => _scheduled = false);
     });
   }
 
@@ -151,13 +154,12 @@ class _HealthModuleSupportPage extends StatelessWidget {
       onRetry = null,
       showProgress = false;
 
-  const _HealthModuleSupportPage.accessUnavailable({
-    required this.onRetry,
-  }) : title = 'Chưa kiểm tra được quyền truy cập',
-       message =
-           'Nabi chưa xác nhận được gói của bạn nên chức năng vẫn được khóa an toàn.',
-       icon = Icons.lock_clock_outlined,
-       showProgress = false;
+  const _HealthModuleSupportPage.accessUnavailable({required this.onRetry})
+    : title = 'Chưa kiểm tra được quyền truy cập',
+      message =
+          'Nabi chưa xác nhận được gói của bạn nên chức năng vẫn được khóa an toàn.',
+      icon = Icons.lock_clock_outlined,
+      showProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -177,12 +179,12 @@ class _HealthModuleSupportPage extends StatelessWidget {
                   child: CircularProgressIndicator(strokeWidth: 2.4),
                 )
               : onRetry == null
-              ? null
-              : FilledButton.icon(
-                  onPressed: onRetry,
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Thử lại'),
-                ),
+                  ? null
+                  : FilledButton.icon(
+                      onPressed: onRetry,
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Thử lại'),
+                    ),
         ),
       ],
     );

@@ -90,7 +90,9 @@ class BodyMetricsAnalysisOrchestrator {
 
 extension _FirstOrNull<T> on Iterable<T> {
   T? get firstOrNull {
-    for (final item in this) return item;
+    for (final item in this) {
+      return item;
+    }
     return null;
   }
 }

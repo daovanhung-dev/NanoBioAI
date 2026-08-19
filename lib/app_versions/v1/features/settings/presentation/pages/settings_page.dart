@@ -5,24 +5,24 @@ import 'package:go_router/go_router.dart';
 
 import 'package:nano_app/app/app_surface_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
+import 'package:nano_app/app_versions/v1/features/settings/domain/entities/settings_preferences_entity.dart';
+import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/font_scale_selector.dart';
+import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/guest_account_access_card.dart';
+import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/membership_upgrade_card.dart';
+import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
-import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
 import 'package:nano_app/core/theme/primitives/button.dart';
-import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
-import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
-import 'package:nano_app/app_versions/v1/features/settings/domain/entities/settings_preferences_entity.dart';
-import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
-import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/guest_account_access_card.dart';
-import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/font_scale_selector.dart';
-import 'package:nano_app/app_versions/v1/features/settings/presentation/widgets/membership_upgrade_card.dart';
+import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/sale_referral/presentation/pages/sale_participation_page.dart';
 import 'package:nano_app/services/supabase/auth/account_security_provider.dart';
 import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
-import 'package:nano_app/sale_referral/presentation/pages/sale_participation_page.dart';
 
 import 'dev_database_viewer_page.dart';
 
@@ -35,11 +35,9 @@ class SettingsView extends ConsumerWidget {
     final preferencesAsync = ref.watch(settingsPreferencesControllerProvider);
     final cacheSizeAsync = ref.watch(settingsCacheSizeProvider);
     final textScale = ref.watch(appTextScaleControllerProvider).value;
-    final experiencePreferencesAsync = ref.watch(
-      appExperiencePreferencesProvider,
-    );
-    final experiencePreferences =
-        experiencePreferencesAsync.value ?? AppExperiencePreferences.defaults;
+    final experienceAsync = ref.watch(appExperiencePreferencesProvider);
+    final experience =
+        experienceAsync.value ?? AppExperiencePreferences.defaults;
     final preferences =
         preferencesAsync.value ?? SettingsPreferencesEntity.defaults();
     final dashboard = dashboardAsync.value;
@@ -56,286 +54,289 @@ class SettingsView extends ConsumerWidget {
       backgroundColor: context.semanticColors.background,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {
-            AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-            ref.invalidate(dashboardProvider);
-            ref.invalidate(settingsPreferencesControllerProvider);
-            ref.invalidate(settingsCacheSizeProvider);
-            ref.invalidate(appExperiencePreferencesProvider);
-            ref.invalidate(saleStateProvider);
-            try {
-              await ref.read(dashboardProvider.future);
-            } catch (_) {}
-            try {
-              await ref.read(settingsPreferencesControllerProvider.future);
-            } catch (_) {}
-            try {
-              await ref.read(settingsCacheSizeProvider.future);
-            } catch (_) {}
-            AppFeedbackService.instance.emit(AppFeedbackType.success);
-          },
+          onRefresh: () => _refreshSettings(context, ref),
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(
               parent: BouncingScrollPhysics(),
             ),
             slivers: [
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.pagePadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _Header(isLoading: dashboardAsync.isLoading),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _ProfileCard(dashboard: dashboard),
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      MembershipUpgradeCard(
-                        isAuthenticated: isAuthenticated,
-                        onPressed: () => context.push(
-                          isAuthenticated
-                              ? V2RoutePaths.payments
-                              : AuthRoutePaths.login,
-                        ),
-                      ),
-                      if (!isAuthenticated) ...[
-                        const SizedBox(height: AppSpacing.sectionSpacing),
-                        GuestAccountAccessCard(
-                          onLogin: () => context.push(AuthRoutePaths.login),
-                          onRegister: () =>
-                              context.push(AuthRoutePaths.register),
-                        ),
-                      ],
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _SectionTitle('Tài khoản'),
-                      const SizedBox(height: AppSpacing.md),
-                      _MenuCard(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 860),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.pagePadding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _MenuItem(
-                            icon: Icons.person_rounded,
-                            title: 'Thông tin cá nhân',
-                            subtitle: dashboard == null
-                                ? 'Nabi chưa thấy hồ sơ nào sẵn sàng'
-                                : _profileSubtitle(dashboard),
-                            onTap: () => context.push(V1RoutePaths.profile),
-                          ),
-                          const _DividerLine(),
-                          _MenuItem(
-                            icon: Icons.schedule_rounded,
-                            title: 'Lịch sinh hoạt cá nhân',
-                            subtitle:
-                                'Chỉnh giờ thức, ngủ, ăn, tập và khoảng bận',
-                            onTap: () => context.push(
-                              V1RoutePaths.dailyRoutinePreferences,
+                          _Header(isLoading: dashboardAsync.isLoading),
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          _ProfileCard(dashboard: dashboard),
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          MembershipUpgradeCard(
+                            isAuthenticated: isAuthenticated,
+                            onPressed: () => context.push(
+                              isAuthenticated
+                                  ? V2RoutePaths.payments
+                                  : AuthRoutePaths.login,
                             ),
+                          ),
+                          if (!isAuthenticated) ...[
+                            const SizedBox(height: AppSpacing.sectionSpacing),
+                            GuestAccountAccessCard(
+                              onLogin: () => context.push(AuthRoutePaths.login),
+                              onRegister: () =>
+                                  context.push(AuthRoutePaths.register),
+                            ),
+                          ],
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          const _SectionTitle('Tài khoản'),
+                          const SizedBox(height: AppSpacing.md),
+                          _MenuCard(
+                            children: [
+                              _MenuItem(
+                                icon: Icons.person_rounded,
+                                title: 'Thông tin cá nhân',
+                                subtitle: dashboard == null
+                                    ? 'Nabi chưa thấy hồ sơ nào sẵn sàng'
+                                    : _profileSubtitle(dashboard),
+                                onTap: () => context.push(V1RoutePaths.profile),
+                              ),
+                              const _DividerLine(),
+                              _MenuItem(
+                                icon: Icons.schedule_rounded,
+                                title: 'Lịch sinh hoạt cá nhân',
+                                subtitle:
+                                    'Chỉnh giờ thức, ngủ, ăn, tập và khoảng bận',
+                                onTap: () => context.push(
+                                  V1RoutePaths.dailyRoutinePreferences,
+                                ),
+                              ),
+                              if (isAuthenticated) ...[
+                                const _DividerLine(),
+                                _MenuItem(
+                                  icon: Icons.lock_rounded,
+                                  title: 'Bảo mật',
+                                  subtitle:
+                                      'Bảo vệ tài khoản và thông tin cá nhân của bạn',
+                                  onTap: () =>
+                                      _showChangePasswordSheet(context),
+                                ),
+                              ],
+                              const _DividerLine(),
+                              _MenuItem(
+                                icon: Icons.notifications_rounded,
+                                title: 'Thông báo',
+                                subtitle: preferences.pushEnabled
+                                    ? 'Đang bật nhắc nhở trên thiết bị'
+                                    : 'Đang tắt nhắc nhở trên thiết bị',
+                                trailing: Switch.adaptive(
+                                  value: preferences.pushEnabled,
+                                  onChanged: preferencesAsync.isLoading
+                                      ? null
+                                      : (value) => ref
+                                            .read(
+                                              settingsPreferencesControllerProvider
+                                                  .notifier,
+                                            )
+                                            .setPushEnabled(value),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (canSwitchToAdmin) ...[
+                            const SizedBox(height: AppSpacing.sectionSpacing),
+                            const _SectionTitle('Chế độ làm việc'),
+                            const SizedBox(height: AppSpacing.md),
+                            _MenuCard(
+                              children: [
+                                _MenuItem(
+                                  key: const Key('settings_switch_to_admin'),
+                                  icon: Icons.admin_panel_settings_rounded,
+                                  title: 'Chuyển sang giao diện quản trị',
+                                  subtitle:
+                                      'Mở công cụ quản trị bằng chính tài khoản hiện tại',
+                                  onTap: () => ref
+                                      .read(
+                                        appSurfaceControllerProvider.notifier,
+                                      )
+                                      .showAdmin(),
+                                ),
+                              ],
+                            ),
+                          ],
+                          if (isAuthenticated) ...[
+                            const SizedBox(height: AppSpacing.sectionSpacing),
+                            const _SectionTitle('Cùng Nabi phát triển'),
+                            const SizedBox(height: AppSpacing.md),
+                            _MenuCard(
+                              children: [
+                                _SaleSettingsEntry(saleState: saleStateAsync),
+                                const _DividerLine(),
+                                const _ReferralCodeSettingsEntry(),
+                              ],
+                            ),
+                          ],
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          const _SectionTitle('Ứng dụng'),
+                          const SizedBox(height: AppSpacing.md),
+                          _MenuCard(
+                            children: [
+                              _MenuItem(
+                                icon: Icons.dark_mode_rounded,
+                                title: 'Chế độ tối',
+                                subtitle: preferences.isDarkMode
+                                    ? 'Giao diện tối đang được bật'
+                                    : 'Giao diện sáng đang được bật',
+                                trailing: Switch.adaptive(
+                                  value: preferences.isDarkMode,
+                                  onChanged: preferencesAsync.isLoading
+                                      ? null
+                                      : (value) => ref
+                                            .read(
+                                              settingsPreferencesControllerProvider
+                                                  .notifier,
+                                            )
+                                            .setDarkMode(value),
+                                ),
+                              ),
+                              const _DividerLine(),
+                              _MenuItem(
+                                icon: Icons.language_rounded,
+                                title: 'Ngôn ngữ',
+                                subtitle: _languageLabel(
+                                  preferences.languageCode,
+                                ),
+                              ),
+                              const _DividerLine(),
+                              _MenuItem(
+                                key: const Key('settings_text_scale'),
+                                icon: Icons.text_fields_rounded,
+                                title: 'Cỡ chữ',
+                                subtitle:
+                                    textScale?.preset.label ?? 'Tiêu chuẩn',
+                                onTap: () =>
+                                    _showTextScaleSheet(context, ref),
+                              ),
+                              const _DividerLine(),
+                              _MenuItem(
+                                key: const Key(
+                                  'settings_experience_feedback',
+                                ),
+                                icon: Icons.motion_photos_auto_rounded,
+                                title: 'Hiệu ứng & phản hồi',
+                                subtitle: _experienceSubtitle(experience),
+                                onTap: () => _showExperienceSheet(context),
+                              ),
+                              const _DividerLine(),
+                              _MenuItem(
+                                icon: Icons.storage_rounded,
+                                title: 'Dung lượng',
+                                subtitle: cacheSizeAsync.when(
+                                  data: _formatBytes,
+                                  loading: () =>
+                                      'Nabi đang kiểm tra dung lượng...',
+                                  error: (_, __) =>
+                                      'Nabi chưa kiểm tra được dung lượng',
+                                ),
+                                trailing: IconButton(
+                                  tooltip: 'Dọn bộ nhớ tạm',
+                                  onPressed: preferencesAsync.isLoading
+                                      ? null
+                                      : () async {
+                                          await ref
+                                              .read(
+                                                settingsPreferencesControllerProvider
+                                                    .notifier,
+                                              )
+                                              .clearCache();
+                                          ref.invalidate(
+                                            settingsCacheSizeProvider,
+                                          );
+                                        },
+                                  icon: const Icon(
+                                    Icons.cleaning_services_rounded,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (kDebugMode) ...[
+                            const SizedBox(height: AppSpacing.sectionSpacing),
+                            const _SectionTitle('Dev'),
+                            const SizedBox(height: AppSpacing.md),
+                            _MenuCard(
+                              children: [
+                                _MenuItem(
+                                  icon: Icons.developer_mode_rounded,
+                                  title: 'Công cụ dữ liệu',
+                                  subtitle:
+                                      'Chỉ hiển thị trong chế độ phát triển ứng dụng',
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          const DevDatabaseViewerPage(),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          const _SectionTitle('Nabi & Sức khỏe'),
+                          const SizedBox(height: AppSpacing.md),
+                          _MenuCard(
+                            children: [
+                              _MenuItem(
+                                icon: Icons.auto_awesome_rounded,
+                                title: 'Phong cách Nabi',
+                                subtitle: _aiPersonalityLabel(
+                                  preferences.aiPersonality,
+                                ),
+                              ),
+                              const _DividerLine(),
+                              _MenuItem(
+                                icon: Icons.favorite_rounded,
+                                title: 'Mục tiêu sức khỏe',
+                                subtitle: dashboard == null
+                                    ? 'Nabi chưa thấy mục tiêu nào được chọn'
+                                    : _goalsSubtitle(dashboard.goals),
+                              ),
+                              const _DividerLine(),
+                              _MenuItem(
+                                icon: Icons.sync_rounded,
+                                title: 'Dữ liệu của bạn',
+                                subtitle: isAuthenticated
+                                    ? _syncStatusLabel(
+                                        syncState,
+                                        fallback: _privacyModeLabel(
+                                          preferences.dataPrivacyMode,
+                                        ),
+                                      )
+                                    : 'Đăng nhập để đồng bộ dữ liệu khi đổi thiết bị',
+                                onTap: isAuthenticated
+                                    ? () => _showDataSyncSheet(context)
+                                    : () =>
+                                          context.push(AuthRoutePaths.login),
+                              ),
+                            ],
                           ),
                           if (isAuthenticated) ...[
-                            const _DividerLine(),
-                            _MenuItem(
-                              icon: Icons.lock_rounded,
-                              title: 'Bảo mật',
-                              subtitle:
-                                  'Bảo vệ tài khoản và thông tin cá nhân của bạn',
-                              onTap: () => _showChangePasswordSheet(context),
+                            const SizedBox(height: AppSpacing.sectionSpacing),
+                            _DangerCard(
+                              email: dashboard?.email.trim().isEmpty == false
+                                  ? dashboard!.email
+                                  : null,
+                              onLogout: () =>
+                                  _confirmLogout(context, ref),
+                              onDeleteAccount: () =>
+                                  _confirmDeleteAccount(context, ref),
                             ),
                           ],
-                          const _DividerLine(),
-                          _MenuItem(
-                            icon: Icons.notifications_rounded,
-                            title: 'Thông báo',
-                            subtitle: preferences.pushEnabled
-                                ? 'Đang bật nhắc nhở trên thiết bị'
-                                : 'Đang tắt nhắc nhở trên thiết bị',
-                            trailing: Switch(
-                              value: preferences.pushEnabled,
-                              activeThumbColor: AppColors.primary,
-                              onChanged: preferencesAsync.isLoading
-                                  ? null
-                                  : (value) => ref
-                                        .read(
-                                          settingsPreferencesControllerProvider
-                                              .notifier,
-                                        )
-                                        .setPushEnabled(value),
-                            ),
-                          ),
+                          const SizedBox(height: AppSpacing.xxxl),
                         ],
                       ),
-                      if (canSwitchToAdmin) ...[
-                        const SizedBox(height: AppSpacing.sectionSpacing),
-                        _SectionTitle('Chế độ làm việc'),
-                        const SizedBox(height: AppSpacing.md),
-                        _MenuCard(
-                          children: [
-                            _MenuItem(
-                              key: const Key('settings_switch_to_admin'),
-                              icon: Icons.admin_panel_settings_rounded,
-                              title: 'Chuyển sang giao diện quản trị',
-                              subtitle:
-                                  'Mở công cụ quản trị bằng chính tài khoản hiện tại',
-                              onTap: () => ref
-                                  .read(appSurfaceControllerProvider.notifier)
-                                  .showAdmin(),
-                            ),
-                          ],
-                        ),
-                      ],
-                      if (isAuthenticated) ...[
-                        const SizedBox(height: AppSpacing.sectionSpacing),
-                        _SectionTitle('Cùng Nabi phát triển'),
-                        const SizedBox(height: AppSpacing.md),
-                        _MenuCard(
-                          children: [
-                            _SaleSettingsEntry(saleState: saleStateAsync),
-                            const _DividerLine(),
-                            const _ReferralCodeSettingsEntry(),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _SectionTitle('Ứng dụng'),
-                      const SizedBox(height: AppSpacing.md),
-                      _MenuCard(
-                        children: [
-                          _MenuItem(
-                            icon: Icons.dark_mode_rounded,
-                            title: 'Chế độ tối',
-                            subtitle: preferences.isDarkMode
-                                ? 'Giao diện tối đang được bật'
-                                : 'Giao diện sáng đang được bật',
-                            trailing: Switch(
-                              value: preferences.isDarkMode,
-                              activeThumbColor: AppColors.primary,
-                              onChanged: preferencesAsync.isLoading
-                                  ? null
-                                  : (value) => ref
-                                        .read(
-                                          settingsPreferencesControllerProvider
-                                              .notifier,
-                                        )
-                                        .setDarkMode(value),
-                            ),
-                          ),
-                          const _DividerLine(),
-                          _MenuItem(
-                            icon: Icons.language_rounded,
-                            title: 'Ngôn ngữ',
-                            subtitle: _languageLabel(preferences.languageCode),
-                          ),
-                          const _DividerLine(),
-                          _MenuItem(
-                            key: const Key('settings_text_scale'),
-                            icon: Icons.text_fields_rounded,
-                            title: 'Cỡ chữ',
-                            subtitle: textScale?.preset.label ?? 'Tiêu chuẩn',
-                            onTap: () => _showTextScaleSheet(context, ref),
-                          ),
-                          const _DividerLine(),
-                          _MenuItem(
-                            key: const Key('settings_experience_feedback'),
-                            icon: Icons.motion_photos_auto_rounded,
-                            title: 'Hiệu ứng & phản hồi',
-                            subtitle: _experienceSubtitle(
-                              experiencePreferences,
-                            ),
-                            onTap: () => _showExperienceSheet(context),
-                          ),
-                          const _DividerLine(),
-                          _MenuItem(
-                            icon: Icons.storage_rounded,
-                            title: 'Dung lượng',
-                            subtitle: cacheSizeAsync.when(
-                              data: _formatBytes,
-                              loading: () => 'Nabi đang kiểm tra dung lượng...',
-                              error: (_, __) =>
-                                  'Nabi chưa kiểm tra được dung lượng',
-                            ),
-                            trailing: IconButton(
-                              tooltip: 'Dọn bộ nhớ tạm',
-                              icon: const Icon(Icons.cleaning_services_rounded),
-                              onPressed: () => ref
-                                  .read(
-                                    settingsPreferencesControllerProvider
-                                        .notifier,
-                                  )
-                                  .clearCache(),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (kDebugMode) ...[
-                        const SizedBox(height: AppSpacing.sectionSpacing),
-                        _SectionTitle('Dev'),
-                        const SizedBox(height: AppSpacing.md),
-                        _MenuCard(
-                          children: [
-                            _MenuItem(
-                              icon: Icons.developer_mode_rounded,
-                              title: 'Công cụ dữ liệu',
-                              subtitle:
-                                  'Chỉ hiển thị trong chế độ phát triển ứng dụng',
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) =>
-                                        const DevDatabaseViewerPage(),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: AppSpacing.sectionSpacing),
-                      _SectionTitle('Nabi & Sức khỏe'),
-                      const SizedBox(height: AppSpacing.md),
-                      _MenuCard(
-                        children: [
-                          _MenuItem(
-                            icon: Icons.auto_awesome_rounded,
-                            title: 'Phong cách Nabi',
-                            subtitle: _aiPersonalityLabel(
-                              preferences.aiPersonality,
-                            ),
-                          ),
-                          const _DividerLine(),
-                          _MenuItem(
-                            icon: Icons.favorite_rounded,
-                            title: 'Mục tiêu sức khỏe',
-                            subtitle: dashboard == null
-                                ? 'Nabi chưa thấy mục tiêu nào được chọn'
-                                : _goalsSubtitle(dashboard.goals),
-                          ),
-                          const _DividerLine(),
-                          _MenuItem(
-                            icon: Icons.sync_rounded,
-                            title: 'Dữ liệu của bạn',
-                            subtitle: isAuthenticated
-                                ? _syncStatusLabel(
-                                    syncState,
-                                    fallback: _privacyModeLabel(
-                                      preferences.dataPrivacyMode,
-                                    ),
-                                  )
-                                : 'Đăng nhập để đồng bộ dữ liệu khi đổi thiết bị',
-                            onTap: isAuthenticated
-                                ? () => _showDataSyncSheet(context, ref)
-                                : () => context.push(AuthRoutePaths.login),
-                          ),
-                        ],
-                      ),
-                      if (isAuthenticated) ...[
-                        const SizedBox(height: AppSpacing.sectionSpacing),
-                        _DangerCard(
-                          email: dashboard?.email.trim().isEmpty == false
-                              ? dashboard!.email
-                              : null,
-                          onLogout: () => _confirmLogout(context, ref),
-                          onDeleteAccount: () =>
-                              _confirmDeleteAccount(context, ref),
-                        ),
-                      ],
-                      const SizedBox(height: AppSpacing.xxxl),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -344,6 +345,57 @@ class SettingsView extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _refreshSettings(BuildContext context, WidgetRef ref) async {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    ref.invalidate(dashboardProvider);
+    ref.invalidate(settingsPreferencesControllerProvider);
+    ref.invalidate(settingsCacheSizeProvider);
+    ref.invalidate(appExperiencePreferencesProvider);
+    ref.invalidate(saleStateProvider);
+
+    final loads = <Future<bool>>[
+      _didLoad(() => ref.read(dashboardProvider.future)),
+      _didLoad(() => ref.read(settingsPreferencesControllerProvider.future)),
+      _didLoad(() => ref.read(settingsCacheSizeProvider.future)),
+      _didLoad(() => ref.read(appExperiencePreferencesProvider.future)),
+    ];
+    if (ref.read(currentAuthUserIdProvider) != null) {
+      loads.add(_didLoad(() => ref.read(saleStateProvider.future)));
+    }
+    final results = await Future.wait<bool>(loads);
+
+    if (!context.mounted) return;
+    final successes = results.where((result) => result).length;
+    if (successes == results.length) {
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
+      return;
+    }
+
+    AppFeedbackService.instance.emit(
+      successes == 0 ? AppFeedbackType.error : AppFeedbackType.warning,
+    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            successes == 0
+                ? 'Nabi chưa thể làm mới cài đặt lúc này. Bạn thử lại sau nhé.'
+                : 'Một vài thông tin chưa cập nhật được. Nội dung hiện có vẫn được giữ lại.',
+          ),
+        ),
+      );
+  }
+
+  Future<bool> _didLoad(Future<Object?> Function() load) async {
+    try {
+      await load();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   String _experienceSubtitle(AppExperiencePreferences preferences) {
@@ -376,7 +428,13 @@ class SettingsView extends ConsumerWidget {
             appExperiencePreferencesProvider.notifier,
           );
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.pagePaddingLarge,
+              AppSpacing.pagePaddingLarge,
+              AppSpacing.pagePaddingLarge,
+              MediaQuery.viewInsetsOf(sheetContext).bottom +
+                  AppSpacing.pagePaddingLarge,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -395,10 +453,7 @@ class SettingsView extends ConsumerWidget {
                   subtitle: const Text(
                     'Giữ chuyển cảnh ngắn và loại bỏ hiệu ứng lặp.',
                   ),
-                  onChanged: (value) {
-                    AppFeedbackService.instance.emit(AppFeedbackType.selection);
-                    controller.setReduceMotion(value);
-                  },
+                  onChanged: controller.setReduceMotion,
                 ),
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
@@ -407,10 +462,7 @@ class SettingsView extends ConsumerWidget {
                   subtitle: const Text(
                     'Tạo cảm giác chạm nhẹ khi chọn hoặc hoàn thành.',
                   ),
-                  onChanged: (value) {
-                    AppFeedbackService.instance.emit(AppFeedbackType.selection);
-                    controller.setHapticsEnabled(value);
-                  },
+                  onChanged: controller.setHapticsEnabled,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
@@ -439,9 +491,6 @@ class SettingsView extends ConsumerWidget {
                   selected: {preferences.performanceTier},
                   onSelectionChanged: (values) {
                     if (values.isNotEmpty) {
-                      AppFeedbackService.instance.emit(
-                        AppFeedbackType.selection,
-                      );
                       controller.setPerformanceTier(values.first);
                     }
                   },
@@ -470,9 +519,6 @@ class SettingsView extends ConsumerWidget {
                   selected: {preferences.soundLevel},
                   onSelectionChanged: (values) {
                     if (values.isNotEmpty) {
-                      AppFeedbackService.instance.emit(
-                        AppFeedbackType.selection,
-                      );
                       controller.setSoundLevel(values.first);
                     }
                   },
@@ -496,53 +542,50 @@ class SettingsView extends ConsumerWidget {
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
-      builder: (sheetContext) {
-        return Consumer(
-          builder: (context, sheetRef, _) {
-            final state =
-                sheetRef.watch(appTextScaleControllerProvider).value ??
-                const AppTextScaleState(
-                  preset: AppTextScalePreset.standard,
-                  isConfigured: true,
-                );
-            return Padding(
-              padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Cỡ chữ hiển thị',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Chọn mức bạn thấy dễ đọc nhất.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: context.semanticColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sectionSpacing),
-                  FontScaleSelector(
-                    value: state.preset,
-                    onChanged: (preset) => sheetRef
-                        .read(appTextScaleControllerProvider.notifier)
-                        .select(preset, markConfigured: true),
-                  ),
-                  const SizedBox(height: AppSpacing.sectionSpacing),
-                  AppButton(
-                    variant: ButtonVariant.primary,
-                    onPressed: () => Navigator.of(sheetContext).pop(),
-                    child: const Text('Xong'),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+      builder: (sheetContext) => Consumer(
+        builder: (context, sheetRef, _) {
+          final state =
+              sheetRef.watch(appTextScaleControllerProvider).value ??
+              const AppTextScaleState(
+                preset: AppTextScalePreset.standard,
+                isConfigured: true,
+              );
+          return SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.pagePaddingLarge,
+              AppSpacing.pagePaddingLarge,
+              AppSpacing.pagePaddingLarge,
+              MediaQuery.viewInsetsOf(sheetContext).bottom +
+                  AppSpacing.pagePaddingLarge,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Cỡ chữ hiển thị', style: AppTextStyles.heading3),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Chọn mức bạn thấy dễ đọc nhất.',
+                  style: AppTextStyles.bodyMedium,
+                ),
+                const SizedBox(height: AppSpacing.sectionSpacing),
+                FontScaleSelector(
+                  value: state.preset,
+                  onChanged: (preset) => sheetRef
+                      .read(appTextScaleControllerProvider.notifier)
+                      .select(preset, markConfigured: true),
+                ),
+                const SizedBox(height: AppSpacing.sectionSpacing),
+                AppButton(
+                  variant: ButtonVariant.primary,
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: const Text('Xong'),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -562,10 +605,9 @@ class SettingsView extends ConsumerWidget {
         'Đang chờ bạn xác nhận dữ liệu khách',
       UserDataSyncStatus.pendingUpload =>
         '${state.pendingCount} thay đổi đang chờ đồng bộ',
-      UserDataSyncStatus.success =>
-        state.lastSuccessAt == null
-            ? 'Đã đồng bộ'
-            : 'Đồng bộ gần nhất: ${_formatSyncTime(state.lastSuccessAt!)}',
+      UserDataSyncStatus.success => state.lastSuccessAt == null
+          ? 'Đã đồng bộ'
+          : 'Đồng bộ gần nhất: ${_formatSyncTime(state.lastSuccessAt!)}',
       UserDataSyncStatus.error =>
         state.safeError ?? 'Đồng bộ chưa hoàn tất, dữ liệu vẫn được giữ',
       UserDataSyncStatus.idle => fallback,
@@ -579,7 +621,7 @@ class SettingsView extends ConsumerWidget {
         '${two(local.day)}/${two(local.month)}/${local.year}';
   }
 
-  Future<void> _showDataSyncSheet(BuildContext context, WidgetRef ref) {
+  Future<void> _showDataSyncSheet(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
@@ -614,7 +656,6 @@ class SettingsView extends ConsumerWidget {
       final controller = ref.read(v2AuthControllerProvider.notifier);
       var result = await controller.signOut();
       if (!context.mounted) return;
-
       if (result.requiresForce) {
         final force = await showDialog<bool>(
           context: context,
@@ -638,7 +679,6 @@ class SettingsView extends ConsumerWidget {
         if (force != true) return;
         result = await controller.signOut(force: true);
       }
-
       if (!result.signedOut || !context.mounted) return;
       invalidateUserScopedProviders(ref);
       context.go(AuthRoutePaths.authGate);
@@ -661,7 +701,7 @@ class SettingsView extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Yêu cầu xóa tài khoản?'),
         content: const Text(
-          'Yêu cầu này sẽ được gửi tới hệ thống bảo mật. Nabikhông giữ khóa quản trị trong ứng dụng.',
+          'Yêu cầu này sẽ được gửi tới hệ thống bảo mật. Nabi không lưu quyền quản trị nhạy cảm trong ứng dụng.',
         ),
         actions: [
           TextButton(
@@ -677,7 +717,6 @@ class SettingsView extends ConsumerWidget {
       ),
     );
     if (confirmed != true) return;
-
     try {
       await ref
           .read(accountSecurityControllerProvider.notifier)
@@ -722,7 +761,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.lg,
         AppSpacing.lg,
@@ -733,18 +772,16 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
         key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('Đổi mật khẩu', style: AppTextStyles.heading3),
             const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Mật khẩu mới cần có ít nhất 8 ký tự. Nabi sẽ không lưu mật khẩu trong hồ sơ công khai.',
-              style: AppTextStyles.bodyMedium,
-            ),
+            const Text('Mật khẩu mới cần có ít nhất 8 ký tự.'),
             const SizedBox(height: AppSpacing.sectionSpacing),
             TextFormField(
               controller: _password,
               obscureText: true,
+              textInputAction: TextInputAction.next,
               decoration: const InputDecoration(labelText: 'Mật khẩu mới'),
               validator: _validatePassword,
             ),
@@ -752,29 +789,28 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
             TextFormField(
               controller: _confirm,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Nhập lại mật khẩu'),
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                labelText: 'Nhập lại mật khẩu',
+              ),
               validator: (value) {
-                final passwordError = _validatePassword(value);
-                if (passwordError != null) return passwordError;
-                if (value != _password.text) {
-                  return 'Hai mật khẩu chưa khớp nhau';
-                }
-                return null;
+                final error = _validatePassword(value);
+                if (error != null) return error;
+                return value == _password.text
+                    ? null
+                    : 'Hai mật khẩu chưa khớp nhau';
               },
+              onFieldSubmitted: (_) => _save(),
             ),
             const SizedBox(height: AppSpacing.sectionSpacing),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: _saving ? null : _save,
-                child: _saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Cập nhật mật khẩu'),
-              ),
+            FilledButton(
+              onPressed: _saving ? null : _save,
+              child: _saving
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Cập nhật mật khẩu'),
             ),
           ],
         ),
@@ -783,13 +819,11 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
   }
 
   String? _validatePassword(String? value) {
-    final text = value ?? '';
-    if (text.length < 8) return 'Mật khẩu cần ít nhất 8 ký tự';
-    return null;
+    return (value ?? '').length < 8 ? 'Mật khẩu cần ít nhất 8 ký tự' : null;
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_saving || !(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
     try {
       await ref
@@ -816,9 +850,9 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
 }
 
 class _SaleSettingsEntry extends StatelessWidget {
-  final AsyncValue<SaleState> saleState;
-
   const _SaleSettingsEntry({required this.saleState});
+
+  final AsyncValue<SaleState> saleState;
 
   @override
   Widget build(BuildContext context) {
@@ -827,61 +861,48 @@ class _SaleSettingsEntry extends StatelessWidget {
         icon: Icons.workspace_premium_rounded,
         title: 'Không gian cộng tác viên',
         subtitle: 'Nabi đang kiểm tra quyền cộng tác viên của bạn...',
-        trailing: SizedBox(
-          height: 22,
-          width: 22,
+        trailing: SizedBox.square(
+          dimension: 22,
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
       error: (_, __) => _MenuItem(
         icon: Icons.volunteer_activism_rounded,
-        title: 'Tham gia kiếm tiền cùng Nabi',
-        subtitle:
-            'Mở điều lệ tham gia và thử kiểm tra lại quyền cộng tác viên.',
+        title: 'Tham gia cùng Nabi',
+        subtitle: 'Mở điều lệ và thử kiểm tra lại trạng thái tham gia.',
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => const SaleParticipationPage(),
           ),
         ),
       ),
-      data: (state) {
-        if (state.isActive) {
-          return _MenuItem(
-            icon: Icons.workspace_premium_rounded,
-            title: 'Chuyển sang không gian cộng tác viên',
-            subtitle: state.referralCode == null
-                ? 'Theo dõi mạng lưới, xếp hạng và công cụ cộng tác viên'
-                : 'Mã giới thiệu: ${state.referralCode}',
-            onTap: () => context.push(V2RoutePaths.sale),
-          );
-        }
-
-        return _MenuItem(
-          icon: Icons.volunteer_activism_rounded,
-          title: 'Tham gia kiếm tiền cùng Nabi',
-          subtitle: _subtitleFor(state.status),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => const SaleParticipationPage(),
+      data: (state) => state.isActive
+          ? _MenuItem(
+              icon: Icons.workspace_premium_rounded,
+              title: 'Không gian cộng tác viên',
+              subtitle: state.referralCode == null
+                  ? 'Theo dõi hoạt động và công cụ cộng tác viên'
+                  : 'Mã giới thiệu: ${state.referralCode}',
+              onTap: () => context.push(V2RoutePaths.sale),
+            )
+          : _MenuItem(
+              icon: Icons.volunteer_activism_rounded,
+              title: 'Tham gia cùng Nabi',
+              subtitle: switch (state.status) {
+                SaleStatus.pending => 'Yêu cầu đang chờ duyệt',
+                SaleStatus.suspended =>
+                  'Quyền cộng tác viên đang tạm dừng',
+                SaleStatus.closed => 'Quyền cộng tác viên đã đóng',
+                SaleStatus.none || SaleStatus.active =>
+                  'Đọc điều lệ trước khi tham gia',
+              },
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const SaleParticipationPage(),
+                ),
+              ),
             ),
-          ),
-        );
-      },
     );
-  }
-
-  String _subtitleFor(SaleStatus status) {
-    switch (status) {
-      case SaleStatus.pending:
-        return 'Xem lại điều lệ và trạng thái tham gia của bạn';
-      case SaleStatus.suspended:
-        return 'Quyền cộng tác viên đang tạm khóa; xem thông tin hỗ trợ';
-      case SaleStatus.closed:
-        return 'Quyền cộng tác viên đã đóng; xem thông tin hỗ trợ';
-      case SaleStatus.none:
-      case SaleStatus.active:
-        return 'Đọc điều lệ, chấp nhận và nhận quyền cộng tác viên';
-    }
   }
 }
 
@@ -896,20 +917,22 @@ class _UserDataSyncSheet extends ConsumerWidget {
       UserDataSyncStatus.awaitingConsent =>
         'Bạn cần hoàn tất lựa chọn dữ liệu tại màn xác nhận tài khoản.',
       UserDataSyncStatus.pendingUpload =>
-        'Còn ${state.pendingCount} thay đổi trên thiết bị chưa gửi thành công. '
-            'Không có dữ liệu nào bị xóa.',
+        'Còn ${state.pendingCount} thay đổi trên thiết bị đang chờ đồng bộ. Không có dữ liệu nào bị xóa.',
       UserDataSyncStatus.error =>
         state.safeError ??
             'Đồng bộ chưa hoàn tất. Dữ liệu vẫn được giữ trên thiết bị.',
       UserDataSyncStatus.success => 'Dữ liệu tài khoản đã được đồng bộ.',
       UserDataSyncStatus.syncing => 'Nabi đang đồng bộ dữ liệu của bạn...',
       UserDataSyncStatus.idle =>
-        'Dữ liệu sức khỏe và lịch trình của tài khoản được đồng bộ theo cơ chế '
-            'an toàn: gửi thay đổi trên thiết bị trước, sau đó mới tải dữ liệu tài khoản.',
+        'Nabi sẽ gửi thay đổi trên thiết bị trước, sau đó tải dữ liệu tài khoản để giảm nguy cơ ghi đè.',
     };
-
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.pagePaddingLarge,
+        AppSpacing.pagePaddingLarge,
+        AppSpacing.pagePaddingLarge,
+        MediaQuery.viewInsetsOf(context).bottom + AppSpacing.pagePaddingLarge,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -917,13 +940,6 @@ class _UserDataSyncSheet extends ConsumerWidget {
           Text('Dữ liệu của bạn', style: AppTextStyles.heading3),
           const SizedBox(height: AppSpacing.sm),
           Text(message, style: AppTextStyles.bodyMedium),
-          if (state.lastSuccessAt != null) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Lần thành công gần nhất: ${state.lastSuccessAt!.toLocal()}',
-              style: AppTextStyles.bodySmall,
-            ),
-          ],
           const SizedBox(height: AppSpacing.sectionSpacing),
           FilledButton.icon(
             onPressed: isWorking
@@ -933,13 +949,16 @@ class _UserDataSyncSheet extends ConsumerWidget {
                         .read(userDataSyncControllerProvider.notifier)
                         .retry();
                     if (!context.mounted) return;
-                    final text = outcome.isSuccess
-                        ? 'Đồng bộ dữ liệu thành công.'
-                        : outcome.safeError ??
-                              'Chưa thể đồng bộ. Dữ liệu vẫn được giữ để thử lại.';
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(text)));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          outcome.isSuccess
+                              ? 'Đồng bộ dữ liệu thành công.'
+                              : outcome.safeError ??
+                                    'Chưa thể đồng bộ. Dữ liệu vẫn được giữ để thử lại.',
+                        ),
+                      ),
+                    );
                   },
             icon: isWorking
                 ? const SizedBox.square(
@@ -949,7 +968,6 @@ class _UserDataSyncSheet extends ConsumerWidget {
                 : const Icon(Icons.refresh_rounded),
             label: const Text('Thử đồng bộ lại'),
           ),
-          const SizedBox(height: AppSpacing.sm),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Đóng'),
@@ -965,109 +983,18 @@ class _ReferralCodeSettingsEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _MenuItem(
+    return const _MenuItem(
       icon: Icons.confirmation_number_rounded,
-      title: 'Nhập mã giới thiệu',
+      title: 'Mã giới thiệu',
       subtitle: 'Mã giới thiệu chỉ được nhập khi đăng ký tài khoản mới.',
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        builder: (_) => const _ReferralCodeSheet(),
-      ),
-    );
-  }
-}
-
-class _ReferralCodeSheet extends ConsumerStatefulWidget {
-  const _ReferralCodeSheet();
-
-  @override
-  ConsumerState<_ReferralCodeSheet> createState() => _ReferralCodeSheetState();
-}
-
-class _ReferralCodeSheetState extends ConsumerState<_ReferralCodeSheet> {
-  final _formKey = GlobalKey<FormState>();
-  final _controller = TextEditingController();
-  final _validator = const SaleReferralCodeValidator();
-  final bool _submitting = false;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
-        bottomInset + AppSpacing.lg,
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Nhập mã giới thiệu', style: AppTextStyles.heading3),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Mã giới thiệu chỉ được gắn khi đăng ký tài khoản.',
-              style: AppTextStyles.bodyMedium,
-            ),
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            TextFormField(
-              controller: _controller,
-              textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(
-                labelText: 'Mã giới thiệu',
-                prefixIcon: Icon(Icons.confirmation_number_rounded),
-              ),
-              validator: (value) => _validator.validate(value ?? ''),
-            ),
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: _submitting ? null : _submit,
-                icon: _submitting
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.check_rounded),
-                label: const Text('Gắn mã giới thiệu'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    final code = _validator.normalize(_controller.text);
-    if (code.isEmpty || _submitting) return;
-
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Mã giới thiệu chỉ được gắn khi đăng ký tài khoản mới.'),
-      ),
     );
   }
 }
 
 class _Header extends StatelessWidget {
-  final bool isLoading;
-
   const _Header({required this.isLoading});
+
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -1083,9 +1010,9 @@ class _Header extends StatelessWidget {
 }
 
 class _ProfileCard extends StatelessWidget {
-  final DashboardEntity? dashboard;
-
   const _ProfileCard({required this.dashboard});
+
+  final DashboardEntity? dashboard;
 
   @override
   Widget build(BuildContext context) {
@@ -1096,7 +1023,6 @@ class _ProfileCard extends StatelessWidget {
     final subtitle = dashboard == null
         ? 'Hoàn thành phần làm quen để Nabi ghi nhớ hồ sơ của bạn'
         : _subscriptionLabel(dashboard!.subscriptionTier);
-
     return MedicalSurfaceCard(
       padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       gradient: AppGradients.hero,
@@ -1124,7 +1050,7 @@ class _ProfileCard extends StatelessWidget {
               children: [
                 Text(
                   fullName,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.heading3.copyWith(
                     color: AppColors.surface,
@@ -1138,32 +1064,8 @@ class _ProfileCard extends StatelessWidget {
                     color: AppColors.surface.withValues(alpha: .9),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface.withValues(alpha: .16),
-                    borderRadius: BorderRadius.circular(AppRadius.circular),
-                  ),
-                  child: Text(
-                    dashboard == null
-                        ? 'Nabi đang chờ hồ sơ'
-                        : 'Nabi đã ghi nhớ hồ sơ này',
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: AppColors.surface,
-                    ),
-                  ),
-                ),
               ],
             ),
-          ),
-          const Icon(
-            Icons.arrow_forward_ios_rounded,
-            color: Colors.white70,
-            size: 18,
           ),
         ],
       ),
@@ -1172,41 +1074,31 @@ class _ProfileCard extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  final String title;
-
   const _SectionTitle(this.title);
 
+  final String title;
+
   @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
-    );
-  }
+  Widget build(BuildContext context) => Text(
+    title,
+    style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
+  );
 }
 
 class _MenuCard extends StatelessWidget {
-  final List<Widget> children;
-
   const _MenuCard({required this.children});
 
+  final List<Widget> children;
+
   @override
-  Widget build(BuildContext context) {
-    return MedicalSurfaceCard(
-      padding: EdgeInsets.zero,
-      elevated: true,
-      child: Column(children: children),
-    );
-  }
+  Widget build(BuildContext context) => MedicalSurfaceCard(
+    padding: EdgeInsets.zero,
+    elevated: true,
+    child: Column(children: children),
+  );
 }
 
 class _MenuItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-
   const _MenuItem({
     super.key,
     required this.icon,
@@ -1216,49 +1108,63 @@ class _MenuItem extends StatelessWidget {
     this.onTap,
   });
 
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     return AppPressScale(
       enabled: onTap != null,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        onTap: onTap == null
-            ? null
-            : () {
-                AppFeedbackService.instance.emit(AppFeedbackType.selection);
-                onTap!();
-              },
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.cardPadding),
-          child: Row(
-            children: [
-              MedicalIconBadge(
-                icon: icon,
-                color: AppColors.primaryDark,
-                backgroundColor: AppColors.primarySoft,
-                size: 48,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: AppTextStyles.labelLarge),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      subtitle,
-                      style: AppTextStyles.bodySmall.copyWith(height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
-              trailing ??
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 18,
-                    color: context.semanticColors.textHint,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap == null
+              ? null
+              : () {
+                  AppFeedbackService.instance.emit(AppFeedbackType.selection);
+                  onTap!();
+                },
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 56),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.cardPadding),
+              child: Row(
+                children: [
+                  MedicalIconBadge(
+                    icon: icon,
+                    color: AppColors.primaryDark,
+                    backgroundColor: AppColors.primarySoft,
+                    size: 48,
                   ),
-            ],
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: AppTextStyles.labelLarge),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          subtitle,
+                          style: AppTextStyles.bodySmall.copyWith(height: 1.45),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  trailing ??
+                      (onTap == null
+                          ? const SizedBox.shrink()
+                          : Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 18,
+                              color: context.semanticColors.textHint,
+                            )),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -1267,91 +1173,57 @@ class _MenuItem extends StatelessWidget {
 }
 
 class _DangerCard extends StatelessWidget {
-  final String? email;
-  final VoidCallback onLogout;
-  final VoidCallback onDeleteAccount;
-
   const _DangerCard({
     required this.email,
     required this.onLogout,
     required this.onDeleteAccount,
   });
 
+  final String? email;
+  final VoidCallback onLogout;
+  final VoidCallback onDeleteAccount;
+
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-      decoration: AppDecoration.card(
-        radius: AppRadius.xxl,
-        shadows: AppShadows.sm,
-      ),
-      child: Column(
-        children: [
-          Container(
-            height: 72,
-            width: 72,
-            decoration: BoxDecoration(
-              color: AppColors.errorSoft,
-              borderRadius: BorderRadius.circular(AppRadius.circular),
-            ),
-            child: const Icon(
-              Icons.logout_rounded,
-              color: AppColors.error,
-              size: 34,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'Đăng xuất',
-            style: AppTextStyles.heading3.copyWith(color: AppColors.error),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            email == null
-                ? 'Nabi chưa thấy email tài khoản để hiển thị.'
-                : 'Tài khoản hiện tại: $email',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium,
-          ),
-          const SizedBox(height: AppSpacing.sectionSpacing),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                ),
-              ),
-              onPressed: onLogout,
-              child: const Text('Đăng xuất'),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextButton.icon(
-            onPressed: onDeleteAccount,
-            icon: const Icon(Icons.delete_forever_rounded),
-            label: const Text('Yêu cầu xóa tài khoản'),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => MedicalSurfaceCard(
+    elevated: true,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Tài khoản',
+          style: AppTextStyles.heading3.copyWith(color: AppColors.error),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          email == null ? 'Tài khoản hiện tại' : 'Tài khoản hiện tại: $email',
+        ),
+        const SizedBox(height: AppSpacing.sectionSpacing),
+        FilledButton.icon(
+          style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+          onPressed: onLogout,
+          icon: const Icon(Icons.logout_rounded),
+          label: const Text('Đăng xuất'),
+        ),
+        TextButton.icon(
+          onPressed: onDeleteAccount,
+          icon: const Icon(Icons.delete_forever_rounded),
+          label: const Text('Yêu cầu xóa tài khoản'),
+          style: TextButton.styleFrom(foregroundColor: AppColors.error),
+        ),
+      ],
+    ),
+  );
 }
 
 class _DividerLine extends StatelessWidget {
   const _DividerLine();
 
   @override
-  Widget build(BuildContext context) {
-    return Divider(
-      height: 1,
-      thickness: 1,
-      color: context.semanticColors.borderLight,
-    );
-  }
+  Widget build(BuildContext context) => Divider(
+    height: 1,
+    thickness: 1,
+    color: context.semanticColors.borderLight,
+  );
 }
 
 String _displayText(String? value, {required String fallback}) {
@@ -1387,29 +1259,18 @@ String _subscriptionLabel(String value) {
 
 String _languageLabel(String _) => 'Tiếng Việt';
 
-String _aiPersonalityLabel(String value) {
-  switch (value) {
-    case 'professional':
-      return 'Chuyên nghiệp';
-    case 'motivational':
-      return 'Động viên';
-    case 'friendly':
-      return 'Thân thiện';
-    default:
-      return value.isEmpty ? '--' : value;
-  }
-}
+String _aiPersonalityLabel(String value) => switch (value) {
+  'professional' => 'Chuyên nghiệp',
+  'motivational' => 'Động viên',
+  'friendly' => 'Thân thiện',
+  _ => value.isEmpty ? '--' : value,
+};
 
-String _privacyModeLabel(String value) {
-  switch (value) {
-    case 'cloud':
-      return 'Ưu tiên đồng bộ trực tuyến';
-    case 'local':
-      return 'Chỉ lưu trên thiết bị';
-    default:
-      return value.isEmpty ? '--' : value;
-  }
-}
+String _privacyModeLabel(String value) => switch (value) {
+  'cloud' => 'Ưu tiên đồng bộ trực tuyến',
+  'local' => 'Chỉ lưu trên thiết bị',
+  _ => value.isEmpty ? '--' : value,
+};
 
 String _formatBytes(int bytes) {
   if (bytes <= 0) return '0 B';

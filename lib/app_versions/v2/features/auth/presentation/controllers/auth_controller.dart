@@ -17,6 +17,9 @@ import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart
 class AuthController extends AsyncNotifier<AuthRouteState> {
   AuthRepository get _repository => ref.read(v2AuthRepositoryProvider);
 
+  Future<RegistrationResult>? _signUpInFlight;
+  Future<void>? _signInInFlight;
+
   @override
   Future<AuthRouteState> build() async {
     final availability = ref.watch(authBackendAvailabilityProvider);
@@ -60,20 +63,38 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     }
   }
 
-  Future<RegistrationResult> signUpWithEmail(RegisterCommand command) {
-    return _runAccountMutation(
+  Future<RegistrationResult> signUpWithEmail(RegisterCommand command) async {
+    final active = _signUpInFlight;
+    if (active != null) return active;
+
+    final operation = _runAccountMutation(
       (repository) => repository.signUpWithEmail(command),
       syncReasonForResult: (result) => result == RegistrationResult.sessionReady
           ? AuthSyncReason.signUpSessionReady
           : null,
     );
+    _signUpInFlight = operation;
+    try {
+      return await operation;
+    } finally {
+      if (identical(_signUpInFlight, operation)) _signUpInFlight = null;
+    }
   }
 
-  Future<void> signInWithEmail(LoginCommand command) {
-    return _runAccountMutation(
+  Future<void> signInWithEmail(LoginCommand command) async {
+    final active = _signInInFlight;
+    if (active != null) return active;
+
+    final operation = _runAccountMutation(
       (repository) => repository.signInWithEmail(command),
       syncReason: AuthSyncReason.signIn,
     );
+    _signInInFlight = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_signInInFlight, operation)) _signInInFlight = null;
+    }
   }
 
   Future<void> resendEmailConfirmation(String email) async {

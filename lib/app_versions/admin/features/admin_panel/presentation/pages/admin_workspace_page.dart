@@ -8,6 +8,7 @@ import 'package:nano_app/app/app_surface_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/controllers/admin_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/copy/admin_ui_copy.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_payout_proof_provider.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'package:nano_app/app_versions/admin/features/wellness_rewards/wellness_rewards_admin.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
@@ -16,7 +17,6 @@ import 'package:nano_app/core/localization/vietnam_time.dart';
 import 'package:nano_app/core/payments/viet_qr_payload_builder.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'admin_workspace_shell.dart';
 part 'admin_workspace_sections.dart';
@@ -27,10 +27,6 @@ const _desktopBreakpoint = 900.0;
 const _wideBreakpoint = 1220.0;
 const _searchDebounceDuration = Duration(milliseconds: 320);
 
-/// Workspace quản trị mới, tập trung vào tốc độ thao tác và tính tường minh.
-///
-/// Business flow vẫn đi qua [AdminController]. Widget này chỉ quản lý layout,
-/// trạng thái tương tác, copy hiển thị và feedback sau kết quả đã được xác nhận.
 class AdminWorkspacePage extends ConsumerStatefulWidget {
   final AdminPanelSection initialSection;
 
@@ -252,9 +248,7 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
 
   Future<void> _activateSection(AdminPanelSection section) async {
     _searchController.clear();
-    if (_lastUsableState?.section != section) {
-      _lastUsableState = null;
-    }
+    if (_lastUsableState?.section != section) _lastUsableState = null;
     await ref.read(adminControllerProvider.notifier).selectSection(section);
   }
 
@@ -270,9 +264,7 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
     _searchDebounce?.cancel();
     _searchDebounce = Timer(_searchDebounceDuration, () {
       if (!mounted) return;
-      unawaited(
-        ref.read(adminControllerProvider.notifier).search(value.trim()),
-      );
+      unawaited(ref.read(adminControllerProvider.notifier).search(value.trim()));
     });
   }
 
@@ -410,10 +402,7 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
       if (section == AdminPanelSection.saleConversions &&
           action.key == 'mark_paid') {
         final proofPath = await _pickAndUploadSalePayoutProof(item.id);
-        if (proofPath == null) {
-          if (mounted) setState(() => _runningTargetId = null);
-          return;
-        }
+        if (proofPath == null) return;
         payload['payment_proof_path'] = proofPath;
       }
 
@@ -453,20 +442,14 @@ class _AdminWorkspacePageState extends ConsumerState<AdminWorkspacePage>
       if (image == null) return null;
 
       final bytes = await image.readAsBytes();
-      final safeName = image.name.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
-      final path =
-          'sale-point-conversions/$conversionId/${DateTime.now().millisecondsSinceEpoch}-$safeName';
-      await Supabase.instance.client.storage
-          .from('sale-payout-proofs')
-          .uploadBinary(
-            path,
-            bytes,
-            fileOptions: FileOptions(
-              contentType: image.mimeType ?? 'image/jpeg',
-              upsert: false,
-            ),
+      return await ref
+          .read(adminPayoutProofRepositoryProvider)
+          .uploadSalePayoutProof(
+            conversionId: conversionId,
+            fileName: image.name,
+            contentType: image.mimeType ?? 'image/jpeg',
+            bytes: bytes,
           );
-      return path;
     } catch (_) {
       if (mounted) {
         _showError(

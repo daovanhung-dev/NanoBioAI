@@ -7,14 +7,14 @@ import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.
 import 'package:nano_app/core/theme/theme.dart';
 
 class WaterTrackingPage extends ConsumerStatefulWidget {
-  final WaterTrackingLocalStore localStore;
-  final DateTime Function() now;
-
   const WaterTrackingPage({
     super.key,
     this.localStore = const SharedPreferencesWaterTrackingLocalStore(),
     DateTime Function()? now,
   }) : now = now ?? DateTime.now;
+
+  final WaterTrackingLocalStore localStore;
+  final DateTime Function() now;
 
   @override
   ConsumerState<WaterTrackingPage> createState() => _WaterTrackingPageState();
@@ -207,12 +207,12 @@ class _WaterTrackingPageState extends ConsumerState<WaterTrackingPage> {
 
     if (_loadError != null) {
       return [
-        NamiCareEmptyState(
+        const NamiCareEmptyState(
           icon: Icons.sync_problem_rounded,
           color: AppColors.error,
-          title: 'Chưa mở được ghi nhận local',
+          title: 'Chưa mở được ghi nhận hôm nay',
           message:
-              'Dữ liệu vẫn ở trên thiết bị. Bạn có thể thử tải lại màn này.',
+              'Thông tin của bạn vẫn được giữ trên thiết bị. Hãy thử tải lại màn này.',
         ),
         const SizedBox(height: AppSpacing.md),
         FilledButton.icon(
@@ -226,7 +226,7 @@ class _WaterTrackingPageState extends ConsumerState<WaterTrackingPage> {
     final target = _targetMl;
     final progress = target == null
         ? null
-        : (_currentMl / target).clamp(0.0, 1.0);
+        : (_currentMl / target).clamp(0.0, 1.0).toDouble();
 
     return [
       NamiCareSurfaceCard(
@@ -369,9 +369,9 @@ class _WaterTrackingPageState extends ConsumerState<WaterTrackingPage> {
 }
 
 class _WaterTargetSheet extends StatefulWidget {
-  final int? initialValue;
-
   const _WaterTargetSheet({required this.initialValue});
+
+  final int? initialValue;
 
   @override
   State<_WaterTargetSheet> createState() => _WaterTargetSheetState();
@@ -437,7 +437,7 @@ class _WaterTargetSheetState extends State<_WaterTargetSheet> {
                   return 'Nhập một giá trị lớn hơn 0.';
                 }
                 if (amount > 100000) {
-                  return 'Giá trị vượt giới hạn lưu trữ kỹ thuật.';
+                  return 'Giá trị quá lớn. Hãy nhập dưới 100000 ml.';
                 }
                 return null;
               },

@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/providers/main_navigation_state_provider.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart';
 import 'package:nano_app/app_versions/v1/features/other/presentation/pages/other_page.dart';
 import 'package:nano_app/app_versions/v1/features/settings/presentation/pages/settings_page.dart';
 import 'package:nano_app/app_versions/v1/features/nabi/nabi.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
-
 import 'package:nano_app/core/theme/theme.dart';
 
 class MainNavigationPage extends ConsumerStatefulWidget {
@@ -21,8 +21,6 @@ class MainNavigationPage extends ConsumerStatefulWidget {
 
 class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
     with TickerProviderStateMixin {
-  // Scaffold lays the body out above the bottom navigation bar already. Keep
-  // only a small visual gap here so Nabi does not float over feature tiles.
   static const double _bottomNavigationReserve = 0;
 
   late final PageController _pageController;
@@ -41,18 +39,18 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
   @override
   void initState() {
     super.initState();
-
     _pageController = PageController();
-
     _ambientController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 18),
     );
-
     _floatingController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
     );
+    Future<void>.microtask(() {
+      if (mounted) ref.read(mainNavigationIndexProvider.notifier).state = 0;
+    });
   }
 
   @override
@@ -86,10 +84,9 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
 
   void _changeTab(int index) {
     if (_currentIndex == index) return;
-
     AppFeedbackService.instance.emit(AppFeedbackType.selection);
-
     setState(() => _currentIndex = index);
+    ref.read(mainNavigationIndexProvider.notifier).state = index;
 
     if (AppMotionScope.reduceMotionOf(context)) {
       _pageController.jumpToPage(index);
@@ -101,17 +98,15 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
       );
     }
 
-    // Cập nhật Nabi context theo tab đang active
-    final routeByTab = [
+    const contextByTab = [
       V1RoutePaths.dashboard,
-      V1RoutePaths.menu, // features hub
+      '/features',
       '/health-insights',
-      V1RoutePaths.menu, // settings
+      '/settings',
     ];
-    final route = index < routeByTab.length
-        ? routeByTab[index]
-        : V1RoutePaths.menu;
-    ref.nabi.setRoute(route);
+    ref.nabi.setRoute(index < contextByTab.length
+        ? contextByTab[index]
+        : V1RoutePaths.menu);
   }
 
   @override
@@ -122,9 +117,8 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
             .copyWith(
               statusBarColor: Colors.transparent,
               systemNavigationBarColor: Colors.transparent,
-              systemNavigationBarIconBrightness: isDark
-                  ? Brightness.light
-                  : Brightness.dark,
+              systemNavigationBarIconBrightness:
+                  isDark ? Brightness.light : Brightness.dark,
             );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -133,31 +127,24 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
         ambientBackground: false,
         backgroundColor: context.semanticColors.background,
         extendBody: true,
-        body: LayoutBuilder(
-          builder: (context, _) {
-            return Stack(
-              children: [
-                RepaintBoundary(
-                  child: _AnimatedBackground(
-                    ambientAnimation: _ambientController,
-                    floatingAnimation: _floatingController,
-                  ),
-                ),
-                PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: _pages,
-                ),
-                // The feature hub is a dense, scrollable tile grid. Keeping a
-                // fixed mascot on top of it obscures tile copy and tap targets;
-                // the hub already exposes the dedicated Nabi chat tile.
-                NabiFloatingOverlay(
-                  bottomReserve: _bottomNavigationReserve,
-                  visible: _currentIndex != 1,
-                ),
-              ],
-            );
-          },
+        body: Stack(
+          children: [
+            RepaintBoundary(
+              child: _AnimatedBackground(
+                ambientAnimation: _ambientController,
+                floatingAnimation: _floatingController,
+              ),
+            ),
+            PageView(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: _pages,
+            ),
+            NabiFloatingOverlay(
+              bottomReserve: _bottomNavigationReserve,
+              visible: _currentIndex != 1,
+            ),
+          ],
         ),
         bottomNavigationBar: SafeArea(
           minimum: const EdgeInsets.only(
@@ -167,15 +154,10 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
           ),
           child: AnimatedBuilder(
             animation: _floatingController,
-            builder: (_, __) {
-              return Transform.translate(
-                offset: Offset(
-                  0,
-                  lerpDouble(0, -3, _floatingController.value)!,
-                ),
-                child: RepaintBoundary(child: _buildNavigationBar(context)),
-              );
-            },
+            builder: (_, __) => Transform.translate(
+              offset: Offset(0, lerpDouble(0, -3, _floatingController.value)!),
+              child: RepaintBoundary(child: _buildNavigationBar(context)),
+            ),
           ),
         ),
       ),
@@ -225,7 +207,6 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
       AppPerformanceTier.balanced => 14.0,
       AppPerformanceTier.rich => 22.0,
     };
-
     final glassColors = isDark
         ? [
             colors.surface.withValues(alpha: .12),
@@ -235,7 +216,6 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
             colors.surface.withValues(alpha: .84),
             colors.surface.withValues(alpha: .66),
           ];
-
     final borderColor = isDark
         ? colors.surface.withValues(alpha: .14)
         : colors.surface.withValues(alpha: .58);
@@ -266,18 +246,14 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
             ],
           ),
           child: Row(
-            children: List.generate(items.length, (index) {
-              final item = items[index];
-
-              return Expanded(
-                child: _AnimatedNavItem(
-                  item: item,
-                  isActive: _currentIndex == index,
-                  pulseValue: _floatingController.value,
-                  onTap: () => _changeTab(index),
-                ),
-              );
-            }),
+            children: List.generate(items.length, (index) => Expanded(
+              child: _AnimatedNavItem(
+                item: items[index],
+                isActive: _currentIndex == index,
+                pulseValue: _floatingController.value,
+                onTap: () => _changeTab(index),
+              ),
+            )),
           ),
         ),
       ),
@@ -315,133 +291,78 @@ class _AnimatedNavItem extends StatelessWidget {
           tween: Tween<double>(end: isActive ? 1 : 0),
           duration: AppDuration.normal,
           curve: Curves.easeOutCubic,
-          builder: (_, value, __) {
-            return AnimatedScale(
-              scale: isActive ? lerpDouble(1, 1.035, pulseValue)! : 1,
-              duration: AppDuration.fast,
-              curve: Curves.easeOutCubic,
-              child: Container(
-                height: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned.fill(
-                      child: AnimatedOpacity(
-                        opacity: isActive ? 1 : 0,
-                        duration: AppDuration.normal,
-                        curve: Curves.easeOutCubic,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(AppRadius.xl),
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [item.baseColor, item.accentColor],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: item.baseColor.withValues(
-                                  alpha: glowOpacity,
-                                ),
-                                blurRadius: 24,
-                                spreadRadius: 1,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
+          builder: (_, value, __) => AnimatedScale(
+            scale: isActive ? lerpDouble(1, 1.035, pulseValue)! : 1,
+            duration: AppDuration.fast,
+            curve: Curves.easeOutCubic,
+            child: Container(
+              height: double.infinity,
+              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned.fill(
+                    child: AnimatedOpacity(
+                      opacity: isActive ? 1 : 0,
+                      duration: AppDuration.normal,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(AppRadius.xl),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [item.baseColor, item.accentColor],
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: item.baseColor.withValues(alpha: glowOpacity),
+                              blurRadius: 24,
+                              spreadRadius: 1,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    AnimatedContainer(
-                      duration: AppDuration.normal,
-                      curve: Curves.easeOutCubic,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppRadius.xl),
-                        border: Border.all(
-                          color: isActive
-                              ? colors.surface.withValues(alpha: .24)
-                              : Colors.transparent,
-                        ),
-                      ),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isCompact = constraints.maxWidth < 72;
-
-                          return Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Transform.translate(
-                                offset: Offset(0, lerpDouble(3, 0, value)!),
-                                child: Icon(
-                                  isActive ? item.activeIcon : item.icon,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isCompact = constraints.maxWidth < 72;
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isActive ? item.activeIcon : item.icon,
+                              color: isActive ? colors.textInverse : inactiveColor,
+                              size: lerpDouble(23, 28, value)!,
+                            ),
+                            if (!isCompact) ...[
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                item.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.labelSmall.copyWith(
                                   color: isActive
                                       ? colors.textInverse
                                       : inactiveColor,
-                                  size: lerpDouble(23, 28, value)!,
+                                  fontWeight: isActive
+                                      ? FontWeight.w800
+                                      : FontWeight.w600,
                                 ),
                               ),
-                              if (!isCompact) ...[
-                                const SizedBox(height: AppSpacing.xs),
-                                AnimatedDefaultTextStyle(
-                                  duration: AppDuration.normal,
-                                  curve: Curves.easeOutCubic,
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: isActive
-                                        ? colors.textInverse
-                                        : inactiveColor,
-                                    fontWeight: isActive
-                                        ? FontWeight.w800
-                                        : FontWeight.w600,
-                                    fontSize: lerpDouble(10.5, 11.4, value)!,
-                                    letterSpacing: .1,
-                                  ),
-                                  child: Text(
-                                    item.label,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
                             ],
-                          );
-                        },
-                      ),
+                          ],
+                        );
+                      },
                     ),
-                    if (isActive)
-                      Positioned(
-                        top: AppSpacing.sm,
-                        child: Container(
-                          width: 22,
-                          height: 3,
-                          decoration: BoxDecoration(
-                            color: colors.textInverse.withValues(alpha: .92),
-                            borderRadius: BorderRadius.circular(
-                              AppRadius.circular,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colors.textInverse.withValues(
-                                  alpha: .62,
-                                ),
-                                blurRadius: 10,
-                                spreadRadius: 1,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
@@ -459,74 +380,44 @@ class _AnimatedBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = context.semanticColors;
-
     return AnimatedBuilder(
       animation: Listenable.merge([ambientAnimation, floatingAnimation]),
-      builder: (_, __) {
-        return IgnorePointer(
-          child: Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: isDark
-                        ? [colors.background, colors.surface]
-                        : [colors.background, colors.surface],
-                  ),
+      builder: (_, __) => IgnorePointer(
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [colors.background, colors.surface],
                 ),
               ),
-              _AmbientOrb(
-                top: -116,
-                left: -84,
-                size: 284,
-                color: colors.primary,
-                opacity: .16,
-                animationValue: ambientAnimation.value,
-                floatingValue: floatingAnimation.value,
-                rotateFactor: 2.2,
-              ),
-              _AmbientOrb(
-                top: 172,
-                right: -92,
-                size: 236,
-                color: colors.secondary,
-                opacity: .13,
-                animationValue: ambientAnimation.value,
-                floatingValue: floatingAnimation.value,
-                rotateFactor: -1.4,
-              ),
-              _AmbientOrb(
-                bottom: -148,
-                left: 42,
-                size: 276,
-                color: colors.warning,
-                opacity: .10,
-                animationValue: ambientAnimation.value,
-                floatingValue: floatingAnimation.value,
-                rotateFactor: 1.1,
-              ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      center: const Alignment(.15, -.55),
-                      radius: 1.1,
-                      colors: [
-                        colors.surface.withValues(alpha: isDark ? .02 : .28),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+            ),
+            _AmbientOrb(
+              top: -116,
+              left: -84,
+              size: 284,
+              color: colors.primary,
+              opacity: .16,
+              animationValue: ambientAnimation.value,
+              floatingValue: floatingAnimation.value,
+              rotateFactor: 2.2,
+            ),
+            _AmbientOrb(
+              top: 172,
+              right: -92,
+              size: 236,
+              color: colors.secondary,
+              opacity: .13,
+              animationValue: ambientAnimation.value,
+              floatingValue: floatingAnimation.value,
+              rotateFactor: -1.4,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -547,14 +438,13 @@ class _AmbientOrb extends StatelessWidget {
     this.top,
     this.left,
     this.right,
-    this.bottom,
     required this.size,
     required this.color,
     required this.opacity,
     required this.animationValue,
     required this.floatingValue,
     required this.rotateFactor,
-  });
+  }) : bottom = null;
 
   @override
   Widget build(BuildContext context) {
@@ -562,9 +452,7 @@ class _AmbientOrb extends StatelessWidget {
       top: top == null ? null : top! + lerpDouble(-10, 10, floatingValue)!,
       left: left,
       right: right,
-      bottom: bottom == null
-          ? null
-          : bottom! + lerpDouble(8, -8, floatingValue)!,
+      bottom: bottom == null ? null : bottom! + lerpDouble(8, -8, floatingValue)!,
       child: Transform.rotate(
         angle: animationValue * rotateFactor,
         child: Container(

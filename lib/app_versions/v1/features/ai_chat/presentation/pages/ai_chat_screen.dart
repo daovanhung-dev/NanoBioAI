@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +7,6 @@ import 'package:nano_app/app_versions/v1/features/nabi/providers/nabi_provider.d
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/features/nabi/data/nabi_asset_catalog.dart';
 import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
 import '../../domain/entities/chat_message_entity.dart';
 import '../controllers/ai_chat_controller.dart';
@@ -25,39 +22,50 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
-  late final NabiContextNotifier _nabiContextNotifier;
+  late final NabiContextNotifier _nabi;
 
-  int _lastMessageCount = 0;
-  bool _lastLoadingState = false;
+  bool _nearBottom = true;
+  bool _forceNextScroll = false;
+  bool _hasUnreadAnswer = false;
 
   @override
   void initState() {
     super.initState();
-    _nabiContextNotifier = ref.read(nabiContextProvider.notifier);
-
+    _nabi = ref.read(nabiContextProvider.notifier);
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _nabiContextNotifier.setRoute(V1RoutePaths.aiChat);
+      _nabi.setRoute(V1RoutePaths.aiChat);
     });
   }
 
   @override
   void dispose() {
-    _nabiContextNotifier.setChatTyping(typing: false);
+    _nabi.setChatTyping(typing: false);
+    _scrollController.removeListener(_onScroll);
     _textController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _scrollToBottom() {
+  void _onScroll() {
     if (!_scrollController.hasClients) return;
+    final distance =
+        _scrollController.position.maxScrollExtent - _scrollController.position.pixels;
+    final near = distance <= 96;
+    if (near == _nearBottom) return;
+    setState(() {
+      _nearBottom = near;
+      if (near) _hasUnreadAnswer = false;
+    });
+  }
 
+  void _scrollToBottom({bool immediate = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
-
       final target = _scrollController.position.maxScrollExtent;
-      if (AppMotionScope.reduceMotionOf(context)) {
+      if (immediate || AppMotionScope.reduceMotionOf(context)) {
         _scrollController.jumpTo(target);
       } else {
         _scrollController.animateTo(
@@ -66,40 +74,32 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
           curve: AppAnimations.emphasizedCurve,
         );
       }
+      if (_hasUnreadAnswer) setState(() => _hasUnreadAnswer = false);
     });
-  }
-
-  void _syncAutoScroll({required int messageCount, required bool isLoading}) {
-    final shouldScroll =
-        _lastMessageCount != messageCount || _lastLoadingState != isLoading;
-
-    _lastMessageCount = messageCount;
-    _lastLoadingState = isLoading;
-
-    if (shouldScroll) {
-      _scrollToBottom();
-    }
   }
 
   void _sendMessage() {
     final message = _textController.text.trim();
     if (message.isEmpty) return;
-
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    _forceNextScroll = true;
     ref.read(aiChatControllerProvider.notifier).sendMessage(message);
     _textController.clear();
     _scrollToBottom();
   }
 
-  void _sendSuggestedQuestion(String question) {
-    _textController.text = question;
-    _sendMessage();
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiChatControllerProvider);
-    final error = state.error;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final overlayStyle =
+        (isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
+            .copyWith(
+              statusBarColor: Colors.transparent,
+              systemNavigationBarColor: context.semanticColors.background,
+              systemNavigationBarIconBrightness:
+                  isDark ? Brightness.light : Brightness.dark,
+            );
 
     ref.listen<AIChatState>(aiChatControllerProvider, (previous, next) {
       final responseArrived =
@@ -109,83 +109,117 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
           next.messages.last.role == MessageRole.assistant;
       if (responseArrived) {
         AppFeedbackService.instance.emit(AppFeedbackType.answerReady);
+        if (_forceNextScroll || _nearBottom) {
+          _forceNextScroll = false;
+          _scrollToBottom();
+        } else if (mounted) {
+          setState(() => _hasUnreadAnswer = true);
+        }
+      }
+      if (next.isLoading && (_forceNextScroll || _nearBottom)) {
+        _scrollToBottom();
       }
       if (next.error != null && next.error != previous?.error) {
         AppFeedbackService.instance.emit(AppFeedbackType.error);
       }
     });
 
-    _syncAutoScroll(
-      messageCount: state.messages.length,
-      isLoading: state.isLoading,
-    );
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: context.semanticColors.background,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
+      value: overlayStyle,
       child: MedicalPageScaffold(
         resizeToAvoidBottomInset: true,
         backgroundColor: context.semanticColors.background,
-        appBar: _buildAppBar(context),
+        appBar: AppBar(
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          backgroundColor: context.semanticColors.background,
+          systemOverlayStyle: overlayStyle,
+          leading: IconButton(
+            tooltip: 'Quay lại',
+            onPressed: () => Navigator.maybePop(context),
+            icon: const Icon(Icons.arrow_back_rounded),
+          ),
+          title: const _ChatTitle(),
+          actions: [
+            IconButton(
+              tooltip: 'Trò chuyện bằng giọng nói',
+              onPressed: () => context.push(V1RoutePaths.aiVoice),
+              icon: const Icon(Icons.mic_rounded),
+            ),
+            IconButton(
+              tooltip: 'Làm mới cuộc trò chuyện',
+              onPressed: () {
+                ref.read(aiChatControllerProvider.notifier).clearChat();
+                setState(() => _hasUnreadAnswer = false);
+              },
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+          ],
+        ),
         body: Column(
           children: [
             Expanded(
-              child: AppStateSwitcher(
-                alignment: Alignment.topCenter,
-                child: state.messages.isEmpty
-                    ? _ChatGptEmptyState(
-                        key: const ValueKey('chat-empty'),
-                        onQuestionTap: _sendSuggestedQuestion,
-                      )
-                    : _MessageList(
-                        key: const ValueKey('chat-messages'),
-                        controller: _scrollController,
-                        messages: state.messages,
-                        isLoading: state.isLoading,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  state.messages.isEmpty
+                      ? _EmptyChat(onQuestionTap: (value) {
+                          _textController.text = value;
+                          _sendMessage();
+                        })
+                      : ListView.builder(
+                          controller: _scrollController,
+                          physics: const BouncingScrollPhysics(),
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.pagePadding,
+                            AppSpacing.sm,
+                            AppSpacing.pagePadding,
+                            AppSpacing.xxl,
+                          ),
+                          itemCount:
+                              state.messages.length + (state.isLoading ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == state.messages.length) {
+                              return const _TypingIndicator();
+                            }
+                            return _MessageBubble(message: state.messages[index]);
+                          },
+                        ),
+                  if (_hasUnreadAnswer)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: FilledButton.tonalIcon(
+                        onPressed: _scrollToBottom,
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                        label: const Text('Tin nhắn mới'),
                       ),
+                    ),
+                ],
               ),
             ),
-            AppStateSwitcher(
-              alignment: Alignment.bottomCenter,
-              child: error == null
-                  ? const SizedBox.shrink(key: ValueKey('chat-no-error'))
-                  : _ChatErrorBanner(
-                      key: ValueKey(error),
-                      message: error,
-                      onRetry: state.canRetry
-                          ? () {
-                              ref
-                                  .read(aiChatControllerProvider.notifier)
-                                  .retryLastMessage();
-                            }
-                          : null,
-                      onUpgrade: state.showPlusUpgrade
-                          ? () {
-                              AppFeedbackService.instance.emit(
-                                AppFeedbackType.primaryAction,
-                              );
-                              openMembershipUpgrade(
-                                context,
-                                planCode: MembershipUpgradePlan.plus,
-                              );
-                            }
-                          : null,
-                      onDismiss: () {
-                        ref
-                            .read(aiChatControllerProvider.notifier)
-                            .dismissError();
-                      },
-                    ),
-            ),
+            if (state.error != null)
+              _ErrorBanner(
+                message: state.error!,
+                onRetry: state.canRetry
+                    ? ref.read(aiChatControllerProvider.notifier).retryLastMessage
+                    : null,
+                onUpgrade: state.showPlusUpgrade
+                    ? () => openMembershipUpgrade(
+                          context,
+                          planCode: MembershipUpgradePlan.plus,
+                        )
+                    : null,
+                onDismiss:
+                    ref.read(aiChatControllerProvider.notifier).dismissError,
+              ),
             SafeArea(
               top: false,
-              child: _ChatComposer(
+              child: _Composer(
                 controller: _textController,
                 focusNode: _focusNode,
-                isLoading: state.isLoading,
+                loading: state.isLoading,
                 onSend: _sendMessage,
               ),
             ),
@@ -194,1098 +228,223 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
       ),
     );
   }
+}
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      toolbarHeight: 56,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      backgroundColor: context.semanticColors.background.withValues(alpha: .92),
-      surfaceTintColor: Colors.transparent,
-      systemOverlayStyle: SystemUiOverlayStyle.dark,
-      leadingWidth: 52,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: AppSpacing.sm),
-        child: _MinimalIconButton(
-          icon: Icons.arrow_back_rounded,
-          semanticLabel: 'Quay lại',
-          onTap: () => Navigator.pop(context),
-        ),
-      ),
-      titleSpacing: 0,
-      title: const _ChatHeaderTitle(),
-      centerTitle: false,
-      actions: [
-        _MinimalIconButton(
-          icon: Icons.mic_rounded,
-          semanticLabel: 'Trò chuyện bằng giọng nói',
-          onTap: () {
-            AppFeedbackService.instance.emit(AppFeedbackType.selection);
-            context.push(V1RoutePaths.aiVoice);
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: AppSpacing.sm),
-          child: _MinimalIconButton(
-            icon: Icons.refresh_rounded,
-            semanticLabel: 'Làm mới cuộc trò chuyện',
-            onTap: () {
-              AppFeedbackService.instance.emit(AppFeedbackType.selection);
-              ref.read(aiChatControllerProvider.notifier).clearChat();
-            },
-          ),
-        ),
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(
-          height: 1,
-          color: context.semanticColors.border.withValues(alpha: .42),
+class _ChatTitle extends StatelessWidget {
+  const _ChatTitle();
+  @override
+  Widget build(BuildContext context) => Row(children: [
+    CircleAvatar(
+      radius: 16,
+      backgroundColor: context.semanticColors.primarySoft,
+      child: Icon(Icons.auto_awesome_rounded,
+          color: context.semanticColors.primary, size: 18),
+    ),
+    const SizedBox(width: AppSpacing.sm),
+    Expanded(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Nabi', style: AppTextStyles.labelLarge),
+        Text('Sẵn sàng lắng nghe bạn',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.caption.copyWith(
+                color: context.semanticColors.textSecondary)),
+      ]),
+    ),
+  ]);
+}
+
+class _EmptyChat extends StatelessWidget {
+  const _EmptyChat({required this.onQuestionTap});
+  final ValueChanged<String> onQuestionTap;
+  @override
+  Widget build(BuildContext context) {
+    const prompts = [
+      'Nabi ơi, làm sao để mình ngủ sâu hơn?',
+      'Hôm nay mình nên ăn gì cho nhẹ bụng?',
+      'Mình đang hơi căng thẳng, Nabi giúp mình với.',
+      'Gợi ý cho mình vài bài tập nhẹ hôm nay.',
+    ];
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.pagePadding),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Column(children: [
+            Icon(Icons.auto_awesome_rounded,
+                size: 48, color: context.semanticColors.primary),
+            const SizedBox(height: AppSpacing.md),
+            Text('Hôm nay bạn muốn Nabi giúp gì?',
+                textAlign: TextAlign.center, style: AppTextStyles.heading2),
+            const SizedBox(height: AppSpacing.lg),
+            for (final prompt in prompts)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => onQuestionTap(prompt),
+                    child: Text(prompt, textAlign: TextAlign.left),
+                  ),
+                ),
+              ),
+            Text(
+              'Vấn đề sức khỏe nghiêm trọng vẫn nên hỏi bác sĩ.',
+              style: AppTextStyles.caption.copyWith(
+                  color: context.semanticColors.textSecondary),
+            ),
+          ]),
         ),
       ),
     );
   }
 }
 
-class _ChatErrorBanner extends StatelessWidget {
+class _MessageBubble extends StatelessWidget {
+  const _MessageBubble({required this.message});
+  final ChatMessageEntity message;
+  @override
+  Widget build(BuildContext context) {
+    final user = message.role == MessageRole.user;
+    return Align(
+      alignment: user ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 680),
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: user
+              ? context.semanticColors.primary
+              : context.semanticColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: user ? null : Border.all(color: context.semanticColors.border),
+        ),
+        child: SelectableText(
+          message.content,
+          style: AppTextStyles.bodyLarge.copyWith(
+            color: user
+                ? context.semanticColors.surface
+                : context.semanticColors.textPrimary,
+            height: 1.45,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TypingIndicator extends StatelessWidget {
+  const _TypingIndicator();
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+    child: Row(children: [
+      const SizedBox.square(
+        dimension: 18,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+      const SizedBox(width: AppSpacing.sm),
+      Text('Nabi đang suy nghĩ...', style: AppTextStyles.bodyMedium),
+    ]),
+  );
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message, required this.onDismiss,
+      this.onRetry, this.onUpgrade});
   final String message;
   final VoidCallback? onRetry;
   final VoidCallback? onUpgrade;
   final VoidCallback onDismiss;
-
-  const _ChatErrorBanner({
-    super.key,
-    required this.message,
-    required this.onDismiss,
-    this.onRetry,
-    this.onUpgrade,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      liveRegion: true,
-      child: Container(
-        width: double.infinity,
-        color: context.semanticColors.errorSoft,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.pagePadding,
-          vertical: AppSpacing.sm,
-        ),
-        child: _CenteredContent(
-          maxWidth: 820,
-          child: Row(
-            children: [
-              const Icon(
-                Icons.info_outline_rounded,
-                color: AppColors.error,
-                size: 20,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  message,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: context.semanticColors.error,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              if (onUpgrade != null)
-                TextButton(
-                  onPressed: onUpgrade,
-                  child: const Text('Nâng cấp Plus'),
-                )
-              else if (onRetry != null)
-                TextButton(onPressed: onRetry, child: const Text('Thử lại')),
-              IconButton(
-                onPressed: onDismiss,
-                icon: const Icon(Icons.close_rounded),
-                color: context.semanticColors.error,
-                iconSize: 20,
-                tooltip: 'Đóng thông báo',
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ChatHeaderTitle extends StatelessWidget {
-  const _ChatHeaderTitle();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const _NamiAvatar(size: 34, iconSize: 18),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Nabi',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: context.semanticColors.textPrimary,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              Row(
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: context.semanticColors.success,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: context.semanticColors.success.withValues(
-                            alpha: .35,
-                          ),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(
-                    child: Text(
-                      'Sẵn sàng lắng nghe bạn',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.caption.copyWith(
-                        color: context.semanticColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _MessageList extends StatelessWidget {
-  static const double _maxContentWidth = 820;
-
-  final ScrollController controller;
-  final List<ChatMessageEntity> messages;
-  final bool isLoading;
-
-  const _MessageList({
-    super.key,
-    required this.controller,
-    required this.messages,
-    required this.isLoading,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      controller: controller,
-      physics: const BouncingScrollPhysics(),
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.pagePadding,
-        AppSpacing.sm,
-        AppSpacing.pagePadding,
-        AppSpacing.lg,
-      ),
-      itemCount: messages.length + (isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == messages.length && isLoading) {
-          return const _CenteredContent(
-            maxWidth: _maxContentWidth,
-            child: _TypingIndicator(),
-          );
-        }
-
-        final message = messages[index];
-        final isUser = message.role == MessageRole.user;
-
-        return _CenteredContent(
-          maxWidth: _maxContentWidth,
-          child: _MessageRow(message: message, isUser: isUser),
-        );
-      },
-    );
-  }
-}
-
-class _MessageRow extends StatelessWidget {
-  final ChatMessageEntity message;
-  final bool isUser;
-
-  const _MessageRow({required this.message, required this.isUser});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Row(
-        mainAxisAlignment: isUser
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!isUser) ...[
-            const _NamiAvatar(size: 34, iconSize: 17),
-            const SizedBox(width: AppSpacing.sm),
-          ],
-          Flexible(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isUser ? 620 : double.infinity,
-              ),
-              child: isUser
-                  ? _UserMessageBubble(message: message)
-                  : _AssistantMessage(message: message),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AssistantMessage extends StatelessWidget {
-  final ChatMessageEntity message;
-
-  const _AssistantMessage({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: AppDuration.normal,
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 8 * (1 - value)),
-            child: child,
-          ),
-        );
-      },
+  Widget build(BuildContext context) => Material(
+    color: context.semanticColors.errorSoft,
+    child: SafeArea(
+      top: false,
       child: Padding(
-        padding: const EdgeInsets.only(top: AppSpacing.xs),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SelectableText(
-              message.content,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: context.semanticColors.textPrimary,
-                height: 1.52,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            _MessageTime(time: message.timestamp, isUser: false),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _UserMessageBubble extends StatelessWidget {
-  final ChatMessageEntity message;
-
-  const _UserMessageBubble({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: AppDuration.normal,
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 8 * (1 - value)),
-            child: child,
-          ),
-        );
-      },
-      child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          gradient: AppGradients.primary,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(AppRadius.lg),
-            topRight: Radius.circular(AppRadius.lg),
-            bottomLeft: Radius.circular(AppRadius.lg),
-            bottomRight: Radius.circular(AppRadius.sm),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: context.semanticColors.primary.withValues(alpha: .16),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            SelectableText(
-              message.content,
-              textAlign: TextAlign.left,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: context.semanticColors.surface,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            _MessageTime(time: message.timestamp, isUser: true),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MessageTime extends StatelessWidget {
-  final DateTime time;
-  final bool isUser;
-
-  const _MessageTime({required this.time, required this.isUser});
-
-  @override
-  Widget build(BuildContext context) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-
-    return Text(
-      '$hour:$minute',
-      style: AppTextStyles.caption.copyWith(
-        color: isUser
-            ? context.semanticColors.surface.withValues(alpha: .72)
-            : context.semanticColors.textMuted,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
-}
-
-class _ChatGptEmptyState extends StatelessWidget {
-  static const double _maxContentWidth = 760;
-
-  final ValueChanged<String> onQuestionTap;
-
-  const _ChatGptEmptyState({super.key, required this.onQuestionTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.pagePadding,
-          AppSpacing.lg,
-          AppSpacing.pagePadding,
-          AppSpacing.lg,
-        ),
-        child: _CenteredContent(
-          maxWidth: _maxContentWidth,
-          child: Column(
-            children: [
-              const _NamiHeroMark(),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              Text(
-                'Hôm nay bạn muốn Nabi giúp gì?',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.heading2.copyWith(
-                  color: context.semanticColors.textPrimary,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -.3,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Hỏi ngắn gọn về điều bạn đang quan tâm.',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: context.semanticColors.textSecondary,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              _PromptGrid(onQuestionTap: onQuestionTap),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              _CareNote(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NamiHeroMark extends StatelessWidget {
-  const _NamiHeroMark();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 56,
-      height: 56,
-      padding: const EdgeInsets.all(AppSpacing.xs),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(colors: AppGradients.ai.colors),
-        boxShadow: [
-          BoxShadow(
-            color: context.semanticColors.primary.withValues(alpha: .18),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          shape: BoxShape.circle,
-        ),
-        padding: const EdgeInsets.all(AppSpacing.tiny),
-        child: Container(
-          decoration: AppDecoration.base(
-            gradient: AppGradients.ai,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            AppIcons.aiChat,
-            color: AppColors.surface,
-            size: 24,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PromptGrid extends StatelessWidget {
-  final ValueChanged<String> onQuestionTap;
-
-  const _PromptGrid({required this.onQuestionTap});
-
-  static const List<_PromptAction> _items = [
-    _PromptAction(
-      icon: Icons.bedtime_rounded,
-      title: 'Cải thiện giấc ngủ',
-      subtitle: 'Nabi ơi, làm sao để mình ngủ sâu hơn?',
-    ),
-    _PromptAction(
-      icon: Icons.restaurant_rounded,
-      title: 'Gợi ý bữa ăn',
-      subtitle: 'Hôm nay mình nên ăn gì cho nhẹ bụng?',
-    ),
-    _PromptAction(
-      icon: Icons.self_improvement_rounded,
-      title: 'Giảm căng thẳng',
-      subtitle: 'Mình đang hơi căng thẳng, Nabi giúp mình với.',
-    ),
-    _PromptAction(
-      icon: Icons.directions_walk_rounded,
-      title: 'Vận động nhẹ',
-      subtitle: 'Gợi ý cho mình vài bài tập nhẹ hôm nay.',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isNarrow = constraints.maxWidth < 560;
-
-        return Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: _items.map((item) {
-            final width = isNarrow
-                ? constraints.maxWidth
-                : (constraints.maxWidth - AppSpacing.sm) / 2;
-
-            return SizedBox(
-              width: width,
-              child: _PromptCard(
-                item: item,
-                onTap: () => onQuestionTap(item.subtitle),
-              ),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-}
-
-class _PromptCard extends StatelessWidget {
-  final _PromptAction item;
-  final VoidCallback onTap;
-
-  const _PromptCard({required this.item, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Gợi ý: ${item.title}',
-      button: true,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          onTap: onTap,
-          child: Ink(
-            padding: const EdgeInsets.all(AppSpacing.cardPadding),
-            decoration: BoxDecoration(
-              color: context.semanticColors.surface,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(
-                color: context.semanticColors.border.withValues(alpha: .62),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: context.semanticColors.primary.withValues(
-                      alpha: .08,
-                    ),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  child: Icon(
-                    item.icon,
-                    color: context.semanticColors.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: context.semanticColors.textPrimary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        item.subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption.copyWith(
-                          color: context.semanticColors.textSecondary,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CareNote extends StatelessWidget {
-  const _CareNote();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: context.semanticColors.primary.withValues(alpha: .055),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.favorite_rounded,
-            color: context.semanticColors.primary,
-            size: 18,
-          ),
+            horizontal: AppSpacing.pagePadding, vertical: AppSpacing.sm),
+        child: Row(children: [
+          const Icon(Icons.info_outline_rounded, color: AppColors.error),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              'Vấn đề sức khỏe nghiêm trọng vẫn nên hỏi bác sĩ.',
-              style: AppTextStyles.caption.copyWith(
-                color: context.semanticColors.textSecondary,
-                height: 1.45,
-              ),
-            ),
+          Expanded(child: Text(message)),
+          if (onUpgrade != null)
+            TextButton(onPressed: onUpgrade, child: const Text('Nâng cấp Plus'))
+          else if (onRetry != null)
+            TextButton(onPressed: onRetry, child: const Text('Thử lại')),
+          IconButton(
+            tooltip: 'Đóng thông báo',
+            onPressed: onDismiss,
+            icon: const Icon(Icons.close_rounded),
           ),
-        ],
+        ]),
       ),
-    );
-  }
+    ),
+  );
 }
 
-class _ChatComposer extends StatefulWidget {
+class _Composer extends StatefulWidget {
+  const _Composer({required this.controller, required this.focusNode,
+      required this.loading, required this.onSend});
   final TextEditingController controller;
   final FocusNode focusNode;
-  final bool isLoading;
+  final bool loading;
   final VoidCallback onSend;
-
-  const _ChatComposer({
-    required this.controller,
-    required this.focusNode,
-    required this.isLoading,
-    required this.onSend,
-  });
-
   @override
-  State<_ChatComposer> createState() => _ChatComposerState();
+  State<_Composer> createState() => _ComposerState();
 }
 
-class _ChatComposerState extends State<_ChatComposer> {
-  bool _hasText = false;
-
+class _ComposerState extends State<_Composer> {
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(_handleTextChanged);
-    widget.focusNode.addListener(_handleFocusChanged);
-    _hasText = widget.controller.text.trim().isNotEmpty;
+    widget.controller.addListener(_changed);
   }
-
   @override
-  void didUpdateWidget(covariant _ChatComposer oldWidget) {
+  void didUpdateWidget(covariant _Composer oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     if (oldWidget.controller != widget.controller) {
-      oldWidget.controller.removeListener(_handleTextChanged);
-      widget.controller.addListener(_handleTextChanged);
-      _handleTextChanged();
-    }
-
-    if (oldWidget.focusNode != widget.focusNode) {
-      oldWidget.focusNode.removeListener(_handleFocusChanged);
-      widget.focusNode.addListener(_handleFocusChanged);
+      oldWidget.controller.removeListener(_changed);
+      widget.controller.addListener(_changed);
     }
   }
-
   @override
   void dispose() {
-    widget.controller.removeListener(_handleTextChanged);
-    widget.focusNode.removeListener(_handleFocusChanged);
+    widget.controller.removeListener(_changed);
     super.dispose();
   }
-
-  void _handleTextChanged() {
-    final next = widget.controller.text.trim().isNotEmpty;
-    if (_hasText == next) return;
-
-    setState(() => _hasText = next);
-  }
-
-  void _handleFocusChanged() {
-    setState(() {});
-  }
-
-  void _submit() {
-    if (!_hasText || widget.isLoading) return;
-    widget.onSend();
-  }
-
+  void _changed() => setState(() {});
   @override
   Widget build(BuildContext context) {
-    final canSend = _hasText && !widget.isLoading;
-    final focused = widget.focusNode.hasFocus;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          color: context.semanticColors.background.withValues(alpha: .92),
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.pagePadding,
-            AppSpacing.sm,
-            AppSpacing.pagePadding,
-            AppSpacing.sm,
-          ),
-          child: SafeArea(
-            top: false,
-            child: _CenteredContent(
-              maxWidth: 820,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedContainer(
-                    duration: AppDuration.fast,
-                    curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.sm,
-                      AppSpacing.xs,
-                      AppSpacing.xs,
-                      AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.semanticColors.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.xl),
-                      border: Border.all(
-                        color: focused
-                            ? context.semanticColors.primary.withValues(
-                                alpha: .38,
-                              )
-                            : context.semanticColors.border.withValues(
-                                alpha: .72,
-                              ),
-                        width: focused ? 1.4 : 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: context.semanticColors.textPrimary.withValues(
-                            alpha: .06,
-                          ),
-                          blurRadius: 22,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minHeight: 30,
-                              maxHeight: 112,
-                            ),
-                            child: TextField(
-                              controller: widget.controller,
-                              focusNode: widget.focusNode,
-                              enabled: !widget.isLoading,
-                              maxLines: null,
-                              minLines: 1,
-                              keyboardType: TextInputType.multiline,
-                              textInputAction: TextInputAction.newline,
-                              textCapitalization: TextCapitalization.sentences,
-                              style: AppTextStyles.bodyLarge.copyWith(
-                                color: context.semanticColors.textPrimary,
-                                height: 1.48,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Nhắn cho Nabi...',
-                                hintStyle: AppTextStyles.bodyLarge.copyWith(
-                                  color: context.semanticColors.textMuted,
-                                  height: 1.48,
-                                ),
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: AppSpacing.sm,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        _SendButton(
-                          canSend: canSend,
-                          isLoading: widget.isLoading,
-                          onTap: _submit,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'Kiểm tra lại thông tin quan trọng trước khi áp dụng.',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.caption.copyWith(
-                      color: context.semanticColors.textMuted,
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SendButton extends StatelessWidget {
-  final bool canSend;
-  final bool isLoading;
-  final VoidCallback onTap;
-
-  const _SendButton({
-    required this.canSend,
-    required this.isLoading,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final background = canSend
-        ? context.semanticColors.primary
-        : context.semanticColors.border;
-    final foreground = canSend
-        ? context.semanticColors.surface
-        : context.semanticColors.textMuted;
-
-    return Semantics(
-      label: 'Gửi tin nhắn',
-      button: true,
-      enabled: canSend,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: canSend ? onTap : null,
-        child: AnimatedContainer(
-          duration: AppDuration.fast,
-          curve: Curves.easeOutCubic,
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: background,
-            shape: BoxShape.circle,
-            boxShadow: canSend
-                ? [
-                    BoxShadow(
-                      color: context.semanticColors.primary.withValues(
-                        alpha: .22,
-                      ),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: AnimatedSwitcher(
-            duration: AppDuration.fast,
-            child: isLoading
-                ? const SizedBox(
-                    key: ValueKey('send-loading'),
-                    width: 18,
-                    height: 18,
-                    child: Center(
-                      child: SizedBox(
-                        width: 17,
-                        height: 17,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.surface,
-                        ),
-                      ),
-                    ),
-                  )
-                : Icon(
-                    key: const ValueKey('send-ready'),
-                    Icons.arrow_upward_rounded,
-                    color: foreground,
-                    size: 21,
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TypingIndicator extends StatefulWidget {
-  const _TypingIndicator();
-
-  @override
-  State<_TypingIndicator> createState() => _TypingIndicatorState();
-}
-
-class _TypingIndicatorState extends State<_TypingIndicator>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1100),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _NamiAvatar(size: 34, iconSize: 17),
-          const SizedBox(width: AppSpacing.md),
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.sm),
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(3, (index) {
-                    final phase = (_controller.value + index * .18) % 1;
-                    final scale = .55 + (.45 * (1 - (phase - .5).abs() * 2));
-
-                    return Transform.scale(
-                      scale: scale,
-                      child: Container(
-                        width: 7,
-                        height: 7,
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.semanticColors.primary.withValues(
-                            alpha: .35 + scale * .45,
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    );
-                  }),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MinimalIconButton extends StatelessWidget {
-  final IconData icon;
-  final String semanticLabel;
-  final VoidCallback onTap;
-
-  const _MinimalIconButton({
-    required this.icon,
-    required this.semanticLabel,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: semanticLabel,
-      button: true,
-      child: IconButton(
-        onPressed: onTap,
-        icon: Icon(icon),
-        color: context.semanticColors.textPrimary,
-        iconSize: 23,
-        splashRadius: 24,
-        tooltip: semanticLabel,
-      ),
-    );
-  }
-}
-
-class _NamiAvatar extends StatelessWidget {
-  final double size;
-  final double iconSize;
-
-  const _NamiAvatar({this.size = 36, this.iconSize = 20});
-
-  @override
-  Widget build(BuildContext context) {
+    final canSend = widget.controller.text.trim().isNotEmpty && !widget.loading;
     return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: context.semanticColors.surface,
-        border: Border.all(
-          color: context.semanticColors.primary.withValues(alpha: .22),
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Image.asset(
-        NabiAssetCatalog.staticAssetPath('core/nabi_idle_happy.png'),
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.medium,
-        errorBuilder: (context, error, stackTrace) => Container(
-          decoration: AppDecoration.base(
-            gradient: AppGradients.ai,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            AppIcons.aiChat,
-            color: context.semanticColors.surface,
-            size: iconSize,
+      color: context.semanticColors.background,
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pagePadding, AppSpacing.sm, AppSpacing.pagePadding, AppSpacing.sm),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        Expanded(
+          child: TextField(
+            controller: widget.controller,
+            focusNode: widget.focusNode,
+            enabled: !widget.loading,
+            minLines: 1,
+            maxLines: 5,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(hintText: 'Nhắn cho Nabi...'),
           ),
         ),
-      ),
+        const SizedBox(width: AppSpacing.sm),
+        IconButton.filled(
+          tooltip: 'Gửi',
+          onPressed: canSend ? widget.onSend : null,
+          icon: widget.loading
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.arrow_upward_rounded),
+        ),
+      ]),
     );
   }
-}
-
-class _CenteredContent extends StatelessWidget {
-  final double maxWidth;
-  final Widget child;
-
-  const _CenteredContent({required this.maxWidth, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth),
-        child: child,
-      ),
-    );
-  }
-}
-
-class _PromptAction {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _PromptAction({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
 }

@@ -6,6 +6,7 @@ import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/controllers/meal_plan_controller.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/utils/meal_detail_content_formatter.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/widgets/meal_photo.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/widgets/meal_replacement_picker.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 class MealPlanPage extends ConsumerStatefulWidget {
@@ -26,6 +27,9 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
       body: Column(
         children: [
           _MealPlanHeader(
+            onBack: Navigator.of(context).canPop()
+                ? () => Navigator.of(context).maybePop()
+                : null,
             onRefresh: () => ref
                 .read(mealPlanControllerProvider.notifier)
                 .refreshMealPlans(),
@@ -53,6 +57,7 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
         subtitle: 'Bạn quay lại sau một chút nhé, Nabi đang chọn món phù hợp.',
       );
     }
+
     final dates = <DateTime>{};
     for (final meal in meals) {
       final date = _parseDate(meal.planDate);
@@ -145,63 +150,77 @@ class _MealPlanPageState extends ConsumerState<MealPlanPage> {
 }
 
 class _MealPlanHeader extends StatelessWidget {
-  const _MealPlanHeader({required this.onRefresh});
+  const _MealPlanHeader({required this.onRefresh, this.onBack});
+
   final VoidCallback onRefresh;
+  final VoidCallback? onBack;
 
   @override
-  Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              context.semanticColors.primary,
-              context.semanticColors.primary.withValues(alpha: .82),
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            context.semanticColors.primary,
+            context.semanticColors.primary.withValues(alpha: .82),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.sm,
+            AppSpacing.md,
+            AppSpacing.pagePadding,
+            AppSpacing.lg,
+          ),
+          child: Row(
+            children: [
+              if (onBack != null) ...[
+                IconButton(
+                  tooltip: 'Quay lại',
+                  onPressed: onBack,
+                  color: context.semanticColors.surface,
+                  icon: const Icon(Icons.arrow_back_rounded),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Thực đơn',
+                      style: AppTextStyles.heading1.copyWith(
+                        color: context.semanticColors.surface,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Dinh dưỡng theo ngày',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: context.semanticColors.surface.withValues(
+                          alpha: .8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton.filledTonal(
+                tooltip: 'Làm mới thực đơn',
+                onPressed: onRefresh,
+                icon: const Icon(Icons.refresh_rounded),
+              ),
             ],
           ),
         ),
-        child: SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.pagePadding,
-              AppSpacing.md,
-              AppSpacing.pagePadding,
-              AppSpacing.lg,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Thực đơn',
-                        style: AppTextStyles.heading1.copyWith(
-                          color: context.semanticColors.surface,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        'Dinh dưỡng theo ngày',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: context.semanticColors.surface
-                              .withValues(alpha: .8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton.filledTonal(
-                  tooltip: 'Làm mới thực đơn',
-                  onPressed: onRefresh,
-                  icon: const Icon(Icons.refresh_rounded),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+      ),
+    );
+  }
 }
 
 class _DateSelector extends StatelessWidget {
@@ -210,33 +229,45 @@ class _DateSelector extends StatelessWidget {
     required this.selected,
     required this.onChanged,
   });
+
   final List<DateTime> dates;
   final DateTime selected;
   final ValueChanged<DateTime> onChanged;
   static const _labels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
   @override
-  Widget build(BuildContext context) => Container(
-        color: context.semanticColors.surface,
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        child: SizedBox(
-          height: 64,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.pagePadding,
-            ),
-            itemCount: dates.length,
-            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
-            itemBuilder: (context, index) {
-              final date = dates[index];
-              final active = DateUtils.isSameDay(date, selected);
-              return InkWell(
+  Widget build(BuildContext context) {
+    final scale = MediaQuery.textScalerOf(context).scale(1);
+    final tileHeight = (64.0 + ((scale - 1).clamp(0, 1.0) * 28)).toDouble();
+    final tileWidth = (54.0 + ((scale - 1).clamp(0, .8) * 14)).toDouble();
+    return Container(
+      color: context.semanticColors.surface,
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: SizedBox(
+        height: tileHeight,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.pagePadding,
+          ),
+          itemCount: dates.length,
+          separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+          itemBuilder: (context, index) {
+            final date = dates[index];
+            final active = DateUtils.isSameDay(date, selected);
+            return Semantics(
+              button: true,
+              selected: active,
+              label:
+                  '${_labels[date.weekday - 1]}, ngày ${date.day}/${date.month}',
+              child: InkWell(
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 onTap: () => onChanged(date),
                 child: AnimatedContainer(
                   duration: AppMotionScope.duration(context, AppDuration.fast),
-                  width: 54,
+                  width: tileWidth,
+                  constraints: const BoxConstraints(minHeight: 48),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                   decoration: BoxDecoration(
                     color: active
                         ? context.semanticColors.primary
@@ -248,6 +279,7 @@ class _DateSelector extends StatelessWidget {
                     children: [
                       Text(
                         _labels[date.weekday - 1],
+                        maxLines: 1,
                         style: AppTextStyles.labelSmall.copyWith(
                           color: active
                               ? context.semanticColors.surface
@@ -258,6 +290,7 @@ class _DateSelector extends StatelessWidget {
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         '${date.day}',
+                        maxLines: 1,
                         style: AppTextStyles.heading4.copyWith(
                           color: active
                               ? context.semanticColors.surface
@@ -267,51 +300,63 @@ class _DateSelector extends StatelessWidget {
                     ],
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
-      );
+      ),
+    );
+  }
 }
 
 class _DaySummary extends StatelessWidget {
   const _DaySummary({required this.date, required this.count});
+
   final DateTime date;
   final int count;
   static const _names = [
-    'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật',
+    'Thứ Hai',
+    'Thứ Ba',
+    'Thứ Tư',
+    'Thứ Năm',
+    'Thứ Sáu',
+    'Thứ Bảy',
+    'Chủ Nhật',
   ];
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  DateUtils.isSameDay(date, DateTime.now())
-                      ? 'Hôm nay'
-                      : _names[date.weekday - 1],
-                  style: AppTextStyles.heading2,
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                DateUtils.isSameDay(date, DateTime.now())
+                    ? 'Hôm nay'
+                    : _names[date.weekday - 1],
+                style: AppTextStyles.heading2,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: context.semanticColors.textSecondary,
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: context.semanticColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          _Pill('$count bữa'),
-        ],
-      );
+        ),
+        _Pill('$count bữa'),
+      ],
+    );
+  }
 }
 
 class _MealPlanCard extends ConsumerWidget {
   const _MealPlanCard({required this.meal});
+
   final MealPlanEntity meal;
 
   @override
@@ -319,7 +364,8 @@ class _MealPlanCard extends ConsumerWidget {
     final content = MealDetailContentFormatter.fromMeal(meal);
     return Semantics(
       button: true,
-      label: '${_mealLabel(meal.mealType, meal.mealOrder)}, ${content.mealName}',
+      label:
+          '${_mealLabel(meal.mealType, meal.mealOrder)}, ${content.mealName}',
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadius.xl),
         onTap: () => _showDetails(context, ref),
@@ -343,7 +389,8 @@ class _MealPlanCard extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _mealLabel(meal.mealType, meal.mealOrder).toUpperCase(),
+                          _mealLabel(meal.mealType, meal.mealOrder)
+                              .toUpperCase(),
                           style: AppTextStyles.labelSmall.copyWith(
                             color: context.semanticColors.primary,
                             fontWeight: FontWeight.w800,
@@ -438,17 +485,12 @@ class _MealPlanCard extends ConsumerWidget {
     required WidgetRef ref,
   }) async {
     final controller = ref.read(mealPlanControllerProvider.notifier);
-    final result = await showModalBottomSheet<MealReplacementResult>(
+    final result = await showMealReplacementPicker(
       context: sheetContext,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _MealReplacementSheet(
-        candidatesFuture: controller.loadReplacementCandidates(meal.id),
-        onConfirm: (candidate) => controller.replaceMealByCatalogCode(
-          mealId: meal.id,
-          catalogCode: candidate.code,
-        ),
+      candidatesFuture: controller.loadReplacementCandidates(meal.id),
+      onConfirm: (candidate) => controller.replaceMealByCatalogCode(
+        mealId: meal.id,
+        catalogCode: candidate.code,
       ),
     );
     if (result == null) return;
@@ -469,75 +511,91 @@ class _MealPlanCard extends ConsumerWidget {
 
 class _MacroStrip extends StatelessWidget {
   const _MacroStrip({required this.content});
+
   final MealDetailContent content;
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Expanded(child: _MacroCell(label: 'Protein', value: content.protein)),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(child: _MacroCell(label: 'Carb', value: content.carbs)),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(child: _MacroCell(label: 'Chất béo', value: content.fat)),
-        ],
-      );
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: _MacroCell(label: 'Protein', value: content.protein)),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(child: _MacroCell(label: 'Carb', value: content.carbs)),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(child: _MacroCell(label: 'Chất béo', value: content.fat)),
+      ],
+    );
+  }
 }
 
 class _MacroCell extends StatelessWidget {
   const _MacroCell({required this.label, required this.value});
+
   final String label;
   final double value;
+
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: context.semanticColors.background,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTextStyles.labelSmall),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              '${_number(value)} g',
-              maxLines: 1,
-              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w800),
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: context.semanticColors.background,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, maxLines: 1, style: AppTextStyles.labelSmall),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            '${_number(value)} g',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w800,
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _EnergyBadge extends StatelessWidget {
   const _EnergyBadge({required this.calories});
+
   final int calories;
+
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: context.semanticColors.primarySoft,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        child: Column(
-          children: [
-            Text('$calories', style: AppTextStyles.heading4),
-            Text('kcal', style: AppTextStyles.labelSmall),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: context.semanticColors.primarySoft,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Column(
+        children: [
+          Text('$calories', style: AppTextStyles.heading4),
+          Text('kcal', style: AppTextStyles.labelSmall),
+        ],
+      ),
+    );
+  }
 }
 
 class _MealDetailSheet extends StatefulWidget {
   const _MealDetailSheet({required this.meal, required this.onReplace});
+
   final MealPlanEntity meal;
   final Future<void> Function()? onReplace;
+
   @override
   State<_MealDetailSheet> createState() => _MealDetailSheetState();
 }
@@ -566,7 +624,9 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
           children: [
             Row(
               children: [
-                Expanded(child: Text(content.mealName, style: AppTextStyles.heading2)),
+                Expanded(
+                  child: Text(content.mealName, style: AppTextStyles.heading2),
+                ),
                 IconButton(
                   tooltip: 'Đóng',
                   onPressed: () => Navigator.of(context).pop(),
@@ -597,9 +657,15 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
             ),
             if (content.description.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sectionSpacing),
-              const _SectionTitle(icon: Icons.notes_rounded, title: 'Mô tả món ăn'),
+              const _SectionTitle(
+                icon: Icons.notes_rounded,
+                title: 'Mô tả món ăn',
+              ),
               const SizedBox(height: AppSpacing.sm),
-              Text(content.description, style: AppTextStyles.bodyMedium.copyWith(height: 1.5)),
+              Text(
+                content.description,
+                style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+              ),
             ],
             if (content.showNutrition) ...[
               const SizedBox(height: AppSpacing.sectionSpacing),
@@ -607,13 +673,19 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
             ],
             if (content.ingredients.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sectionSpacing),
-              const _SectionTitle(icon: Icons.shopping_basket_rounded, title: 'Nguyên liệu'),
+              const _SectionTitle(
+                icon: Icons.shopping_basket_rounded,
+                title: 'Nguyên liệu',
+              ),
               const SizedBox(height: AppSpacing.sm),
               ...content.ingredients.map((item) => _Bullet(text: item)),
             ],
             if (content.cookingSteps.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sectionSpacing),
-              const _SectionTitle(icon: Icons.soup_kitchen_rounded, title: 'Cách chế biến'),
+              const _SectionTitle(
+                icon: Icons.soup_kitchen_rounded,
+                title: 'Cách chế biến',
+              ),
               const SizedBox(height: AppSpacing.sm),
               for (var i = 0; i < content.cookingSteps.length; i++)
                 _RecipeStep(number: i + 1, text: content.cookingSteps[i]),
@@ -622,16 +694,25 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
               const SizedBox(height: AppSpacing.sectionSpacing),
               const _SectionTitle(icon: Icons.spa_rounded, title: 'Lợi ích'),
               const SizedBox(height: AppSpacing.sm),
-              Text(content.benefits, style: AppTextStyles.bodyMedium.copyWith(height: 1.5)),
+              Text(
+                content.benefits,
+                style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+              ),
             ],
             if (content.hasWarnings) ...[
               const SizedBox(height: AppSpacing.sectionSpacing),
-              const _SectionTitle(icon: Icons.health_and_safety_outlined, title: 'Lưu ý'),
+              const _SectionTitle(
+                icon: Icons.health_and_safety_outlined,
+                title: 'Lưu ý',
+              ),
               const SizedBox(height: AppSpacing.sm),
               if (content.allergenTags.isNotEmpty)
                 _Warning(title: 'Dị ứng', values: content.allergenTags),
               if (content.avoidConditionTags.isNotEmpty)
-                _Warning(title: 'Nên tránh khi', values: content.avoidConditionTags),
+                _Warning(
+                  title: 'Nên tránh khi',
+                  values: content.avoidConditionTags,
+                ),
             ],
             if (content.sourceLabel.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sectionSpacing),
@@ -660,7 +741,9 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.swap_horiz_rounded),
-                label: Text(_replacing ? 'Đang mở danh sách...' : 'Đổi món khác'),
+                label: Text(
+                  _replacing ? 'Đang mở danh sách...' : 'Đổi món khác',
+                ),
               )
             else
               Text(
@@ -678,20 +761,19 @@ class _MealDetailSheetState extends State<_MealDetailSheet> {
 
   Future<void> _replace() async {
     final callback = widget.onReplace;
-    if (callback == null) return;
+    if (callback == null || _replacing) return;
     setState(() => _replacing = true);
     try {
       await callback();
     } finally {
-      if (mounted) {
-        setState(() => _replacing = false);
-      }
+      if (mounted) setState(() => _replacing = false);
     }
   }
 }
 
 class _NutritionPanel extends StatelessWidget {
   const _NutritionPanel({required this.content});
+
   final MealDetailContent content;
 
   @override
@@ -706,13 +788,17 @@ class _NutritionPanel extends StatelessWidget {
         ('Béo bão hòa', '${_number(content.saturatedFatG!)} g'),
     ];
     final micro = <(String, String)>[
-      if (_positive(content.sodiumMg)) ('Natri', '${_number(content.sodiumMg!)} mg'),
-      if (_positive(content.potassiumMg)) ('Kali', '${_number(content.potassiumMg!)} mg'),
-      if (_positive(content.calciumMg)) ('Canxi', '${_number(content.calciumMg!)} mg'),
+      if (_positive(content.sodiumMg))
+        ('Natri', '${_number(content.sodiumMg!)} mg'),
+      if (_positive(content.potassiumMg))
+        ('Kali', '${_number(content.potassiumMg!)} mg'),
+      if (_positive(content.calciumMg))
+        ('Canxi', '${_number(content.calciumMg!)} mg'),
       if (_positive(content.ironMg)) ('Sắt', '${_number(content.ironMg!)} mg'),
       if (_positive(content.cholesterolMg))
         ('Cholesterol', '${_number(content.cholesterolMg!)} mg'),
     ];
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
@@ -725,10 +811,16 @@ class _NutritionPanel extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.monitor_heart_outlined, color: context.semanticColors.primary),
+              Icon(
+                Icons.monitor_heart_outlined,
+                color: context.semanticColors.primary,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: Text(content.nutritionLabel, style: AppTextStyles.heading4),
+                child: Text(
+                  content.nutritionLabel,
+                  style: AppTextStyles.heading4,
+                ),
               ),
             ],
           ),
@@ -744,13 +836,23 @@ class _NutritionPanel extends StatelessWidget {
           ],
           if (macro.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
-            Text('Đa lượng', style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w800)),
+            Text(
+              'Đa lượng',
+              style: AppTextStyles.bodySmall.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             _NutrientGrid(items: macro),
           ],
           if (micro.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
-            Text('Khoáng chất & vi chất', style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w800)),
+            Text(
+              'Khoáng chất & vi chất',
+              style: AppTextStyles.bodySmall.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             _NutrientGrid(items: micro),
           ],
@@ -771,358 +873,264 @@ class _NutritionPanel extends StatelessWidget {
 
 class _NutrientGrid extends StatelessWidget {
   const _NutrientGrid({required this.items});
+
   final List<(String, String)> items;
+
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth;
-          final itemWidth = width >= 520 ? (width - AppSpacing.sm * 2) / 3 : (width - AppSpacing.sm) / 2;
-          return Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              for (final item in items)
-                SizedBox(
-                  width: itemWidth,
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: context.semanticColors.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item.$1, style: AppTextStyles.labelSmall),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(item.$2, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w800)),
-                      ],
-                    ),
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scale = MediaQuery.textScalerOf(context).scale(1);
+        final minWidth = scale >= 1.5 ? 190.0 : 150.0;
+        final columns = (constraints.maxWidth / minWidth).floor().clamp(1, 3);
+        final itemWidth =
+            (constraints.maxWidth - AppSpacing.sm * (columns - 1)) / columns;
+        return Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
+            for (final item in items)
+              SizedBox(
+                width: itemWidth,
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: context.semanticColors.surface,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.$1, style: AppTextStyles.labelSmall),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        item.$2,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-            ],
-          );
-        },
-      );
-}
-
-class _MealReplacementSheet extends StatefulWidget {
-  const _MealReplacementSheet({required this.candidatesFuture, required this.onConfirm});
-  final Future<List<MealReplacementCandidateEntity>> candidatesFuture;
-  final Future<MealReplacementResult> Function(MealReplacementCandidateEntity candidate) onConfirm;
-  @override
-  State<_MealReplacementSheet> createState() => _MealReplacementSheetState();
-}
-
-class _MealReplacementSheetState extends State<_MealReplacementSheet> {
-  MealReplacementCandidateEntity? _selected;
-  bool _saving = false;
-  bool _failed = false;
-
-  @override
-  Widget build(BuildContext context) => DraggableScrollableSheet(
-        initialChildSize: .82,
-        minChildSize: .55,
-        maxChildSize: .95,
-        builder: (context, controller) => Container(
-          decoration: BoxDecoration(
-            color: context.semanticColors.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
-          ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Đổi món', style: AppTextStyles.heading2),
-                          Text(
-                            'Các món đã lọc theo hồ sơ và bữa ăn.',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: context.semanticColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: _saving ? null : () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ],
-                ),
               ),
-              Expanded(
-                child: FutureBuilder<List<MealReplacementCandidateEntity>>(
-                  future: widget.candidatesFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.hasError) {
-                      return const _MealEmptyView(
-                        title: 'Chưa tải được danh sách món',
-                        subtitle: 'Bạn đóng cửa sổ này và thử lại nhé.',
-                      );
-                    }
-                    final candidates = snapshot.data ?? const [];
-                    if (candidates.isEmpty) {
-                      return const _MealEmptyView(
-                        title: 'Chưa có món thay thế phù hợp',
-                        subtitle: 'Nabi sẽ giữ món hiện tại cho bạn.',
-                      );
-                    }
-                    return ListView.separated(
-                      controller: controller,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.pagePaddingLarge,
-                      ),
-                      itemCount: candidates.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (context, index) {
-                        final candidate = candidates[index];
-                        final selected = _selected?.code == candidate.code;
-                        return InkWell(
-                          onTap: _saving ? null : () => setState(() {
-                            _selected = candidate;
-                            _failed = false;
-                          }),
-                          borderRadius: BorderRadius.circular(AppRadius.lg),
-                          child: Container(
-                            padding: const EdgeInsets.all(AppSpacing.md),
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? context.semanticColors.primarySoft
-                                  : context.semanticColors.background,
-                              borderRadius: BorderRadius.circular(AppRadius.lg),
-                              border: Border.all(
-                                color: selected
-                                    ? context.semanticColors.primary
-                                    : context.semanticColors.border,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(candidate.mealName, style: AppTextStyles.heading4),
-                                      if (candidate.healthTopicName.trim().isNotEmpty)
-                                        Text(
-                                          candidate.healthTopicName,
-                                          style: AppTextStyles.bodySmall.copyWith(
-                                            color: context.semanticColors.primary,
-                                          ),
-                                        ),
-                                      const SizedBox(height: AppSpacing.xs),
-                                      Wrap(
-                                        spacing: AppSpacing.xs,
-                                        children: [
-                                          if (candidate.calories > 0) _Pill('${candidate.calories} kcal'),
-                                          if (candidate.servingSize.trim().isNotEmpty) _Pill(candidate.servingSize),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Icon(
-                                  selected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                                  color: selected ? context.semanticColors.primary : context.semanticColors.textSecondary,
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (_failed) ...[
-                      Text('Chưa thể đổi món này. Bạn thử lại nhé.', style: AppTextStyles.bodySmall.copyWith(color: context.semanticColors.error)),
-                      const SizedBox(height: AppSpacing.sm),
-                    ],
-                    FilledButton.icon(
-                      onPressed: _selected == null || _saving ? null : _confirm,
-                      icon: _saving
-                          ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.check_rounded),
-                      label: Text(_saving ? 'Đang đổi món...' : _selected == null ? 'Chọn một món' : 'Chọn món này'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-
-  Future<void> _confirm() async {
-    final selected = _selected;
-    if (selected == null || _saving) return;
-    setState(() {
-      _saving = true;
-      _failed = false;
-    });
-    try {
-      final result = await widget.onConfirm(selected);
-      if (mounted) Navigator.of(context).pop(result);
-    } catch (_) {
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      if (mounted) {
-        setState(() {
-          _saving = false;
-          _failed = true;
-        });
-      }
-    }
+          ],
+        );
+      },
+    );
   }
 }
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle({required this.icon, required this.title});
+
   final IconData icon;
   final String title;
+
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Icon(icon, color: context.semanticColors.primary),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(child: Text(title, style: AppTextStyles.heading4)),
-        ],
-      );
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: context.semanticColors.primary),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(child: Text(title, style: AppTextStyles.heading4)),
+      ],
+    );
+  }
 }
 
 class _Pill extends StatelessWidget {
   const _Pill(this.text);
+
   final String text;
+
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-        decoration: BoxDecoration(
-          color: context.semanticColors.primarySoft,
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-        ),
-        child: Text(text, style: AppTextStyles.bodySmall),
-      );
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: context.semanticColors.primarySoft,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Text(text, style: AppTextStyles.bodySmall),
+    );
+  }
 }
 
 class _Bullet extends StatelessWidget {
   const _Bullet({required this.text});
+
   final String text;
+
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 7),
-              child: CircleAvatar(radius: 3, backgroundColor: context.semanticColors.primary),
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 7),
+            child: CircleAvatar(
+              radius: 3,
+              backgroundColor: context.semanticColors.primary,
             ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(child: Text(text, style: AppTextStyles.bodyMedium.copyWith(height: 1.5))),
-          ],
-        ),
-      );
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _RecipeStep extends StatelessWidget {
   const _RecipeStep({required this.number, required this.text});
+
   final int number;
   final String text;
+
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: context.semanticColors.primary,
-              child: Text('$number', style: AppTextStyles.labelMedium.copyWith(color: context.semanticColors.surface)),
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: context.semanticColors.primary,
+            child: Text(
+              '$number',
+              style: AppTextStyles.labelMedium.copyWith(
+                color: context.semanticColors.surface,
+              ),
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(child: Text(text, style: AppTextStyles.bodyMedium.copyWith(height: 1.5))),
-          ],
-        ),
-      );
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _Warning extends StatelessWidget {
   const _Warning({required this.title, required this.values});
+
   final String title;
   final List<String> values;
+
   @override
-  Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: context.semanticColors.warningSoft,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        child: Text('$title: ${values.join(' • ')}', style: AppTextStyles.bodySmall.copyWith(height: 1.4)),
-      );
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: context.semanticColors.warningSoft,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Text(
+        '$title: ${values.join(' • ')}',
+        style: AppTextStyles.bodySmall.copyWith(height: 1.4),
+      ),
+    );
+  }
 }
 
 class _MealLoadingView extends StatelessWidget {
   const _MealLoadingView();
+
   @override
-  Widget build(BuildContext context) => const Center(child: CircularProgressIndicator());
+  Widget build(BuildContext context) {
+    return const Center(child: CircularProgressIndicator());
+  }
 }
 
 class _MealEmptyView extends StatelessWidget {
   const _MealEmptyView({required this.title, required this.subtitle});
+
   final String title;
   final String subtitle;
+
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.restaurant_menu_rounded, size: 44, color: context.semanticColors.primary),
-              const SizedBox(height: AppSpacing.md),
-              Text(title, textAlign: TextAlign.center, style: AppTextStyles.heading3),
-              const SizedBox(height: AppSpacing.sm),
-              Text(subtitle, textAlign: TextAlign.center, style: AppTextStyles.bodyMedium.copyWith(color: context.semanticColors.textSecondary)),
-            ],
-          ),
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.restaurant_menu_rounded,
+              size: 44,
+              color: context.semanticColors.primary,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.heading3,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: context.semanticColors.textSecondary,
+              ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 }
 
 class _MealErrorView extends StatelessWidget {
   const _MealErrorView({required this.onRetry});
+
   final VoidCallback onRetry;
+
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline_rounded, size: 42, color: context.semanticColors.error),
-              const SizedBox(height: AppSpacing.md),
-              Text('Nabi chưa mở được thực đơn', style: AppTextStyles.heading3),
-              const SizedBox(height: AppSpacing.md),
-              FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh_rounded), label: const Text('Thử lại')),
-            ],
-          ),
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 42,
+              color: context.semanticColors.error,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text('Nabi chưa mở được thực đơn', style: AppTextStyles.heading3),
+            const SizedBox(height: AppSpacing.md),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Thử lại'),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 }
 
 String _mealLabel(String type, int order) => switch (type.trim().toLowerCase()) {
@@ -1150,6 +1158,8 @@ String _timeLabel(MealPlanEntity meal) {
   };
 }
 
-String _number(double value) =>
-    value == value.roundToDouble() ? value.toInt().toString() : value.toStringAsFixed(1);
+String _number(double value) => value == value.roundToDouble()
+    ? value.toInt().toString()
+    : value.toStringAsFixed(1);
+
 bool _positive(double? value) => value != null && value > 0;

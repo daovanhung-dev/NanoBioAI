@@ -17,6 +17,10 @@ class AuthGatePage extends ConsumerStatefulWidget {
 
 class _AuthGatePageState extends ConsumerState<AuthGatePage> {
   var _confirmedExistingCloudWarning = false;
+  var _applyingGuestAction = false;
+  var _signingOut = false;
+
+  bool get _busy => _applyingGuestAction || _signingOut;
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +34,9 @@ class _AuthGatePageState extends ConsumerState<AuthGatePage> {
           key: const ValueKey('auth-gate-consent'),
           cloudHasData: syncState.cloudHasMeaningfulData,
           secondConfirmation: _confirmedExistingCloudWarning,
-          loading: false,
+          loading: _busy,
           onContinueWarning: () {
+            if (_busy) return;
             AppFeedbackService.instance.emit(AppFeedbackType.warning);
             setState(() => _confirmedExistingCloudWarning = true);
           },
@@ -39,6 +44,7 @@ class _AuthGatePageState extends ConsumerState<AuthGatePage> {
           onUseCloud: () =>
               _applyGuestAction(GuestMergeAction.useExistingCloud),
           onDefer: () {
+            if (_busy) return;
             AppFeedbackService.instance.emit(AppFeedbackType.warning);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -112,57 +118,69 @@ class _AuthGatePageState extends ConsumerState<AuthGatePage> {
   }
 
   Future<void> _applyGuestAction(GuestMergeAction action) async {
+    if (_busy) return;
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    final outcome = await ref
-        .read(userDataSyncControllerProvider.notifier)
-        .sync(AuthSyncReason.manualRetry, guestAction: action);
-    if (!mounted) return;
+    setState(() => _applyingGuestAction = true);
+    try {
+      final outcome = await ref
+          .read(userDataSyncControllerProvider.notifier)
+          .sync(AuthSyncReason.manualRetry, guestAction: action);
+      if (!mounted) return;
 
-    if (outcome.status == UserDataSyncStatus.success) {
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
-      await ref.read(v2AuthControllerProvider.notifier).refresh();
-      return;
+      if (outcome.status == UserDataSyncStatus.success) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+        await ref.read(v2AuthControllerProvider.notifier).refresh();
+        return;
+      }
+
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
+      final message =
+          outcome.safeError ??
+          'Chưa thể đồng bộ. Dữ liệu trên thiết bị vẫn được giữ nguyên.';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    } finally {
+      if (mounted) setState(() => _applyingGuestAction = false);
     }
-
-    AppFeedbackService.instance.emit(AppFeedbackType.error);
-    final message =
-        outcome.safeError ??
-        'Chưa thể đồng bộ. Dữ liệu trên thiết bị vẫn được giữ nguyên.';
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _signOut() async {
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    final controller = ref.read(v2AuthControllerProvider.notifier);
-    var result = await controller.signOut();
-    if (!mounted) return;
+    if (_busy) return;
+    setState(() => _signingOut = true);
+    try {
+      AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+      final controller = ref.read(v2AuthControllerProvider.notifier);
+      var result = await controller.signOut();
+      if (!mounted) return;
 
-    if (result.requiresForce) {
-      final force = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Vẫn đăng xuất?'),
-          content: Text(result.message ?? 'Còn dữ liệu chưa đồng bộ.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Ở lại'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Vẫn đăng xuất'),
-            ),
-          ],
-        ),
-      );
-      if (force == true) result = await controller.signOut(force: true);
-    }
+      if (result.requiresForce) {
+        final force = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Vẫn đăng xuất?'),
+            content: Text(result.message ?? 'Còn dữ liệu chưa đồng bộ.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Ở lại'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Vẫn đăng xuất'),
+              ),
+            ],
+          ),
+        );
+        if (force == true) result = await controller.signOut(force: true);
+      }
 
-    if (mounted && result.signedOut) {
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
-      context.go(V2RoutePaths.login);
+      if (mounted && result.signedOut) {
+        AppFeedbackService.instance.emit(AppFeedbackType.success);
+        context.go(V2RoutePaths.login);
+      }
+    } finally {
+      if (mounted) setState(() => _signingOut = false);
     }
   }
 
@@ -229,7 +247,7 @@ class _GuestConsentState extends StatelessWidget {
       backgroundColor: colors.background,
       body: SafeArea(
         child: Center(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 500),
@@ -254,6 +272,10 @@ class _GuestConsentState extends StatelessWidget {
                         style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
                       ),
                       const SizedBox(height: AppSpacing.sectionSpacing),
+                      if (loading) ...[
+                        const LinearProgressIndicator(),
+                        const SizedBox(height: AppSpacing.md),
+                      ],
                       if (cloudHasData && isEstablishedWarning)
                         FilledButton(
                           onPressed: loading ? null : onContinueWarning,
@@ -266,7 +288,14 @@ class _GuestConsentState extends StatelessWidget {
                               : cloudHasData
                               ? onUseCloud
                               : onMergeNow,
-                          icon: const Icon(Icons.sync_rounded),
+                          icon: loading
+                              ? const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.sync_rounded),
                           label: Text(
                             cloudHasData
                                 ? 'Dùng dữ liệu tài khoản'
@@ -325,7 +354,7 @@ class _AuthSupportState extends StatelessWidget {
       backgroundColor: colors.background,
       body: SafeArea(
         child: Center(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:nano_app/core/theme/theme.dart';
 
 import '../../providers/onboarding_provider.dart';
@@ -35,7 +34,7 @@ class ConsentStep extends ConsumerWidget {
           const _ConsentCard(
             icon: Icons.medical_information_rounded,
             title: 'Lưu ý sức khỏe',
-            text: 'NaBi không thay thế bác sĩ hoặc chuyên gia.',
+            text: 'Nabi không thay thế bác sĩ hoặc chuyên gia.',
             color: NabiPalette.warning,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -67,20 +66,8 @@ class ConsentStep extends ConsumerWidget {
                           : colors.border,
                       width: state.agreed ? 1.8 : 1,
                     ),
-                    boxShadow: state.agreed
-                        ? [
-                            BoxShadow(
-                              color: NabiPalette.greenPrimary.withValues(
-                                alpha: 0.22,
-                              ),
-                              blurRadius: 18,
-                              offset: const Offset(0, 8),
-                            ),
-                          ]
-                        : const [],
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       AnimatedContainer(
                         duration: AppDuration.fast,
@@ -92,20 +79,13 @@ class ConsentStep extends ConsumerWidget {
                               : colors.primarySoft,
                           shape: BoxShape.circle,
                         ),
-                        child: AnimatedSwitcher(
-                          duration: AppDuration.button,
-                          transitionBuilder: (child, animation) =>
-                              ScaleTransition(scale: animation, child: child),
-                          child: Icon(
-                            state.agreed
-                                ? Icons.check_rounded
-                                : Icons.touch_app_rounded,
-                            key: ValueKey(state.agreed),
-                            color: state.agreed
-                                ? AppColors.textInverse
-                                : NabiPalette.greenPrimary,
-                            size: 25,
-                          ),
+                        child: Icon(
+                          state.agreed
+                              ? Icons.check_rounded
+                              : Icons.touch_app_rounded,
+                          color: state.agreed
+                              ? AppColors.textInverse
+                              : NabiPalette.greenPrimary,
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
@@ -146,17 +126,17 @@ class ConsentStep extends ConsumerWidget {
 }
 
 class _ConsentCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String text;
-  final Color color;
-
   const _ConsentCard({
     required this.icon,
     required this.title,
     required this.text,
     required this.color,
   });
+
+  final IconData icon;
+  final String title;
+  final String text;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {

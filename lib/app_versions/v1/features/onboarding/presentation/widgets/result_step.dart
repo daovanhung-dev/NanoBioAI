@@ -5,7 +5,7 @@ import 'package:nano_app/core/theme/theme.dart';
 import 'nabi_onboarding_experience.dart';
 
 class ResultStep extends StatelessWidget {
-  final double healthScore;
+  final double? healthScore;
   final String userName;
   final String message;
   final VoidCallback? onContinue;
@@ -13,7 +13,7 @@ class ResultStep extends StatelessWidget {
 
   const ResultStep({
     super.key,
-    this.healthScore = 82,
+    this.healthScore,
     this.userName = 'Bạn',
     this.message = 'Hồ sơ đã sẵn sàng.',
     this.onContinue,
@@ -90,34 +90,69 @@ class ResultStep extends StatelessWidget {
                           colors: [colors.card, colors.cardAlt],
                         ),
                         padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                        child: Row(
-                          children: [
-                            _ScoreRing(score: healthScore),
-                            const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        child: healthScore == null
+                            ? Row(
                                 children: [
-                                  Text(
-                                    'Điểm khởi đầu',
-                                    style: AppTextStyles.heading5.copyWith(
-                                      color: colors.textPrimary,
-                                      fontWeight: FontWeight.w900,
+                                  const Icon(
+                                    Icons.insights_rounded,
+                                    size: 42,
+                                    color: NabiPalette.greenPrimary,
+                                  ),
+                                  const SizedBox(width: AppSpacing.md),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Hồ sơ đã sẵn sàng',
+                                          style: AppTextStyles.heading5.copyWith(
+                                            color: colors.textPrimary,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                        const SizedBox(height: AppSpacing.xs),
+                                        Text(
+                                          'Điểm sức khỏe chỉ hiển thị khi có dữ liệu thật để tính.',
+                                          style: AppTextStyles.bodySmall.copyWith(
+                                            color: colors.textSecondary,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: AppSpacing.xs),
-                                  Text(
-                                    'NaBi sẽ đồng hành và điều chỉnh theo tiến trình của bạn.',
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: colors.textSecondary,
-                                      height: 1.4,
+                                ],
+                              )
+                            : Row(
+                                children: [
+                                  _ScoreRing(score: healthScore!),
+                                  const SizedBox(width: AppSpacing.md),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Điểm khởi đầu',
+                                          style: AppTextStyles.heading5.copyWith(
+                                            color: colors.textPrimary,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                        const SizedBox(height: AppSpacing.xs),
+                                        Text(
+                                          'Nabi sẽ đồng hành và điều chỉnh theo tiến trình của bạn.',
+                                          style: AppTextStyles.bodySmall.copyWith(
+                                            color: colors.textSecondary,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
                       ),
                       const SizedBox(height: AppSpacing.md),
                       SizedBox(

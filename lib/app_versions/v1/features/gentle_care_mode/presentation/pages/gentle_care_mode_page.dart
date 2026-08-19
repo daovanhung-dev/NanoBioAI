@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
+import 'package:nano_app/core/theme/theme.dart';
 
 class GentleCareModePage extends StatefulWidget {
   const GentleCareModePage({super.key});
@@ -92,7 +92,7 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
         const NamiCareSectionTitle(
           title: 'Bạn đang thấy thế nào?',
           subtitle:
-              'Chọn cảm giác gần nhất lúc này. Nabi sẽ giúp bạn hạ mục tiêu xuống thật vừa sức.',
+              'Chọn cảm giác gần nhất lúc này. Nabi sẽ đưa ra gợi ý nhẹ nhàng; lịch và mục tiêu hiện tại chỉ thay đổi khi bạn chỉnh ở màn tương ứng.',
         ),
         const SizedBox(height: AppSpacing.md),
         ...List.generate(_moods.length, (index) {
@@ -107,7 +107,7 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
               title: mood.title,
               subtitle: mood.subtitle,
               selected: selected,
-              trailing: selected ? 'Nabi hiểu rồi' : null,
+              trailing: selected ? 'Đã chọn' : null,
               onTap: () => setState(() => _selectedIndex = index),
             ),
           );
@@ -119,10 +119,13 @@ class _GentleCareModePageState extends State<GentleCareModePage> {
             color: AppColors.warning,
             title: 'Hôm nay không cần hoàn hảo đâu',
             message:
-                'Mình chỉ cần không bỏ quên bản thân là được. Nabi sẽ gợi ý vài việc thật nhẹ để bạn dễ chịu hơn.',
+                'Các mục bên dưới là gợi ý tại chỗ, không tự động giảm nhiệm vụ hoặc thay đổi lịch của bạn. Nếu cần điều chỉnh kế hoạch, bạn vẫn là người quyết định.',
           ),
           const SizedBox(height: AppSpacing.sectionSpacing),
-          const NamiCareSectionTitle(title: 'Gợi ý nhẹ cho bạn'),
+          const NamiCareSectionTitle(
+            title: 'Gợi ý nhẹ cho bạn',
+            subtitle: 'Chọn điều phù hợp, bỏ qua điều không phù hợp.',
+          ),
           const SizedBox(height: AppSpacing.md),
           ..._suggestions.map(
             (suggestion) => Padding(

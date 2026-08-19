@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/app/router/shared_route_factories.dart';
 import 'package:nano_app/app_versions/v1/features/ai_voice/presentation/pages/ai_voice_page.dart';
 import 'package:nano_app/app_versions/v1/features/auth/presentation/pages/v1_auth_entry_page.dart';
 import 'package:nano_app/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart';
@@ -8,14 +9,13 @@ import 'package:nano_app/app_versions/v1/features/daily_health_tracking/presenta
 import 'package:nano_app/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
 import 'package:nano_app/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart';
-import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/presentation/pages/nutrition_page.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/presentation/pages/nutrition_profile_editor_page.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/onboarding.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/pages/onboarding_text_scale_page.dart';
-import 'package:nano_app/app_versions/v1/features/profile/presentation/pages/profile_page.dart';
 import 'package:nano_app/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart';
+import 'package:nano_app/app_versions/v1/features/profile/presentation/pages/profile_page.dart';
 import 'package:nano_app/app_versions/v1/features/quick_care/presentation/pages/quick_care_page.dart';
 import 'package:nano_app/app_versions/v1/features/splash/splash.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart';
@@ -30,14 +30,11 @@ import 'v1_route_guards.dart';
 import 'v1_route_paths.dart';
 
 final v1Routes = <RouteBase>[
-  /// Splash
   GoRoute(
     path: V1RoutePaths.splash,
     name: V1RoutePaths.splash,
-    builder: (context, state) => SplashPage(),
+    builder: (context, state) => const SplashPage(),
   ),
-
-  /// Login
   GoRoute(
     path: V1RoutePaths.login,
     name: V1RoutePaths.login,
@@ -45,176 +42,129 @@ final v1Routes = <RouteBase>[
     builder: (context, state) =>
         const V1AuthEntryPage(intent: V1AuthEntryIntent.login),
   ),
-
-  /// Register
   GoRoute(
     path: V1RoutePaths.register,
     name: V1RoutePaths.register,
     builder: (context, state) =>
         const V1AuthEntryPage(intent: V1AuthEntryIntent.register),
   ),
-
-  /// Dashboard
   GoRoute(
     path: V1RoutePaths.dashboard,
     name: V1RoutePaths.dashboard,
-    // redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const DashboardPage(),
   ),
-
-  /// Onboarding
   GoRoute(
     path: V1RoutePaths.onboardingEntry,
     name: V1RoutePaths.onboardingEntry,
     builder: (context, state) => const OnboardingEntryPage(),
   ),
-
-  /// Onboarding
   GoRoute(
     path: V1RoutePaths.onboarding,
     name: V1RoutePaths.onboarding,
     builder: (context, state) =>
         const OnboardingTextScaleGate(child: OnboardingPage()),
   ),
-
-  /// Menu
   GoRoute(
     path: V1RoutePaths.menu,
     name: V1RoutePaths.menu,
     builder: (context, state) => const MainNavigationPage(),
   ),
-
-  /// Meal Plan
   GoRoute(
     path: V1RoutePaths.mealPlan,
     name: V1RoutePaths.mealPlan,
     builder: (context, state) => const MealPlanPage(),
   ),
-
-  /// Daily Health Tracking
   GoRoute(
     path: V1RoutePaths.healthTracking,
     name: V1RoutePaths.healthTracking,
     builder: (context, state) => const DailyHealthTrackingPage(),
   ),
-
-  /// Today's Tasks
   GoRoute(
     path: V1RoutePaths.todayTasks,
     name: V1RoutePaths.todayTasks,
     builder: (context, state) => const TodayTasksPage(),
   ),
-
   GoRoute(
     path: V1RoutePaths.waterTracking,
     name: V1RoutePaths.waterTracking,
     builder: (context, state) => const WaterTrackingPage(),
   ),
-
   GoRoute(
     path: V1RoutePaths.weeklySummary,
     name: V1RoutePaths.weeklySummary,
     builder: (context, state) => const WeeklySummaryPage(),
   ),
-
   GoRoute(
     path: V1RoutePaths.personalGoals,
     name: V1RoutePaths.personalGoals,
     builder: (context, state) => const PersonalGoalsPage(),
   ),
-
   GoRoute(
     path: V1RoutePaths.quickCare,
     name: V1RoutePaths.quickCare,
     builder: (context, state) => const QuickCarePage(),
   ),
-
   GoRoute(
     path: V1RoutePaths.gentleCare,
     name: V1RoutePaths.gentleCare,
     builder: (context, state) => const GentleCareModePage(),
   ),
-
   GoRoute(
     path: V1RoutePaths.namiCare,
     name: V1RoutePaths.namiCare,
     builder: (context, state) => const NamiCarePage(),
   ),
-
   GoRoute(
     path: V1RoutePaths.bodyMetrics,
     name: V1RoutePaths.bodyMetrics,
     builder: (context, state) => const BodyMetricsPage(),
   ),
-
-  /// Lifestyle Schedule
-  GoRoute(
-    path: V1RoutePaths.lifestyleSchedule,
-    name: V1RoutePaths.lifestyleSchedule,
-    builder: (context, state) =>
-        LifestyleSchedulePage(initialItemId: state.uri.queryParameters['item']),
-  ),
-
+  buildLifestyleScheduleRoute(),
   GoRoute(
     path: V1RoutePaths.dailyRoutinePreferences,
     name: V1RoutePaths.dailyRoutinePreferences,
     builder: (context, state) => const DailyRoutinePreferencesPage(),
   ),
-
-  /// Sleep Tracking
   GoRoute(
     path: V1RoutePaths.sleepTracking,
     name: V1RoutePaths.sleepTracking,
     builder: (context, state) => const SleepTrackingPage(),
   ),
-
-  /// Stress Tracking
   GoRoute(
     path: V1RoutePaths.stressTracking,
     name: V1RoutePaths.stressTracking,
     builder: (context, state) => const StressTrackingPage(),
   ),
-
-  /// AI Chat
   GoRoute(
     path: V1RoutePaths.aiChat,
     name: V1RoutePaths.aiChat,
     redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const AIChatScreen(),
   ),
-
-  /// AI Voice
   GoRoute(
     path: V1RoutePaths.aiVoice,
     name: V1RoutePaths.aiVoice,
     redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const AiVoicePage(),
   ),
-
-  /// Nutrition
   GoRoute(
     path: V1RoutePaths.nutrition,
     name: V1RoutePaths.nutrition,
     redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const NutritionPage(),
   ),
-
   GoRoute(
     path: V1RoutePaths.nutritionProfile,
     name: V1RoutePaths.nutritionProfile,
     redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const NutritionProfileEditorPage(),
   ),
-
-  /// Profile
   GoRoute(
     path: V1RoutePaths.profile,
     name: V1RoutePaths.profile,
     redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const ProfilePage(),
   ),
-
-  /// Community
   GoRoute(
     path: V1RoutePaths.community,
     name: V1RoutePaths.community,

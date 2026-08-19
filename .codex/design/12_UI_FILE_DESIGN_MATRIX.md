@@ -1,8 +1,8 @@
 # UI File Design Matrix — Re-execution
 
-The repository carries a historical **183-file UI-affecting baseline matrix** plus a working-tree **80 surface registry**. The 80 repository surfaces are distinct from the 76 Stitch reference pairs; neither count is permission to ignore supporting widgets/theme/router files or claim visual acceptance.
+The repository carries a historical **183-file UI-affecting baseline matrix** plus a working-tree **81 surface registry**. The 81 repository surfaces are distinct from the Stitch reference pairs; neither count is permission to ignore supporting widgets/theme/router files or claim visual acceptance.
 
-Baseline commit: `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
+Baseline audit commit: `30587ab9b04d95aa621e5412502aafd0d0ca4827`.
 
 | Surface | Group | Source | Classification | Spec |
 |---|---|---|---|---|
@@ -14,7 +14,7 @@ Baseline commit: `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 | V1-06 Onboarding Journey Shell | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_page.dart` | active-route | [open](screens/v1-06-onboarding-journey-shell.md) |
 | V1-07 Main Navigation | 01_foundation_shell | `lib/app_versions/v1/features/dashboard/presentation/pages/menu_page.dart` | active-route | [open](screens/v1-07-main-navigation.md) |
 | V1-08 Meal Plan | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart` | active-route | [open](screens/v1-08-meal-plan.md) |
-| V1-09 Daily Health Tracking Alias | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart` | alias | [open](screens/v1-09-daily-health-tracking-alias.md) |
+| V1-09 Daily Health Tracking | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart` | active-route | [open](screens/v1-09-daily-health-tracking-alias.md) |
 | V1-10 Body Metrics | 03_dashboard_health | `lib/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart` | active-route | [open](screens/v1-10-body-metrics.md) |
 | V1-11 Lifestyle Schedule | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart` | active-route | [open](screens/v1-11-lifestyle-schedule.md) |
 | V1-12 Daily Routine Preferences | 05_profile_settings | `lib/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart` | active-route | [open](screens/v1-12-daily-routine-preferences.md) |
@@ -47,7 +47,8 @@ Baseline commit: `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 | V1-X07 Quick Care | 03_dashboard_health | `lib/app_versions/v1/features/quick_care/presentation/pages/quick_care_page.dart` | active-route | [open](screens/v1-x07-quick-care.md) |
 | V1-X08 Gentle Care Mode | 03_dashboard_health | `lib/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart` | active-route | [open](screens/v1-x08-gentle-care-mode.md) |
 | V1-X09 Personal Goals | 03_dashboard_health | `lib/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart` | active-route | [open](screens/v1-x09-personal-goals.md) |
-| V1-X10 Nami Care Page | 03_dashboard_health | `lib/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart` | active-route | [open](screens/v1-x10-nami-care-page.md) |
+| V1-X10 Nabi Care Page | 03_dashboard_health | `lib/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart` | active-route | [open](screens/v1-x10-nami-care-page.md) |
+| V1-X11 Settings / Của bạn | 05_profile_settings | `lib/app_versions/v1/features/settings/presentation/pages/settings_page.dart` | source-sub-surface | [open](screens/v1-x11-settings.md) |
 | V2-01 Auth Gate | 06_v2_v3_access | `lib/app_versions/v2/features/auth/presentation/pages/auth_gate_page.dart` | gate | [open](screens/v2-01-auth-gate.md) |
 | V2-02 Login | 06_v2_v3_access | `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart` | active-route | [open](screens/v2-02-login.md) |
 | V2-03 Register | 06_v2_v3_access | `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart` | active-route | [open](screens/v2-03-register.md) |
@@ -88,4 +89,5 @@ Baseline commit: `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 | ADM-X03 Admin Workspace Dialogs | 08_admin | `lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_dialogs.dart` | dialog-surface | [open](screens/adm-x03-admin-workspace-dialogs.md) |
 
 ## Coding rule
+
 Before editing a Dart UI file, map it to one of the groups and exact screen/surface spec. Supporting theme/router/widget files remain governed by the existing 183-file baseline requirement and the relevant group contract.

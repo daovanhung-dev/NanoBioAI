@@ -56,7 +56,6 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
 
     ref.listen<AiVoiceState>(aiVoiceControllerProvider, (previous, next) {
       if (previous?.phase == next.phase) return;
-
       switch (next.phase) {
         case AiVoicePhase.listening:
           AppFeedbackService.instance.emit(AppFeedbackType.voiceStart);
@@ -98,7 +97,7 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
         title: const Text('Trò chuyện bằng giọng nói'),
         actions: [
           IconButton(
-            tooltip: state.isMuted ? 'Bật giọng NaBi' : 'Tắt giọng NaBi',
+            tooltip: state.isMuted ? 'Bật giọng Nabi' : 'Tắt giọng Nabi',
             onPressed: controller.toggleMuted,
             icon: Icon(
               state.isMuted
@@ -159,7 +158,7 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
                           ? const SizedBox.shrink(key: ValueKey('no-response'))
                           : _VoiceMessageCard(
                               key: ValueKey(state.response),
-                              title: 'NaBi trả lời',
+                              title: 'Nabi trả lời',
                               content: state.response,
                               icon: Icons.favorite_outline_rounded,
                               trailing: state.isMuted
@@ -193,7 +192,7 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
                         enabled: canTapMic,
                         label: isListening
                             ? 'Dừng nghe'
-                            : 'Bắt đầu nói với NaBi',
+                            : 'Bắt đầu nói với Nabi',
                         child: InkWell(
                           onTap: isListening
                               ? controller.stop
@@ -256,7 +255,12 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
                           label: const Text('Dừng'),
                         ),
                         OutlinedButton.icon(
-                          onPressed: () => context.go(V1RoutePaths.aiChat),
+                          onPressed: () {
+                            AppFeedbackService.instance.emit(
+                              AppFeedbackType.selection,
+                            );
+                            context.push(V1RoutePaths.aiChat);
+                          },
                           icon: const Icon(Icons.keyboard_alt_outlined),
                           label: const Text('Nhập chữ'),
                         ),
@@ -283,7 +287,6 @@ class _AiVoicePageState extends ConsumerState<AiVoicePage>
 
 class _NabiVoiceHero extends StatelessWidget {
   final AiVoicePhase phase;
-
   const _NabiVoiceHero({required this.phase});
 
   @override
@@ -309,8 +312,8 @@ NabiAnimationType _animationFor(AiVoicePhase phase) {
     AiVoicePhase.initializing => NabiAnimationType.loading,
     AiVoicePhase.greeting => NabiAnimationType.greeting,
     AiVoicePhase.listening => NabiAnimationType.listening,
-    AiVoicePhase.transcribing ||
-    AiVoicePhase.thinking => NabiAnimationType.thinking,
+    AiVoicePhase.transcribing || AiVoicePhase.thinking =>
+      NabiAnimationType.thinking,
     AiVoicePhase.speaking => NabiAnimationType.talking,
     AiVoicePhase.error => NabiAnimationType.error,
     AiVoicePhase.permissionDenied => NabiAnimationType.reminder,
@@ -377,7 +380,6 @@ class _VoiceMessageCard extends StatelessWidget {
 
 class _VoiceError extends StatelessWidget {
   final String message;
-
   const _VoiceError({required this.message});
 
   @override
@@ -407,14 +409,14 @@ class _VoiceError extends StatelessWidget {
 
 String _statusText(AiVoicePhase phase) {
   return switch (phase) {
-    AiVoicePhase.initializing => 'NaBi đang chuẩn bị…',
-    AiVoicePhase.greeting => 'NaBi đang chào bạn',
-    AiVoicePhase.listening => 'NaBi đang lắng nghe…',
-    AiVoicePhase.transcribing => 'NaBi đang ghi lại câu hỏi…',
-    AiVoicePhase.thinking => 'NaBi đang suy nghĩ…',
-    AiVoicePhase.speaking => 'NaBi đang trả lời…',
-    AiVoicePhase.permissionDenied => 'NaBi chưa có quyền dùng micro',
+    AiVoicePhase.initializing => 'Nabi đang chuẩn bị…',
+    AiVoicePhase.greeting => 'Nabi đang chào bạn',
+    AiVoicePhase.listening => 'Nabi đang lắng nghe…',
+    AiVoicePhase.transcribing => 'Nabi đang ghi lại câu hỏi…',
+    AiVoicePhase.thinking => 'Nabi đang suy nghĩ…',
+    AiVoicePhase.speaking => 'Nabi đang trả lời…',
+    AiVoicePhase.permissionDenied => 'Nabi chưa có quyền dùng micro',
     AiVoicePhase.error => 'Mình thử lại nhé',
-    AiVoicePhase.idle => 'NaBi sẵn sàng nghe bạn',
+    AiVoicePhase.idle => 'Nabi sẵn sàng nghe bạn',
   };
 }

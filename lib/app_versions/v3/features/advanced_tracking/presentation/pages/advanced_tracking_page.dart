@@ -82,19 +82,11 @@ class AdvancedTrackingPage extends ConsumerWidget {
                   result: viewModel.result!,
                   message: viewModel.message,
                   onCreate: () async {
-                    AppFeedbackService.instance.emit(
-                      AppFeedbackType.primaryAction,
-                    );
-                    try {
-                      await ref.read(
-                        advancedTrackingCreateHydrationGoalProvider,
-                      )();
-                      await ref.read(advancedTrackingSummaryProvider.future);
-                      AppFeedbackService.instance.emit(AppFeedbackType.success);
-                    } catch (_) {
-                      AppFeedbackService.instance.emit(AppFeedbackType.error);
-                      rethrow;
-                    }
+                    await ref.read(
+                      advancedTrackingCreateHydrationGoalProvider,
+                    )();
+                    ref.invalidate(advancedTrackingSummaryProvider);
+                    await ref.read(advancedTrackingSummaryProvider.future);
                   },
                 ),
                 AdvancedTrackingViewStatus.ready => _RoadmapReady(
@@ -130,7 +122,7 @@ class AdvancedTrackingPage extends ConsumerWidget {
   }
 }
 
-class _EmptyGoalState extends StatelessWidget {
+class _EmptyGoalState extends StatefulWidget {
   final AdvancedTrackingRoadmapResult result;
   final String? message;
   final Future<void> Function() onCreate;
@@ -142,15 +134,46 @@ class _EmptyGoalState extends StatelessWidget {
   });
 
   @override
+  State<_EmptyGoalState> createState() => _EmptyGoalStateState();
+}
+
+class _EmptyGoalStateState extends State<_EmptyGoalState> {
+  bool _creating = false;
+
+  Future<void> _create() async {
+    if (_creating) return;
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    setState(() => _creating = true);
+    try {
+      await widget.onCreate();
+      if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
+    } catch (_) {
+      if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Nabi chưa tạo được mục tiêu nước lúc này. Bạn thử lại nhé.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _creating = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.pagePadding),
       children: [
-        _HydrationIntro(result: result),
+        _HydrationIntro(result: widget.result),
         const SizedBox(height: AppSpacing.md),
         Text(
-          message ?? 'Mình bắt đầu nhẹ nhàng với mục tiêu uống đủ nước nhé.',
+          widget.message ??
+              'Mình bắt đầu nhẹ nhàng với mục tiêu uống đủ nước nhé.',
           style: AppTextStyles.bodyMedium.copyWith(
             color: colors.textSecondary,
             height: 1.45,
@@ -158,9 +181,14 @@ class _EmptyGoalState extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sectionSpacing),
         FilledButton.icon(
-          onPressed: () async => onCreate(),
-          icon: const Icon(Icons.water_drop_rounded),
-          label: const Text('Bắt đầu mục tiêu nước'),
+          onPressed: _creating ? null : _create,
+          icon: _creating
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.water_drop_rounded),
+          label: Text(_creating ? 'Đang tạo mục tiêu...' : 'Bắt đầu mục tiêu nước'),
         ),
       ],
     );
@@ -387,7 +415,7 @@ class _SupportState extends StatelessWidget {
     final colors = context.semanticColors;
     return SafeArea(
       child: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),

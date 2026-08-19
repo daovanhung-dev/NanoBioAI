@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/shared/widgets/vietnamese_ui_text.dart';
 import 'package:nano_app/sale_referral/domain/entities/sale_models.dart';
 import 'package:nano_app/sale_referral/domain/services/sale_conversion_policy_service.dart';
 import 'package:nano_app/sale_referral/providers/sale_providers.dart';
-import 'package:nano_app/services/supabase/sale/sale_terms.dart';
 
 class SaleShellPage extends ConsumerStatefulWidget {
   const SaleShellPage({super.key});
@@ -20,53 +19,35 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(saleStateProvider);
-    final colors = context.semanticColors;
-
+    final saleStateAsync = ref.watch(saleStateProvider);
     return AppStateSwitcher(
-      child: state.when(
-        loading: () => const KeyedSubtree(
-          key: ValueKey<String>('sale-shell-loading'),
-          child: _SaleLoading(),
+      child: saleStateAsync.when(
+        loading: () => const _CenteredProgress(
+          key: ValueKey('sale-shell-loading'),
         ),
-        error: (_, __) => KeyedSubtree(
-          key: const ValueKey<String>('sale-shell-error'),
-          child: _SaleSupportPage(
-            title: 'Chưa mở được không gian cộng tác viên',
-            message:
-                'Hệ thống chưa kiểm tra được trạng thái cộng tác viên. Bạn thử làm mới lại.',
-            onRetry: _refreshAll,
-          ),
+        error: (_, __) => _SupportState(
+          key: const ValueKey('sale-shell-error'),
+          title: 'Chưa mở được không gian cộng tác viên',
+          message:
+              'Nabi chưa kiểm tra được trạng thái của bạn. Hãy thử làm mới sau một chút.',
+          onRetry: _refreshAll,
         ),
-        data: (saleState) {
-          if (!saleState.isActive) {
-            return KeyedSubtree(
-              key: ValueKey<String>(
-                'sale-shell-inactive-${saleState.status.name}',
-              ),
-              child: _SaleSupportPage(
-                title: _inactiveTitle(saleState.status),
-                message: _inactiveMessage(saleState.status),
-                onRetry: _refreshAll,
-              ),
+        data: (state) {
+          if (!state.isActive) {
+            return _SupportState(
+              key: ValueKey('sale-shell-${state.status.name}'),
+              title: _inactiveTitle(state.status),
+              message: _inactiveMessage(state.status),
+              onRetry: _refreshAll,
             );
           }
-
-          if (!saleState.payoutProfileComplete) {
-            return KeyedSubtree(
-              key: const ValueKey<String>('sale-shell-payout-gate'),
-              child: _SalePayoutProfileGate(onSaved: _refreshAll),
-            );
+          if (!state.payoutProfileComplete) {
+            return _PayoutProfileGate(onSaved: _refreshAll);
           }
-
           return MedicalPageScaffold(
-            key: const ValueKey<String>('sale-shell-ready'),
-            backgroundColor: colors.background,
+            backgroundColor: context.semanticColors.background,
             appBar: AppBar(
               title: const Text('NanoBio Cộng tác viên'),
-              backgroundColor: colors.surface,
-              foregroundColor: colors.textPrimary,
-              elevation: 0,
               actions: [
                 IconButton(
                   tooltip: 'Làm mới',
@@ -78,17 +59,17 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
             body: IndexedStack(
               index: _index,
               children: [
-                _OverviewTab(state: saleState),
+                _OverviewTab(state: state),
                 const _DirectCustomersTab(),
                 const _PointLedgerTab(),
-                _ConversionToolsTab(state: saleState),
+                _ConversionToolsTab(state: state),
               ],
             ),
             bottomNavigationBar: NavigationBar(
               selectedIndex: _index,
-              onDestinationSelected: (value) {
+              onDestinationSelected: (index) {
                 AppFeedbackService.instance.emit(AppFeedbackType.selection);
-                setState(() => _index = value);
+                setState(() => _index = index);
               },
               destinations: const [
                 NavigationDestination(
@@ -104,8 +85,8 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
                   label: 'Điểm',
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.handyman_rounded),
-                  label: 'Công cụ',
+                  icon: Icon(Icons.published_with_changes_rounded),
+                  label: 'Quy đổi',
                 ),
               ],
             ),
@@ -125,57 +106,47 @@ class _SaleShellPageState extends ConsumerState<SaleShellPage> {
     ref.invalidate(salePayoutProfileProvider);
     try {
       await ref.read(saleStateProvider.future);
-      if (mounted) {
-        AppFeedbackService.instance.emit(AppFeedbackType.success);
-      }
+      if (mounted) AppFeedbackService.instance.emit(AppFeedbackType.success);
     } catch (_) {
-      if (mounted) {
-        AppFeedbackService.instance.emit(AppFeedbackType.error);
-      }
+      if (mounted) AppFeedbackService.instance.emit(AppFeedbackType.error);
     }
   }
 
-  String _inactiveTitle(SaleStatus status) {
-    return switch (status) {
-      SaleStatus.pending => 'Hồ sơ đang chờ duyệt',
-      SaleStatus.suspended => 'Tài khoản cộng tác viên đang tạm dừng',
-      SaleStatus.closed => 'Tài khoản cộng tác viên đã đóng',
-      SaleStatus.none || SaleStatus.active => 'Bạn chưa có quyền cộng tác viên',
-    };
-  }
+  String _inactiveTitle(SaleStatus status) => switch (status) {
+    SaleStatus.pending => 'Yêu cầu đang chờ duyệt',
+    SaleStatus.suspended => 'Quyền cộng tác viên đang tạm dừng',
+    SaleStatus.closed => 'Quyền cộng tác viên đã đóng',
+    SaleStatus.none || SaleStatus.active => 'Bạn chưa có quyền cộng tác viên',
+  };
 
-  String _inactiveMessage(SaleStatus status) {
-    return switch (status) {
-      SaleStatus.pending => 'Mã giới thiệu sẽ mở sau khi được duyệt.',
-      SaleStatus.suspended =>
-        'Bạn cần liên hệ hỗ trợ để kiểm tra lý do tạm dừng trước khi tiếp tục.',
-      SaleStatus.closed =>
-        'Trạng thái cộng tác viên đã đóng. Vui lòng liên hệ hỗ trợ nếu cần xem xét lại.',
-      SaleStatus.none ||
-      SaleStatus.active => 'Vào Cài đặt để đọc và chấp nhận điều lệ.',
-    };
-  }
+  String _inactiveMessage(SaleStatus status) => switch (status) {
+    SaleStatus.pending => 'Mã giới thiệu sẽ mở sau khi yêu cầu được duyệt.',
+    SaleStatus.suspended =>
+      'Vui lòng liên hệ hỗ trợ để kiểm tra trạng thái trước khi tiếp tục.',
+    SaleStatus.closed =>
+      'Vui lòng liên hệ hỗ trợ nếu bạn cần xem xét lại trạng thái.',
+    SaleStatus.none || SaleStatus.active =>
+      'Vào Cài đặt để đọc điều lệ và gửi yêu cầu tham gia.',
+  };
 }
 
-class _SalePayoutProfileGate extends ConsumerStatefulWidget {
+class _PayoutProfileGate extends ConsumerStatefulWidget {
+  const _PayoutProfileGate({required this.onSaved});
+
   final VoidCallback onSaved;
 
-  const _SalePayoutProfileGate({required this.onSaved});
-
   @override
-  ConsumerState<_SalePayoutProfileGate> createState() =>
-      _SalePayoutProfileGateState();
+  ConsumerState<_PayoutProfileGate> createState() => _PayoutProfileGateState();
 }
 
-class _SalePayoutProfileGateState
-    extends ConsumerState<_SalePayoutProfileGate> {
+class _PayoutProfileGateState extends ConsumerState<_PayoutProfileGate> {
   final _formKey = GlobalKey<FormState>();
   final _citizenId = TextEditingController();
   final _bankBin = TextEditingController();
   final _bankName = TextEditingController();
   final _bankAccountNumber = TextEditingController();
   final _bankAccountName = TextEditingController();
-  var _saving = false;
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -189,111 +160,75 @@ class _SalePayoutProfileGateState
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.semanticColors;
     return MedicalPageScaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(
-        title: const Text('Hồ sơ chi trả cộng tác viên'),
-        backgroundColor: colors.surface,
-        foregroundColor: colors.textPrimary,
-        elevation: 0,
-        actions: [
-          IconButton(
-            tooltip: 'Làm mới',
-            onPressed: widget.onSaved,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Hồ sơ nhận tiền')),
       body: _SaleScroll(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.cardPadding),
-              decoration: _panelDecoration(colors),
+            child: MedicalSurfaceCard(
               child: Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Cập nhật CCCD và ngân hàng',
+                      'Hoàn tất thông tin nhận tiền',
                       style: AppTextStyles.heading3,
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Hoàn tất trước khi dùng dashboard hoặc rút tiền.',
-                      style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+                      'Cập nhật căn cước và tài khoản ngân hàng trước khi xem tổng quan hoặc gửi yêu cầu quy đổi.',
+                      style: AppTextStyles.bodyMedium,
                     ),
                     const SizedBox(height: AppSpacing.sectionSpacing),
-                    TextFormField(
+                    _Field(
                       controller: _citizenId,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: 'Số căn cước công dân',
-                        prefixIcon: Icon(Icons.badge_rounded),
-                      ),
+                      label: 'Số căn cước công dân',
+                      icon: Icons.badge_rounded,
+                      digitsOnly: true,
                       validator: (value) => _required(value, minimumLength: 9),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    TextFormField(
+                    _Field(
                       controller: _bankBin,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: 'Mã ngân hàng/BIN',
-                        prefixIcon: Icon(Icons.account_balance_rounded),
-                      ),
+                      label: 'Mã ngân hàng/BIN',
+                      icon: Icons.account_balance_rounded,
+                      digitsOnly: true,
                       validator: (value) => _required(value, minimumLength: 3),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    TextFormField(
+                    _Field(
                       controller: _bankName,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'Tên ngân hàng',
-                        prefixIcon: Icon(Icons.business_rounded),
-                      ),
+                      label: 'Tên ngân hàng',
+                      icon: Icons.business_rounded,
                       validator: _required,
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    TextFormField(
+                    _Field(
                       controller: _bankAccountNumber,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: 'Số tài khoản',
-                        prefixIcon: Icon(Icons.numbers_rounded),
-                      ),
+                      label: 'Số tài khoản',
+                      icon: Icons.numbers_rounded,
+                      digitsOnly: true,
                       validator: (value) => _required(value, minimumLength: 4),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    TextFormField(
+                    _Field(
                       controller: _bankAccountName,
-                      textCapitalization: TextCapitalization.characters,
-                      decoration: const InputDecoration(
-                        labelText: 'Tên chủ tài khoản',
-                        prefixIcon: Icon(Icons.person_pin_rounded),
-                      ),
+                      label: 'Tên chủ tài khoản',
+                      icon: Icons.person_pin_rounded,
                       validator: _required,
                     ),
                     const SizedBox(height: AppSpacing.sectionSpacing),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: _saving ? null : _save,
-                        icon: _saving
-                            ? const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.save_rounded),
-                        label: const Text('Lưu hồ sơ chi trả'),
-                      ),
+                    FilledButton.icon(
+                      onPressed: _saving ? null : _save,
+                      icon: _saving
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save_rounded),
+                      label: Text(_saving ? 'Đang lưu...' : 'Lưu thông tin'),
                     ),
                   ],
                 ),
@@ -306,18 +241,11 @@ class _SalePayoutProfileGateState
   }
 
   Future<void> _save() async {
-    if (_saving) return;
-    if (!_formKey.currentState!.validate()) {
-      AppFeedbackService.instance.emit(AppFeedbackType.warning);
-      return;
-    }
+    if (_saving || !(_formKey.currentState?.validate() ?? false)) return;
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     setState(() => _saving = true);
-
     try {
-      await ref
-          .read(saleRepositoryProvider)
-          .upsertPayoutProfile(
+      await ref.read(saleRepositoryProvider).upsertPayoutProfile(
             SalePayoutProfileCommand(
               citizenId: _citizenId.text.trim(),
               bankBin: _bankBin.text.trim(),
@@ -328,104 +256,109 @@ class _SalePayoutProfileGateState
           );
       ref.invalidate(saleStateProvider);
       ref.invalidate(salePayoutProfileProvider);
-      widget.onSaved();
+      if (!mounted) return;
       AppFeedbackService.instance.emit(AppFeedbackType.success);
-      _showSnack('Đã lưu hồ sơ chi trả cộng tác viên.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã lưu thông tin nhận tiền.')),
+      );
+      widget.onSaved();
     } catch (_) {
+      if (!mounted) return;
       AppFeedbackService.instance.emit(AppFeedbackType.error);
-      _showSnack('Chưa lưu được hồ sơ chi trả. Bạn thử lại sau.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Chưa lưu được thông tin. Bạn thử lại sau nhé.'),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
 
   String? _required(String? value, {int minimumLength = 1}) {
-    final text = value?.trim() ?? '';
-    if (text.length < minimumLength) return 'Cần nhập đầy đủ thông tin.';
-    return null;
+    return (value?.trim().length ?? 0) < minimumLength
+        ? 'Cần nhập đầy đủ thông tin.'
+        : null;
   }
+}
 
-  void _showSnack(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+class _Field extends StatelessWidget {
+  const _Field({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    required this.validator,
+    this.digitsOnly = false,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final FormFieldValidator<String> validator;
+  final bool digitsOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: digitsOnly ? TextInputType.number : TextInputType.text,
+      inputFormatters: digitsOnly
+          ? <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly]
+          : null,
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
+      validator: validator,
+    );
   }
 }
 
 class _OverviewTab extends ConsumerWidget {
-  final SaleState state;
-
   const _OverviewTab({required this.state});
+
+  final SaleState state;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summary = ref.watch(saleDashboardProvider);
+    final summaryAsync = ref.watch(saleDashboardProvider);
     return _SaleScroll(
-      child: summary.when(
+      child: summaryAsync.when(
         loading: () => const _CenteredProgress(),
-        error: (_, __) => const _EmptySaleState(
+        error: (_, __) => const _EmptyState(
           title: 'Chưa tải được tổng quan',
-          message:
-              'Dữ liệu cộng tác viên được đọc từ hệ thống. Bạn thử làm mới lại sau.',
+          message: 'Bạn thử làm mới lại sau nhé.',
         ),
-        data: (data) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _HeroPanel(
-                title: 'Tổng quan cộng tác viên',
-                subtitle: state.referralCode == null
-                    ? 'Mã giới thiệu sẽ hiển thị sau khi quản trị viên duyệt.'
-                    : 'Mã giới thiệu: ${state.referralCode}',
-              ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              GridView.count(
-                crossAxisCount: MediaQuery.sizeOf(context).width > 760 ? 4 : 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: AppSpacing.sm,
-                crossAxisSpacing: AppSpacing.sm,
-                childAspectRatio: 1.55,
-                children: [
-                  _MetricTile(
-                    label: 'Khách hàng trực tiếp',
-                    value: data.directCustomers.toString(),
-                    icon: Icons.group_rounded,
-                  ),
-                  _MetricTile(
-                    label: 'Thanh toán hợp lệ',
-                    value: data.successfulPayments.toString(),
-                    icon: Icons.verified_rounded,
-                  ),
-                  _MetricTile(
-                    label: 'Điểm đang giữ',
-                    value: _money(data.pendingPointCents, data.currency),
-                    icon: Icons.lock_clock_rounded,
-                  ),
-                  _MetricTile(
-                    label: 'Điểm khả dụng',
-                    value: _money(data.availablePointCents, data.currency),
-                    icon: Icons.account_balance_wallet_rounded,
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              _ListTilePanel(
-                icon: data.conversionPolicy.enabled
-                    ? Icons.published_with_changes_rounded
-                    : Icons.lock_clock_rounded,
-                title: data.conversionPolicy.enabled
-                    ? 'Quy đổi điểm đang mở'
-                    : 'Quy đổi điểm chưa mở',
-                subtitle: data.conversionPolicy.enabled
-                    ? 'Điểm sau 24 giờ. Tối thiểu '
-                          '${_money(data.conversionPolicy.minimumPointCents, data.conversionPolicy.currency)}.'
-                    : 'Nút yêu cầu sẽ mở khi Admin bật quy đổi.',
-              ),
-            ],
-          );
-        },
+        data: (summary) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _Hero(
+              title: 'Tổng quan cộng tác viên',
+              subtitle: state.referralCode == null
+                  ? 'Mã giới thiệu sẽ hiển thị sau khi được duyệt.'
+                  : 'Mã giới thiệu: ${state.referralCode}',
+            ),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+            _MetricWrap(
+              metrics: [
+                _Metric('Khách hàng trực tiếp', '${summary.directCustomers}', Icons.group_rounded),
+                _Metric('Thanh toán hợp lệ', '${summary.successfulPayments}', Icons.verified_rounded),
+                _Metric('Điểm đang chờ', _money(summary.pendingPointCents, summary.currency), Icons.schedule_rounded),
+                _Metric('Điểm khả dụng', _money(summary.availablePointCents, summary.currency), Icons.account_balance_wallet_rounded),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+            _Notice(
+              icon: summary.conversionPolicy.enabled
+                  ? Icons.published_with_changes_rounded
+                  : Icons.lock_clock_rounded,
+              title: summary.conversionPolicy.enabled
+                  ? 'Quy đổi điểm đang mở'
+                  : 'Quy đổi điểm chưa mở',
+              message: summary.conversionPolicy.enabled
+                  ? 'Mức tối thiểu: ${_money(summary.conversionPolicy.minimumPointCents, summary.conversionPolicy.currency)}.'
+                  : 'Nabi sẽ hiển thị nút gửi yêu cầu khi tính năng sẵn sàng.',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -436,38 +369,52 @@ class _DirectCustomersTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final customers = ref.watch(saleDirectCustomersProvider);
+    final customersAsync = ref.watch(saleDirectCustomersProvider);
     return _SaleScroll(
-      child: customers.when(
+      child: customersAsync.when(
         loading: () => const _CenteredProgress(),
-        error: (_, __) => const _EmptySaleState(
-          title: 'Chưa tải được khách hàng trực tiếp',
-          message:
-              'Hệ thống chỉ hiển thị khách hàng được gắn trực tiếp với bạn.',
+        error: (_, __) => const _EmptyState(
+          title: 'Chưa tải được khách hàng',
+          message: 'Bạn thử làm mới lại sau nhé.',
         ),
-        data: (items) {
-          if (items.isEmpty) {
-            return const _EmptySaleState(
+        data: (customers) {
+          if (customers.isEmpty) {
+            return const _EmptyState(
               title: 'Chưa có khách hàng trực tiếp',
-              message:
-                  'Khi khách nhập mã giới thiệu hợp lệ, danh sách sẽ hiển thị tại đây.',
+              message: 'Danh sách sẽ xuất hiện khi có người dùng hợp lệ.',
             );
           }
-
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const _HeroPanel(
-                title: 'Khách hàng trực tiếp',
-                subtitle: 'Chỉ hiển thị khách đã gắn trực tiếp với bạn.',
-              ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              ...items.map(
-                (item) => _ListTilePanel(
-                  icon: Icons.person_rounded,
-                  title: vietnameseUiText(item.displayName),
-                  subtitle: _customerSubtitle(item),
+              Text('Khách hàng trực tiếp', style: AppTextStyles.heading3),
+              const SizedBox(height: AppSpacing.md),
+              for (final customer in customers)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: MedicalSurfaceCard(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.person_rounded),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(customer.displayName, style: AppTextStyles.labelLarge),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                '${customer.successfulPayments} thanh toán hợp lệ • ${_money(customer.approvedPointCents, customer.currency)} điểm',
+                                style: AppTextStyles.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
             ],
           );
         },
@@ -476,54 +423,59 @@ class _DirectCustomersTab extends ConsumerWidget {
   }
 }
 
-String _customerSubtitle(SaleDirectCustomer item) {
-  final age = item.age == null ? 'Tuổi: chưa có' : 'Tuổi: ${item.age}';
-  final phone = item.phone == null ? 'SĐT: chưa có' : 'SĐT: ${item.phone}';
-  final points = _money(item.approvedPointCents, item.currency);
-  return '$age - $phone - ${item.successfulPayments} thanh toán - $points điểm';
-}
-
 class _PointLedgerTab extends ConsumerWidget {
   const _PointLedgerTab();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ledger = ref.watch(salePointLedgerProvider);
+    final ledgerAsync = ref.watch(salePointLedgerProvider);
     return _SaleScroll(
-      child: ledger.when(
+      child: ledgerAsync.when(
         loading: () => const _CenteredProgress(),
-        error: (_, __) => const _EmptySaleState(
-          title: 'Chưa tải được điểm cộng tác viên',
-          message: 'Điểm chỉ đến từ thanh toán hợp lệ.',
+        error: (_, __) => const _EmptyState(
+          title: 'Chưa tải được lịch sử điểm',
+          message: 'Bạn thử làm mới lại sau nhé.',
         ),
-        data: (items) {
-          if (items.isEmpty) {
-            return const _EmptySaleState(
-              title: 'Chưa có điểm cộng tác viên',
-              message:
-                  'Khi khách hàng trực tiếp có thanh toán được duyệt, điểm sẽ hiển thị tại đây.',
+        data: (entries) {
+          if (entries.isEmpty) {
+            return const _EmptyState(
+              title: 'Chưa có điểm nào được ghi nhận',
+              message: 'Lịch sử điểm sẽ xuất hiện tại đây.',
             );
           }
-
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const _HeroPanel(
-                title: 'Sổ điểm cộng tác viên',
-                subtitle: 'Mỗi dòng gắn với một thanh toán hợp lệ.',
-              ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              ...items.map(
-                (item) => _ListTilePanel(
-                  icon: Icons.receipt_long_rounded,
-                  title:
-                      '${vietnameseUiText(item.customerName)} • '
-                      '${_money(item.pointAmountCents, item.currency)}',
-                  subtitle:
-                      '${_planLabel(item.planCode)} • '
-                      '${_money(item.paymentAmountCents, item.currency)} • '
-                      '${_statusLabel(item.status)}',
+              Text('Lịch sử điểm', style: AppTextStyles.heading3),
+              const SizedBox(height: AppSpacing.md),
+              for (final entry in entries)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: MedicalSurfaceCard(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.toll_rounded),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(entry.customerName, style: AppTextStyles.labelLarge),
+                              Text(
+                                '${_statusLabel(entry.status)} • ${entry.planCode.isEmpty ? 'Thanh toán' : entry.planCode}',
+                                style: AppTextStyles.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          _money(entry.pointAmountCents, entry.currency),
+                          style: AppTextStyles.labelLarge,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
             ],
           );
         },
@@ -533,18 +485,17 @@ class _PointLedgerTab extends ConsumerWidget {
 }
 
 class _ConversionToolsTab extends ConsumerStatefulWidget {
-  final SaleState state;
-
   const _ConversionToolsTab({required this.state});
 
+  final SaleState state;
+
   @override
-  ConsumerState<_ConversionToolsTab> createState() =>
-      _ConversionToolsTabState();
+  ConsumerState<_ConversionToolsTab> createState() => _ConversionToolsTabState();
 }
 
 class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
   final _pointController = TextEditingController();
-  var _submitting = false;
+  bool _submitting = false;
   String? _pendingIdempotencyKey;
 
   @override
@@ -555,60 +506,105 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
 
   @override
   Widget build(BuildContext context) {
-    final dashboard = ref.watch(saleDashboardProvider);
-    final conversions = ref.watch(saleConversionsProvider);
-
+    final summaryAsync = ref.watch(saleDashboardProvider);
+    final conversionsAsync = ref.watch(saleConversionsProvider);
     return _SaleScroll(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _ReferralCodePanel(referralCode: widget.state.referralCode),
           const SizedBox(height: AppSpacing.sectionSpacing),
-          AppStateSwitcher(
-            child: dashboard.when(
-              loading: () => const KeyedSubtree(
-                key: ValueKey<String>('sale-conversion-loading'),
-                child: _CenteredProgress(),
-              ),
-              error: (_, __) => const _EmptySaleState(
-                key: ValueKey<String>('sale-conversion-error'),
-                title: 'Chưa tải được cấu hình quy đổi',
-                message: 'Bạn thử làm mới lại sau.',
-              ),
-              data: (data) => _ConversionRequestPanel(
-                key: const ValueKey<String>('sale-conversion-ready'),
-                dashboard: data,
-                pointController: _pointController,
-                submitting: _submitting,
-                onChanged: () => setState(() => _pendingIdempotencyKey = null),
-                onSubmit: _submitConversion,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sectionSpacing),
-          conversions.when(
+          summaryAsync.when(
             loading: () => const _CenteredProgress(),
-            error: (_, __) => const SizedBox.shrink(),
-            data: (items) => _ConversionHistory(items: items),
+            error: (_, __) => const _EmptyState(
+              title: 'Chưa tải được thông tin quy đổi',
+              message: 'Bạn thử làm mới lại sau nhé.',
+            ),
+            data: _buildRequestPanel,
           ),
           const SizedBox(height: AppSpacing.sectionSpacing),
-          _ListTilePanel(
-            icon: Icons.policy_rounded,
-            title: 'Điều lệ phiên bản ${SaleTerms.currentVersion}',
-            subtitle: SaleTerms.bullets.first,
+          conversionsAsync.when(
+            loading: () => const _CenteredProgress(),
+            error: (_, __) => const _EmptyState(
+              title: 'Chưa tải được các yêu cầu trước đây',
+              message: 'Bạn thử làm mới lại sau nhé.',
+            ),
+            data: (items) => _ConversionHistory(items: items),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _submitConversion(SaleDashboard dashboard) async {
-    if (_submitting) return;
-
-    final requested = _parseInt(_pointController.text);
+  Widget _buildRequestPanel(SaleDashboard summary) {
+    final requested = int.tryParse(_pointController.text.trim()) ?? 0;
+    final money = summary.conversionPolicy.estimateMoneyCents(requested);
     final error = const SaleConversionPolicyService().validateRequest(
-      policy: dashboard.conversionPolicy,
-      availablePointCents: dashboard.availablePointCents,
+      policy: summary.conversionPolicy,
+      availablePointCents: summary.availablePointCents,
+      requestedPointCents: requested,
+    );
+    return MedicalSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Yêu cầu quy đổi điểm', style: AppTextStyles.heading3),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            summary.conversionPolicy.enabled
+                ? 'Điểm khả dụng: ${_money(summary.availablePointCents, summary.currency)}'
+                : 'Quy đổi điểm hiện chưa sẵn sàng.',
+            style: AppTextStyles.bodySmall,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _pointController,
+            enabled: summary.conversionPolicy.enabled && !_submitting,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (_) => setState(() => _pendingIdempotencyKey = null),
+            decoration: const InputDecoration(labelText: 'Số điểm muốn quy đổi'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            requested <= 0
+                ? 'Nhập số điểm bạn muốn quy đổi.'
+                : 'Giá trị ước tính: ${_money(money, summary.conversionPolicy.currency)}',
+            style: AppTextStyles.bodySmall,
+          ),
+          if (requested > 0 && error != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              error,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: context.semanticColors.error,
+              ),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.md),
+          FilledButton.icon(
+            onPressed: error == null && !_submitting
+                ? () => _submitConversion(summary)
+                : null,
+            icon: _submitting
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.send_rounded),
+            label: Text(_submitting ? 'Đang gửi...' : 'Gửi yêu cầu'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submitConversion(SaleDashboard summary) async {
+    if (_submitting) return;
+    final requested = int.tryParse(_pointController.text.trim()) ?? 0;
+    final error = const SaleConversionPolicyService().validateRequest(
+      policy: summary.conversionPolicy,
+      availablePointCents: summary.availablePointCents,
       requestedPointCents: requested,
     );
     if (error != null) {
@@ -616,17 +612,11 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
       _showSnack(error);
       return;
     }
-
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    final idempotencyKey = _pendingIdempotencyKey ??=
+        'sale-conversion-${DateTime.now().microsecondsSinceEpoch}';
     setState(() => _submitting = true);
-    final idempotencyKey =
-        _pendingIdempotencyKey ?? _buildConversionIdempotencyKey(requested);
-    _pendingIdempotencyKey = idempotencyKey;
-
     try {
-      await ref
-          .read(saleRepositoryProvider)
-          .requestConversion(
+      await ref.read(saleRepositoryProvider).requestConversion(
             SaleConversionCommand(
               pointCents: requested,
               idempotencyKey: idempotencyKey,
@@ -634,516 +624,352 @@ class _ConversionToolsTabState extends ConsumerState<_ConversionToolsTab> {
           );
       ref.invalidate(saleDashboardProvider);
       ref.invalidate(saleConversionsProvider);
+      if (!mounted) return;
       _pointController.clear();
       _pendingIdempotencyKey = null;
       AppFeedbackService.instance.emit(AppFeedbackType.success);
-      _showSnack('Đã gửi yêu cầu quy đổi điểm cộng tác viên.');
+      _showSnack('Đã gửi yêu cầu quy đổi điểm.');
     } catch (_) {
+      if (!mounted) return;
       AppFeedbackService.instance.emit(AppFeedbackType.error);
-      _showSnack('Chưa gửi được yêu cầu quy đổi. Bạn thử lại sau.');
+      _showSnack('Chưa gửi được yêu cầu. Bạn thử lại sau nhé.');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
   }
 
   void _showSnack(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  String _buildConversionIdempotencyKey(int requestedPointCents) {
-    final code = widget.state.referralCode ?? 'sale';
-    return 'sale-conversion-$code-$requestedPointCents-${DateTime.now().millisecondsSinceEpoch}';
-  }
-}
-
-class _ReferralCodePanel extends StatelessWidget {
-  final String? referralCode;
-
-  const _ReferralCodePanel({required this.referralCode});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(colors),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Mã giới thiệu', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            referralCode ?? 'Chưa có mã đang hoạt động',
-            style: AppTextStyles.heading3.copyWith(color: colors.primary),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          FilledButton.icon(
-            onPressed: referralCode == null
-                ? null
-                : () async {
-                    AppFeedbackService.instance.emit(AppFeedbackType.selection);
-                    await Clipboard.setData(ClipboardData(text: referralCode!));
-                    if (!context.mounted) return;
-                    AppFeedbackService.instance.emit(AppFeedbackType.success);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Đã sao chép mã giới thiệu.'),
-                      ),
-                    );
-                  },
-            icon: const Icon(Icons.copy_rounded),
-            label: const Text('Sao chép mã'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConversionRequestPanel extends StatelessWidget {
-  final SaleDashboard dashboard;
-  final TextEditingController pointController;
-  final bool submitting;
-  final VoidCallback onChanged;
-  final ValueChanged<SaleDashboard> onSubmit;
-
-  const _ConversionRequestPanel({
-    super.key,
-    required this.dashboard,
-    required this.pointController,
-    required this.submitting,
-    required this.onChanged,
-    required this.onSubmit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final requested = _parseInt(pointController.text);
-    final colors = context.semanticColors;
-    final money = dashboard.conversionPolicy.estimateMoneyCents(requested);
-    final canSubmit =
-        dashboard.conversionPolicy.canRequest(dashboard.availablePointCents) &&
-        requested > 0 &&
-        !submitting;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(colors),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Yêu cầu quy đổi điểm', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            dashboard.conversionPolicy.enabled
-                ? 'Điểm khả dụng: ${_money(dashboard.availablePointCents, dashboard.currency)}'
-                : 'Quy đổi điểm cộng tác viên chưa được quản trị viên mở cấu hình.',
-            style: AppTextStyles.bodySmall.copyWith(height: 1.45),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          TextField(
-            controller: pointController,
-            enabled: dashboard.conversionPolicy.enabled && !submitting,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: (_) => onChanged(),
-            decoration: const InputDecoration(
-              labelText: 'Số điểm muốn quy đổi',
-              prefixIcon: Icon(Icons.stars_rounded),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _EstimateLine(
-            label: 'Giá trị ước tính',
-            value: _money(money, dashboard.conversionPolicy.currency),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: canSubmit ? () => onSubmit(dashboard) : null,
-              icon: submitting
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.send_rounded),
-              label: const Text('Gửi yêu cầu quy đổi'),
-            ),
-          ),
-        ],
-      ),
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
 class _ConversionHistory extends StatelessWidget {
-  final List<SaleConversionRequest> items;
-
   const _ConversionHistory({required this.items});
+
+  final List<SaleConversionRequest> items;
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const _ListTilePanel(
-        icon: Icons.history_rounded,
+      return const _EmptyState(
         title: 'Chưa có yêu cầu quy đổi',
-        subtitle: 'Các yêu cầu quy đổi điểm cộng tác viên sẽ hiển thị tại đây.',
+        message: 'Các yêu cầu bạn đã gửi sẽ xuất hiện tại đây.',
       );
     }
-
     return Column(
-      children: items
-          .map(
-            (item) => _ListTilePanel(
-              icon: Icons.history_rounded,
-              title:
-                  '${_money(item.requestedPointCents, item.currency)} - ${_statusLabel(item.status)}',
-              subtitle:
-                  'Giá trị: ${_money(item.moneyAmountCents, item.currency)}',
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class _EstimateLine extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _EstimateLine({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final style = AppTextStyles.bodyMedium;
-    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(child: Text(label, style: style)),
-        Text(value, style: style),
-      ],
-    );
-  }
-}
-
-class _SaleScroll extends StatelessWidget {
-  final Widget child;
-
-  const _SaleScroll({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      child: child,
-    );
-  }
-}
-
-class _HeroPanel extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const _HeroPanel({required this.title, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    final onPrimary = Theme.of(context).colorScheme.onPrimary;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-      decoration: BoxDecoration(
-        color: colors.primary,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: AppTextStyles.heading2.copyWith(
-              color: onPrimary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            subtitle,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: onPrimary.withValues(alpha: .9),
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MetricTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-
-  const _MetricTile({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(colors),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: colors.primary),
-          const Spacer(),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.heading3,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(label, style: AppTextStyles.bodySmall),
-        ],
-      ),
-    );
-  }
-}
-
-class _ListTilePanel extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _ListTilePanel({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: _panelDecoration(colors),
-      child: Row(
-        children: [
-          Icon(icon, color: colors.primary),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: AppTextStyles.labelLarge),
-                const SizedBox(height: AppSpacing.xs),
-                Text(subtitle, style: AppTextStyles.bodySmall),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptySaleState extends StatelessWidget {
-  final String title;
-  final String message;
-
-  const _EmptySaleState({
-    super.key,
-    required this.title,
-    required this.message,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.insights_rounded, color: colors.textHint, size: 44),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.heading3,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CenteredProgress extends StatelessWidget {
-  const _CenteredProgress();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      height: 220,
-      child: Center(child: CircularProgressIndicator()),
-    );
-  }
-}
-
-class _SaleLoading extends StatelessWidget {
-  const _SaleLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    return MedicalPageScaffold(
-      backgroundColor: context.semanticColors.background,
-      body: const Center(child: CircularProgressIndicator()),
-    );
-  }
-}
-
-class _SaleSupportPage extends StatelessWidget {
-  final String title;
-  final String message;
-  final VoidCallback onRetry;
-
-  const _SaleSupportPage({
-    required this.title,
-    required this.message,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return MedicalPageScaffold(
-      backgroundColor: colors.background,
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.cardPadding),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 460),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+        Text('Yêu cầu đã gửi', style: AppTextStyles.heading3),
+        const SizedBox(height: AppSpacing.md),
+        for (final item in items)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: MedicalSurfaceCard(
+              child: Row(
                 children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: AppDecoration.circle(color: colors.primarySoft),
-                    child: Icon(
-                      Icons.support_agent_rounded,
-                      color: colors.primary,
-                      size: 28,
+                  const Icon(Icons.receipt_long_rounded),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      _statusLabel(item.status),
+                      style: AppTextStyles.labelLarge,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.sectionSpacing),
                   Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.heading2,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    message,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
-                  ),
-                  const SizedBox(height: AppSpacing.sectionSpacing),
-                  FilledButton.icon(
-                    onPressed: onRetry,
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Kiểm tra lại'),
+                    _money(item.requestedPointCents, item.currency),
+                    style: AppTextStyles.labelLarge,
                   ),
                 ],
               ),
             ),
           ),
-        ),
+      ],
+    );
+  }
+}
+
+class _ReferralCodePanel extends StatelessWidget {
+  const _ReferralCodePanel({required this.referralCode});
+
+  final String? referralCode;
+
+  @override
+  Widget build(BuildContext context) {
+    final code = referralCode?.trim();
+    return MedicalSurfaceCard(
+      child: Row(
+        children: [
+          const Icon(Icons.confirmation_number_rounded),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Mã giới thiệu', style: AppTextStyles.labelLarge),
+                Text(
+                  code == null || code.isEmpty
+                      ? 'Chưa có mã giới thiệu.'
+                      : code,
+                  style: AppTextStyles.heading3,
+                ),
+              ],
+            ),
+          ),
+          if (code != null && code.isNotEmpty)
+            IconButton(
+              tooltip: 'Sao chép mã giới thiệu',
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: code));
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã sao chép mã giới thiệu.')),
+                );
+              },
+              icon: const Icon(Icons.copy_rounded),
+            ),
+        ],
       ),
     );
   }
 }
 
-BoxDecoration _panelDecoration(AppSemanticColors colors) {
-  return BoxDecoration(
-    color: colors.surface,
-    borderRadius: BorderRadius.circular(AppRadius.sm),
-    border: Border.all(color: colors.borderLight),
+class _MetricWrap extends StatelessWidget {
+  const _MetricWrap({required this.metrics});
+
+  final List<_Metric> metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scale = MediaQuery.textScalerOf(context).scale(1);
+        final minWidth = scale >= 1.45 ? 230.0 : 180.0;
+        final columns = (constraints.maxWidth / minWidth).floor().clamp(1, 4);
+        final width =
+            (constraints.maxWidth - AppSpacing.sm * (columns - 1)) / columns;
+        return Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
+            for (final metric in metrics)
+              SizedBox(
+                width: width,
+                child: MedicalSurfaceCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(metric.icon),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(metric.label, style: AppTextStyles.bodySmall),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(metric.value, style: AppTextStyles.heading4),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _Metric {
+  const _Metric(this.label, this.value, this.icon);
+
+  final String label;
+  final String value;
+  final IconData icon;
+}
+
+class _Hero extends StatelessWidget {
+  const _Hero({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(AppSpacing.xl),
+    decoration: AppDecoration.gradient(
+      colors: AppGradients.ai.colors,
+      radius: AppRadius.xxl,
+      shadows: AppShadows.lg,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: AppTextStyles.heading2.copyWith(color: AppColors.textInverse),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          subtitle,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textInverse.withValues(alpha: .9),
+          ),
+        ),
+      ],
+    ),
   );
 }
 
-int _parseInt(String value) {
-  return int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+class _Notice extends StatelessWidget {
+  const _Notice({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => MedicalSurfaceCard(
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: context.semanticColors.primary),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppTextStyles.labelLarge),
+              const SizedBox(height: AppSpacing.xs),
+              Text(message, style: AppTextStyles.bodySmall),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
-String _money(int amount, String currency) {
-  final sign = amount < 0 ? '-' : '';
-  final digits = amount.abs().toString();
+class _SupportState extends StatelessWidget {
+  const _SupportState({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.onRetry,
+  });
+
+  final String title;
+  final String message;
+  final Future<void> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) => MedicalPageScaffold(
+    body: SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.pagePadding),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: _EmptyState(
+              title: title,
+              message: message,
+              actionLabel: 'Thử lại',
+              onAction: onRetry,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final Future<void> Function()? onAction;
+
+  @override
+  Widget build(BuildContext context) => MedicalSurfaceCard(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.info_outline_rounded, size: 38),
+        const SizedBox(height: AppSpacing.md),
+        Text(title, textAlign: TextAlign.center, style: AppTextStyles.heading3),
+        const SizedBox(height: AppSpacing.sm),
+        Text(message, textAlign: TextAlign.center),
+        if (actionLabel != null && onAction != null) ...[
+          const SizedBox(height: AppSpacing.md),
+          FilledButton(
+            onPressed: () => onAction!(),
+            child: Text(actionLabel!),
+          ),
+        ],
+      ],
+    ),
+  );
+}
+
+class _CenteredProgress extends StatelessWidget {
+  const _CenteredProgress({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: Padding(
+      padding: EdgeInsets.all(AppSpacing.xl),
+      child: CircularProgressIndicator(),
+    ),
+  );
+}
+
+class _SaleScroll extends StatelessWidget {
+  const _SaleScroll({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SingleChildScrollView(
+    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+    padding: EdgeInsets.fromLTRB(
+      AppSpacing.pagePadding,
+      AppSpacing.pagePadding,
+      AppSpacing.pagePadding,
+      AppSpacing.xxxl + MediaQuery.paddingOf(context).bottom,
+    ),
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 920),
+        child: child,
+      ),
+    ),
+  );
+}
+
+String _money(int cents, String currency) {
+  final absolute = cents.abs();
+  final sign = cents < 0 ? '-' : '';
+  final digits = absolute.toString();
   final buffer = StringBuffer();
   for (var i = 0; i < digits.length; i++) {
-    final remaining = digits.length - i;
+    if (i > 0 && (digits.length - i) % 3 == 0) buffer.write('.');
     buffer.write(digits[i]);
-    if (remaining > 1 && remaining % 3 == 1) buffer.write(',');
   }
-  return '$sign$buffer $currency';
+  return '$sign${buffer.toString()} ${currency.trim().isEmpty ? 'VND' : currency}';
 }
 
-String _statusLabel(String value) {
-  switch (value.trim().toLowerCase()) {
-    case 'approved':
-    case 'points_credited':
-      return 'Đã duyệt';
-    case 'paid':
-      return 'Đã chi trả';
-    case 'requested':
-    case 'pending':
-    case 'pending_review':
-      return 'Đang chờ';
-    case 'rejected':
-      return 'Từ chối';
-    case 'reversed':
-    case 'points_reversed':
-      return 'Đã điều chỉnh';
-    default:
-      return 'Đang được xử lý';
-  }
-}
-
-String _planLabel(String value) {
-  switch (value.trim().toLowerCase().replaceAll('-', '_')) {
-    case 'free':
-    case 'basic':
-      return 'Gói Miễn phí';
-    case 'plus':
-    case 'premium':
-    case 'pro':
-      return 'Gói Plus';
-    case 'familyplus':
-    case 'family_plus':
-      return 'Gói FamilyPlus';
-    default:
-      return 'Gói chưa xác định';
-  }
-}
+String _statusLabel(String raw) => switch (raw.trim().toLowerCase()) {
+  'pending' || 'requested' => 'Đang chờ',
+  'approved' || 'confirmed' => 'Đã xác nhận',
+  'paid' || 'completed' => 'Đã hoàn tất',
+  'rejected' || 'declined' => 'Không được duyệt',
+  'reversed' => 'Đã hoàn tác',
+  _ => 'Đang xử lý',
+};

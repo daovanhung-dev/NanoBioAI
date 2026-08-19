@@ -1,20 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/app/router/shared_route_factories.dart';
 import 'package:nano_app/app_versions/v1/router/router.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_guards.dart';
 import 'package:nano_app/app_versions/v2/features/auth/auth.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
-import 'package:nano_app/app_versions/v2/features/health_scoring/health_scoring.dart';
 import 'package:nano_app/app_versions/v2/features/health_modules/health_modules.dart';
+import 'package:nano_app/app_versions/v2/features/health_scoring/health_scoring.dart';
 import 'package:nano_app/app_versions/v2/features/home/presentation/pages/v2_home_page.dart';
-import 'package:nano_app/app_versions/v2/features/payments/payments.dart';
 import 'package:nano_app/app_versions/v2/features/wellness_rewards/wellness_rewards.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
 import 'package:nano_app/app_versions/v3/router/v3_router.dart';
 import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
-import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_shell_page.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
@@ -24,11 +23,7 @@ final v2Routes = <RouteBase>[
     name: V2RoutePaths.authGate,
     builder: (context, state) => const AuthGatePage(),
   ),
-  GoRoute(
-    path: V2RoutePaths.login,
-    name: V2RoutePaths.login,
-    builder: (context, state) => const V2LoginPage(),
-  ),
+  buildV2LoginRoute(),
   GoRoute(
     path: V2RoutePaths.register,
     name: V2RoutePaths.register,
@@ -37,9 +32,8 @@ final v2Routes = <RouteBase>[
   GoRoute(
     path: V2RoutePaths.verifyEmail,
     name: V2RoutePaths.verifyEmail,
-    builder: (context, state) {
-      return V2VerifyEmailPage(email: state.uri.queryParameters['email'] ?? '');
-    },
+    builder: (context, state) =>
+        V2VerifyEmailPage(email: state.uri.queryParameters['email'] ?? ''),
   ),
   GoRoute(
     path: V2RoutePaths.forgotPassword,
@@ -78,15 +72,7 @@ final v2Routes = <RouteBase>[
       moduleId: state.pathParameters['moduleId'] ?? '',
     ),
   ),
-  GoRoute(
-    path: V2RoutePaths.payments,
-    name: V2RoutePaths.payments,
-    builder: (context, state) => MembershipPaymentPage(
-      initialPlanCode: normalizeMembershipUpgradePlan(
-        state.uri.queryParameters['plan'],
-      ),
-    ),
-  ),
+  buildMembershipPaymentRoute(),
   GoRoute(
     path: V2RoutePaths.wellnessRewards,
     name: V2RoutePaths.wellnessRewards,
@@ -175,6 +161,8 @@ abstract class V2RouteGuards {
     return exactProtectedPaths.contains(normalizedPath) ||
         HealthModuleRoutePaths.matchesProtectedPrefix(normalizedPath);
   }
+
+  static canAccessMembershipPayment(String payments, {required bool isSignedIn, required AuthRouteStatus authStatus}) {}
 }
 
 class _RouterRefreshNotifier extends ChangeNotifier {

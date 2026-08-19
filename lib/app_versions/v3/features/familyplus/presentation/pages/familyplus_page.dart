@@ -128,13 +128,20 @@ class _FamilyPlusBody extends ConsumerWidget {
   }
 }
 
-class _EmptyFamilyState extends ConsumerWidget {
+class _EmptyFamilyState extends ConsumerStatefulWidget {
   final FamilyPlusContext contextModel;
 
   const _EmptyFamilyState({super.key, required this.contextModel});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_EmptyFamilyState> createState() => _EmptyFamilyStateState();
+}
+
+class _EmptyFamilyStateState extends ConsumerState<_EmptyFamilyState> {
+  bool _creating = false;
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.semanticColors;
     return _PagePadding(
       child: Column(
@@ -153,38 +160,46 @@ class _EmptyFamilyState extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: contextModel.canManage
-                  ? () async {
-                      AppFeedbackService.instance.emit(
-                        AppFeedbackType.primaryAction,
-                      );
-                      try {
-                        await ref.read(familyPlusCreateDefaultGroupProvider)();
-                        if (context.mounted) {
-                          AppFeedbackService.instance.emit(
-                            AppFeedbackType.success,
-                          );
-                        }
-                      } catch (_) {
-                        if (!context.mounted) return;
-                        AppFeedbackService.instance.emit(AppFeedbackType.error);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Chưa tạo được nhóm FamilyPlus. Bạn thử lại sau.',
-                            ),
-                          ),
-                        );
-                      }
-                    }
+              onPressed: widget.contextModel.canManage && !_creating
+                  ? _createGroup
                   : null,
-              icon: const Icon(Icons.group_add_rounded),
-              label: const Text('Tạo nhóm FamilyPlus'),
+              icon: _creating
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.group_add_rounded),
+              label: Text(
+                _creating ? 'Đang tạo nhóm...' : 'Tạo nhóm FamilyPlus',
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _createGroup() async {
+    if (_creating) return;
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    setState(() => _creating = true);
+    try {
+      await ref.read(familyPlusCreateDefaultGroupProvider)();
+      if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.success);
+    } catch (_) {
+      if (!mounted) return;
+      AppFeedbackService.instance.emit(AppFeedbackType.error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Chưa tạo được nhóm FamilyPlus. Bạn thử lại sau.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _creating = false);
+    }
   }
 }
 

@@ -287,57 +287,103 @@ class _ProofCard extends StatelessWidget {
   }
 }
 
-class _ProofImage extends StatelessWidget {
+class _ResolvedProofImage {
+  final File file;
+  final bool exists;
+
+  const _ResolvedProofImage({required this.file, required this.exists});
+}
+
+class _ProofImage extends StatefulWidget {
   final ScheduleCompletionProofEntity proof;
   final ScheduleProofImageService service;
 
   const _ProofImage({required this.proof, required this.service});
 
   @override
+  State<_ProofImage> createState() => _ProofImageState();
+}
+
+class _ProofImageState extends State<_ProofImage> {
+  late Future<_ResolvedProofImage> _resolved;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolved = _resolve();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ProofImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.proof.localPath != widget.proof.localPath ||
+        oldWidget.service != widget.service) {
+      _resolved = _resolve();
+    }
+  }
+
+  Future<_ResolvedProofImage> _resolve() async {
+    final file = await widget.service.resolveProofFile(widget.proof.localPath);
+    return _ResolvedProofImage(file: file, exists: await file.exists());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<File>(
-      future: service.resolveProofFile(proof.localPath),
+    return FutureBuilder<_ResolvedProofImage>(
+      future: _resolved,
       builder: (context, snapshot) {
-        final file = snapshot.data;
-        if (file == null) {
+        final resolved = snapshot.data;
+        if (resolved == null) {
           return ColoredBox(
             color: context.semanticColors.borderLight,
-            child: Center(child: CircularProgressIndicator()),
+            child: const Center(child: CircularProgressIndicator()),
           );
         }
-        return FutureBuilder<bool>(
-          future: file.exists(),
-          builder: (context, existsSnapshot) {
-            if (existsSnapshot.data != true) {
-              return ColoredBox(
-                color: context.semanticColors.borderLight,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacingTokens.itemSpacing),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.cloud_download_outlined),
-                        if (proof.cloudObjectPath != null) ...[
-                          const SizedBox(height: AppSpacingTokens.itemSpacing),
-                          Text(
-                            'Chạm để tải lại ảnh',
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.caption,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
+        if (!resolved.exists) {
+          return ColoredBox(
+            color: context.semanticColors.borderLight,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacingTokens.itemSpacing),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.cloud_download_outlined),
+                    if (widget.proof.cloudObjectPath != null) ...[
+                      const SizedBox(height: AppSpacingTokens.itemSpacing),
+                      Text(
+                        'Chạm để tải lại ảnh',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.caption,
+                      ),
+                    ],
+                  ],
                 ),
-              );
-            }
+              ),
+            ),
+          );
+        }
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final dpr = MediaQuery.devicePixelRatioOf(context);
+            final cacheWidth = constraints.maxWidth.isFinite
+                ? (constraints.maxWidth * dpr).ceil().clamp(1, 2048)
+                : null;
+            final cacheHeight = constraints.maxHeight.isFinite
+                ? (constraints.maxHeight * dpr).ceil().clamp(1, 2048)
+                : null;
             return Image.file(
-              file,
+              resolved.file,
               fit: BoxFit.cover,
+              cacheWidth: cacheWidth,
+              cacheHeight: cacheHeight,
+              filterQuality: FilterQuality.medium,
               errorBuilder: (_, _, _) => ColoredBox(
                 color: context.semanticColors.borderLight,
-                child: Center(child: Icon(Icons.image_not_supported_outlined)),
+                child: const Center(
+                  child: Icon(Icons.image_not_supported_outlined),
+                ),
               ),
             );
           },

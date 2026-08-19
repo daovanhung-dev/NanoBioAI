@@ -3,11 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
-/// Hub chăm sóc chỉ mở các năng lực đã có trong runtime.
+/// Backward-compatible source name for the public "Nabi Care" hub.
 ///
-/// Mẫu Stitch có nội dung premium/chuyên gia, nhưng runtime hiện chưa có
-/// contract đặt lịch hoặc chuyên gia. Trang này vì thế chỉ là hub điều
-/// hướng tới các công cụ wellness local đã sẵn sàng.
+/// The class/file keep the historical NamiCare identifiers so existing imports
+/// remain stable; all user-facing copy uses the canonical Nabi spelling.
 class NamiCarePage extends StatelessWidget {
   const NamiCarePage({super.key});
 
@@ -18,46 +17,46 @@ class NamiCarePage extends StatelessWidget {
       icon: Icons.water_drop_rounded,
       color: AppColors.info,
       route: V1RoutePaths.waterTracking,
-      status: 'Lưu trên máy',
+      status: 'Có thể dùng ngay',
     ),
     _NamiCareDestination(
       title: 'Mục tiêu cá nhân',
-      subtitle: 'Xem trước một việc nhỏ, vừa sức cho hôm nay.',
+      subtitle: 'Xem một việc nhỏ, vừa sức cho hôm nay.',
       icon: Icons.flag_rounded,
       color: AppColors.success,
       route: V1RoutePaths.personalGoals,
-      status: 'Xem trước',
+      status: 'Gợi ý hôm nay',
     ),
     _NamiCareDestination(
       title: 'Chăm mình 5 phút',
-      subtitle: 'Các bài tự chăm sóc ngắn, không dùng AI.',
+      subtitle: 'Các bài tự chăm sóc ngắn để nghỉ một nhịp.',
       icon: Icons.spa_rounded,
       color: AppColors.secondary,
       route: V1RoutePaths.quickCare,
-      status: 'Bài cố định',
+      status: 'Có thể dùng ngay',
     ),
     _NamiCareDestination(
       title: 'Chế độ dịu nhẹ',
-      subtitle: 'Giảm nhịp và chọn gợi ý wellness tại chỗ.',
+      subtitle: 'Chọn gợi ý nhẹ nhàng khi bạn muốn giảm nhịp.',
       icon: Icons.nights_stay_rounded,
       color: AppColors.warning,
       route: V1RoutePaths.gentleCare,
-      status: 'Bài cố định',
+      status: 'Gợi ý nhẹ nhàng',
     ),
     _NamiCareDestination(
       title: 'Tổng kết tuần',
-      subtitle: 'Chỉ tổng hợp khi đã có đủ ghi nhận thật trong tuần.',
+      subtitle: 'Nhìn lại các nhiệm vụ thật đã được ghi nhận trong tuần.',
       icon: Icons.insights_rounded,
       color: AppColors.primary,
       route: V1RoutePaths.weeklySummary,
-      status: 'Chờ dữ liệu',
+      status: 'Theo dữ liệu của bạn',
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
     return NamiCareScaffold(
-      title: 'Nami Care',
+      title: 'Nabi Care',
       subtitle: 'Một nơi để bạn chọn cách chăm sóc nhỏ, rõ ràng và vừa sức.',
       badge: 'Cùng Nabi chăm mình',
       icon: Icons.health_and_safety_rounded,
@@ -68,13 +67,12 @@ class NamiCarePage extends StatelessWidget {
           color: AppColors.primary,
           title: 'Chọn một bước chăm sóc phù hợp',
           message:
-              'Nami Care nói rõ công cụ nào lưu local, công cụ nào chỉ xem trước hoặc đang chờ dữ liệu thật. Không có chuyên gia, đặt lịch hay kết quả mẫu.',
+              'Mỗi công cụ đều nói rõ điều bạn có thể làm ngay. Các gợi ý ở đây không thay thế chẩn đoán hoặc tư vấn y khoa.',
         ),
         const SizedBox(height: AppSpacing.sectionSpacing),
         const NamiCareSectionTitle(
           title: 'Công cụ hiện có',
-          subtitle:
-              'Các mục dưới đây không tự đưa ra chẩn đoán; xem nhãn trạng thái trước khi bắt đầu.',
+          subtitle: 'Chọn công cụ phù hợp với nhu cầu của bạn lúc này.',
         ),
         const SizedBox(height: AppSpacing.md),
         for (final destination in _availableCare)
@@ -95,13 +93,6 @@ class NamiCarePage extends StatelessWidget {
 }
 
 class _NamiCareDestination {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final String route;
-  final String status;
-
   const _NamiCareDestination({
     required this.title,
     required this.subtitle,
@@ -110,16 +101,16 @@ class _NamiCareDestination {
     required this.route,
     required this.status,
   });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final String route;
+  final String status;
 }
 
 class NamiCareScaffold extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String badge;
-  final IconData icon;
-  final LinearGradient gradient;
-  final List<Widget> children;
-
   const NamiCareScaffold({
     super.key,
     required this.title,
@@ -129,6 +120,13 @@ class NamiCareScaffold extends StatelessWidget {
     required this.gradient,
     required this.children,
   });
+
+  final String title;
+  final String subtitle;
+  final String badge;
+  final IconData icon;
+  final LinearGradient gradient;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +157,7 @@ class NamiCareScaffold extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _NamiCareHeader(
+                            _NabiCareHeader(
                               title: title,
                               subtitle: subtitle,
                               badge: badge,
@@ -184,16 +182,16 @@ class NamiCareScaffold extends StatelessWidget {
 }
 
 class NamiCareSurfaceCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final Color? borderColor;
-
   const NamiCareSurfaceCard({
     super.key,
     required this.child,
     this.padding,
     this.borderColor,
   });
+
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -206,10 +204,10 @@ class NamiCareSurfaceCard extends StatelessWidget {
 }
 
 class NamiCareSectionTitle extends StatelessWidget {
+  const NamiCareSectionTitle({super.key, required this.title, this.subtitle});
+
   final String title;
   final String? subtitle;
-
-  const NamiCareSectionTitle({super.key, required this.title, this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -218,14 +216,6 @@ class NamiCareSectionTitle extends StatelessWidget {
 }
 
 class NamiCareInfoTile extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-  final String? trailing;
-  final bool selected;
-  final VoidCallback? onTap;
-
   const NamiCareInfoTile({
     super.key,
     required this.icon,
@@ -237,13 +227,22 @@ class NamiCareInfoTile extends StatelessWidget {
     this.onTap,
   });
 
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final String? trailing;
+  final bool selected;
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
     final tone = _resolveSemanticTone(colors, color);
-    final tile = AnimatedContainer(
-      duration: AppDuration.fast,
+    final content = AnimatedContainer(
+      duration: AppMotionScope.duration(context, AppDuration.fast),
       curve: Curves.easeOut,
+      constraints: const BoxConstraints(minHeight: 64),
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: selected ? tone.withValues(alpha: .08) : colors.card,
@@ -257,8 +256,8 @@ class NamiCareInfoTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: tone.withValues(alpha: .12),
               borderRadius: BorderRadius.circular(AppRadius.md),
@@ -291,20 +290,23 @@ class NamiCareInfoTile extends StatelessWidget {
           ),
           if (trailing != null) ...[
             const SizedBox(width: AppSpacing.sm),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
-              ),
-              decoration: BoxDecoration(
-                color: tone.withValues(alpha: .1),
-                borderRadius: BorderRadius.circular(AppRadius.circular),
-              ),
-              child: Text(
-                trailing!,
-                style: AppTextStyles.caption.copyWith(
-                  color: tone,
-                  fontWeight: AppTypography.bold,
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: tone.withValues(alpha: .1),
+                  borderRadius: BorderRadius.circular(AppRadius.circular),
+                ),
+                child: Text(
+                  trailing!,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(
+                    color: tone,
+                    fontWeight: AppTypography.bold,
+                  ),
                 ),
               ),
             ),
@@ -313,18 +315,21 @@ class NamiCareInfoTile extends StatelessWidget {
       ),
     );
 
-    if (onTap == null) return tile;
-
-    return AppPressScale(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          onTap: () {
-            AppFeedbackService.instance.emit(AppFeedbackType.selection);
-            onTap!();
-          },
-          child: tile,
+    if (onTap == null) return content;
+    return Semantics(
+      button: true,
+      label: '$title. $subtitle',
+      child: AppPressScale(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            onTap: () {
+              AppFeedbackService.instance.emit(AppFeedbackType.selection);
+              onTap!();
+            },
+            child: content,
+          ),
         ),
       ),
     );
@@ -332,12 +337,6 @@ class NamiCareInfoTile extends StatelessWidget {
 }
 
 class NamiCareActionChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final VoidCallback? onTap;
-  final bool selected;
-
   const NamiCareActionChip({
     super.key,
     required this.label,
@@ -346,6 +345,12 @@ class NamiCareActionChip extends StatelessWidget {
     this.onTap,
     this.selected = false,
   });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onTap;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -363,34 +368,39 @@ class NamiCareActionChip extends StatelessWidget {
                   AppFeedbackService.instance.emit(AppFeedbackType.selection);
                   onTap!();
                 },
-          child: AnimatedContainer(
-            duration: AppDuration.fast,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            decoration: BoxDecoration(
-              color: selected ? tone.withValues(alpha: .14) : colors.card,
-              borderRadius: BorderRadius.circular(AppRadius.circular),
-              border: Border.all(
-                color: selected
-                    ? tone.withValues(alpha: .32)
-                    : colors.borderLight,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: AnimatedContainer(
+              duration: AppMotionScope.duration(context, AppDuration.fast),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: tone, size: 18),
-                const SizedBox(width: AppSpacing.xs),
-                Text(
-                  label,
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: selected ? tone : colors.textPrimary,
-                    fontWeight: AppTypography.bold,
-                  ),
+              decoration: BoxDecoration(
+                color: selected ? tone.withValues(alpha: .14) : colors.card,
+                borderRadius: BorderRadius.circular(AppRadius.circular),
+                border: Border.all(
+                  color: selected
+                      ? tone.withValues(alpha: .32)
+                      : colors.borderLight,
                 ),
-              ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: tone, size: 18),
+                  const SizedBox(width: AppSpacing.xs),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: selected ? tone : colors.textPrimary,
+                        fontWeight: AppTypography.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -399,27 +409,7 @@ class NamiCareActionChip extends StatelessWidget {
   }
 }
 
-Color _resolveSemanticTone(AppSemanticColors colors, Color legacy) {
-  if (legacy == AppColors.primary || legacy == AppColors.primaryDark) {
-    return colors.primary;
-  }
-  if (legacy == AppColors.secondary || legacy == AppColors.secondaryDark) {
-    return colors.secondary;
-  }
-  if (legacy == AppColors.tertiary) return colors.tertiary;
-  if (legacy == AppColors.success) return colors.success;
-  if (legacy == AppColors.warning) return colors.warning;
-  if (legacy == AppColors.error) return colors.error;
-  if (legacy == AppColors.info) return colors.info;
-  return legacy;
-}
-
 class NamiCareEmptyState extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String message;
-
   const NamiCareEmptyState({
     super.key,
     required this.icon,
@@ -427,6 +417,11 @@ class NamiCareEmptyState extends StatelessWidget {
     required this.title,
     required this.message,
   });
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String message;
 
   @override
   Widget build(BuildContext context) {
@@ -439,20 +434,20 @@ class NamiCareEmptyState extends StatelessWidget {
   }
 }
 
-class _NamiCareHeader extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String badge;
-  final IconData icon;
-  final LinearGradient gradient;
-
-  const _NamiCareHeader({
+class _NabiCareHeader extends StatelessWidget {
+  const _NabiCareHeader({
     required this.title,
     required this.subtitle,
     required this.badge,
     required this.icon,
     required this.gradient,
   });
+
+  final String title;
+  final String subtitle;
+  final String badge;
+  final IconData icon;
+  final LinearGradient gradient;
 
   @override
   Widget build(BuildContext context) {
@@ -476,8 +471,8 @@ class _NamiCareHeader extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                   onTap: () => Navigator.of(context).maybePop(),
                   child: const SizedBox(
-                    width: 46,
-                    height: 46,
+                    width: 48,
+                    height: 48,
                     child: Icon(
                       Icons.arrow_back_rounded,
                       color: AppColors.surface,
@@ -487,32 +482,33 @@ class _NamiCareHeader extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.md),
               Container(
-                width: 46,
-                height: 46,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: AppColors.surface.withValues(alpha: .16),
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(
-                    color: AppColors.surface.withValues(alpha: .18),
-                  ),
                 ),
                 child: Icon(icon, color: AppColors.surface, size: 24),
               ),
               const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.surface.withValues(alpha: .18),
-                  borderRadius: BorderRadius.circular(AppRadius.circular),
-                ),
-                child: Text(
-                  badge,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.surface,
-                    fontWeight: AppTypography.bold,
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withValues(alpha: .18),
+                    borderRadius: BorderRadius.circular(AppRadius.circular),
+                  ),
+                  child: Text(
+                    badge,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.surface,
+                      fontWeight: AppTypography.bold,
+                    ),
                   ),
                 ),
               ),
@@ -524,14 +520,13 @@ class _NamiCareHeader extends StatelessWidget {
             style: AppTextStyles.heading2.copyWith(
               color: AppColors.surface,
               fontWeight: AppTypography.bold,
-              height: 1.22,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             subtitle,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.surface.withValues(alpha: .92),
+              color: AppColors.surface.withValues(alpha: .9),
               height: 1.45,
             ),
           ),
@@ -539,4 +534,19 @@ class _NamiCareHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+Color _resolveSemanticTone(AppSemanticColors colors, Color legacy) {
+  if (legacy == AppColors.primary || legacy == AppColors.primaryDark) {
+    return colors.primary;
+  }
+  if (legacy == AppColors.secondary || legacy == AppColors.secondaryDark) {
+    return colors.secondary;
+  }
+  if (legacy == AppColors.tertiary) return colors.tertiary;
+  if (legacy == AppColors.success) return colors.success;
+  if (legacy == AppColors.warning) return colors.warning;
+  if (legacy == AppColors.error) return colors.error;
+  if (legacy == AppColors.info) return colors.info;
+  return legacy;
 }

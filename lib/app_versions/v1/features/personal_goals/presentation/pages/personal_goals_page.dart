@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
+import 'package:nano_app/core/theme/theme.dart';
 
 class PersonalGoalsPage extends StatefulWidget {
   const PersonalGoalsPage({super.key});
@@ -63,13 +63,12 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
         const NamiCareSectionTitle(
           title: 'Hôm nay mình muốn thử điều gì?',
           subtitle:
-              'Lựa chọn trên màn hình này chưa được lưu hoặc tạo nhắc nhở.',
+              'Lựa chọn ở đây chỉ giúp bạn xem trước; hiện chưa được lưu thành mục tiêu hoặc nhắc nhở.',
         ),
         const SizedBox(height: AppSpacing.md),
         ...List.generate(_goals.length, (index) {
           final goal = _goals[index];
           final selected = _selectedIndex == index;
-
           return Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: NamiCareInfoTile(
@@ -98,7 +97,7 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
                     color: _goals[_selectedIndex!].color,
                     title: 'Bạn đang xem trước mục tiêu này',
                     message:
-                        'Lựa chọn chỉ được giữ trong lúc trang này đang mở. Tính năng lưu và nhắc mục tiêu sẽ chỉ bật khi contract tương ứng được duyệt.',
+                        'Lựa chọn chỉ được giữ trong lúc trang này đang mở. Khi tính năng lưu mục tiêu sẵn sàng, Nabi sẽ nói rõ trước khi lưu hoặc tạo nhắc nhở.',
                   ),
                 ),
         ),
@@ -108,15 +107,15 @@ class _PersonalGoalsPageState extends State<PersonalGoalsPage> {
 }
 
 class _GoalOption {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-
   const _GoalOption({
     required this.icon,
     required this.color,
     required this.title,
     required this.subtitle,
   });
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
 }

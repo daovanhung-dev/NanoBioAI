@@ -27,13 +27,21 @@ class OnboardingPage extends ConsumerStatefulWidget {
 
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   static const _tag = 'ONBOARDING_PAGE';
+
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(onboardingProvider);
-    AppLogger.info(
-      _tag,
-      'Rendering step ${state.currentStep + 1}/${OnboardingCatalog.totalSteps}',
+    ref.listen<int>(
+      onboardingProvider.select((state) => state.currentStep),
+      (previous, next) {
+        if (previous == next) return;
+        AppLogger.info(
+          _tag,
+          'Step changed to ${next + 1}/${OnboardingCatalog.totalSteps}',
+        );
+      },
     );
+
+    final state = ref.watch(onboardingProvider);
     final hasHistory = Navigator.of(context).canPop();
     return PopScope(
       canPop: state.currentStep <= 0 && !state.isSaving && hasHistory,

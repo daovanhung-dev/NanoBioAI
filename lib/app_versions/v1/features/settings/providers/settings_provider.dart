@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:nano_app/app_versions/v1/features/body_metrics/providers/body_metrics_providers.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/providers/daily_health_tracking_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
@@ -32,6 +33,8 @@ final settingsPreferencesControllerProvider =
 void invalidateUserScopedProviders(WidgetRef ref) {
   ref.invalidate(dashboardProvider);
   ref.invalidate(dashboardDynamicProvider);
+  ref.invalidate(bodyMetricsPersonalContextProvider);
+  ref.invalidate(bodyMetricsControllerProvider);
   ref.invalidate(dailyHealthTrackingControllerProvider);
   ref.invalidate(lifestyleScheduleControllerProvider);
   ref.invalidate(mealPlanControllerProvider);
@@ -44,6 +47,8 @@ void invalidateUserScopedProviders(WidgetRef ref) {
 void invalidateUserScopedContainerProviders(Ref ref) {
   ref.invalidate(dashboardProvider);
   ref.invalidate(dashboardDynamicProvider);
+  ref.invalidate(bodyMetricsPersonalContextProvider);
+  ref.invalidate(bodyMetricsControllerProvider);
   ref.invalidate(dailyHealthTrackingControllerProvider);
   ref.invalidate(lifestyleScheduleControllerProvider);
   ref.invalidate(mealPlanControllerProvider);

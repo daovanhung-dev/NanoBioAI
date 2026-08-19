@@ -1,14 +1,6 @@
 part of 'admin_workspace_page.dart';
 
 class _AdminSidebar extends StatelessWidget {
-  final AdminPanelSection selected;
-  final List<AdminPanelSection> sections;
-  final bool extended;
-  final ValueChanged<AdminPanelSection> onSelected;
-  final VoidCallback onShowGuide;
-  final VoidCallback? onShowUserApp;
-  final VoidCallback onSignOut;
-
   const _AdminSidebar({
     required this.selected,
     required this.sections,
@@ -19,13 +11,20 @@ class _AdminSidebar extends StatelessWidget {
     required this.onSignOut,
   });
 
+  final AdminPanelSection selected;
+  final List<AdminPanelSection> sections;
+  final bool extended;
+  final ValueChanged<AdminPanelSection> onSelected;
+  final VoidCallback onShowGuide;
+  final VoidCallback? onShowUserApp;
+  final VoidCallback onSignOut;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.adminColors;
     final width = extended
         ? AdminWorkspaceTheme.sidebarWidth
         : AdminWorkspaceTheme.compactSidebarWidth;
-
     return Container(
       width: width,
       decoration: BoxDecoration(
@@ -97,13 +96,6 @@ class _AdminSidebar extends StatelessWidget {
 }
 
 class _AdminNavigationDrawer extends StatelessWidget {
-  final AdminPanelSection selected;
-  final List<AdminPanelSection> sections;
-  final ValueChanged<AdminPanelSection> onSelected;
-  final VoidCallback onShowGuide;
-  final VoidCallback? onShowUserApp;
-  final VoidCallback onSignOut;
-
   const _AdminNavigationDrawer({
     required this.selected,
     required this.sections,
@@ -112,6 +104,13 @@ class _AdminNavigationDrawer extends StatelessWidget {
     required this.onShowUserApp,
     required this.onSignOut,
   });
+
+  final AdminPanelSection selected;
+  final List<AdminPanelSection> sections;
+  final ValueChanged<AdminPanelSection> onSelected;
+  final VoidCallback onShowGuide;
+  final VoidCallback? onShowUserApp;
+  final VoidCallback onSignOut;
 
   @override
   Widget build(BuildContext context) {
@@ -193,9 +192,9 @@ class _AdminNavigationDrawer extends StatelessWidget {
 }
 
 class _AdminBrand extends StatelessWidget {
-  final bool extended;
-
   const _AdminBrand({required this.extended});
+
+  final bool extended;
 
   @override
   Widget build(BuildContext context) {
@@ -213,11 +212,9 @@ class _AdminBrand extends StatelessWidget {
         size: 23,
       ),
     );
-
     if (!extended) {
       return Tooltip(message: 'NanoBio Quản trị', child: icon);
     }
-
     return Row(
       children: [
         icon,
@@ -248,11 +245,6 @@ class _AdminBrand extends StatelessWidget {
 }
 
 class _SidebarDestination extends StatelessWidget {
-  final AdminPanelSection section;
-  final bool selected;
-  final bool extended;
-  final VoidCallback onTap;
-
   const _SidebarDestination({
     required this.section,
     required this.selected,
@@ -260,11 +252,15 @@ class _SidebarDestination extends StatelessWidget {
     required this.onTap,
   });
 
+  final AdminPanelSection section;
+  final bool selected;
+  final bool extended;
+  final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.adminColors;
     final foreground = selected ? colors.blueStrong : colors.textSecondary;
-
     final tile = Padding(
       padding: const EdgeInsets.only(bottom: 3),
       child: Material(
@@ -275,16 +271,15 @@ class _SidebarDestination extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           hoverColor: colors.hover,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44),
+            constraints: const BoxConstraints(minHeight: 48),
             child: Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: extended ? 11 : 8,
                 vertical: 8,
               ),
               child: Row(
-                mainAxisAlignment: extended
-                    ? MainAxisAlignment.start
-                    : MainAxisAlignment.center,
+                mainAxisAlignment:
+                    extended ? MainAxisAlignment.start : MainAxisAlignment.center,
                 children: [
                   Icon(
                     _iconForSection(section, selected),
@@ -300,9 +295,8 @@ class _SidebarDestination extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.labelMedium.copyWith(
                           color: foreground,
-                          fontWeight: selected
-                              ? FontWeight.w700
-                              : FontWeight.w600,
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w600,
                         ),
                       ),
                     ),
@@ -314,19 +308,12 @@ class _SidebarDestination extends StatelessWidget {
         ),
       ),
     );
-
     if (extended) return tile;
     return Tooltip(message: AdminUiCopy.sectionLabel(section), child: tile);
   }
 }
 
 class _SidebarUtility extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool extended;
-  final bool danger;
-  final VoidCallback onPressed;
-
   const _SidebarUtility({
     required this.icon,
     required this.label,
@@ -334,6 +321,12 @@ class _SidebarUtility extends StatelessWidget {
     required this.onPressed,
     this.danger = false,
   });
+
+  final IconData icon;
+  final String label;
+  final bool extended;
+  final bool danger;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -347,16 +340,15 @@ class _SidebarUtility extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         hoverColor: colors.hover,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 42),
+          constraints: const BoxConstraints(minHeight: 48),
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: extended ? 11 : 8,
               vertical: 8,
             ),
             child: Row(
-              mainAxisAlignment: extended
-                  ? MainAxisAlignment.start
-                  : MainAxisAlignment.center,
+              mainAxisAlignment:
+                  extended ? MainAxisAlignment.start : MainAxisAlignment.center,
               children: [
                 Icon(icon, size: 20, color: color),
                 if (extended) ...[
@@ -380,18 +372,6 @@ class _SidebarUtility extends StatelessWidget {
 }
 
 class _AdminToolbar extends StatelessWidget {
-  final AdminPanelState state;
-  final bool compact;
-  final bool busy;
-  final TextEditingController searchController;
-  final VoidCallback? onMenuPressed;
-  final ValueChanged<String> onSearchChanged;
-  final VoidCallback onClearSearch;
-  final VoidCallback onRefresh;
-  final VoidCallback onShowGuide;
-  final VoidCallback? onShowUserApp;
-  final VoidCallback onSignOut;
-
   const _AdminToolbar({
     required this.state,
     required this.compact,
@@ -406,12 +386,23 @@ class _AdminToolbar extends StatelessWidget {
     required this.onSignOut,
   });
 
+  final AdminPanelState state;
+  final bool compact;
+  final bool busy;
+  final TextEditingController searchController;
+  final VoidCallback? onMenuPressed;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onClearSearch;
+  final VoidCallback onRefresh;
+  final VoidCallback onShowGuide;
+  final VoidCallback? onShowUserApp;
+  final VoidCallback onSignOut;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.adminColors;
     final searchable =
-        state.section != AdminPanelSection.dashboard &&
-        !state.isPermissionDenied;
+        state.section != AdminPanelSection.dashboard && !state.isPermissionDenied;
 
     return Container(
       color: colors.toolbar,
@@ -456,9 +447,7 @@ class _AdminToolbar extends StatelessWidget {
                       AdminUiCopy.sectionLabel(state.section),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.heading4.copyWith(
-                        color: colors.text,
-                      ),
+                      style: AppTextStyles.heading4.copyWith(color: colors.text),
                     ),
                     if (!narrow)
                       Text(
@@ -474,7 +463,6 @@ class _AdminToolbar extends StatelessWidget {
               ),
             ],
           );
-
           final actions = _ToolbarMenu(
             busy: busy,
             onRefresh: onRefresh,
@@ -487,12 +475,7 @@ class _AdminToolbar extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Expanded(child: header),
-                    actions,
-                  ],
-                ),
+                Row(children: [Expanded(child: header), actions]),
                 if (searchable) ...[
                   const SizedBox(height: 10),
                   _AdminSearchField(
@@ -532,17 +515,17 @@ class _AdminToolbar extends StatelessWidget {
 }
 
 class _AdminSearchField extends StatelessWidget {
-  final TextEditingController controller;
-  final AdminPanelSection section;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onClear;
-
   const _AdminSearchField({
     required this.controller,
     required this.section,
     required this.onChanged,
     required this.onClear,
   });
+
+  final TextEditingController controller;
+  final AdminPanelSection section;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -571,12 +554,6 @@ class _AdminSearchField extends StatelessWidget {
 }
 
 class _ToolbarMenu extends StatelessWidget {
-  final bool busy;
-  final VoidCallback onRefresh;
-  final VoidCallback onShowGuide;
-  final VoidCallback? onShowUserApp;
-  final VoidCallback onSignOut;
-
   const _ToolbarMenu({
     required this.busy,
     required this.onRefresh,
@@ -584,6 +561,12 @@ class _ToolbarMenu extends StatelessWidget {
     required this.onShowUserApp,
     required this.onSignOut,
   });
+
+  final bool busy;
+  final VoidCallback onRefresh;
+  final VoidCallback onShowGuide;
+  final VoidCallback? onShowUserApp;
+  final VoidCallback onSignOut;
 
   @override
   Widget build(BuildContext context) {
@@ -646,15 +629,11 @@ class _ToolbarMenu extends StatelessWidget {
 enum _ToolbarAction { guide, userApp, signOut }
 
 class _MenuItem extends StatelessWidget {
+  const _MenuItem({required this.icon, required this.label, this.danger = false});
+
   final IconData icon;
   final String label;
   final bool danger;
-
-  const _MenuItem({
-    required this.icon,
-    required this.label,
-    this.danger = false,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -671,10 +650,10 @@ class _MenuItem extends StatelessWidget {
 }
 
 class _PaymentReviewNotice extends StatelessWidget {
+  const _PaymentReviewNotice({required this.count, required this.onOpen});
+
   final int count;
   final VoidCallback onOpen;
-
-  const _PaymentReviewNotice({required this.count, required this.onOpen});
 
   @override
   Widget build(BuildContext context) {
@@ -683,37 +662,40 @@ class _PaymentReviewNotice extends StatelessWidget {
       color: colors.warningContainer,
       child: InkWell(
         onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-          child: Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: colors.warning,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  '$count',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: colors.onAccent,
-                    fontWeight: FontWeight.w800,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+            child: Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: colors.warning,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '$count',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: colors.onAccent,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  '$count thanh toán đang chờ bạn kiểm tra.',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: colors.onWarningContainer,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '$count thanh toán đang chờ bạn kiểm tra.',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: colors.onWarningContainer,
+                    ),
                   ),
                 ),
-              ),
-              TextButton(onPressed: onOpen, child: const Text('Mở danh sách')),
-            ],
+                TextButton(onPressed: onOpen, child: const Text('Mở danh sách')),
+              ],
+            ),
           ),
         ),
       ),
