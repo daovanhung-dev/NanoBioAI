@@ -98,6 +98,7 @@ flutter:
     - assets/icons/nutrition/
     - assets/icons/outlined/
     - assets/config/
+    - docs/note/19-08-2026/image_char/
     # Only Nabi v2 is bundled for release. V1 remains in Git as a source-only
     # rollback package; see docs/features/nabi_character/NABI_V2_ROLLOUT.md.
     - assets/images/nabi_v2/

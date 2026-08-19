@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 import '../../providers/onboarding_provider.dart';
+import '../constants/gender_options.dart';
 import '../constants/onboarding_options.dart';
 import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
@@ -56,7 +57,7 @@ class BasicInfoStep extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 OnboardingChoiceGrid(
-                  options: genders,
+                  options: onboardingGenderOptions,
                   selectedCodes: state.gender.isEmpty
                       ? const []
                       : [state.gender],

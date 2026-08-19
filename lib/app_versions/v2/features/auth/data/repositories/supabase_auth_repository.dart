@@ -36,6 +36,13 @@ class SupabaseAuthRepository implements AuthRepository {
       }
 
       final profile = await datasource.getCurrentProfile();
+      if (profile?.isAccessBlocked == true) {
+        await _signOutSilently();
+        return const AuthRouteState.failure(
+          'Tài khoản bị khóa. Vui lòng liên hệ quản trị viên nếu bạn cần hỗ trợ.',
+        );
+      }
+
       return resolver.resolve(
         session: session,
         profile: profile,
@@ -76,12 +83,25 @@ class SupabaseAuthRepository implements AuthRepository {
 
     try {
       await datasource.signIn(command);
+
+      final profile = await datasource.getCurrentProfile();
+      if (profile?.isAccessBlocked == true) {
+        await _signOutSilently();
+        throw const AuthFailure(
+          code: AuthFailureCode.accountDisabled,
+          userMessage:
+              'Tài khoản bị khóa. Vui lòng liên hệ quản trị viên nếu bạn cần hỗ trợ.',
+        );
+      }
+
       try {
         await datasource.touchLastLogin();
       } catch (error, stackTrace) {
         AppLogger.warning(_tag, 'last_login_at update skipped: $error');
         AppLogger.error(_tag, 'last_login_at update failed', error, stackTrace);
       }
+    } on AuthFailure {
+      rethrow;
     } on AuthException catch (error) {
       throw _mapAuthException(error);
     } catch (_) {
@@ -301,7 +321,7 @@ class SupabaseAuthRepository implements AuthRepository {
       SupabaseAuthErrorKind.rateLimited =>
         'Bạn đã thử quá nhiều lần. Vui lòng chờ một lúc rồi thử lại.',
       SupabaseAuthErrorKind.accountDisabled =>
-        'Tài khoản đang tạm khóa hoặc chưa được phép đăng nhập.',
+        'Tài khoản bị khóa. Vui lòng liên hệ quản trị viên nếu bạn cần hỗ trợ.',
       SupabaseAuthErrorKind.network =>
         'Chưa kết nối được dịch vụ đăng nhập. Bạn hãy kiểm tra mạng rồi thử lại.',
       SupabaseAuthErrorKind.configuration ||
@@ -326,6 +346,20 @@ class SupabaseAuthRepository implements AuthRepository {
       SupabaseAuthErrorKind.authServer => AuthFailureCode.authServer,
       SupabaseAuthErrorKind.unknown => AuthFailureCode.unknown,
     };
+  }
+
+  Future<void> _signOutSilently() async {
+    try {
+      await datasource.signOut();
+    } catch (error, stackTrace) {
+      AppLogger.warning(_tag, 'Blocked-account sign-out deferred: $error');
+      AppLogger.error(
+        _tag,
+        'Blocked-account sign-out failed',
+        error,
+        stackTrace,
+      );
+    }
   }
 
   AuthFailure _genericFailure([

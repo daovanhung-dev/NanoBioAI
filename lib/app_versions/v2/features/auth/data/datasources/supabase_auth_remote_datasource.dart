@@ -46,7 +46,7 @@ class SupabaseAuthRemoteDatasource {
 
     final row = await client
         .from('users')
-        .select('id,onboarding_status,subscription_tier')
+        .select('id,onboarding_status,subscription_tier,admin_status')
         .eq('id', userId)
         .maybeSingle();
 

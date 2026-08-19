@@ -34,9 +34,11 @@ class SupabaseMembershipPaymentRemoteDatasource
   }) async {
     final client = _client();
 
-    // Canonical M13 v2 contract: mobile sends only purchase selection and an
-    // idempotency key. Supabase owns payer profile lookup, price, receiving
-    // account, payment reference and transfer content.
+    // The current rebuild contract in docs/supabase/setup.sql exposes the
+    // four-argument RPC. Calling it first avoids a guaranteed PGRST202 round
+    // trip on every QR request. Keep the three-argument call as rollout
+    // compatibility for environments that already moved payer lookup fully
+    // server-side.
     try {
       return await client.rpc(
         'create_membership_payment_request',
@@ -44,23 +46,18 @@ class SupabaseMembershipPaymentRemoteDatasource
           'p_plan_code': planCode,
           'p_billing_cycle': billingCycle,
           'p_idempotency_key': idempotencyKey,
+          'p_payer_full_name': payerFullName,
         },
       );
     } on PostgrestException catch (error) {
-      if (!_isCanonicalCreateRpcUnavailable(error)) rethrow;
+      if (!_isCreateRpcSignatureUnavailable(error)) rethrow;
 
-      // Rollout compatibility only: a mobile build carrying this patch can
-      // still create a QR against the immediately previous four-argument RPC
-      // until migration 25 is applied. That legacy RPC already generates the
-      // NB reference server-side. Once migration 25 is live, this path is not
-      // used and the client-provided display name never crosses the boundary.
       return client.rpc(
         'create_membership_payment_request',
         params: {
           'p_plan_code': planCode,
           'p_billing_cycle': billingCycle,
           'p_idempotency_key': idempotencyKey,
-          'p_payer_full_name': payerFullName,
         },
       );
     }
@@ -100,12 +97,12 @@ class SupabaseMembershipPaymentRemoteDatasource
   }
 }
 
-
-bool _isCanonicalCreateRpcUnavailable(PostgrestException error) {
+bool _isCreateRpcSignatureUnavailable(PostgrestException error) {
   if (error.code == 'PGRST202') return true;
   final text = '${error.message} ${error.details ?? ''} ${error.hint ?? ''}'
       .toLowerCase();
   return text.contains('create_membership_payment_request') &&
       (text.contains('could not find the function') ||
-          text.contains('schema cache'));
+          text.contains('schema cache') ||
+          text.contains('function') && text.contains('does not exist'));
 }

@@ -152,18 +152,27 @@ class _GreenHero extends StatelessWidget {
           const Positioned(
             top: AppSpacing.sm,
             right: AppSpacing.sm,
-            child: _HeroOrb(
-              icon: Icons.favorite_rounded,
-              color: NabiPalette.careCoral,
+            child: IgnorePointer(
+              child: _HeroOrb(
+                icon: Icons.favorite_rounded,
+                color: NabiPalette.careCoral,
+              ),
             ),
           ),
+          // Keep the decorative moon in the avatar zone instead of anchoring
+          // it to the bottom of the Stack. Bottom positioning allowed it to
+          // overlap the first hero tag ("Cá nhân hóa") on compact screens and
+          // with larger text scaling.
           const Positioned(
             left: AppSpacing.xs,
-            bottom: AppSpacing.xl,
-            child: _HeroOrb(
-              icon: Icons.bedtime_rounded,
-              color: NabiPalette.calmBlue,
-              small: true,
+            top: 104,
+            child: IgnorePointer(
+              key: Key('onboarding_entry_moon_orb'),
+              child: _HeroOrb(
+                icon: Icons.bedtime_rounded,
+                color: NabiPalette.calmBlue,
+                small: true,
+              ),
             ),
           ),
           Column(

@@ -49,51 +49,38 @@ class HealthInsightsView extends ConsumerWidget {
                   parent: BouncingScrollPhysics(),
                 ),
                 slivers: [
-                  SliverPadding(
-                    padding: EdgeInsets.fromLTRB(
-                      AppSpacing.compactPagePadding,
-                      AppSpacing.compactPagePadding,
-                      AppSpacing.compactPagePadding,
-                      AppSpacing.xxxxl + MediaQuery.paddingOf(context).bottom,
-                    ),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate([
-                        _HealthInsightsHeader(dashboard: dashboard),
-                        if (dynamicStatus != null) ...[
-                          const SizedBox(
-                            height: AppSpacing.compactSectionSpacing,
+                  SliverToBoxAdapter(
+                    child: _HealthInsightsContentShell(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _HealthInsightsHeader(dashboard: dashboard),
+                          if (dynamicStatus != null) ...[
+                            const SizedBox(height: AppSpacing.sectionSpacing),
+                            dynamicStatus,
+                          ],
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          _HealthSnapshotCard(metrics: dynamicData.metrics),
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          _PrimaryInsightSection(
+                            insights: dynamicData.insights,
                           ),
-                          dynamicStatus,
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          _PrimaryRecommendationSection(
+                            recommendations: dynamicData.recommendations,
+                          ),
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          _TodayMetricStrip(metrics: dynamicData.metrics),
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          _AdditionalHealthDetails(
+                            dashboard: dashboard,
+                            metrics: dynamicData.metrics,
+                            insightCount: dynamicData.insights.length,
+                            recommendationCount:
+                                dynamicData.recommendations.length,
+                          ),
                         ],
-                        const SizedBox(
-                          height: AppSpacing.compactSectionSpacing,
-                        ),
-                        _HealthSnapshotCard(metrics: dynamicData.metrics),
-                        const SizedBox(
-                          height: AppSpacing.compactSectionSpacing,
-                        ),
-                        _TodayMetricStrip(metrics: dynamicData.metrics),
-                        const SizedBox(
-                          height: AppSpacing.compactSectionSpacing,
-                        ),
-                        _PrimaryInsightSection(insights: dynamicData.insights),
-                        const SizedBox(
-                          height: AppSpacing.compactSectionSpacing,
-                        ),
-                        _PrimaryRecommendationSection(
-                          recommendations: dynamicData.recommendations,
-                        ),
-                        const SizedBox(
-                          height: AppSpacing.compactSectionSpacing,
-                        ),
-                        _AdditionalHealthDetails(
-                          dashboard: dashboard,
-                          metrics: dynamicData.metrics,
-                          insightCount: dynamicData.insights.length,
-                          recommendationCount:
-                              dynamicData.recommendations.length,
-                        ),
-                      ]),
+                      ),
                     ),
                   ),
                 ],

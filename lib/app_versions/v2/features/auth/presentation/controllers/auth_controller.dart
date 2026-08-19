@@ -19,6 +19,7 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
 
   Future<RegistrationResult>? _signUpInFlight;
   Future<void>? _signInInFlight;
+  Future<void>? _authEventRefreshInFlight;
 
   @override
   Future<AuthRouteState> build() async {
@@ -27,7 +28,22 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
       return const AuthRouteState.unauthenticated();
     }
 
-    ref.watch(v2AuthChangesProvider);
+    // Auth events are invalidation signals, not the owner of route state. Using
+    // ref.watch here makes Riverpod rebuild this notifier in the middle of a
+    // successful sign-in, which can temporarily restore an unauthenticated
+    // snapshot and bounce the first login back to the login page.
+    ref.listen(v2AuthChangesProvider, (previous, next) {
+      if (previous == null) return;
+      final previousUserId = previous.value;
+      final nextUserId = next.value;
+      if (previousUserId == nextUserId ||
+          _signInInFlight != null ||
+          _signUpInFlight != null) {
+        return;
+      }
+      unawaited(_refreshFromAuthEvent());
+    });
+
     await _trySyncAfterAuth(
       AuthSyncReason.authGateRefresh,
       updateSyncState: false,
@@ -192,6 +208,35 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     } catch (_) {
       state = previousState;
       rethrow;
+    }
+  }
+
+  Future<void> _refreshFromAuthEvent() async {
+    final active = _authEventRefreshInFlight;
+    if (active != null) return active;
+
+    final operation = _refreshFromAuthEventInternal();
+    _authEventRefreshInFlight = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_authEventRefreshInFlight, operation)) {
+        _authEventRefreshInFlight = null;
+      }
+    }
+  }
+
+  Future<void> _refreshFromAuthEventInternal() async {
+    try {
+      await refresh();
+    } catch (error, stackTrace) {
+      AppLogger.warning('AUTH_CONTROLLER', 'Auth event refresh deferred: $error');
+      AppLogger.error(
+        'AUTH_CONTROLLER',
+        'Auth event refresh failed',
+        error,
+        stackTrace,
+      );
     }
   }
 

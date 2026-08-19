@@ -1,5 +1,37 @@
 part of '../pages/other_page.dart';
 
+const double _healthInsightsMaxContentWidth = 920;
+const double _healthMetricMinWidth = 168;
+
+class _HealthInsightsContentShell extends StatelessWidget {
+  final Widget child;
+
+  const _HealthInsightsContentShell({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = width >= 720
+        ? AppSpacing.pagePaddingLarge
+        : AppSpacing.pagePadding;
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _healthInsightsMaxContentWidth),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSpacing.pagePadding,
+            horizontalPadding,
+            AppSpacing.xxxxl,
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
 class _HealthInsightsHeader extends StatelessWidget {
   final DashboardEntity dashboard;
 
@@ -8,45 +40,51 @@ class _HealthInsightsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = _shortName(dashboard.fullName);
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Góc sức khỏe',
-                style: AppTextStyles.heading1.copyWith(
-                  fontWeight: FontWeight.w800,
+              Semantics(
+                header: true,
+                child: Text(
+                  'Góc sức khỏe',
+                  style: AppTextStyles.heading1.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.xxs),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 name.isEmpty
-                    ? 'Tổng hợp những điều đáng chú ý hôm nay'
-                    : 'Chào $name, đây là tổng hợp hôm nay',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodySmall.copyWith(
+                    ? 'Những điều đáng chú ý và gợi ý chăm sóc dành cho bạn hôm nay.'
+                    : 'Chào $name, Nabi đã gom những điều đáng chú ý hôm nay cho bạn.',
+                style: AppTextStyles.bodyMedium.copyWith(
                   color: context.semanticColors.textSecondary,
+                  height: 1.45,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: AppSpacing.sm),
-        Container(
-          height: 44,
-          width: 44,
-          decoration: AppDecoration.gradient(
-            colors: const [AppColors.primary, AppColors.secondary],
-            radius: AppRadius.md,
-            shadows: AppShadows.sm,
-          ),
-          child: const Icon(
-            Icons.auto_awesome_rounded,
-            color: AppColors.surface,
-            size: 22,
+        const SizedBox(width: AppSpacing.md),
+        ExcludeSemantics(
+          child: Container(
+            height: 48,
+            width: 48,
+            decoration: AppDecoration.gradient(
+              colors: const [AppColors.primary, AppColors.secondary],
+              radius: AppRadius.md,
+              shadows: AppShadows.sm,
+            ),
+            child: const Icon(
+              Icons.auto_awesome_rounded,
+              color: AppColors.surface,
+              size: 23,
+            ),
           ),
         ),
       ],
@@ -63,99 +101,100 @@ class _HealthSnapshotCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final score = metrics.dailyScore;
     final progress = score <= 0 ? 0.0 : (score / 100).clamp(0.0, 1.0);
+    final scoreSemantics = score <= 0
+        ? 'Điểm sức khỏe hôm nay chưa đủ dữ liệu.'
+        : 'Điểm sức khỏe hôm nay: $score trên 100. ${_scoreTitle(score)}.';
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.compactCardPadding),
-      decoration: AppDecoration.gradient(
-        colors: AppGradients.hero.colors,
-        radius: AppRadius.lg,
-        shadows: AppShadows.md,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'TỔNG QUAN HÔM NAY',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: context.semanticColors.surface.withValues(
-                          alpha: .82,
-                        ),
-                        letterSpacing: .7,
-                      ),
+    final heroPadding = MediaQuery.sizeOf(context).width >= 720
+        ? AppSpacing.cardPaddingLarge
+        : AppSpacing.cardPadding;
+
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: scoreSemantics,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(heroPadding),
+        decoration: AppDecoration.gradient(
+          colors: AppGradients.hero.colors,
+          radius: AppRadius.lg,
+          shadows: AppShadows.md,
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final textScale = MediaQuery.textScalerOf(context).scale(1);
+            final stackHeader = constraints.maxWidth < 430 || textScale > 1.3;
+            final headerContent = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'TỔNG QUAN HÔM NAY',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: context.semanticColors.surface.withValues(
+                      alpha: .82,
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      _scoreTitle(score),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.heading2.copyWith(
-                        color: context.semanticColors.surface,
-                        height: 1.28,
-                      ),
+                    letterSpacing: .7,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  _scoreTitle(score),
+                  style: AppTextStyles.heading2.copyWith(
+                    color: context.semanticColors.surface,
+                    height: 1.24,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  _scoreMessage(score),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: context.semanticColors.surface.withValues(
+                      alpha: .88,
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      _scoreMessage(score),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: context.semanticColors.surface.withValues(
-                          alpha: .86,
-                        ),
-                        height: 1.4,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            );
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (stackHeader) ...[
+                  headerContent,
+                  const SizedBox(height: AppSpacing.md),
+                  _ScoreBadge(score: score),
+                ] else
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: headerContent),
+                      const SizedBox(width: AppSpacing.md),
+                      _ScoreBadge(score: score),
+                    ],
+                  ),
+                const SizedBox(height: AppSpacing.md),
+                ExcludeSemantics(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.circular),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 7,
+                      backgroundColor: context.semanticColors.surface.withValues(
+                        alpha: .2,
                       ),
+                      valueColor: const AlwaysStoppedAnimation(AppColors.surface),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _ScoreBadge(score: score),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.circular),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 6,
-              backgroundColor: context.semanticColors.surface.withValues(
-                alpha: .2,
-              ),
-              valueColor: const AlwaysStoppedAnimation(AppColors.surface),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: _SnapshotMetric(
-                  icon: Icons.favorite_rounded,
-                  label: 'Nhịp tim',
-                  value: metrics.heartRateBpm == null
-                      ? '--'
-                      : '${metrics.heartRateBpm} bpm',
-                ),
-              ),
-              const SizedBox(width: AppSpacing.compactItemSpacing),
-              Expanded(
-                child: _SnapshotMetric(
-                  icon: Icons.bloodtype_rounded,
-                  label: 'SpO₂',
-                  value: metrics.oxygenSaturation == null
-                      ? '--'
-                      : '${metrics.oxygenSaturation!.toStringAsFixed(1)}%',
-                ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(height: AppSpacing.md),
+                _SnapshotMetricsWrap(metrics: metrics),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -168,37 +207,87 @@ class _ScoreBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 72,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: context.semanticColors.surface.withValues(alpha: .14),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: context.semanticColors.surface.withValues(alpha: .2),
+    return ExcludeSemantics(
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 86),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: context.semanticColors.surface.withValues(alpha: .14),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(
+            color: context.semanticColors.surface.withValues(alpha: .22),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              score <= 0 ? '--' : '$score',
+              style: AppTextStyles.displaySmall.copyWith(
+                color: context.semanticColors.surface,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              score <= 0 ? 'chưa có' : 'điểm',
+              style: AppTextStyles.labelSmall.copyWith(
+                color: context.semanticColors.surface.withValues(alpha: .82),
+              ),
+            ),
+          ],
         ),
       ),
-      child: Column(
-        children: [
-          Text(
-            score <= 0 ? '--' : '$score',
-            style: AppTextStyles.displaySmall.copyWith(
-              color: context.semanticColors.surface,
-              fontWeight: FontWeight.w800,
+    );
+  }
+}
+
+class _SnapshotMetricsWrap extends StatelessWidget {
+  final DashboardDailyMetrics metrics;
+
+  const _SnapshotMetricsWrap({required this.metrics});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final textScale = MediaQuery.textScalerOf(context).scale(1);
+        final useTwoColumns = constraints.maxWidth >= 320 && textScale <= 1.35;
+        final gap = AppSpacing.sm;
+        final itemWidth = useTwoColumns
+            ? (constraints.maxWidth - gap) / 2
+            : constraints.maxWidth;
+
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            SizedBox(
+              width: itemWidth,
+              child: _SnapshotMetric(
+                icon: Icons.favorite_rounded,
+                label: 'Nhịp tim',
+                value: metrics.heartRateBpm == null
+                    ? 'Chưa có dữ liệu'
+                    : '${metrics.heartRateBpm} bpm',
+              ),
             ),
-          ),
-          Text(
-            score <= 0 ? 'chưa có' : 'điểm',
-            maxLines: 1,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: context.semanticColors.surface.withValues(alpha: .82),
+            SizedBox(
+              width: itemWidth,
+              child: _SnapshotMetric(
+                icon: Icons.bloodtype_rounded,
+                label: 'SpO₂',
+                value: metrics.oxygenSaturation == null
+                    ? 'Chưa có dữ liệu'
+                    : '${metrics.oxygenSaturation!.toStringAsFixed(1)}%',
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 }
@@ -216,46 +305,50 @@ class _SnapshotMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: context.semanticColors.surface.withValues(alpha: .11),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: context.semanticColors.surface, size: 20),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: context.semanticColors.surface.withValues(
-                      alpha: .72,
+    return Semantics(
+      container: true,
+      label: '$label: $value',
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: context.semanticColors.surface.withValues(alpha: .11),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        child: ExcludeSemantics(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: context.semanticColors.surface, size: 20),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: context.semanticColors.surface.withValues(
+                          alpha: .72,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      value,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: context.semanticColors.surface,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: context.semanticColors.surface,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -271,7 +364,7 @@ class _TodayMetricStrip extends StatelessWidget {
     final calories = metrics.caloriesLogged > 0
         ? metrics.caloriesLogged
         : metrics.caloriesPlanned;
-    final calorieHint = metrics.caloriesLogged > 0 ? 'đã ghi' : 'kế hoạch';
+    final calorieHint = metrics.caloriesLogged > 0 ? 'đã ghi' : 'kcal kế hoạch';
     final items = [
       _HealthMetricItem(
         label: 'Nước',
@@ -314,24 +407,38 @@ class _TodayMetricStrip extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(title: 'Chỉ số hôm nay'),
-        const SizedBox(height: AppSpacing.sm),
+        const _SectionTitle(
+          title: 'Chỉ số hôm nay',
+          subtitle: 'Các tín hiệu nhanh để bạn theo dõi nhịp chăm sóc trong ngày.',
+        ),
+        const SizedBox(height: AppSpacing.md),
         LayoutBuilder(
           builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 680 ? 4 : 2;
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: items.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                mainAxisSpacing: AppSpacing.compactItemSpacing,
-                crossAxisSpacing: AppSpacing.compactItemSpacing,
-                childAspectRatio: columns == 4 ? 1.75 : 2.1,
-              ),
-              itemBuilder: (context, index) {
-                return _HealthMetricTile(item: items[index]);
-              },
+            final textScale = MediaQuery.textScalerOf(context).scale(1);
+            final preferredMinWidth = textScale > 1.3
+                ? 220.0
+                : _healthMetricMinWidth;
+            final gap = AppSpacing.sm;
+            final fourColumnWidth = preferredMinWidth * 4 + gap * 3;
+            final twoColumnWidth = preferredMinWidth * 2 + gap;
+            final columns = constraints.maxWidth >= fourColumnWidth
+                ? 4
+                : constraints.maxWidth >= twoColumnWidth
+                ? 2
+                : 1;
+            final itemWidth =
+                (constraints.maxWidth - gap * (columns - 1)) / columns;
+
+            return Wrap(
+              spacing: gap,
+              runSpacing: gap,
+              children: [
+                for (final item in items)
+                  SizedBox(
+                    width: itemWidth,
+                    child: _HealthMetricTile(item: item),
+                  ),
+              ],
             );
           },
         ),
@@ -365,65 +472,64 @@ class _HealthMetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPaddingCompact),
-      decoration: BoxDecoration(
-        color: context.semanticColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: context.semanticColors.borderLight),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 34,
-            width: 34,
-            decoration: BoxDecoration(
-              color: item.background,
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-            ),
-            child: Icon(item.icon, color: item.color, size: 19),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.labelSmall,
+    final spokenValue = item.value == '--'
+        ? 'chưa có dữ liệu'
+        : '${item.value} ${item.unit}';
+
+    return Semantics(
+      container: true,
+      label: '${item.label}: $spokenValue',
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 88),
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
+        decoration: BoxDecoration(
+          color: context.semanticColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: context.semanticColors.borderLight),
+        ),
+        child: ExcludeSemantics(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 38,
+                width: 38,
+                decoration: BoxDecoration(
+                  color: item.background,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
-                const SizedBox(height: AppSpacing.xxs),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                child: Icon(item.icon, color: item.color, size: 20),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
-                      child: Text(
-                        item.value,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.heading4.copyWith(
-                          fontWeight: FontWeight.w800,
+                    Text(item.label, style: AppTextStyles.labelSmall),
+                    const SizedBox(height: AppSpacing.xs),
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xxs,
+                      crossAxisAlignment: WrapCrossAlignment.end,
+                      children: [
+                        Text(
+                          item.value,
+                          style: AppTextStyles.heading4.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Flexible(
-                      child: Text(
-                        item.unit,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption,
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
+                          child: Text(item.unit, style: AppTextStyles.caption),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -440,60 +546,62 @@ class _PrimaryInsightSection extends StatelessWidget {
       return const _CompactEmptyState(
         icon: Icons.auto_awesome_outlined,
         title: 'Nabi chưa có nhận xét mới',
-        message: 'Khi có thêm tín hiệu, Nabi sẽ đặt điều đáng chú ý ở đây.',
+        message:
+            'Khi có thêm tín hiệu sức khỏe, Nabi sẽ đặt điều đáng chú ý ở đây.',
       );
     }
 
     final primary = insights.first;
     final remaining = insights.skip(1).toList(growable: false);
+    final riskLabel = _riskLabel(primary.riskLevel);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(title: 'Mình nhận thấy'),
-        const SizedBox(height: AppSpacing.sm),
-        _CompactSurface(
-          accentColor: _riskColor(primary.riskLevel),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _TintedIcon(
-                icon: _riskIcon(primary.riskLevel),
-                color: _riskColor(primary.riskLevel),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+        const _SectionTitle(
+          title: 'Điều đáng chú ý',
+          subtitle: 'Nabi ưu tiên tín hiệu quan trọng nhất để bạn đọc trước.',
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Semantics(
+          container: true,
+          label: '$riskLabel. ${primary.title}. ${primary.content}',
+          child: _CompactSurface(
+            accentColor: _riskColor(primary.riskLevel),
+            child: ExcludeSemantics(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _TintedIcon(
+                    icon: _riskIcon(primary.riskLevel),
+                    color: _riskColor(primary.riskLevel),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            primary.title,
-                            style: AppTextStyles.heading5,
-                          ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: _RiskLabel(riskLevel: primary.riskLevel),
                         ),
-                        const SizedBox(width: AppSpacing.xs),
-                        _RiskLabel(riskLevel: primary.riskLevel),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(primary.title, style: AppTextStyles.heading5),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          primary.content,
+                          style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      primary.content,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodyMedium.copyWith(height: 1.42),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
         if (remaining.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: AppSpacing.sm),
           _ExpandableInsightList(items: remaining),
         ],
       ],
@@ -514,7 +622,10 @@ class _ExpandableInsightList extends StatelessWidget {
         for (var index = 0; index < items.length; index++) ...[
           _InsightDetailRow(item: items[index]),
           if (index != items.length - 1)
-            const Divider(height: AppSpacing.md, color: AppColors.divider),
+            Divider(
+              height: AppSpacing.md,
+              color: context.semanticColors.borderLight,
+            ),
         ],
       ],
     );
@@ -529,25 +640,33 @@ class _InsightDetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _riskColor(item.riskLevel);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(_riskIcon(item.riskLevel), size: 19, color: color),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(item.title, style: AppTextStyles.labelLarge),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                item.content,
-                style: AppTextStyles.bodySmall.copyWith(height: 1.42),
+    final label = _riskLabel(item.riskLevel);
+
+    return Semantics(
+      container: true,
+      label: '$label. ${item.title}. ${item.content}',
+      child: ExcludeSemantics(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(_riskIcon(item.riskLevel), size: 19, color: color),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.title, style: AppTextStyles.labelLarge),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    item.content,
+                    style: AppTextStyles.bodySmall.copyWith(height: 1.45),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -569,55 +688,97 @@ class _PrimaryRecommendationSection extends StatelessWidget {
 
     final primary = recommendations.first;
     final remaining = recommendations.skip(1).toList(growable: false);
+    final action = primary.actionText.trim();
+    final semantics = StringBuffer(
+      'Việc nên làm hôm nay. ${primary.title}. ${primary.description}',
+    );
+    if (action.isNotEmpty) semantics.write('. Gợi ý: $action');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(title: 'Việc nên làm hôm nay'),
-        const SizedBox(height: AppSpacing.sm),
-        _CompactSurface(
-          accentColor: context.semanticColors.primary,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _TintedIcon(
-                icon: primary.isRead
-                    ? Icons.lightbulb_outline_rounded
-                    : Icons.lightbulb_rounded,
-                color: context.semanticColors.primary,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(primary.title, style: AppTextStyles.heading5),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      primary.description,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodyMedium.copyWith(height: 1.42),
-                    ),
-                    if (primary.actionText.trim().isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        'Gợi ý: ${primary.actionText.trim()}',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: context.semanticColors.textSecondary,
+        const _SectionTitle(
+          title: 'Việc nên làm hôm nay',
+          subtitle: 'Một hành động nhỏ, dễ bắt đầu và phù hợp với nhịp hiện tại.',
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Semantics(
+          container: true,
+          label: semantics.toString(),
+          child: _CompactSurface(
+            accentColor: context.semanticColors.primary,
+            backgroundColor: context.semanticColors.primarySubtle,
+            child: ExcludeSemantics(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _TintedIcon(
+                    icon: primary.isRead
+                        ? Icons.lightbulb_outline_rounded
+                        : Icons.lightbulb_rounded,
+                    color: context.semanticColors.primary,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.semanticColors.primarySoft,
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.circular,
+                            ),
+                          ),
+                          child: Text(
+                            'Ưu tiên hôm nay',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: context.semanticColors.primary,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ],
-                ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(primary.title, style: AppTextStyles.heading5),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          primary.description,
+                          style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+                        ),
+                        if (action.isNotEmpty) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(AppSpacing.sm),
+                            decoration: BoxDecoration(
+                              color: context.semanticColors.surface,
+                              borderRadius: BorderRadius.circular(AppRadius.sm),
+                              border: Border.all(
+                                color: context.semanticColors.primarySoft,
+                              ),
+                            ),
+                            child: Text(
+                              'Gợi ý: $action',
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: context.semanticColors.textPrimary,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
         if (remaining.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: AppSpacing.sm),
           _ExpandableRecommendationList(items: remaining),
         ],
       ],
@@ -638,7 +799,10 @@ class _ExpandableRecommendationList extends StatelessWidget {
         for (var index = 0; index < items.length; index++) ...[
           _RecommendationDetailRow(item: items[index]),
           if (index != items.length - 1)
-            const Divider(height: AppSpacing.md, color: AppColors.divider),
+            Divider(
+              height: AppSpacing.md,
+              color: context.semanticColors.borderLight,
+            ),
         ],
       ],
     );
@@ -652,40 +816,51 @@ class _RecommendationDetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          item.isRead
-              ? Icons.lightbulb_outline_rounded
-              : Icons.lightbulb_rounded,
-          size: 19,
-          color: context.semanticColors.primary,
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(item.title, style: AppTextStyles.labelLarge),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                item.description,
-                style: AppTextStyles.bodySmall.copyWith(height: 1.42),
-              ),
-              if (item.actionText.trim().isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Gợi ý: ${item.actionText.trim()}',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: context.semanticColors.textSecondary,
+    final action = item.actionText.trim();
+    final semantics = StringBuffer('${item.title}. ${item.description}');
+    if (action.isNotEmpty) semantics.write('. Gợi ý: $action');
+
+    return Semantics(
+      container: true,
+      label: semantics.toString(),
+      child: ExcludeSemantics(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              item.isRead
+                  ? Icons.lightbulb_outline_rounded
+                  : Icons.lightbulb_rounded,
+              size: 19,
+              color: context.semanticColors.primary,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.title, style: AppTextStyles.labelLarge),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    item.description,
+                    style: AppTextStyles.bodySmall.copyWith(height: 1.45),
                   ),
-                ),
-              ],
-            ],
-          ),
+                  if (action.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Gợi ý: $action',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: context.semanticColors.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -736,14 +911,27 @@ class _AdditionalHealthDetails extends StatelessWidget {
         ),
     ];
 
-    return _CompactExpansionPanel(
-      title: 'Thông tin thêm',
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var index = 0; index < rows.length; index++) ...[
-          _DetailRow(data: rows[index]),
-          if (index != rows.length - 1)
-            const Divider(height: AppSpacing.md, color: AppColors.divider),
-        ],
+        const _SectionTitle(
+          title: 'Thông tin thêm',
+          subtitle: 'Mở khi bạn muốn xem thêm các chỉ số và nội dung phụ.',
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _CompactExpansionPanel(
+          title: 'Xem chi tiết',
+          children: [
+            for (var index = 0; index < rows.length; index++) ...[
+              _DetailRow(data: rows[index]),
+              if (index != rows.length - 1)
+                Divider(
+                  height: AppSpacing.md,
+                  color: context.semanticColors.borderLight,
+                ),
+            ],
+          ],
+        ),
       ],
     );
   }
@@ -770,27 +958,44 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          height: 32,
-          width: 32,
-          decoration: BoxDecoration(
-            color: data.color.withValues(alpha: .1),
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-          ),
-          child: Icon(data.icon, color: data.color, size: 18),
+    final spokenValue = data.value == '--' ? 'chưa có dữ liệu' : data.value;
+
+    return Semantics(
+      container: true,
+      label: '${data.label}: $spokenValue',
+      child: ExcludeSemantics(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 34,
+              width: 34,
+              decoration: BoxDecoration(
+                color: data.color.withValues(alpha: .1),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Icon(data.icon, color: data.color, size: 18),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                data.label,
+                style: AppTextStyles.bodyMedium,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Flexible(
+              child: Text(
+                data.value,
+                textAlign: TextAlign.end,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: context.semanticColors.textPrimary,
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(child: Text(data.label, style: AppTextStyles.bodyMedium)),
-        const SizedBox(width: AppSpacing.sm),
-        Text(
-          data.value,
-          style: AppTextStyles.labelLarge.copyWith(
-            color: context.semanticColors.textPrimary,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -812,14 +1017,14 @@ class _CompactExpansionPanel extends StatelessWidget {
       child: ExpansionTile(
         maintainState: true,
         tilePadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.compactCardPadding,
-          vertical: AppSpacing.xxs,
+          horizontal: AppSpacing.cardPadding,
+          vertical: AppSpacing.xs,
         ),
         childrenPadding: const EdgeInsets.fromLTRB(
-          AppSpacing.compactCardPadding,
+          AppSpacing.cardPadding,
           0,
-          AppSpacing.compactCardPadding,
-          AppSpacing.compactCardPadding,
+          AppSpacing.cardPadding,
+          AppSpacing.cardPadding,
         ),
         shape: const Border(),
         collapsedShape: const Border(),
@@ -835,24 +1040,29 @@ class _CompactExpansionPanel extends StatelessWidget {
 class _CompactSurface extends StatelessWidget {
   final Widget child;
   final Color? accentColor;
+  final Color? backgroundColor;
 
-  const _CompactSurface({required this.child, this.accentColor});
+  const _CompactSurface({
+    required this.child,
+    this.accentColor,
+    this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.compactCardPadding),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: context.semanticColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        color: backgroundColor ?? context.semanticColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border(
-          top: const BorderSide(color: AppColors.borderLight),
-          right: const BorderSide(color: AppColors.borderLight),
-          bottom: const BorderSide(color: AppColors.borderLight),
+          top: BorderSide(color: context.semanticColors.borderLight),
+          right: BorderSide(color: context.semanticColors.borderLight),
+          bottom: BorderSide(color: context.semanticColors.borderLight),
           left: BorderSide(
             color: accentColor ?? context.semanticColors.borderLight,
-            width: accentColor == null ? 1 : 3,
+            width: accentColor == null ? 1 : 4,
           ),
         ),
       ),
@@ -870,13 +1080,13 @@ class _TintedIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 34,
-      width: 34,
+      height: 38,
+      width: 38,
       decoration: BoxDecoration(
         color: color.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
-      child: Icon(icon, color: color, size: 19),
+      child: Icon(icon, color: color, size: 20),
     );
   }
 }
@@ -889,18 +1099,26 @@ class _RiskLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _riskColor(riskLevel);
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs,
+        vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(AppRadius.circular),
       ),
-      child: Text(
-        _riskLabel(riskLevel),
-        style: AppTextStyles.labelSmall.copyWith(color: color),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_riskIcon(riskLevel), size: 14, color: color),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            _riskLabel(riskLevel),
+            style: AppTextStyles.labelSmall.copyWith(color: color),
+          ),
+        ],
       ),
     );
   }
@@ -908,12 +1126,31 @@ class _RiskLabel extends StatelessWidget {
 
 class _SectionTitle extends StatelessWidget {
   final String title;
+  final String? subtitle;
 
-  const _SectionTitle({required this.title});
+  const _SectionTitle({required this.title, this.subtitle});
 
   @override
   Widget build(BuildContext context) {
-    return Text(title, style: AppTextStyles.sectionTitle);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          header: true,
+          child: Text(title, style: AppTextStyles.sectionTitle),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            subtitle!,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: context.semanticColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ],
+    );
   }
 }
 
@@ -930,33 +1167,39 @@ class _CompactEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.compactCardPadding),
-      decoration: BoxDecoration(
-        color: context.semanticColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: context.semanticColors.borderLight),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _TintedIcon(icon: icon, color: context.semanticColors.primary),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: AppTextStyles.labelLarge),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  message,
-                  style: AppTextStyles.bodySmall.copyWith(height: 1.42),
+    return Semantics(
+      container: true,
+      label: '$title. $message',
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
+        decoration: BoxDecoration(
+          color: context.semanticColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: context.semanticColors.borderLight),
+        ),
+        child: ExcludeSemantics(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _TintedIcon(icon: icon, color: context.semanticColors.primary),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppTextStyles.labelLarge),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      message,
+                      style: AppTextStyles.bodySmall.copyWith(height: 1.45),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -979,31 +1222,36 @@ class _HealthInsightsStatusStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.compactCardPadding,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: context.semanticColors.primarySubtle,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: context.semanticColors.primarySoft),
-      ),
-      child: Row(
-        children: [
-          if (showProgress)
-            const SizedBox(
-              height: 18,
-              width: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          else
-            Icon(icon, size: 19, color: context.semanticColors.primary),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(child: Text(message, style: AppTextStyles.bodySmall)),
-          if (actionLabel != null && onAction != null)
-            TextButton(onPressed: onAction, child: Text(actionLabel!)),
-        ],
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: message,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.cardPadding,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: context.semanticColors.primarySubtle,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: context.semanticColors.primarySoft),
+        ),
+        child: Row(
+          children: [
+            if (showProgress)
+              const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              Icon(icon, size: 19, color: context.semanticColors.primary),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(child: Text(message, style: AppTextStyles.bodySmall)),
+            if (actionLabel != null && onAction != null)
+              TextButton(onPressed: onAction, child: Text(actionLabel!)),
+          ],
+        ),
       ),
     );
   }
@@ -1016,32 +1264,40 @@ class _HealthInsightsLoadingState extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(AppSpacing.compactPagePadding),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SkeletonBlock(height: 48, widthFactor: .72),
-          SizedBox(height: AppSpacing.compactSectionSpacing),
-          _SkeletonBlock(height: 210),
-          SizedBox(height: AppSpacing.compactSectionSpacing),
-          Row(
-            children: [
-              Expanded(child: _SkeletonBlock(height: 72)),
-              SizedBox(width: AppSpacing.compactItemSpacing),
-              Expanded(child: _SkeletonBlock(height: 72)),
-            ],
-          ),
-          SizedBox(height: AppSpacing.compactItemSpacing),
-          Row(
-            children: [
-              Expanded(child: _SkeletonBlock(height: 72)),
-              SizedBox(width: AppSpacing.compactItemSpacing),
-              Expanded(child: _SkeletonBlock(height: 72)),
-            ],
-          ),
-          SizedBox(height: AppSpacing.compactSectionSpacing),
-          _SkeletonBlock(height: 116),
-        ],
+      child: _HealthInsightsContentShell(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _SkeletonBlock(height: 52, widthFactor: .68),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+            const _SkeletonBlock(height: 238),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+            const _SkeletonBlock(height: 150),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+            const _SkeletonBlock(height: 180),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final twoColumns = constraints.maxWidth >= 420;
+                final gap = AppSpacing.sm;
+                final width = twoColumns
+                    ? (constraints.maxWidth - gap) / 2
+                    : constraints.maxWidth;
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: gap,
+                  children: List.generate(
+                    4,
+                    (_) => SizedBox(
+                      width: width,
+                      child: const _SkeletonBlock(height: 92),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1061,7 +1317,7 @@ class _SkeletonBlock extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           color: context.semanticColors.borderLight,
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
       ),
     );
@@ -1075,43 +1331,49 @@ class _HealthInsightsErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 420),
-          padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-          decoration: BoxDecoration(
-            color: context.semanticColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: context.semanticColors.borderLight),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const _TintedIcon(
-                icon: Icons.error_outline_rounded,
-                color: AppColors.error,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Chưa thể mở góc sức khỏe',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.heading4,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Nabi chưa lấy được dữ liệu của bạn lúc này.',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              FilledButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Thử lại'),
-              ),
-            ],
+    return SingleChildScrollView(
+      child: _HealthInsightsContentShell(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxWidth: 460),
+            padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+            decoration: BoxDecoration(
+              color: context.semanticColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: context.semanticColors.borderLight),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const _TintedIcon(
+                  icon: Icons.error_outline_rounded,
+                  color: AppColors.error,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Semantics(
+                  header: true,
+                  child: Text(
+                    'Chưa thể mở góc sức khỏe',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.heading4,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Nabi chưa lấy được dữ liệu của bạn lúc này. Bạn có thể thử lại sau một chút.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                FilledButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Thử lại'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1160,9 +1422,9 @@ String _scoreTitle(int score) {
 
 String _scoreMessage(int score) {
   if (score <= 0) {
-    return 'Nabi sẽ cập nhật khi có thêm ghi nhận.';
+    return 'Nabi sẽ cập nhật khi có thêm ghi nhận trong ngày.';
   }
-  return 'Điểm tổng hợp từ nhiệm vụ, bữa ăn, nước và giấc ngủ.';
+  return 'Điểm tổng hợp từ nhiệm vụ, bữa ăn, nước và giấc ngủ của bạn.';
 }
 
 String _stressLabel(int value) {
