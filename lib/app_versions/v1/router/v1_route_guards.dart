@@ -57,6 +57,9 @@ class V1RouteGuards {
     V1RoutePaths.dailyRoutinePreferences,
     V1RoutePaths.sleepTracking,
     V1RoutePaths.stressTracking,
+    // Voice Live connects directly to Gemini and intentionally has no
+    // Supabase/account access gate.
+    V1RoutePaths.aiVoice,
     AuthRoutePaths.authGate,
     AuthRoutePaths.login,
     AuthRoutePaths.register,

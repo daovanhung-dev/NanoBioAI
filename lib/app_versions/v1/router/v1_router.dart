@@ -144,7 +144,6 @@ final v1Routes = <RouteBase>[
   GoRoute(
     path: V1RoutePaths.aiVoice,
     name: V1RoutePaths.aiVoice,
-    redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const AiVoicePage(),
   ),
   GoRoute(

@@ -205,6 +205,7 @@ class AppEnv {
         'ONBOARDING_AI_DEV_CHECK_ENABLED',
       ),
       'GEMINI_API_KEY' => const String.fromEnvironment('GEMINI_API_KEY'),
+      'GEMINI_LIVE_MODEL' => const String.fromEnvironment('GEMINI_LIVE_MODEL'),
       'GEMINI_MODEL' => const String.fromEnvironment('GEMINI_MODEL'),
       'GEMINI_BASE_URL' => const String.fromEnvironment('GEMINI_BASE_URL'),
       'GEMINI_PLAN_MODEL' => const String.fromEnvironment('GEMINI_PLAN_MODEL'),
@@ -232,8 +233,7 @@ class AppEnv {
     if (cleaned.length >= 2) {
       final first = cleaned[0];
       final last = cleaned[cleaned.length - 1];
-      if ((first == '"' && last == '"') ||
-          (first == "'" && last == "'")) {
+      if ((first == '"' && last == '"') || (first == "'" && last == "'")) {
         cleaned = cleaned.substring(1, cleaned.length - 1).trim();
       }
     }

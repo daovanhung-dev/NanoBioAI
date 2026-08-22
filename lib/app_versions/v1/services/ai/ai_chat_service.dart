@@ -6,8 +6,8 @@ import 'package:nano_app/core/config/app_env.dart';
 
 import 'ai_exceptions.dart';
 import 'ai_trace_logger.dart';
-import 'gemini_rest_client.dart';
 import 'ai_vietnamese_text_validator.dart';
+import 'gemini_rest_client.dart';
 
 typedef AIChatTextGenerator =
     Future<String> Function({
@@ -15,10 +15,6 @@ typedef AIChatTextGenerator =
       required String message,
     });
 
-/// A validated model response that is not yet part of the chat context.
-///
-/// The repository acknowledges it only after the trusted quota commit
-/// succeeds. This keeps a failed request out of the next Gemini prompt.
 class AIChatPreparedResponse {
   final String text;
   final void Function() _onAccepted;
@@ -34,6 +30,21 @@ class AIChatPreparedResponse {
   }
 
   static void _noOp() {}
+}
+
+class AIChatPreparedStream {
+  final Stream<String> stream;
+  final void Function() _onAccepted;
+  bool _accepted = false;
+
+  AIChatPreparedStream({required this.stream, required void Function() onAccepted})
+    : _onAccepted = onAccepted;
+
+  void accept() {
+    if (_accepted) return;
+    _accepted = true;
+    _onAccepted();
+  }
 }
 
 final aiChatServiceProvider = Provider<AIChatService>((ref) {
@@ -92,6 +103,7 @@ class AIChatService {
               ? _env('GEMINI_CHAT_FALLBACK_MODELS')
               : null,
         );
+
     AITraceLogger.info(
       _tag,
       AITraceLogger.nextTraceId('ai-chat-init'),
@@ -174,27 +186,157 @@ class AIChatService {
     }
   }
 
+  /// Prepares a true streaming Gemini turn without adding it to conversation
+  /// history until [AIChatPreparedStream.accept] is called by the repository.
+  Future<AIChatPreparedStream> prepareMessageStream(String message) async {
+    if (!_hasRuntimeTextSource) {
+      _throwMissingConfiguration(
+        traceId: AITraceLogger.nextTraceId('ai-chat-stream'),
+        method: 'prepareMessageStream',
+      );
+    }
+
+    // Tests and injected generators keep deterministic legacy behaviour while
+    // production Gemini uses the SSE path below.
+    if (_textGenerator != null) {
+      final prepared = await prepareMessage(message);
+      return AIChatPreparedStream(
+        stream: Stream<String>.value(prepared.text),
+        onAccepted: prepared.accept,
+      );
+    }
+
+    final pending = _PendingStreamTurn(userMessage: message);
+    return AIChatPreparedStream(
+      stream: _streamGeminiMessage(message, pending),
+      onAccepted: pending.accept,
+    );
+  }
+
+  Future<Stream<String>> sendMessageStream(String message) async {
+    final prepared = await prepareMessageStream(message);
+    return (() async* {
+      var accepted = false;
+      await for (final delta in prepared.stream) {
+        if (!accepted && delta.isNotEmpty) {
+          prepared.accept();
+          accepted = true;
+        }
+        yield delta;
+      }
+    })();
+  }
+
+  Stream<String> _streamGeminiMessage(
+    String message,
+    _PendingStreamTurn pending,
+  ) async* {
+    final traceId = AITraceLogger.nextTraceId('ai-chat-stream');
+    const method = 'prepareMessageStream';
+    Object? lastError;
+    StackTrace? lastStackTrace;
+    var totalAttempts = 0;
+
+    for (var modelIndex = 0; modelIndex < _models.length; modelIndex++) {
+      final entry = _models[modelIndex];
+      if (_activeCooldownUntil(entry.name) != null) continue;
+      totalAttempts++;
+      var emitted = false;
+      final buffer = StringBuffer();
+
+      try {
+        final client = _geminiClient;
+        if (client == null) {
+          throw StateError('Missing Gemini REST client for ${entry.name}');
+        }
+
+        final source = client
+            .streamText(
+              model: entry.name,
+              contents: entry.contentsWithUserMessage(message),
+              generationConfig: const GeminiGenerationConfig(
+                candidateCount: 1,
+                maxOutputTokens: 512,
+                temperature: 0.4,
+                topP: 0.8,
+              ),
+              systemInstruction: _systemInstruction,
+            )
+            .timeout(AIChatRetryPolicy.perAttemptTimeout);
+
+        await for (final delta in source) {
+          if (delta.isEmpty) continue;
+          emitted = true;
+          buffer.write(delta);
+          yield delta;
+        }
+
+        final validated = _validatedResponse(buffer.toString());
+        pending.complete(entry: entry, modelMessage: validated);
+        AITraceLogger.success(
+          _tag,
+          traceId,
+          method,
+          'STREAM_SUCCESS',
+          'AI chat stream completed.',
+          data: {
+            'model': entry.name,
+            'textLength': validated.length,
+            'totalAttempt': totalAttempts,
+          },
+          location: StackTrace.current,
+        );
+        return;
+      } catch (error, stackTrace) {
+        lastError = error;
+        lastStackTrace = stackTrace;
+
+        // Once content has been exposed, never switch models because that can
+        // splice two answers into one spoken response.
+        if (emitted) {
+          _throwTypedFailure(error, stackTrace);
+        }
+
+        if (AIAuthenticationException.matches(error)) {
+          Error.throwWithStackTrace(
+            const AIAuthenticationException(),
+            stackTrace,
+          );
+        }
+
+        final transient = AIChatRetryPolicy.isTransient(error);
+        if (transient) {
+          _cooldownModel(entry.name);
+          if (_hasAvailableModelAfter(modelIndex)) {
+            final retryDelay = AIChatRetryPolicy.delayForFailureNumber(
+              totalAttempts,
+              random: _random,
+            );
+            await _delay(retryDelay);
+          }
+        }
+      }
+    }
+
+    _throwTypedFailure(
+      lastError ?? const AIOverloadedException(),
+      lastStackTrace ?? StackTrace.current,
+    );
+  }
+
   void resetChat() {
-    final traceId = AITraceLogger.nextTraceId('ai-chat-reset');
-    const method = 'resetChat';
     for (final entry in _models) {
       entry.resetChat();
     }
     AITraceLogger.info(
       _tag,
-      traceId,
-      method,
+      AITraceLogger.nextTraceId('ai-chat-reset'),
+      'resetChat',
       'SESSION_RESET',
       'AI chat session reset.',
       data: {'models': _modelNames()},
       location: StackTrace.current,
     );
-  }
-
-  Future<Stream<String>> sendMessageStream(String message) async {
-    final preparedResponse = await prepareMessage(message);
-    preparedResponse.accept();
-    return Stream.value(preparedResponse.text);
   }
 
   Future<_AIChatValidationResult> _runWithRetry({
@@ -249,9 +391,9 @@ class AIChatService {
             location: StackTrace.current,
           );
 
-          final text = await operation(
-            entry,
-          ).timeout(AIChatRetryPolicy.perAttemptTimeout);
+          final text = await operation(entry).timeout(
+            AIChatRetryPolicy.perAttemptTimeout,
+          );
           final responseText = _validatedResponse(text);
           final validation = _AIChatValidationResult(
             text: responseText,
@@ -326,19 +468,15 @@ class AIChatService {
             );
           }
 
-          if (!transient) {
-            break;
-          }
+          if (!transient) break;
 
           _cooldownModel(entry.name);
           final hasMoreAttempts =
               modelAttempt < AIChatRetryPolicy.maxAttemptsPerModel ||
               _hasAvailableModelAfter(modelIndex);
-          if (!hasMoreAttempts) {
-            break;
-          }
+          if (!hasMoreAttempts) break;
 
-          final delay = AIChatRetryPolicy.delayForFailureNumber(
+          final retryDelay = AIChatRetryPolicy.delayForFailureNumber(
             totalAttempts,
             random: _random,
           );
@@ -351,11 +489,11 @@ class AIChatService {
             data: {
               'model': entry.name,
               'nextTotalAttempt': totalAttempts + 1,
-              'delayMs': delay.inMilliseconds,
+              'delayMs': retryDelay.inMilliseconds,
             },
             location: StackTrace.current,
           );
-          await _delay(delay);
+          await _delay(retryDelay);
         }
       }
     }
@@ -391,7 +529,7 @@ class AIChatService {
       throw StateError('Missing Gemini REST client for ${entry.name}');
     }
 
-    final response = await client.generateText(
+    return client.generateText(
       model: entry.name,
       contents: entry.contentsWithUserMessage(message),
       generationConfig: const GeminiGenerationConfig(
@@ -402,7 +540,6 @@ class AIChatService {
       ),
       systemInstruction: _systemInstruction,
     );
-    return response;
   }
 
   void _logValidation(
@@ -422,36 +559,27 @@ class AIChatService {
   }
 
   void _cooldownModel(String modelName) {
-    if (_modelCooldown <= Duration.zero) {
-      return;
-    }
+    if (_modelCooldown <= Duration.zero) return;
     _modelCooldownUntil[modelName] = _now().add(_modelCooldown);
   }
 
   DateTime? _activeCooldownUntil(String modelName) {
     final cooldownUntil = _modelCooldownUntil[modelName];
-    if (cooldownUntil == null) {
-      return null;
-    }
-    if (_now().isBefore(cooldownUntil)) {
-      return cooldownUntil;
-    }
+    if (cooldownUntil == null) return null;
+    if (_now().isBefore(cooldownUntil)) return cooldownUntil;
     _modelCooldownUntil.remove(modelName);
     return null;
   }
 
   bool _hasAvailableModelAfter(int modelIndex) {
     for (var index = modelIndex + 1; index < _models.length; index++) {
-      if (_activeCooldownUntil(_models[index].name) == null) {
-        return true;
-      }
+      if (_activeCooldownUntil(_models[index].name) == null) return true;
     }
     return false;
   }
 
-  List<String> _modelNames() {
-    return _models.map((entry) => entry.name).toList(growable: false);
-  }
+  List<String> _modelNames() =>
+      _models.map((entry) => entry.name).toList(growable: false);
 
   bool get _hasRuntimeTextSource =>
       _textGenerator != null || _geminiClient != null;
@@ -465,7 +593,7 @@ class AIChatService {
       traceId,
       method,
       'MISSING_API_KEY',
-      'AI chat is unavailable because GEMINI_API_KEY is missing.',
+      'Chat AI is unavailable because GEMINI_API_KEY is missing.',
       data: {'reason': 'missing_api_key', 'models': _modelNames()},
       location: StackTrace.current,
     );
@@ -500,28 +628,19 @@ class AIChatService {
     return AppEnv.maybeStringWithLegacy(key, legacyKey);
   }
 
-  static String? _env(String key) {
-    return AppEnv.maybeString(key);
-  }
+  static String? _env(String key) => AppEnv.maybeString(key);
 
   static String? _cleanEnv(String? value) {
     final cleaned = value?.trim();
-    if (cleaned == null || cleaned.isEmpty) {
-      return null;
-    }
-    return cleaned;
+    return cleaned == null || cleaned.isEmpty ? null : cleaned;
   }
 
   static String _validatedResponse(String? rawText) {
     final text = rawText?.trim() ?? '';
-    if (text.isEmpty) {
-      throw const AIResponseInvalidException();
-    }
-
+    if (text.isEmpty) throw const AIResponseInvalidException();
     if (!AIVietnameseTextValidator.isValidDisplayText(text)) {
       throw const AIResponseInvalidException();
     }
-
     return text;
   }
 
@@ -537,6 +656,7 @@ Phong cách:
 - Luôn trả lời bằng tiếng Việt có dấu.
 - Gọi người dùng là "bạn", tự xưng là "mình".
 - Câu trả lời ngắn gọn, dễ hiểu, thường từ 2 đến 4 câu.
+- Ưu tiên câu ngắn để phản hồi giọng nói bắt đầu nhanh.
 - Tránh thuật ngữ y khoa phức tạp khi không cần thiết.
 - Có giọng thân thiện, ấm áp và chuyên nghiệp.
 
@@ -546,18 +666,48 @@ Nguyên tắc an toàn:
 - Khuyến khích gặp bác sĩ khi triệu chứng nghiêm trọng, kéo dài hoặc bất thường.
 - Tập trung vào thói quen sinh hoạt, dinh dưỡng, vận động và nghỉ ngơi.
 - Chỉ dùng token kỹ thuật phổ biến khi thật cần thiết, ví dụ AI, BMI, kcal hoặc ml.
-
-Ví dụ phong cách:
-"Mình hiểu bạn đang cảm thấy mệt. Bạn nên ưu tiên ngủ đủ 7 đến 8 tiếng mỗi đêm, uống đủ nước và ăn thêm rau xanh. Nếu tình trạng kéo dài hoặc nặng hơn, bạn nên trao đổi với bác sĩ nhé."
 ''';
+}
+
+class _PendingStreamTurn {
+  final String userMessage;
+  bool _accepted = false;
+  bool _completed = false;
+  bool _remembered = false;
+  _AIChatModelEntry? _entry;
+  String _modelMessage = '';
+
+  _PendingStreamTurn({required this.userMessage});
+
+  void accept() {
+    _accepted = true;
+    _rememberIfReady();
+  }
+
+  void complete({
+    required _AIChatModelEntry entry,
+    required String modelMessage,
+  }) {
+    _entry = entry;
+    _modelMessage = modelMessage;
+    _completed = true;
+    _rememberIfReady();
+  }
+
+  void _rememberIfReady() {
+    if (!_accepted || !_completed || _remembered) return;
+    final entry = _entry;
+    if (entry == null || _modelMessage.isEmpty) return;
+    _remembered = true;
+    entry.rememberTurn(
+      userMessage: userMessage,
+      modelMessage: _modelMessage,
+    );
+  }
 }
 
 class AIChatModelCandidates {
   static const defaultPrimaryModel = 'gemini-3.1-flash-lite';
-  // Keep chat aligned with the verified plan fallback set. Some Gemini
-  // projects do not have access to the lite preview models, while 3.5 Flash
-  // remains available. A non-transient model error still advances to the next
-  // candidate, so chat can recover without pretending a local reply is AI.
   static const defaultFallbackModels = [
     'gemini-3.5-flash',
     'gemini-3.1-flash-lite',
@@ -574,27 +724,19 @@ class AIChatModelCandidates {
       _clean(primaryModel) ?? defaultPrimaryModel,
       ...(fallbackModels.isEmpty ? defaultFallbackModels : fallbackModels),
     ];
-
     final models = <String>[];
     final seen = <String>{};
-
     for (final rawModel in rawModels) {
       final model = rawModel.trim();
-      if (model.isEmpty || !seen.add(model)) {
-        continue;
-      }
+      if (model.isEmpty || !seen.add(model)) continue;
       models.add(model);
     }
-
     return models.isEmpty ? const [defaultPrimaryModel] : models;
   }
 
   static List<String> _parseCsv(String? value) {
     final text = value?.trim();
-    if (text == null || text.isEmpty) {
-      return const [];
-    }
-
+    if (text == null || text.isEmpty) return const [];
     return text
         .split(',')
         .map((item) => item.trim())
@@ -604,10 +746,7 @@ class AIChatModelCandidates {
 
   static String? _clean(String? value) {
     final text = value?.trim();
-    if (text == null || text.isEmpty) {
-      return null;
-    }
-    return text;
+    return text == null || text.isEmpty ? null : text;
   }
 }
 
@@ -622,17 +761,15 @@ class AIChatRetryPolicy {
   static bool isTransient(Object error) => AIOverloadedException.matches(error);
 
   static Duration baseDelayForFailureNumber(int failureNumber) {
-    return switch (failureNumber) {
-      <= 1 => const Duration(seconds: 1),
-      _ => const Duration(seconds: 3),
-    };
+    return failureNumber <= 1
+        ? const Duration(seconds: 1)
+        : const Duration(seconds: 3);
   }
 
   static Duration delayForFailureNumber(int failureNumber, {Random? random}) {
     final baseDelay = baseDelayForFailureNumber(failureNumber);
     final jitter = Duration(milliseconds: random?.nextInt(751) ?? 0);
     final delay = baseDelay + jitter;
-
     return delay.compareTo(maxDelay) > 0 ? maxDelay : delay;
   }
 }
@@ -656,16 +793,11 @@ class _AIChatModelEntry {
     _history
       ..add(GeminiContent.user(userMessage))
       ..add(GeminiContent.model(modelMessage));
-
     final overflow = _history.length - _maxHistoryMessages;
-    if (overflow > 0) {
-      _history.removeRange(0, overflow);
-    }
+    if (overflow > 0) _history.removeRange(0, overflow);
   }
 
-  void resetChat() {
-    _history.clear();
-  }
+  void resetChat() => _history.clear();
 }
 
 class _AIChatValidationResult {

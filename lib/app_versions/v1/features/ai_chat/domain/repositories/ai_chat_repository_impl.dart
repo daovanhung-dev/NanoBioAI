@@ -3,10 +3,12 @@ import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart'
 import '../../../../services/ai/ai_chat_service.dart';
 import '../../../../services/ai/ai_exceptions.dart';
 import '../../data/models/chat_message_model.dart';
+import '../entities/ai_chat_stream_event.dart';
 import '../entities/chat_message_entity.dart';
 import 'ai_chat_repository.dart';
 
-class AIChatRepositoryImpl implements AIChatRepository {
+class AIChatRepositoryImpl
+    implements AIChatRepository, AIChatStreamingCapability {
   final AIChatService _aiChatService;
   final UsageQuotaGateway? _quotaGateway;
   final List<ChatMessageEntity> _history = [];
@@ -32,7 +34,6 @@ class AIChatRepositoryImpl implements AIChatRepository {
 
     await _checkQuota(requestId: requestId, at: timestamp);
 
-    // Create user message
     final userMessage = ChatMessageModel(
       id: timestamp.millisecondsSinceEpoch.toString(),
       content: message,
@@ -40,43 +41,88 @@ class AIChatRepositoryImpl implements AIChatRepository {
       timestamp: timestamp,
     );
 
-    // Get AI response. Failed requests are not committed to repository history.
     final AIChatPreparedResponse preparedResponse;
     try {
       preparedResponse = await _aiChatService.prepareMessage(message);
     } catch (error, stackTrace) {
-      if (error is AIConfigurationUnavailableException ||
-          error is AIAuthenticationException ||
-          error is AINetworkException ||
-          error is AIModelUnavailableException ||
-          error is AIOverloadedException ||
-          error is AIResponseInvalidException) {
-        Error.throwWithStackTrace(error, stackTrace);
-      }
-      Error.throwWithStackTrace(const AIChatUnavailableException(), stackTrace);
+      _throwKnownOrUnavailable(error, stackTrace);
     }
 
     await _commitQuotaWithRetry(requestId: requestId);
     preparedResponse.accept();
     _history.add(userMessage);
 
-    // Create AI message
     final aiMessage = ChatMessageModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       content: preparedResponse.text,
       role: MessageRole.assistant,
       timestamp: DateTime.now(),
     );
-
     _history.add(aiMessage);
-
     return aiMessage;
   }
 
   @override
-  Future<List<ChatMessageEntity>> getChatHistory() async {
-    return List.from(_history);
+  Stream<AIChatStreamEvent> sendRealtimeMessageStream(String message) async* {
+    final timestamp = DateTime.now();
+    final requestId = _requestIdFactory(timestamp);
+    await _checkQuota(requestId: requestId, at: timestamp);
+
+    final userMessage = ChatMessageModel(
+      id: timestamp.millisecondsSinceEpoch.toString(),
+      content: message,
+      role: MessageRole.user,
+      timestamp: timestamp,
+    );
+
+    final AIChatPreparedStream preparedStream;
+    try {
+      preparedStream = await _aiChatService.prepareMessageStream(message);
+    } catch (error, stackTrace) {
+      _throwKnownOrUnavailable(error, stackTrace);
+    }
+
+    var quotaCommitted = false;
+    final fullText = StringBuffer();
+
+    try {
+      await for (final delta in preparedStream.stream) {
+        if (delta.isEmpty) continue;
+
+        if (!quotaCommitted) {
+          await _commitQuotaWithRetry(requestId: requestId);
+          quotaCommitted = true;
+          preparedStream.accept();
+          _history.add(userMessage);
+        }
+
+        fullText.write(delta);
+        yield AIChatStreamEvent.delta(
+          delta: delta,
+          fullText: fullText.toString(),
+        );
+      }
+    } catch (error, stackTrace) {
+      _throwKnownOrUnavailable(error, stackTrace);
+    }
+
+    final responseText = fullText.toString().trim();
+    if (!quotaCommitted || responseText.isEmpty) {
+      throw const AIResponseInvalidException();
+    }
+
+    final aiMessage = ChatMessageModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      content: responseText,
+      role: MessageRole.assistant,
+      timestamp: DateTime.now(),
+    );
+    _history.add(aiMessage);
+    yield AIChatStreamEvent.completed(fullText: responseText);
   }
+
+  @override
+  Future<List<ChatMessageEntity>> getChatHistory() async => List.from(_history);
 
   @override
   Future<void> clearHistory() async {
@@ -123,5 +169,18 @@ class AIChatRepositoryImpl implements AIChatRepository {
     }
     if (lastError is UsageQuotaException) throw lastError;
     throw const UsageQuotaUnavailableException();
+  }
+
+  Never _throwKnownOrUnavailable(Object error, StackTrace stackTrace) {
+    if (error is AIConfigurationUnavailableException ||
+        error is AIAuthenticationException ||
+        error is AINetworkException ||
+        error is AIModelUnavailableException ||
+        error is AIOverloadedException ||
+        error is AIResponseInvalidException ||
+        error is UsageQuotaException) {
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+    Error.throwWithStackTrace(const AIChatUnavailableException(), stackTrace);
   }
 }

@@ -89,6 +89,26 @@ Nguồn chi tiết: [`DD_READINESS.md`](../refactor/stitch_nanobio_design_system
 
 ### Cập nhật implementation evidence 2026-07-19 — Admin, AI và notification reliability
 
+- 2026-08-23 M07 voice direct delta thay thế runtime Edge/Plus trước đó theo
+  yêu cầu sản phẩm: `/ai-voice` cho guest, Flutter nối
+  `BidiGenerateContent?key=…` trực tiếp từ `AppEnv`, không gọi JWT,
+  `effective_user_access`, quota hay `voice-live-token`. Setup giữ PCM/VAD/
+  transcript/interruption, thêm Nabi instruction + context compression, bỏ
+  timer 15 phút cục bộ và cho resume liên tiếp. Dart format, targeted analyzer
+  sạch, 31 test Voice/AppEnv/route và APK debug PASS. Xiaomi bị ngắt ADB trước
+  khi cài APK mới nên end-to-end audio thật còn pending. Direct mode chấp nhận
+  key nằm trong APK và không thể thực thi Plus-only đáng tin cậy.
+
+- 2026-08-22 M07 voice realtime delta: source thay session voice legacy bằng
+  Gemini Live audio-to-audio, native PCM Android/iOS, consent cục bộ theo account
+  và Edge Function JWT/quota/ephemeral token. Không lưu audio/transcript. Có
+  protocol/controller/Deno source tests; `dart format`, targeted Flutter analyze
+  0 issue, 13 Flutter tests, Android Kotlin debug compile và `git diff --check`
+  PASS. Deno, Supabase sandbox, Xcode/iOS compile và Android/iPhone device smoke
+  chưa khả dụng nên coding 100% baseline và production acceptance không thay đổi.
+  Backlog: deploy Edge Function với secret, quota/idempotency sandbox,
+  speaker/Bluetooth/permission/background/network/nói chen real-device smoke.
+
 - M05/M15: `AppSurface.automatic` đưa Admin-only và dual-role vào Admin ngay sau identity/access resolve; user surface chỉ là lựa chọn chủ động của dual-role. Auth stream nay phát `String?` từ session event, nên Settings bỏ card Guest ngay khi login. Regression Admin/Auth/Settings/router: 10 tests PASS; analyzer toàn dự án sạch.
 - M02/M06/M07: Chat giữ chuỗi quota check → Gemini hợp lệ → quota commit → accept assistant turn; không có local chat giả. Lịch mang `generation_source` qua SQLite v16; nếu bất kỳ chunk dùng catalog local thì hiển thị “lịch gợi ý cơ bản” và không commit quota member. AI/quota/migration bundle: 81 tests PASS.
 - M09: refresh chỉ dùng active subject, hủy OS notification và xóa pending rows của subject khác/source đã mất; nếu OS cancel lỗi thì giữ row để retry; tap notification cũ sau User A → User B fail-closed. Có iOS registrant/delegate, action “Mở nhiệm vụ + Để sau”, legacy `done` mở task và V3 route exact-item. Notification bundle: 44 tests PASS.

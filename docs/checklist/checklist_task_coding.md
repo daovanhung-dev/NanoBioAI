@@ -108,6 +108,26 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 
 ## Notes tu phien coding gan nhat
 
+- 2026-08-23: M07 Voice chuyển sang Gemini Live direct theo yêu cầu mới: không
+  gọi Supabase/Edge/JWT/quota/membership, `/ai-voice` mở được cho guest nhưng
+  vẫn cần chạm Bắt đầu trước micro. Gateway dùng API key từ `AppEnv`, endpoint
+  `BidiGenerateContent?key=…`, Nabi instruction, VAD/transcript/interruption,
+  setupComplete gate, context compression và resume lặp; bỏ timer 15 phút cục
+  bộ. Dart format, targeted analyzer, 31 test Voice/AppEnv/V1 route, V2 guest
+  route regression và APK debug PASS. Xiaomi ngắt ADB trước install/smoke nên
+  chưa claim hội thoại thật; không còn blocker deploy. Direct mode chấp nhận
+  API key có trong APK và không thể enforce Plus-only đáng tin cậy.
+
+- 2026-08-22: M07 voice realtime Gemini Live da co source contract/session,
+  native Android+iOS PCM bridge, consent local per account, Edge Function
+  JWT + quota `ai_chat_message` + ephemeral token, va controller/protocol/Deno
+  tests. `dart format`, targeted `flutter analyze` (0 issue), 13 targeted
+  Flutter tests, Android Kotlin debug compile va `git diff --check` PASS.
+  Deno, Xcode/iOS toolchain, device va Supabase sandbox chua co nen chua claim
+  production acceptance. Viec tiep theo: deploy `voice-live-token` voi
+  `GEMINI_API_KEY` o sandbox, chay Deno test va smoke speaker/Bluetooth/
+  permission/background/network/interruption tren Android va iPhone.
+
 - 2026-07-31: M13 VietQR Vietcombank cho duyet thu cong da tich hop: backend sinh
   ma NB + 12 hex, memo ASCII toi da 25 ky tu, recipient VCB server-owned, SQLite
   full_name dung cho memo display, QR/confirm flow, pending_review banner/Admin

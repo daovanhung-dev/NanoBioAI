@@ -27,6 +27,7 @@ void main() {
         V1RoutePaths.dailyRoutinePreferences,
         V1RoutePaths.sleepTracking,
         V1RoutePaths.stressTracking,
+        V1RoutePaths.aiVoice,
         AuthRoutePaths.login,
         AuthRoutePaths.register,
       ]) {
@@ -41,7 +42,6 @@ void main() {
     test('blocks guest routes outside V1 baseline', () {
       for (final path in [
         V1RoutePaths.aiChat,
-        V1RoutePaths.aiVoice,
         V1RoutePaths.nutrition,
         V1RoutePaths.nutritionProfile,
         V1RoutePaths.profile,

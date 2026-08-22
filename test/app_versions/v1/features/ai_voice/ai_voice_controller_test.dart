@@ -1,200 +1,308 @@
 import 'dart:async';
+import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/app_versions/v1/features/ai_chat/domain/entities/chat_message_entity.dart';
-import 'package:nano_app/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository.dart';
-import 'package:nano_app/app_versions/v1/features/ai_chat/providers/ai_chat_providers.dart';
-import 'package:nano_app/app_versions/v1/features/ai_voice/data/gateways/speech_to_text_gateway.dart';
 import 'package:nano_app/app_versions/v1/features/ai_voice/domain/entities/ai_voice_state.dart';
-import 'package:nano_app/app_versions/v1/features/ai_voice/domain/gateways/voice_gateways.dart';
-import 'package:nano_app/app_versions/v1/features/ai_voice/presentation/controllers/ai_voice_controller.dart';
+import 'package:nano_app/app_versions/v1/features/ai_voice/domain/entities/voice_live_event.dart';
+import 'package:nano_app/app_versions/v1/features/ai_voice/domain/ai_voice_copy.dart';
+import 'package:nano_app/app_versions/v1/features/ai_voice/domain/gateways/voice_live_gateway.dart';
 import 'package:nano_app/app_versions/v1/features/ai_voice/providers/ai_voice_providers.dart';
 
 void main() {
-  test('greets once without consuming chat repository', () async {
-    final speech = _FakeSpeechGateway();
-    final tts = _FakeTtsGateway();
-    final chat = _FakeChatRepository();
-    final container = _container(speech: speech, tts: tts, chat: chat);
-    addTearDown(container.dispose);
-    final controller = container.read(aiVoiceControllerProvider.notifier);
-
-    await controller.initializeAndGreet();
-    await controller.initializeAndGreet();
-
-    expect(tts.spoken, <String>[AiVoiceController.greeting]);
-    expect(chat.sendCalls, 0);
-    expect(container.read(aiVoiceControllerProvider).isInitialized, isTrue);
-  });
-
-  test('surfaces microphone permission denial without calling AI', () async {
-    final speech = _PermissionDeniedSpeechGateway();
-    final chat = _FakeChatRepository();
-    final container = _container(
-      speech: speech,
-      tts: _FakeTtsGateway(),
-      chat: chat,
-    );
-    addTearDown(container.dispose);
-    final controller = container.read(aiVoiceControllerProvider.notifier);
-
-    await controller.initializeAndGreet();
-
-    final state = container.read(aiVoiceControllerProvider);
-    expect(state.phase, AiVoicePhase.permissionDenied);
-    expect(state.errorMessage, isNotEmpty);
-    expect(chat.sendCalls, 0);
-  });
-
   test(
-    'recognizes one phrase, reuses AI chat repository and speaks answer',
+    'does not open microphone or consume a Live turn before explicit start',
     () async {
-      final speech = _FakeSpeechGateway(result: 'Tôi nên ăn gì?');
-      final tts = _FakeTtsGateway();
-      final chat = _FakeChatRepository(answer: 'Bạn có thể chọn một bữa nhẹ.');
-      final container = _container(speech: speech, tts: tts, chat: chat);
+      final live = _FakeLiveGateway();
+      final container = _container(live: live);
       addTearDown(container.dispose);
       final controller = container.read(aiVoiceControllerProvider.notifier);
 
-      await controller.initializeAndGreet();
-      await controller.listenAndRespond();
+      await controller.initialize();
 
-      final state = container.read(aiVoiceControllerProvider);
-      expect(chat.messages, <String>['Tôi nên ăn gì?']);
-      expect(state.transcript, 'Tôi nên ăn gì?');
-      expect(state.response, 'Bạn có thể chọn một bữa nhẹ.');
-      expect(state.phase, AiVoicePhase.idle);
-      expect(tts.spoken.last, state.response);
+      expect(live.startCalls, 0);
+      expect(
+        container.read(aiVoiceControllerProvider).phase,
+        AiVoicePhase.idle,
+      );
     },
   );
 
-  test('stop invalidates a stale AI response', () async {
-    final response = Completer<ChatMessageEntity>();
-    final container = _container(
-      speech: _FakeSpeechGateway(result: 'Câu hỏi'),
-      tts: _FakeTtsGateway(),
-      chat: _FakeChatRepository(completer: response),
-    );
+  test(
+    'opens one Live session immediately after the explicit start action',
+    () async {
+      final live = _FakeLiveGateway();
+      final container = _container(live: live);
+      addTearDown(container.dispose);
+      final controller = container.read(aiVoiceControllerProvider.notifier);
+
+      await controller.initialize();
+      await controller.startConversation();
+      expect(live.startCalls, 1);
+      expect(container.read(aiVoiceControllerProvider).isSessionActive, isTrue);
+    },
+  );
+
+  test(
+    'transitions from listening to user speech, Nabi speech and listening',
+    () async {
+      final live = _FakeLiveGateway();
+      final container = _container(live: live);
+      addTearDown(container.dispose);
+      final controller = container.read(aiVoiceControllerProvider.notifier);
+
+      await controller.initialize();
+      await controller.startConversation();
+      live.emit(const VoiceLiveEvent.inputTranscript('Tôi nên ăn gì?'));
+      await _drainEvents();
+      expect(
+        container.read(aiVoiceControllerProvider).phase,
+        AiVoicePhase.userSpeaking,
+      );
+      expect(
+        container.read(aiVoiceControllerProvider).transcript,
+        'Tôi nên ăn gì?',
+      );
+
+      live.emit(
+        const VoiceLiveEvent.outputTranscript('Bạn hãy ăn đủ bữa nhé.'),
+      );
+      live.emit(VoiceLiveEvent.outputAudio(Uint8List.fromList(<int>[1, 2])));
+      await _drainEvents();
+      expect(
+        container.read(aiVoiceControllerProvider).phase,
+        AiVoicePhase.speaking,
+      );
+      expect(
+        container.read(aiVoiceControllerProvider).responseDraft,
+        'Bạn hãy ăn đủ bữa nhé.',
+      );
+
+      live.emit(const VoiceLiveEvent.turnCompleted());
+      await _drainEvents();
+      expect(
+        container.read(aiVoiceControllerProvider).phase,
+        AiVoicePhase.listening,
+      );
+    },
+  );
+
+  test(
+    'interruption clears Nabi response while microphone session remains open',
+    () async {
+      final live = _FakeLiveGateway();
+      final container = _container(live: live);
+      addTearDown(container.dispose);
+      final controller = container.read(aiVoiceControllerProvider.notifier);
+
+      await controller.initialize();
+      await controller.startConversation();
+      live.emit(const VoiceLiveEvent.outputTranscript('Câu Nabi đang nói'));
+      live.emit(const VoiceLiveEvent.interrupted());
+      await _drainEvents();
+
+      final state = container.read(aiVoiceControllerProvider);
+      expect(state.phase, AiVoicePhase.interrupted);
+      expect(state.responseDraft, isEmpty);
+      expect(state.isSessionActive, isTrue);
+      expect(live.stopCalls, 0);
+    },
+  );
+
+  test(
+    'pauses and resumes only microphone input in the active session',
+    () async {
+      final live = _FakeLiveGateway();
+      final container = _container(live: live);
+      addTearDown(container.dispose);
+      final controller = container.read(aiVoiceControllerProvider.notifier);
+
+      await controller.initialize();
+      await controller.startConversation();
+      await controller.pauseListening();
+      expect(live.pauseCalls, 1);
+      expect(
+        container.read(aiVoiceControllerProvider).phase,
+        AiVoicePhase.paused,
+      );
+
+      await controller.resumeListening();
+      expect(live.resumeCalls, 1);
+      expect(
+        container.read(aiVoiceControllerProvider).phase,
+        AiVoicePhase.listening,
+      );
+    },
+  );
+
+  test('stops and releases Live audio when app leaves foreground', () async {
+    final live = _FakeLiveGateway();
+    final container = _container(live: live);
     addTearDown(container.dispose);
     final controller = container.read(aiVoiceControllerProvider.notifier);
 
-    await controller.initializeAndGreet();
-    final operation = controller.listenAndRespond();
-    await Future<void>.delayed(Duration.zero);
-    await controller.stop();
-    response.complete(_answer('Phản hồi đến muộn'));
-    await operation;
+    await controller.initialize();
+    await controller.startConversation();
+    await controller.handleAppLifecycleState(AppLifecycleState.paused);
 
-    final state = container.read(aiVoiceControllerProvider);
-    expect(state.phase, AiVoicePhase.idle);
-    expect(state.response, isEmpty);
+    expect(live.stopCalls, 1);
+    expect(
+      container.read(aiVoiceControllerProvider).sessionState,
+      AiVoiceSessionState.stopped,
+    );
   });
+
+  test('cancels a pending startup when the app leaves foreground', () async {
+    final live = _FakeLiveGateway(startCompleter: Completer());
+    final container = _container(live: live);
+    addTearDown(container.dispose);
+    final controller = container.read(aiVoiceControllerProvider.notifier);
+
+    await controller.initialize();
+    final start = controller.startConversation();
+    await _drainEvents();
+    expect(
+      container.read(aiVoiceControllerProvider).sessionState,
+      AiVoiceSessionState.starting,
+    );
+
+    await controller.handleAppLifecycleState(AppLifecycleState.paused);
+    live.completeStart();
+    await start;
+
+    expect(
+      container.read(aiVoiceControllerProvider).sessionState,
+      AiVoiceSessionState.stopped,
+    );
+    expect(container.read(aiVoiceControllerProvider).isSessionActive, isFalse);
+    expect(live.stopCalls, greaterThanOrEqualTo(1));
+  });
+
+  test(
+    'does not open a second Live session while startup is pending',
+    () async {
+      final live = _FakeLiveGateway(startCompleter: Completer());
+      final container = _container(live: live);
+      addTearDown(container.dispose);
+      final controller = container.read(aiVoiceControllerProvider.notifier);
+
+      await controller.initialize();
+      final firstStart = controller.startConversation();
+      await _drainEvents();
+      await controller.startConversation();
+
+      expect(live.startCalls, 1);
+      live.completeStart();
+      await firstStart;
+      expect(container.read(aiVoiceControllerProvider).isSessionActive, isTrue);
+    },
+  );
+
+  test(
+    'terminal Live error stops session without retaining playback resources',
+    () async {
+      final live = _FakeLiveGateway();
+      final container = _container(live: live);
+      addTearDown(container.dispose);
+      final controller = container.read(aiVoiceControllerProvider.notifier);
+
+      await controller.initialize();
+      await controller.startConversation();
+      live.emit(VoiceLiveEvent.failure(StateError('network')));
+      await _drainEvents();
+
+      expect(
+        container.read(aiVoiceControllerProvider).phase,
+        AiVoicePhase.error,
+      );
+      expect(live.stopCalls, 1);
+    },
+  );
+
+  test(
+    'shows a safe local configuration error without opening a session',
+    () async {
+      final live = _FakeLiveGateway(
+        startError: const VoiceLiveConfigurationException(),
+      );
+      final container = _container(live: live);
+      addTearDown(container.dispose);
+      final controller = container.read(aiVoiceControllerProvider.notifier);
+
+      await controller.initialize();
+      await controller.startConversation();
+      await _drainEvents();
+
+      final state = container.read(aiVoiceControllerProvider);
+      expect(state.phase, AiVoicePhase.error);
+      expect(state.errorMessage, AiVoiceCopy.voiceConfigurationMissing);
+      expect(live.startCalls, 1);
+      expect(live.stopCalls, 1);
+    },
+  );
 }
 
-ProviderContainer _container({
-  required SpeechRecognitionGateway speech,
-  required TextToSpeechGateway tts,
-  required AIChatRepository chat,
-}) {
+ProviderContainer _container({required _FakeLiveGateway live}) {
   return ProviderContainer(
-    overrides: [
-      speechRecognitionGatewayProvider.overrideWithValue(speech),
-      textToSpeechGatewayProvider.overrideWithValue(tts),
-      aiChatRepositoryProvider.overrideWithValue(chat),
-    ],
+    overrides: [voiceLiveGatewayProvider.overrideWithValue(live)],
   );
 }
 
-class _FakeSpeechGateway implements SpeechRecognitionGateway {
-  final String result;
+Future<void> _drainEvents() => Future<void>.delayed(Duration.zero);
 
-  _FakeSpeechGateway({this.result = ''});
+class _FakeLiveGateway implements VoiceLiveGateway {
+  final _events = StreamController<VoiceLiveEvent>();
+  final Completer<Stream<VoiceLiveEvent>>? _startCompleter;
+  final Object? _startError;
+  int startCalls = 0;
+  int stopCalls = 0;
+  int pauseCalls = 0;
+  int resumeCalls = 0;
 
-  @override
-  Future<bool> initialize() async => true;
-
-  @override
-  Future<String> listenOnce({
-    String localeId = 'vi_VN',
-    Duration listenFor = const Duration(seconds: 30),
-    Duration pauseFor = const Duration(seconds: 4),
-  }) async => result;
-
-  @override
-  Future<void> cancel() async {}
-
-  @override
-  Future<void> stop() async {}
-}
-
-class _FakeTtsGateway implements TextToSpeechGateway {
-  final List<String> spoken = <String>[];
+  _FakeLiveGateway({
+    Completer<Stream<VoiceLiveEvent>>? startCompleter,
+    Object? startError,
+  }) : _startCompleter = startCompleter,
+       _startError = startError;
 
   @override
-  Future<void> initialize() async {}
+  Future<Stream<VoiceLiveEvent>> startSession() async {
+    startCalls++;
+    final error = _startError;
+    if (error != null) throw error;
+    final completer = _startCompleter;
+    if (completer != null) return completer.future;
+    return _events.stream;
+  }
+
+  void completeStart() {
+    final completer = _startCompleter;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(_events.stream);
+    }
+  }
+
+  void emit(VoiceLiveEvent event) => _events.add(event);
 
   @override
-  Future<void> speak(String text) async => spoken.add(text);
-
-  @override
-  Future<void> stop() async {}
-}
-
-class _FakeChatRepository implements AIChatRepository {
-  final String answer;
-  final Completer<ChatMessageEntity>? completer;
-  final List<String> messages = <String>[];
-  int sendCalls = 0;
-
-  _FakeChatRepository({this.answer = 'NaBi trả lời', this.completer});
-
-  @override
-  Future<ChatMessageEntity> sendMessage(String message) {
-    sendCalls++;
-    messages.add(message);
-    return completer?.future ??
-        Future<ChatMessageEntity>.value(_answer(answer));
+  Future<void> pauseInput() async {
+    pauseCalls++;
   }
 
   @override
-  Future<List<ChatMessageEntity>> getChatHistory() async => const [];
-
-  @override
-  Future<void> clearHistory() async {}
-}
-
-ChatMessageEntity _answer(String content) {
-  return ChatMessageEntity(
-    id: 'answer-1',
-    content: content,
-    role: MessageRole.assistant,
-    timestamp: DateTime(2026, 8, 2),
-  );
-}
-
-class _PermissionDeniedSpeechGateway implements SpeechRecognitionGateway {
-  @override
-  Future<bool> initialize() {
-    throw const SpeechRecognitionPermissionDeniedException(
-      permanentlyDenied: true,
-    );
+  Future<void> resumeInput() async {
+    resumeCalls++;
   }
 
   @override
-  Future<String> listenOnce({
-    String localeId = 'vi_VN',
-    Duration listenFor = const Duration(seconds: 30),
-    Duration pauseFor = const Duration(seconds: 4),
-  }) {
-    throw const SpeechRecognitionPermissionDeniedException(
-      permanentlyDenied: true,
-    );
+  Future<void> setOutputMuted(bool muted) async {}
+
+  @override
+  Future<void> stopOutputImmediately() async {}
+
+  @override
+  Future<void> stopSession() async {
+    stopCalls++;
   }
-
-  @override
-  Future<void> cancel() async {}
-
-  @override
-  Future<void> stop() async {}
 }

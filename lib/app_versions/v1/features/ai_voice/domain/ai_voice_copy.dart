@@ -1,8 +1,7 @@
 abstract final class AiVoiceCopy {
   const AiVoiceCopy._();
 
-  static const greeting =
-      'Xin chào, mình là Nabi – Trợ lý của chị Thủy Tiên.';
+  static const greeting = 'Xin chào, mình là Nabi – Trợ lý của chị Thủy Tiên.';
 
   static const unavailable =
       'NaBi chưa thể bật giọng nói trên thiết bị này. Bạn vẫn có thể nhập bằng bàn phím.';
@@ -15,4 +14,7 @@ abstract final class AiVoiceCopy {
 
   static const responseUnavailable =
       'NaBi chưa thể trả lời lúc này. Bạn kiểm tra kết nối rồi thử lại nhé.';
+
+  static const voiceConfigurationMissing =
+      'Trò chuyện bằng giọng nói chưa được cấu hình trong bản cài đặt này. Bạn hãy cài lại ứng dụng với cấu hình Gemini.';
 }
