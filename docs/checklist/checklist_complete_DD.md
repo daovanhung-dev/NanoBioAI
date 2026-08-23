@@ -9,7 +9,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001`, va `docs/refactor/stitch_nanobio_design_system/DD_READINESS.md` |
 | Pham vi | BioAI / NanoBio: approved DD M01-M19 and M30, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, planned DD backlog M20-M29, va pending Stitch Green Wellness modules/deltas |
 | Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
-| Ngay cap nhat | 2026-08-08 |
+| Ngay cap nhat | 2026-08-23 |
 | Muc dich | Theo doi DD docs completeness rieng voi coding progress va implementation evidence backlog; khong tron UI discovery shell voi nghiep vu module. |
 
 ## Rubric phan tram
@@ -37,7 +37,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | M04 `BASIC_HEALTH_CALC` | Approved - DD docs complete | 0 | 100 | 100 | Versioned BMI/BMR/RMR/TDEE/hydration calculator, route `/body-metrics`, hub tile, disclaimer UI, and unit/widget tests exist. | Clinical/formula source review and production copy approval remain production acceptance backlog. | Verify production copy/formula references with PO/clinical review before release. |
 | M05 `AUTH_PROFILE_SYNC` | Approved - DD docs complete | 0 | 100 | 100 | Auth callback coordinator/result, reactive gate/router, Guest Settings login/register entry, authenticated build helper, sign-out preflight, atomic referral signup metadata, Guest consent, single-flight push-before-pull sync, durable pull retry, transaction race guard, Admin session isolation, request-ledger `request_id` snapshot mapping, migration and focused regression/contract test source exist. | Flutter compile/full test, Supabase sandbox atomic rollback/RLS/idempotency and device `12b304f9` evidence remain production acceptance backlog; no concurrent multi-device merge support. | Run targeted/full Flutter gates, apply migration 15 to sandbox, execute `V2-M05-01..06`, callback recovery/confirmation and Admin role/session-expiry cases with evidence. |
 | M06 `MEMBERSHIP_QUOTA` | Approved - DD docs complete | 0 | 100 | 100 | SQL quota RPC contracts, v2 effective access read model, shared trusted quota gateway, Free 3/day and 3/month static contract tests, paid bypass tests, Asia/Ho_Chi_Minh period keys, idempotent commit, and no-client-write checks exist. | Supabase sandbox/RLS verification for quota counters/events, idempotency, reset policy, and client write rejection remains production acceptance backlog. | Run `docs/supabase/config.sql` in sandbox and execute quota acceptance checks for Free, Plus, and FamilyPlus accounts. |
-| M07 `AI_CHAT` | Approved - DD docs complete | 0 | 100 | 100 | AI Chat repository checks quota before AI, commits only after successful response, maps safe blocked states, and has quota tests for Free daily limit and paid bypass contract. | Sandbox proof that Free limit blocks after 3/day and Plus/FamilyPlus bypass via M06 RPC remains production acceptance backlog. | Smoke AI Chat with authenticated Free and paid sandbox users, verifying no AI call when quota is denied. |
+| M07 `AI_CHAT` | Approved - DD docs complete; client-only Voice Android reaction-speed accepted; 3-minute >60-second continuity pending | 0 | 100 | 100 | AI Chat chữ giữ quota contract hiện có. `AI_CHAT-F03/FN03/V03/API03` dùng Plus/FamilyPlus fail-closed trong app, half-duplex STT→direct Gemini REST→TTS, six-turn RAM history và cleanup Live/PCM/Edge Voice. DD v1.7 trace endpointing 200/500/1.000/2.000 ms, delayed arm, hard cap `listenFor = 180.000 ms`, user/history item 6.000 ký tự và response 2.000 ký tự. Delta 3 phút source, MethodChannel/controller assertions, expanded 90/90 tests, analyze 10 item/0 issue, format 21 file/0 changed và Android debug build/install Xiaomi PASS; reaction-speed Android evidence trước đó vẫn PASS. | Delta 3 phút chưa có device continuity smoke qua mốc 60 giây; OS có thể final/stop trước hard cap và không được claim raw audio luôn đủ 3 phút. Chat quota sandbox, iOS build/iPhone smoke vẫn pending. Voice key nằm trong APK và paid gate có thể bị bypass. | Hoàn tất `AI_CHAT-TC18` bằng compatibility smoke qua mốc 60 giây khi OS cho phép; sau đó chạy iOS smoke và Chat quota sandbox riêng. |
 | M08 `HEALTH_SCORE_HABITS` | Approved - DD docs complete | 0 | 100 | 100 | Official `m08_wellness_v1_2026_06` formula, Vietnamese UI/disclaimer, FamilyPlus subject access tests, Supabase `health_score_ledgers` contract/RLS, providers, route, and tests exist. | Supabase sandbox ledger/RLS smoke remains production acceptance backlog. | Verify health score ledger read/write policy and FamilyPlus visibility in sandbox. |
 | M09 `SCHEDULE_NOTIFICATIONS` | Approved - DD docs complete | 0 | 100 | 100 | Subject-aware notification payload v2, subject-stable reminder IDs, idempotent action handling, source-owner mismatch protection, permission-denied/refresh/package-member tests, cloud-sync contract, and architecture tests pass. | Production real-device notification and Supabase sandbox cross-device smoke remain outside code+test acceptance. | Run real-device notification delivery/action smoke and Supabase sandbox sync before production release. |
 | M10 `ADVANCED_TRACKING_GOALS` | Approved - DD docs complete | 0 | 100 | 100 | V3 hydration advanced tracking slice implemented with Plus/FamilyPlus access gate, `advanced_hydration` goal storage in `health_goals`, roadmap progress from `health_tracking_logs.water_ml`, v3 route/page/providers/repository/use cases, widget/provider/data/use-case tests, cloud-sync contract, and architecture tests pass. | Production paid-access sandbox and FamilyPlus subject/RLS smoke remain outside code+test acceptance. | Run sandbox Plus/FamilyPlus access and subject visibility smoke before production release. |
@@ -89,17 +89,29 @@ Nguồn chi tiết: [`DD_READINESS.md`](../refactor/stitch_nanobio_design_system
 
 ### Cập nhật implementation evidence 2026-07-19 — Admin, AI và notification reliability
 
-- 2026-08-23 M07 voice direct delta thay thế runtime Edge/Plus trước đó theo
-  yêu cầu sản phẩm: `/ai-voice` cho guest, Flutter nối
-  `BidiGenerateContent?key=…` trực tiếp từ `AppEnv`, không gọi JWT,
-  `effective_user_access`, quota hay `voice-live-token`. Setup giữ PCM/VAD/
-  transcript/interruption, thêm Nabi instruction + context compression, bỏ
-  timer 15 phút cục bộ và cho resume liên tiếp. Dart format, targeted analyzer
-  sạch, 31 test Voice/AppEnv/route và APK debug PASS. Xiaomi bị ngắt ADB trước
-  khi cài APK mới nên end-to-end audio thật còn pending. Direct mode chấp nhận
-  key nằm trong APK và không thể thực thi Plus-only đáng tin cậy.
+- 2026-08-23 M07 Sequential Voice client-only supersedes Gemini Live và Edge
+  Function Voice: `/ai-voice` yêu cầu auth và exact-user Plus/FamilyPlus
+  fail-closed trong app; `speech_to_text -> Gemini REST -> flutter_tts`, history
+  RAM tối đa 6 lượt và không có NanoBio Voice quota. Người dùng chấp nhận key có
+  thể bị lấy khỏi APK và paid gate có thể bị bypass. Targeted validation, Android
+  build/APK scan và ba lượt Xiaomi device smoke đã PASS; iOS build/iPhone smoke
+  chưa claim.
+- 2026-08-23 M07 reaction-speed delta: `AI_CHAT-F03/FN03/V03/API03` cho chọn
+  endpointing 0,2/0,5/1/2 giây, default 1 giây. Selection chỉ ở RAM, chỉ
+  đổi khi session dừng; timeout được arm sau partial non-empty đầu tiên.
+  Đây là silence cutoff sau speech result, không phải Gemini latency. Expanded
+  86/86 tests, analyze 10 item/0 issue, Android debug build/install và Xiaomi
+  reaction-speed re-smoke PASS; safe network retry và Stop trong TTS được xác nhận.
+- 2026-08-23 M07 3-minute contract delta: hard cap app/plugin mỗi lượt đổi từ
+  60 giây thành `listenFor = 180.000 ms`; final/endpointing/OS vẫn có thể dừng
+  sớm. User/history item Voice tăng lên 6.000 ký tự, response giữ 2.000 ký tự và
+  256 output tokens. `AI_CHAT-BR11/ADR05/TC18` đã documented; source, expanded
+  90/90 tests, analyze 10 item/0 issue, format 21 file/0 changed và Android debug
+  build/install Xiaomi PASS. Device continuity qua mốc 60 giây còn pending,
+  chưa claim compatibility acceptance.
 
-- 2026-08-22 M07 voice realtime delta: source thay session voice legacy bằng
+- 2026-08-22 M07 voice realtime delta (historical, superseded by Sequential
+  Voice contract 2026-08-23): source từng thay session voice legacy bằng
   Gemini Live audio-to-audio, native PCM Android/iOS, consent cục bộ theo account
   và Edge Function JWT/quota/ephemeral token. Không lưu audio/transcript. Có
   protocol/controller/Deno source tests; `dart format`, targeted Flutter analyze
@@ -153,7 +165,7 @@ acceptance đạt trên một dự án Supabase sandbox thật.
 | M04 `BASIC_HEALTH_CALC` | Clinical/formula source review and production copy approval evidence. |
 | M05 `AUTH_PROFILE_SYNC` | Flutter compile/full test, guest consent/push-before-pull cross-device sandbox evidence, request ledger round-trip, atomic invalid-referral rollback, RLS/idempotency and Admin separate-session/device evidence. |
 | M06 `MEMBERSHIP_QUOTA` | Supabase sandbox/RLS verification for quota counters/events, idempotency, reset policy, and client write rejection. |
-| M07 `AI_CHAT` | Sandbox proof that Free limit blocks after 3/day and Plus/FamilyPlus bypass via M06 RPC. |
+| M07 `AI_CHAT` | Chat chữ: sandbox proof Free limit/paid bypass qua M06. Voice: targeted Flutter/plugin/datasource validation, client gate Guest/Free/Plus/FamilyPlus, Android Vietnamese multi-turn device evidence và iOS build/iPhone smoke. Client-only key/APK và bypass risk phải luôn được ghi rõ. |
 | M08 `HEALTH_SCORE_HABITS` | Supabase sandbox ledger/RLS smoke evidence. |
 | M09 `SCHEDULE_NOTIFICATIONS` | Production real-device notification delivery/action smoke and Supabase sandbox cross-device sync evidence before release. |
 | M10 `ADVANCED_TRACKING_GOALS` | Production Plus/FamilyPlus sandbox access, subject visibility/RLS, and hydration roadmap smoke before release. |

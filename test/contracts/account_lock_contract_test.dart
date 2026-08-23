@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('admin suspension is enforced in Supabase Auth and client profile checks', () {
     final migration = File(
-      'docs/supabase/20260819_auth_account_lock.sql',
+      'docs/supabase/04_schema_auth_account_lock.sql',
     ).readAsStringSync();
     final authDatasource = File(
       'lib/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart',

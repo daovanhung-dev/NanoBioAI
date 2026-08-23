@@ -25,7 +25,7 @@ Commit de xuat: fix(admin): sua dashboard admin khong tai sau login
 
 - Giu nguyen RPC signature `get_admin_dashboard_summary(timestamptz,
   timestamptz, text, text)`.
-- Cap nhat `docs/supabase/11-admin-access-dashboard.sql` va
+- Cap nhat `docs/supabase/01_schema_rebuild_local_sandbox.sql` va
   `docs/supabase/config.sql`:
   - `public.payment_events pe`: dung `pe.status`, `pe.created_at`.
   - `public.sale_profiles sp`: dung `sp.status`.

@@ -1,140 +1,76 @@
 enum AiVoicePhase {
   initializing,
   idle,
-  connecting,
   listening,
-  userSpeaking,
+  thinking,
   speaking,
-  paused,
-  reconnecting,
-  interrupted,
   error,
   permissionDenied,
-
-  // Retained while callers migrate from the pre-Live implementation.
-  greeting,
-  transcribing,
-  finalizingInput,
-  thinking,
-  waitingFirstToken,
-  streamingResponse,
-  recoveringRecognizer,
 }
 
-enum AiVoiceSessionState {
-  stopped,
-  starting,
-  active,
-  stopping,
-  permissionDenied,
-  error,
+enum AiVoiceSessionState { stopped, starting, active, stopping }
+
+enum AiVoiceReactionSpeed {
+  ultraFast(
+    label: 'Siêu nhanh 0,2 giây',
+    pauseFor: Duration(milliseconds: 200),
+  ),
+  fast(label: 'Nhanh 0,5 giây', pauseFor: Duration(milliseconds: 500)),
+  normal(label: 'Bình thường 1 giây', pauseFor: Duration(seconds: 1)),
+  slow(label: 'Chậm 2 giây', pauseFor: Duration(seconds: 2));
+
+  const AiVoiceReactionSpeed({required this.label, required this.pauseFor});
+
+  final String label;
+  final Duration pauseFor;
 }
 
 class AiVoiceState {
   final AiVoicePhase phase;
   final AiVoiceSessionState sessionState;
-  final String partialTranscript;
-  final String finalTranscript;
-  final String responseDraft;
-  final String spokenResponse;
+  final String transcript;
+  final String response;
   final String? errorMessage;
-  final bool isMuted;
   final bool isInitialized;
-  final bool isListeningPaused;
-  final bool isBargeInArmed;
-  final bool hasSpeechStarted;
-  final bool isContinuousListeningEnabled;
-  final double voiceActivityLevel;
-  final String conversationSessionId;
-  final int turnId;
-  final DateTime? sessionStartedAt;
-  final DateTime? currentTurnStartedAt;
+  final AiVoiceReactionSpeed reactionSpeed;
 
   const AiVoiceState({
     this.phase = AiVoicePhase.initializing,
     this.sessionState = AiVoiceSessionState.stopped,
-    this.partialTranscript = '',
-    this.finalTranscript = '',
-    this.responseDraft = '',
-    this.spokenResponse = '',
+    this.transcript = '',
+    this.response = '',
     this.errorMessage,
-    this.isMuted = false,
     this.isInitialized = false,
-    this.isListeningPaused = false,
-    this.isBargeInArmed = false,
-    this.hasSpeechStarted = false,
-    this.isContinuousListeningEnabled = true,
-    this.voiceActivityLevel = 0,
-    this.conversationSessionId = '',
-    this.turnId = 0,
-    this.sessionStartedAt,
-    this.currentTurnStartedAt,
+    this.reactionSpeed = AiVoiceReactionSpeed.normal,
   });
 
-  String get transcript =>
-      finalTranscript.isNotEmpty ? finalTranscript : partialTranscript;
-  String get response => responseDraft;
   bool get isSessionActive => sessionState == AiVoiceSessionState.active;
+
   bool get isSessionInProgress =>
       sessionState == AiVoiceSessionState.starting ||
       sessionState == AiVoiceSessionState.active ||
       sessionState == AiVoiceSessionState.stopping;
-  bool get isListening =>
-      phase == AiVoicePhase.listening || phase == AiVoicePhase.userSpeaking;
-  bool get isBusy =>
-      phase == AiVoicePhase.connecting ||
-      phase == AiVoicePhase.userSpeaking ||
-      phase == AiVoicePhase.speaking ||
-      phase == AiVoicePhase.reconnecting;
+
+  bool get isListening => phase == AiVoicePhase.listening;
 
   AiVoiceState copyWith({
     AiVoicePhase? phase,
     AiVoiceSessionState? sessionState,
-    String? partialTranscript,
-    String? finalTranscript,
-    String? responseDraft,
-    String? spokenResponse,
+    String? transcript,
+    String? response,
     String? errorMessage,
     bool clearError = false,
-    bool? isMuted,
     bool? isInitialized,
-    bool? isListeningPaused,
-    bool? isBargeInArmed,
-    bool? hasSpeechStarted,
-    bool? isContinuousListeningEnabled,
-    double? voiceActivityLevel,
-    String? conversationSessionId,
-    int? turnId,
-    DateTime? sessionStartedAt,
-    DateTime? currentTurnStartedAt,
-    bool clearSessionStartedAt = false,
-    bool clearCurrentTurnStartedAt = false,
+    AiVoiceReactionSpeed? reactionSpeed,
   }) {
     return AiVoiceState(
       phase: phase ?? this.phase,
       sessionState: sessionState ?? this.sessionState,
-      partialTranscript: partialTranscript ?? this.partialTranscript,
-      finalTranscript: finalTranscript ?? this.finalTranscript,
-      responseDraft: responseDraft ?? this.responseDraft,
-      spokenResponse: spokenResponse ?? this.spokenResponse,
+      transcript: transcript ?? this.transcript,
+      response: response ?? this.response,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
-      isMuted: isMuted ?? this.isMuted,
       isInitialized: isInitialized ?? this.isInitialized,
-      isListeningPaused: isListeningPaused ?? this.isListeningPaused,
-      isBargeInArmed: isBargeInArmed ?? this.isBargeInArmed,
-      hasSpeechStarted: hasSpeechStarted ?? this.hasSpeechStarted,
-      isContinuousListeningEnabled:
-          isContinuousListeningEnabled ?? this.isContinuousListeningEnabled,
-      voiceActivityLevel: voiceActivityLevel ?? this.voiceActivityLevel,
-      conversationSessionId:
-          conversationSessionId ?? this.conversationSessionId,
-      turnId: turnId ?? this.turnId,
-      sessionStartedAt: clearSessionStartedAt
-          ? null
-          : sessionStartedAt ?? this.sessionStartedAt,
-      currentTurnStartedAt: clearCurrentTurnStartedAt
-          ? null
-          : currentTurnStartedAt ?? this.currentTurnStartedAt,
+      reactionSpeed: reactionSpeed ?? this.reactionSpeed,
     );
   }
 }

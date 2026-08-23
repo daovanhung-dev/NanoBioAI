@@ -92,7 +92,7 @@ rg --files -g '!build/**' -g '!.dart_tool/**' -g '!.git/**'
 - DD checklist: `docs/checklist/checklist_create_DD.md`
 - Supabase rebuild config: `docs/supabase/config.sql`
 - Supabase context: `docs/supabase/README.md`
-- Admin Supabase draft: `docs/supabase/11-admin-access-dashboard.sql`
+- Admin Supabase contract: `docs/supabase/01_schema_rebuild_local_sandbox.sql`
 
 For any Supabase database schema/RLS/RPC/seed/docs change, read
 `docs/supabase/README.md`, `docs/supabase/config.sql`, and the directly related

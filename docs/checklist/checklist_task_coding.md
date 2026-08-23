@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tra
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-08-08 |
+| Ngay cap nhat | 2026-08-23 |
 | Muc dich | Ghi lai trang thai coding M01-M19/M30 va coding gate rieng cho planned M20-M29. |
 
 ## DD Progress Next Tasks
@@ -45,6 +45,47 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - Production evidence backlog con lai la sandbox/RLS/API/audit/provider/real-device smoke, khong phai blocker coding cua luot nay.
 
 ## Uu tien tiep theo
+
+### M07 Sequential Voice Plus — 2026-08-23
+
+- [x] Chốt client-only delta `AI_CHAT-F03/FN03/V03/API03`: Plus/FamilyPlus
+  fail-closed trong app, half-duplex STT→Gemini REST→TTS, six-turn RAM history,
+  không backend Voice và không NanoBio Voice quota.
+- [x] Ghi rõ ngoại lệ được chấp nhận: key có thể bị lấy khỏi APK và paid gate có
+  thể bị bypass khi app bị sửa; `.env` không phải lớp bảo vệ binary.
+- [x] Hoàn tất/validate datasource `GeminiRestClient`, STT null-return/native
+  settle, TTS timeout và cleanup `voice-chat-turn` khỏi runtime/config/APK.
+- [x] Chạy targeted Dart format, Flutter analyze/tests, static scan và Android
+  debug build: 29 file format sạch, analyze 0 issue, 75 tests và build PASS.
+- [x] Smoke ba lượt tiếng Việt trên Xiaomi `220333QPG` bằng mic/loa tích hợp;
+  Stop/restart/background an toàn và không `concurrent startListening`.
+- [x] Chốt DD v1.6 cho **Tốc độ phản ứng**: Siêu nhanh 0,2 giây,
+  Nhanh 0,5 giây, Bình thường 1 giây mặc định và Chậm 2 giây. Đây là
+  endpointing silence sau speech result, không phải Gemini/network latency.
+- [x] Hợp nhất evidence unit/widget/plugin: mapping/default, selection RAM giữ
+  qua Stop/Start cùng page, dropdown/setter khóa khi active, native listen dùng
+  `pauseFor: null` trước partial non-empty và final result dừng ngay. Expanded
+  targeted suite 86/86 PASS; analyze 10 item/0 issue.
+- [x] Build/install lại và Android re-smoke mức Siêu nhanh 0,2 giây trên Xiaomi
+  `220333QPG`: delayed arm không đóng mic trước speech, Gemini/TTS/re-listen
+  thành công, selector khóa/persist đúng và Stop trong TTS dừng an toàn. Một
+  lượt gặp Wi-Fi `SocketException` đã fail-safe; retry thành công sau khi mạng
+  phục hồi, không có `concurrent startListening` hay STT/TTS overlap.
+- [x] Chốt DD v1.7/`AI_CHAT-BR11/ADR05/TC18`: hard cap app/plugin mỗi lượt
+  `listenFor = 180.000 ms`; final/endpointing/OS có thể dừng sớm và không hứa
+  raw audio liên tục đủ 3 phút. User/history item tối đa 6.000 ký tự; response
+  vẫn tối đa 2.000 ký tự và 256 output tokens.
+- [x] Implement và test phần source của `AI_CHAT-TC18`: mỗi controller turn
+  truyền `Duration(minutes: 3)`, MethodChannel nhận 180.000 ms; input 3.000 ký
+  tự accepted, 6.001 rejected, response >2.000 rejected; final/endpointing và
+  native-settle/concurrency contract giữ nguyên. Expanded 90/90 tests, analyze
+  10 item/0 issue và format 21 file/0 changed PASS.
+- [x] Android debug build PASS và `adb install -r` thành công trên Xiaomi
+  `220333QPG` (`12b304f9`).
+- [ ] Chạy device continuity smoke qua mốc 60 giây khi recognizer OS cho phép;
+  không claim thiết bị nào cũng giữ mic đủ 3 phút.
+- [ ] Chạy Xcode build và iPhone mic/STT/TTS/background smoke trên macOS trước
+  khi claim iOS acceptance.
 
 ### Reliability closure M05/M02/M06/M07/M09 — 2026-07-19
 
@@ -101,32 +142,44 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 | Priority | Module | Viec can lam tiep | Ly do |
 |---:|---|---|---|
 | 1 | M15-M19 Admin/Reconciliation/Reporting/Audit | Verify Admin SQL/RPC sandbox, RLS, audit rows, payment reversal, reconciliation run/status actions, report export, retention, and privacy filters; record acceptance evidence. | Code/SQL/static contracts/tests da 100%; can sandbox/staging evidence de dat production acceptance. |
-| 2 | M06/M07/M02 Quota + AI | Run Supabase sandbox quota acceptance: Free 3/day AI chat, Free 3/month schedule, Plus/FamilyPlus bypass, idempotent commit, RLS/client write rejection. | Code/SQL gateway/tests da 100%; sandbox evidence la production acceptance backlog. |
+| 2 | M06/M07/M02 Quota + AI | Run text quota sandbox acceptance và bổ sung iOS Voice evidence. | Voice client-only Android reaction-speed acceptance đã PASS; iOS build/iPhone smoke và Chat quota sandbox còn thiếu. |
 | 3 | M05/M12 Auth sync + Referral | Verify cross-device profile/schedule AI request sync and registration-only referral attach anti-fraud cases in Supabase sandbox. | SQLite/cloud-sync/static referral contracts da 100%; live RLS/RPC smoke con lai. |
 | 4 | M11 FamilyPlus | Verify FamilyPlus member lifecycle, selected subject context, owner-only writes, max-5 guard, and two-family RLS isolation in Supabase sandbox. | Runtime slice/SQL/contracts/tests da 100%; sandbox isolation evidence con lai. |
 | 5 | M13/M14 Payment/Sale | Apply/test VietQR manual payment in Supabase sandbox: customer ownership/idempotency, pending_review alert, payments.write review/audit, approval entitlement, rejection and bank-app QR scan/VCB reconciliation; retain M14 conversion checks. | Runtime/SQL/tests da 100%; no bank API/webhook/balance integration; sandbox/provider/UAT evidence van thieu. |
 
 ## Notes tu phien coding gan nhat
 
-- 2026-08-23: M07 Voice chuyển sang Gemini Live direct theo yêu cầu mới: không
-  gọi Supabase/Edge/JWT/quota/membership, `/ai-voice` mở được cho guest nhưng
-  vẫn cần chạm Bắt đầu trước micro. Gateway dùng API key từ `AppEnv`, endpoint
-  `BidiGenerateContent?key=…`, Nabi instruction, VAD/transcript/interruption,
-  setupComplete gate, context compression và resume lặp; bỏ timer 15 phút cục
-  bộ. Dart format, targeted analyzer, 31 test Voice/AppEnv/V1 route, V2 guest
-  route regression và APK debug PASS. Xiaomi ngắt ADB trước install/smoke nên
-  chưa claim hội thoại thật; không còn blocker deploy. Direct mode chấp nhận
-  API key có trong APK và không thể enforce Plus-only đáng tin cậy.
+- 2026-08-23: M07 Voice thêm tùy chọn endpointing 0,2/0,5/1/2 giây
+  sau speech result, mặc định 1 giây; selection RAM giữ qua Stop/Start
+  cùng page và không được đổi khi session active. Đây không phải
+  Gemini latency. Expanded 86/86 tests, analyze 10 item/0 issue, Android debug
+  build/install và Xiaomi reaction-speed re-smoke đã PASS; delayed arm, safe
+  network retry, selector lock/persistence và Stop trong TTS đều được xác nhận.
 
-- 2026-08-22: M07 voice realtime Gemini Live da co source contract/session,
+- 2026-08-23: M07 Voice contract v1.7 tăng hard cap mỗi lượt từ 60 giây lên
+  `listenFor = 180.000 ms`, nhưng final/endpointing/recognizer OS vẫn có thể
+  dừng sớm. User/history item tăng lên 6.000 ký tự; response giữ 2.000 ký tự và
+  256 output tokens. Contract docs, source, expanded 90/90 tests, analyze 10
+  item/0 issue, format 21 file/0 changed và Android debug build/install đã PASS;
+  device continuity qua mốc 60 giây vẫn pending theo `AI_CHAT-TC18`.
+
+- 2026-08-23: M07 Voice contract hiện hành là Sequential Voice client-only,
+  thay thế cả Gemini Live và `voice-chat-turn`: route/auth + exact-user
+  Plus/FamilyPlus fail-closed trong app, `speech_to_text -> Gemini REST ->
+  flutter_tts`, history RAM 6 lượt và không NanoBio Voice quota. Người dùng chấp
+  nhận key có thể bị lấy khỏi APK và paid gate có thể bị bypass. Runtime fix,
+  75 targeted tests, Android build/APK scan và ba lượt device smoke đã PASS;
+  iOS device acceptance vẫn chờ macOS/iPhone.
+
+- 2026-08-22: M07 voice realtime Gemini Live (historical, superseded 2026-08-23)
+  da co source contract/session,
   native Android+iOS PCM bridge, consent local per account, Edge Function
   JWT + quota `ai_chat_message` + ephemeral token, va controller/protocol/Deno
   tests. `dart format`, targeted `flutter analyze` (0 issue), 13 targeted
   Flutter tests, Android Kotlin debug compile va `git diff --check` PASS.
   Deno, Xcode/iOS toolchain, device va Supabase sandbox chua co nen chua claim
-  production acceptance. Viec tiep theo: deploy `voice-live-token` voi
-  `GEMINI_API_KEY` o sandbox, chay Deno test va smoke speaker/Bluetooth/
-  permission/background/network/interruption tren Android va iPhone.
+  production acceptance. Hướng deploy `voice-live-token`/Bluetooth/barge-in
+  của delta lịch sử này đã bị Sequential Voice thay thế và không còn được chạy.
 
 - 2026-07-31: M13 VietQR Vietcombank cho duyet thu cong da tich hop: backend sinh
   ma NB + 12 hex, memo ASCII toi da 25 ky tu, recipient VCB server-owned, SQLite

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synchronize docs/supabase/seed_data.sql meal source rows with the canonical Markdown.
+"""Synchronize the numbered local/sandbox meal seed with the canonical Markdown.
 
 This tool is deliberately source-faithful. It never infers nutrition, allergens,
 meal type, serving size, or contraindications. NanoBio's SQL/SQLite contract uses
@@ -23,7 +23,7 @@ from typing import Iterable
 
 SOURCE_NAME = "Suc_Khoe_Tu_Nha_Bep_Thuc_Don_Theo_Tung_Muc.md"
 DEFAULT_SOURCE = Path("docs/note") / SOURCE_NAME
-DEFAULT_SEED = Path("docs/supabase/seed_data.sql")
+DEFAULT_SEED = Path("docs/supabase/05_seed_local_sandbox.sql")
 EXPECTED_RECIPES = 163
 EXPECTED_TOPICS = 64
 EXPECTED_CHAPTERS = 11
@@ -286,7 +286,9 @@ def validate_counts(recipes: list[Recipe], expected_recipes: int, expected_topic
 def build_seed(seed_text: str, recipes: list[Recipe], expected_recipes: int) -> str:
     insert_start = seed_text.find(INSERT_PREFIX)
     if insert_start < 0:
-        raise ValueError("Could not locate meal_catalog source block in seed_data.sql")
+        raise ValueError(
+            "Could not locate meal_catalog source block in 05_seed_local_sandbox.sql"
+        )
     commit_pos = seed_text.rfind("\ncommit;")
     if commit_pos < insert_start:
         raise ValueError("Could not locate final commit after meal_catalog source block")
@@ -329,7 +331,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--seed", type=Path, default=DEFAULT_SEED)
-    parser.add_argument("--check", action="store_true", help="Fail if seed_data.sql differs from deterministic output")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Fail if 05_seed_local_sandbox.sql differs from deterministic output",
+    )
     parser.add_argument("--expected-recipes", type=int, default=EXPECTED_RECIPES)
     parser.add_argument("--expected-topics", type=int, default=EXPECTED_TOPICS)
     parser.add_argument("--expected-chapters", type=int, default=EXPECTED_CHAPTERS)
@@ -347,7 +353,9 @@ def main() -> int:
 
     if args.check:
         if before != after:
-            raise SystemExit("FAIL: seed_data.sql meal catalog is not in canonical generated form")
+            raise SystemExit(
+                "FAIL: 05_seed_local_sandbox.sql meal catalog is not in canonical generated form"
+            )
         print(
             f"PASS: SQL source fidelity verified ({len(recipes)} recipes, "
             f"{len({r.topic_code for r in recipes})} topics, {len({r.chapter_number for r in recipes})} chapters)"
@@ -355,7 +363,7 @@ def main() -> int:
         return 0
 
     if before == after:
-        print("No changes: seed_data.sql is already canonical")
+        print("No changes: 05_seed_local_sandbox.sql is already canonical")
         return 0
 
     atomic_write(args.seed, after)

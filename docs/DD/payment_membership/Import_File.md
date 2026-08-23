@@ -34,9 +34,10 @@
 | `lib/app_versions/v2/features/cloud_sync/` | Existing authenticated server -> SQLite projection refresh; includes `subscription_tier`. |
 | `lib/app_versions/v1/features/dashboard/providers/dashboard_provider.dart` | Invalidated after successful trusted projection pull so Dashboard re-reads SQLite. |
 | `lib/app_versions/admin/features/admin_panel/` | Finance/Super-only payment section, queue, reconciliation confirm and mutations. |
-| `docs/supabase/23-membership-payment-hardening.sql` | Non-destructive M13 hardening migration. |
+| `docs/supabase/01_schema_rebuild_local_sandbox.sql` | Rebuild source containing the final M13 payment hardening contract. |
 | `docs/supabase/config.sql` | Disposable local/sandbox rebuild source with matching final contract. |
-| `test/docs/fixtures/supabase_membership_payment_hardening_smoke.sql` | Rollback-only executable SQL acceptance fixture. |
+| `docs/supabase/93_validate_membership_vietqr.sql` | Rollback-only local/sandbox smoke for server-issued VietQR creation. |
+| `test/docs/fixtures/supabase_membership_payment_hardening_smoke.sql` | Extended rollback-only payment acceptance fixture. |
 
 ## 3. Supabase RPC Contract
 

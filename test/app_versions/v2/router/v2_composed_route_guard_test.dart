@@ -12,7 +12,6 @@ void main() {
         V1RoutePaths.mealPlan,
         V1RoutePaths.lifestyleSchedule,
         V1RoutePaths.dailyRoutinePreferences,
-        V1RoutePaths.aiVoice,
       ]) {
         expect(
           V2RouteGuards.redirectForV1Guest(path, isSignedIn: false),
@@ -24,6 +23,7 @@ void main() {
     test('blocks authenticated-only V1 routes for guest', () {
       for (final path in [
         V1RoutePaths.aiChat,
+        V1RoutePaths.aiVoice,
         V1RoutePaths.nutrition,
         V1RoutePaths.profile,
         V1RoutePaths.community,

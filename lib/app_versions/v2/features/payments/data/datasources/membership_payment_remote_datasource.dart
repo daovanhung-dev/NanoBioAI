@@ -34,7 +34,8 @@ class SupabaseMembershipPaymentRemoteDatasource
   }) async {
     final client = _client();
 
-    // The current rebuild contract in docs/supabase/setup.sql exposes the
+    // The current rebuild contract in
+    // docs/supabase/01_schema_rebuild_local_sandbox.sql exposes the
     // four-argument RPC. Calling it first avoids a guaranteed PGRST202 round
     // trip on every QR request. Keep the three-argument call as rollout
     // compatibility for environments that already moved payer lookup fully

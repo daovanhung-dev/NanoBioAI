@@ -47,10 +47,7 @@ void main() {
       );
 
       expect(result, 'Bạn nên giữ giờ ngủ ổn định mỗi tối.');
-      expect(
-        capturedUrl,
-        endsWith('/models/gemini-3.5-flash:generateContent'),
-      );
+      expect(capturedUrl, endsWith('/models/gemini-3.5-flash:generateContent'));
       expect(
         capturedHeaders['x-goog-api-key'],
         'test-api-key-with-safe-length',
@@ -110,6 +107,59 @@ void main() {
 
       expect(error.isNetworkFailure, isTrue);
       expect(error.isTransient, isTrue);
+    });
+
+    test('hỗ trợ Gemini 3 thinking tối thiểu và bỏ sampling tùy chọn', () {
+      const config = GeminiGenerationConfig(
+        candidateCount: null,
+        maxOutputTokens: 256,
+        thinkingLevel: 'MINIMAL',
+      );
+
+      expect(config.toJson(), {
+        'maxOutputTokens': 256,
+        'thinkingConfig': {'thinkingLevel': 'MINIMAL'},
+      });
+    });
+
+    test('không đưa phần suy luận nội bộ vào văn bản trả về', () async {
+      final client = GeminiRestClient(
+        apiKey: 'test-api-key-with-safe-length',
+        post:
+            ({
+              required String url,
+              required Map<String, String> headers,
+              required Map<String, Object?> body,
+            }) async {
+              return const GeminiHttpResponse(
+                statusCode: 200,
+                data: {
+                  'candidates': [
+                    {
+                      'content': {
+                        'parts': [
+                          {'thought': true, 'text': 'Suy luận nội bộ'},
+                          {'text': 'Câu trả lời dành cho người dùng.'},
+                        ],
+                      },
+                    },
+                  ],
+                },
+              );
+            },
+      );
+
+      final result = await client.generateText(
+        model: 'gemini-3.5-flash',
+        contents: const [GeminiContent.user('Xin chào')],
+        generationConfig: const GeminiGenerationConfig(
+          candidateCount: null,
+          maxOutputTokens: 256,
+          thinkingLevel: 'MINIMAL',
+        ),
+      );
+
+      expect(result, 'Câu trả lời dành cho người dùng.');
     });
   });
 }

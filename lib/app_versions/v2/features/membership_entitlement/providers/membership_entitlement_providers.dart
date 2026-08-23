@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/data/datasources/effective_access_remote_datasource.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/data/repositories/supabase_effective_access_repository.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/domain/entities/effective_access.dart';
@@ -18,5 +19,6 @@ final effectiveAccessRepositoryProvider = Provider<EffectiveAccessRepository>((
 });
 
 final effectiveAccessProvider = FutureProvider<EffectiveAccess?>((ref) {
+  if (ref.watch(currentAuthUserIdProvider) == null) return null;
   return ref.watch(effectiveAccessRepositoryProvider).fetchCurrentAccess();
 });

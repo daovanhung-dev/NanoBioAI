@@ -5,368 +5,272 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/ai_voice_copy.dart';
 import '../../domain/entities/ai_voice_state.dart';
-import '../../domain/entities/voice_live_event.dart';
-import '../../domain/gateways/voice_live_gateway.dart';
-import '../../domain/speech_transcript_merger.dart';
-import '../../providers/voice_live_dependencies.dart';
+import '../../domain/gateways/voice_gateways.dart';
+import '../../domain/repositories/ai_voice_repository.dart';
+import '../../domain/voice_chat_exception.dart';
+import '../../providers/voice_dependencies.dart';
 
 class AiVoiceController extends Notifier<AiVoiceState> {
-  StreamSubscription<VoiceLiveEvent>? _sessionSubscription;
+  late final SpeechRecognitionGateway _speech;
+  late final TextToSpeechGateway _tts;
+  late final AiVoiceRepository _repository;
+  late final Duration _turnDelay;
+
   bool _isDisposed = false;
-  int _sessionGeneration = 0;
-  late final VoiceLiveGateway _liveGateway;
+  int _generation = 0;
 
   @override
   AiVoiceState build() {
-    _liveGateway = ref.read(voiceLiveGatewayProvider);
+    _speech = ref.read(speechRecognitionGatewayProvider);
+    _tts = ref.read(textToSpeechGatewayProvider);
+    _repository = ref.read(aiVoiceRepositoryProvider);
+    _turnDelay = ref.read(aiVoiceTurnDelayProvider);
     ref.onDispose(() {
       _isDisposed = true;
-      _sessionGeneration++;
-      unawaited(_disposeSession());
+      _generation++;
+      _repository.resetSession();
+      unawaited(_cancelDevices());
     });
     return const AiVoiceState();
   }
 
-  Future<void> initialize() {
-    if (_isDisposed || state.isInitialized) return Future<void>.value();
+  /// Prepares presentation state only. Device permission and microphone access
+  /// are deferred until the user explicitly presses Start.
+  Future<void> initialize() async {
+    if (_isDisposed || state.isInitialized) return;
     state = state.copyWith(
       phase: AiVoicePhase.idle,
+      sessionState: AiVoiceSessionState.stopped,
       isInitialized: true,
       clearError: true,
     );
-    return Future<void>.value();
   }
 
-  /// Opens a single Gemini Live voice session. This method is intentionally
-  /// called only from the user's explicit start action.
   Future<void> startConversation() async {
     if (_isDisposed || state.isSessionInProgress) return;
 
-    final generation = ++_sessionGeneration;
+    final generation = ++_generation;
+    _repository.resetSession();
     state = state.copyWith(
-      phase: AiVoicePhase.connecting,
+      phase: AiVoicePhase.initializing,
       sessionState: AiVoiceSessionState.starting,
-      isListeningPaused: false,
-      isMuted: false,
-      isBargeInArmed: true,
-      hasSpeechStarted: false,
-      partialTranscript: '',
-      finalTranscript: '',
-      responseDraft: '',
-      spokenResponse: '',
+      transcript: '',
+      response: '',
+      isInitialized: true,
       clearError: true,
-      clearSessionStartedAt: true,
-      clearCurrentTurnStartedAt: true,
     );
 
     try {
-      final events = await _liveGateway.startSession();
-      if (!_isCurrentGeneration(generation)) {
-        await _liveGateway.stopSession();
-        return;
+      final speechAvailable = await _speech.initialize();
+      if (!speechAvailable) {
+        throw const SpeechRecognitionUnavailableException();
       }
-      await _sessionSubscription?.cancel();
-      if (!_isCurrentGeneration(generation)) {
-        await _liveGateway.stopSession();
-        return;
-      }
-      _sessionSubscription = events.listen(
-        (event) => _handleLiveEvent(event, generation),
-        onError: (Object error, StackTrace stackTrace) =>
-            _handleUnhandledEventError(error, stackTrace, generation),
-      );
-      if (!_isCurrentGeneration(generation)) {
-        await _disposeSession();
-        return;
-      }
+      await _tts.initialize();
+      if (!_isCurrent(generation)) return;
+
       state = state.copyWith(
         phase: AiVoicePhase.listening,
         sessionState: AiVoiceSessionState.active,
-        sessionStartedAt: DateTime.now(),
-        isBargeInArmed: true,
+        clearError: true,
       );
-    } catch (error) {
-      _handleFailure(
-        AiVoiceCopy.responseUnavailable,
-        generation: generation,
-        error: error,
-      );
+      unawaited(_runConversation(generation));
+    } on SpeechRecognitionPermissionDeniedException {
+      if (_isCurrent(generation)) {
+        await _stopWithFailure(
+          phase: AiVoicePhase.permissionDenied,
+          message: AiVoiceCopy.permissionDenied,
+        );
+      }
+    } catch (_) {
+      if (_isCurrent(generation)) {
+        await _stopWithFailure(
+          phase: AiVoicePhase.error,
+          message: AiVoiceCopy.unavailable,
+        );
+      }
     }
   }
 
-  /// Kept as a small compatibility surface for callers of the prior
-  /// one-shot voice controller.
   Future<void> listenAndRespond() => startConversation();
 
-  Future<void> toggleListening() async {
-    if (!state.isSessionActive || _isDisposed) return;
-    if (state.isListeningPaused) {
-      await resumeListening();
-      return;
-    }
-    await pauseListening();
+  void setReactionSpeed(AiVoiceReactionSpeed speed) {
+    if (_isDisposed || state.isSessionInProgress) return;
+    state = state.copyWith(reactionSpeed: speed);
   }
 
-  Future<void> pauseListening() async {
-    if (!state.isSessionActive || state.isListeningPaused || _isDisposed) {
-      return;
-    }
-    final generation = _sessionGeneration;
-    try {
-      await _liveGateway.pauseInput();
-      if (!_isCurrentGeneration(generation) || !state.isSessionActive) return;
+  Future<void> _runConversation(int generation) async {
+    while (_isCurrent(generation) && state.isSessionActive) {
+      state = state.copyWith(phase: AiVoicePhase.listening, clearError: true);
+
+      final String transcript;
+      try {
+        transcript = (await _speech.listenOnce(
+          localeId: 'vi_VN',
+          listenFor: const Duration(minutes: 3),
+          pauseFor: state.reactionSpeed.pauseFor,
+        )).trim();
+        await _speech.stop();
+      } on SpeechRecognitionPermissionDeniedException {
+        if (_isCurrent(generation)) {
+          await _stopWithFailure(
+            phase: AiVoicePhase.permissionDenied,
+            message: AiVoiceCopy.permissionDenied,
+          );
+        }
+        return;
+      } catch (_) {
+        if (_isCurrent(generation)) {
+          await _stopWithFailure(
+            phase: AiVoicePhase.error,
+            message: AiVoiceCopy.unavailable,
+          );
+        }
+        return;
+      }
+
+      if (!_isCurrent(generation) || !state.isSessionActive) return;
+      if (transcript.isEmpty) {
+        await _waitBeforeNextTurn(generation);
+        continue;
+      }
+
       state = state.copyWith(
-        phase: AiVoicePhase.paused,
-        isListeningPaused: true,
-        hasSpeechStarted: false,
-        clearCurrentTurnStartedAt: true,
+        phase: AiVoicePhase.thinking,
+        transcript: transcript,
       );
-    } catch (error) {
-      _handleFailure(
-        AiVoiceCopy.responseUnavailable,
-        generation: generation,
-        error: error,
-      );
+
+      final String response;
+      try {
+        response = (await _repository.sendTurn(transcript)).trim();
+      } on VoiceChatException catch (error) {
+        if (_isCurrent(generation)) {
+          await _stopWithFailure(
+            phase: AiVoicePhase.error,
+            message: _messageForVoiceFailure(error.failure),
+          );
+        }
+        return;
+      } catch (_) {
+        if (_isCurrent(generation)) {
+          await _stopWithFailure(
+            phase: AiVoicePhase.error,
+            message: AiVoiceCopy.temporarilyUnavailable,
+          );
+        }
+        return;
+      }
+
+      if (!_isCurrent(generation) || !state.isSessionActive) return;
+      if (response.isEmpty) {
+        await _stopWithFailure(
+          phase: AiVoicePhase.error,
+          message: AiVoiceCopy.invalidResponse,
+        );
+        return;
+      }
+
+      state = state.copyWith(phase: AiVoicePhase.speaking, response: response);
+      try {
+        await _tts.speak(response);
+      } catch (_) {
+        if (_isCurrent(generation)) {
+          await _stopWithFailure(
+            phase: AiVoicePhase.error,
+            message: AiVoiceCopy.ttsUnavailable,
+          );
+        }
+        return;
+      }
+
+      if (!_isCurrent(generation) || !state.isSessionActive) return;
+      await _waitBeforeNextTurn(generation);
     }
   }
 
-  Future<void> resumeListening() async {
-    if (!state.isSessionActive || !state.isListeningPaused || _isDisposed) {
-      return;
-    }
-    final generation = _sessionGeneration;
-    try {
-      await _liveGateway.resumeInput();
-      if (!_isCurrentGeneration(generation) || !state.isSessionActive) return;
-      state = state.copyWith(
-        phase: AiVoicePhase.listening,
-        isListeningPaused: false,
-        hasSpeechStarted: false,
-        isBargeInArmed: true,
-        clearCurrentTurnStartedAt: true,
-      );
-    } catch (error) {
-      _handleFailure(
-        AiVoiceCopy.responseUnavailable,
-        generation: generation,
-        error: error,
-      );
-    }
-  }
-
-  Future<void> setMuted(bool muted) async {
-    if (!state.isSessionActive || _isDisposed) return;
-    final generation = _sessionGeneration;
-    try {
-      await _liveGateway.setOutputMuted(muted);
-      if (!_isCurrentGeneration(generation) || !state.isSessionActive) return;
-      state = state.copyWith(isMuted: muted);
-    } catch (error) {
-      _handleFailure(
-        AiVoiceCopy.responseUnavailable,
-        generation: generation,
-        error: error,
-      );
-    }
+  Future<void> _waitBeforeNextTurn(int generation) async {
+    if (_turnDelay > Duration.zero) await Future<void>.delayed(_turnDelay);
+    if (!_isCurrent(generation)) return;
   }
 
   Future<void> stopConversation() async {
-    if (_isDisposed || !state.isSessionInProgress) {
-      return;
-    }
-    _sessionGeneration++;
-    state = state.copyWith(sessionState: AiVoiceSessionState.stopping);
-    await _disposeSession();
     if (_isDisposed) return;
-    state = const AiVoiceState(phase: AiVoicePhase.idle, isInitialized: true);
+    _generation++;
+    _repository.resetSession();
+    if (state.isSessionInProgress) {
+      state = state.copyWith(sessionState: AiVoiceSessionState.stopping);
+    }
+    await _cancelDevices();
+    if (_isDisposed) return;
+    state = state.copyWith(
+      phase: AiVoicePhase.idle,
+      sessionState: AiVoiceSessionState.stopped,
+      clearError: true,
+      isInitialized: true,
+    );
+  }
+
+  /// Route disposal cannot publish synchronously while Flutter is unmounting
+  /// the listening widget. Cleanup starts immediately; idle is published only
+  /// after the device cancellation future yields.
+  Future<void> leavePage() async {
+    if (_isDisposed) return;
+    _generation++;
+    _repository.resetSession();
+    await _cancelDevices();
+    if (_isDisposed) return;
+    state = state.copyWith(
+      phase: AiVoicePhase.idle,
+      sessionState: AiVoiceSessionState.stopped,
+      clearError: true,
+      isInitialized: true,
+    );
   }
 
   Future<void> handleAppLifecycleState(AppLifecycleState lifecycleState) async {
-    if (lifecycleState == AppLifecycleState.resumed ||
-        !state.isSessionInProgress) {
-      return;
-    }
-    await stopConversation();
-  }
-
-  Future<void> _disposeSession() async {
-    final subscription = _sessionSubscription;
-    _sessionSubscription = null;
-    await subscription?.cancel();
-    await _liveGateway.stopSession();
-  }
-
-  void _handleLiveEvent(VoiceLiveEvent event, int generation) {
-    if (!_isCurrentGeneration(generation)) return;
-    switch (event.type) {
-      case VoiceLiveEventType.connected:
-      case VoiceLiveEventType.reconnected:
-        state = state.copyWith(
-          phase: AiVoicePhase.listening,
-          sessionState: AiVoiceSessionState.active,
-          isListeningPaused: false,
-          isBargeInArmed: true,
-          clearError: true,
-        );
-        break;
-      case VoiceLiveEventType.listening:
-        if (!state.isListeningPaused) {
-          state = state.copyWith(
-            phase: AiVoicePhase.listening,
-            sessionState: AiVoiceSessionState.active,
-            isBargeInArmed: true,
-          );
-        }
-        break;
-      case VoiceLiveEventType.inputTranscript:
-        final merged = SpeechTranscriptMerger.merge(
-          state.finalTranscript,
-          event.transcript,
-        );
-        state = state.copyWith(
-          phase: state.isListeningPaused
-              ? AiVoicePhase.paused
-              : AiVoicePhase.userSpeaking,
-          partialTranscript: event.transcript,
-          finalTranscript: merged,
-          hasSpeechStarted: event.transcript.trim().isNotEmpty,
-          currentTurnStartedAt: state.hasSpeechStarted ? null : DateTime.now(),
-        );
-        break;
-      case VoiceLiveEventType.outputTranscript:
-        final response = SpeechTranscriptMerger.merge(
-          state.responseDraft,
-          event.transcript,
-        );
-        state = state.copyWith(
-          phase: AiVoicePhase.speaking,
-          responseDraft: response,
-          spokenResponse: response,
-          hasSpeechStarted: false,
-          isBargeInArmed: true,
-          clearCurrentTurnStartedAt: true,
-        );
-        break;
-      case VoiceLiveEventType.outputAudio:
-        if (!state.isMuted && !state.isListeningPaused) {
-          state = state.copyWith(
-            phase: AiVoicePhase.speaking,
-            hasSpeechStarted: false,
-            isBargeInArmed: true,
-          );
-        }
-        break;
-      case VoiceLiveEventType.interrupted:
-        state = state.copyWith(
-          phase: state.isListeningPaused
-              ? AiVoicePhase.paused
-              : AiVoicePhase.interrupted,
-          responseDraft: '',
-          spokenResponse: '',
-          isBargeInArmed: true,
-          hasSpeechStarted: false,
-          clearCurrentTurnStartedAt: true,
-        );
-        break;
-      case VoiceLiveEventType.turnCompleted:
-        state = state.copyWith(
-          phase: state.isListeningPaused
-              ? AiVoicePhase.paused
-              : AiVoicePhase.listening,
-          partialTranscript: '',
-          responseDraft: '',
-          hasSpeechStarted: false,
-          isBargeInArmed: true,
-          clearCurrentTurnStartedAt: true,
-        );
-        break;
-      case VoiceLiveEventType.paused:
-        state = state.copyWith(
-          phase: AiVoicePhase.paused,
-          isListeningPaused: true,
-          hasSpeechStarted: false,
-          clearCurrentTurnStartedAt: true,
-        );
-        break;
-      case VoiceLiveEventType.reconnecting:
-        state = state.copyWith(phase: AiVoicePhase.reconnecting);
-        break;
-      case VoiceLiveEventType.permissionDenied:
-        _sessionGeneration++;
-        state = state.copyWith(
-          phase: AiVoicePhase.permissionDenied,
-          sessionState: AiVoiceSessionState.permissionDenied,
-          errorMessage: AiVoiceCopy.permissionDenied,
-        );
-        unawaited(_disposeSession());
-        break;
-      case VoiceLiveEventType.failure:
-        _handleFailure(
-          AiVoiceCopy.responseUnavailable,
-          generation: generation,
-          error: event.error,
-        );
-        break;
-      case VoiceLiveEventType.closed:
-        if (state.sessionState == AiVoiceSessionState.active) {
-          state = state.copyWith(
-            phase: AiVoicePhase.idle,
-            sessionState: AiVoiceSessionState.stopped,
-            isListeningPaused: false,
-            isBargeInArmed: false,
-          );
-        }
-        break;
+    if (lifecycleState != AppLifecycleState.resumed &&
+        state.isSessionInProgress) {
+      await stopConversation();
     }
   }
 
-  void _handleUnhandledEventError(
-    Object error,
-    StackTrace stackTrace,
-    int generation,
-  ) {
-    _handleFailure(
-      AiVoiceCopy.responseUnavailable,
-      generation: generation,
-      error: error,
-    );
-  }
-
-  bool _isCurrentGeneration(int generation) =>
-      !_isDisposed && generation == _sessionGeneration;
-
-  void _handleFailure(
-    String message, {
-    required int generation,
-    Object? error,
-  }) {
-    if (!_isCurrentGeneration(generation)) return;
-    _debugFailure(error);
-    _sessionGeneration++;
+  Future<void> _stopWithFailure({
+    required AiVoicePhase phase,
+    required String message,
+  }) async {
+    _generation++;
+    _repository.resetSession();
+    await _cancelDevices();
+    if (_isDisposed) return;
     state = state.copyWith(
-      phase: AiVoicePhase.error,
-      sessionState: AiVoiceSessionState.error,
-      errorMessage: _failureMessage(message, error),
-      isListeningPaused: false,
-      isBargeInArmed: false,
-      hasSpeechStarted: false,
-      clearCurrentTurnStartedAt: true,
+      phase: phase,
+      sessionState: AiVoiceSessionState.stopped,
+      errorMessage: message,
+      isInitialized: true,
     );
-    unawaited(_disposeSession());
   }
 
-  String _failureMessage(String fallback, Object? error) {
-    return error is VoiceLiveConfigurationException
-        ? AiVoiceCopy.voiceConfigurationMissing
-        : fallback;
+  Future<void> _cancelDevices() async {
+    try {
+      await _speech.cancel();
+    } catch (_) {
+      // Best-effort cleanup; the generation token already blocks late work.
+    }
+    try {
+      await _tts.stop();
+    } catch (_) {
+      // Best-effort cleanup; the user-facing failure was set by the caller.
+    }
   }
 
-  void _debugFailure(Object? error) {
-    assert(() {
-      debugPrint(
-        '[ai_voice] session failure errorType=${error?.runtimeType ?? 'unknown'}',
-      );
-      return true;
-    }());
+  bool _isCurrent(int generation) => !_isDisposed && generation == _generation;
+
+  String _messageForVoiceFailure(VoiceChatFailure failure) {
+    return switch (failure) {
+      VoiceChatFailure.temporarilyUnavailable =>
+        AiVoiceCopy.temporarilyUnavailable,
+      VoiceChatFailure.invalidResponse => AiVoiceCopy.invalidResponse,
+      VoiceChatFailure.invalidRequest => AiVoiceCopy.temporarilyUnavailable,
+      VoiceChatFailure.unavailable => AiVoiceCopy.unavailable,
+    };
   }
 }

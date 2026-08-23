@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app/router/shared_route_factories.dart';
+import 'package:nano_app/app_versions/v1/features/ai_voice/presentation/pages/ai_voice_access_gate.dart';
 import 'package:nano_app/app_versions/v1/features/ai_voice/presentation/pages/ai_voice_page.dart';
 import 'package:nano_app/app_versions/v1/features/auth/presentation/pages/v1_auth_entry_page.dart';
 import 'package:nano_app/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart';
@@ -144,7 +145,8 @@ final v1Routes = <RouteBase>[
   GoRoute(
     path: V1RoutePaths.aiVoice,
     name: V1RoutePaths.aiVoice,
-    builder: (context, state) => const AiVoicePage(),
+    redirect: V1RouteGuards.authGuard,
+    builder: (context, state) => const AiVoiceAccessGate(child: AiVoicePage()),
   ),
   GoRoute(
     path: V1RoutePaths.nutrition,

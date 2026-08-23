@@ -21,6 +21,7 @@ View / Presentation
 |---|---|---|---|---|---|---|---|---|---|
 | AI_CHAT-FN01 | openAiChatWithEntitlement | AI_CHAT-F01 | Use case / Service | planned:lib/app_versions/v2/features/ai_chat/application/ai_chat_fn01.dart | Mở AI Chat | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
 | AI_CHAT-FN02 | sendAiChatQuestion | AI_CHAT-F02 | Use case / Service | planned:lib/app_versions/v2/features/ai_chat/application/ai_chat_fn02.dart | Submit chat question | Command + actor context | Result/Error | Audit/event when required | Approved - DD docs complete |
+| AI_CHAT-FN03 | runSequentialVoiceConversation | AI_CHAT-F03 | Controller -> Repository -> Datasource -> GeminiRestClient | `lib/app_versions/v1/features/ai_voice/` | Chọn reaction speed, nhấn Bắt đầu / mỗi STT final, endpointing hoặc hard cap | Reaction-speed selection + 180.000 ms listen cap + transcript + bounded RAM history + AppEnv config | Voice state + safe text/error | RAM selection/history; STT/TTS lifecycle | Reaction-speed Android PASS; 3-minute source/test/build/install PASS, >60-second continuity pending; iOS pending |
 
 ---
 
@@ -153,3 +154,116 @@ View / Presentation
 | AI_CHAT-FN-EV02-03 | Permission denied theo role/scope. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
 | AI_CHAT-FN-EV02-04 | Idempotency/retry nếu có ghi dữ liệu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
 | AI_CHAT-FN-EV02-05 | Audit hoặc event được tạo khi BD yêu cầu. | Documented | Required in implementation/test phase; not executed in this DD docs pass |
+
+---
+
+<a id="ai_chat-fn03"></a>
+# AI_CHAT-FN03 — runSequentialVoiceConversation
+
+## A. Định danh và trách nhiệm
+
+| Trường | Nội dung |
+|---|---|
+| Feature cha | AI_CHAT-F03 |
+| Layer | Presentation controller điều phối; repository sở hữu history RAM; datasource gọi `GeminiRestClient` trực tiếp. |
+| File dự kiến | `lib/app_versions/v1/features/ai_voice/presentation/controllers/ai_voice_controller.dart`; `domain/repositories/ai_voice_repository.dart`; `data/repositories/ai_voice_repository_impl.dart`; `data/datasources/voice_chat_turn_datasource.dart` |
+| Trigger | `setReactionSpeed()` khi session dừng; `start()` do người dùng gọi; mỗi STT final/endpointing timeout khi session còn active. |
+| Mục tiêu duy nhất | Điều phối hội thoại half-duplex liên tục không chồng STT/TTS; gate non-paid trong app và gọi Gemini client-only theo rủi ro đã chấp nhận. |
+| Không chịu trách nhiệm | Full-duplex, barge-in, custom PCM, Bluetooth, offline, persistence hoặc quota NanoBio. |
+| Rule áp dụng | AI_CHAT-BR03..AI_CHAT-BR11 |
+
+## B. Hợp đồng app input/output
+
+| Input | Type | Validation / source |
+|---|---|---|
+| current user/access | Auth + `EffectiveAccess` | Exact user match, not anonymous, Plus/FamilyPlus; otherwise fail-closed before mount. |
+| transcript | String | `trim`, non-empty, tối đa 6.000 ký tự trước API. |
+| history | List of `{role,text}` | RAM only, role `user`/`model`, tối đa 12 item và 6.000 ký tự/item; repository trim sau mỗi successful pair. |
+| reaction speed | Enum/value object | 200/500/1.000/2.000 ms; default 1.000 ms; chỉ cho đổi khi session không in-progress. |
+| listen hard cap | Duration | 180.000 ms/3 phút mỗi lượt; final, endpointing, lifecycle hoặc platform recognizer được phép kết thúc sớm hơn. |
+| operation generation | Integer/token | Tăng khi Start/Stop/background/dispose để callback cũ không đổi state. |
+
+| Output | Nội dung |
+|---|---|
+| State | `idle`, `listening`, `thinking`, `speaking`, `error`/permission denied. |
+| Success | Last transcript + last response tối đa 2.000 ký tự; history chỉ append đủ user/model pair sau response hợp lệ. |
+| Failure | Typed/safe error; session dừng, STT/TTS tắt, không tự restart. |
+
+## C. Luồng xử lý app
+
+1. Khi session không in-progress, `setReactionSpeed()` cập nhật selection
+   RAM. Selection giữ qua Stop/Start trong cùng controller/page; controller
+   mới dùng default 1 giây.
+2. `start()` tăng generation, dừng audio cũ, reset repository và khởi tạo STT/TTS.
+3. Chuyển `listening`; recognizer nghe từng câu với `listenFor = 180.000 ms`
+   và `pauseFor: null`. Gateway chỉ áp 200/500/1.000/2.000 ms sau partial
+   non-empty đầu tiên.
+4. Khi final hoặc endpointing timeout, dừng recognizer trước khi xử lý
+   transcript. Mỗi result nhận dạng mới reset pause timer.
+5. Nếu transcript rỗng và generation còn hợp lệ, quay lại listen mà không gọi API.
+6. Nếu hợp lệ, chuyển `thinking` và gọi repository `sendTurn(message)`.
+7. Repository gửi message + history hiện có qua datasource; datasource gọi
+   `AI_CHAT-API03` trực tiếp bằng `GeminiRestClient`.
+8. Response non-empty thành công mới append user/model pair, trim còn 12 item và
+   trả text cho controller.
+9. Controller kiểm tra generation, chuyển `speaking`, chờ TTS completion, đợi
+   300 ms rồi mới listen lại.
+10. Stop/background/dispose tăng generation trước, cancel STT, stop TTS, reset
+   history, về idle và không xử lý late response.
+
+## D. Luồng xử lý datasource client-only
+
+1. Validate message/history trước khi gọi provider; user message và mỗi history
+   item tối đa 6.000 ký tự, history tối đa 12 item.
+2. Đọc `GEMINI_API_KEY` từ `AppEnv`; resolve model theo
+   `GEMINI_CHAT_MODEL -> GEMINI_MODEL -> gemini-3.5-flash`.
+3. Lắp `systemInstruction`, bounded contents và `generationConfig` với
+   `maxOutputTokens: 256`; gọi Gemini REST bằng `GeminiRestClient`.
+4. Timeout turn sau 30 giây. 408/429/network/5xx thành lỗi tạm thời; key/auth/
+   model/config thành unavailable; response rỗng hoặc quá 2.000 ký tự thành
+   invalid response.
+5. Chỉ log stage/status/error type an toàn; không log message, history, key,
+   header/URL chứa key hoặc raw response.
+6. Không có server kiểm tra paid access lại trước Gemini; app gate và key/APK
+   exposure là rủi ro client-only được chấp nhận.
+
+## E. Error mapping
+
+| Failure/domain | Điều kiện | Controller behavior |
+|---|---|---|
+| Access fail-closed | Session/effective access không hợp lệ trước khi mount | Không mount Voice hoặc dừng session; hiển thị login/CTA phù hợp. |
+| `invalid_request` | Message/history sai contract | Dừng session, copy lỗi an toàn. |
+| `temporarily_unavailable` | 408/429/network/5xx/timeout | Dừng, yêu cầu thử lại sau. |
+| `invalid_response` | Gemini response rỗng/không hợp lệ | Dừng, không append history. |
+| `voice_unavailable` | Key/auth/model/config lỗi | Dừng, yêu cầu chủ động thử lại. |
+| Device permission/TTS | STT/TTS failure | Cancel audio, dừng session, không mở micro lại. |
+
+## F. Side effects và độ tin cậy
+
+| Nội dung | Quy định |
+|---|---|
+| Persistence | None; không SQLite/Supabase table/RPC mới. |
+| Quota | Không check/commit NanoBio quota; không tạo ledger/event Voice. |
+| Retry | Không auto retry turn Gemini/TTS lỗi; người dùng chủ động Bắt đầu lại. |
+| Concurrency | Một operation generation active; late completion không đổi state/history. |
+| Reaction speed | Chỉ endpointing sau speech result; không phải Gemini/network latency. Dropdown và setter bị khóa khi session in-progress. |
+| Listen duration/text bounds | 180.000 ms là hard cap phía app/plugin, không phải cam kết raw audio/recognizer luôn chạy đủ 3 phút. Final, endpointing và platform stop vẫn thắng. User/history item tối đa 6.000 ký tự; response tối đa 2.000 ký tự. |
+| Secret / accepted risk | Key lấy từ `AppEnv`, không hard-code/commit/log nhưng hiện diện trong APK/runtime và có thể bị trích xuất. Paid gate chỉ ở Flutter. |
+
+## G. Test requirements
+
+- `AI_CHAT-TC04..TC08`: fake STT/repository/TTS chứng minh thứ tự, lifecycle,
+  error và bounded history.
+- `AI_CHAT-TC09..TC12`: Flutter plugin/datasource/static tests chứng minh STT
+  null-return/native settle, Gemini request/config/timeout/error mapping, no
+  sensitive log và không còn runtime `voice-chat-turn`.
+- `AI_CHAT-TC13`: baseline Android build/multi-turn smoke đã PASS; giữ làm
+  regression evidence.
+- `AI_CHAT-TC14`: iOS build + real-device smoke vẫn pending.
+- `AI_CHAT-TC15..TC17`: mapping/default/selection RAM, gateway delayed-arm/final
+  contract và Android reaction-speed re-smoke PASS; iOS vẫn theo `AI_CHAT-TC14`.
+- `AI_CHAT-TC18`: concrete gateway test cho `listenFor = 180.000 ms`, final/
+  endpointing kết thúc sớm; input 3.000 ký tự accepted, 6.001 rejected và
+  response >2.000 rejected. Source, expanded 90/90 tests, analyze 10 item/0
+  issue, format 21 file/0 changed và Android build/install đã PASS;
+  >60-second device continuity smoke vẫn pending.

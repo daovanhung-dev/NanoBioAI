@@ -7,7 +7,7 @@ void main() {
 
   setUpAll(() {
     sql = File(
-      'docs/supabase/20260816_daily_health_hub_rewards.sql',
+      'docs/supabase/03_schema_daily_health_hub_rewards.sql',
     ).readAsStringSync();
   });
 

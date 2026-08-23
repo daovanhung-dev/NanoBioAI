@@ -38,8 +38,7 @@ Commit de xuat: feat(app): hop nhat entrypoint va tu dong chon giao dien theo qu
 - `lib/app_versions/v2/router/v2_router.dart`
 - `lib/app_versions/v1/features/settings/presentation/pages/settings_page.dart`
 - `lib/app_versions/admin/features/admin_panel/`
-- `docs/supabase/17-unified-app-role-surface.sql`
-- `docs/supabase/11-admin-access-dashboard.sql`
+- `docs/supabase/01_schema_rebuild_local_sandbox.sql`
 - `docs/supabase/config.sql`
 
 ## Kiểm chứng

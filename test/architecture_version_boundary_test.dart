@@ -209,6 +209,9 @@ bool _isKnownVersionBridge(File file) {
         'lib/app_versions/v1/features/settings/presentation/pages/settings_page.dart',
       ) ||
       normalized.endsWith(
+        'lib/app_versions/v1/features/ai_voice/presentation/pages/ai_voice_access_gate.dart',
+      ) ||
+      normalized.endsWith(
         'lib/sale_referral/presentation/pages/sale_participation_page.dart',
       );
 }

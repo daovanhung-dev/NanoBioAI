@@ -59,7 +59,7 @@ The core schedule and health-log schemas do not need new columns. A SQLite v19 m
 
 ## Supabase delta
 
-`docs/supabase/20260816_daily_health_hub_rewards.sql` adds:
+`docs/supabase/03_schema_daily_health_hub_rewards.sql` adds:
 
 - `schedule_health_checkins` server-owned evidence rows;
 - server-owned weighted reward-point mapping;

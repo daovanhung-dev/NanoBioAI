@@ -205,7 +205,6 @@ class AppEnv {
         'ONBOARDING_AI_DEV_CHECK_ENABLED',
       ),
       'GEMINI_API_KEY' => const String.fromEnvironment('GEMINI_API_KEY'),
-      'GEMINI_LIVE_MODEL' => const String.fromEnvironment('GEMINI_LIVE_MODEL'),
       'GEMINI_MODEL' => const String.fromEnvironment('GEMINI_MODEL'),
       'GEMINI_BASE_URL' => const String.fromEnvironment('GEMINI_BASE_URL'),
       'GEMINI_PLAN_MODEL' => const String.fromEnvironment('GEMINI_PLAN_MODEL'),

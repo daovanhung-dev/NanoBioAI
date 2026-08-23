@@ -188,9 +188,7 @@ void main() {
     });
 
     test('keeps VietQR membership requests server-owned and manually reviewed', () {
-      final module = File(
-        'docs/supabase/13-membership-payment-request.sql',
-      ).readAsStringSync();
+      final module = sql;
       final create = _lastFunctionBlock(
         sql,
         'create_membership_payment_request',

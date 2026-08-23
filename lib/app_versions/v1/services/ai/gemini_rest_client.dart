@@ -57,28 +57,33 @@ class GeminiContent {
 }
 
 class GeminiGenerationConfig {
-  final int candidateCount;
+  final int? candidateCount;
   final int maxOutputTokens;
-  final double temperature;
-  final double topP;
+  final double? temperature;
+  final double? topP;
   final String? responseMimeType;
+  final String? thinkingLevel;
 
   const GeminiGenerationConfig({
     this.candidateCount = 1,
     required this.maxOutputTokens,
-    required this.temperature,
-    required this.topP,
+    this.temperature,
+    this.topP,
     this.responseMimeType,
+    this.thinkingLevel,
   });
 
   Map<String, Object?> toJson() {
     final mimeType = _cleanText(responseMimeType);
+    final normalizedThinkingLevel = _cleanText(thinkingLevel);
     return {
-      'candidateCount': candidateCount,
+      if (candidateCount != null) 'candidateCount': candidateCount,
       'maxOutputTokens': maxOutputTokens,
-      'temperature': temperature,
-      'topP': topP,
+      if (temperature != null) 'temperature': temperature,
+      if (topP != null) 'topP': topP,
       if (mimeType != null) 'responseMimeType': mimeType,
+      if (normalizedThinkingLevel != null)
+        'thinkingConfig': {'thinkingLevel': normalizedThinkingLevel},
     };
   }
 }
@@ -179,7 +184,10 @@ class GeminiRestClient {
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw _exceptionFromPayload(response.data, statusCode: response.statusCode);
+      throw _exceptionFromPayload(
+        response.data,
+        statusCode: response.statusCode,
+      );
     }
     return _extractText(response.data);
   }
@@ -301,6 +309,7 @@ class GeminiRestClient {
         if (parts is! List) continue;
         for (final part in parts) {
           final partMap = _asObjectMap(part);
+          if (partMap?['thought'] == true) continue;
           final value = partMap?['text'];
           if (value is String && value.isNotEmpty) fragments.add(value);
         }
@@ -353,7 +362,10 @@ class GeminiRestClient {
       } catch (error, stackTrace) {
         Error.throwWithStackTrace(
           GeminiApiException(
-            message: _truncateText('Unexpected Gemini client error: $error', 240),
+            message: _truncateText(
+              'Unexpected Gemini client error: $error',
+              240,
+            ),
           ),
           stackTrace,
         );
@@ -414,7 +426,10 @@ class GeminiRestClient {
         if (error is GeminiApiException) rethrow;
         Error.throwWithStackTrace(
           GeminiApiException(
-            message: _truncateText('Unexpected Gemini stream error: $error', 240),
+            message: _truncateText(
+              'Unexpected Gemini stream error: $error',
+              240,
+            ),
           ),
           stackTrace,
         );
@@ -441,7 +456,8 @@ class GeminiRestClient {
     final rootMap = _asObjectMap(payload);
     final errorMap = _asObjectMap(rootMap?['error']);
     final status =
-        _cleanText(errorMap?['status']?.toString()) ?? _cleanText(fallbackStatus);
+        _cleanText(errorMap?['status']?.toString()) ??
+        _cleanText(fallbackStatus);
     final message =
         _cleanText(errorMap?['message']?.toString()) ??
         _cleanText(rootMap?['message']?.toString()) ??
@@ -466,6 +482,7 @@ class GeminiRestClient {
         if (parts is! List) continue;
         for (final part in parts) {
           final partMap = _asObjectMap(part);
+          if (partMap?['thought'] == true) continue;
           final text = _cleanText(partMap?['text']?.toString());
           if (text != null) textSegments.add(text);
         }
@@ -490,13 +507,17 @@ class GeminiRestClient {
         message: 'Gemini blocked the request: $blockReason.',
       );
     }
-    throw const GeminiApiException(message: 'Gemini returned an empty response.');
+    throw const GeminiApiException(
+      message: 'Gemini returned an empty response.',
+    );
   }
 
   static String? _extractFinishReason(List<Object?> candidates) {
     for (final candidate in candidates) {
       final candidateMap = _asObjectMap(candidate);
-      final finishReason = _cleanText(candidateMap?['finishReason']?.toString());
+      final finishReason = _cleanText(
+        candidateMap?['finishReason']?.toString(),
+      );
       if (finishReason != null) return finishReason;
     }
     return null;
@@ -523,7 +544,8 @@ class GeminiRestClient {
       DioExceptionType.connectionError => 'Could not connect to Gemini.',
       DioExceptionType.badCertificate => 'Gemini TLS certificate was rejected.',
       DioExceptionType.cancel => 'Gemini request was cancelled.',
-      DioExceptionType.badResponse => 'Gemini returned an invalid HTTP response.',
+      DioExceptionType.badResponse =>
+        'Gemini returned an invalid HTTP response.',
       DioExceptionType.unknown =>
         'Gemini request failed because of an unknown network error.',
     };

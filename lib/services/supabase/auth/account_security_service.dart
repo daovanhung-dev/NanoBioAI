@@ -46,7 +46,10 @@ class AccountSecurityService {
 
   Future<void> requestAccountDeletion() async {
     final client = _requireClient();
-    await client.functions.invoke(deleteAccountFunctionName);
+    await client.functions.invoke(
+      deleteAccountFunctionName,
+      body: const {'confirm': true},
+    );
     await AppPrefs.setOnboardingCompleted(false);
     await client.auth.signOut();
   }

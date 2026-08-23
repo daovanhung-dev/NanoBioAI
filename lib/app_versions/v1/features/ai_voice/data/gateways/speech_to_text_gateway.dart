@@ -4,41 +4,60 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
-import '../../domain/entities/speech_recognition_event.dart';
 import '../../domain/gateways/voice_gateways.dart';
-import '../../domain/speech_transcript_merger.dart';
 
-class DeviceSpeechRecognitionGateway
-    implements SpeechRecognitionGateway, RealtimeSpeechRecognitionCapability {
+class DeviceSpeechRecognitionGateway implements SpeechRecognitionGateway {
+  static const Duration _defaultStartTimeout = Duration(seconds: 3);
+  static const Duration _defaultTerminalTimeout = Duration(seconds: 2);
+
   final SpeechToText _speech;
+  final Duration _startTimeout;
+  final Duration _terminalTimeout;
 
   bool _initialized = false;
-  int _sessionSerial = 0;
-  int _generation = 0;
-  StreamController<SpeechRecognitionEvent>? _controller;
-  Completer<void>? _segmentDone;
-  String _committedTranscript = '';
+  Future<bool>? _initializeOperation;
+  Completer<String>? _activeListen;
+  Completer<void>? _listenStarted;
+  Completer<void>? _terminalStatus;
+  Future<void>? _endOperation;
   String _latestTranscript = '';
-  DateTime? _firstSpeechAt;
-  DateTime? _segmentStartedAt;
-  bool _segmentFinal = false;
-  bool _segmentHadSpeech = false;
-  Object? _segmentError;
-  Duration _currentListenFor = const Duration(seconds: 50);
-  Duration _maxUtteranceDuration = const Duration(minutes: 3);
-  bool _awaitingBoundaryContinuation = false;
-  Timer? _boundaryContinuationTimer;
+  Object? _sessionFailure;
+  bool _nativeSessionPending = false;
+  bool _discardTranscript = false;
+  Duration _silenceTimeout = const Duration(seconds: 1);
+  bool _silenceTimeoutArmed = false;
 
-  DeviceSpeechRecognitionGateway({SpeechToText? speech})
-      : _speech = speech ?? SpeechToText();
+  DeviceSpeechRecognitionGateway({
+    SpeechToText? speech,
+    Duration startTimeout = _defaultStartTimeout,
+    Duration terminalTimeout = _defaultTerminalTimeout,
+  }) : _speech = speech ?? SpeechToText(),
+       _startTimeout = startTimeout,
+       _terminalTimeout = terminalTimeout;
 
   @override
   Future<bool> initialize() async {
     if (_initialized) return _speech.isAvailable;
 
+    final pending = _initializeOperation;
+    if (pending != null) return pending;
+
+    final operation = _initialize();
+    _initializeOperation = operation;
+    try {
+      return await operation;
+    } finally {
+      if (identical(_initializeOperation, operation)) {
+        _initializeOperation = null;
+      }
+    }
+  }
+
+  Future<bool> _initialize() async {
     _initialized = await _speech.initialize(
       onStatus: _handleStatus,
       onError: _handleError,
+      options: <SpeechConfigOption>[SpeechToText.androidNoBluetooth],
     );
     if (!_initialized && !await _speech.hasPermission) {
       throw const SpeechRecognitionPermissionDeniedException();
@@ -47,361 +66,216 @@ class DeviceSpeechRecognitionGateway
   }
 
   @override
-  Future<Stream<SpeechRecognitionEvent>> startRealtimeSession({
+  Future<String> listenOnce({
     String localeId = 'vi_VN',
-    Duration maxUtteranceDuration = const Duration(minutes: 3),
-    Duration segmentDuration = const Duration(seconds: 50),
-    Duration pauseFor = const Duration(milliseconds: 1300),
+    Duration listenFor = const Duration(minutes: 3),
+    Duration pauseFor = const Duration(seconds: 1),
   }) async {
-    final available = await initialize();
-    if (!available) throw const SpeechRecognitionUnavailableException();
+    if (!await initialize()) {
+      throw const SpeechRecognitionUnavailableException();
+    }
+    if (_activeListen != null || _nativeSessionPending) {
+      throw const SpeechRecognitionUnavailableException();
+    }
 
-    await cancel();
-    final serial = ++_sessionSerial;
-    _generation = 0;
-    _committedTranscript = '';
+    final completer = Completer<String>();
+    final started = Completer<void>();
+    final terminal = Completer<void>();
+    _activeListen = completer;
+    _listenStarted = started;
+    _terminalStatus = terminal;
     _latestTranscript = '';
-    _firstSpeechAt = null;
-    _segmentError = null;
-    _awaitingBoundaryContinuation = false;
-    _boundaryContinuationTimer?.cancel();
-    _maxUtteranceDuration = maxUtteranceDuration;
-
-    final controller = StreamController<SpeechRecognitionEvent>();
-    _controller = controller;
-    unawaited(
-      _runSession(
-        serial: serial,
-        localeId: localeId,
-        maxUtteranceDuration: maxUtteranceDuration,
-        segmentDuration: segmentDuration,
-        pauseFor: pauseFor,
-      ),
-    );
-    return controller.stream;
-  }
-
-  Future<void> _runSession({
-    required int serial,
-    required String localeId,
-    required Duration maxUtteranceDuration,
-    required Duration segmentDuration,
-    required Duration pauseFor,
-  }) async {
-    _emit(SpeechRecognitionEvent.started(generation: _generation));
+    _sessionFailure = null;
+    _discardTranscript = false;
+    _silenceTimeout = pauseFor;
+    _silenceTimeoutArmed = false;
+    _nativeSessionPending = true;
 
     try {
-      while (_isCurrent(serial)) {
-        final firstSpeechAt = _firstSpeechAt;
-        if (firstSpeechAt != null &&
-            DateTime.now().difference(firstSpeechAt) >= maxUtteranceDuration) {
-          await _speech.stop();
-          await _completeSession(serial);
-          return;
-        }
-
-        _generation++;
-        _segmentStartedAt = DateTime.now();
-        _segmentFinal = false;
-        _segmentHadSpeech = false;
-        _segmentError = null;
-        _segmentDone = Completer<void>();
-
-        final remaining = _remainingUtteranceTime(maxUtteranceDuration);
-        final listenFor = remaining == null || remaining > segmentDuration
-            ? segmentDuration
-            : remaining;
-        _currentListenFor = listenFor;
-
-        if (listenFor <= Duration.zero) {
-          await _completeSession(serial);
-          return;
-        }
-
-        try {
-          await _speech.listen(
-            onResult: _handleResult,
-            onSoundLevelChange: (level) {
-              _emit(
-                SpeechRecognitionEvent.soundLevel(
-                  level: level,
-                  generation: _generation,
-                ),
-              );
-            },
-            listenOptions: SpeechListenOptions(
-              localeId: localeId,
-              listenFor: listenFor,
-              pauseFor: pauseFor,
-              partialResults: true,
-              cancelOnError: false,
-              listenMode: ListenMode.dictation,
-              autoPunctuation: true,
-            ),
-          );
-          if (_awaitingBoundaryContinuation) {
-            _boundaryContinuationTimer?.cancel();
-            _boundaryContinuationTimer = Timer(
-              pauseFor + const Duration(milliseconds: 900),
-              () {
-                if (_isCurrent(serial) && !_segmentHadSpeech && _speech.isListening) {
-                  unawaited(_speech.stop());
-                }
-              },
-            );
-          }
-        } catch (error) {
-          _segmentError = error;
-          _completeSegment();
-        }
-
-        try {
-          await _segmentDone!.future.timeout(
-            listenFor + const Duration(seconds: 3),
-            onTimeout: () async {
-              if (_speech.isListening) await _speech.stop();
-            },
-          );
-        } catch (_) {
-          // The session state below decides whether to recover or complete.
-        }
-
-        if (!_isCurrent(serial)) return;
-
-        final error = _segmentError;
-        if (error != null) {
-          _emit(
-            SpeechRecognitionEvent.failure(
-              error: error,
-              generation: _generation,
-            ),
-          );
-          await _closeController();
-          return;
-        }
-
-        if (_segmentFinal) {
-          await _completeSession(serial);
-          return;
-        }
-
-        if (_awaitingBoundaryContinuation &&
-            !_segmentHadSpeech &&
-            _committedTranscript.trim().isNotEmpty) {
-          await _completeSession(serial);
-          return;
-        }
-
-        final firstSpeech = _firstSpeechAt;
-        if (firstSpeech != null &&
-            DateTime.now().difference(firstSpeech) >= maxUtteranceDuration) {
-          await _completeSession(serial);
-          return;
-        }
-
-        final segmentElapsed = DateTime.now().difference(
-          _segmentStartedAt ?? DateTime.now(),
-        );
-        final reachedSegmentBoundary =
-            segmentElapsed >= listenFor - const Duration(milliseconds: 500);
-
-        if (_segmentHadSpeech && !reachedSegmentBoundary) {
-          // Native recognizer ended after speech before the rolling boundary.
-          // Treat this as an end-of-turn even when the platform did not mark
-          // the result final.
-          await _completeSession(serial);
-          return;
-        }
-
-        if (_latestTranscript.trim().isNotEmpty) {
-          _committedTranscript = _latestTranscript.trim();
-        }
-
-        _emit(
-          SpeechRecognitionEvent.restarting(
-            transcript: _latestTranscript.trim(),
-            generation: _generation,
+      await (() async {
+        // speech_to_text 7.4.0 intentionally exposes an untyped Future here
+        // and the public wrapper completes with null. Native start is confirmed
+        // by the status callback instead of treating that null as a bool.
+        await _speech.listen(
+          onResult: _handleResult,
+          listenOptions: SpeechListenOptions(
+            localeId: localeId,
+            listenFor: listenFor,
+            // Do not pass the selected silence timeout at native start. The
+            // speech_to_text timer starts immediately, so a 200 ms timeout
+            // would close the microphone before the user begins speaking.
+            // It is armed after the first non-empty recognition result.
+            pauseFor: null,
+            partialResults: true,
+            cancelOnError: false,
+            listenMode: ListenMode.dictation,
+            autoPunctuation: true,
           ),
         );
-      }
+        await started.future;
+        _throwSessionFailureIfAny();
+      })().timeout(_startTimeout);
+
+      final transcript = await completer.future.timeout(
+        listenFor + pauseFor + const Duration(seconds: 2),
+        onTimeout: () async {
+          await _endNativeSession(cancel: false);
+          return _latestTranscript.trim();
+        },
+      );
+      _throwSessionFailureIfAny();
+      return transcript;
+    } on SpeechRecognitionPermissionDeniedException {
+      await _endNativeSession(cancel: true);
+      rethrow;
+    } on SpeechRecognitionUnavailableException {
+      await _endNativeSession(cancel: true);
+      rethrow;
+    } on TimeoutException {
+      await _endNativeSession(cancel: true);
+      throw const SpeechRecognitionUnavailableException();
+    } catch (_) {
+      await _endNativeSession(cancel: true);
+      throw const SpeechRecognitionUnavailableException();
     } finally {
-      if (_isCurrent(serial)) {
-        await _closeController();
+      if (_nativeSessionPending) {
+        await _endNativeSession(cancel: true);
+      }
+      if (identical(_activeListen, completer)) {
+        _activeListen = null;
+        _listenStarted = null;
+        _terminalStatus = null;
       }
     }
-  }
-
-  Duration? _remainingUtteranceTime(Duration maxUtteranceDuration) {
-    final firstSpeechAt = _firstSpeechAt;
-    if (firstSpeechAt == null) return null;
-    final elapsed = DateTime.now().difference(firstSpeechAt);
-    return maxUtteranceDuration - elapsed;
   }
 
   void _handleResult(SpeechRecognitionResult result) {
-    final words = result.recognizedWords.trim();
-    if (words.isNotEmpty) {
-      _segmentHadSpeech = true;
-      _boundaryContinuationTimer?.cancel();
-      _awaitingBoundaryContinuation = false;
-      _firstSpeechAt ??= DateTime.now();
-      _latestTranscript = SpeechTranscriptMerger.merge(_committedTranscript, words);
-      _emit(
-        SpeechRecognitionEvent.partial(
-          transcript: _latestTranscript,
-          generation: _generation,
-        ),
-      );
+    if (!_nativeSessionPending) return;
+    _latestTranscript = result.recognizedWords.trim();
+    if (_latestTranscript.isNotEmpty && !_silenceTimeoutArmed) {
+      _silenceTimeoutArmed = true;
+      try {
+        // speech_to_text enforces this timer in Dart on both Android and iOS
+        // and refreshes it when subsequent recognition results arrive.
+        _speech.changePauseFor(_silenceTimeout);
+      } catch (_) {
+        // A terminal native callback can race the final partial result. The
+        // normal done/notListening path below still settles the session.
+      }
     }
-
-    if (result.finalResult) {
-      if (_latestTranscript.trim().isNotEmpty) {
-        _committedTranscript = _latestTranscript.trim();
-      }
-      _emit(
-        SpeechRecognitionEvent.finalSegment(
-          transcript: _latestTranscript.trim(),
-          generation: _generation,
-        ),
-      );
-
-      final segmentElapsed = DateTime.now().difference(
-        _segmentStartedAt ?? DateTime.now(),
-      );
-      final nearRollingBoundary =
-          segmentElapsed >= _currentListenFor - const Duration(milliseconds: 500);
-      final firstSpeechAt = _firstSpeechAt;
-      final belowHardCap = firstSpeechAt == null ||
-          DateTime.now().difference(firstSpeechAt) < _maxUtteranceDuration;
-
-      if (nearRollingBoundary && belowHardCap) {
-        _segmentFinal = false;
-        _awaitingBoundaryContinuation = true;
-      } else {
-        _segmentFinal = true;
-      }
-      _completeSegment();
+    if (result.finalResult && _speech.isListening) {
+      unawaited(_endNativeSession(cancel: false));
     }
   }
 
   void _handleStatus(String status) {
-    if (status == SpeechToText.notListeningStatus ||
-        status == SpeechToText.doneStatus) {
-      _completeSegment();
+    if (!_nativeSessionPending) return;
+    if (status == SpeechToText.listeningStatus) {
+      final started = _listenStarted;
+      if (started != null && !started.isCompleted) started.complete();
+      return;
     }
+    if (status != SpeechToText.doneStatus &&
+        status != SpeechToText.notListeningStatus) {
+      return;
+    }
+
+    _nativeSessionPending = false;
+    final terminal = _terminalStatus;
+    if (terminal != null && !terminal.isCompleted) terminal.complete();
+
+    final started = _listenStarted;
+    if (started != null && !started.isCompleted) {
+      _sessionFailure = const SpeechRecognitionUnavailableException();
+      started.complete();
+    }
+    _completeActive(_discardTranscript ? '' : _latestTranscript.trim());
   }
 
   void _handleError(SpeechRecognitionError error) {
+    if (!_nativeSessionPending) return;
     final normalized = error.errorMsg.trim().toLowerCase();
-    if (normalized.contains('permission') ||
-        normalized.contains('recognizer_disabled')) {
-      _segmentError = SpeechRecognitionPermissionDeniedException(
-        permanentlyDenied: error.permanent,
-      );
-    } else {
-      _segmentError = SpeechRecognitionUnavailableException(
-        message: error.errorMsg,
-      );
-    }
-    _completeSegment();
+    final exception =
+        normalized.contains('permission') ||
+            normalized.contains('recognizer_disabled')
+        ? SpeechRecognitionPermissionDeniedException(
+            permanentlyDenied: error.permanent,
+          )
+        : SpeechRecognitionUnavailableException(message: error.errorMsg);
+    _sessionFailure = exception;
+    _completeActive('');
+    final started = _listenStarted;
+    if (started != null && !started.isCompleted) started.complete();
   }
 
-  void _completeSegment() {
-    final completer = _segmentDone;
-    if (completer != null && !completer.isCompleted) completer.complete();
-  }
-
-  Future<void> _completeSession(int serial) async {
-    if (!_isCurrent(serial)) return;
-    _boundaryContinuationTimer?.cancel();
-    _boundaryContinuationTimer = null;
-    _awaitingBoundaryContinuation = false;
-    final transcript = _latestTranscript.trim();
-    _emit(
-      SpeechRecognitionEvent.completed(
-        transcript: transcript,
-        generation: _generation,
-      ),
-    );
-    await _closeController();
-  }
-
-  void _emit(SpeechRecognitionEvent event) {
-    final controller = _controller;
-    if (controller == null || controller.isClosed) return;
-    controller.add(event);
-  }
-
-  bool _isCurrent(int serial) => serial == _sessionSerial;
-
-  @override
-  Future<void> finishRealtimeSession() async {
-    if (_speech.isListening) await _speech.stop();
-    final serial = _sessionSerial;
-    if (_controller != null && !_controller!.isClosed) {
-      await _completeSession(serial);
+  void _completeActive(String transcript) {
+    final completer = _activeListen;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(transcript);
     }
   }
 
   @override
-  Future<String> listenOnce({
-    String localeId = 'vi_VN',
-    Duration listenFor = const Duration(seconds: 30),
-    Duration pauseFor = const Duration(seconds: 4),
-  }) async {
-    final stream = await startRealtimeSession(
-      localeId: localeId,
-      maxUtteranceDuration: listenFor,
-      segmentDuration: listenFor,
-      pauseFor: pauseFor,
-    );
-    String latest = '';
-    await for (final event in stream) {
-      if (event.transcript.trim().isNotEmpty) latest = event.transcript.trim();
-      if (event.type == SpeechRecognitionEventType.error && event.error != null) {
-        throw event.error!;
+  Future<void> stop() => _endNativeSession(cancel: false);
+
+  @override
+  Future<void> cancel() => _endNativeSession(cancel: true);
+
+  Future<void> _endNativeSession({required bool cancel}) {
+    if (cancel) _discardTranscript = true;
+    if (!_nativeSessionPending) {
+      _completeActive(_discardTranscript ? '' : _latestTranscript.trim());
+      return Future<void>.value();
+    }
+
+    final pending = _endOperation;
+    if (pending != null) return pending;
+
+    late final Future<void> operation;
+    operation = _finishNativeSession(cancel: cancel).whenComplete(() {
+      if (identical(_endOperation, operation)) _endOperation = null;
+    });
+    _endOperation = operation;
+    return operation;
+  }
+
+  Future<void> _finishNativeSession({required bool cancel}) async {
+    try {
+      if (cancel) {
+        await _speech.cancel();
+      } else {
+        await _speech.stop();
+      }
+    } catch (_) {
+      // Cleanup still settles locally so a failed native stop cannot leave the
+      // microphone loop permanently blocked.
+    }
+
+    final terminal = _terminalStatus;
+    if (terminal != null && !terminal.isCompleted) {
+      try {
+        await terminal.future.timeout(_terminalTimeout);
+      } on TimeoutException {
+        // The native recognizer occasionally omits its terminal callback. The
+        // bounded cleanup prevents a second native start from overlapping it.
       }
     }
-    return latest;
+
+    if (_nativeSessionPending) {
+      _nativeSessionPending = false;
+      if (terminal != null && !terminal.isCompleted) terminal.complete();
+      final started = _listenStarted;
+      if (started != null && !started.isCompleted) {
+        _sessionFailure = const SpeechRecognitionUnavailableException();
+        started.complete();
+      }
+      _completeActive(_discardTranscript ? '' : _latestTranscript.trim());
+    }
   }
 
-  @override
-  Future<void> stop() => finishRealtimeSession();
-
-  @override
-  Future<void> cancel() async {
-    _sessionSerial++;
-    _boundaryContinuationTimer?.cancel();
-    _boundaryContinuationTimer = null;
-    _completeSegment();
-    if (_speech.isListening) await _speech.cancel();
-    await _closeController();
-    _segmentDone = null;
+  void _throwSessionFailureIfAny() {
+    final failure = _sessionFailure;
+    if (failure is SpeechRecognitionPermissionDeniedException) throw failure;
+    if (failure is SpeechRecognitionUnavailableException) throw failure;
   }
-
-  Future<void> _closeController() async {
-    final controller = _controller;
-    if (controller == null) return;
-    if (!controller.isClosed) await controller.close();
-    if (identical(_controller, controller)) _controller = null;
-  }
-
-
-}
-
-class SpeechRecognitionUnavailableException implements Exception {
-  final String? message;
-
-  const SpeechRecognitionUnavailableException({this.message});
-
-  @override
-  String toString() => message ?? 'Speech recognition unavailable';
-}
-
-class SpeechRecognitionPermissionDeniedException implements Exception {
-  final bool permanentlyDenied;
-
-  const SpeechRecognitionPermissionDeniedException({
-    this.permanentlyDenied = false,
-  });
 }

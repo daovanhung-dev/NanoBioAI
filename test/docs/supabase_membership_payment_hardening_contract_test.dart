@@ -9,10 +9,8 @@ void main() {
     late String smoke;
 
     setUpAll(() {
-      migration = File(
-        'docs/supabase/23-membership-payment-hardening.sql',
-      ).readAsStringSync();
       rebuild = File('docs/supabase/config.sql').readAsStringSync();
+      migration = rebuild;
       smoke = File(
         'test/docs/fixtures/supabase_membership_payment_hardening_smoke.sql',
       ).readAsStringSync();

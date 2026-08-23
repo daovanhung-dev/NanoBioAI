@@ -237,7 +237,7 @@ def main() -> int:
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     asset = args.root / "assets/data/meal_catalog_v1.json"
-    seed = args.root / "docs/supabase/seed_data.sql"
+    seed = args.root / "docs/supabase/05_seed_local_sandbox.sql"
     doc = json.loads(asset.read_text(encoding="utf-8"))
     recipes = doc.get("recipes")
     if not isinstance(recipes, list): raise RuntimeError("recipes must be a list")

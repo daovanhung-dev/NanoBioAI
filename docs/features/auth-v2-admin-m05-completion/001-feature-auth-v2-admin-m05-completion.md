@@ -57,7 +57,7 @@ Commit de xuat: feat(auth-sync): hoan thien Auth V2 Admin va dong bo M05 an toan
 
 ## SQL và tài liệu
 
-- Migration không phá hủy: `docs/supabase/15-auth-sync-completion.sql`.
+- Rebuild local/sandbox: `docs/supabase/01_schema_rebuild_local_sandbox.sql`.
 - Nội dung migration được đồng bộ vào `docs/supabase/config.sql` để rebuild local/sandbox.
 - Không chạy `config.sql` trên remote/production.
 

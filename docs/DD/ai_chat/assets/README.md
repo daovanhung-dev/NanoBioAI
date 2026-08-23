@@ -7,6 +7,7 @@
 | Wireframe / mockup for module views | UI/UX reference for Views.md | Optional future asset | BD v2.0 does not require wireframes for DD completion; add after design review if needed. |
 | Empty/error/loading illustrations if used | UI state support | Optional future asset | Optional implementation asset; must follow NanoBio/Nabi tone and avoid sensitive data if created. |
 | Test fixtures | QA/dev evidence | Planned | Must be synthetic; no production PII, health data, payment evidence, tokens, or raw webhook payloads. |
+| AI_CHAT-V03 custom visual assets | Voice status/transcript/response view | Not required | Use existing theme/icons; keep the screen minimal and do not add waveform/Live artwork for this delta. |
 
 ## Rules
 - Do not store production screenshots with PII.

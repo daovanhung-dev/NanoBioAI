@@ -6,8 +6,8 @@ Repository: `daovanhung-dev/NanoBioAI` (`main`)
 ## Vị trí file đã xác định
 
 - Source of truth: `docs/note/Suc_Khoe_Tu_Nha_Bep_Thuc_Don_Theo_Tung_Muc.md`
-- Supabase schema: `docs/supabase/setup.sql`
-- Supabase seed: `docs/supabase/seed_data.sql`
+- Supabase schema: `docs/supabase/01_schema_rebuild_local_sandbox.sql`
+- Supabase seed: `docs/supabase/05_seed_local_sandbox.sql`
 - Existing canonical JSON: `assets/data/meal_catalog_v1.json`
 - Existing importer: `tools/import_meal_catalog.py`
 - Existing validator: `tools/validate_meal_catalog.py`
@@ -17,7 +17,7 @@ Repository: `daovanhung-dev/NanoBioAI` (`main`)
 
 - Markdown declares 64 topics and 163 recipes across 11 chapters.
 - Existing JSON catalog declares the same 163/64/11 contract and uses source-faithful structured fields.
-- Current `seed_data.sql` source block starts with `src_c01_thieu_mau_01_canh_thit_bo_rau_cai_bo_xoi` and ends with `src_c13_benh_tang_sinh_xuong_03_nuoc_hat_dau_nanh_vung_den` before `commit;`.
+- Current `05_seed_local_sandbox.sql` source block starts with `src_c01_thieu_mau_01_canh_thit_bo_rau_cai_bo_xoi` and ends with `src_c13_benh_tang_sinh_xuong_03_nuoc_hat_dau_nanh_vung_den` before `commit;`.
 - SQL rows carry per-recipe `source_hash`, `source_page`, `source_chapter`, `source_topic`, and `source_recipe_order`.
 - Source rows are marked `nutrition_status='missing_source_data'`, `constraint_metadata_status='awaiting_professional_review'`, `metadata_status='source_imported'`, `is_plan_eligible=false`.
 - Numeric nutrition fields use `0` sentinel in SQL. This matches NanoBio local SQLite's `NOT NULL DEFAULT 0` schema; therefore the patch intentionally does not change those columns to NULL.

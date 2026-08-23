@@ -143,7 +143,7 @@ To prevent this in future:
 
 - BD: `docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md`
 - DD: `docs/DD/admin_dashboard/`, `docs/DD/admin_operations/`
-- Supabase Schema: `docs/supabase/11-admin-access-dashboard.sql`
+- Supabase Schema: `docs/supabase/01_schema_rebuild_local_sandbox.sql`
 - RPC Definition: `docs/supabase/config.sql` (line 2108: `get_my_admin_session`)
 
 ## Verification

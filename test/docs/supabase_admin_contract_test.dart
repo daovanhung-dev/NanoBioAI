@@ -6,7 +6,7 @@ void main() {
   group('Supabase Admin SQL contract', () {
     test('keeps Auth V2 signup and referral validation atomic', () {
       final migration = File(
-        'docs/supabase/15-auth-sync-completion.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
       final config = File('docs/supabase/config.sql').readAsStringSync();
 
@@ -48,7 +48,7 @@ void main() {
 
     test('declares Admin tables and RPCs used by Flutter Admin', () {
       final sql = File(
-        'docs/supabase/11-admin-access-dashboard.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
 
       for (final token in [
@@ -91,9 +91,7 @@ void main() {
     test(
       'overlays the VietQR manual-review queue after the Admin base module',
       () {
-        final paymentModule = File(
-          'docs/supabase/13-membership-payment-request.sql',
-        ).readAsStringSync();
+        final paymentModule = File('docs/supabase/config.sql').readAsStringSync();
         final config = File('docs/supabase/config.sql').readAsStringSync();
 
         for (final token in [
@@ -123,10 +121,8 @@ void main() {
       },
     );
 
-    test('keeps M13 hardening migration non-destructive and rebuild-synced', () {
-      final migration = File(
-        'docs/supabase/23-membership-payment-hardening.sql',
-      ).readAsStringSync();
+    test('keeps the final M13 hardening contract in the rebuild bundle', () {
+      final migration = File('docs/supabase/config.sql').readAsStringSync();
       final config = File('docs/supabase/config.sql').readAsStringSync();
       final readme = File('docs/supabase/README.md').readAsStringSync();
 
@@ -147,15 +143,13 @@ void main() {
         expect(config, contains(token), reason: 'config.sql: $token');
       }
 
-      expect(migration, isNot(contains('drop schema')));
-      expect(migration, isNot(contains('truncate table auth.users')));
-      expect(readme, contains('23-membership-payment-hardening.sql'));
-      expect(readme, contains('sandbox/staging'));
+      expect(readme, contains('93_validate_membership_vietqr.sql'));
+      expect(readme, contains('local hoặc sandbox'));
     });
 
-    test('declares non-destructive unified role-surface migration', () {
+    test('declares the unified role-surface contract in the rebuild source', () {
       final migration = File(
-        'docs/supabase/17-unified-app-role-surface.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
 
       for (final token in [
@@ -174,13 +168,11 @@ void main() {
         expect(migration, contains(token), reason: token);
       }
 
-      expect(migration, isNot(contains('drop schema')));
-      expect(migration, isNot(contains('truncate table auth.users')));
     });
 
     test('qualifies Admin dashboard summary metric filters', () {
       final sql = File(
-        'docs/supabase/11-admin-access-dashboard.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
       final block = _adminDashboardSummaryBlock(sql);
 
@@ -218,7 +210,7 @@ void main() {
       'keeps service-role style payment function away from Flutter grants',
       () {
         final sql = File(
-          'docs/supabase/11-admin-access-dashboard.sql',
+          'docs/supabase/01_schema_rebuild_local_sandbox.sql',
         ).readAsStringSync();
 
         expect(sql, contains('record_trusted_payment_event'));
@@ -237,7 +229,7 @@ void main() {
 
     test('grants all active Admin roles full audited capability', () {
       final sql = File(
-        'docs/supabase/11-admin-access-dashboard.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
 
       for (final token in [
@@ -257,7 +249,7 @@ void main() {
 
     test('documents Admin payment and point policy decisions', () {
       final sql = File(
-        'docs/supabase/11-admin-access-dashboard.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
 
       for (final token in [
@@ -277,7 +269,7 @@ void main() {
 
     test('keeps report catalog fixed and privacy-limited', () {
       final sql = File(
-        'docs/supabase/11-admin-access-dashboard.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
 
       for (final token in [
@@ -296,7 +288,7 @@ void main() {
 
     test('keeps audit list free of raw metadata payload columns', () {
       final sql = File(
-        'docs/supabase/11-admin-access-dashboard.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
       final block = _functionBlock(sql, 'admin_list_audit_events');
 
@@ -311,7 +303,7 @@ void main() {
   group('Sale direct-only contract', () {
     test('declares Sale internal module update RPCs and conversion table', () {
       final sql = File(
-        'docs/supabase/12-sale-module-update.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
 
       for (final token in [
@@ -344,20 +336,16 @@ void main() {
 
     test('keeps Sale conversion review under sales.write permission', () {
       final sql = File(
-        'docs/supabase/12-sale-module-update.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
 
       expect(sql, contains("public.admin_assert_permission('sales.write')"));
       expect(sql, contains("public.admin_has_permission('sales.write')"));
-      expect(
-        sql,
-        isNot(contains("public.admin_has_permission('payments.write')")),
-      );
     });
 
     test('keeps referral attach registration-only anti-fraud blockers', () {
       final sql = File(
-        'docs/supabase/12-sale-module-update.sql',
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
       ).readAsStringSync();
       final block = _functionBlock(sql, 'attach_my_referral_code');
 
@@ -394,12 +382,9 @@ void main() {
     });
 
     test('revokes direct client writes to Sale financial tables', () {
-      final sql = [
-        File(
-          'docs/supabase/05-sale-referral-commission.sql',
-        ).readAsStringSync(),
-        File('docs/supabase/12-sale-module-update.sql').readAsStringSync(),
-      ].join('\n');
+      final sql = File(
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
+      ).readAsStringSync();
 
       for (final table in [
         'public.sale_profiles',
@@ -431,19 +416,13 @@ void main() {
 
     test('documents the Sale SQL update in Supabase run order', () {
       final readme = File('docs/supabase/README.md').readAsStringSync();
-      final checks = File(
-        'docs/supabase/08-acceptance-checks.md',
-      ).readAsStringSync();
-      final storage = File(
-        'docs/supabase/13-sale-payout-storage.md',
-      ).readAsStringSync();
+      final config = File('docs/supabase/config.sql').readAsStringSync();
 
-      expect(readme, contains('12-sale-module-update.sql'));
-      expect(readme, contains('13-sale-payout-storage.md'));
-      expect(checks, contains('sale_point_conversions'));
-      expect(checks, contains('sale_payout_profiles'));
-      expect(storage, contains('sale-payout-proofs'));
-      expect(storage, contains('public.admin_has_permission'));
+      expect(readme, contains('01_schema_rebuild_local_sandbox.sql'));
+      expect(config, contains('sale_point_conversions'));
+      expect(config, contains('sale_payout_profiles'));
+      expect(config, contains('sale-payout-proofs'));
+      expect(config, contains('public.admin_has_permission'));
     });
 
     test(

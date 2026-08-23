@@ -24,7 +24,6 @@ void main() {
         envString: [
           'AUTH_DELETE_ACCOUNT_FUNCTION=delete-account-dev',
           'AUTH_CONFIRM_EMAIL_REQUIRED=false',
-          'GEMINI_LIVE_MODEL=gemini-live-test',
         ].join('\n'),
       );
 
@@ -40,8 +39,6 @@ void main() {
         AppEnv.boolValue('AUTH_CONFIRM_EMAIL_REQUIRED', defaultValue: true),
         isFalse,
       );
-      expect(AppEnv.maybeString('GEMINI_LIVE_MODEL'), 'gemini-live-test');
-      expect(AppEnv.valueSource('GEMINI_LIVE_MODEL'), AppEnvValueSource.dotEnv);
     });
 
     test('keeps optional loading safe when both files are missing', () async {
