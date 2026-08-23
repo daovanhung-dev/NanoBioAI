@@ -27,6 +27,22 @@
 | **Business Rule** | A mandatory rule that the system must enforce. |
 | **Traceability** | The ability to trace a requirement through feature, function, view, source code, and test case. |
 
+### 1.1. Independent Status Axes
+
+Do not use one generic `Status` field for document approval and runtime
+completion. Every current DD entrypoint must record these axes independently:
+
+| Axis | Allowed values | Meaning |
+|---|---|---|
+| Lifecycle | `Current`, `Historical`, `Generated`, `Reference`, `Source`, `Binary` | How the document/artifact is used now. |
+| Implementation | `Implemented`, `Partial`, `Placeholder`, `Source-only`, `Absent`, `N/A` | What the reachable source actually provides. |
+| Verification | `Static-verified`, `Runtime-unverified`, `Sandbox-unverified`, `Historical` | Which evidence level has been established. Multiple verification labels may be listed when static evidence exists but runtime/sandbox evidence does not. |
+
+`Approved` remains a DD/business decision state only. It never implies that
+code is reachable, tests passed, a device run completed, or Supabase was
+validated. Implementation claims must cite code reachable from `lib/main.dart`
+or executable config/schema source.
+
 ---
 
 ## 2. Required Inputs Before Creating a DD
@@ -190,7 +206,10 @@ touch docs/DD/PAYMENT/history/CHANGELOG.md
 |---|---|
 | Module Code | `[MODULE_CODE]` |
 | Version | `v1.0` |
-| Status | `Draft / Review / Approved / Deprecated` |
+| Lifecycle | `Current / Historical / Reference` |
+| DD Decision | `Draft / Review / Approved / Deprecated` |
+| Implementation | `Implemented / Partial / Placeholder / Source-only / Absent / N/A` |
+| Verification | `Static-verified / Runtime-unverified / Sandbox-unverified / Historical` |
 | Owner | `[Responsible person]` |
 | Created Date | `YYYY-MM-DD` |
 | Last Updated | `YYYY-MM-DD` |
@@ -258,7 +277,10 @@ touch docs/DD/PAYMENT/history/CHANGELOG.md
 |---|---|
 | Module Code | `[MODULE_CODE]` |
 | Version | `v1.0` |
-| Status | `Draft` |
+| Lifecycle | `Current` |
+| DD Decision | `Draft` |
+| Implementation | `Absent` |
+| Verification | `Runtime-unverified` |
 | Owner | `[Name]` |
 | Source BD | `[Link/path]` |
 | Created Date | `YYYY-MM-DD` |

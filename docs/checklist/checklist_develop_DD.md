@@ -2,6 +2,17 @@ Commit de xuat: docs(checklist): ghi nhan chuc nang DD chua coding
 
 # Checklist develop DD
 
+| Trục | Trạng thái |
+|---|---|
+| Lifecycle | Historical |
+| Status | Superseded 2026-08-24 |
+| Verification | Historical |
+| Replaced by | `docs/DD/README.md`, `docs/checklist/checklist_complete_DD.md`, `docs/checklist/checklist_task_coding.md` |
+
+> Toàn bộ nội dung bên dưới là snapshot cũ và được giữ nguyên để truy vết.
+> Các link `docs/DD/product_flow/`, claim `docs/DD/authentication/` và trạng thái
+> coding trong snapshot không mô tả working tree tại `25018e8`.
+
 **Nguon DD da doc:** `docs/DD/product_flow/` (17 file)
 **Ngay cap nhat:** 2026-06-30
 **Pham vi:** doi chieu DD Product Flow / Membership / Sale voi source hien co trong `lib/`, `docs/supabase/`, `test/`.

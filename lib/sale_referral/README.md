@@ -1,5 +1,8 @@
 # Sale Referral Module
 
+Lifecycle: `Current`. Implementation: `Partial` by static source at baseline
+`25018e8`; live Supabase policy/RPC behavior requires sandbox verification.
+
 Sale/referral is an independent product axis, not a membership package and not
 an app version. A user can have a membership package and may or may not have
 active Sale status.

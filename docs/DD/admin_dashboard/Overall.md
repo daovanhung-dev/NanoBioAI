@@ -7,7 +7,7 @@
 | Module Code | ADMIN_DASHBOARD |
 | BD Module | M15 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| DD decision | Approved |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

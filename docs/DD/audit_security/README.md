@@ -5,7 +5,11 @@
 | Module Code | AUDIT_SECURITY |
 | BD Module | M19 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Partial |
+| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Source evidence | Auth/access/RLS/audit surface exists; support/ticket, retention execution and response scope are not end-to-end |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

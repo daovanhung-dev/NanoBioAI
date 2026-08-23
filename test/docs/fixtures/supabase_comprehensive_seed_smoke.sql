@@ -1,6 +1,6 @@
 -- Local/sandbox smoke assertions for the comprehensive dev fixture.
--- Prerequisite: rebuild a disposable database with docs/supabase/config.sql,
--- apply docs/supabase/20-dev-sandbox-demo-profile.sql, then run
+-- Prerequisite: rebuild a disposable database with docs/supabase/config.sql
+-- (the generated 01 through 06 bundle), then run
 -- tools/supabase/Seed-StorageFixtures.ps1 against that same database.
 -- This script always rolls back. It is not a production migration.
 

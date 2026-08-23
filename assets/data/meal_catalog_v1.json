@@ -2,7 +2,7 @@
   "schema_version": 1,
   "catalog_version": 1,
   "source_name": "Suc_Khoe_Tu_Nha_Bep_Thuc_Don_Theo_Tung_Muc.md",
-  "source_sha256": "0f772b819f74def728ddb11adb9b0861c78fd37345bbe900a71ec49e7e4e09f5",
+  "source_sha256": "4d3f675c022e64f7555175e12af85e38e6d6c9146ddff238d556736a36e73e20",
   "policy": {
     "source_fidelity": "verbatim_structured",
     "missing_metadata": "not_inferred",

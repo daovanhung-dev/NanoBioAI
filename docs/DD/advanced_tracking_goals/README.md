@@ -5,7 +5,11 @@
 | Module Code | ADVANCED_TRACKING_GOALS |
 | BD Module | M10 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Partial |
+| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Source evidence | Reachable V3 advanced-hydration goal/roadmap slice; broader multi-goal and plan-adjustment scope is absent |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

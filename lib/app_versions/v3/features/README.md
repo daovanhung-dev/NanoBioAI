@@ -1,14 +1,19 @@
-# V3 Planned Features
+# V3 Feature Registry
 
-This folder contains placeholders for Plus and FamilyPlus modules. Each feature
-folder owns its future presentation, provider/controller, domain, repository,
-datasource, and test contracts.
+Lifecycle: `Current`. Baseline: `25018e8`.
 
-Planned modules:
+| Folder | Status | Reachability |
+| --- | --- | --- |
+| `advanced_tracking` | `Partial` | Route `/v3/advanced-tracking`; provider/repository/datasource active behind paid gate. |
+| `familyplus` | `Partial` | Route `/v3/familyplus`; provider/repository/datasource active behind FamilyPlus gate. |
+| `home` | `Placeholder` | Route `/v3`; catalog “Sắp có”. |
+| `advanced_health_tracking` | `Source-only` | `status = 'planned'`; không có consumer. |
+| `family_members` | `Source-only` | `status = 'planned'`; không có consumer riêng. |
+| `family_onboarding` | `Source-only` | `status = 'planned'`; không có consumer riêng. |
+| `family_schedule` | `Source-only` | `status = 'planned'`; không có consumer riêng. |
+| `goal_roadmap` | `Source-only` | `status = 'planned'`; không có consumer. |
+| `premium_ai` | `Source-only` | `status = 'planned'`; không có consumer. |
 
-- `premium_ai`: unlimited AI chat and unlimited schedule generation for Plus.
-- `goal_roadmap`: personal goal roadmap for Plus and FamilyPlus.
-- `advanced_health_tracking`: deeper health tracking for paid users.
-- `family_onboarding`: family setup and consent flow for FamilyPlus.
-- `family_members`: member list, member roles, and trusted ownership checks.
-- `family_schedule`: schedule visibility and coordination across family members.
+Không dùng marker class làm evidence của business implementation. Khi một
+planned module được nối runtime, cập nhật route/provider/repository/test và
+registry này trong cùng thay đổi.

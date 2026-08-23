@@ -6,6 +6,19 @@
 **Phạm vi:** Ứng dụng NanoBio/Nabi  
 **Đối tượng sử dụng:** BA, UI/UX, Flutter Developer, Backend Developer, Tester, Product Owner
 
+| Trục | Trạng thái theo source tại `25018e8` |
+|---|---|
+| Vòng đời | Current |
+| Implementation | Source-only |
+| Xác minh | Static-verified; Runtime-unverified; Sandbox-unverified |
+| Bằng chứng | SQLite v15/current v20 schema, catalog/engine/local repositories/controller và Supabase tables/RPC/RLS source tồn tại; controller/overlay M30 chưa được nối vào user app shell |
+
+> **Chuẩn hóa thuật ngữ:** “VIP 30 ngày” trong nội dung nghiệp vụ cũ ánh xạ
+> sang `Plus/monthly`; “VIP năm” ánh xạ sang `Plus/yearly`. Source code và UI
+> hiện hành dùng `Plus`/`FamilyPlus`. Free AI Chat là 3 lượt thành công/ngày,
+> không phải 5. Các capability chỉ có trong BD nhưng chưa được app shell gọi
+> không được xem là runtime đã triển khai.
+
 ---
 
 # 1. Mục tiêu nghiệp vụ
@@ -75,7 +88,7 @@ Người dùng Free được sử dụng:
 
 - Hồ sơ sức khỏe ban đầu.
 - Thực đơn mẫu ba ngày.
-- Tối đa năm câu hỏi với Nabi mỗi ngày.
+- Tối đa ba lượt AI Chat thành công với Nabi mỗi ngày.
 - Nhiệm vụ sức khỏe cơ bản.
 - Tích điểm từ nhiệm vụ.
 - Xem trước Bản đồ 365 ở trạng thái khóa.
@@ -271,7 +284,7 @@ Mở màn hình so sánh gói:
 **Điều kiện kích hoạt mức 1**
 
 - Người dùng Free đã gửi câu hỏi thứ tư trong ngày.
-- Giới hạn hiện tại là năm câu hỏi mỗi ngày.
+- Giới hạn hiện tại là ba lượt thành công mỗi ngày.
 
 **Nội dung mức 1**
 
@@ -281,7 +294,7 @@ Mở màn hình so sánh gói:
 
 **Điều kiện kích hoạt mức 2**
 
-- Người dùng đã sử dụng hết năm câu hỏi.
+- Người dùng đã sử dụng hết ba lượt thành công.
 - Người dùng tiếp tục gửi câu hỏi mới.
 
 **Nội dung mức 2**

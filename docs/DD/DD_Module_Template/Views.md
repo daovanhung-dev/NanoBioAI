@@ -4,9 +4,9 @@
 
 ## 0. View inventory
 
-| ID | Tên view | Route / entry point | Actor | Feature | Loại | Data source | Trạng thái | Mockup |
-|---|---|---|---|---|---|---|---|---|
-| `[MODULE]-V01` | `{{Tên view}}` | `{{/route hoặc modal}}` | `{{Role}}` | `[MODULE]-F01` | `Page / Modal / Drawer / Widget` | `[MODULE]-API01` | `Draft` | `assets/{{file}}` |
+| ID | Tên view | Route / entry point | Actor | Feature | Loại | Data source | DD decision | Implementation | Verification | Mockup |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `[MODULE]-V01` | `{{Tên view}}` | `{{/route hoặc modal}}` | `{{Role}}` | `[MODULE]-F01` | `Page / Modal / Drawer / Widget` | `[MODULE]-API01` | `Draft` | `Absent` | `Runtime-unverified` | `assets/{{file}}` |
 
 ## 1. Navigation map
 

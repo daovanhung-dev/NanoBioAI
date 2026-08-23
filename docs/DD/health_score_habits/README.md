@@ -5,7 +5,11 @@
 | Module Code | HEALTH_SCORE_HABITS |
 | BD Module | M08 |
 | Version | v1.4 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Implemented |
+| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Source evidence | V2 health-score route/providers/repository and local/cloud ledger source are reachable |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-08-16 |

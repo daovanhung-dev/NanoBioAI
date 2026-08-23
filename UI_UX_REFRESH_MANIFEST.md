@@ -1,5 +1,9 @@
 # UI/UX Refresh Manifest
 
+> **Lifecycle: Historical delivery evidence / Superseded for current-state
+> claims.** Bảng hash và kết quả bên dưới được giữ nguyên như evidence ngày
+> 2026-07-19; dùng source và audit hiện hành cho trạng thái hiện tại.
+
 - Ngày: `2026-07-19`
 - Style: `Clinical Calm × Nabi Friendly`
 - Workflow: `coding`

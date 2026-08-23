@@ -5,7 +5,11 @@
 | Module Code | MEMBERSHIP_QUOTA |
 | BD Module | M06 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Implemented |
+| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Source evidence | Effective-access providers and trusted chat/schedule quota gateways plus RPC source |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

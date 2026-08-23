@@ -3,10 +3,19 @@
 > **Dự án:** BioAI / NanoBio  
 > **Mã tài liệu:** BD-BIOAI-ADVANCED-HEALTH-001  
 > **Phiên bản:** 1.0  
-> **Trạng thái:** Draft - UI catalog shell approved  
+> **Vòng đời:** Current
+> **Trạng thái nghiệp vụ:** Draft - UI catalog shell approved
+> **Trạng thái implementation theo source:** Placeholder
+> **Xác minh:** Static-verified tại `25018e8`; Runtime-unverified
 > **Ngày tạo:** 13/07/2026  
 > **Nguồn nền:** ../project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002)  
 > **Phạm vi phê duyệt hiện tại:** Chỉ phê duyệt tên, thứ tự, nhãn gói và hành vi điều hướng của 10 mục trong Danh mục chức năng. Nghiệp vụ ghi nhận dữ liệu, AI, cảnh báo, đồng bộ, thiết bị và chia sẻ chưa được phê duyệt để coding.
+
+> **Bằng chứng source:** `advancedHealthFeatureCatalog`, route
+> `/v2/health-modules/:moduleId`, access resolver và `MedicalComingSoonPage` là
+> shell reachable. `V3AdvancedHealthTrackingFeature.status = 'planned'` không
+> phải business implementation; M20–M29 không có DD module, persistence, API/AI
+> hoặc notification riêng.
 
 ## Kiểm soát thay đổi
 

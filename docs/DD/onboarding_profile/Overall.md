@@ -7,7 +7,7 @@
 | Module Code | ONBOARDING_PROFILE |
 | BD Module | M01 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| DD decision | Approved |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M01, 13, 16.1 AC-01, Appendix A UC-01 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

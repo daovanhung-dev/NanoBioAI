@@ -1,11 +1,15 @@
+import 'dart:ui' show FontFeature;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_dynamic_entity.dart';
-import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+
+import '../../domain/entities/health_insights_entity.dart';
+import '../../providers/health_insights_provider.dart';
 
 part '../widgets/health_insights_widgets.dart';
 
@@ -14,36 +18,19 @@ class HealthInsightsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardAsync = ref.watch(dashboardProvider);
-    final dynamicAsync = ref.watch(dashboardDynamicProvider);
+    final insightsAsync = ref.watch(healthInsightsProvider);
 
     return MedicalPageScaffold(
       backgroundColor: context.semanticColors.background,
       body: SafeArea(
-        child: dashboardAsync.when(
+        child: insightsAsync.when(
           loading: () => const _HealthInsightsLoadingState(),
-          error: (_, __) =>
-              _HealthInsightsErrorState(onRetry: () => _retryAll(ref)),
-          data: (dashboard) {
-            final dynamicData =
-                dynamicAsync.value ?? DashboardDynamicEntity.empty();
-            final dynamicStatus = dynamicAsync.when<Widget?>(
-              data: (_) => null,
-              loading: () => const _HealthInsightsStatusStrip(
-                icon: Icons.sync_rounded,
-                message: 'Đang cập nhật chỉ số mới nhất…',
-                showProgress: true,
-              ),
-              error: (_, __) => _HealthInsightsStatusStrip(
-                icon: Icons.cloud_off_outlined,
-                message: 'Một vài chỉ số chưa được cập nhật.',
-                actionLabel: 'Thử lại',
-                onAction: () => ref.invalidate(dashboardDynamicProvider),
-              ),
-            );
-
+          error: (_, __) => _HealthInsightsErrorState(
+            onRetry: () => _retryHealthInsights(ref),
+          ),
+          data: (insights) {
             return RefreshIndicator(
-              onRefresh: () => _refreshAll(ref),
+              onRefresh: () => _refreshHealthInsights(ref),
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),
@@ -51,35 +38,16 @@ class HealthInsightsView extends ConsumerWidget {
                 slivers: [
                   SliverToBoxAdapter(
                     child: _HealthInsightsContentShell(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _HealthInsightsHeader(dashboard: dashboard),
-                          if (dynamicStatus != null) ...[
-                            const SizedBox(height: AppSpacing.sectionSpacing),
-                            dynamicStatus,
-                          ],
-                          const SizedBox(height: AppSpacing.sectionSpacing),
-                          _HealthSnapshotCard(metrics: dynamicData.metrics),
-                          const SizedBox(height: AppSpacing.sectionSpacing),
-                          _PrimaryInsightSection(
-                            insights: dynamicData.insights,
-                          ),
-                          const SizedBox(height: AppSpacing.sectionSpacing),
-                          _PrimaryRecommendationSection(
-                            recommendations: dynamicData.recommendations,
-                          ),
-                          const SizedBox(height: AppSpacing.sectionSpacing),
-                          _TodayMetricStrip(metrics: dynamicData.metrics),
-                          const SizedBox(height: AppSpacing.sectionSpacing),
-                          _AdditionalHealthDetails(
-                            dashboard: dashboard,
-                            metrics: dynamicData.metrics,
-                            insightCount: dynamicData.insights.length,
-                            recommendationCount:
-                                dynamicData.recommendations.length,
-                          ),
-                        ],
+                      child: _HealthInsightsContent(
+                        insights: insights,
+                        onRefresh: () => _refreshHealthInsights(ref),
+                        onRangeChanged: (range) {
+                          ref
+                              .read(healthInsightsRangeProvider.notifier)
+                              .setRange(range);
+                        },
+                        onOpenTarget: (target) =>
+                            _openHealthInsightsTarget(context, target),
                       ),
                     ),
                   ),
@@ -91,4 +59,41 @@ class HealthInsightsView extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<void> _refreshHealthInsights(WidgetRef ref) async {
+  ref.invalidate(dashboardProvider);
+  ref.invalidate(dashboardDynamicProvider);
+  ref.invalidate(healthInsightsProvider);
+  try {
+    await ref.read(healthInsightsProvider.future);
+  } catch (_) {
+    // The provider owns the visible safe error state.
+  }
+}
+
+void _retryHealthInsights(WidgetRef ref) {
+  ref.invalidate(dashboardProvider);
+  ref.invalidate(dashboardDynamicProvider);
+  ref.invalidate(healthInsightsProvider);
+}
+
+void _openHealthInsightsTarget(
+  BuildContext context,
+  HealthActionTarget target,
+) {
+  final path = switch (target) {
+    HealthActionTarget.healthTracking => V1RoutePaths.healthTracking,
+    HealthActionTarget.weeklySummary => V1RoutePaths.weeklySummary,
+    HealthActionTarget.bodyMetrics => V1RoutePaths.bodyMetrics,
+    HealthActionTarget.waterTracking => V1RoutePaths.waterTracking,
+    HealthActionTarget.sleepTracking => V1RoutePaths.sleepTracking,
+    HealthActionTarget.stressTracking => V1RoutePaths.stressTracking,
+    HealthActionTarget.mealPlan => V1RoutePaths.mealPlan,
+    HealthActionTarget.lifestyleSchedule => V1RoutePaths.lifestyleSchedule,
+    HealthActionTarget.none => null,
+  };
+
+  if (path == null) return;
+  context.push(path);
 }

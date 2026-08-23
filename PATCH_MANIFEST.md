@@ -1,5 +1,9 @@
 # NanoBioAI Gradle Fix Patch
 
+> **Lifecycle: Historical patch evidence / Superseded for current-state
+> claims.** File này ghi snapshot patch ngày 2026-08-15, không phải hướng dẫn
+> cấu hình source hiện tại.
+
 Target repository: `daovanhung-dev/NanoBioAI`
 Target branch inspected: `main`
 Date: `2026-08-15`

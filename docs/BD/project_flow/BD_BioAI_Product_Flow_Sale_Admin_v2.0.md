@@ -3,9 +3,18 @@
 > **Dự án:** BioAI / NanoBio  
 > **Mã tài liệu:** BD-BIOAI-PRODUCT-FLOW-002  
 > **Phiên bản:** 2.0  
-> **Trạng thái:** Bản cập nhật nghiệp vụ — dùng làm nguồn cho DD, API contract, database migration, UI/UX, test case và Codex/AI Agent.  
+> **Vòng đời:** Current
+> **Trạng thái nghiệp vụ:** Bản cập nhật nghiệp vụ — dùng làm nguồn cho DD, API contract, database migration, UI/UX, test case và Codex/AI Agent.
+> **Trạng thái implementation theo source:** Partial
+> **Xác minh:** Static-verified tại `25018e8`; Runtime-unverified; Sandbox-unverified
 > **Ngày cập nhật:** 27/06/2026  
 > **Thay thế:** Các nội dung Sale/giới thiệu trong BD-BIOAI-PRODUCT-FLOW-001.
+
+> **Quy ước source truth (2026-08-24):** Trạng thái implementation trong tài
+> liệu này chỉ được suy ra từ code reachable từ `lib/main.dart`, router hợp nhất
+> và schema/config đang được build. `Approved`, DD đầy đủ hoặc có SQL source
+> không đồng nghĩa runtime, thiết bị hay Supabase sandbox đã hoàn tất. Ma trận
+> hiện hành nằm tại `docs/DD/README.md`.
 
 ---
 
@@ -21,7 +30,11 @@
 | Extension M20–M29 | Đăng ký tài liệu mở rộng `BD-BIOAI-ADVANCED-HEALTH-001` cho danh mục chức năng sức khỏe nâng cao. Thay đổi này chỉ tạo cross-reference, không thay baseline M01–M19. |
 | Nhiệm vụ và Điểm chăm sóc | Bổ sung addendum Approved `BD-BIOAI-WELLNESS-REWARDS-001` cho cửa sổ nhiệm vụ 30 phút, ảnh bằng chứng, hệ Điểm chăm sóc thứ ba, voucher dùng một lần, quyền `wellness_rewards.read/write` và Việt hóa production. Khi có khác biệt trong phạm vi này, addendum ngày 2026-07-13 được ưu tiên. |
 
-> **Quy tắc ưu tiên:** Khi BD cũ, code hiện tại hoặc tài liệu khác mâu thuẫn với tài liệu này, team phải dừng ở điểm mâu thuẫn, ghi issue và xin Product Owner xác nhận. Không được giữ lại logic Sale cũ chỉ để tương thích với code hiện có.
+> **Quy tắc ưu tiên:** Source code/config/schema hiện hành là nguồn tin cậy cho
+> trạng thái đã triển khai. BD này vẫn là nguồn yêu cầu nghiệp vụ; phần chưa có
+> bằng chứng source phải được ghi `Partial`, `Source-only` hoặc `Absent`, không
+> được mô tả như hành vi runtime hiện có. Không được giữ lại logic Sale cũ chỉ
+> để tương thích với tài liệu lịch sử.
 
 ---
 

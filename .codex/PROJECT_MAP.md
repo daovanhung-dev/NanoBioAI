@@ -6,8 +6,8 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 
 - Unified app bootstrap: `lib/main.dart`
 - v1 guest/basic app: `lib/app_versions/v1/`
-- v2 authenticated free app: `lib/app_versions/v2/`
-- v3 Plus/FamilyPlus planned app: `lib/app_versions/v3/`
+- v2 authenticated user app and capability layer: `lib/app_versions/v2/`
+- v3 Plus/FamilyPlus partial runtime + planned markers: `lib/app_versions/v3/`
 - Admin app surface: `lib/app_versions/admin/`
 - Sale/referral independent axis: `lib/sale_referral/`
 - Core constants/theme/storage/network/utils: `lib/core/`
@@ -63,6 +63,7 @@ Open only when relevant:
 - `lib/core/storage/localdb/database_version.dart`
 - `lib/app_versions/v1/services/ai/ai_service.dart`
 - `lib/app_versions/v1/services/ai/ai_chat_service.dart`
+- `lib/app_versions/v1/services/ai/gemini_rest_client.dart`
 - `lib/app_versions/v1/services/ai/generated_plan_service.dart`
 - `lib/app_versions/v1/services/notifications/notification_bootstrap.dart`
 - `lib/app_versions/v1/services/notifications/notification_action_handler.dart`
@@ -82,6 +83,10 @@ rg --files -g '!build/**' -g '!.dart_tool/**' -g '!.git/**'
 ```
 
 ## Docs Routing
+
+Current docs start at `docs/README.md`. For current-state conflicts, prefer
+reachable runtime, executable schema/config, package/platform config, and
+executable tests over authored or historical docs.
 
 - Product flow BD: `docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md`
 - Advanced health extension BD: `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` (`BD-BIOAI-ADVANCED-HEALTH-001`) for M20-M29. Status is `Draft - UI catalog shell approved`: only catalog cards/tier labels/development placeholder are approved; DD and business implementation remain 0%.

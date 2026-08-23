@@ -5,7 +5,11 @@
 | Module Code | REPORTING |
 | BD Module | M18 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Partial |
+| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Source evidence | Reachable report catalog and export-request RPC; no report artifact producer/download path exists |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

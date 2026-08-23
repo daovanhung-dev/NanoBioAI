@@ -7,7 +7,7 @@
 | Module Code | REPORTING |
 | BD Module | M18 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| DD decision | Approved |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

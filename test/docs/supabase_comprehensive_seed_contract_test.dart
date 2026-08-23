@@ -3,13 +3,23 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _configPath = 'docs/supabase/config.sql';
-const _modulePath = 'docs/supabase/19-dev-sandbox-comprehensive-seed.sql';
-const _accountsPath = 'docs/supabase/19-dev-sandbox-accounts.md';
-const _demoProfilePath = 'docs/supabase/20-dev-sandbox-demo-profile.sql';
+const _seedPath = 'docs/supabase/05_seed_local_sandbox.sql';
 const _smokeFixturePath =
     'test/docs/fixtures/supabase_comprehensive_seed_smoke.sql';
-const _moduleName = '19-dev-sandbox-comprehensive-seed.sql';
+const _seedName = '05_seed_local_sandbox.sql';
 const _fixtureMarker = 'dev-sandbox-comprehensive-v1';
+
+const _schemaOnlyTables = {
+  'food_restrictions',
+  'health_symptoms',
+  'lab_results',
+  'meal_schedule_preferences',
+  'medication_records',
+  'nutrition_goals',
+  'nutrition_preference_rules',
+  'nutrition_profiles',
+  'schedule_health_checkins',
+};
 
 const _legacyAccounts = <_LegacyAccount>[
   _LegacyAccount(
@@ -33,65 +43,56 @@ const _legacyAccounts = <_LegacyAccount>[
 void main() {
   group('Supabase comprehensive local/sandbox seed', () {
     late String config;
-    late String module;
+    late String seed;
 
     setUpAll(() {
       config = File(_configPath).readAsStringSync();
-      module = File(_modulePath).readAsStringSync();
+      seed = File(_seedPath).readAsStringSync();
     });
 
     test(
-      'mirrors module 19 exactly once immediately before the final commit',
+      'mirrors numbered seed exactly once before runtime support',
       () {
-        final block = _markedBlock(config, _moduleName);
+        final block = _markedBlock(config, _seedName);
 
         expect(block.beginMatches, hasLength(1));
         expect(block.endMatches, hasLength(1));
         expect(
           _normaliseSql(block.body),
-          _normaliseSql(module),
+          _normaliseSql(seed),
           reason:
-              'The canonical module and the config.sql rebuild copy must stay '
+              'The authoritative seed and the config.sql rebuild copy must stay '
               'byte-equivalent apart from line endings/trailing whitespace.',
         );
 
-        final commits = RegExp(
-          r'^\s*commit\s*;\s*$',
-          multiLine: true,
-          caseSensitive: false,
-        ).allMatches(config).toList();
-        expect(commits, isNotEmpty);
+        final runtimeStart = config.indexOf(
+          '-- BEGIN 06_schema_runtime_support.sql',
+        );
+        expect(runtimeStart, greaterThanOrEqualTo(0));
         expect(
           block.end.end,
-          lessThan(commits.last.start),
-          reason: 'Module 19 must run before config.sql commits the rebuild.',
+          lessThan(runtimeStart),
+          reason: 'The numbered seed must run before runtime support.',
         );
       },
     );
 
     test(
-      'covers every public table plus Auth through explicit fixture evidence',
+      'tracks seeded and intentionally schema-only public tables',
       () {
         final publicTables = _publicTableNames(config);
-        expect(
-          publicTables,
-          hasLength(64),
-          reason:
-              'The comprehensive fixture is the coverage contract for all '
-              'public tables in the rebuild schema.',
-        );
+        expect(publicTables, hasLength(73));
 
         final missingTables =
             publicTables
-                .where((table) => !_hasFixtureEvidence(module, table))
-                .toList()
-              ..sort();
+                .where((table) => !_hasFixtureEvidence(seed, table))
+                .toSet();
         expect(
           missingTables,
-          isEmpty,
+          equals(_schemaOnlyTables),
           reason:
-              'Use INSERT INTO public.<table> or a -- fixture-table: <table> '
-              'manifest entry for rows that are created indirectly.',
+              'New schema-only tables must be classified explicitly until the '
+              'local fixture intentionally covers them.',
         );
 
         for (final table in ['auth.users', 'auth.identities']) {
@@ -99,22 +100,18 @@ void main() {
             RegExp(
               '\\binsert\\s+into\\s+${RegExp.escape(table)}\\b',
               caseSensitive: false,
-            ).hasMatch(module),
+            ).hasMatch(seed),
             isTrue,
             reason: table,
           );
         }
-        expect(module, contains(_fixtureMarker));
-        expect(module, contains('dev.fixture.'));
-        expect(module, contains('Asia/Ho_Chi_Minh'));
+        expect(seed, contains(_fixtureMarker));
+        expect(seed, contains('dev.fixture.'));
+        expect(seed, contains('Asia/Ho_Chi_Minh'));
       },
     );
 
-    test('preserves the four legacy account UUID/email bindings', () {
-      final legacySeed = File(
-        'docs/supabase/09-dev-seed-membership-test-accounts.sql',
-      ).readAsStringSync();
-
+    test('preserves the four stable account UUID/email bindings', () {
       for (final account in _legacyAccounts) {
         expect(
           _containsLegacySeedTuple(config, account),
@@ -122,16 +119,15 @@ void main() {
           reason: 'config.sql: ${account.email}',
         );
         expect(
-          _containsLegacySeedTuple(legacySeed, account),
+          _containsLegacySeedTuple(seed, account),
           isTrue,
-          reason: 'legacy seed: ${account.email}',
+          reason: 'numbered seed: ${account.email}',
         );
       }
     });
 
-    test('keeps the account matrix synchronized with configured dev users', () {
-      final accounts = File(_accountsPath).readAsStringSync();
-      final configuredEmails = _devAccountEmails(config);
+    test('keeps the account matrix inside the authoritative numbered seed', () {
+      final configuredEmails = _devAccountEmails(seed);
 
       expect(
         configuredEmails,
@@ -141,48 +137,35 @@ void main() {
         configuredEmails.any((email) => email.startsWith('dev.fixture.')),
         isTrue,
       );
-      for (final email in configuredEmails) {
-        expect(accounts, contains(email), reason: email);
-      }
-
-      final normalizedAccounts = accounts.toLowerCase();
-      expect(accounts, contains('NanoBio@123456'));
-      expect(normalizedAccounts, contains('local'));
-      expect(normalizedAccounts, contains('sandbox'));
-      expect(normalizedAccounts, contains('production'));
+      final normalizedSeed = seed.toLowerCase();
+      expect(seed, contains('NanoBio@123456'));
+      expect(normalizedSeed, contains('local'));
+      expect(normalizedSeed, contains('sandbox'));
+      expect(normalizedSeed, contains('production'));
       expect(
         RegExp(
           r'(không|khong|not).{0,40}production',
           dotAll: true,
-        ).hasMatch(normalizedAccounts),
+        ).hasMatch(normalizedSeed),
         isTrue,
-        reason: 'The account document must prohibit production use.',
+        reason: 'The numbered seed must prohibit production use.',
       );
       for (final token in ['free', 'plus', 'sale', 'admin', 'family']) {
-        expect(normalizedAccounts, contains(token), reason: token);
+        expect(normalizedSeed, contains(token), reason: token);
       }
-      expect(RegExp(r'family\s*plus').hasMatch(normalizedAccounts), isTrue);
+      expect(normalizedSeed, contains('family_plus'));
     });
 
-    test('keeps the opt-in demo profile separate from the base rebuild', () {
-      final profile = File(_demoProfilePath).readAsStringSync();
-
+    test('keeps fixture rollout defaults explicit in the numbered seed', () {
       for (final token in [
-        'begin;',
-        'commit;',
         'wellness_rewards_rollout',
         'sale_point_conversion',
         'nabi_companion_notifications_rollout',
+        '"enabled": false',
+        'M30 rollout remains disabled until sandbox and device acceptance pass.',
       ]) {
-        expect(profile, contains(token), reason: token);
+        expect(seed, contains(token), reason: token);
       }
-      expect(profile.toLowerCase(), contains('local'));
-      expect(profile.toLowerCase(), contains('sandbox'));
-      expect(
-        config,
-        isNot(contains('-- BEGIN 20-dev-sandbox-demo-profile.sql')),
-        reason: 'The base rebuild must retain its rollout-default state.',
-      );
     });
 
     test(
@@ -207,21 +190,19 @@ void main() {
       'documents the comprehensive seed and supplies a rollback-only smoke fixture',
       () {
         final readme = File('docs/supabase/README.md').readAsStringSync();
-        final acceptance = File(
-          'docs/supabase/08-acceptance-checks.md',
-        ).readAsStringSync();
         final smoke = File(_smokeFixturePath).readAsStringSync();
 
         for (final token in [
-          '19-dev-sandbox-comprehensive-seed.sql',
-          '19-dev-sandbox-accounts.md',
-          '20-dev-sandbox-demo-profile.sql',
+          '05_seed_local_sandbox.sql',
+          'config.sql',
+          'Sandbox runtime (thực thi 01 → 06 rồi 90 → 94): `UNVERIFIED`',
         ]) {
           expect(readme, contains(token), reason: token);
         }
-        expect(acceptance, contains('supabase_comprehensive_seed_smoke.sql'));
 
-        for (final table in _publicTableNames(config)) {
+        for (final table in _publicTableNames(config).where(
+          (table) => !_schemaOnlyTables.contains(table),
+        )) {
           expect(smoke, contains("'$table'"), reason: table);
         }
 

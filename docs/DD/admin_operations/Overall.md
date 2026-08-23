@@ -7,7 +7,7 @@
 | Module Code | ADMIN_OPS |
 | BD Module | M16 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| DD decision | Approved |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

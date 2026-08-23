@@ -7,9 +7,14 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 - App: NanoBio / NamiAI - tro ly suc khoe AI bang Flutter.
 - Persona UI: Nabi- am ap, nhe nhang, quan tam, khong phan xet.
 - Kien truc: feature-first + Clean Architecture theo code hien co.
-- Stack: Flutter/Dart SDK `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4`, Gemini SDK `0.4.7`, local notifications `19.5.0`.
+- Stack: Dart SDK constraint `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4`, Gemini REST client noi bo (khong co Gemini Dart SDK), local notifications `19.5.0`.
 - SQLite version: `DatabaseVersion.currentVersion = 20`.
-- Source version: `v1` guest/basic, `v2` authenticated free, `v3` Plus/FamilyPlus modules, `admin` app surface, `sale_referral` independent.
+- Source version: `v1` guest/basic, `v2` authenticated capabilities, `v3` paid-gated partial flows + planned markers, `admin` app surface, `sale_referral` independent.
+
+Source-of-truth order for current-state claims: code reachable from
+`lib/main.dart` -> executable SQLite/Supabase source -> package/platform config
+-> executable tests -> current docs. Historical worklogs and delivery manifests
+remain evidence for their original snapshot, not current runtime truth.
 
 ## Commands
 
@@ -126,7 +131,10 @@ Access rules:
 
 - v1 guest/basic: onboarding, basic health modules, first AI personal schedule, local notifications.
 - v2 free: authenticated flow, AI chat 3/day, schedule generation 3/month, health score from schedule completion history.
-- v3 Plus/FamilyPlus: planned paid features only when BD/DD is ready.
+- v3 Plus/FamilyPlus: M10 advanced tracking and M11 FamilyPlus have partial,
+  paid-gated runtime paths; `premium_ai`, `goal_roadmap`,
+  `advanced_health_tracking`, `family_onboarding`, `family_members`, and
+  `family_schedule` remain source-only planned markers.
 - Sale/referral: independent role; not a membership tier.
 - Membership, quota, sale status, referral tree, payment success, and commission must come from Supabase/trusted backend.
 

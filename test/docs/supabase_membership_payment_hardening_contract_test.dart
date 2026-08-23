@@ -96,7 +96,7 @@ void main() {
       expect(smoke, contains('True two-session concurrency'));
       expect(
         smoke,
-        contains('docs/supabase/08-acceptance-checks.md'),
+        contains('docs/supabase/README.md as runtime UNVERIFIED'),
       );
     });
   });

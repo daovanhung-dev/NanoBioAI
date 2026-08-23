@@ -7,7 +7,7 @@
 | Module Code | PAYMENT_MEMBERSHIP |
 | BD Module | M13 |
 | Version | v1.4 |
-| Status | Approved - DD docs complete; sandbox/UAT acceptance pending |
+| DD decision | Approved; sandbox/UAT acceptance is not implied |
 | Source BD | BD-BIOAI-PRODUCT-FLOW-002 + approved M13 VietQR hardening delta 2026-08-12 |
 | Last Updated | 2026-08-12 |
 

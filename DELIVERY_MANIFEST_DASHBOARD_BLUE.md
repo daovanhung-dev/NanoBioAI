@@ -1,5 +1,9 @@
 # NanoBio Dashboard Blue Wellness — Delivery Manifest
 
+> **Lifecycle: Historical delivery evidence / Superseded for current-state
+> claims.** Giữ nguyên kết quả tại thời điểm đóng gói; trạng thái hiện tại phải
+> đối chiếu `docs/README.md`, `SYSTEM_FEATURES_DOCUMENTATION.md` và source.
+
 ## Phạm vi
 
 - Chuyển semantic brand palette từ xanh lá sang xanh dương.

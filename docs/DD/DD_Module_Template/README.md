@@ -51,6 +51,20 @@ DD_[MODULE_CODE]/
 
 ## Trạng thái tài liệu
 
-`Draft` → `In Review` → `Approved` → `Implemented` → `Deprecated`.
+DD decision dùng chuỗi `Draft` → `In Review` → `Approved` → `Deprecated`.
+Implementation là trục độc lập. Với DD mới, bắt buộc tách:
 
-Không được code một feature ở trạng thái `Draft` khi chưa thống nhất business rule hoặc luồng lỗi trọng yếu.
+| Trục | Giá trị cho phép |
+|---|---|
+| Lifecycle | `Current`, `Historical`, `Generated`, `Reference`, `Source`, `Binary` |
+| DD decision | `Draft`, `In Review`, `Approved`, `Deprecated` |
+| Implementation | `Implemented`, `Partial`, `Placeholder`, `Source-only`, `Absent`, `N/A` |
+| Verification | `Static-verified`, `Runtime-unverified`, `Sandbox-unverified`, `Historical` |
+
+`Approved` chỉ nói business/DD đã được chốt; không được dùng để suy ra runtime
+hoàn tất. `Implemented` chỉ được ghi khi capability có bằng chứng source
+reachable; test thiết bị hoặc Supabase sandbox chưa chạy phải ghi rõ
+`Runtime-unverified`/`Sandbox-unverified`.
+
+Không được code một feature ở trạng thái DD `Draft` khi chưa thống nhất
+business rule hoặc luồng lỗi trọng yếu.

@@ -13,9 +13,9 @@
 
 ## 1. Feature inventory
 
-| ID | Feature | Mục tiêu | Actor | Trigger | Priority | Depends on | Functions | Views | Status |
-|---|---|---|---|---|---|---|---|---|---|
-| `[MODULE]-F01` | `{{Tên feature}}` | `{{...}}` | `{{Role}}` | `{{...}}` | `P0` | `{{Fxx/none}}` | `[MODULE]-FN01` | `[MODULE]-V01` | `Draft` |
+| ID | Feature | Mục tiêu | Actor | Trigger | Priority | Depends on | Functions | Views | DD decision | Implementation | Verification |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `[MODULE]-F01` | `{{Tên feature}}` | `{{...}}` | `{{Role}}` | `{{...}}` | `P0` | `{{Fxx/none}}` | `[MODULE]-FN01` | `[MODULE]-V01` | `Draft` | `Absent` | `Runtime-unverified` |
 
 ## 2. Bản đồ liên kết giữa feature
 

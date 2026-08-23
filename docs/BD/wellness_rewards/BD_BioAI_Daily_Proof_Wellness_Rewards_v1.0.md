@@ -6,10 +6,17 @@ Commit de xuat: docs(bd): chot nhiem vu co bang chung va Diem cham soc
 |---|---|
 | Mã tài liệu | `BD-BIOAI-WELLNESS-REWARDS-001` |
 | Phiên bản | v1.0 |
-| Trạng thái | Approved — user decision 2026-07-13 |
+| Vòng đời | Current |
+| Trạng thái nghiệp vụ | Approved — user decision 2026-07-13 |
+| Implementation | Implemented |
+| Xác minh | Static-verified tại `25018e8`; Runtime-unverified; Sandbox-unverified |
 | Phạm vi module | M03, M08 (ranh giới hệ điểm), M09, M15, M16 |
 | Nguồn | Kế hoạch triển khai được người dùng chốt ngày 2026-07-13 |
 | Múi giờ nghiệp vụ | `Asia/Ho_Chi_Minh` |
+
+`Implemented` ở đây chỉ xác nhận route/client/SQLite/Supabase source tồn tại và
+reachable; rollout flag, bucket private, concurrency/RLS trên Supabase sandbox
+và camera/notification trên thiết bị vẫn chưa được xác minh trong audit này.
 
 ## 1. Mục tiêu và ranh giới
 

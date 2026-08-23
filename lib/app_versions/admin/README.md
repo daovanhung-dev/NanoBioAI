@@ -1,5 +1,8 @@
 # Admin App Surface
 
+Lifecycle: `Current`. Implementation: `Partial` by static source at baseline
+`25018e8`; Supabase RPC/RLS/device behavior is not implied to be PASS.
+
 Admin remains an isolated presentation surface, but it is selected by the unified app bootstrap beside `v1`, `v2`, and `v3`.
 
 Guardrails:

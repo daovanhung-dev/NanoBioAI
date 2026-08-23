@@ -1,78 +1,113 @@
 # NanoBioAI / Nabi
 
-NanoBioAI là ứng dụng Flutter chăm sóc sức khỏe cá nhân theo hướng **local-first**, với Nabi làm trợ lý đồng hành. Ứng dụng kết hợp hồ sơ sức khỏe, lịch sinh hoạt, thực đơn, theo dõi hằng ngày, AI, thông báo và các lớp quyền tài khoản trên một runtime thống nhất.
+NanoBioAI là ứng dụng Flutter chăm sóc sức khỏe cá nhân theo hướng
+**local-first**, với Nabi làm trợ lý đồng hành. Tài liệu này mô tả trạng thái
+source tại baseline `25018e8` (2026-08-24); kết quả runtime/device hoặc Supabase
+sandbox không được suy ra từ việc source tồn tại.
+
+## Source of truth
+
+Khi tài liệu mâu thuẫn, dùng thứ tự sau:
+
+1. Code reachable từ `lib/main.dart`.
+2. SQLite runtime và bộ SQL Supabase có thể rebuild.
+3. `pubspec.yaml`, `pubspec.lock` và cấu hình Android/iOS.
+4. Test/validator thực thi được.
+5. Tài liệu hiện hành; tài liệu lịch sử chỉ là bằng chứng tại thời điểm tạo.
+
+Entry point cho toàn bộ tài liệu là `docs/README.md`. Báo cáo đối chiếu và
+inventory nằm trong `docs/audit/`.
+
+Các nhãn trạng thái dùng trong tài liệu:
+
+- `Implemented`: có đường gọi reachable và xử lý thật trong source.
+- `Partial`: có đường chạy thật nhưng capability chưa bao phủ toàn bộ phạm vi.
+- `Placeholder`: route/UI chỉ giới thiệu hoặc báo đang phát triển.
+- `Source-only`: có source/schema nhưng không có consumer reachable từ
+  `lib/main.dart`.
+- `Absent`: không có implementation trong source hiện tại.
 
 ## Runtime hiện tại
 
 ```text
 lib/main.dart
   -> nạp cấu hình tùy chọn
-  -> khởi tạo Supabase nếu có cấu hình hợp lệ
+  -> khởi tạo Supabase nếu đủ URL + anon key
   -> ProviderScope
   -> BioAIApp
-       -> User surface (V1 + V2 + V3 routes)
-       -> Admin surface khi session được backend xác nhận
-  -> cloud sync khi backend sẵn sàng
-  -> local notifications
+       -> User surface: một GoRouter gộp V1 + V2 + V3 routes
+       -> Admin surface: adminRouter khi backend xác nhận quyền Admin
+  -> cloud sync + meal-catalog refresh khi Supabase sẵn sàng
+  -> local notification startup
 ```
 
-### Các lớp sản phẩm
+Chỉ có một entrypoint ứng dụng: `lib/main.dart`. Các file cũ như
+`lib/main_v2.dart` và `lib/main_admin.dart` không tồn tại.
 
-- **V1 guest/basic**: onboarding, hồ sơ local, lịch cá nhân đầu tiên, meal plan, daily health tracking, lifestyle schedule và notification.
-- **V2 authenticated/free**: Supabase Auth, guest merge/cloud sync, quota, health score, membership/payment và Wellness Rewards.
-- **V3 Plus/FamilyPlus**: advanced tracking, FamilyPlus và các module paid được triển khai theo contract hiện hành.
-- **Admin**: surface quản trị dùng access backend riêng.
-- **Sale/referral**: trục vai trò độc lập, không phải membership tier.
+Supabase là tùy chọn đối với bootstrap và guest mode. Auth, cloud sync,
+membership, quota, payment, FamilyPlus, Sale và Admin cần Supabase hợp lệ;
+không có cấu hình thì các capability đó không được xem là hoạt động.
 
-## Kiến trúc
+## Trạng thái capability
 
-Dependency flow bắt buộc:
+| Khu vực | Trạng thái theo source |
+| --- | --- |
+| V1 guest/basic | `Implemented` cho onboarding 9 bước, hồ sơ/local data, dashboard, lịch, meal plan, tracking cơ bản và notification. |
+| V1 AI plan | `Implemented`: Gemini REST khi có key; local catalog fallback cho luồng tạo plan. |
+| V1 AI chat/voice | `Partial`: route cần đăng nhập; chat cần Gemini config và quota backend, voice còn có membership access gate. |
+| V1 planned UI | `Placeholder`: sleep, stress, community; personal goals chỉ là preview không lưu. |
+| V2 authenticated | `Implemented/Partial`: auth, merge/cloud sync, entitlement, quota, health score, payment request và Wellness Rewards có đường runtime; cần backend để kiểm chứng end-to-end. |
+| M20-M29 | `Placeholder`: catalog và access/upgrade/coming-soon UI; chưa có business storage/flow cho từng module. |
+| V3 | `Partial`: advanced tracking và FamilyPlus có route, provider, repository và access gate; V3 home vẫn là catalog “Sắp có”. |
+| V3 marker modules | `Source-only`: premium AI, goal roadmap, advanced health tracking, family onboarding/members/schedule chỉ khai báo `planned`. |
+| M30 Nabi notifications | `Source-only`: SQLite v20 tables, models, engine và repositories có source nhưng chưa có consumer reachable từ app bootstrap/UI. |
+| Sale/referral | `Partial`: Sale UI/RPC cho trạng thái, khách trực tiếp, điểm và conversion; phê duyệt/payment success vẫn là backend/Admin. |
+| Admin | `Partial`: surface và các section/RPC có source, được mở sau trusted role resolution; cần Supabase policy/RPC để chạy thật. |
 
-```text
-Presentation
-  -> Provider / Controller
-  -> Repository interface
-  -> Repository implementation
-  -> Datasource
-  -> DAO / Supabase RPC / external service
-```
+Chi tiết và evidence path xem `SYSTEM_FEATURES_DOCUMENTATION.md`.
 
-Presentation không truy cập DAO/SQLite/API trực tiếp. Dữ liệu user-owned phải luôn được scope bằng active `user_id` / subject đã resolve.
+## AI transport và cấu hình
 
-## Stack chính
+Runtime dùng client REST nội bộ tại
+`lib/app_versions/v1/services/ai/gemini_rest_client.dart` với endpoint
+`models/{model}:generateContent` và header `x-goog-api-key`. Dự án **không khai
+báo Gemini Dart SDK** (`google_generative_ai`) trong `pubspec.yaml`.
 
-- Flutter / Dart
-- Riverpod
-- GoRouter
-- SQLite (`sqflite`) — schema runtime hiện tại: **v20**
-- Supabase Auth + cloud sync
-- Gemini-backed AI services với local fallback theo từng flow
-- `flutter_local_notifications`
+Nguồn cấu hình được `AppEnv` xét theo thứ tự:
 
-## Local-first và Guest
+1. `--dart-define` / `--dart-define-from-file`.
+2. dotenv tùy chọn nếu môi trường có thể nạp file.
+3. Android native `BuildConfig` cho `GEMINI_API_KEY`.
+4. `assets/config/auth.env` chỉ cho public auth configuration.
 
-Thiếu cấu hình Supabase không ngăn app khởi động ở guest mode. Guest onboarding dùng catalog local đã seed/cache để tạo lịch đầu tiên; khi Supabase khả dụng, catalog remote được dùng để refresh cache nhưng lỗi mạng/remote rỗng không được phép xóa catalog local hợp lệ.
+Không commit API key, service-role key, session token hoặc `.env` thật.
 
-Identity local không được suy ra bằng “user mới nhất”. Guest dùng durable local user ID; authenticated flow resolve actor ở provider boundary, và `SubjectAccessContext` được dùng tại các flow có selected subject/FamilyPlus context.
+## Stack và identity
+
+- Package Dart: `nano_app`, version `1.0.0+1`, SDK constraint `^3.9.2`.
+- Riverpod `^3.3.1`, GoRouter `^17.2.3`, sqflite `^2.4.2`.
+- Supabase Flutter `^2.12.4`.
+- Local notifications `19.5.0`; SQLite schema runtime `20`.
+- Android namespace/application ID: `com.nanobioai.app`; label: `NanoBio`.
+- iOS bundle ID: `com.example.nanoApp`; display name: `NaBi`.
+
+Android và iOS hiện chưa cùng bundle/application identifier; tài liệu không
+được tự quy chúng về một ID.
 
 ## Cấu trúc nguồn
 
 ```text
 lib/
 ├── main.dart
-├── app/
+├── app/                    # root surface selection
 ├── app_versions/
-│   ├── v1/
-│   ├── v2/
-│   ├── v3/
-│   └── admin/
-├── core/
-│   ├── access/
-│   ├── config/
-│   ├── storage/localdb/
-│   └── theme/
-├── services/
-├── sale_referral/
+│   ├── v1/                 # guest/basic + shared user experience
+│   ├── v2/                 # authenticated capabilities + merged user router
+│   ├── v3/                 # paid-gated partial flows + planned markers
+│   └── admin/              # trusted Admin surface
+├── core/                   # config, access, SQLite, theme
+├── services/               # Supabase and device/shared services
+├── sale_referral/          # independent Sale role axis
 └── shared/
 
 test/
@@ -83,13 +118,13 @@ docs/
 
 ## Chạy ứng dụng
 
-Cài dependencies:
+Cài dependency:
 
 ```powershell
 flutter pub get
 ```
 
-Kiểm tra cấu hình runtime mà không khởi động Flutter:
+Kiểm tra cấu hình mà không chạy Flutter:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -ValidateOnly
@@ -101,46 +136,39 @@ Chạy unified app:
 powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1
 ```
 
-Không cần Supabase để mở guest flow. Các chức năng authenticated/cloud cần cấu hình hợp lệ. Không commit `.env`, API key hoặc session token.
+Plain `flutter run -t lib/main.dart` có thể mở guest mode. Dùng script trên cho
+authenticated/AI testing vì script chuẩn bị runtime defines theo contract dự
+án.
 
 ## Validation
 
-Ưu tiên validation theo phạm vi file đã chạm:
+Ưu tiên kiểm tra đúng phạm vi:
 
 ```powershell
-dart format <paths>
 dart format --set-exit-if-changed <paths>
 flutter analyze <paths>
 flutter test <paths>
 ```
 
-Runtime quick check:
+Docs/source-truth:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1
-```
-
-Full/native check khi scope yêu cầu:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .codex/tool/codex_check.ps1 -BuildApk
-```
-
-Context/docs integrity:
-
-```powershell
+python tools/validate_docs_source_truth.py
 powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1
 git diff --check
 ```
 
+Runtime quick/full check:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .codex/tool/codex_quick_check.ps1
+powershell -ExecutionPolicy Bypass -File .codex/tool/codex_check.ps1 -BuildApk
+```
+
+Nếu Flutter/device/Supabase sandbox chưa chạy, kết quả phải ghi `UNVERIFIED`,
+không được ghi `PASS` dựa trên static inspection.
+
 ## Agent context
 
-Coding agent phải bắt đầu từ:
-
-1. `AGENTS.md`
-2. `.codex/AGENTS.md`
-3. `.codex/PROJECT_MAP.md`
-4. `.codex/history/LEARNED_SKILLS.md`
-5. workflow + task-skill + domain đúng task
-
-Runtime source và tests là source-of-truth khi README/context cũ mâu thuẫn với code.
+Coding agent bắt đầu từ `AGENTS.md`, rồi làm theo router trong `.codex/`.
+Không dùng worklog hoặc delivery manifest lịch sử để thay cho source hiện tại.

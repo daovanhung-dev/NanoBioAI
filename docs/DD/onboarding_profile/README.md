@@ -5,7 +5,11 @@
 | Module Code | ONBOARDING_PROFILE |
 | BD Module | M01 |
 | Version | v1.1 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Implemented |
+| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Source evidence | `lib/main.dart`; V1 onboarding route/controller/repository; `OnboardingCatalog.totalSteps = 9` |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-08-17 |

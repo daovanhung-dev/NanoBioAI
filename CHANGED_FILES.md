@@ -1,5 +1,8 @@
 # Files changed by `apply_fix.py`
 
+> **Lifecycle: Historical patch inventory / Superseded.** Danh sách này thuộc
+> gói fix cũ, không phải `git diff` hoặc inventory của HEAD hiện tại.
+
 1. `lib/app_versions/v1/features/meal_plan/presentation/utils/meal_image_resolver.dart`
 2. `test/app_versions/v1/features/meal_plan/presentation/utils/meal_image_resolver_test.dart`
 3. `lib/app_versions/v1/features/lifestyle_schedule/presentation/widgets/schedule_timeline.dart`

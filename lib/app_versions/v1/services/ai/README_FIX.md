@@ -1,5 +1,8 @@
 # NanoBio AI Chat — runtime configuration
 
+Lifecycle: `Current source note`. Baseline: `25018e8`. Runtime uses the internal
+`GeminiRestClient` over REST; `pubspec.yaml` does not declare a Gemini Dart SDK.
+
 ## Root cause
 
 `AIChatService` chỉ tạo Gemini REST client khi `AppEnv` resolve được

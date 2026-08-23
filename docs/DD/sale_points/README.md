@@ -5,7 +5,11 @@
 | Module Code | SALE_POINTS |
 | BD Module | M14 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Implemented |
+| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Source evidence | Sale wallet/conversion UI/repository and Admin conversion/adjustment RPC source are reachable |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

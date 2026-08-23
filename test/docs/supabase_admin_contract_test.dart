@@ -26,10 +26,13 @@ void main() {
         expect(config, contains(token), reason: 'config.sql: $token');
       }
 
+      final numberedSchemaMarkers = config.split(
+        '-- BEGIN 01_schema_rebuild_local_sandbox.sql',
+      );
       expect(
-        config.split('-- BEGIN 15-auth-sync-completion.sql').length - 1,
-        1,
-        reason: 'The rebuild config must include the migration exactly once.',
+        numberedSchemaMarkers,
+        hasLength(2),
+        reason: 'The rebuild config must include numbered schema 01 exactly once.',
       );
     });
 

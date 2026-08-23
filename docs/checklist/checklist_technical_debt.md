@@ -2,6 +2,17 @@ Commit de xuat: docs(checklist): tao checklist no ky thuat
 
 # Checklist No Ky Thuat
 
+| Trục | Trạng thái |
+|---|---|
+| Lifecycle | Historical |
+| Status | Superseded 2026-08-24 |
+| Verification | Historical |
+| Replaced by | Current issue/todo indexes and the source-truth audit; commands below were not rerun in this docs-only reconciliation |
+
+> Snapshot 2026-07-02 bên dưới được giữ nguyên làm bằng chứng lịch sử. Các số
+> analyze/test/format, path và trạng thái Open/Fixed không được dùng như trạng
+> thái hiện hành nếu chưa xác minh lại tại baseline `25018e8`.
+
 ## Metadata
 
 | Field | Value |

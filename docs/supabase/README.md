@@ -3,6 +3,34 @@
 Bộ SQL này chỉ dành cho Supabase local hoặc sandbox có thể xóa dữ liệu. Không
 chạy các file rebuild/seed trên staging hoặc production.
 
+## Nguồn tin cậy và trạng thái xác minh
+
+Thứ tự ưu tiên khi có khác biệt:
+
+1. Sáu file authored `01_schema_rebuild_local_sandbox.sql` đến
+   `06_schema_runtime_support.sql` là nguồn có thẩm quyền cho cấu trúc, RLS,
+   RPC, seed và hạ tầng runtime của bộ rebuild local/sandbox.
+2. `config.sql` là bản dẫn xuất được sinh nguyên văn từ 01 → 06 bởi
+   `tools/build_supabase_rebuild_config.py`; không sửa file này bằng tay.
+3. Các file 90 → 94 chỉ là truy vấn/transaction xác minh sau rebuild. Chúng
+   không định nghĩa hoặc thay thế schema, RPC hay seed.
+
+Kiểm tra parity tĩnh của `config.sql`:
+
+```bash
+python3 tools/build_supabase_rebuild_config.py --check
+```
+
+Trạng thái tại baseline `25018e8`:
+
+- Parity tĩnh giữa `config.sql` và 01 → 06: `STATIC-VERIFIED`.
+- Sandbox runtime (thực thi 01 → 06 rồi 90 → 94): `UNVERIFIED`.
+- Edge Function và luồng Flutter trên thiết bị: `UNVERIFIED`.
+
+`UNVERIFIED` không có nghĩa là thất bại; nó có nghĩa là repository chưa có
+bằng chứng chạy local/sandbox hoặc thiết bị cho baseline này.
+Không suy diễn trạng thái production từ contract SQL hay contract test tĩnh.
+
 ## Thứ tự chạy
 
 | Thứ tự | File | Mục đích |
@@ -33,7 +61,10 @@ psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f docs/supabase/01_schema_rebuild_lo
 ```
 
 Lặp lại lệnh cho các file còn lại theo đúng thứ tự. Hoặc chạy duy nhất
-`docs/supabase/config.sql` để rebuild 01 → 06, rồi chạy 90 → 94.
+`docs/supabase/config.sql` để rebuild 01 → 06, rồi chạy 90 → 94. Chỉ ghi nhận
+PASS runtime khi tất cả lệnh thực sự chạy thành công trên cùng một local/sandbox
+có thể xóa dữ liệu; việc đọc file hoặc chạy contract test không thay thế bước
+này.
 
 ## Edge Functions bắt buộc
 

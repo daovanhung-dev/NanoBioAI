@@ -1,5 +1,8 @@
 # `delete-account` Edge Function
 
+Lifecycle: `Current`. Implementation: `Static-verified` at baseline `25018e8`;
+deployment and Supabase runtime remain `Sandbox-unverified` unless rerun.
+
 Hàm này phục vụ thao tác xóa tài khoản từ Flutter. Nó bắt buộc JWT hợp lệ,
 yêu cầu body `{ "confirm": true }`, lấy người dùng từ JWT và chỉ gọi Admin API
 để xóa chính người dùng đó. Khóa service role chỉ tồn tại trong Edge runtime.

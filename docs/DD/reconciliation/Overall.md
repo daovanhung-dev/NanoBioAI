@@ -7,7 +7,7 @@
 | Module Code | RECONCILIATION |
 | BD Module | M17 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| DD decision | Approved |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD section 12.1, 14.4, 15, Appendix A UC-22 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

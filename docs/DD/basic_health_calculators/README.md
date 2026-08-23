@@ -5,7 +5,11 @@
 | Module Code | BASIC_HEALTH_CALC |
 | BD Module | M04 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Partial |
+| Verification | Static-verified at `25018e8`; Runtime-unverified |
+| Source evidence | `/body-metrics` and versioned formula engine are reachable; DD Admin formula-version management is not end-to-end |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

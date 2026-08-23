@@ -7,7 +7,7 @@
 | Module Code | ADVANCED_TRACKING_GOALS |
 | BD Module | M10 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| DD decision | Approved |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M10, 16.1 AC-06, Appendix A UC-10 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

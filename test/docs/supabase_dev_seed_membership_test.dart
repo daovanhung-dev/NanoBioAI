@@ -3,46 +3,31 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('legacy membership-only seed is a no-op redirect to fixture 19', () {
-    final source = File(
-      'docs/supabase/09-dev-seed-membership-test-accounts.sql',
+  test('numbered seed owns the local membership account contract', () {
+    final seed = File(
+      'docs/supabase/05_seed_local_sandbox.sql',
     ).readAsStringSync();
-    final executable = _withoutBlockComments(source);
 
     for (final token in [
-      'DEPRECATED / NO-OP REDIRECT',
-      '19-dev-sandbox-comprehensive-seed.sql',
-      '19-dev-sandbox-accounts.md',
-      'docs/supabase/config.sql',
-      'local/sandbox',
-      'production',
+      'DEV/SANDBOX ONLY',
+      'NanoBio@123456',
+      'dev.free@nanobio.local',
+      'dev.plus@nanobio.local',
+      'dev.family@nanobio.local',
+      'dev.admin@nanobio.local',
+      "'free'::public.nb_membership_plan",
+      "'plus'::public.nb_membership_plan",
+      "'family_plus'::public.nb_membership_plan",
+      'insert into auth.users',
+      'insert into auth.identities',
+      'insert into public.membership_subscriptions',
+      'LOCAL_PLUS_SEED_AUTH_INVALID',
+      'LOCAL_PLUS_SEED_PLAN_INVALID',
     ]) {
-      expect(source, contains(token), reason: token);
+      expect(seed, contains(token), reason: token);
     }
 
-    expect(executable, isNot(contains('begin;')));
-    expect(executable, isNot(contains('commit;')));
-    expect(executable, isNot(contains('insert into auth.users')));
-    expect(executable, isNot(contains('insert into auth.identities')));
-    expect(
-      executable,
-      isNot(contains('insert into public.membership_subscriptions')),
-    );
-
-    // The commented historical context intentionally retains the original
-    // account names for review, while only config.sql/module 19 can seed data.
-    expect(source, contains('dev.free@nanobio.local'));
-    expect(source, contains('dev.plus@nanobio.local'));
-    expect(source, contains('dev.family@nanobio.local'));
-    expect(
-      source.toLowerCase(),
-      isNot(contains('v2')),
-      reason:
-          'The deprecated file must not preserve a competing plan-version contract.',
-    );
+    expect(seed.toLowerCase(), contains('local/sandbox'));
+    expect(seed.toLowerCase(), contains('production'));
   });
-}
-
-String _withoutBlockComments(String source) {
-  return source.replaceAll(RegExp(r'/\*.*?\*/', dotAll: true), '');
 }

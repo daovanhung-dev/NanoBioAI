@@ -33,14 +33,21 @@ Doc `.codex/history/OPEN_RISKS.md` chi khi task cham release readiness, auth, Su
 
 ## Snapshot
 
-- Flutter/Dart SDK `^3.9.2`.
+- Dart SDK constraint `^3.9.2`; the Flutter SDK version is not pinned in
+  `pubspec.yaml`.
 - Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`.
-- Supabase `2.12.4`, Gemini SDK `0.4.7`.
+- Supabase `2.12.4`; Gemini uses the internal REST client in
+  `lib/app_versions/v1/services/ai/gemini_rest_client.dart` and no Gemini Dart
+  SDK is declared.
 - Local notifications `19.5.0`, timezone `0.10.1`, flutter_timezone `5.1.0`.
 - SQLite database version: `DatabaseVersion.currentVersion = 20`.
-- Product access map: `v1` guest/basic, `v2` authenticated free, `v3` Plus/FamilyPlus modules, `sale_referral` independent.
+- Product access map: `v1` guest/basic, `v2` authenticated capabilities, `v3`
+  partial paid-gated flows plus source-only planned markers, `sale_referral`
+  independent.
 
-Nguon dung nhat van la `pubspec.yaml` va `lib/core/storage/localdb/database_version.dart`.
+Current-state source order is: reachable runtime from `lib/main.dart`,
+executable SQLite/Supabase source, package/platform config, executable tests,
+then current docs. Worklogs and delivery manifests are historical evidence.
 
 ## History Learning
 

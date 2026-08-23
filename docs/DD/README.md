@@ -9,40 +9,60 @@
 | Daily Proof and Wellness Rewards Addendum | docs/BD/wellness_rewards/BD_BioAI_Daily_Proof_Wellness_Rewards_v1.0.md (`BD-BIOAI-WELLNESS-REWARDS-001`) |
 | Nabi Companion Notification BD | docs/BD/notification_Nabi/BD_thong_bao_nut_noi_Nabi.md (`BD-NABI-NOTIFICATION-001`) |
 | DD Baseline Date | 2026-06-28 |
-| Last Updated | 2026-08-08 |
-| Status | M01-M19 and M30 Approved - DD docs complete; M20-M29 DD not started |
+| Source-truth Baseline | `25018e8` |
+| Last Updated | 2026-08-24 |
+| Lifecycle | Current |
+| DD decision | M01-M19/M30 Approved; M20-M29 Draft without module DD |
+| Implementation | Partial aggregate; see module matrix |
+| Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
 
 ## Purpose
-This folder contains split module DDs for the approved BioAI / NanoBio product-flow baseline M01-M19 and the approved M30 Nabi companion-notification implementation contract. The 2026-06-30 pass records accepted decisions for BD Q-01..Q-18, and the 2026-07-17 M30 pass records the user-approved mapping and rollout decisions for `BD-NABI-NOTIFICATION-001`. Runtime/sandbox evidence remains separate from DD completeness. Advanced-health modules M20-M29 remain a future DD backlog only.
+This folder contains split module DDs for M01-M19 and M30. `Approved` records a
+business/DD decision only; it does not mean runtime complete. The matrix below
+is the current source-derived status. M20-M29 have a reachable catalog/access
+placeholder but no module DD or business implementation. M30 has SQLite,
+engine/repository/controller and Supabase source, but no app-shell trigger or
+presentation wiring, so it is `Source-only`.
+
+## Status Contract
+
+- Lifecycle describes how the document is used: `Current`, `Historical`,
+  `Generated`, `Reference`, `Source`, or `Binary`.
+- Implementation describes reachable code: `Implemented`, `Partial`,
+  `Placeholder`, `Source-only`, `Absent`, or `N/A`.
+- Verification describes evidence: `Static-verified`, `Runtime-unverified`,
+  `Sandbox-unverified`, or `Historical`.
+- Static source/config evidence never substitutes for device, provider,
+  production, or Supabase sandbox acceptance.
 
 ## Stitch Green Wellness Readiness — 2026-08-08
 
-The [Wave 0 DD readiness and evidence pack](../refactor/stitch_nanobio_design_system/DD_READINESS.md) records the pending source, owner-approval, safety, privacy, route/provider and schema decisions for the proposed wellness modules, M20-M29 and Stitch deltas to existing modules. It is a Draft gate document, not an Approved module DD or addendum. M01-M19/M30 baseline status remains unchanged; M20-M29 DD completeness and business coding remain 0%, with only the approved catalog/placeholder shell allowed.
+The [Wave 0 DD readiness and evidence pack](../refactor/stitch_nanobio_design_system/DD_READINESS.md) records pending decisions. It is a Draft gate document, not an Approved module DD or addendum. M20-M29 remain `Placeholder`; the shell is real reachable code but is not health-data/AI business behavior.
 
 ## Module Map
 
-| BD | Module DD | Module Code | Status | Source |
-|---|---|---|---|---|
-| M01 | [Onboarding and health profile](./onboarding_profile/README.md) | ONBOARDING_PROFILE | Approved - DD docs complete | BD sections 6/M01, 13, 16.1 AC-01, Appendix A UC-01 |
-| M02 | [Personal schedule AI](./personal_schedule_ai/README.md) | PERSONAL_SCHEDULE_AI | Approved - DD docs complete | BD sections 6/M02, 13, 16.1 AC-01/AC-02/AC-05/AC-06, Appendix A UC-02/UC-08 |
-| M03 | [Dashboard and schedule execution](./dashboard_schedule/README.md) | DASHBOARD_SCHEDULE | Approved - DD docs complete | BD sections 6/M03, 13, Appendix A UC-09 |
-| M04 | [Basic health calculators](./basic_health_calculators/README.md) | BASIC_HEALTH_CALC | Approved - DD docs complete | BD sections 6/M04, 18.2 Q-14, Appendix A UC-03 |
-| M05 | [Auth, profile sync, and guest merge](./auth_profile_sync/README.md) | AUTH_PROFILE_SYNC | Approved - DD docs complete | BD sections 6/M05, 13, Appendix A UC-05 |
-| M06 | [Membership and quota](./membership_quota/README.md) | MEMBERSHIP_QUOTA | Approved - DD docs complete | BD sections 6/M06, 13, 16.1 AC-04..AC-08, Appendix A UC-06 |
-| M07 | [AI Chat](./ai_chat/README.md) | AI_CHAT | Approved - DD docs complete | BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07 |
-| M08 | [Health score and habits](./health_score_habits/README.md) | HEALTH_SCORE_HABITS | Approved - DD docs complete | BD sections 6/M08, 9, 13, Appendix A UC-09 |
-| M09 | [Schedule notifications](./schedule_notifications/README.md) | SCHEDULE_NOTIFICATIONS | Approved - DD docs complete | BD sections 6/M09, 13, Appendix A UC-04 |
-| M10 | [Advanced tracking and goals](./advanced_tracking_goals/README.md) | ADVANCED_TRACKING_GOALS | Approved - DD docs complete | BD sections 6/M10, 16.1 AC-06, Appendix A UC-10 |
-| M11 | [FamilyPlus](./familyplus/README.md) | FAMILYPLUS | Approved - DD docs complete | BD sections 10/M11, 13, 14.2, 16.1 AC-06, Appendix A UC-11 |
-| M12 | [Sale and direct referral](./referral_direct/README.md) | REFERRAL_DIRECT | Approved - DD docs complete | BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14 |
-| M13 | [Payment, verification, and entitlement](./payment_membership/README.md) | PAYMENT_MEMBERSHIP | Approved - DD docs complete | BD sections 8/M13, 14.4, 15, 16.1 AC-07/AC-08, 16.3 AC-20/AC-21, Appendix A UC-15/UC-16 |
-| M14 | [Sale points and conversion](./sale_points/README.md) | SALE_POINTS | Approved - DD docs complete | BD sections 7.5..7.10, 9, 12.1, 14.4, 16.2 AC-11..AC-18, Appendix A UC-17..UC-19 |
-| M15 | [Admin dashboard](./admin_dashboard/README.md) | ADMIN_DASHBOARD | Approved - DD docs complete | BD sections 11.1/11.2, 12.2, 16.3 AC-19, Appendix A UC-20 |
-| M16 | [Admin operations](./admin_operations/README.md) | ADMIN_OPS | Approved - DD docs complete | BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
-| M17 | [Reconciliation](./reconciliation/README.md) | RECONCILIATION | Approved - DD docs complete | BD section 12.1, 14.4, 15, Appendix A UC-22 |
-| M18 | [Statistics and reporting](./reporting/README.md) | REPORTING | Approved - DD docs complete | BD section 12.2, 14.2, 16.3 AC-23, Appendix A UC-24 |
-| M19 | [Audit, security, and support](./audit_security/README.md) | AUDIT_SECURITY | Approved - DD docs complete | BD sections 11.8, 14, 15, 16.3 AC-20/AC-21/AC-24, Appendix A UC-23 |
-| M30 | [Nabi companion notifications](./nabi_companion_notifications/README.md) | NABI_COMPANION_NOTIFICATIONS | Approved - implementation contract | `BD-NABI-NOTIFICATION-001` sections 1-22 and accepted implementation plan 2026-07-17 |
+| BD | Module DD | DD decision | Implementation | Verification | Reachable/source evidence |
+|---|---|---|---|---|---|
+| M01 | [Onboarding and health profile](./onboarding_profile/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | V1 onboarding route/controller/repository plus `main.dart` completion callback; 9-step catalog |
+| M02 | [Personal schedule AI](./personal_schedule_ai/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | `GeneratedPlanService`, onboarding first plan and dashboard additional-plan action |
+| M03 | [Dashboard and schedule execution](./dashboard_schedule/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | V1 dashboard/lifestyle schedule, completion/proof and wellness-reward gateways |
+| M04 | [Basic health calculators](./basic_health_calculators/README.md) | Approved | Partial | Static-verified; Runtime-unverified | `/body-metrics` and versioned formula engine are reachable; DD Admin formula-version management is not end-to-end |
+| M05 | [Auth, profile sync, and guest merge](./auth_profile_sync/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | V2 auth routes/controller, reactive gate and cloud-sync flow |
+| M06 | [Membership and quota](./membership_quota/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Effective-access providers and trusted quota gateways/RPC source |
+| M07 | [AI Chat](./ai_chat/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Auth-protected text/voice routes, controllers and REST/STT/TTS sources |
+| M08 | [Health score and habits](./health_score_habits/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | V2 health-score route/providers/repository and ledger SQL source |
+| M09 | [Schedule notifications](./schedule_notifications/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Notification bootstrap, scheduler, lifecycle refresh and action handler |
+| M10 | [Advanced tracking and goals](./advanced_tracking_goals/README.md) | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Reachable V3 advanced-hydration goal/roadmap slice; broader multi-goal/plan adjustment in BD is absent |
+| M11 | [FamilyPlus](./familyplus/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | V3 FamilyPlus route/page/repository and family RPC source |
+| M12 | [Sale and direct referral](./referral_direct/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Protected Sale route, registration/referral repository and RPC source |
+| M13 | [Payment, verification, and entitlement](./payment_membership/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Membership payment route, VietQR request/confirm and Admin review source |
+| M14 | [Sale points and conversion](./sale_points/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Sale wallet/conversion UI/repository and Admin conversion RPC source |
+| M15 | [Admin dashboard](./admin_dashboard/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Admin surface/router, safe summary metrics and permissioned drill-down sections |
+| M16 | [Admin operations](./admin_operations/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Admin user/payment/Sale/plan/config operations and mutation RPC mapping |
+| M17 | [Reconciliation](./reconciliation/README.md) | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Reachable Admin reconciliation run/status flow; source only detects a limited discrepancy class and has no scheduled runner |
+| M18 | [Statistics and reporting](./reporting/README.md) | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Reachable report catalog/export-request flow; no report file producer/download path |
+| M19 | [Audit, security, and support](./audit_security/README.md) | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Auth/access/RLS/audit event surface exists; full support/ticket, retention and response scope is not end-to-end |
+| M30 | [Nabi companion notifications](./nabi_companion_notifications/README.md) | Approved | Source-only | Static-verified; Runtime-unverified; Sandbox-unverified | SQLite v15/current v20 tables, catalog/engine/local repository/controller and Supabase RPC/RLS source; no app-shell trigger/presentation wiring |
 
 ## Approved Cross-Module Delta - 2026-07-13
 
@@ -60,18 +80,18 @@ The addendum is the higher-priority source for conflicts limited to this feature
 
 ## Planned DD Backlog — M20-M29
 
-| BD | Planned Module DD | Module Code | DD Status | Source |
-|---|---|---|---|---|
-| M20 | Not created | BLOOD_PRESSURE_TRACKING | Not started - source BD Draft | Advanced Health BD M20, UC-25, M20-BR01..03, M20-AC01..03 |
-| M21 | Not created | HEART_OXYGEN_TRACKING | Not started - source BD Draft | Advanced Health BD M21, UC-26, M21-BR01..03, M21-AC01..03 |
-| M22 | Not created | MEDICATION_ADHERENCE | Not started - source BD Draft | Advanced Health BD M22, UC-27, M22-BR01..03, M22-AC01..03 |
-| M23 | Not created | GLUCOSE_TRACKING | Not started - source BD Draft | Advanced Health BD M23, UC-28, M23-BR01..03, M23-AC01..03 |
-| M24 | Not created | SYMPTOM_PAIN_JOURNAL | Not started - source BD Draft | Advanced Health BD M24, UC-29, M24-BR01..03, M24-AC01..03 |
-| M25 | Not created | WOMENS_CYCLE_HEALTH | Not started - source BD Draft | Advanced Health BD M25, UC-30, M25-BR01..03, M25-AC01..03 |
-| M26 | Not created | RESPIRATORY_ALLERGY_TRACKING | Not started - source BD Draft | Advanced Health BD M26, UC-31, M26-BR01..03, M26-AC01..03 |
-| M27 | Not created | LAB_RESULT_TRACKING | Not started - source BD Draft | Advanced Health BD M27, UC-32, M27-BR01..03, M27-AC01..03 |
-| M28 | Not created | PREVENTIVE_CARE | Not started - source BD Draft | Advanced Health BD M28, UC-33, M28-BR01..03, M28-AC01..03 |
-| M29 | Not created | AI_HEALTH_TRENDS | Not started - source BD Draft | Advanced Health BD M29, UC-34, M29-BR01..05, M29-AC01..04 |
+| BD | Planned Module DD | Module Code | DD decision | Implementation | Verification |
+|---|---|---|---|---|---|
+| M20 | Not created | BLOOD_PRESSURE_TRACKING | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M21 | Not created | HEART_OXYGEN_TRACKING | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M22 | Not created | MEDICATION_ADHERENCE | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M23 | Not created | GLUCOSE_TRACKING | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M24 | Not created | SYMPTOM_PAIN_JOURNAL | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M25 | Not created | WOMENS_CYCLE_HEALTH | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M26 | Not created | RESPIRATORY_ALLERGY_TRACKING | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M27 | Not created | LAB_RESULT_TRACKING | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M28 | Not created | PREVENTIVE_CARE | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M29 | Not created | AI_HEALTH_TRENDS | Draft | Placeholder | Static-verified; Runtime-unverified |
 
 Coding gate for M20-M29: only the UI catalog shell and shared development placeholder described by AHF-BR-001..006 are approved. Do not create DD folders or implement health-data/AI behavior until each module DD is approved.
 
@@ -137,8 +157,8 @@ Coding gate for M20-M29: only the UI catalog shell and shared development placeh
 - CDC sleep: https://www.cdc.gov/sleep/about/index.html
 
 ## Validation Notes
-- Runtime code, SQL, Supabase config, and tests are out of scope for this DD docs 100 percent pass.
+- This audit changed documentation only; it did not change runtime code, SQL, schema or RPC behavior.
 - `DD_Module_Template/` remains the source template and intentionally still contains placeholders.
-- M01-M19 DD docs are complete at the documentation layer: status Approved, Open Q = 0, and traceability/contracts are documented.
+- M01-M19 DD decisions are Approved, but implementation status is independently recorded in the module matrix and must not be inferred from DD approval.
 - The 2026-07-13 implementation deltas record exact source and targeted test evidence separately from DD completeness. The migration/config rebuild and local contract smoke are source-level evidence, not proof of deployment to a real Supabase project.
-- Real Supabase sandbox bucket/RLS/API smoke, device camera/notification checks, full-root validation and production acceptance remain in the implementation evidence backlog and do not reduce DD docs completeness.
+- Real Supabase sandbox bucket/RLS/API smoke and device camera/notification checks remain `Sandbox-unverified`/`Runtime-unverified`; they are not PASS.

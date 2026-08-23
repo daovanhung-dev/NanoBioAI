@@ -1,16 +1,51 @@
 # Checklist Task Coding
 
-Commit de xuat: docs(checklist): danh dau coding M01-M19 hoan thanh 100 phan tram
+Commit de xuat: docs(checklist): dong bo coding status theo source truth
 
 ## Metadata
 
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-08-23 |
-| Muc dich | Ghi lai trang thai coding M01-M19/M30 va coding gate rieng cho planned M20-M29. |
+| Ngay cap nhat | 2026-08-24 |
+| Lifecycle | Current |
+| Source-truth baseline | `25018e8` |
+| Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
+| Muc dich | Ghi handoff coding theo capability reachable; khong dung DD Approved/phan tram de claim runtime complete. |
 
-## DD Progress Next Tasks
+## Current Coding Handoff
+
+| Status | Modules | Current boundary |
+|---|---|---|
+| Implemented | M01-M03, M05-M09, M11-M16 | Source reachable; device/provider/Supabase acceptance vẫn đọc là Runtime-unverified/Sandbox-unverified. |
+| Partial | M04, M10, M17-M19 | Có luồng reachable nhưng chưa bao phủ toàn bộ capability DD/BD; xem gap tại `docs/DD/README.md`. |
+| Placeholder | M20-M29 | Chỉ catalog, access gate và trang đang phát triển; không persistence/API/AI/notification nghiệp vụ. |
+| Source-only | M30 | Có SQLite v15/current v20, catalog/engine/repository/controller và Supabase source; chưa nối controller/trigger/overlay/CTA/native delivery vào app shell. |
+
+### Next implementation tasks
+
+- [ ] M30: wire typed business snapshots/time ticks into
+  `nabiNotificationControllerProvider`, render the M30 presentation state in the
+  user app shell, and replace no-op navigation/native gateways with the existing
+  route and M09-compatible delivery adapters.
+- [ ] M30: wire preferences/analytics outbox/config invalidation; then run
+  targeted engine/controller/widget tests, Android/iOS foreground/background
+  smoke and Supabase sandbox RLS/RPC acceptance before changing
+  Runtime-unverified/Sandbox-unverified.
+- [ ] M04/M10/M17/M18/M19: either implement the missing source boundary listed
+  in `docs/DD/README.md` or narrow the business/DD scope through an approved
+  decision; do not promote the current `Partial` status by percentage.
+- [ ] M01-M19: record real device/provider/Supabase evidence independently;
+  static source does not authorize a production-ready claim.
+- [ ] M20-M29: keep the reachable shell data-free until each module has an
+  approved DD and safety/privacy/data contracts.
+
+## Historical Task Log — Superseded 2026-08-24
+
+The dated checkboxes and percentage claims below are retained as historical
+session evidence. They do not override the current coding handoff above.
+
+### DD Progress Next Tasks (historical)
 
 - [ ] Truoc moi phien coding, doc `docs/checklist/checklist_complete_DD.md` de chon DD module, DD completeness, coding progress, implementation evidence backlog va next step.
 - [ ] Sau do doc file nay de tiep tuc note dang do cua phien truoc.

@@ -16,8 +16,14 @@
 
 - v1: guest/basic, onboarding and one initial personal schedule.
 - v2: authenticated free, AI chat 3/day, schedule generation 3/month, health score from schedule completion history.
-- v3: Plus/FamilyPlus planned.
+- v3: M10 advanced tracking and M11 FamilyPlus are partial paid-gated runtime
+  flows. V3 home and the remaining planned feature markers are not implemented
+  business capabilities.
 - Sale/referral: independent axis, not a membership tier.
+
+The user GoRouter composes V1, V2 and V3 routes. Admin keeps a separate router,
+selected by `BioAIApp` only after trusted Admin access resolution. Route
+presence alone does not prove paid access or feature completeness.
 
 ## Rules
 

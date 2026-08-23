@@ -3,29 +3,34 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Supabase wellness rewards migration 16', () {
-    late String migration;
+  group('Supabase wellness rewards numbered contract', () {
+    late String schema;
+    late String seed;
+    late String runtime;
     late String config;
 
     setUpAll(() {
-      migration = File(
-        'docs/supabase/16-wellness-rewards.sql',
+      schema = File(
+        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
+      ).readAsStringSync();
+      seed = File(
+        'docs/supabase/05_seed_local_sandbox.sql',
+      ).readAsStringSync();
+      runtime = File(
+        'docs/supabase/06_schema_runtime_support.sql',
       ).readAsStringSync();
       config = File('docs/supabase/config.sql').readAsStringSync();
     });
 
-    test('is folded into the destructive rebuild config exactly once', () {
-      expect(config.split('-- BEGIN 16-wellness-rewards.sql').length - 1, 1);
-      expect(config.split('-- END 16-wellness-rewards.sql').length - 1, 1);
-      final embedded = _between(
-        config,
-        '-- BEGIN 16-wellness-rewards.sql',
-        '-- END 16-wellness-rewards.sql',
-      ).trim();
-      expect(
-        embedded.replaceAll('\r\n', '\n'),
-        migration.trim().replaceAll('\r\n', '\n'),
-      );
+    test('uses schema 01, seed 05 and runtime support 06', () {
+      for (final filename in [
+        '01_schema_rebuild_local_sandbox.sql',
+        '05_seed_local_sandbox.sql',
+        '06_schema_runtime_support.sql',
+      ]) {
+        expect(config.split('-- BEGIN $filename').length - 1, 1);
+        expect(config.split('-- END $filename').length - 1, 1);
+      }
     });
 
     test('declares server-owned proof, wallet and voucher tables', () {
@@ -43,7 +48,7 @@ void main() {
         'create table if not exists public.wellness_redemption_allocation_usages',
         'wellness_ledger_append_only',
       ]) {
-        expect(migration, contains(token), reason: token);
+        expect(schema, contains(token), reason: token);
         expect(config, contains(token), reason: 'config.sql: $token');
       }
     });
@@ -69,18 +74,18 @@ void main() {
         'plan_item_count between plan_days * 10 and plan_days * 11',
         'schedule_items_outside_request_range',
       ]) {
-        expect(migration, contains(token), reason: token);
+        expect(schema, contains(token), reason: token);
       }
 
       expect(
-        _functionBlock(migration, 'begin_my_schedule_completion'),
+        _functionBlock(schema, 'begin_my_schedule_completion'),
         allOf(
           contains('p_schedule_item_id uuid'),
           contains("'window_end', v_eligibility.window_end"),
         ),
       );
       final finalize = _functionBlock(
-        migration,
+        schema,
         'finalize_my_schedule_completion',
       );
       expect(finalize, contains('p_storage_path text'));
@@ -90,7 +95,7 @@ void main() {
         contains("v_object.created_at > v_eligibility.window_end"),
       );
       expect(
-        _functionBlock(migration, 'undo_my_schedule_completion'),
+        _functionBlock(schema, 'undo_my_schedule_completion'),
         contains('p_schedule_item_id uuid'),
       );
     });
@@ -99,7 +104,7 @@ void main() {
       'pins one Guest request while allowing only incomplete future subsets',
       () {
         final register = _functionBlock(
-          migration,
+          schema,
           'register_my_schedule_reward_eligibilities',
         );
         for (final token in [
@@ -131,13 +136,13 @@ void main() {
         }
 
         expect(
-          migration,
+          schema,
           contains(
             'alter table public.guest_schedule_reward_registrations enable row level security',
           ),
         );
         expect(
-          migration,
+          schema,
           isNot(
             contains(
               'grant select on public.guest_schedule_reward_registrations',
@@ -149,7 +154,7 @@ void main() {
 
     test('pins one immutable full manifest for every Member request', () {
       final register = _functionBlock(
-        migration,
+        schema,
         'register_my_schedule_reward_eligibilities',
       );
       for (final token in [
@@ -168,13 +173,13 @@ void main() {
         expect(register, contains(token), reason: token);
       }
       expect(
-        migration,
+        schema,
         contains(
           'alter table public.member_schedule_reward_registrations enable row level security',
         ),
       );
       expect(
-        migration,
+        schema,
         isNot(
           contains(
             'grant select on public.member_schedule_reward_registrations',
@@ -188,22 +193,26 @@ void main() {
         "'schedule-completion-proofs'",
         '5242880',
         "array['image/jpeg']::text[]",
+      ]) {
+        expect(runtime, contains(token), reason: token);
+      }
+      for (final token in [
         'schedule_completion_proofs_storage_select_own',
         'schedule_completion_proofs_storage_insert_own',
         'split_part(name, \'/\', 1) = auth.uid()::text',
         'drop policy if exists schedule_completion_proofs_storage_update_own',
         'drop policy if exists schedule_completion_proofs_storage_delete_own',
       ]) {
-        expect(migration, contains(token), reason: token);
+        expect(schema, contains(token), reason: token);
       }
       expect(
-        migration,
+        schema,
         isNot(
           contains('create policy schedule_completion_proofs_storage_update'),
         ),
       );
       expect(
-        migration,
+        schema,
         isNot(
           contains('create policy schedule_completion_proofs_storage_delete'),
         ),
@@ -211,7 +220,7 @@ void main() {
     });
 
     test('removes wellness ledger from snapshot push/delete whitelist', () {
-      final sync = _lastFunctionBlock(config, 'sync_my_mobile_snapshot');
+      final sync = _lastFunctionBlock(schema, 'sync_my_mobile_snapshot');
       final collectionTables = _between(
         sync,
         'v_collection_tables text[] := array[',
@@ -221,33 +230,39 @@ void main() {
       expect(collectionTables, isNot(contains('wellness_point_ledgers')));
       expect(sync, isNot(contains("elsif v_table = 'wellness_point_ledgers'")));
       expect(
-        migration,
-        contains(
-          'revoke insert, update, delete on public.wellness_point_ledgers',
-        ),
+        RegExp(
+          r'revoke\s+insert\s*,\s*update\s*,\s*delete\s+on\s+'
+          r'public\.wellness_point_ledgers',
+          caseSensitive: false,
+        ).hasMatch(schema),
+        isTrue,
       );
-      expect(migration, contains('wellness_point_ledgers_select_own'));
+      expect(schema, contains('wellness_point_ledgers_select_own'));
     });
 
     test('versions +10 pending/available points and 180-day expiry', () {
       for (final token in [
         "'reward_points', 10",
         "'expiry_days', 180",
-        "'time_zone', 'Asia/Ho_Chi_Minh'",
-        "window_end = window_start + interval '30 minutes'",
-        "when now() > v_eligibility.window_end then 'available'",
-        'v_eligibility.window_end + make_interval(days => v_program.expiry_days)',
         "program_code = 'wellness_schedule_v1'",
         "program_code = 'wellness_schedule_legacy_v1'",
         'points_delta = points_delta * 10',
         'is_redeemable = false',
       ]) {
-        expect(migration, contains(token), reason: token);
+        expect(seed, contains(token), reason: token);
+      }
+      for (final token in [
+        "'time_zone', 'Asia/Ho_Chi_Minh'",
+        "window_end = window_start + interval '30 minutes'",
+        "when now() > v_eligibility.window_end then 'available'",
+        'v_eligibility.window_end + make_interval(days => v_program.expiry_days)',
+      ]) {
+        expect(schema, contains(token), reason: token);
       }
     });
 
     test('keeps redemption atomic, earliest-expiry-first and idempotent', () {
-      final redeem = _functionBlock(migration, 'redeem_my_reward_offer');
+      final redeem = _functionBlock(schema, 'redeem_my_reward_offer');
       for (final token in [
         'for update skip locked',
         'order by wpa.expires_at',
@@ -258,22 +273,22 @@ void main() {
         "status = 'issued'",
       ]) {
         expect(
-          token == 'unique (user_id, idempotency_key)' ? migration : redeem,
+          token == 'unique (user_id, idempotency_key)' ? schema : redeem,
           contains(token),
           reason: token,
         );
       }
       expect(
-        RegExp('pg_advisory_xact_lock').allMatches(migration).length,
+        RegExp('pg_advisory_xact_lock').allMatches(schema).length,
         greaterThanOrEqualTo(8),
       );
       expect(
-        migration,
+        schema,
         contains(
           'create unique index if not exists idx_wellness_reward_codes_global_hash',
         ),
       );
-      expect(migration, contains('on conflict (code_hash) do nothing'));
+      expect(schema, contains('on conflict (code_hash) do nothing'));
     });
 
     test(
@@ -293,9 +308,9 @@ void main() {
           'current_wellness_reward_program',
           'invalid_vietnamese_copy',
         ]) {
-          expect(migration, contains(token), reason: token);
+          expect(schema, contains(token), reason: token);
         }
-        final list = _functionBlock(migration, 'admin_list_wellness_rewards');
+        final list = _functionBlock(schema, 'admin_list_wellness_rewards');
         expect(list, contains("'offer'::text as item_type"));
         expect(list, contains("'redemption'::text as item_type"));
         expect(list, contains("'••••••'::text as masked_code"));
@@ -305,25 +320,23 @@ void main() {
 
     test('documents Storage, RLS and sandbox acceptance', () {
       final readme = File('docs/supabase/README.md').readAsStringSync();
-      final storage = File(
-        'docs/supabase/16-schedule-proof-storage.md',
-      ).readAsStringSync();
-      final matrix = File(
-        'docs/supabase/06-rls-policy-matrix.md',
-      ).readAsStringSync();
-      final acceptance = File(
-        'docs/supabase/08-acceptance-checks.md',
+      final runtimeSmoke = File(
+        'docs/supabase/94_validate_runtime_support.sql',
       ).readAsStringSync();
       final adversarial = File(
         'test/docs/fixtures/supabase_wellness_rewards_adversarial.sql',
       ).readAsStringSync();
 
-      expect(readme, contains('16-wellness-rewards.sql'));
-      expect(readme, contains('16-schedule-proof-storage.md'));
-      expect(storage, contains('upsert: false'));
-      expect(storage, contains('User B'));
-      expect(matrix, contains('wellness_rewards.read/write'));
-      expect(acceptance, contains('FOR UPDATE SKIP LOCKED'));
+      for (final token in [
+        '01_schema_rebuild_local_sandbox.sql',
+        '06_schema_runtime_support.sql',
+        '94_validate_runtime_support.sql',
+        'Sandbox runtime (thực thi 01 → 06 rồi 90 → 94): `UNVERIFIED`',
+      ]) {
+        expect(readme, contains(token), reason: token);
+      }
+      expect(runtimeSmoke, contains('RUNTIME_STORAGE_BUCKET_INVALID_'));
+      expect(runtimeSmoke.trimRight(), endsWith('rollback;'));
       for (final token in [
         'MEMBER_SECOND_BATCH_ACCEPTED',
         'MUTATED_GUEST_PLAN_ACCEPTED',
@@ -335,11 +348,6 @@ void main() {
       ]) {
         expect(adversarial, contains(token), reason: token);
       }
-      expect(
-        acceptance,
-        contains('PENDING'),
-        reason: 'Sandbox is not run here.',
-      );
     });
   });
 }

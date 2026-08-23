@@ -89,13 +89,14 @@ Canonical task-skill files are: `coding.md`, `bugfix.md`, `fix-issues.md`,
 
 - Unified app bootstrap and role-based surface selection: `lib/main.dart`, `lib/app/`
 - v1 guest/basic: `lib/app_versions/v1/`
-- v2 authenticated free: `lib/app_versions/v2/`
-- v3 Plus/FamilyPlus planned: `lib/app_versions/v3/`
+- v2 authenticated user/capability layer: `lib/app_versions/v2/`
+- v3 Plus/FamilyPlus partial runtime plus planned markers: `lib/app_versions/v3/`
 - Sale/referral independent axis: `lib/sale_referral/`
 - Core shared code: `lib/core/`
 - Shared services/widgets: `lib/services/`, `lib/shared/widgets/`
 - Tests: `test/`
 - Product/design docs: `docs/BD/`, `docs/DD/`, `docs/supabase/`
+- Current docs entrypoint and source audit: `docs/README.md`, `docs/audit/`
 - UI design source: `.codex/design/`
 - Work tracking docs: `docs/issues/`, `docs/todo/`, `docs/worklog/`
 

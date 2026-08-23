@@ -10,13 +10,20 @@
 | Tên module | `{{Tên tiếng Việt}}` |
 | Tên kỹ thuật | `{{module_name}}` |
 | Phiên bản DD | `v{{x.y.z}}` |
-| Trạng thái | `Draft / In Review / Approved / Implemented / Deprecated` |
+| Lifecycle | `Current / Historical / Reference` |
+| DD decision | `Draft / In Review / Approved / Deprecated` |
+| Implementation | `Implemented / Partial / Placeholder / Source-only / Absent / N/A` |
+| Verification | `Static-verified / Runtime-unverified / Sandbox-unverified / Historical` |
+| Source-truth baseline | `{{commit hash}}` |
 | BD/BRD nguồn | `{{đường dẫn hoặc mã BD}}` |
 | Owner nghiệp vụ | `{{PO/BA}}` |
 | Owner kỹ thuật | `{{Tech Lead}}` |
 | Người review | `{{Tên/role}}` |
 | Ngày tạo / cập nhật | `{{YYYY-MM-DD}} / {{YYYY-MM-DD}}` |
 | Phạm vi release | `{{MVP / V1 / V2 / Sprint}}` |
+
+`Approved` chỉ là trạng thái quyết định DD. Nó không được dùng để suy ra
+implementation, runtime, thiết bị hoặc Supabase sandbox đã hoàn tất.
 
 ## 1. Mục đích nghiệp vụ
 

@@ -1,5 +1,10 @@
 # NanoBio / BioAI - DD Authentication Package
 
+> **Lifecycle: Historical / Superseded.** File này mô tả một gói DD
+> authentication cũ và nhiều path bên dưới không còn tồn tại trong working tree.
+> Không dùng hướng dẫn “chép thư mục” này cho source hiện tại; bắt đầu từ
+> `docs/README.md` và DD index hiện hành.
+
 Gói này được thiết kế để đặt trực tiếp vào repository NanoBio:
 
 ```text

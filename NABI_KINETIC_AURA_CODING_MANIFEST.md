@@ -1,5 +1,9 @@
 # NanoBio — Nabi Kinetic Aura Coding Delivery
 
+> **Lifecycle: Historical delivery evidence / Superseded for current-state
+> claims.** Validation bên dưới chỉ thuộc snapshot được giao; không tự động là
+> PASS cho HEAD hiện tại.
+
 ## Scope
 
 This delivery implements the approved Nabi Kinetic Aura design at foundation,

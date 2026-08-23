@@ -1,5 +1,9 @@
 # Validation Report — NanoBio AI Chat Fix
 
+> **Lifecycle: Historical validation evidence / Superseded for current-state
+> claims.** Không chuyển các kết quả trong report này thành PASS cho HEAD hiện
+> tại nếu chưa chạy lại command tương ứng.
+
 ## Completed
 
 - Read and indexed all 567 files in the supplied `lib` package.

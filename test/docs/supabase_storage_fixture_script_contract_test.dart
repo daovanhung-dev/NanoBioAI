@@ -38,22 +38,21 @@ void main() {
     });
 
     test(
-      'keeps the demo profile opt-in and isolated from the rebuild default',
+      'keeps rollout defaults explicit in the numbered local seed',
       () {
-        final profile = File(
-          'docs/supabase/20-dev-sandbox-demo-profile.sql',
+        final seed = File(
+          'docs/supabase/05_seed_local_sandbox.sql',
         ).readAsStringSync();
 
         for (final token in [
-          'Local/sandbox-only opt-in demo profile',
           'wellness_rewards_rollout',
           'sale_point_conversion',
           'nabi_companion_notifications_rollout',
-          '"enabled": true',
-          'begin;',
-          'commit;',
+          '"enabled": false',
+          'Default disabled Sale point conversion policy.',
+          'M30 rollout remains disabled until sandbox and device acceptance pass.',
         ]) {
-          expect(profile, contains(token), reason: token);
+          expect(seed, contains(token), reason: token);
         }
       },
     );

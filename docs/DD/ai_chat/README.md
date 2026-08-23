@@ -5,7 +5,11 @@
 | Module Code | AI_CHAT |
 | BD Module | M07 |
 | Version | v1.7 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved; Sequential Voice delta accepted |
+| Implementation | Implemented |
+| Verification | Static-verified at `25018e8`; Runtime-unverified for cross-device/iOS continuity; Sandbox-unverified |
+| Source evidence | Auth-protected `/ai-chat` and `/ai-voice`, REST/STT/TTS controllers and access gate are reachable |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-08-23 |

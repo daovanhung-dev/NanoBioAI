@@ -15,7 +15,7 @@
 -- - legacy active paid subscription with NULL ends_at blocks approval
 --
 -- True two-session concurrency is intentionally tracked in
--- docs/supabase/08-acceptance-checks.md because one SQL transaction cannot
+-- docs/supabase/README.md as runtime UNVERIFIED because one SQL transaction cannot
 -- prove lock ordering across separate sessions.
 
 begin;

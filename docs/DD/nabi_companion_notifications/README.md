@@ -5,7 +5,11 @@
 | Module Code | `NABI_COMPANION_NOTIFICATIONS` |
 | BD Module | M30 |
 | Version | v1.0 |
-| Status | Approved - implementation contract |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Source-only |
+| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Source evidence | SQLite v15/current v20 tables, catalog/engine/local repository/controller and Supabase RPC/RLS source exist; controller/overlay triggers are not wired into the app shell |
 | Owner | Product Owner / Tech Lead |
 | Created / Updated | 2026-07-17 |
 | Source BD | `docs/BD/notification_Nabi/BD_thong_bao_nut_noi_Nabi.md` (`BD-NABI-NOTIFICATION-001`) |
@@ -52,4 +56,3 @@ M18 reporting và M19 audit/privacy.
 | BA/PO | Approved | User requested implementation of the attached decision-complete plan, 2026-07-17 |
 | Tech Lead | Approved for source implementation | Architecture and data contracts below |
 | QA | Pending production acceptance | Supabase sandbox and Android/iOS device smoke required |
-

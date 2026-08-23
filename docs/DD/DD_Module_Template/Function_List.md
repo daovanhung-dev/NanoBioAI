@@ -24,9 +24,9 @@ Database / External service
 
 ## 1. Function registry
 
-| ID | Tên function/use case | Feature | Layer | File dự kiến | Trigger | Input | Output | Side effect | Status |
-|---|---|---|---|---|---|---|---|---|---|
-| `[MODULE]-FN01` | `{{verbNoun}}` | `[MODULE]-F01` | `Use case` | `{{src/...}}` | `{{UI/API/Event}}` | `{{DTO}}` | `{{Result}}` | `{{audit/event}}` | `Draft` |
+| ID | Tên function/use case | Feature | Layer | File dự kiến | Trigger | Input | Output | Side effect | DD decision | Implementation | Verification |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `[MODULE]-FN01` | `{{verbNoun}}` | `[MODULE]-F01` | `Use case` | `{{src/...}}` | `{{UI/API/Event}}` | `{{DTO}}` | `{{Result}}` | `{{audit/event}}` | `Draft` | `Absent` | `Runtime-unverified` |
 
 ---
 

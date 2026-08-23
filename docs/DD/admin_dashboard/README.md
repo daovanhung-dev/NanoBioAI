@@ -5,7 +5,11 @@
 | Module Code | ADMIN_DASHBOARD |
 | BD Module | M15 |
 | Version | v1.3 |
-| Status | Approved - DD docs complete |
+| Lifecycle | Current |
+| DD decision | Approved |
+| Implementation | Implemented |
+| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Source evidence | Admin root surface/router, safe summary metrics and permissioned drill-down sections are reachable |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-07-13 |

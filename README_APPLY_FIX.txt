@@ -1,3 +1,7 @@
+LIFECYCLE: HISTORICAL HOTFIX INSTRUCTIONS / SUPERSEDED FOR CURRENT SOURCE.
+Do not overlay this package onto the current working tree without an explicit,
+targeted verification of the old patch target.
+
 NanoBioAI - Feature Hub runtime hotfix
 
 NGUYÊN NHÂN

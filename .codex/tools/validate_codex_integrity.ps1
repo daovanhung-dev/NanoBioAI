@@ -213,6 +213,24 @@ if (Test-Path $openRisksPath) {
   }
 }
 
+$sourceTruthValidator = Join-Path $root "tools\validate_docs_source_truth.py"
+if (-not (Test-Path $sourceTruthValidator)) {
+  Add-Failure "Missing cross-platform source-truth validator: tools/validate_docs_source_truth.py"
+} else {
+  $python = Get-Command python3 -ErrorAction SilentlyContinue
+  if ($null -eq $python) {
+    $python = Get-Command python -ErrorAction SilentlyContinue
+  }
+  if ($null -eq $python) {
+    Add-Failure "Python 3 is required for repository-wide source-truth validation."
+  } else {
+    & $python.Source $sourceTruthValidator
+    if ($LASTEXITCODE -ne 0) {
+      Add-Failure "Repository-wide source-truth validation failed."
+    }
+  }
+}
+
 if ($failures.Count -gt 0) {
   Write-Host "CODEX INTEGRITY VALIDATION FAILED"
   foreach ($failure in $failures) {

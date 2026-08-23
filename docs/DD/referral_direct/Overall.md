@@ -7,7 +7,7 @@
 | Module Code | REFERRAL_DIRECT |
 | BD Module | M12 |
 | Version | v1.0 |
-| Status | Approved - DD docs complete |
+| DD decision | Approved |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 7/M12, 15, 16.2 AC-09/AC-10/AC-14, Appendix A UC-12..UC-14 |
 | Created Date | 2026-06-28 |
 | Last Updated | 2026-06-30 |

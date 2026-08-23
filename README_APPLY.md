@@ -1,5 +1,8 @@
 # Apply patch
 
+> **Lifecycle: Historical patch instructions / Superseded.** Không chạy hướng
+> dẫn overlay này trên source hiện tại nếu chưa chủ động xác minh target patch.
+
 Giai nen ZIP vao root du an `nano_app` / `NanoBioAI` va cho phep ghi de file trung ten.
 
 Sau do chay:

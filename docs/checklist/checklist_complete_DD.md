@@ -9,10 +9,55 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001`, va `docs/refactor/stitch_nanobio_design_system/DD_READINESS.md` |
 | Pham vi | BioAI / NanoBio: approved DD M01-M19 and M30, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, planned DD backlog M20-M29, va pending Stitch Green Wellness modules/deltas |
 | Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
-| Ngay cap nhat | 2026-08-23 |
-| Muc dich | Theo doi DD docs completeness rieng voi coding progress va implementation evidence backlog; khong tron UI discovery shell voi nghiep vu module. |
+| Ngay cap nhat | 2026-08-24 |
+| Lifecycle | Current |
+| Source-truth baseline | `25018e8` |
+| Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
+| Muc dich | Theo doi rieng DD decision, implementation theo source va verification; khong dung phan tram tai lieu de suy ra runtime hoan tat. |
 
-## Rubric phan tram
+## Current Source-Truth Matrix
+
+`Approved` ở cột DD chỉ là quyết định tài liệu. `Implemented` ở cột source chỉ
+xác nhận capability có code reachable; runtime/device và Supabase sandbox vẫn
+phải đọc ở cột verification.
+
+| Module | DD decision | Implementation | Verification | Current source boundary / gap |
+|---|---|---|---|---|
+| M01 `ONBOARDING_PROFILE` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | 9-step onboarding and completion callback are reachable. |
+| M02 `PERSONAL_SCHEDULE_AI` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | First/additional plan flows and quota gateway are reachable. |
+| M03 `DASHBOARD_SCHEDULE` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Dashboard/schedule/proof/reward client source is reachable. |
+| M04 `BASIC_HEALTH_CALC` | Approved | Partial | Static-verified; Runtime-unverified | Calculator/formula engine exists; Admin formula-version management is not end-to-end. |
+| M05 `AUTH_PROFILE_SYNC` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Auth/router/sync source is reachable. |
+| M06 `MEMBERSHIP_QUOTA` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Effective access and trusted quota gateway/RPC source exist. |
+| M07 `AI_CHAT` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Text/Sequential Voice are reachable; iOS/cross-device continuity and quota sandbox remain unverified. |
+| M08 `HEALTH_SCORE_HABITS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Health-score route/repository/ledger source exists. |
+| M09 `SCHEDULE_NOTIFICATIONS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Bootstrap/scheduler/actions are reachable; real-device delivery is unverified here. |
+| M10 `ADVANCED_TRACKING_GOALS` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Advanced hydration slice exists; broader multi-goal/plan-adjustment scope is absent. |
+| M11 `FAMILYPLUS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | FamilyPlus route/repository/RPC source exists. |
+| M12 `REFERRAL_DIRECT` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Sale/referral flow and RPC source are reachable. |
+| M13 `PAYMENT_MEMBERSHIP` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | VietQR/manual-review source is reachable; bank UAT is unverified. |
+| M14 `SALE_POINTS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Wallet/conversion/Admin adjustment source is reachable. |
+| M15 `ADMIN_DASHBOARD` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Admin dashboard and permissioned drill-down are reachable. |
+| M16 `ADMIN_OPS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Permissioned operations and RPC mappings are reachable. |
+| M17 `RECONCILIATION` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Manual run/status exists; limited discrepancy generation and no scheduled runner. |
+| M18 `REPORTING` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Catalog/export request exists; no artifact producer/download path. |
+| M19 `AUDIT_SECURITY` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Access/RLS/audit surface exists; full support/retention/response scope is absent. |
+| M20 `BLOOD_PRESSURE_TRACKING` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M21 `HEART_OXYGEN_TRACKING` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M22 `MEDICATION_ADHERENCE` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M23 `GLUCOSE_TRACKING` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M24 `SYMPTOM_PAIN_JOURNAL` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M25 `WOMENS_CYCLE_HEALTH` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M26 `RESPIRATORY_ALLERGY_TRACKING` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M27 `LAB_RESULT_TRACKING` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M28 `PREVENTIVE_CARE` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M29 `AI_HEALTH_TRENDS` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M30 `NABI_COMPANION_NOTIFICATIONS` | Approved | Source-only | Static-verified; Runtime-unverified; Sandbox-unverified | SQLite v15/current v20, engine/repository/controller and SQL/RPC/RLS source exist; app-shell trigger/presentation wiring is absent. |
+
+## Historical Percentage Rubric — Superseded 2026-08-24
+
+The percentage model and dated evidence below are retained for history only.
+They must not override the current matrix or be used to claim runtime complete.
 
 `DD completeness %`:
 
@@ -27,7 +72,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 
 `Coding progress %`: chi doi khi co bang chung code runtime, test, SQL/RPC, sandbox hoac acceptance thuc te.
 
-## Tong hop M01-M30
+## Historical Snapshot M01-M30 — Superseded 2026-08-24
 
 | Module | DD docs status | Open Q | DD completeness % | Coding progress % | DD docs evidence | Implementation evidence backlog | Next implementation evidence |
 |---|---|---:|---:|---:|---|---|---|
