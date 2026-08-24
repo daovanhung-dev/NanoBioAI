@@ -2,7 +2,7 @@
 
 - Canonical key: test
 - Workflow: .codex/workflows/test.md
-- Generated from 8 worklog(s).
+- Generated from 9 worklog(s).
 
 ## When To Read
 
@@ -12,6 +12,7 @@
 - Historical task type: coding / test-contract / docs-context (1)
 - Historical task type: Bug fix / Android build toolchain (1)
 - Historical task type: coding / asset generation / docs / test (1)
+- Historical task type: docs-context cleanup (1)
 
 ## Common Modules
 
@@ -48,3 +49,4 @@
 - [Worklog - Coding Nabi Kinetic Aura toàn bộ ứng dụng](../../docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md) - unknown
 - [Worklog - Android build toolchain compatibility](../../docs/worklog/2026-08-15/002-worklog-android-build-toolchain-compatibility.md) - android/
 - [Worklog - Nabi Blue va Blue Wellness cutover](../../docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md) - UI / Theme / NabiCopy, Nabi v2 asset bundle
+- [Worklog - Dọn file và dữ liệu dư thừa an toàn](../../docs/worklog/2026-08-24/003-worklog-redundant-file-cleanup.md) - documentation, historical visual evidence, local build caches

@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 139
+- Total worklogs: 142
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -147,4 +147,7 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-23 | coding + docs + Android device acceptance M07 | docs-context | M07 AI_CHAT / Sequential Voice Plus | [Worklog — Tùy chọn tốc độ phản ứng Voice](../../docs/worklog/2026-08-23/008-worklog-ai-voice-reaction-speed-docs.md) |
 | 2026-08-23 | docs-context hỗ trợ coding M07 | docs-context | M07 AI_CHAT / AI_CHAT-F03 Sequential Voice Plus | [Worklog — Voice nghe mỗi lượt tối đa 3 phút](../../docs/worklog/2026-08-23/009-worklog-ai-voice-three-minute-listening-docs.md) |
 | 2026-08-24 | bugfix | bugfix | Lifestyle Schedule / Personal Schedule AI | [Worklog - Personal Schedule AI Regeneration Button](../../docs/worklog/2026-08-24/001-worklog-personal-schedule-ai-regeneration-button.md) |
+| 2026-08-24 | unknown | docs-context | unknown | [Worklog — Đơn giản hóa môi trường NanoBio Admin](../../docs/worklog/2026-08-24/002-worklog-admin-workspace-simplification.md) |
 | 2026-08-24 | Supabase schema/seed consolidation, tooling, contract test va docs. | supabase-schema | local/sandbox rebuild, membership/payment fixtures, Daily Health Hub, Storage runtime va M31 Sleep Safety. | [Worklog - Supabase two-script consolidation](../../docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md) |
+| 2026-08-24 | docs-context cleanup | test | documentation, historical visual evidence, local build caches | [Worklog - Dọn file và dữ liệu dư thừa an toàn](../../docs/worklog/2026-08-24/003-worklog-redundant-file-cleanup.md) |
+| 2026-08-24 | unknown | docs-context | unknown | [2026-08-24-professional-observability-logging](../../docs/worklog/2026-08-24/2026-08-24-professional-observability-logging.md) |
