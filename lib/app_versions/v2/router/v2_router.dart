@@ -146,6 +146,8 @@ abstract class V2RouteGuards {
     V3RoutePaths.home,
     V3RoutePaths.advancedTracking,
     V3RoutePaths.familyPlus,
+    V3RoutePaths.foodScan,
+    V3RoutePaths.foodScanHistory,
   };
 
   static String? redirectForV1Guest(
@@ -162,7 +164,11 @@ abstract class V2RouteGuards {
         HealthModuleRoutePaths.matchesProtectedPrefix(normalizedPath);
   }
 
-  static canAccessMembershipPayment(String payments, {required bool isSignedIn, required AuthRouteStatus authStatus}) {}
+  static canAccessMembershipPayment(
+    String payments, {
+    required bool isSignedIn,
+    required AuthRouteStatus authStatus,
+  }) {}
 }
 
 class _RouterRefreshNotifier extends ChangeNotifier {

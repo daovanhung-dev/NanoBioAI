@@ -1,4 +1,5 @@
 import 'package:nano_app/app_versions/admin/features/admin_panel/data/datasources/admin_supabase_datasource.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_account_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart';
 
@@ -22,14 +23,10 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<void> signOut() {
-    return datasource.signOut();
-  }
+  Future<void> signOut() => datasource.signOut();
 
   @override
-  Future<AdminSession> fetchSession() {
-    return datasource.fetchSession();
-  }
+  Future<AdminSession> fetchSession() => datasource.fetchSession();
 
   @override
   Future<List<AdminDashboardMetric>> fetchDashboardSummary({
@@ -67,5 +64,24 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<AdminMutationResult> runMutation(AdminMutationCommand command) {
     return datasource.runMutation(command);
+  }
+
+  @override
+  Future<List<AdminAccountSummary>> searchAccounts({required String query}) {
+    return datasource.searchAccounts(query: query);
+  }
+
+  @override
+  Future<AdminCreateAccountResult> createAccount(
+    AdminCreateAccountRequest request,
+  ) {
+    return datasource.createAccount(request);
+  }
+
+  @override
+  Future<AdminMembershipGrantResult> grantMembership(
+    AdminMembershipGrantRequest request,
+  ) {
+    return datasource.grantMembership(request);
   }
 }

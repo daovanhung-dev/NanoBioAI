@@ -36,20 +36,54 @@ class GeminiHttpStreamResponse {
   });
 }
 
+/// Inline binary part for Gemini multimodal requests.
+///
+/// [data] must be a base64 encoded payload. Keeping this object separate from
+/// [GeminiContent] preserves every existing text-only call site while allowing
+/// features such as Food Scan to submit images through the canonical client.
+class GeminiInlineData {
+  final String mimeType;
+  final String data;
+
+  const GeminiInlineData({required this.mimeType, required this.data});
+
+  Map<String, Object?> toJson() => {
+    'inlineData': {'mimeType': mimeType, 'data': data},
+  };
+}
+
 class GeminiContent {
   final String role;
   final String text;
+  final List<GeminiInlineData> inlineData;
 
-  const GeminiContent({required this.role, required this.text});
+  const GeminiContent({
+    required this.role,
+    required this.text,
+    this.inlineData = const [],
+  });
 
   const GeminiContent.user(String text) : this(role: 'user', text: text);
 
   const GeminiContent.model(String text) : this(role: 'model', text: text);
 
+  factory GeminiContent.userWithInlineData({
+    required String text,
+    required String mimeType,
+    required String base64Data,
+  }) {
+    return GeminiContent(
+      role: 'user',
+      text: text,
+      inlineData: [GeminiInlineData(mimeType: mimeType, data: base64Data)],
+    );
+  }
+
   Map<String, Object?> toJson() {
     return {
       'role': role,
       'parts': [
+        for (final part in inlineData) part.toJson(),
         {'text': text},
       ],
     };

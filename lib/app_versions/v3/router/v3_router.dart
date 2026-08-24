@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app/router/shared_route_factories.dart';
 import 'package:nano_app/app_versions/v3/features/advanced_tracking/advanced_tracking.dart';
 import 'package:nano_app/app_versions/v3/features/familyplus/familyplus.dart';
+import 'package:nano_app/app_versions/v3/features/food_scan/food_scan.dart';
 import 'package:nano_app/app_versions/v3/features/home/presentation/pages/v3_home_page.dart';
 import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
 
@@ -20,6 +21,16 @@ final v3Routes = <RouteBase>[
     path: V3RoutePaths.familyPlus,
     name: V3RoutePaths.familyPlus,
     builder: (context, state) => const FamilyPlusPage(),
+  ),
+  GoRoute(
+    path: V3RoutePaths.foodScan,
+    name: V3RoutePaths.foodScan,
+    builder: (context, state) => const FoodScanPage(),
+  ),
+  GoRoute(
+    path: V3RoutePaths.foodScanHistory,
+    name: V3RoutePaths.foodScanHistory,
+    builder: (context, state) => const FoodScanHistoryPage(),
   ),
 ];
 

@@ -1,6 +1,15 @@
 abstract class AdminRoutePaths {
   static const root = '/admin';
   static const login = '/admin/login';
+
+  static const accounts = '/admin/accounts';
+  static const createAccount = '/admin/accounts/create';
+  static const upgradeAccount = '/admin/accounts/upgrade';
+  static const saleReview = '/admin/sales/review';
+  static const salePayouts = '/admin/sales/payouts';
+  static const membershipReview = '/admin/memberships/review';
+
+  // Legacy deep-links kept only for redirect compatibility.
   static const dashboard = '/admin/dashboard';
   static const users = '/admin/users';
   static const payments = '/admin/payments';

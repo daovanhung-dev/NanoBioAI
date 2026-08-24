@@ -37,6 +37,7 @@ import 'migrations/migration_v18.dart';
 import 'migrations/migration_v19.dart';
 import 'migrations/migration_v20.dart';
 import 'migrations/migration_v21.dart';
+import 'migrations/migration_v22.dart';
 import 'seeders/ai_catalog_seeder.dart';
 
 class DatabaseService {
@@ -86,6 +87,9 @@ class DatabaseService {
         if (oldVersion < 21 && newVersion >= 21) {
           await MigrationV21.run(db);
         }
+        if (oldVersion < 22 && newVersion >= 22) {
+          await MigrationV22.run(db);
+        }
       },
       onOpen: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
@@ -96,6 +100,9 @@ class DatabaseService {
         }
         if (await db.getVersion() >= 21) {
           await MigrationV21.ensureSchema(db);
+        }
+        if (await db.getVersion() >= 22) {
+          await MigrationV22.ensureSchema(db);
         }
       },
     );
@@ -151,6 +158,7 @@ class DatabaseService {
     await db.execute(ScheduleTaskCatalogTable.createCategoryIndex);
     await AiCatalogSeeder.seed(db);
     await SyncOutboxSchema.create(db);
+    await MigrationV22.ensureSchema(db);
   }
 
   static Future<void> deleteDatabaseFile() async {

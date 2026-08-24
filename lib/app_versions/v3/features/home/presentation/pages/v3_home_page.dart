@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 class V3HomePage extends StatelessWidget {
@@ -36,6 +38,69 @@ class V3HomePage extends StatelessWidget {
       icon: Icons.workspace_premium_rounded,
       gradient: AppGradients.premium,
       children: [
+        MedicalSectionHeader(
+          title: 'Tính năng Plus đang hoạt động',
+          subtitle: 'Phân tích món ăn từ ảnh và cá nhân hóa theo sức khỏe.',
+          icon: Icons.document_scanner_rounded,
+          color: colors.primary,
+        ),
+        MedicalSurfaceCard(
+          onTap: () => context.push(V3RoutePaths.foodScan),
+          gradient: LinearGradient(
+            colors: [colors.primarySoft, colors.card],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderColor: colors.primary.withValues(alpha: .18),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MedicalIconBadge(
+                icon: Icons.restaurant_menu_rounded,
+                color: colors.primaryDark,
+                backgroundColor: colors.surface,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Food Scan • Phân tích món ăn',
+                            style: AppTextStyles.heading5,
+                          ),
+                        ),
+                        MedicalStatusPill(
+                          label: 'PLUS',
+                          icon: Icons.workspace_premium_rounded,
+                          foregroundColor: colors.primaryDark,
+                          backgroundColor: colors.primarySoft,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Chụp hoặc chọn ảnh để Nabi ước tính calo, nhiều dưỡng chất, nhận diện nguyên liệu/dị ứng và đánh giá món ăn theo hồ sơ sức khỏe.',
+                      style: AppTextStyles.bodyMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Không giới hạn lượt quét • Ảnh/lịch sử giữ trên thiết bị',
+                      style: AppTextStyles.caption.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Icon(Icons.chevron_right_rounded, color: colors.primary),
+            ],
+          ),
+        ),
         MedicalSectionHeader(
           title: 'Trải nghiệm đang được hoàn thiện',
           subtitle: 'Hiểu nhanh hơn, ít áp lực hơn.',

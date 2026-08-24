@@ -1,4 +1,5 @@
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_access_state.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_account_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -23,9 +24,7 @@ class AdminSupabaseDatasource {
     await _client().auth.signInWithPassword(email: email, password: password);
   }
 
-  Future<void> signOut() {
-    return _client().auth.signOut();
-  }
+  Future<void> signOut() => _client().auth.signOut();
 
   Future<AdminSession> fetchSession() async {
     try {
@@ -75,9 +74,7 @@ class AdminSupabaseDatasource {
     return _maps(response).map(AdminWorkItem.fromMap).toList();
   }
 
-  Future<List<AdminAuditEvent>> fetchAuditEvents({
-    required String query,
-  }) async {
+  Future<List<AdminAuditEvent>> fetchAuditEvents({required String query}) async {
     final response = await _client().rpc(
       'admin_list_audit_events',
       params: {'p_query': query, 'p_limit': 50},
@@ -91,6 +88,51 @@ class AdminSupabaseDatasource {
       params: adminRpcParamsFor(command),
     );
     return AdminMutationResult.fromMap(_firstMap(response));
+  }
+
+  Future<List<AdminAccountSummary>> searchAccounts({required String query}) async {
+    final response = await _client().rpc(
+      'admin_search_users',
+      params: {'p_query': query, 'p_limit': 50},
+    );
+    return _maps(response)
+        .map(AdminWorkItem.fromMap)
+        .map(_accountSummaryFromWorkItem)
+        .toList(growable: false);
+  }
+
+  Future<AdminCreateAccountResult> createAccount(
+    AdminCreateAccountRequest request,
+  ) async {
+    final response = await _client().functions.invoke(
+      'admin-create-account',
+      body: {
+        'full_name': request.fullName,
+        'email': request.email,
+        'password': request.password,
+        'phone': request.phone,
+        'reason': request.reason,
+        'idempotency_key': request.idempotencyKey,
+      },
+    );
+    return AdminCreateAccountResult.fromMap(_copyMap(response.data));
+  }
+
+  Future<AdminMembershipGrantResult> grantMembership(
+    AdminMembershipGrantRequest request,
+  ) async {
+    final response = await _client().functions.invoke(
+      'admin-grant-membership',
+      body: {
+        'user_id': request.userId,
+        'plan_code': request.planCode,
+        'starts_at': request.startsAt.toUtc().toIso8601String(),
+        'ends_at': request.endsAt.toUtc().toIso8601String(),
+        'reason': request.reason,
+        'idempotency_key': request.idempotencyKey,
+      },
+    );
+    return AdminMembershipGrantResult.fromMap(_copyMap(response.data));
   }
 
   SupabaseClient _client() => clientOverride ?? Supabase.instance.client;
@@ -156,9 +198,6 @@ Map<String, Object?> adminRpcParamsFor(AdminMutationCommand command) {
         ...base,
         'p_payment_event_id': command.targetId,
         'p_decision': command.action,
-        // The review RPC independently rejects an approval unless this is
-        // true. It is set only after the Finance/Super Admin confirms the
-        // Vietcombank reconciliation checklist in the workspace.
         if (command.action == 'approve' || command.action == 'reject')
           'p_transfer_verified': command.payload['transfer_verified'] == true,
       };
@@ -255,9 +294,8 @@ bool _isAccessRevoked(PostgrestException error) {
 
 Map<String, Object?> _firstMap(Object? response) {
   if (response is Map) return _copyMap(response);
-  if (response is List && response.isNotEmpty) {
-    final first = response.first;
-    if (first is Map) return _copyMap(first);
+  if (response is List && response.isNotEmpty && response.first is Map) {
+    return _copyMap(response.first);
   }
   return const {};
 }
@@ -267,8 +305,29 @@ List<Map<String, Object?>> _maps(Object? response) {
   return response.whereType<Map>().map(_copyMap).toList(growable: false);
 }
 
-Map<String, Object?> _copyMap(Map<dynamic, dynamic> map) {
-  return map.map((key, value) => MapEntry(key.toString(), value));
+Map<String, Object?> _copyMap(Object? value) {
+  if (value is! Map) return const {};
+  return value.map((key, entry) => MapEntry(key.toString(), entry));
+}
+
+AdminAccountSummary _accountSummaryFromWorkItem(AdminWorkItem item) {
+  final parts = item.subtitle
+      .split(' - ')
+      .map((value) => value.trim())
+      .where((value) => value.isNotEmpty)
+      .toList(growable: false);
+  final email = parts.isNotEmpty ? parts[0] : '';
+  final plan = parts.length > 1 ? parts[1] : 'free';
+  final sale = parts.length > 2 ? parts[2] : 'none';
+  return AdminAccountSummary(
+    id: item.id,
+    displayName: item.title,
+    email: email,
+    accountStatus: item.status,
+    planCode: plan,
+    saleStatus: sale,
+    createdAt: item.createdAt,
+  );
 }
 
 int _readPayloadInt(Object? value) {
