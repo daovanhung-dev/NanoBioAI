@@ -10,6 +10,8 @@ void main() {
     'docs/supabase/04_schema_auth_account_lock.sql',
     'docs/supabase/05_seed_local_sandbox.sql',
     'docs/supabase/06_schema_runtime_support.sql',
+    'docs/supabase/07_schema_sleep_safety.sql',
+    'docs/supabase/08_enable_sleep_safety_rollout.sql',
   ];
 
   const validationPaths = [
@@ -83,11 +85,25 @@ void main() {
       '`config.sql` là bản dẫn xuất',
       'không sửa file này bằng tay',
       'không định nghĩa hoặc thay thế schema, RPC hay seed',
-      'Sandbox runtime (thực thi 01 → 06 rồi 90 → 94): `UNVERIFIED`',
+      'Sandbox runtime (thực thi 01 → 08 rồi 90 → 94): `UNVERIFIED`',
       'Không suy diễn trạng thái production',
     ]) {
       expect(readme, contains(token), reason: token);
     }
+  });
+
+
+  test('enables M31 rollout without granting membership', () {
+    final rollout = File(
+      'docs/supabase/08_enable_sleep_safety_rollout.sql',
+    ).readAsStringSync();
+
+    expect(rollout, contains("to_regclass('public.sleep_safety_runtime_config')"));
+    expect(rollout, contains("where config_key = 'default'"));
+    expect(rollout, contains('set enabled = true'));
+    expect(rollout, contains('SLEEP_SAFETY_RUNTIME_CONFIG_MISSING'));
+    expect(rollout, contains('SLEEP_SAFETY_DEFAULT_CONFIG_MISSING'));
+    expect(rollout, isNot(contains('membership_plan =')));
   });
 
   test('seeds the requested local Plus account server-side', () {
@@ -116,7 +132,7 @@ void main() {
 
     expect(smoke, startsWith('-- Rollback-only'));
     expect(smoke, contains('create_membership_payment_request'));
-    expect(smoke, contains("'^NB[0-9A-F]{12}$'"));
+    expect(smoke, contains(r"'^NB[0-9A-F]{12}$'"));
     expect(smoke, contains('VIETQR_IDEMPOTENCY_BROKEN'));
     expect(smoke, contains('VIETQR_OPEN_REQUEST_GUARD_MISSING'));
     expect(smoke.trimRight(), endsWith('rollback;'));

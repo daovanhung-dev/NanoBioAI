@@ -119,6 +119,9 @@ class _FeaturesHubPageState extends State<FeaturesHubPage> {
     _FeatureAction('health-tracking', 'Theo dõi sức khỏe',
         Icons.monitor_heart_rounded, AppColors.success, AppColors.pastelMint,
         () => context.push(V1RoutePaths.healthTracking)),
+    _FeatureAction('sleep-tracking', 'Giám sát giấc ngủ', Icons.bedtime_rounded,
+        AppColors.tertiary, AppColors.pastelLavender,
+        () => context.push(V1RoutePaths.sleepTracking)),
     _FeatureAction('water-tracking', 'Uống nước', Icons.water_drop_rounded,
         AppColors.info, AppColors.pastelSky,
         () => context.push(V1RoutePaths.waterTracking)),
@@ -146,9 +149,6 @@ class _FeaturesHubPageState extends State<FeaturesHubPage> {
   ];
 
   List<_FeatureAction> _plannedFeatures(BuildContext context) => [
-    _FeatureAction('sleep-tracking', 'Giấc ngủ', Icons.bedtime_rounded,
-        AppColors.tertiary, AppColors.pastelLavender,
-        () => context.push(V1RoutePaths.sleepTracking)),
     _FeatureAction('stress-tracking', 'Cảm xúc & stress',
         Icons.psychology_rounded, AppColors.secondary, AppColors.pastelMint,
         () => context.push(V1RoutePaths.stressTracking)),

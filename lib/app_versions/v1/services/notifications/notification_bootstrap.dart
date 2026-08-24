@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -11,6 +12,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import 'active_notification_subject.dart';
 import 'notification_action_handler.dart';
+import 'notification_navigation_coordinator.dart';
 import 'reminder_notification_scheduler.dart';
 import 'reminder_schedule_service.dart';
 
@@ -103,6 +105,10 @@ class NotificationBootstrap {
   ) async {
     try {
       await initialize();
+      if (_isSleepSafetyArmPayload(response.payload)) {
+        NotificationNavigationCoordinator.openSleepSafety();
+        return;
+      }
       final handler = await NotificationActionHandler.create(
         scheduler: _scheduler,
       );
@@ -114,6 +120,18 @@ class NotificationBootstrap {
         error,
         stackTrace,
       );
+    }
+  }
+
+  static bool _isSleepSafetyArmPayload(String? payload) {
+    final raw = payload?.trim();
+    if (raw == null || raw.isEmpty) return false;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return false;
+      return decoded['type'] == 'sleep_safety' && decoded['action'] == 'arm';
+    } catch (_) {
+      return false;
     }
   }
 

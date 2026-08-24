@@ -12,6 +12,7 @@ import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_tabl
 import 'package:nano_app/core/storage/localdb/tables/wellness_rewards_cache_tables.dart';
 import 'package:nano_app/core/storage/localdb/tables/nabi_notification_tables.dart';
 import 'package:nano_app/core/storage/localdb/tables/nutrition_profile_tables.dart';
+import 'package:nano_app/core/storage/localdb/tables/sleep_safety_tables.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -35,6 +36,7 @@ import 'migrations/migration_manager.dart';
 import 'migrations/migration_v18.dart';
 import 'migrations/migration_v19.dart';
 import 'migrations/migration_v20.dart';
+import 'migrations/migration_v21.dart';
 import 'seeders/ai_catalog_seeder.dart';
 
 class DatabaseService {
@@ -58,7 +60,7 @@ class DatabaseService {
       onConfigure: (db) async {
         // Legacy databases can contain orphan rows because releases <=19 ran
         // with FK enforcement disabled. Keep enforcement off only for that
-        // upgrade transaction so v20 can repair those rows first. Fresh/v20
+        // upgrade transaction so v20 can repair those rows first. Fresh/v20+
         // databases enable FK immediately.
         final existingVersion = await db.getVersion();
         await db.execute(
@@ -81,6 +83,9 @@ class DatabaseService {
         if (oldVersion < 20 && newVersion >= 20) {
           await MigrationV20.run(db);
         }
+        if (oldVersion < 21 && newVersion >= 21) {
+          await MigrationV21.run(db);
+        }
       },
       onOpen: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
@@ -88,6 +93,9 @@ class DatabaseService {
         await MigrationV19.ensureSchema(db);
         if (await db.getVersion() >= 20) {
           await MigrationV20.assertIntegrity(db);
+        }
+        if (await db.getVersion() >= 21) {
+          await MigrationV21.ensureSchema(db);
         }
       },
     );
@@ -123,6 +131,7 @@ class DatabaseService {
       await db.execute(statement);
     }
     await NabiNotificationTables.create(db);
+    await SleepSafetyTables.create(db);
     await db.execute(NutritionLogsTable.createTable);
     await db.execute(AIInsightsTable.createTable);
     await db.execute(AIRecommendationsTable.createTable);

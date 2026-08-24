@@ -22,10 +22,22 @@ class NotificationNavigationCoordinator {
 
   static void openScheduleItem(String sourceId) {
     final normalized = sourceId.trim();
-    final uri = Uri(
-      path: V1RoutePaths.lifestyleSchedule,
-      queryParameters: normalized.isEmpty ? null : {'item': normalized},
+    _open(
+      Uri(
+        path: V1RoutePaths.lifestyleSchedule,
+        queryParameters: normalized.isEmpty ? null : {'item': normalized},
+      ),
     );
+  }
+
+  static void openSleepSafety() {
+    _open(Uri(
+      path: V1RoutePaths.sleepTracking,
+      queryParameters: const {'source': 'scheduled_reminder'},
+    ));
+  }
+
+  static void _open(Uri uri) {
     final navigator = _navigator;
     if (navigator == null) {
       _pendingUri = uri;

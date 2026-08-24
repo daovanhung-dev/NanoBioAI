@@ -21,6 +21,7 @@ import 'package:nano_app/app_versions/v1/features/quick_care/presentation/pages/
 import 'package:nano_app/app_versions/v1/features/splash/splash.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart';
 import 'package:nano_app/app_versions/v1/features/community/presentation/pages/community_page.dart';
+import 'package:nano_app/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_access_gate.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart';
 import 'package:nano_app/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart';
 import 'package:nano_app/app_versions/v1/features/today_tasks/presentation/pages/today_tasks_page.dart';
@@ -129,7 +130,10 @@ final v1Routes = <RouteBase>[
   GoRoute(
     path: V1RoutePaths.sleepTracking,
     name: V1RoutePaths.sleepTracking,
-    builder: (context, state) => const SleepTrackingPage(),
+    redirect: V1RouteGuards.authGuard,
+    builder: (context, state) => const SleepSafetyAccessGate(
+      child: SleepTrackingPage(),
+    ),
   ),
   GoRoute(
     path: V1RoutePaths.stressTracking,

@@ -56,6 +56,10 @@
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
+    <key>UIBackgroundModes</key>
+    <array>
+      <string>audio</string>
+    </array>
     <!-- Camera permission -->
     <key>NSCameraUsageDescription</key>
     <string>Chúng tôi cần quyền truy cập máy ảnh để bạn có thể cập nhật ảnh đại diện của mình</string>
@@ -65,9 +69,9 @@
     <!-- Face ID permission -->
     <key>NSFaceIDUsageDescription</key>
     <string>Chúng tôi sử dụng Face ID để bảo mật quyền truy cập vào ứng dụng của bạn</string>
-    <!-- Voice interaction permissions -->
+    <!-- Voice / sleep safety permissions -->
     <key>NSMicrophoneUsageDescription</key>
-    <string>NaBi cần quyền dùng micro để nghe câu hỏi bằng giọng nói của bạn</string>
+    <string>NaBi dùng micro khi bạn chủ động bật trò chuyện giọng nói hoặc giám sát an toàn giấc ngủ. Âm thanh giám sát được phân tích trên thiết bị và không lưu bản ghi âm thô.</string>
     <key>NSSpeechRecognitionUsageDescription</key>
     <string>NaBi cần nhận dạng giọng nói để chuyển câu hỏi của bạn thành văn bản</string>
   </dict>

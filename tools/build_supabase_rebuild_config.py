@@ -14,6 +14,8 @@ COMPONENTS = (
     "04_schema_auth_account_lock.sql",
     "05_seed_local_sandbox.sql",
     "06_schema_runtime_support.sql",
+    "07_schema_sleep_safety.sql",
+    "08_enable_sleep_safety_rollout.sql",
 )
 HEADER = """-- =============================================================================
 -- config.sql
@@ -58,7 +60,7 @@ def main() -> int:
             raise SystemExit(
                 "config.sql is stale. Run: python tools/build_supabase_rebuild_config.py"
             )
-        print("PASS config.sql matches 01 through 06")
+        print("PASS config.sql matches 01 through 08")
         return 0
 
     output_path.write_text(expected, encoding="utf-8")
