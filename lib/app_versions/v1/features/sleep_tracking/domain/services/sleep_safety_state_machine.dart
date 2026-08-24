@@ -29,7 +29,10 @@ class SleepSafetyStateMachine {
   SleepSafetyMachineState calibrate() => const SleepSafetyMachineState(phase: SleepSafetyPhase.calibrating);
   SleepSafetyMachineState monitor() => const SleepSafetyMachineState(phase: SleepSafetyPhase.monitoring);
   SleepSafetyMachineState onConfirmedEvent(SleepSafetyMachineState current, {required String eventId, required DateTime now}) {
-    if (current.phase != SleepSafetyPhase.monitoring) return current;
+    if (current.phase != SleepSafetyPhase.monitoring &&
+        current.phase != SleepSafetyPhase.calibrating) {
+      return current;
+    }
     return SleepSafetyMachineState(phase: SleepSafetyPhase.awaitingResponse, eventId: eventId, alertStartedAt: now);
   }
   SleepSafetyMachineState tick(SleepSafetyMachineState current, {required DateTime now}) {

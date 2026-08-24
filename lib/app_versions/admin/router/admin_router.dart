@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/admin_login_page.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/simple/admin_accounts_page.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/simple/admin_create_account_page.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/simple/admin_membership_review_page.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/simple/admin_sale_payout_page.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/simple/admin_sale_review_page.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/simple/admin_upgrade_account_page.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/widgets/admin_access_gate.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
+import 'package:nano_app/core/utils/logger/route_log_observer.dart';
 
 final adminRouter = GoRouter(
-  initialLocation: AdminRoutePaths.accounts,
+  initialLocation: AdminRoutePaths.dashboard,
+  observers: [AppRouteLogObserver(scope: 'AdminRouter')],
   redirect: (context, state) {
-    if (state.uri.path == AdminRoutePaths.root) return AdminRoutePaths.accounts;
+    if (state.uri.path == AdminRoutePaths.root) {
+      AppRouteLogObserver.redirect(
+        scope: 'AdminRouter',
+        from: AdminRoutePaths.root,
+        to: AdminRoutePaths.dashboard,
+        reason: 'admin_root_redirect',
+      );
+      return AdminRoutePaths.dashboard;
+    }
     return null;
   },
   routes: [
@@ -25,42 +31,40 @@ final adminRouter = GoRouter(
         child: const AdminLoginPage(),
       ),
     ),
-    _protected(AdminRoutePaths.accounts, const AdminAccountsPage()),
-    _protected(AdminRoutePaths.createAccount, const AdminCreateAccountPage()),
-    _protected(AdminRoutePaths.upgradeAccount, const AdminUpgradeAccountPage()),
-    _protected(AdminRoutePaths.saleReview, const AdminSaleReviewPage()),
-    _protected(AdminRoutePaths.salePayouts, const AdminSalePayoutPage()),
+    _protected(AdminRoutePaths.dashboard, AdminPanelSection.dashboard),
+    _protected(AdminRoutePaths.users, AdminPanelSection.users),
+    _protected(AdminRoutePaths.payments, AdminPanelSection.payments),
+    _protected(AdminRoutePaths.sales, AdminPanelSection.sales),
     _protected(
-      AdminRoutePaths.membershipReview,
-      const AdminMembershipReviewPage(),
+      AdminRoutePaths.saleConversions,
+      AdminPanelSection.saleConversions,
     ),
-    _legacy(AdminRoutePaths.dashboard, AdminRoutePaths.accounts),
-    _legacy(AdminRoutePaths.users, AdminRoutePaths.accounts),
-    _legacy(AdminRoutePaths.payments, AdminRoutePaths.membershipReview),
-    _legacy(AdminRoutePaths.sales, AdminRoutePaths.saleReview),
-    _legacy(AdminRoutePaths.saleConversions, AdminRoutePaths.salePayouts),
-    _legacy(AdminRoutePaths.wellnessRewards, AdminRoutePaths.accounts),
-    _legacy(AdminRoutePaths.reconciliation, AdminRoutePaths.accounts),
-    _legacy(AdminRoutePaths.plans, AdminRoutePaths.accounts),
-    _legacy(AdminRoutePaths.reports, AdminRoutePaths.accounts),
-    _legacy(AdminRoutePaths.audit, AdminRoutePaths.accounts),
-    _legacy(AdminRoutePaths.config, AdminRoutePaths.accounts),
+    _protected(
+      AdminRoutePaths.wellnessRewards,
+      AdminPanelSection.wellnessRewards,
+    ),
+    _protected(
+      AdminRoutePaths.reconciliation,
+      AdminPanelSection.reconciliation,
+    ),
+    _protected(AdminRoutePaths.plans, AdminPanelSection.plans),
+    _protected(AdminRoutePaths.reports, AdminPanelSection.reports),
+    _protected(AdminRoutePaths.audit, AdminPanelSection.audit),
+    _protected(AdminRoutePaths.config, AdminPanelSection.config),
   ],
 );
 
-GoRoute _protected(String path, Widget child) {
+GoRoute _protected(String path, AdminPanelSection section) {
   return GoRoute(
     path: path,
     name: path,
     pageBuilder: (context, state) => _adminPage(
       state: state,
-      child: AdminAccessGate(child: child),
+      child: AdminAccessGate(
+        child: AdminWorkspacePage(initialSection: section),
+      ),
     ),
   );
-}
-
-GoRoute _legacy(String path, String target) {
-  return GoRoute(path: path, redirect: (_, __) => target);
 }
 
 CustomTransitionPage<void> _adminPage({
@@ -69,15 +73,17 @@ CustomTransitionPage<void> _adminPage({
 }) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
-    transitionDuration: const Duration(milliseconds: 200),
-    reverseTransitionDuration: const Duration(milliseconds: 160),
+    transitionDuration: const Duration(milliseconds: 220),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       if (MediaQuery.disableAnimationsOf(context)) return child;
       final offset = Tween<Offset>(
-        begin: const Offset(0, .006),
+        begin: const Offset(0, .008),
         end: Offset.zero,
-      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+      ).animate(
+        CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+      );
       return FadeTransition(
         opacity: animation,
         child: SlideTransition(position: offset, child: child),

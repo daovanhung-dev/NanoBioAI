@@ -13,6 +13,24 @@ import '../domain/repositories/sleep_safety_repository.dart';
 import '../domain/services/sleep_safety_state_machine.dart';
 import 'sleep_safety_providers.dart';
 
+class SleepSafetyAudioMetrics {
+  const SleepSafetyAudioMetrics({
+    required this.signalLevel,
+    required this.peakLevel,
+    required this.relativeEnergy,
+    required this.baselineLevel,
+    required this.phase,
+    required this.updatedAt,
+  });
+
+  final double signalLevel;
+  final double peakLevel;
+  final double relativeEnergy;
+  final double baselineLevel;
+  final String phase;
+  final DateTime updatedAt;
+}
+
 class SleepSafetyViewState {
   const SleepSafetyViewState({
     required this.machine,
@@ -22,6 +40,9 @@ class SleepSafetyViewState {
     this.session,
     this.currentEvent,
     this.calibrationProgress = 0,
+    this.audioMetrics,
+    this.detectorCandidateType,
+    this.audioSignalStale = false,
     this.isBusy = false,
     this.errorMessage,
     this.notice,
@@ -36,6 +57,9 @@ class SleepSafetyViewState {
   final List<SafetyContact> contacts;
   final List<SleepSafetyEvent> history;
   final double calibrationProgress;
+  final SleepSafetyAudioMetrics? audioMetrics;
+  final String? detectorCandidateType;
+  final bool audioSignalStale;
   final bool isBusy;
   final String? errorMessage;
   final String? notice;
@@ -46,7 +70,10 @@ class SleepSafetyViewState {
   SleepSafetyViewState copyWith({
     SleepSafetyMachineState? machine, SleepSafetyPreference? preference, SleepSafetySession? session,
     SleepSafetyEvent? currentEvent, bool clearCurrentEvent=false, List<SafetyContact>? contacts,
-    List<SleepSafetyEvent>? history, double? calibrationProgress, bool? isBusy,
+    List<SleepSafetyEvent>? history, double? calibrationProgress,
+    SleepSafetyAudioMetrics? audioMetrics, bool clearAudioMetrics=false,
+    String? detectorCandidateType, bool clearDetectorCandidate=false,
+    bool? audioSignalStale, bool? isBusy,
     String? errorMessage, bool clearError=false, String? notice, bool clearNotice=false,
   }) => SleepSafetyViewState(
     machine: machine ?? this.machine,
@@ -56,6 +83,11 @@ class SleepSafetyViewState {
     contacts: contacts ?? this.contacts,
     history: history ?? this.history,
     calibrationProgress: calibrationProgress ?? this.calibrationProgress,
+    audioMetrics: clearAudioMetrics ? null : audioMetrics ?? this.audioMetrics,
+    detectorCandidateType: clearDetectorCandidate
+        ? null
+        : detectorCandidateType ?? this.detectorCandidateType,
+    audioSignalStale: audioSignalStale ?? this.audioSignalStale,
     isBusy: isBusy ?? this.isBusy,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     notice: clearNotice ? null : notice ?? this.notice,
@@ -65,13 +97,17 @@ class SleepSafetyViewState {
 class SleepSafetyController extends Notifier<SleepSafetyViewState> {
   final _machine = const SleepSafetyStateMachine();
   StreamSubscription<SleepSafetyNativeEvent>? _nativeSubscription;
+  Timer? _audioMetricsWatchdog;
   final Set<String> _dispatchingEvents = <String>{};
   final Random _random = Random.secure();
   SleepSafetyRepository get _repository => ref.read(sleepSafetyRepositoryProvider);
 
   @override
   SleepSafetyViewState build() {
-    ref.onDispose(() => _nativeSubscription?.cancel());
+    ref.onDispose(() {
+      _nativeSubscription?.cancel();
+      _audioMetricsWatchdog?.cancel();
+    });
     unawaited(_initialize());
     return SleepSafetyViewState.initial();
   }
@@ -96,8 +132,12 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         onError: (_) {
           state = state.copyWith(
             machine: _machine.fail('native_event_stream'),
+            clearAudioMetrics: true,
+            clearDetectorCandidate: true,
+            audioSignalStale: true,
             errorMessage: 'Giám sát âm thanh vừa bị gián đoạn.',
           );
+          _stopAudioMetricsWatchdog();
         },
       );
     } catch (_) {
@@ -262,6 +302,33 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         machine: preference?.calibrationRequired == true
             ? _machine.calibrate()
             : _machine.monitor(),
+        clearAudioMetrics: true,
+        clearDetectorCandidate: true,
+        audioSignalStale: false,
+      );
+      _ensureAudioMetricsWatchdog();
+      return;
+    }
+    if (event.type == 'audioMetrics') {
+      final phase = event.data['phase']?.toString() ?? 'monitoring';
+      state = state.copyWith(
+        audioMetrics: SleepSafetyAudioMetrics(
+          signalLevel: _unit(event.data['signalLevel']),
+          peakLevel: _unit(event.data['peakLevel']),
+          relativeEnergy: (event.data['relativeEnergy'] as num?)?.toDouble() ?? 0,
+          baselineLevel: _unit(event.data['baselineLevel']),
+          phase: phase,
+          updatedAt: now,
+        ),
+        clearDetectorCandidate: phase == 'monitoring' || phase == 'calibrating',
+        audioSignalStale: false,
+      );
+      _ensureAudioMetricsWatchdog();
+      return;
+    }
+    if (event.type == 'detectorCandidate') {
+      state = state.copyWith(
+        detectorCandidateType: event.data['eventType']?.toString(),
       );
       return;
     }
@@ -283,9 +350,15 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
           updatedAt: now,
         );
         await _repository.savePreference(updated);
+        final alertOrCooldown = const {
+          SleepSafetyPhase.awaitingResponse,
+          SleepSafetyPhase.reminder,
+          SleepSafetyPhase.escalating,
+          SleepSafetyPhase.cooldown,
+        }.contains(state.machine.phase);
         state = state.copyWith(
           preference: updated,
-          machine: _machine.monitor(),
+          machine: alertOrCooldown ? state.machine : _machine.monitor(),
           calibrationProgress: 1,
         );
       }
@@ -392,6 +465,7 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
               .clamp(0, 1)
               .toDouble(),
     );
+    _ensureAudioMetricsWatchdog();
     if (phase == 'escalating' &&
         current != null &&
         current.escalationStatus != SleepSafetyEscalationStatus.accepted) {
@@ -430,7 +504,11 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
 
   Future<void> _recordConfirmedEvent(SleepSafetyNativeEvent native,DateTime now) async {
     final session=state.session; final userId=ref.read(currentAuthUserIdProvider);
-    if(session==null||userId==null||state.machine.phase!=SleepSafetyPhase.monitoring)return;
+    if (session == null || userId == null) return;
+    if (state.machine.phase != SleepSafetyPhase.monitoring &&
+        state.machine.phase != SleepSafetyPhase.calibrating) {
+      return;
+    }
     final id=native.data['eventId']?.toString() ?? _newId('event');
     final event=SleepSafetyEvent(
       id:id,sessionId:session.id,userId:userId,detectedAt:DateTime.tryParse(native.data['detectedAt']?.toString() ?? '') ?? now,
@@ -486,7 +564,11 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         machine: failed
             ? _machine.fail(reason)
             : const SleepSafetyMachineState.idle(),
+        clearAudioMetrics: true,
+        clearDetectorCandidate: true,
+        audioSignalStale: false,
       );
+      _stopAudioMetricsWatchdog();
       return;
     }
 
@@ -519,8 +601,38 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
           : const SleepSafetyMachineState.idle(),
       clearCurrentEvent: true,
       calibrationProgress: 0,
+      clearAudioMetrics: true,
+      clearDetectorCandidate: true,
+      audioSignalStale: false,
     );
+    _stopAudioMetricsWatchdog();
   }
+
+  void _ensureAudioMetricsWatchdog() {
+    _audioMetricsWatchdog ??= Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!state.monitoringActive) {
+        _stopAudioMetricsWatchdog();
+        return;
+      }
+      final metrics = state.audioMetrics;
+      if (metrics == null) return;
+      if (DateTime.now().difference(metrics.updatedAt) > const Duration(seconds: 2)) {
+        state = state.copyWith(
+          clearAudioMetrics: true,
+          clearDetectorCandidate: true,
+          audioSignalStale: true,
+        );
+      }
+    });
+  }
+
+  void _stopAudioMetricsWatchdog() {
+    _audioMetricsWatchdog?.cancel();
+    _audioMetricsWatchdog = null;
+  }
+
+  double _unit(Object? value) =>
+      ((value as num?)?.toDouble() ?? 0).clamp(0.0, 1.0).toDouble();
 
   String _nativeStartErrorMessage(String code) {
     return switch (code) {

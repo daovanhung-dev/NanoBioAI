@@ -4,11 +4,20 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Build
 import androidx.core.app.ActivityCompat
 import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * RAM-only PCM capture for Sleep Safety.
+ *
+ * UNPROCESSED is preferred when the device explicitly supports it so detector
+ * features are less affected by automatic gain/noise processing. Unsupported
+ * devices fall back safely without changing privacy guarantees.
+ */
 class SleepSafetyAudioCapture(
     private val context: Context,
     private val onFrame: (ShortArray, Int) -> Unit,
@@ -46,26 +55,44 @@ class SleepSafetyAudioCapture(
             return false
         }
 
+        val sources = preferredAudioSources()
+        for (source in sources) {
+            val started = tryStartRecorder(source, sampleRate, minBufferSize)
+            if (started) return true
+            if (!running.get()) return false
+        }
+
+        running.set(false)
+        signalFailure("audio_record_init_failed")
+        return false
+    }
+
+    private fun tryStartRecorder(
+        source: Int,
+        sampleRate: Int,
+        minBufferSize: Int,
+    ): Boolean {
+        if (!running.get()) return false
         return try {
             val created = AudioRecord(
-                MediaRecorder.AudioSource.MIC,
+                source,
                 sampleRate,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
                 maxOf(minBufferSize * 2, 4096),
             )
-            recorder = created
             if (created.state != AudioRecord.STATE_INITIALIZED) {
-                running.set(false)
-                releaseRecorder()
-                signalFailure("audio_record_init_failed")
+                try {
+                    created.release()
+                } catch (_: RuntimeException) {
+                    // Try the next source.
+                }
                 false
             } else {
+                recorder = created
                 created.startRecording()
                 if (created.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
-                    running.set(false)
                     releaseRecorder()
-                    signalFailure("audio_record_start_failed")
                     false
                 } else {
                     startReaderThread()
@@ -77,12 +104,32 @@ class SleepSafetyAudioCapture(
             releaseRecorder()
             signalFailure("microphone_permission_lost")
             false
-        } catch (_: RuntimeException) {
-            running.set(false)
+        } catch (_: IllegalArgumentException) {
             releaseRecorder()
-            signalFailure("audio_capture_failed")
+            false
+        } catch (_: RuntimeException) {
+            releaseRecorder()
             false
         }
+    }
+
+    private fun preferredAudioSources(): List<Int> {
+        val sources = mutableListOf<Int>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && supportsUnprocessedSource()) {
+            sources += MediaRecorder.AudioSource.UNPROCESSED
+        }
+        // VOICE_RECOGNITION commonly applies less aggressive gain control than
+        // MIC while still being widely supported. MIC remains the final fallback.
+        sources += MediaRecorder.AudioSource.VOICE_RECOGNITION
+        sources += MediaRecorder.AudioSource.MIC
+        return sources.distinct()
+    }
+
+    private fun supportsUnprocessedSource(): Boolean {
+        val manager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+            ?: return false
+        return manager.getProperty(AudioManager.PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED)
+            ?.equals("true", ignoreCase = true) == true
     }
 
     private fun startReaderThread() {
@@ -132,8 +179,7 @@ class SleepSafetyAudioCapture(
         try {
             onFailure(code)
         } catch (_: RuntimeException) {
-            // The audio worker must never terminate the app process because a
-            // failure callback also failed. Native service cleanup is best effort.
+            // A failed callback must never terminate the audio worker/process.
         }
     }
 

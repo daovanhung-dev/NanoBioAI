@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/bio_ai_app.dart';
@@ -11,6 +12,12 @@ import 'core/config/app_env.dart';
 import 'core/config/auth_backend_availability.dart';
 import 'core/storage/localdb/app_prefs.dart';
 import 'core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
+import 'core/utils/logger/app_error_capture.dart';
+import 'core/utils/logger/app_log_category.dart';
+import 'core/utils/logger/app_log_level.dart';
+import 'core/utils/logger/app_logger.dart';
+import 'core/utils/logger/app_provider_observer.dart';
+import 'core/utils/logger/logging_http_client.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox_refresher.dart';
 import 'services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart';
@@ -22,8 +29,31 @@ import 'app_versions/v1/services/notifications/notification_startup_scheduler.da
 
 const _bootstrapTag = 'APP_BOOTSTRAP';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      AppErrorCapture.install();
+      await _bootstrapApplication();
+    },
+    AppErrorCapture.captureZoneError,
+    zoneSpecification: ZoneSpecification(
+      print: (self, parent, zone, line) {
+        AppLogger.legacyPrint(line, source: 'print');
+      },
+    ),
+  );
+}
+
+Future<void> _bootstrapApplication() async {
+  final bootstrapStopwatch = Stopwatch()..start();
+  AppLogger.event(
+    level: AppLogLevel.info,
+    category: AppLogCategory.app,
+    scope: _bootstrapTag,
+    operation: 'BOOT',
+    message: 'Application bootstrap started',
+  );
 
   await AppEnv.loadOptionalDotEnv();
   _logRuntimeConfigStatus();
@@ -31,6 +61,7 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
+      observers: const [AppProviderObserver()],
       overrides: [
         authBackendAvailabilityProvider.overrideWithValue(
           authBackendAvailability,
@@ -54,28 +85,46 @@ Future<void> main() async {
     ),
   );
 
+  bootstrapStopwatch.stop();
+  AppLogger.event(
+    level: AppLogLevel.info,
+    category: AppLogCategory.app,
+    scope: _bootstrapTag,
+    operation: 'BOOT',
+    message: 'Application bootstrap completed',
+    duration: bootstrapStopwatch.elapsed,
+    metadata: {'authBackend': authBackendAvailability.name},
+  );
+
   unawaited(_startPostLaunchServices(authBackendAvailability));
 }
 
 void _logRuntimeConfigStatus() {
   final geminiConfigSource = AppEnv.valueSource('GEMINI_API_KEY');
-  debugPrint(
-    '$_bootstrapTag: Gemini config present: '
-    '${geminiConfigSource != AppEnvValueSource.missing}',
-  );
-  debugPrint(
-    '$_bootstrapTag: Gemini config source: ${geminiConfigSource.name}',
+  AppLogger.event(
+    level: AppLogLevel.info,
+    category: AppLogCategory.app,
+    scope: _bootstrapTag,
+    operation: 'RUNTIME_CONFIG',
+    message: 'Gemini runtime configuration resolved',
+    metadata: {
+      'present': geminiConfigSource != AppEnvValueSource.missing,
+      'source': geminiConfigSource.name,
+    },
   );
 }
 
 Future<AuthBackendAvailability> _initializeSupabaseIfConfigured() async {
   final config = AppEnv.maybeSupabaseConfig();
+  final stopwatch = Stopwatch()..start();
   final availability = await initializeAuthBackendAvailability(
     config: config,
     initialize: (url, anonKey) async {
       await Supabase.initialize(
         url: url,
         anonKey: anonKey,
+        debug: false,
+        httpClient: LoggingHttpClient(http.Client(), scope: 'Supabase'),
         authOptions: FlutterAuthClientOptions(
           detectSessionInUri: false,
           localStorage: SharedPreferencesLocalStorage(
@@ -84,17 +133,32 @@ Future<AuthBackendAvailability> _initializeSupabaseIfConfigured() async {
         ),
       );
     },
-    onInitializationError: (error, _) {
-      debugPrint(
-        '$_bootstrapTag: Supabase initialization failed; '
-        'errorType=${error.runtimeType}',
+    onInitializationError: (error, stackTrace) {
+      AppLogger.captureError(
+        category: AppLogCategory.supabase,
+        scope: _bootstrapTag,
+        operation: 'INITIALIZE',
+        message: 'Supabase initialization failed; guest mode will continue',
+        error: error,
+        stackTrace: stackTrace,
       );
     },
   );
+  stopwatch.stop();
 
-  if (availability == AuthBackendAvailability.missingConfiguration) {
-    debugPrint('$_bootstrapTag: Supabase config missing; guest mode starts.');
-  }
+  AppLogger.event(
+    level: availability == AuthBackendAvailability.missingConfiguration
+        ? AppLogLevel.warn
+        : AppLogLevel.info,
+    category: AppLogCategory.supabase,
+    scope: _bootstrapTag,
+    operation: 'INITIALIZE',
+    message: availability == AuthBackendAvailability.missingConfiguration
+        ? 'Supabase configuration missing; guest mode starts'
+        : 'Supabase initialization resolved',
+    duration: stopwatch.elapsed,
+    metadata: {'availability': availability.name},
+  );
 
   return availability;
 }
@@ -118,10 +182,14 @@ Future<void> _prepareMealCatalogForOnboarding(
       final refreshed =
           await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
       if (refreshed > 0) return;
-    } catch (error) {
-      debugPrint(
-        '$_bootstrapTag: onboarding meal catalog refresh deferred; '
-        'errorType=${error.runtimeType}',
+    } catch (error, stackTrace) {
+      AppLogger.captureError(
+        category: AppLogCategory.supabase,
+        scope: _bootstrapTag,
+        operation: 'ONBOARDING_MEAL_CATALOG_REFRESH',
+        message: 'Onboarding meal catalog refresh deferred',
+        error: error,
+        stackTrace: stackTrace,
       );
     }
   }
@@ -136,19 +204,42 @@ Future<void> _prepareMealCatalogForOnboarding(
 }
 
 Future<void> _refreshMealCatalogSafely() async {
+  final stopwatch = Stopwatch()..start();
   try {
     final refreshed =
         await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
-    debugPrint('$_bootstrapTag: meal catalog cache refreshed: $refreshed');
-  } catch (error) {
-    debugPrint(
-      '$_bootstrapTag: meal catalog refresh skipped; '
-      'errorType=${error.runtimeType}',
+    stopwatch.stop();
+    AppLogger.event(
+      level: AppLogLevel.info,
+      category: AppLogCategory.supabase,
+      scope: _bootstrapTag,
+      operation: 'MEAL_CATALOG_REFRESH',
+      message: 'Meal catalog cache refreshed',
+      duration: stopwatch.elapsed,
+      metadata: {'rows': refreshed},
+    );
+  } catch (error, stackTrace) {
+    stopwatch.stop();
+    AppLogger.captureError(
+      category: AppLogCategory.supabase,
+      scope: _bootstrapTag,
+      operation: 'MEAL_CATALOG_REFRESH',
+      message: 'Meal catalog refresh skipped',
+      error: error,
+      stackTrace: stackTrace,
+      duration: stopwatch.elapsed,
     );
   }
 }
 
 void _startCloudSync() {
+  AppLogger.event(
+    level: AppLogLevel.info,
+    category: AppLogCategory.supabase,
+    scope: _bootstrapTag,
+    operation: 'CLOUD_SYNC',
+    message: 'Cloud sync dispatcher starting',
+  );
   LocalUserDataSyncDispatcher.register(
     UserDataSyncOutbox.requestImmediateDrain,
   );
@@ -156,6 +247,7 @@ void _startCloudSync() {
 }
 
 Future<void> _startNotificationsSafely() async {
+  final stopwatch = Stopwatch()..start();
   try {
     await NotificationBootstrap.initialize();
     NotificationLifecycleRefresher(
@@ -165,10 +257,25 @@ Future<void> _startNotificationsSafely() async {
             NotificationBootstrap.scheduleGeneratedReminders,
       ),
     ).start();
-  } catch (error) {
-    debugPrint(
-      '$_bootstrapTag: Notification startup failed; '
-      'errorType=${error.runtimeType}',
+    stopwatch.stop();
+    AppLogger.event(
+      level: AppLogLevel.info,
+      category: AppLogCategory.notification,
+      scope: _bootstrapTag,
+      operation: 'INITIALIZE',
+      message: 'Notification services started',
+      duration: stopwatch.elapsed,
+    );
+  } catch (error, stackTrace) {
+    stopwatch.stop();
+    AppLogger.captureError(
+      category: AppLogCategory.notification,
+      scope: _bootstrapTag,
+      operation: 'INITIALIZE',
+      message: 'Notification startup failed',
+      error: error,
+      stackTrace: stackTrace,
+      duration: stopwatch.elapsed,
     );
   }
 }

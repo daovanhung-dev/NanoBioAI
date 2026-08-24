@@ -14,24 +14,50 @@ private enum SleepSafetyIOSConstants {
 }
 
 private final class SleepSafetyIOSDetector {
+  struct AudioMetrics {
+    let signalLevel: Double
+    let peakLevel: Double
+    let relativeEnergy: Double
+    let baselineLevel: Double
+    let phase: String
+  }
+
   struct FrameResult {
     let eventType: String
     let confidence: Double
     let relativeEnergy: Double
     let baselineDelta: Double
+    let repetitionCount: Int
+  }
+
+  struct ProcessOutput {
+    let event: FrameResult?
+    let candidateType: String?
+    let metrics: AudioMetrics
+    let calibrationProgress: Double?
+    let completedNoiseFloor: Double?
+  }
+
+  private struct Thresholds {
+    let relative: Double
+    let minimumRms: Double
+    let extremeRms: Double
+    let extremePeak: Double
   }
 
   private var sensitivity: String
-  private var noiseFloor: Double?
+  private var noiseFloor: Double
   private var calibrationStartedAt: Date?
   private var calibrationSeconds: TimeInterval = 30
-  private var calibrationEnergySum = 0.0
-  private var calibrationFrames = 0
-  private var repeatedHighEnergyFrames = 0
+  private var calibrationSamples: [Double] = []
+  private var rollingRms: [Double] = []
+  private var sustainedHighEnergyFrames = 0
+  private var burstCount = 0
+  private var lastBurstAt: Date?
 
   init(sensitivity: String, initialNoiseFloor: Double?, calibrationSeconds: Int) {
     self.sensitivity = sensitivity
-    self.noiseFloor = initialNoiseFloor
+    self.noiseFloor = max(0.0005, initialNoiseFloor ?? 0.006)
     self.calibrationSeconds = TimeInterval(max(10, min(calibrationSeconds, 60)))
     if initialNoiseFloor == nil {
       startCalibration(seconds: calibrationSeconds)
@@ -45,19 +71,21 @@ private final class SleepSafetyIOSDetector {
   func startCalibration(seconds: Int = 30) {
     calibrationStartedAt = Date()
     calibrationSeconds = TimeInterval(max(10, min(seconds, 60)))
-    calibrationEnergySum = 0
-    calibrationFrames = 0
-    repeatedHighEnergyFrames = 0
+    calibrationSamples.removeAll(keepingCapacity: true)
+    rollingRms.removeAll(keepingCapacity: true)
+    sustainedHighEnergyFrames = 0
+    burstCount = 0
+    lastBurstAt = nil
   }
 
   func isCalibrating() -> Bool {
     calibrationStartedAt != nil
   }
 
-  func process(buffer: AVAudioPCMBuffer) -> (FrameResult?, Double?, Double?) {
-    guard let channel = buffer.floatChannelData?[0] else { return (nil, nil, nil) }
+  func process(buffer: AVAudioPCMBuffer) -> ProcessOutput? {
+    guard let channel = buffer.floatChannelData?[0] else { return nil }
     let count = Int(buffer.frameLength)
-    guard count > 0 else { return (nil, nil, nil) }
+    guard count > 0 else { return nil }
 
     var sumSquares = 0.0
     var peak = 0.0
@@ -72,67 +100,298 @@ private final class SleepSafetyIOSDetector {
       }
       previous = value
     }
-    let rms = sqrt(sumSquares / Double(count))
+
+    let rms = max(0.000_001, sqrt(sumSquares / Double(count)))
     let zeroCrossingRate = Double(zeroCrossings) / Double(count)
+    let baseline = calibrationStartedAt == nil ? noiseFloor : provisionalCalibrationFloor()
+    let relative = rms / max(0.0005, baseline)
+    let delta = max(0, rms - baseline)
+    let peakRatio = peak / max(rms, 0.0005)
+    let previousRolling = max(baseline, rollingAverage())
+    let attackRatio = rms / max(0.0005, previousRolling)
+    pushRollingRms(rms)
 
     if let started = calibrationStartedAt {
-      calibrationEnergySum += rms
-      calibrationFrames += 1
+      calibrationSamples.append(rms)
       let elapsed = Date().timeIntervalSince(started)
       let progress = min(1.0, elapsed / calibrationSeconds)
-      if progress >= 1.0 {
-        let floor = max(0.000_1, calibrationEnergySum / Double(max(1, calibrationFrames)))
-        noiseFloor = floor
+      let bypass = calibrationSafetyBypass(
+        rms: rms,
+        peak: peak,
+        relative: relative,
+        zeroCrossingRate: zeroCrossingRate,
+        peakRatio: peakRatio,
+        attackRatio: attackRatio
+      )
+
+      var completedFloor: Double?
+      if progress >= 1.0 && !calibrationSamples.isEmpty {
+        noiseFloor = robustNoiseFloor(calibrationSamples)
         calibrationStartedAt = nil
-        return (nil, progress, floor)
+        completedFloor = noiseFloor
       }
-      return (nil, progress, nil)
+
+      return ProcessOutput(
+        event: bypass,
+        candidateType: bypass?.eventType,
+        metrics: makeMetrics(
+          rms: rms,
+          peak: peak,
+          relative: relative,
+          baseline: baseline,
+          phase: bypass == nil ? "calibrating" : "candidate"
+        ),
+        calibrationProgress: progress,
+        completedNoiseFloor: completedFloor
+      )
     }
 
-    guard let baseline = noiseFloor, baseline > 0 else { return (nil, nil, nil) }
-    let relative = rms / baseline
-    let delta = max(0, rms - baseline)
-    let candidateFloor: Double
-    switch sensitivity {
-    case "low": candidateFloor = 4.0
-    case "high": candidateFloor = 2.2
-    default: candidateFloor = 2.9
-    }
-    guard relative >= candidateFloor || peak >= 0.88 else {
-      repeatedHighEnergyFrames = max(0, repeatedHighEnergyFrames - 1)
-      return (nil, nil, nil)
-    }
-
-    repeatedHighEnergyFrames += 1
-    let peakRatio = peak / max(rms, 0.0005)
-    let eventType: String
-    if peakRatio >= 3.6 && peak >= 0.82 {
-      eventType = "strongImpact"
-    } else if relative >= candidateFloor * 1.8 && zeroCrossingRate >= 0.20 {
-      eventType = "abnormalScream"
-    } else if relative >= candidateFloor * 1.45 && zeroCrossingRate >= 0.10 {
-      eventType = "abnormalShout"
-    } else if repeatedHighEnergyFrames >= 3 {
-      eventType = "repeatedSuspiciousPattern"
-    } else if relative >= candidateFloor * 1.25 {
-      eventType = "suddenLoudSound"
+    let thresholds = thresholdsForSensitivity()
+    let isHighEnergy = relative >= thresholds.relative && rms >= thresholds.minimumRms
+    if isHighEnergy {
+      sustainedHighEnergyFrames = min(12, sustainedHighEnergyFrames + 1)
     } else {
-      eventType = "unknownHighEnergyEvent"
+      sustainedHighEnergyFrames = max(0, sustainedHighEnergyFrames - 1)
     }
-    let confidence = min(0.97, 0.50 + relative / 12.0 + peak / 8.0)
-    return (
-      FrameResult(
-        eventType: eventType,
+
+    if relative < 1.65 && peak < 0.42 && rms < thresholds.minimumRms {
+      noiseFloor = min(0.12, max(0.0005, noiseFloor * 0.996 + rms * 0.004))
+    }
+
+    let extreme = peak >= thresholds.extremePeak ||
+      rms >= thresholds.extremeRms ||
+      (rms >= thresholds.minimumRms * 1.7 && peak >= thresholds.extremePeak * 0.82)
+    let impact = peak >= 0.72 && peakRatio >= 3.0 && attackRatio >= 2.0
+    let vocalLike = zeroCrossingRate >= 0.055 && zeroCrossingRate <= 0.36
+    let scream = vocalLike && sustainedHighEnergyFrames >= 2 &&
+      relative >= thresholds.relative * 1.15 && rms >= thresholds.minimumRms
+    let shout = sustainedHighEnergyFrames >= 2 &&
+      relative >= thresholds.relative && rms >= thresholds.minimumRms
+    let sudden = extreme ||
+      (relative >= thresholds.relative * 1.35 && rms >= thresholds.minimumRms) ||
+      (attackRatio >= 2.35 && relative >= thresholds.relative && rms >= thresholds.minimumRms)
+
+    var candidateType: String?
+    if impact {
+      candidateType = "strongImpact"
+    } else if scream {
+      candidateType = "abnormalScream"
+    } else if shout {
+      candidateType = "abnormalShout"
+    } else if sudden {
+      candidateType = "suddenLoudSound"
+    }
+
+    if candidateType != nil {
+      registerBurst()
+    } else if let last = lastBurstAt, Date().timeIntervalSince(last) > 2.5 {
+      burstCount = 0
+    }
+
+    let repeated = burstCount >= 3 &&
+      (lastBurstAt.map { Date().timeIntervalSince($0) <= 2.5 } ?? false)
+    let resolvedType: String?
+    if impact {
+      resolvedType = "strongImpact"
+    } else if scream {
+      resolvedType = "abnormalScream"
+    } else if repeated {
+      resolvedType = "repeatedSuspiciousPattern"
+    } else if shout {
+      resolvedType = "abnormalShout"
+    } else if sudden {
+      resolvedType = "suddenLoudSound"
+    } else {
+      resolvedType = nil
+    }
+
+    let confirmed: Bool
+    if resolvedType == nil {
+      confirmed = false
+    } else if impact || extreme || repeated {
+      confirmed = true
+    } else if scream && sustainedHighEnergyFrames >= 2 {
+      confirmed = true
+    } else if shout && (sustainedHighEnergyFrames >= 3 || attackRatio >= 2.0) {
+      confirmed = true
+    } else if sudden && (relative >= thresholds.relative * 1.6 || attackRatio >= 2.6) {
+      confirmed = true
+    } else {
+      confirmed = false
+    }
+
+    let confidence = confidenceScore(
+      relative: relative,
+      threshold: thresholds.relative,
+      rms: rms,
+      minimumRms: thresholds.minimumRms,
+      peak: peak,
+      attackRatio: attackRatio,
+      sustainedFrames: sustainedHighEnergyFrames,
+      extreme: extreme
+    )
+
+    let event: FrameResult?
+    if confirmed, let resolvedType = resolvedType {
+      event = FrameResult(
+        eventType: resolvedType,
         confidence: confidence,
         relativeEnergy: relative,
-        baselineDelta: delta
+        baselineDelta: delta,
+        repetitionCount: max(1, burstCount)
+      )
+    } else {
+      event = nil
+    }
+
+    return ProcessOutput(
+      event: event,
+      candidateType: resolvedType,
+      metrics: makeMetrics(
+        rms: rms,
+        peak: peak,
+        relative: relative,
+        baseline: noiseFloor,
+        phase: event != nil ? "alerting" : (resolvedType != nil ? "candidate" : "monitoring")
       ),
-      nil,
-      nil
+      calibrationProgress: nil,
+      completedNoiseFloor: nil
     )
   }
-}
 
+  private func thresholdsForSensitivity() -> Thresholds {
+    switch sensitivity {
+    case "high":
+      return Thresholds(relative: 1.9, minimumRms: 0.032, extremeRms: 0.12, extremePeak: 0.78)
+    case "low":
+      return Thresholds(relative: 3.1, minimumRms: 0.065, extremeRms: 0.20, extremePeak: 0.92)
+    default:
+      return Thresholds(relative: 2.35, minimumRms: 0.045, extremeRms: 0.15, extremePeak: 0.86)
+    }
+  }
+
+  private func calibrationSafetyBypass(
+    rms: Double,
+    peak: Double,
+    relative: Double,
+    zeroCrossingRate: Double,
+    peakRatio: Double,
+    attackRatio: Double
+  ) -> FrameResult? {
+    let thresholds = thresholdsForSensitivity()
+    let bypass = peak >= 0.92 ||
+      rms >= max(0.18, thresholds.extremeRms) ||
+      (rms >= max(0.075, thresholds.minimumRms) && peak >= 0.40 && relative >= 4.8)
+    guard bypass else { return nil }
+
+    let vocalLike = zeroCrossingRate >= 0.055 && zeroCrossingRate <= 0.36
+    let eventType: String
+    if peakRatio >= 3.2 && peak >= 0.82 {
+      eventType = "strongImpact"
+    } else if vocalLike && rms >= 0.10 {
+      eventType = "abnormalScream"
+    } else {
+      eventType = "suddenLoudSound"
+    }
+    return FrameResult(
+      eventType: eventType,
+      confidence: min(0.98, 0.76 + min(0.20, attackRatio / 10.0)),
+      relativeEnergy: relative,
+      baselineDelta: max(0, rms - provisionalCalibrationFloor()),
+      repetitionCount: 1
+    )
+  }
+
+  private func robustNoiseFloor(_ values: [Double]) -> Double {
+    guard !values.isEmpty else { return 0.006 }
+    let sorted = values.sorted()
+    let retainedCount = max(1, Int(Double(sorted.count) * 0.85))
+    let retained = Array(sorted.prefix(retainedCount))
+    let middle = retained.count / 2
+    let median: Double
+    if retained.count > 1 && retained.count % 2 == 0 {
+      median = (retained[middle - 1] + retained[middle]) / 2.0
+    } else {
+      median = retained[middle]
+    }
+    let mean = retained.reduce(0, +) / Double(retained.count)
+    return min(0.12, max(0.0005, median * 0.7 + mean * 0.3))
+  }
+
+  private func provisionalCalibrationFloor() -> Double {
+    guard calibrationSamples.count >= 4 else { return max(0.006, noiseFloor) }
+    return robustNoiseFloor(calibrationSamples)
+  }
+
+  private func registerBurst() {
+    let now = Date()
+    if let last = lastBurstAt, now.timeIntervalSince(last) <= 2.5 {
+      burstCount = min(8, burstCount + 1)
+    } else {
+      burstCount = 1
+    }
+    lastBurstAt = now
+  }
+
+  private func pushRollingRms(_ value: Double) {
+    rollingRms.append(value)
+    if rollingRms.count > 12 {
+      rollingRms.removeFirst(rollingRms.count - 12)
+    }
+  }
+
+  private func rollingAverage() -> Double {
+    guard !rollingRms.isEmpty else { return noiseFloor }
+    return rollingRms.reduce(0, +) / Double(rollingRms.count)
+  }
+
+  private func confidenceScore(
+    relative: Double,
+    threshold: Double,
+    rms: Double,
+    minimumRms: Double,
+    peak: Double,
+    attackRatio: Double,
+    sustainedFrames: Int,
+    extreme: Bool
+  ) -> Double {
+    if extreme { return 0.95 }
+    let relativeScore = min(1.0, max(0, relative / (threshold * 2.0)))
+    let levelScore = min(1.0, max(0, rms / (minimumRms * 3.0)))
+    let peakScore = min(1.0, max(0, peak / 0.90))
+    let attackScore = min(1.0, max(0, attackRatio / 3.0))
+    let persistenceScore = min(1.0, max(0, Double(sustainedFrames) / 4.0))
+    return min(0.96, max(0,
+      relativeScore * 0.32 +
+      levelScore * 0.22 +
+      peakScore * 0.16 +
+      attackScore * 0.14 +
+      persistenceScore * 0.16
+    ))
+  }
+
+  private func makeMetrics(
+    rms: Double,
+    peak: Double,
+    relative: Double,
+    baseline: Double,
+    phase: String
+  ) -> AudioMetrics {
+    AudioMetrics(
+      signalLevel: amplitudeToLevel(rms),
+      peakLevel: amplitudeToLevel(peak),
+      relativeEnergy: min(50, max(0, relative)),
+      baselineLevel: amplitudeToLevel(baseline),
+      phase: phase
+    )
+  }
+
+  private func amplitudeToLevel(_ amplitude: Double) -> Double {
+    let safe = max(0.000_001, amplitude)
+    let db = 20.0 * log10(safe)
+    return min(1.0, max(0, (db + 56.0) / 52.0))
+  }
+}
 private final class SleepSafetyIOSRuntime {
   static let shared = SleepSafetyIOSRuntime()
 
@@ -152,6 +411,8 @@ private final class SleepSafetyIOSRuntime {
   private var escalationWork: DispatchWorkItem?
   private var active = false
   private var phase = "idle"
+  private var lastMetricsEmitAt = Date.distantPast
+  private var lastCandidateEmitAt = Date.distantPast
 
   private init() {}
 
@@ -210,6 +471,8 @@ private final class SleepSafetyIOSRuntime {
       audioEngine.prepare()
       try audioEngine.start()
 
+      lastMetricsEmitAt = Date.distantPast
+      lastCandidateEmitAt = Date.distantPast
       active = true
       phase = detector?.isCalibrating() == true ? "calibrating" : "monitoring"
       emit("serviceStarted")
@@ -237,6 +500,8 @@ private final class SleepSafetyIOSRuntime {
     detectionSuppressed = false
     active = false
     phase = "idle"
+    lastMetricsEmitAt = Date.distantPast
+    lastCandidateEmitAt = Date.distantPast
     emit("serviceStopped", data: ["reason": reason])
   }
 
@@ -297,34 +562,47 @@ private final class SleepSafetyIOSRuntime {
   }
 
   private func process(buffer: AVAudioPCMBuffer) {
-    guard active, !detectionSuppressed else { return }
-    let output = detector?.process(buffer: buffer)
-    if let progress = output?.1 {
+    guard active, let output = detector?.process(buffer: buffer) else { return }
+
+    let now = Date()
+    if now.timeIntervalSince(lastMetricsEmitAt) >= 0.16 {
+      lastMetricsEmitAt = now
+      emit("audioMetrics", data: [
+        "signalLevel": output.metrics.signalLevel,
+        "peakLevel": output.metrics.peakLevel,
+        "relativeEnergy": output.metrics.relativeEnergy,
+        "baselineLevel": output.metrics.baselineLevel,
+        "phase": detectionSuppressed ? phase : output.metrics.phase,
+        "capturedAtEpochMs": Int64(now.timeIntervalSince1970 * 1000.0),
+      ])
+    }
+
+    if let progress = output.calibrationProgress {
       emit("calibrationProgress", data: ["progress": progress])
     }
-    if let floor = output?.2 {
-      phase = "monitoring"
+    if let floor = output.completedNoiseFloor {
+      let canBecomeReady = !detectionSuppressed && phase == "calibrating"
+      if canBecomeReady { phase = "monitoring" }
       emit("calibrationCompleted", data: ["noiseFloor": floor])
-      emit("monitoringReady")
+      if canBecomeReady { emit("monitoringReady") }
     }
-    guard let candidate = output?.0 else { return }
 
-    let energyFloor: Double
-    let confidenceFloor: Double
-    switch sensitivity {
-    case "low":
-      energyFloor = 4.4
-      confidenceFloor = 0.78
-    case "high":
-      energyFloor = 2.5
-      confidenceFloor = 0.58
-    default:
-      energyFloor = 3.2
-      confidenceFloor = 0.66
+    guard !detectionSuppressed else { return }
+
+    if output.event == nil,
+       let candidateType = output.candidateType,
+       now.timeIntervalSince(lastCandidateEmitAt) >= 0.30 {
+      lastCandidateEmitAt = now
+      emit("detectorCandidate", data: [
+        "eventType": candidateType,
+        "relativeEnergy": output.metrics.relativeEnergy,
+        "signalLevel": output.metrics.signalLevel,
+      ])
     }
-    guard candidate.relativeEnergy >= energyFloor,
-          candidate.confidence >= confidenceFloor else { return }
-    beginAlert(candidate)
+
+    if let event = output.event {
+      beginAlert(event)
+    }
   }
 
   private func beginAlert(_ candidate: SleepSafetyIOSDetector.FrameResult) {
@@ -338,11 +616,11 @@ private final class SleepSafetyIOSRuntime {
       "eventId": eventID,
       "detectedAt": formatter.string(from: Date()),
       "eventType": candidate.eventType,
-      "severity": candidate.relativeEnergy >= 6.0 ? "high" : "attention",
+      "severity": (candidate.relativeEnergy >= 5.0 || candidate.confidence >= 0.90) ? "high" : "attention",
       "confidence": candidate.confidence,
       "relativeEnergy": candidate.relativeEnergy,
       "baselineDelta": candidate.baselineDelta,
-      "repetitionCount": 1,
+      "repetitionCount": candidate.repetitionCount,
     ]
     currentEventData = eventData
     emit("confirmedSafetyEvent", data: eventData)

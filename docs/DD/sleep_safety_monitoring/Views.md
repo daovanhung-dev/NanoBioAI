@@ -16,14 +16,15 @@ States:
 - Access loading/error/Free/rollout-off.
 - Idle ready.
 - Arming/calibrating with progress.
-- Monitoring.
+- Monitoring with `Âm thanh môi trường` live level meter driven only by native numeric metrics.
+- Candidate/loud-sound indication on the same meter; missing metrics show a no-signal state instead of fake animation.
 - Alert overlay.
 - Escalating.
 - Cooldown.
 - Native/permission failure.
 
 Primary CTA: `Bắt đầu giám sát đêm nay` / `Dừng giám sát`.  
-Secondary: sensitivity, schedule, contacts, history, recalibrate.  
+Secondary: live signal meter, sensitivity, schedule, contacts, history, recalibrate.  
 Copy must always include the non-medical disclaimer and never say the system can
 guarantee safety.
 

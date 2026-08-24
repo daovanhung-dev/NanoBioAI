@@ -14,6 +14,7 @@ import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
 import 'package:nano_app/app_versions/v3/router/v3_router.dart';
 import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
+import 'package:nano_app/core/utils/logger/route_log_observer.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_shell_page.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
@@ -94,6 +95,7 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: V1RoutePaths.splash,
     refreshListenable: refresh,
+    observers: [AppRouteLogObserver(scope: 'V2Router')],
     redirect: (context, state) {
       final path = state.uri.path;
       final auth = ref.read(v2AuthControllerProvider);
@@ -103,10 +105,25 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
           path == V2RoutePaths.login || path == V2RoutePaths.register;
       final isProtected = V2RouteGuards.isProtectedPath(path);
 
+      String? redirectTo(String? target, String reason) {
+        if (target != null && target != path) {
+          AppRouteLogObserver.redirect(
+            scope: 'V2Router',
+            from: path,
+            to: target,
+            reason: reason,
+          );
+        }
+        return target;
+      }
+
       if (isAccountEntry &&
           routeState != null &&
           routeState.status != AuthRouteStatus.unauthenticated) {
-        return V2RoutePaths.authGate;
+        return redirectTo(
+          V2RoutePaths.authGate,
+          'signed_in_account_entry_guard',
+        );
       }
 
       final isSignedIn =
@@ -116,20 +133,27 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
         path,
         isSignedIn: isSignedIn,
       );
-      if (v1GuestRedirect != null) return v1GuestRedirect;
+      if (v1GuestRedirect != null) {
+        return redirectTo(v1GuestRedirect, 'v1_guest_route_guard');
+      }
 
       if (!isProtected) return null;
       if (syncState.status == UserDataSyncStatus.awaitingConsent ||
           syncState.status == UserDataSyncStatus.syncing) {
-        return V2RoutePaths.authGate;
+        return redirectTo(V2RoutePaths.authGate, 'cloud_sync_not_ready');
       }
-      if (auth.isLoading) return V2RoutePaths.authGate;
-      if (auth.hasError || routeState == null) return V2RoutePaths.authGate;
+      if (auth.isLoading) {
+        return redirectTo(V2RoutePaths.authGate, 'auth_loading');
+      }
+      if (auth.hasError || routeState == null) {
+        return redirectTo(V2RoutePaths.authGate, 'auth_state_unresolved');
+      }
 
       return switch (routeState.status) {
         AuthRouteStatus.authenticatedReady => null,
-        AuthRouteStatus.unauthenticated => V2RoutePaths.login,
-        _ => V2RoutePaths.authGate,
+        AuthRouteStatus.unauthenticated =>
+          redirectTo(V2RoutePaths.login, 'authentication_required'),
+        _ => redirectTo(V2RoutePaths.authGate, 'auth_transition_in_progress'),
       };
     },
     routes: [...v1Routes, ...v2Routes, ...v3Routes],
@@ -146,8 +170,6 @@ abstract class V2RouteGuards {
     V3RoutePaths.home,
     V3RoutePaths.advancedTracking,
     V3RoutePaths.familyPlus,
-    V3RoutePaths.foodScan,
-    V3RoutePaths.foodScanHistory,
   };
 
   static String? redirectForV1Guest(

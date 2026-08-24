@@ -25,7 +25,7 @@ class FoodScanImageService {
     try {
       final picked = await pickerService.pickFromCameraWithPermissionFeedback();
       if (picked == null) return null;
-      return prepare(picked, userId: userId);
+      return await prepare(picked, userId: userId);
     } on ImagePickerServiceException catch (error) {
       throw FoodScanException(
         code: 'CAMERA_PICK_FAILED',
@@ -39,7 +39,7 @@ class FoodScanImageService {
     try {
       final picked = await pickerService.pickFromGallery();
       if (picked == null) return null;
-      return prepare(picked, userId: userId);
+      return await prepare(picked, userId: userId);
     } on ImagePickerServiceException catch (error) {
       throw FoodScanException(
         code: 'GALLERY_PICK_FAILED',

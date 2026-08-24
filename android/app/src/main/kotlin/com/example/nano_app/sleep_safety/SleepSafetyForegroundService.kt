@@ -21,6 +21,9 @@ class SleepSafetyForegroundService : Service() {
         const val ACTION_UPDATE = "com.nanobioai.app.sleep_safety.UPDATE"
         const val ACTION_RESPONSE_OK = "com.nanobioai.app.sleep_safety.RESPONSE_OK"
         const val ACTION_RESPONSE_HELP = "com.nanobioai.app.sleep_safety.RESPONSE_HELP"
+
+        private const val METRICS_EMIT_INTERVAL_MS = 160L
+        private const val CANDIDATE_EMIT_INTERVAL_MS = 300L
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -37,6 +40,8 @@ class SleepSafetyForegroundService : Service() {
     private var currentSensitivity: String = "balanced"
     private var starting = false
     private var foregroundStarted = false
+    private var lastMetricsEmitAt = 0L
+    private var lastCandidateEmitAt = 0L
 
     override fun onCreate() {
         super.onCreate()
@@ -49,9 +54,7 @@ class SleepSafetyForegroundService : Service() {
         try {
             when (intent?.action) {
                 ACTION_START -> startMonitoring(intent)
-                ACTION_STOP -> stopMonitoring(
-                    intent.getStringExtra("reason") ?: "user",
-                )
+                ACTION_STOP -> stopMonitoring(intent.getStringExtra("reason") ?: "user")
                 ACTION_CALIBRATE -> detector?.startCalibration(
                     intent.getIntExtra("calibrationSeconds", 30),
                 )
@@ -99,10 +102,7 @@ class SleepSafetyForegroundService : Service() {
 
             SleepSafetyRuntimeStatus.sessionId = intent.getStringExtra("sessionId")
             SleepSafetyRuntimeStatus.phase = "arming"
-            cooldownSeconds = intent.getIntExtra(
-                "cooldownSeconds",
-                120,
-            ).coerceIn(30, 900)
+            cooldownSeconds = intent.getIntExtra("cooldownSeconds", 120).coerceIn(30, 900)
             currentSensitivity = intent.getStringExtra("sensitivity") ?: "balanced"
             scheduledEndEpochMs = intent.getLongExtra(
                 "scheduledEndEpochMs",
@@ -132,9 +132,7 @@ class SleepSafetyForegroundService : Service() {
             if (!audioCapture.start()) return
             if (!SleepSafetyRuntimeStatus.active) return
 
-            SleepSafetyRuntimeStatus.phase = if (
-                detector?.isCalibrating() == true
-            ) {
+            SleepSafetyRuntimeStatus.phase = if (detector?.isCalibrating() == true) {
                 "calibrating"
             } else {
                 "monitoring"
@@ -191,7 +189,7 @@ class SleepSafetyForegroundService : Service() {
             try {
                 stopForeground(STOP_FOREGROUND_REMOVE)
             } catch (_: RuntimeException) {
-                // Best-effort cleanup only. Never crash while handling a start failure.
+                // Best-effort cleanup only.
             }
             foregroundStarted = false
         }
@@ -217,28 +215,63 @@ class SleepSafetyForegroundService : Service() {
     }
 
     private fun onAudioFrame(samples: ShortArray, length: Int) {
-        if (detectionSuppressed) return
-        val result = detector?.process(samples, length) ?: return
-        val energyFloor = when (intentSensitivity()) {
-            "low" -> 4.4
-            "high" -> 2.5
-            else -> 3.2
-        }
-        val confidenceFloor = when (intentSensitivity()) {
-            "low" -> 0.78
-            "high" -> 0.58
-            else -> 0.66
-        }
+        val activeDetector = detector ?: return
+        val output = activeDetector.process(samples, length) ?: return
+        val now = System.currentTimeMillis()
+
+        emitAudioMetrics(output.metrics, now)
+
         if (
-            result.relativeEnergy < energyFloor ||
-            result.confidence < confidenceFloor
+            SleepSafetyRuntimeStatus.phase == "calibrating" &&
+            !activeDetector.isCalibrating()
         ) {
-            return
+            SleepSafetyRuntimeStatus.phase = "monitoring"
+            SleepSafetyNativeEventBus.emit("monitoringReady")
         }
-        beginAlert(result)
+
+        if (detectionSuppressed) return
+
+        if (
+            output.confirmedEvent == null &&
+            output.candidateType != null &&
+            now - lastCandidateEmitAt >= CANDIDATE_EMIT_INTERVAL_MS
+        ) {
+            lastCandidateEmitAt = now
+            SleepSafetyNativeEventBus.emit(
+                "detectorCandidate",
+                mapOf(
+                    "eventType" to output.candidateType,
+                    "relativeEnergy" to output.metrics.relativeEnergy,
+                    "signalLevel" to output.metrics.signalLevel,
+                ),
+            )
+        }
+
+        output.confirmedEvent?.let(::beginAlert)
     }
 
-    private fun intentSensitivity(): String = currentSensitivity
+    private fun emitAudioMetrics(
+        metrics: SleepSafetyDetector.AudioMetrics,
+        now: Long,
+    ) {
+        if (now - lastMetricsEmitAt < METRICS_EMIT_INTERVAL_MS) return
+        lastMetricsEmitAt = now
+        val runtimePhase = when {
+            detectionSuppressed -> SleepSafetyRuntimeStatus.phase
+            else -> metrics.phase
+        }
+        SleepSafetyNativeEventBus.emit(
+            "audioMetrics",
+            mapOf(
+                "signalLevel" to metrics.signalLevel,
+                "peakLevel" to metrics.peakLevel,
+                "relativeEnergy" to metrics.relativeEnergy,
+                "baselineLevel" to metrics.baselineLevel,
+                "phase" to runtimePhase,
+                "capturedAtEpochMs" to now,
+            ),
+        )
+    }
 
     private fun beginAlert(result: SleepSafetyDetector.FrameResult) {
         if (currentEventId != null) return
@@ -251,11 +284,13 @@ class SleepSafetyForegroundService : Service() {
             "eventId" to eventId,
             "detectedAt" to now,
             "eventType" to result.eventType,
-            "severity" to if (result.relativeEnergy >= 6.0) "high" else "attention",
+            "severity" to if (
+                result.relativeEnergy >= 5.0 || result.confidence >= 0.90
+            ) "high" else "attention",
             "confidence" to result.confidence,
             "relativeEnergy" to result.relativeEnergy,
             "baselineDelta" to result.baselineDelta,
-            "repetitionCount" to 1,
+            "repetitionCount" to result.repetitionCount,
         )
         SleepSafetyRuntimeStatus.currentEvent = eventData
         SleepSafetyNativeEventBus.emit("confirmedSafetyEvent", eventData)
@@ -309,6 +344,7 @@ class SleepSafetyForegroundService : Service() {
         }
         currentEventId = null
         SleepSafetyRuntimeStatus.currentEvent = null
+        SleepSafetyRuntimeStatus.phase = "cooldown"
         handler.postDelayed({
             if (SleepSafetyRuntimeStatus.active) {
                 detectionSuppressed = false
@@ -319,6 +355,7 @@ class SleepSafetyForegroundService : Service() {
                     SleepSafetyNotificationFactory.NOTIFICATION_ID,
                     notifications.monitoring(),
                 )
+                SleepSafetyNativeEventBus.emit("monitoringReady")
             }
         }, cooldownSeconds * 1000L)
     }
@@ -371,6 +408,8 @@ class SleepSafetyForegroundService : Service() {
         detector = null
         currentEventId = null
         detectionSuppressed = false
+        lastMetricsEmitAt = 0L
+        lastCandidateEmitAt = 0L
     }
 
     private fun resetRuntimeStatus() {

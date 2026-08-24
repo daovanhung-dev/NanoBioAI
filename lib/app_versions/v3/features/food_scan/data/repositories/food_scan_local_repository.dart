@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:nano_app/app_versions/v2/features/cloud_sync/application/user_data_sync_outbox.dart';
+import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/models/nutrition_log_model.dart';
 import 'package:sqflite/sqflite.dart';
@@ -104,12 +104,10 @@ class FoodScanLocalRepository {
         return logId;
       });
 
-      await UserDataSyncOutbox.tryEnqueueUpsertForCurrentUser(
-        tableName: 'nutrition_logs',
-        recordId: committedLogId,
-        database: db,
-      );
-      UserDataSyncOutbox.requestImmediateDrain(database: db);
+      // nutrition_logs participates in SyncOutboxSchema triggers, so the
+      // committed insert is already durably queued for cloud sync. Only signal
+      // the registered application-level dispatcher to drain it immediately.
+      LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
       return result.copyWith(nutritionLogId: committedLogId);
     } catch (error) {
       if (error is FoodScanException) rethrow;

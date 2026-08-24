@@ -108,23 +108,36 @@ similar raw-capture payload in M31 persistence schemas.
 
 ## 5. Detection design
 
-### M31-ADR01 — deterministic rollout-gated detector first
+### M31-ADR01 — deterministic rollout-gated detector v2
 
-The delivery uses a low-cost deterministic feature extractor on Android/iOS:
+The delivery uses an on-device deterministic feature detector on Android/iOS.
+Raw PCM remains RAM-only and is discarded after numeric feature extraction.
+Detector v2 uses:
 
-- RMS energy
-- peak / RMS (crest-like ratio)
-- zero-crossing rate
-- calibrated room noise floor
-- repeated candidate count
+- RMS + peak signal level;
+- peak / RMS (crest-like ratio);
+- zero-crossing rate;
+- robust room baseline from trimmed/median calibration samples;
+- slow baseline adaptation on quiet frames only;
+- rolling RMS / attack ratio;
+- sustained high-energy frames and short-window repeated bursts;
+- extreme-event bypass while calibration is still running.
 
-Labels are acoustic hints only: sudden loud sound, impact-like, shout-like,
-scream-like, repeated suspicious pattern, unknown high-energy event.
+The detector owns the **single** confirmed/candidate decision. The foreground
+service does not apply a second independent energy/confidence threshold. Labels
+remain acoustic hints only: sudden loud sound, impact-like, shout-like,
+scream-like and repeated suspicious pattern.
 
-Numeric thresholds are **experimental implementation values**, not medical or
-clinical rules. Schema 07 keeps a fail-safe OFF default, while SQL 08 enables the
-current paid rollout decision. The server kill switch remains authoritative. A future licensed on-device classifier may be inserted behind the
-same event metadata contract without changing BD behavior.
+Native also emits throttled transient `audioMetrics` (`signalLevel`, `peakLevel`,
+`baselineLevel`, `relativeEnergy`, phase) for the live UI meter. These metrics
+are not stored in SQLite/Supabase; no PCM, file, transcript or raw waveform is
+sent through Flutter channels.
+
+Numeric thresholds remain experimental implementation values, not medical or
+clinical rules. SQL 08 enables the current paid rollout decision while the
+server kill switch remains authoritative. Device hit-rate / false-positive /
+battery evidence is still required before calling the detector production
+validated.
 
 ### M31-ADR02 — no STT for sleep monitoring
 
@@ -226,9 +239,9 @@ No official emergency service number is part of this flow.
 
 ## 12. Rollout
 
-`01_build_system.sql` creates the server config with `enabled=false` as a
-fail-safe baseline, then applies the approved current rollout decision that
-changes only `config_key=default` to `enabled=true`.
+`07_schema_sleep_safety.sql` creates the server config with `enabled=false` as a
+fail-safe baseline. `08_enable_sleep_safety_rollout.sql` is the approved current
+rollout decision and changes only `config_key=default` to `enabled=true`.
 
 This does not grant membership: Flutter and Edge Functions still require trusted
 Plus/FamilyPlus access. The kill switch can be returned to `false` server-side

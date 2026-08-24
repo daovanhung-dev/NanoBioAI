@@ -6,8 +6,8 @@
 | M31-FN02 | `startMonitoring` | Controller | source + already-resolved rollout state | local session + native start | no duplicate rollout fetch; permission/native failure |
 | M31-FN03 | `stopMonitoring` | Controller/native | reason | native stop + ended session | idempotent stop |
 | M31-FN04 | Native service/audio session start | Android/iOS | session config | microphone capture active | user-start only, permission lost |
-| M31-FN05 | Calibration | Native + Controller | 30s frames | numeric noise floor | no audio persistence |
-| M31-FN06 | Acoustic feature detection | Native | PCM frame RAM | metadata candidate | sensitivity/feature thresholds |
+| M31-FN05 | Robust calibration | Native + Controller | 30s frames | trimmed/median numeric noise floor + progress | extreme-event bypass; no audio persistence |
+| M31-FN06 | Acoustic detector v2 | Native | PCM frame RAM | confirmed/candidate decision + transient metrics | single decision layer, rolling energy/attack/impact/vocal-like policy |
 | M31-FN07 | Confirm event | Native/Controller | candidate | event + T0 alert | duplicate suppression |
 | M31-FN08 | Alert reminder | Native timer | event | +30s reminder | timer cancel on response |
 | M31-FN09 | `respondOk` | Controller/native | eventId | response ok + cooldown | no dispatch |
@@ -23,6 +23,7 @@
 | M31-FN19 | Schedule arming notifications | Reminder service | preference | local notifications | no mic auto-start |
 | M31-FN20 | List event history | Local datasource/DAO | user id | recent metadata | ownership/no raw audio |
 | M31-FN21 | Restore native status | EventChannel/Controller | snapshot | session/event/machine recovery | engine recreation/idempotent escalation |
+| M31-FN22 | Live sound metrics | Native/EventChannel/Controller/UI | RMS/peak numeric features | 0..1 signal/peak/baseline meter state | throttled, RAM-only, stale-signal watchdog, no PCM payload |
 
 ## API / RPC contracts
 
@@ -83,6 +84,8 @@ Events:
 - `calibrationProgress`
 - `calibrationCompleted`
 - `monitoringReady`
+- `audioMetrics`
+- `detectorCandidate`
 - `confirmedSafetyEvent`
 - `alertReminder`
 - `userResponse`
@@ -101,6 +104,5 @@ Events:
   the already-resolved `sleepSafetyRolloutProvider`.
 - `startMonitoring()` reads that resolved state and never invokes
   `SleepSafetyRepository.isRolloutEnabled()` a second time.
-- Notification permission is exposed through an injectable provider boundary for
-  deterministic controller tests; production still delegates to
-  `NotificationBootstrap.scheduler.requestPermissions`.
+- Notification permission is exposed through an injectable M31-only boundary;
+  starting monitoring does not request Exact Alarm access.

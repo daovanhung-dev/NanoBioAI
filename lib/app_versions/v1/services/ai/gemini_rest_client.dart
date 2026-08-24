@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:nano_app/core/utils/logger/dio_log_interceptor.dart';
 
 /// Hàm HTTP POST có thể được mock trong unit test.
 typedef GeminiHttpPost =
@@ -365,7 +366,10 @@ class GeminiRestClient {
   }
 
   static GeminiHttpPost _createDioPost(Dio? injectedDio) {
-    final dio = injectedDio ?? _newDio();
+    final dio = attachDioLogging(
+      injectedDio ?? _newDio(),
+      scope: 'Gemini',
+    );
     return ({
       required String url,
       required Map<String, String> headers,
@@ -408,7 +412,10 @@ class GeminiRestClient {
   }
 
   static GeminiHttpStreamPost _createDioStreamPost(Dio? injectedDio) {
-    final dio = injectedDio ?? _newDio();
+    final dio = attachDioLogging(
+      injectedDio ?? _newDio(),
+      scope: 'Gemini',
+    );
     return ({
       required String url,
       required Map<String, String> headers,

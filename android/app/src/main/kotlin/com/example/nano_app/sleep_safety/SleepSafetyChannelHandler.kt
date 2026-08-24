@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Handler
+import android.os.Looper
 import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
@@ -21,9 +23,10 @@ class SleepSafetyChannelHandler(
         messenger,
         "com.nanobioai.app/sleep_safety/events",
     )
+    private val mainHandler = Handler(Looper.getMainLooper())
     private var sink: EventChannel.EventSink? = null
     private val listener: (Map<String, Any?>) -> Unit = { event ->
-        sink?.success(event)
+        mainHandler.post { sink?.success(event) }
     }
 
     init {

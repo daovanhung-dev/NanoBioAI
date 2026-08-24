@@ -1,5 +1,5 @@
-import 'dart:convert';
-
+import 'package:nano_app/core/utils/logger/app_log_category.dart';
+import 'package:nano_app/core/utils/logger/app_log_level.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 
 class AITraceLogger {
@@ -46,7 +46,7 @@ class AITraceLogger {
   const AITraceLogger._();
 
   static String nextTraceId(String scope) {
-    final timestamp = DateTime.now().toUtc().toIso8601String();
+    final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
     final sequence = (++_sequence).toString().padLeft(4, '0');
     return '$scope-$timestamp-$sequence';
   }
@@ -78,10 +78,15 @@ class AITraceLogger {
     Map<String, Object?> data = const {},
     StackTrace? location,
   }) {
-    AppLogger.success(tag, _line(traceId, method, step, message));
-    if (data.isNotEmpty) {
-      _metadata(tag, traceId, method, '$step.data', data);
-    }
+    _write(
+      level: AppLogLevel.info,
+      tag: tag,
+      traceId: traceId,
+      method: method,
+      step: step,
+      message: message,
+      data: data,
+    );
   }
 
   static void info(
@@ -93,10 +98,15 @@ class AITraceLogger {
     Map<String, Object?> data = const {},
     StackTrace? location,
   }) {
-    AppLogger.info(tag, _line(traceId, method, step, message));
-    if (data.isNotEmpty) {
-      _metadata(tag, traceId, method, '$step.data', data);
-    }
+    _write(
+      level: AppLogLevel.debug,
+      tag: tag,
+      traceId: traceId,
+      method: method,
+      step: step,
+      message: message,
+      data: data,
+    );
   }
 
   static void warning(
@@ -108,10 +118,15 @@ class AITraceLogger {
     Map<String, Object?> data = const {},
     StackTrace? location,
   }) {
-    AppLogger.warning(tag, _line(traceId, method, step, message));
-    if (data.isNotEmpty) {
-      _metadata(tag, traceId, method, '$step.data', data);
-    }
+    _write(
+      level: AppLogLevel.warn,
+      tag: tag,
+      traceId: traceId,
+      method: method,
+      step: step,
+      message: message,
+      data: data,
+    );
   }
 
   static void error(
@@ -125,53 +140,53 @@ class AITraceLogger {
     Map<String, Object?> data = const {},
     StackTrace? location,
   }) {
-    AppLogger.error(tag, _line(traceId, method, step, message));
-    _metadata(tag, traceId, method, '$step.data', {
-      ...data,
-      'errorType': error.runtimeType.toString(),
-    });
+    AppLogger.captureError(
+      category: AppLogCategory.ai,
+      scope: tag,
+      operation: '$method.$step',
+      message: message,
+      error: error,
+      stackTrace: stackTrace,
+      correlationId: traceId,
+      metadata: _sanitizeMetadata({
+        ...data,
+        'errorType': error.runtimeType.toString(),
+      }),
+    );
   }
 
-  static void _metadata(
-    String tag,
-    String traceId,
-    String method,
-    String step,
-    Map<String, Object?> data,
-  ) {
+  static void _write({
+    required AppLogLevel level,
+    required String tag,
+    required String traceId,
+    required String method,
+    required String step,
+    required String message,
+    required Map<String, Object?> data,
+  }) {
+    AppLogger.event(
+      level: level,
+      category: AppLogCategory.ai,
+      scope: tag,
+      operation: '$method.$step',
+      message: message,
+      correlationId: traceId,
+      metadata: _sanitizeMetadata(data),
+    );
+  }
+
+  static Map<String, Object?> _sanitizeMetadata(Map<String, Object?> data) {
     final sanitized = <String, Object?>{};
     for (final entry in data.entries) {
-      if (!_isAllowedMetadataKey(entry.key)) continue;
+      if (!_allowedMetadataKeys.contains(entry.key)) continue;
       final value = _safeMetadataValue(entry.key, entry.value);
-      if (value != null) {
-        sanitized[entry.key] = value;
-      }
+      if (value != null) sanitized[entry.key] = value;
     }
-    if (sanitized.isEmpty) return;
-
-    AppLogger.info(tag, _line(traceId, method, step, jsonEncode(sanitized)));
-  }
-
-  static String _line(
-    String traceId,
-    String method,
-    String step,
-    String message,
-  ) {
-    return 'traceId=$traceId method=$method step=$step $message';
-  }
-
-  static bool _isAllowedMetadataKey(String key) {
-    return _allowedMetadataKeys.contains(key);
+    return sanitized;
   }
 
   static Object? _safeMetadataValue(String key, Object? value) {
-    if (value is num || value is bool) {
-      return value;
-    }
-    if (value is String) {
-      return value;
-    }
+    if (value is num || value is bool || value is String) return value;
     if (key == 'models' && value is Iterable<String>) {
       return value.toList(growable: false);
     }
