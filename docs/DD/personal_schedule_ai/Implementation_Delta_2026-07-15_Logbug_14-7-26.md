@@ -20,4 +20,5 @@
 - `PersonalScheduleStillActiveException`, `ScheduleHorizonDataException`, `DailyRoutinePreferencesRequiredException` là lỗi fail-closed tương ứng.
 - Runtime: `generated_plan_service.dart`, schedule horizon datasource/entity/repository, timing resolver và timeline builder.
 - Test: horizon tháng/năm/leap-day/malformed, single-flight, gate trước quota/AI, idempotent retry và manifest 10/11.
-- SQL: migration 16 và `config.sql` chấp nhận 10/11 item/ngày; sandbox apply vẫn là gate riêng.
+- SQL: `01_build_system.sql` chấp nhận 10/11 item/ngày; sandbox apply vẫn là
+  gate riêng.

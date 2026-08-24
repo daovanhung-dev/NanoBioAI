@@ -69,5 +69,7 @@ Commit de xuat: docs(checklist): tao checklist no ky thuat
 
 - Use `fix-issues` for one documented issue/todo at a time.
 - For new rows marked `New`, create issue docs first through `create-issues` before fixing.
-- For Supabase behavior changes, follow `.codex/workflows/supabase-schema.md` and update `docs/supabase/config.sql` when schema/RLS/RPC changes.
+- For Supabase behavior changes, follow `.codex/workflows/supabase-schema.md`
+  and update `docs/supabase/01_build_system.sql` for schema/RLS/RPC/runtime
+  changes or `docs/supabase/02_seed_data.sql` for destructive sandbox fixtures.
 - After each substantial fix, create/update worklog and run `.codex/tools/update_worklog_learning.ps1`.

@@ -15,6 +15,11 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Iterable
 
+from sync_meal_catalog_sql import (
+    generated_catalog_header,
+    replace_generated_catalog_block,
+)
+
 STATUS = "estimated_from_ingredients"
 SERVING = "1 khẩu phần (ước tính)"
 
@@ -224,12 +229,12 @@ def recipe_sql(recipe: dict) -> str:
 
 def rewrite_seed(seed_path: Path, recipes: list[dict]) -> None:
     text = seed_path.read_text(encoding="utf-8")
-    marker = "insert into public.meal_catalog ("
-    start = text.find(marker)
-    if start < 0: raise RuntimeError("meal_catalog seed marker not found")
-    prefix = text[:start].rstrip()
     block = "\n".join(recipe_sql(r) for r in recipes)
-    seed_path.write_text(prefix + "\n\n" + block + "\n\ncommit;\n", encoding="utf-8")
+    rewritten = replace_generated_catalog_block(
+        text,
+        generated_catalog_header() + "\n\n" + block,
+    )
+    seed_path.write_text(rewritten, encoding="utf-8")
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -237,7 +242,7 @@ def main() -> int:
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     asset = args.root / "assets/data/meal_catalog_v1.json"
-    seed = args.root / "docs/supabase/05_seed_local_sandbox.sql"
+    seed = args.root / "docs/supabase/02_seed_data.sql"
     doc = json.loads(asset.read_text(encoding="utf-8"))
     recipes = doc.get("recipes")
     if not isinstance(recipes, list): raise RuntimeError("recipes must be a list")

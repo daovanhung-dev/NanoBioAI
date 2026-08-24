@@ -10,15 +10,17 @@ dung cũ khi cần đối chiếu theo thời điểm.
 Khi hai nguồn mâu thuẫn, dùng thứ tự sau:
 
 1. Code reachable từ `lib/main.dart`, router được compose và wiring provider.
-2. SQLite schema/migration trong `lib/core/storage/localdb/`, Supabase SQL
-   nguồn `01`–`06`, Edge Function và cấu hình platform thực thi.
+2. SQLite schema/migration trong `lib/core/storage/localdb/`, Supabase build
+   `01_build_system.sql` rồi seed `02_seed_data.sql`, Edge Function và cấu
+   hình platform thực thi.
 3. `pubspec.yaml`, `pubspec.lock`, manifest/build config và catalog asset.
 4. Assertion thực thi trong test; comment và fixture prose không ghi đè code.
 5. README, BD, DD, checklist, thiết kế, audit và tài liệu lịch sử.
 
-`docs/supabase/config.sql` là file sinh từ SQL `01`–`06`, không sửa trực tiếp.
-Code tồn tại nhưng không reachable từ runtime được ghi `Source-only`, không
-được mô tả như tính năng người dùng đang sử dụng.
+Hai script `docs/supabase/01_build_system.sql` rồi
+`docs/supabase/02_seed_data.sql` là nguồn local/sandbox có thẩm quyền. Code
+tồn tại nhưng không reachable từ runtime được ghi `Source-only`, không được
+mô tả như tính năng người dùng đang sử dụng.
 
 ## Ba trục trạng thái
 
@@ -40,7 +42,7 @@ Supabase sandbox, tài liệu phải giữ trạng thái `Runtime-unverified` ho
 | Nhóm | Vai trò | Cách sử dụng |
 | --- | --- | --- |
 | `BD/`, `DD/` | Traceability theo module | Giữ ID, nhưng trạng thái triển khai phải dẫn tới source hiện hành. |
-| `supabase/` | Source SQL local/sandbox và hướng dẫn rebuild | `01`–`06` là nguồn; `90`–`94` là validation; `config.sql` là generated. |
+| `supabase/` | Source SQL local/sandbox và hướng dẫn rebuild | Chạy `01_build_system.sql`, rồi `02_seed_data.sql`; assertion/smoke thuộc đúng script. |
 | `checklist/` | Trạng thái hiện hành hoặc baseline có nhãn | Checklist cũ phải ghi `Historical`/`Superseded`. |
 | `audit/` | Báo cáo và manifest source-truth | Dùng để chứng minh coverage và các ngoại lệ có lý do. |
 | `worklog/`, `features/`, `fixbug/` | Lịch sử thay đổi | Không viết lại sự kiện cũ theo kiến trúc mới. |

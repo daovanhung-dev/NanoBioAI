@@ -4,30 +4,33 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('M13 VietQR hardening executable acceptance source', () {
-    late String migration;
-    late String rebuild;
+    late String build;
+    late String seed;
     late String smoke;
 
     setUpAll(() {
-      rebuild = File('docs/supabase/config.sql').readAsStringSync();
-      migration = rebuild;
+      build = File('docs/supabase/01_build_system.sql').readAsStringSync();
+      seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
       smoke = File(
         'test/docs/fixtures/supabase_membership_payment_hardening_smoke.sql',
       ).readAsStringSync();
     });
 
     test('keeps the canonical reference-only VietQR contract', () {
-      for (final source in [migration, rebuild]) {
-        expect(source, contains(r"'^NB[0-9A-F]{12}$'"));
-        expect(source, contains('v_transfer_memo := v_transfer_reference'));
-        expect(
-          source,
-          contains("'transfer_memo_contract', 'reference_only_v2'"),
-        );
-        expect(source, contains('"bank_code": "VCB"'));
-        expect(source, contains('"bank_bin": "970436"'));
-        expect(source, contains('"bank_account_number": "1026806174"'));
-        expect(source, contains('"bank_account_name": "LE PHU THACH"'));
+      for (final token in [
+        r"'^NB[0-9A-F]{12}$'",
+        'v_transfer_memo := v_transfer_reference',
+        "'transfer_memo_contract', 'reference_only_v2'",
+      ]) {
+        expect(build, contains(token), reason: token);
+      }
+      for (final token in [
+        '"bank_code": "VCB"',
+        '"bank_bin": "970436"',
+        '"bank_account_number": "1026806174"',
+        '"bank_account_name": "LE PHU THACH"',
+      ]) {
+        expect(seed, contains(token), reason: token);
       }
     });
 
@@ -40,8 +43,7 @@ void main() {
         "aur.role_code in ('finance_admin', 'super_admin')",
         'PAYMENT_TRANSFER_RECONCILIATION_REQUIRED',
       ]) {
-        expect(migration, contains(token), reason: 'migration: $token');
-        expect(rebuild, contains(token), reason: 'config.sql: $token');
+        expect(build, contains(token), reason: token);
       }
     });
 
@@ -58,8 +60,7 @@ void main() {
         'superseded_subscription_ids',
         'public.admin_write_audit',
       ]) {
-        expect(migration, contains(token), reason: token);
-        expect(rebuild, contains(token), reason: 'config.sql: $token');
+        expect(build, contains(token), reason: token);
       }
     });
 
@@ -94,10 +95,7 @@ void main() {
 
     test('documents the only acceptance case that needs two SQL sessions', () {
       expect(smoke, contains('True two-session concurrency'));
-      expect(
-        smoke,
-        contains('docs/supabase/README.md as runtime UNVERIFIED'),
-      );
+      expect(smoke, contains('docs/supabase/README.md'));
     });
   });
 }

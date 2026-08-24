@@ -16,7 +16,8 @@ Domain/application code must not import Flutter widgets, sqflite, Supabase clien
 | `lib/features/nabi/presentation/` | overlay/controllers/providers | application/domain/theme | DAO/raw clients |
 | `lib/app_versions/v1/services/notifications/` | shared native bootstrap/envelope dispatch | M30 gateway contracts | M30 business policy |
 | `lib/app_versions/v2/features/membership_entitlement/` | trusted billing period/access snapshot | membership datasource | M30 presentation |
-| `docs/supabase/config.sql` | rebuildable schema/RLS/RPC/seed | PostgreSQL | secrets/production data |
+| `docs/supabase/01_build_system.sql` | rebuildable schema/RLS/RPC/runtime | PostgreSQL | secrets/production data |
+| `docs/supabase/02_seed_data.sql` | destructive local/sandbox reset and fixture seed | PostgreSQL | secrets/production data |
 
 ## Public contracts
 
@@ -40,4 +41,3 @@ Domain/application code must not import Flutter widgets, sqflite, Supabase clien
 - `test/core/storage/localdb/`: fresh DB and v14→v15 migration.
 - `test/services/notifications/`: envelope routing/M09 regression.
 - `test/docs/`: Supabase config/RLS/RPC contracts.
-

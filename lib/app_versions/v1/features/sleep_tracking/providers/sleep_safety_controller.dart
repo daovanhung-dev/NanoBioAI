@@ -109,7 +109,15 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     final userId = ref.read(currentAuthUserIdProvider);
     final preference = state.preference;
     if (userId == null || preference == null || state.isBusy) return;
-    state = state.copyWith(isBusy: true, clearError: true, clearNotice: true);
+
+    SleepSafetySession? startingSession;
+    var nativeStartRequested = false;
+    state = state.copyWith(
+      isBusy: true,
+      clearError: true,
+      clearNotice: true,
+    );
+
     try {
       if (!ref.read(sleepSafetyRolloutApprovedProvider)) {
         throw StateError('rollout_disabled');
@@ -122,34 +130,73 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
       if (!notificationsAllowed) {
         throw StateError('notification_denied');
       }
+
       final now = DateTime.now();
       final sessionId = _newId('ss');
       final session = SleepSafetySession(
-        id: sessionId, userId: userId, startedAt: now, sensitivity: preference.sensitivity,
-        status: SleepSafetySessionStatus.arming, startSource: source,
-        platform: defaultTargetPlatform.name, appVersion: '1.0.0', createdAt: now, updatedAt: now,
+        id: sessionId,
+        userId: userId,
+        startedAt: now,
+        sensitivity: preference.sensitivity,
+        status: SleepSafetySessionStatus.arming,
+        startSource: source,
+        platform: defaultTargetPlatform.name,
+        appVersion: '1.0.0',
+        createdAt: now,
+        updatedAt: now,
         calibrationNoiseFloor: preference.calibrationNoiseFloor,
         scheduledWindowEnd: _nextScheduleEnd(preference, now),
       );
       await _repository.saveSession(session);
-      await _repository.startNative(<String,Object?>{
-        'sessionId':sessionId,'userId':userId,'sensitivity':preference.sensitivity.name,
-        'calibrationRequired':preference.calibrationRequired,'calibrationNoiseFloor':preference.calibrationNoiseFloor,
-        'calibrationSeconds':30,'cooldownSeconds':preference.cooldownSeconds,
-        'scheduledEndEpochMs':session.scheduledWindowEnd?.millisecondsSinceEpoch,
+      startingSession = session;
+
+      // Persist and expose the arming session before crossing into native code.
+      // If Android rejects foreground-service creation, the asynchronous native
+      // failure event can still close this exact session instead of leaving a
+      // ghost `arming` row behind.
+      state = state.copyWith(session: session, machine: _machine.arm());
+      nativeStartRequested = true;
+      await _repository.startNative(<String, Object?>{
+        'sessionId': sessionId,
+        'userId': userId,
+        'sensitivity': preference.sensitivity.name,
+        'calibrationRequired': preference.calibrationRequired,
+        'calibrationNoiseFloor': preference.calibrationNoiseFloor,
+        'calibrationSeconds': 30,
+        'cooldownSeconds': preference.cooldownSeconds,
+        'scheduledEndEpochMs':
+            session.scheduledWindowEnd?.millisecondsSinceEpoch,
       });
-      state = state.copyWith(session: session, machine: _machine.arm(), notice: state.contacts.any((c)=>c.isVerified) ? null : 'Bạn chưa có người liên hệ đã xác minh. Cảnh báo tại máy vẫn hoạt động nhưng Nabi chưa thể liên hệ hỗ trợ qua cloud.');
+
+      state = state.copyWith(
+        notice: state.contacts.any((contact) => contact.isVerified)
+            ? null
+            : 'Bạn chưa có người liên hệ đã xác minh. Cảnh báo tại máy vẫn hoạt động nhưng Nabi chưa thể liên hệ hỗ trợ qua cloud.',
+      );
+    } on SleepSafetyNativeStartException catch (error) {
+      await _finishSession(error.code, failed: true);
+      state = state.copyWith(
+        errorMessage: _nativeStartErrorMessage(error.code),
+      );
     } on StateError catch (error) {
       final code = error.message;
-      state = state.copyWith(errorMessage: code == 'microphone_denied'
-          ? 'NanoBio cần quyền micro để giám sát âm thanh khi bạn ngủ.'
-          : code == 'notification_denied'
-              ? 'NanoBio cần quyền thông báo để có thể đánh thức và hỏi bạn khi phát hiện âm thanh cần chú ý.'
-              : code == 'rollout_disabled'
-              ? 'Giám sát giấc ngủ đang tạm dừng từ hệ thống. Bạn có thể kiểm tra lại sau.'
-              : 'Chưa thể bắt đầu giám sát.');
+      state = state.copyWith(
+        errorMessage: code == 'microphone_denied'
+            ? 'NanoBio cần quyền micro để giám sát âm thanh khi bạn ngủ.'
+            : code == 'notification_denied'
+                ? 'NanoBio cần quyền thông báo để có thể đánh thức và hỏi bạn khi phát hiện âm thanh cần chú ý.'
+                : code == 'rollout_disabled'
+                    ? 'Giám sát giấc ngủ đang tạm dừng từ hệ thống. Bạn có thể kiểm tra lại sau.'
+                    : 'Chưa thể bắt đầu giám sát.',
+      );
     } catch (_) {
-      state = state.copyWith(errorMessage: 'Chưa thể bắt đầu giám sát. Bạn kiểm tra kết nối và thử lại nhé.');
+      if (nativeStartRequested && startingSession != null) {
+        await _finishSession('native_start_failed', failed: true);
+      }
+      state = state.copyWith(
+        errorMessage:
+            'Chưa thể bắt đầu giám sát. Bạn kiểm tra quyền micro và thử lại nhé.',
+      );
     } finally {
       state = state.copyWith(isBusy: false);
     }
@@ -274,18 +321,17 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
       return;
     }
     if (event.type == 'permissionLost') {
-      await _finishSession('permission_revoked');
+      await _finishSession('permission_revoked', failed: true);
       state = state.copyWith(
-        machine: _machine.fail('permission_revoked'),
         errorMessage: 'Quyền micro đã bị thu hồi nên Nabi đã dừng giám sát.',
       );
       return;
     }
     if (event.type == 'nativeFailure') {
-      await _finishSession('native_failure');
+      final code = event.data['code']?.toString() ?? 'native_failure';
+      await _finishSession(code, failed: true);
       state = state.copyWith(
-        machine: _machine.fail('native_failure'),
-        errorMessage: 'Giám sát âm thanh vừa bị gián đoạn.',
+        errorMessage: _nativeStartErrorMessage(code),
       );
     }
   }
@@ -430,17 +476,66 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     } finally { _dispatchingEvents.remove(eventId); }
   }
 
-  Future<void> _finishSession(String reason) async {
-    final session=state.session; if(session==null){state=state.copyWith(machine:const SleepSafetyMachineState.idle());return;}
-    final now=DateTime.now();
-    final updated=SleepSafetySession(
-      id:session.id,userId:session.userId,startedAt:session.startedAt,endedAt:now,scheduledWindowStart:session.scheduledWindowStart,
-      scheduledWindowEnd:session.scheduledWindowEnd,sensitivity:session.sensitivity,calibrationNoiseFloor:session.calibrationNoiseFloor,
-      status:SleepSafetySessionStatus.stopped,startSource:session.startSource,stopReason:reason,platform:session.platform,appVersion:session.appVersion,
-      createdAt:session.createdAt,updatedAt:now,
+  Future<void> _finishSession(
+    String reason, {
+    bool failed = false,
+  }) async {
+    final session = state.session;
+    if (session == null) {
+      state = state.copyWith(
+        machine: failed
+            ? _machine.fail(reason)
+            : const SleepSafetyMachineState.idle(),
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+    final targetStatus = failed || session.status == SleepSafetySessionStatus.failed
+        ? SleepSafetySessionStatus.failed
+        : SleepSafetySessionStatus.stopped;
+    final updated = SleepSafetySession(
+      id: session.id,
+      userId: session.userId,
+      startedAt: session.startedAt,
+      endedAt: now,
+      scheduledWindowStart: session.scheduledWindowStart,
+      scheduledWindowEnd: session.scheduledWindowEnd,
+      sensitivity: session.sensitivity,
+      calibrationNoiseFloor: session.calibrationNoiseFloor,
+      status: targetStatus,
+      startSource: session.startSource,
+      stopReason: reason,
+      platform: session.platform,
+      appVersion: session.appVersion,
+      createdAt: session.createdAt,
+      updatedAt: now,
     );
     await _repository.saveSession(updated);
-    state=state.copyWith(session:updated,machine:const SleepSafetyMachineState.idle(),clearCurrentEvent:true,calibrationProgress:0);
+    state = state.copyWith(
+      session: updated,
+      machine: targetStatus == SleepSafetySessionStatus.failed
+          ? _machine.fail(reason)
+          : const SleepSafetyMachineState.idle(),
+      clearCurrentEvent: true,
+      calibrationProgress: 0,
+    );
+  }
+
+  String _nativeStartErrorMessage(String code) {
+    return switch (code) {
+      'microphone_permission_missing' || 'microphone_permission_lost' =>
+        'NanoBio chưa có quyền micro để bắt đầu giám sát.',
+      'microphone_fgs_not_allowed' =>
+        'Android chưa cho phép bật giám sát lúc này. Hãy giữ NanoBio ở màn hình này rồi thử lại.',
+      'service_not_registered' =>
+        'Thành phần giám sát trên thiết bị chưa sẵn sàng. Hãy khởi động lại ứng dụng và thử lại.',
+      'audio_buffer_unavailable' ||
+      'audio_record_init_failed' ||
+      'audio_capture_failed' =>
+        'NanoBio chưa mở được micro trên thiết bị. Bạn kiểm tra quyền micro và thử lại nhé.',
+      _ => 'Giám sát âm thanh vừa bị gián đoạn. Bạn có thể thử bật lại.',
+    };
   }
 
   SleepSafetyEvent _copyEvent(SleepSafetyEvent v,{SleepSafetyResponse? response,DateTime? responseAt,String? stateName,bool? escalationRequired,SleepSafetyEscalationStatus? escalationStatus,required DateTime updatedAt}) => SleepSafetyEvent(

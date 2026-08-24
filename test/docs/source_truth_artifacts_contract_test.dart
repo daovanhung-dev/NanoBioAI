@@ -18,7 +18,8 @@ void main() {
       '`Source-only`',
       '`Runtime-unverified`',
       '`Sandbox-unverified`',
-      'docs/supabase/config.sql',
+      'docs/supabase/01_build_system.sql',
+      'docs/supabase/02_seed_data.sql',
     ]) {
       expect(docsReadme, contains(token), reason: token);
     }
@@ -26,7 +27,8 @@ void main() {
       '100% static traceability',
       '`Runtime-unverified`',
       '`Sandbox-unverified`',
-      'SQL `01`–`06`',
+      '01_build_system.sql',
+      '02_seed_data.sql',
     ]) {
       expect(audit, contains(token), reason: token);
     }
@@ -90,7 +92,7 @@ void main() {
       'lib/app_versions/v2/router/v2_router.dart',
     ).readAsStringSync();
 
-    expect(databaseVersion, contains('currentVersion = 20'));
+    expect(databaseVersion, contains('currentVersion = 21'));
     expect(onboarding, contains('totalSteps = 9'));
     for (final token in ['...v1Routes', '...v2Routes', '...v3Routes']) {
       expect(router, contains(token), reason: token);

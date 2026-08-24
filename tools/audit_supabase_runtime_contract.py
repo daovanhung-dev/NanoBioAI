@@ -49,6 +49,13 @@ STORAGE_CONSTANT_PATTERN = re.compile(
     r"(?:static\s+)?const\s+bucketName\s*=\s*['\"]([a-z][a-z0-9_-]*)['\"]",
     re.IGNORECASE,
 )
+RUNTIME_RPC_MANIFEST_PATTERN = re.compile(
+    r"foreach\s+v_function_name\s+in\s+array\s+array\s*\["
+    r"(?P<body>.*?)\]\s*loop",
+    re.IGNORECASE | re.DOTALL,
+)
+
+BUILD_SYSTEM_SQL = Path("docs/supabase/01_build_system.sql")
 
 REQUIRED_VIEWS = {"effective_user_access"}
 REQUIRED_TRIGGERS = {
@@ -103,15 +110,31 @@ def fail_if_missing(kind: str, required: set[str], available: set[str]) -> list[
     return []
 
 
+def runtime_grant_manifest(build_system: str, functions: set[str]) -> set[str]:
+    """Return the explicit runtime-RPC manifest from the build script.
+
+    The manifest is intentionally separate from function declarations: a
+    declared RPC is not necessarily callable by an authenticated Flutter user.
+    """
+    match = RUNTIME_RPC_MANIFEST_PATTERN.search(build_system)
+    if match is None:
+        raise RuntimeError("Could not locate the runtime RPC grant manifest")
+    return {
+        value
+        for value in re.findall(r"['\"]([a-z][a-z0-9_]*)['\"]", match.group("body"))
+        if value in functions
+    }
+
+
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
-    config = read(root / "docs/supabase/config.sql")
-    functions = matches(FUNCTION_PATTERN, config)
-    tables = matches(TABLE_PATTERN, config)
-    views = matches(VIEW_PATTERN, config)
-    triggers = matches(TRIGGER_PATTERN, config)
-    procedures = matches(PROCEDURE_PATTERN, config)
-    literal_policy_count = len(POLICY_PATTERN.findall(config))
+    build_system = read(root / BUILD_SYSTEM_SQL)
+    functions = matches(FUNCTION_PATTERN, build_system)
+    tables = matches(TABLE_PATTERN, build_system)
+    views = matches(VIEW_PATTERN, build_system)
+    triggers = matches(TRIGGER_PATTERN, build_system)
+    procedures = matches(PROCEDURE_PATTERN, build_system)
+    literal_policy_count = len(POLICY_PATTERN.findall(build_system))
 
     rpc_calls: set[str] = set()
     direct_tables: set[str] = set()
@@ -139,18 +162,13 @@ def main() -> int:
     errors.extend(fail_if_missing("view", REQUIRED_VIEWS, views))
     errors.extend(fail_if_missing("trigger", REQUIRED_TRIGGERS, triggers))
 
-    runtime_support = read(root / "docs/supabase/06_schema_runtime_support.sql")
-    granted_rpc_manifest = {
-        value
-        for value in re.findall(r"['\"]([a-z][a-z0-9_]*)['\"]", runtime_support)
-        if value in functions
-    }
+    granted_rpc_manifest = runtime_grant_manifest(build_system, functions)
     errors.extend(
         fail_if_missing("runtime RPC grant", rpc_calls, granted_rpc_manifest)
     )
     for bucket in sorted(storage_buckets):
-        if f"'{bucket}'" not in runtime_support:
-            errors.append(f"Storage bucket missing from runtime support: {bucket}")
+        if f"'{bucket}'" not in build_system:
+            errors.append(f"Storage bucket missing from build system: {bucket}")
 
     toml = read(root / "supabase/config.toml")
     for function_name in sorted(REQUIRED_EDGE_FUNCTIONS):
@@ -173,7 +191,7 @@ def main() -> int:
 
     print(
         "PASS Supabase runtime contract: "
-        f"schema declares {len(functions)} functions, {len(procedures)} procedures, "
+        f"build system declares {len(functions)} functions, {len(procedures)} procedures, "
         f"{len(tables)} tables, {len(views)} views, {len(triggers)} triggers and "
         f"{literal_policy_count} literal RLS policies; app uses {len(rpc_calls)} RPCs, "
         f"{len(direct_tables)} tables/views, {len(REQUIRED_TRIGGERS)} critical triggers, "

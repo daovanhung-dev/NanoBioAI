@@ -3,13 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('numbered schema keeps base and V18 nutrition contracts', () {
-    final baseSchema = File(
-      'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-    ).readAsStringSync();
-    final nutritionV18 = File(
-      'docs/supabase/02_schema_meal_nutrition_v18.sql',
-    ).readAsStringSync();
+  test('build script keeps base and V18 nutrition contracts', () {
+    final build = File('docs/supabase/01_build_system.sql').readAsStringSync();
 
     for (final token in [
       'create table if not exists public.nutrition_profiles',
@@ -20,7 +15,7 @@ void main() {
       'revoke insert, update, delete on public.meal_catalog',
       "'source_hash', 'source_page'",
     ]) {
-      expect(baseSchema, contains(token), reason: token);
+      expect(build, contains(token), reason: token);
     }
     for (final token in [
       'meal_catalog_nutrition_nonnegative_v18',
@@ -29,14 +24,12 @@ void main() {
       'nutrition_status text',
       'insert_mobile_snapshot_row',
     ]) {
-      expect(nutritionV18, contains(token), reason: token);
+      expect(build, contains(token), reason: token);
     }
   });
 
-  test('numbered seed contains exactly 163 catalog upserts', () {
-    final seed = File(
-      'docs/supabase/05_seed_local_sandbox.sql',
-    ).readAsStringSync();
+  test('seed script contains exactly 163 catalog upserts', () {
+    final seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
 
     expect(
       RegExp(r'insert into public\.meal_catalog', caseSensitive: false)

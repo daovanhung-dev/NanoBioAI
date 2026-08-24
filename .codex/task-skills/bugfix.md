@@ -2,32 +2,32 @@
 
 - Canonical key: bugfix
 - Workflow: .codex/workflows/bugfix.md
-- Generated from 23 worklog(s).
+- Generated from 26 worklog(s).
 
 ## When To Read
 
-- Historical task type: bugfix (20)
+- Historical task type: bugfix (23)
 - Historical task type: fix (1)
-- Historical task type: fix flow dữ liệu (1)
 - Historical task type: fix UI/copy (1)
+- Historical task type: fix flow dữ liệu (1)
 
 ## Common Modules
 
-- M05 AI / AI Chat / runtime configuration: 2
 - M05 AI / runtime configuration / onboarding: 2
-- M05 Authentication / App bootstrap config: 1
-- M05 AI / onboarding / Gemini authentication: 1
-- M05 AI / Meal / Exercise / AI Chat / runtime config: 1
-- Android build toolchain / Gradle Wrapper: 1
-- Android build toolchain: 1
-- Core theme / Green Wellness release presentation: 1
+- M05 AI / AI Chat / runtime configuration: 2
+- AI chat: 1
+- lib/features/**/presentation: 1
+- Dashboard, Lifestyle Schedule, Meal Plan, Nutrition: 1
+- v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.: 1
+- v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
+- Admin dashboard / Supabase RPC: 1
 
 ## Work Pattern
 
 - Start from the selected workflow, then this task skill, then one domain file.
-- Prefer targeted `rg` and focused tests over broad reads/checks.
+- Prefer targeted source searches and focused tests over broad raw reads.
 - Record exact evidence in the worklog and add the self-review section.
-- Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.
+- Ask before expanding scope when product decisions are missing.
 
 ## Token Optimization
 
@@ -39,7 +39,7 @@
 ## Source Worklogs
 
 - [Worklog - AI chat retry](../../docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md) - AI chat
-- [Worklog - Nabihóa copy UI](../../docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md) - lib/app_versions/v1/features/**/presentation
+- [Worklog - Nabihóa copy UI](../../docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md) - lib/features/**/presentation
 - [Worklog - Đồng bộ lịch trình và thực đơn sau khi tạo dữ liệu mới](../../docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md) - Dashboard, Lifestyle Schedule, Meal Plan, Nutrition
 - [Worklog - Fix module flow P0](../../docs/worklog/2026-06-22/007-worklog-fix-module-flow.md) - v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.
 - [Worklog - Fix health scoring zero flow](../../docs/worklog/2026-06-22/008-worklog-fix-health-scoring-flow.md) - v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.

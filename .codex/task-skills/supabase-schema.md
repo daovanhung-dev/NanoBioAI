@@ -2,43 +2,45 @@
 
 - Canonical key: supabase-schema
 - Workflow: .codex/workflows/supabase-schema.md
-- Generated from 15 worklog(s).
+- Generated from 18 worklog(s).
 
 ## When To Read
 
-- Historical task type: Supabase schema/seed fixture va smoke test (1)
-- Historical task type: Mo rong fixture Supabase local/sandbox, tai lieu va contract test. (1)
-- Historical task type: coding/bugfix/test/docs (1)
-- Historical task type: bugfix + test (1)
-- Historical task type: coding + data validation (1)
-- Historical task type: coding / Supabase schema / test authoring / static validation. (1)
-- Historical task type: coding + Supabase contract + test + DD/docs. (1)
-- Historical task type: coding + Supabase schema draft + Admin UI + tests + docs (1)
-- Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)
-- Historical task type: docs-context / audit checklist (1)
+- Historical task type: supabase-schema (2)
 - Historical task type: docs/coding (1)
+- Historical task type: docs-context / audit checklist (1)
+- Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)
 - Historical task type: coding + Supabase schema draft + test/docs (1)
-- Historical task type: coding + Supabase schema draft + tests + DD/checklist docs (1)
-- Historical task type: coding + test + docs-context (1)
 - Historical task type: coding + Supabase schema draft + test/docs. (1)
+- Historical task type: coding + test + docs-context (1)
+- Historical task type: coding + Supabase schema draft + tests + DD/checklist docs (1)
+- Historical task type: coding + Supabase schema draft + Admin UI + tests + docs (1)
+- Historical task type: coding/bugfix/test/docs (1)
+- Historical task type: Mo rong fixture Supabase local/sandbox, tai lieu va contract test. (1)
+- Historical task type: Supabase schema/seed fixture va smoke test (1)
+- Historical task type: bugfix + test (1)
+- Historical task type: coding + Supabase contract + test + DD/docs. (1)
+- Historical task type: coding / Supabase schema / test authoring / static validation. (1)
+- Historical task type: coding + data validation (1)
+- Historical task type: Supabase schema/seed consolidation, tooling, contract test va docs. (1)
 
 ## Common Modules
 
 - unknown: 2
-- Sale/referral, M12 va M14: 1
-- M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M09 SCHEDULE_NOTIFICATIONS, M15 ADMIN_DASHBOARD: 1
-- Auth, subscription/quota, FamilyPlus, Sale, Admin, Wellness/reward, Nabi va Storage proof.: 1
-- V1 Meal Plan / meal catalog / local meal assets: 1
-- M13 PAYMENT_MEMBERSHIP và Admin payment queue.: 1
-- Sale/referral dashboard va direct customers: 1
+- Supabase database, membership, quota, FamilyPlus, Sale/referral: 1
+- DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
+- Admin app, Supabase Admin, Sale direct-only: 1
+- lib/sale_referral, lib/services/supabase/sale,: 1
+- M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
 - M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
 
 ## Work Pattern
 
 - Start from the selected workflow, then this task skill, then one domain file.
-- Prefer targeted `rg` and focused tests over broad reads/checks.
+- Prefer targeted source searches and focused tests over broad raw reads.
 - Record exact evidence in the worklog and add the self-review section.
-- Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.
+- Ask before expanding scope when product decisions are missing.
 
 ## Token Optimization
 

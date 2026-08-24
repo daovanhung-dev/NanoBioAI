@@ -2,34 +2,36 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 36 worklog(s).
+- Generated from 45 worklog(s).
 
 ## When To Read
 
-- Historical task type: unknown (20)
+- Historical task type: unknown (27)
 - Historical task type: docs-context (8)
 - Historical task type: docs (5)
-- Historical task type: coding / visual asset integration (1)
-- Historical task type: coding - pha khao sat/checklist/plan, chua coding runtime (1)
 - Historical task type: docs/context update (1)
+- Historical task type: coding - pha khao sat/checklist/plan, chua coding runtime (1)
+- Historical task type: coding / visual asset integration (1)
+- Historical task type: coding + docs + Android device acceptance M07 (1)
+- Historical task type: docs-context hỗ trợ coding M07 (1)
 
 ## Common Modules
 
-- unknown: 20
+- unknown: 27
 - .codex: 2
-- .codex, agent context, docs integrity: 1
-- docs/checklist, .codex/workflows/coding.md, .codex/tools/update_worklog_learning.ps1: 1
-- .codex/skills/create-dd-from-bd, .agents/skills/create-dd-from-bd, docs/DD: 1
-- docs/prompts/bootstrap-ai-context.md: 1
-- UI / Theme / NabiCopy, toan bo app surfaces: 1
-- docs/checklist, technical debt audit summary: 1
+- docs/issues, docs/todo: 1
+- authentication: 1
+- .codex project workflow: 1
+- Product Flow, Membership, Quota, FamilyPlus, Sale/referral, DD workflow.: 1
+- .codex, workflow router, domain context, worklog learning, project skill.: 1
+- .codex, history learning, task-skills, project skill: 1
 
 ## Work Pattern
 
 - Start from the selected workflow, then this task skill, then one domain file.
-- Prefer targeted `rg` and focused tests over broad reads/checks.
+- Prefer targeted source searches and focused tests over broad raw reads.
 - Record exact evidence in the worklog and add the self-review section.
-- Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.
+- Ask before expanding scope when product decisions are missing.
 
 ## Token Optimization
 

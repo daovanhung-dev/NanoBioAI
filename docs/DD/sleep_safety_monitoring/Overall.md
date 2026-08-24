@@ -226,9 +226,9 @@ No official emergency service number is part of this flow.
 
 ## 12. Rollout
 
-`07_schema_sleep_safety.sql` creates the server config with `enabled=false` as a
-fail-safe baseline. `08_enable_sleep_safety_rollout.sql` is the approved current
-rollout decision and changes only `config_key=default` to `enabled=true`.
+`01_build_system.sql` creates the server config with `enabled=false` as a
+fail-safe baseline, then applies the approved current rollout decision that
+changes only `config_key=default` to `enabled=true`.
 
 This does not grant membership: Flutter and Edge Functions still require trusted
 Plus/FamilyPlus access. The kill switch can be returned to `false` server-side

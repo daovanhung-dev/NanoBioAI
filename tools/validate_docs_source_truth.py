@@ -117,9 +117,13 @@ DOCS_ROOT_HISTORICAL = {
 }
 
 GENERATED_PATHS = {
-    "docs/supabase/config.sql",
     "lib/l10n/app_localizations.dart",
     "lib/l10n/app_localizations_vi.dart",
+}
+
+SUPABASE_SQL_SOURCES = {
+    "docs/supabase/01_build_system.sql",
+    "docs/supabase/02_seed_data.sql",
 }
 
 SOURCE_EXTENSIONS = {
@@ -287,8 +291,6 @@ def evidence_for(path: str, lifecycle: str) -> list[str]:
     if lifecycle == "Historical":
         return []
     if lifecycle == "Generated":
-        if path == "docs/supabase/config.sql":
-            return [f"docs/supabase/{index:02d}_" for index in range(1, 7)]
         if path.startswith((".codex/history/", ".codex/task-skills/")):
             return ["docs/worklog/"]
         if path.startswith("lib/l10n/"):
@@ -320,7 +322,7 @@ def evidence_for(path: str, lifecycle: str) -> list[str]:
         }
         return [module_roots.get(module, "lib/main.dart")]
     if path.startswith("docs/supabase/"):
-        return ["docs/supabase/01_schema_rebuild_local_sandbox.sql", "lib/services/supabase/"]
+        return ["docs/supabase/01_build_system.sql", "lib/services/supabase/"]
     if path.startswith(".codex/design/"):
         return ["lib/core/theme/", "lib/app_versions/v1/router/v1_router.dart"]
     if path.startswith("lib/") and PurePosixPath(path).suffix.lower() in {".md", ".txt"}:
@@ -566,12 +568,12 @@ def validate_core_contracts(errors: list[str]) -> None:
         errors.append(f"Expected exactly one lib entrypoint, found: {lib_mains}")
 
     required_fragments = {
-        "lib/core/storage/localdb/database_version.dart": "currentVersion = 20",
+        "lib/core/storage/localdb/database_version.dart": "currentVersion = 21",
         "lib/core/constants/onboarding_constants.dart": "totalSteps = 9",
         "lib/app_versions/v2/router/v2_router.dart": "...v1Routes",
         "lib/app/bio_ai_app.dart": "return const BioAIV2App",
         "pubspec.yaml": "sdk: ^3.9.2",
-        "docs/supabase/config.sql": "-- BEGIN 06_schema_runtime_support.sql",
+        "docs/supabase/02_seed_data.sql": "-- BEGIN GENERATED MEAL CATALOG",
         "lib/app_versions/v1/services/ai/gemini_rest_client.dart": ":generateContent",
         "lib/app_versions/v1/services/ai/ai_chat_service.dart": "gemini-3.1-flash-lite",
         "lib/app_versions/v1/services/ai/ai_service.dart": "gemini-3.1-flash-lite",
@@ -612,26 +614,18 @@ def validate_core_contracts(errors: list[str]) -> None:
     if re.search(r"(?m)^  (google_generative_ai|gemini):\s*$", pubspec_lock):
         errors.append("pubspec.lock unexpectedly resolves a Gemini SDK package")
 
-    supabase_sources = {
-        f"docs/supabase/{name}"
-        for name in (
-            "01_schema_rebuild_local_sandbox.sql",
-            "02_schema_meal_nutrition_v18.sql",
-            "03_schema_daily_health_hub_rewards.sql",
-            "04_schema_auth_account_lock.sql",
-            "05_seed_local_sandbox.sql",
-            "06_schema_runtime_support.sql",
-            "90_validate_meal_catalog.sql",
-            "91_validate_meal_nutrition_v18.sql",
-            "92_validate_daily_health_hub_rewards.sql",
-            "93_validate_membership_vietqr.sql",
-            "94_validate_runtime_support.sql",
-        )
-    }
     workspace = set(workspace_paths())
-    missing_supabase = sorted(supabase_sources - workspace)
+    actual_supabase_sources = {
+        path
+        for path in workspace
+        if path.startswith("docs/supabase/") and path.endswith(".sql")
+    }
+    missing_supabase = sorted(SUPABASE_SQL_SOURCES - actual_supabase_sources)
     if missing_supabase:
-        errors.append(f"Numbered Supabase source/validation set is incomplete: {missing_supabase}")
+        errors.append(f"Supabase SQL source set is incomplete: {missing_supabase}")
+    unexpected_supabase = sorted(actual_supabase_sources - SUPABASE_SQL_SOURCES)
+    if unexpected_supabase:
+        errors.append(f"Unexpected Supabase SQL sources: {unexpected_supabase}")
 
     required_assets = {
         "assets/data/meal_catalog_v1.json",
@@ -652,17 +646,15 @@ def validate_core_contracts(errors: list[str]) -> None:
         if "Gemini SDK" in text:
             errors.append(f"Current canonical doc still claims a Gemini SDK: {canonical}")
 
-    stale_supabase = re.compile(
-        r"docs/supabase/(?:08-acceptance-checks|09-dev-seed-membership-test-accounts|"
-        r"16-wellness-rewards|19-dev-sandbox|20-dev-sandbox|22-meal-catalog-source-seed)"
-    )
+    stale_supabase = re.compile(r"docs/supabase/[^\s)`'\"]+\.sql")
     for relative in workspace_paths():
         if not relative.startswith("test/docs/") or not relative.endswith(".dart"):
             continue
         text = read_text(ROOT / relative) or ""
-        match = stale_supabase.search(text)
-        if match:
-            errors.append(f"Stale Supabase contract path in {relative}: {match.group(0)}")
+        for match in stale_supabase.finditer(text):
+            path = match.group(0)
+            if path not in SUPABASE_SQL_SOURCES:
+                errors.append(f"Stale Supabase contract path in {relative}: {path}")
 
     worklogs = [path for path in workspace_paths() if path.startswith("docs/worklog/") and path.endswith(".md")]
     index_text = read_text(ROOT / ".codex/history/WORKLOG_INDEX.md") or ""
@@ -675,7 +667,6 @@ def validate_core_contracts(errors: list[str]) -> None:
         )
 
     read_only_checks = (
-        ("Supabase config parity", [sys.executable, "tools/build_supabase_rebuild_config.py", "--check"]),
         ("worklog/history parity", [sys.executable, ".codex/tools/update_worklog_learning.py", "--check"]),
     )
     for label, command in read_only_checks:

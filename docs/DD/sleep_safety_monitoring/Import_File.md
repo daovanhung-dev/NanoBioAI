@@ -16,7 +16,6 @@
 - `android/app/src/main/kotlin/com/example/nano_app/MainActivity.kt`
 - `ios/Runner/AppDelegate.swift`
 - `ios/Runner/Info.plist`
-- `tools/build_supabase_rebuild_config.py`
 - `docs/supabase/README.md`
 
 ## New Flutter source
@@ -62,16 +61,16 @@ verified.
 
 ## Supabase / Edge
 
-- `docs/supabase/07_schema_sleep_safety.sql`
-- `docs/supabase/08_enable_sleep_safety_rollout.sql`
-- generator source order becomes 01→08
+- `docs/supabase/01_build_system.sql`
+- `docs/supabase/02_seed_data.sql`
 - `_shared/sleep_safety_provider.ts`
 - `sleep-safety-contact-verification/`
 - `sleep-safety-dispatch/`
 - `sleep-safety-provider-webhook/`
 
-`config.sql` is generated and must be regenerated from the real checkout after
-applying this delivery; it is intentionally not hand-edited.
+`01_build_system.sql` owns M31 schema, runtime support and rollout;
+`02_seed_data.sql` owns the destructive sandbox fixture reset. Run them in
+that order; neither file is generated.
 
 
 ## Enable-paid / FeatureHub verification files
@@ -79,6 +78,6 @@ applying this delivery; it is intentionally not hand-edited.
 - `test/app_versions/v1/features/features_hub/sleep_safety_feature_entry_test.dart`
 - `test/app_versions/v1/features/sleep_tracking/presentation/sleep_safety_access_gate_test.dart`
 - `test/app_versions/v1/features/sleep_tracking/providers/sleep_safety_controller_test.dart`
-- `test/docs/supabase_numbered_rebuild_contract_test.dart`
+- `test/docs/supabase_two_script_rebuild_contract_test.dart`
 
 No new package is introduced by the rollout/FeatureHub activation delta.

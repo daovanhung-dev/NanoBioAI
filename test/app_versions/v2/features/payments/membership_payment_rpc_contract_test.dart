@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('mobile payment create contract matches current Supabase rebuild first', () {
+  test('mobile payment create contract matches the Supabase build script', () {
     final datasource = File(
       'lib/app_versions/v2/features/payments/data/datasources/membership_payment_remote_datasource.dart',
     ).readAsStringSync();
     final setup = File(
-      'docs/supabase/01_schema_rebuild_local_sandbox.sql',
+      'docs/supabase/01_build_system.sql',
     ).readAsStringSync();
 
     expect(setup, contains('p_payer_full_name text'));

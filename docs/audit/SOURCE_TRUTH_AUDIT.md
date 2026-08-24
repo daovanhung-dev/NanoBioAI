@@ -32,7 +32,7 @@ manifest cũ; lifecycle và evidence tách tài liệu hiện hành khỏi lịc
 | Package | `pubspec.yaml`, `pubspec.lock` | Dart `^3.9.2`; phân biệt constraint với resolved version. |
 | AI | Gemini REST client, app env và AI services | Không có Gemini SDK dependency; model/config lấy từ source runtime. |
 | Local data | database version/service/migration manager | SQLite version 20; migration và sync contract là nguồn. |
-| Supabase | SQL `01`–`06`, Edge Function, Flutter service/RPC literals | SQL đánh số là nguồn; `config.sql` generated; production readiness chưa được suy diễn. |
+| Supabase | `01_build_system.sql`, `02_seed_data.sql`, Edge Function, Flutter service/RPC literals | Hai script theo thứ tự build rồi seed là nguồn; production readiness chưa được suy diễn. |
 | Native | Android/iOS config | Android `com.nanobioai.app`; iOS vẫn `com.example.nanoApp`; deep link `nanobio://auth/callback`. |
 | Onboarding | catalog/constants và router | `totalSteps = 9`; tài liệu 7/8 bước là stale. |
 | Asset/localization | `pubspec.yaml`, ARB và catalog | ARB là localization source; generated Dart và binary được parity-check. |
@@ -48,8 +48,8 @@ manifest cũ; lifecycle và evidence tách tài liệu hiện hành khỏi lịc
 | M20–M29 | Chỉ catalog/access-aware placeholder được ghi nhận. | `Placeholder`, runtime business `Absent` |
 | M30 checklist ghi coding 0% dù source đã có nhiều tầng | Ghi `Partial`, liệt kê source hiện có và wiring/acceptance chưa xác minh. | Resolved trong đợt audit |
 | Worklog index 123 trong khi corpus đã lớn hơn | Sửa generator, tạo worklog mới và refresh deterministic. | Resolved khi history check PASS |
-| Generator hard-code file Supabase đã xóa | Dùng validation `90`–`94`/README hiện hành và Python cross-platform. | Resolved khi generator check PASS |
-| `test/docs` trỏ tới chín file Supabase legacy | Map assertion sang SQL `01`–`06` và validation `90`–`94`. | Resolved tĩnh; Flutter test unverified |
+| Rebuild Supabase bị phân tán qua script/generator | Gom system build và destructive seed thành đúng hai script có assertion/smoke đi kèm. | Current source contract |
+| `test/docs` trỏ tới các file Supabase legacy | Map assertion sang contract hai script build rồi seed. | Resolved tĩnh; Flutter test unverified |
 | Audit/test/issue summary cũ dễ bị đọc như trạng thái HEAD | Giữ dữ liệu baseline, thêm Historical/Superseded/Resolved marker. | Resolved trong đợt audit |
 | Meal catalog source fingerprint lệch | Chỉ cập nhật fingerprint sau khi row/ID/image/source parity được xác minh. | Phải PASS static validator |
 | Green/Blue UI validator có findings code baseline | Không sửa runtime trong task docs; tài liệu không được tuyên bố runtime PASS. | Open source finding, documented |
@@ -72,8 +72,9 @@ module phải công bố:
   kể cả các sequence number lịch sử bị trùng.
 - Broken path trong lịch sử/reference chỉ được giữ khi manifest có exception và
   lý do; tài liệu hiện hành không được có broken link.
-- `docs/supabase/config.sql`, `.codex/history/`, `.codex/task-skills/` và
-  localization Dart là generated; phải sửa nguồn/generator trước rồi sinh lại.
+- `.codex/history/`, `.codex/task-skills/` và localization Dart là generated;
+  phải sửa nguồn/generator trước rồi sinh lại. Hai script Supabase là authored
+  local/sandbox source, không phải generated artifact.
 
 ## Acceptance
 
@@ -81,7 +82,7 @@ module phải công bố:
 | --- | --- |
 | Source-truth manifest, digest, link/path và core contract | Chạy ở cuối phiên |
 | Supabase runtime contract | Chạy ở cuối phiên |
-| Supabase generated config parity | Chạy ở cuối phiên |
+| Supabase two-script contract và assertion/smoke | Chạy ở cuối phiên |
 | Meal sync/catalog và Kinetic Aura static validation | Chạy ở cuối phiên |
 | Worklog/history deterministic check | Chạy ở cuối phiên |
 | `git diff --check` | Chạy ở cuối phiên |

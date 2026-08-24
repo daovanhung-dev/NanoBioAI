@@ -1,6 +1,7 @@
 -- M13 VietQR hardening executable smoke.
--- Prerequisite: disposable local/sandbox rebuilt with docs/supabase/config.sql
--- from the same commit/patch. This script intentionally mutates fixture rows
+-- Prerequisite: disposable local/sandbox built with
+-- docs/supabase/01_build_system.sql then seeded with
+-- docs/supabase/02_seed_data.sql from the same commit/patch. This script intentionally mutates fixture rows
 -- inside one transaction and always rolls back.
 --
 -- Covers:

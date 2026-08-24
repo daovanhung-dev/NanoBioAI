@@ -6,13 +6,19 @@ import 'package:nano_app/app_versions/v1/services/notifications/reminder_notific
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../domain/entities/sleep_safety_preference.dart';
+import '../gateways/sleep_safety_notification_permission_gateway.dart';
 
 /// Schedules an *arming reminder* only. It never starts the microphone in the
 /// background. The user must open NanoBio and explicitly start monitoring.
 class SleepSafetyReminderService {
-  const SleepSafetyReminderService();
+  const SleepSafetyReminderService({
+    SleepSafetyNotificationPermissionGateway? permissionGateway,
+  }) : _permissionGateway = permissionGateway ??
+            const LocalSleepSafetyNotificationPermissionGateway();
 
   static const _baseId = 319100;
+
+  final SleepSafetyNotificationPermissionGateway _permissionGateway;
 
   Future<void> apply(SleepSafetyPreference preference) async {
     await NotificationBootstrap.initialize();
@@ -22,7 +28,9 @@ class SleepSafetyReminderService {
     }
     if (!preference.scheduleEnabled) return;
 
-    final allowed = await scheduler.requestPermissions();
+    // M31 reminders are inexact by design. Do not reuse M09's permission
+    // helper here because it also requests Exact Alarm special access.
+    final allowed = await _permissionGateway.requestPermission();
     if (!allowed) return;
 
     // Reuse the already-initialized M09 plugin so responses keep flowing through
@@ -34,7 +42,9 @@ class SleepSafetyReminderService {
     final now = DateTime.now();
     var created = 0;
     for (var offset = 0; offset < 14 && created < 7; offset++) {
-      final day = DateTime(now.year, now.month, now.day).add(Duration(days: offset));
+      final day = DateTime(now.year, now.month, now.day).add(
+        Duration(days: offset),
+      );
       if (!preference.selectedWeekdays.contains(day.weekday)) continue;
 
       final hour = preference.scheduleStartMinutes ~/ 60;

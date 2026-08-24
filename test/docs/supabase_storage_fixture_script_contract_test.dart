@@ -38,11 +38,9 @@ void main() {
     });
 
     test(
-      'keeps rollout defaults explicit in the numbered local seed',
+      'keeps rollout defaults explicit in the local seed script',
       () {
-        final seed = File(
-          'docs/supabase/05_seed_local_sandbox.sql',
-        ).readAsStringSync();
+        final seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
 
         for (final token in [
           'wellness_rewards_rollout',

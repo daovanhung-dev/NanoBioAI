@@ -2,24 +2,26 @@
 
 - Canonical key: find-issues
 - Workflow: .codex/workflows/find-issues.md
-- Generated from 2 worklog(s).
+- Generated from 3 worklog(s).
 
 ## When To Read
 
-- Historical task type: docs-context / UI design audit / coding plan (1)
 - Historical task type: review/audit/docs (1)
+- Historical task type: docs-context / UI design audit / coding plan (1)
+- Historical task type: find-issues / UI-UX audit (1)
 
 ## Common Modules
 
-- UI, Theme, Motion, Sound, Haptic, Nabi, toàn bộ presentation layer: 1
 - toàn dự án, trọng tâm AI, Features Hub, route guard, onboarding logging, release checks: 1
+- UI, Theme, Motion, Sound, Haptic, Nabi, toàn bộ presentation layer: 1
+- toan bo presentation V1/V2/V3/Sale/Admin + shared UI/Nabi/theme/router/state cross-screen: 1
 
 ## Work Pattern
 
 - Start from the selected workflow, then this task skill, then one domain file.
-- Prefer targeted `rg` and focused tests over broad reads/checks.
+- Prefer targeted source searches and focused tests over broad raw reads.
 - Record exact evidence in the worklog and add the self-review section.
-- Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.
+- Ask before expanding scope when product decisions are missing.
 
 ## Token Optimization
 
@@ -32,3 +34,4 @@
 
 - [Worklog - Release 1.0 bug audit](../../docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md) - toàn dự án, trọng tâm AI, Features Hub, route guard, onboarding logging, release checks
 - [Worklog - Nabi Kinetic Aura design toàn bộ UI](../../docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md) - UI, Theme, Motion, Sound, Haptic, Nabi, toàn bộ presentation layer
+- [Worklog - Flutter UI UX Full Audit](../../docs/worklog/2026-08-19/001-worklog-flutter-ui-ux-full-audit.md) - toan bo presentation V1/V2/V3/Sale/Admin + shared UI/Nabi/theme/router/state cross-screen

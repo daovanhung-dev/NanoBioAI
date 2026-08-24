@@ -34,14 +34,15 @@ secret hoặc raw payload qua summary/Admin list.
 | M15-DELTA-UI01 | Stable code/permission/action/audit target được map sang tiếng Việt; unknown dùng fallback an toàn. |
 
 Source-ready nằm trong Admin route/panel model/controller/datasource, feature
-`lib/app_versions/admin/features/wellness_rewards/` và migration 16.
+`lib/app_versions/admin/features/wellness_rewards/` và
+`docs/supabase/01_build_system.sql`.
 
 ## 3. Bằng chứng và phần còn thiếu
 
 - Reward client/Admin/cache/gateway tests: 38/38 PASS.
 - Targeted analyze reward client/Admin: PASS.
 - Localization/settings/image bundles và contract scan: PASS theo evidence phiên.
-- Supabase static contract bundle 40 test, full `config.sql` rebuild trên
+- Supabase static contract bundle 40 test, full local/sandbox rebuild trên
   PostgreSQL 18 tạm và local RLS/direct-ledger smoke: PASS.
 
 Chưa có evidence từ dự án Supabase sandbox thật cho role matrix, bucket runtime,

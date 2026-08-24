@@ -15,22 +15,22 @@
 
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - unknown: 2
-- UI/UX dùng chung cho V1, V2, V3, Sale và Admin: 1
-- M05 AUTH_PROFILE_SYNC, Settings Guest entry, authenticated Android build.: 1
-- v1 lifestyle schedule, dashboard, localdb, cloud sync, Supabase docs: 1
-- M05 AUTH_PROFILE_SYNC, M12 REFERRAL_DIRECT, M15-M16 Admin access: 1
-- M02 PERSONAL_SCHEDULE_AI, M05 AUTH_PROFILE_SYNC, M06 MEMBERSHIP_QUOTA, M07 AI_CHAT, M11 FAMILYPLUS, M12 REFERRAL_DIRECT, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
-- M03 Dashboard/Schedule reward delta; M04 Basic Health Calculator scoped AI interpretation: 1
+- Dashboard, AI service, lifestyle schedule: 1
+- dashboard, daily_health_tracking, lifestyle_schedule, meal_plan, shared/widgets: 1
+- onboarding, dashboard: 1
+- authentication: 1
+- authentication v2: 1
+- Authentication v2, Settings account security: 1
 
 ## Work Pattern
 
 - Start from the selected workflow, then this task skill, then one domain file.
-- Read docs/checklist/checklist_complete_DD.md first to identify DD module progress, blockers, and next step; then read docs/checklist/checklist_task_coding.md for prior-session coding notes.
-- Before coding from a DD module, state the module, current progress percentages, blockers, and exact next task from the checklist.
-- After coding, update docs/checklist/checklist_complete_DD.md and record upcoming work in docs/checklist/checklist_task_coding.md.
-- Prefer targeted `rg` and focused tests over broad reads/checks.
+- Read `docs/checklist/checklist_complete_DD.md` first to identify code-derived module progress, blockers, and next step; then read `docs/checklist/checklist_task_coding.md` for prior-session notes.
+- Before coding from a DD module, state implementation and verification independently; DD completeness never proves runtime completion.
+- After coding, update current checklists and record upcoming work without rewriting historical evidence.
+- Prefer targeted source searches and focused tests over broad raw reads.
 - Record exact evidence in the worklog and add the self-review section.
-- Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.
+- Ask before expanding scope when product decisions are missing.
 
 ## Token Optimization
 

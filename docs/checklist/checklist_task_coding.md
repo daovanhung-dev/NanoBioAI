@@ -131,7 +131,7 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [x] Runtime Gemini Android đã dùng `dartDefine`; Gemini preflight PASS với model khả dụng và Chat có fallback `gemini-3.5-flash` (2026-07-19). Không bypass quota hay giả câu trả lời.
 - [x] Chat Android `12b304f9` smoke end-to-end qua `flutter run` không define: native debug config, quota allowed, Gemini response hợp lệ và quota commit (2026-07-19).
 - [ ] Chạy manual UI tạo lịch trên Android `12b304f9` bằng tài khoản còn quota; ghi lại lifecycle an toàn.
-- [ ] Cấp Supabase sandbox disposable + CLI/project ref để chạy quota/RLS/idempotency acceptance; không chạy `config.sql` trên production.
+- [ ] Cấp Supabase sandbox disposable + CLI/project ref để chạy quota/RLS/idempotency acceptance; không chạy `01_build_system.sql` hoặc `02_seed_data.sql` trên production.
 - [ ] Chạy Android permission deny/allow, exact-alarm off/reboot và iOS foreground/background/terminated action với account test được cấp.
 
 ### M30 Nabi companion notifications — 2026-07-17

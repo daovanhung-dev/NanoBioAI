@@ -39,16 +39,16 @@ permission ở backend. Client bị revoke DML trực tiếp vào ledger và inv
   datasource, repository, Riverpod controller và responsive Admin panel.
 - `lib/app_versions/admin/features/admin_panel/`: section/permission/route và
   safe mapping cho permission, action, audit target/reason.
-- `docs/supabase/16-wellness-rewards.sql`: schema, RLS, RPC, append-only ledger,
+- `docs/supabase/01_build_system.sql`: schema, RLS, RPC, append-only ledger,
   inventory/redemption/refund/audit contract.
-- `docs/supabase/config.sql`: rebuild source đồng bộ migration 16.
+- `docs/supabase/02_seed_data.sql`: destructive local/sandbox fixture seed.
 
 ## 4. Bằng chứng và phần còn thiếu
 
 - Reward user/Admin/cache/secure-store/gateway tests: 38/38 PASS.
 - Targeted analyze reward client/Admin: PASS.
 - Supabase static contract bundle kiểm tra RPC/permission/RLS/Storage: 40 test
-  PASS; full `config.sql` rebuild trên PostgreSQL 18 tạm với Auth/Storage stub:
+  PASS; full local/sandbox rebuild trên PostgreSQL 18 tạm với Auth/Storage stub:
   PASS.
 - Local end-to-end smoke register → begin → upload → finalize → undo → refinalize
   → redeem → cancel, RLS chéo người dùng và direct-ledger rejection: PASS.

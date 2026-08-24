@@ -94,7 +94,9 @@ Riverpod or performs a health action.
 - Engine is pure Dart and table-tested for all 20 IDs.
 - Overlay supports 200% text scale, screen reader, contrast, keyboard/viewInsets and SafeArea.
 - Config/state failures fail closed; local user interactions remain available offline.
-- Schema/RLS/RPC updates are rebuildable from `docs/supabase/config.sql`.
+- Schema/RLS/RPC updates are rebuilt by running
+  `docs/supabase/01_build_system.sql` then
+  `docs/supabase/02_seed_data.sql` in a disposable local/sandbox.
 - Production acceptance requires sandbox RLS/idempotency and Android/iOS foreground/background/terminated smoke.
 
 ## 10. ADRs and risks
@@ -114,4 +116,3 @@ Riverpod or performs a health action.
 | BD §§8,16,17 | F02/F04 | BR01-08 | engine/native/dedup |
 | BD §§9-15 | F01/F02/F05 | catalog | 20-ID table tests |
 | BD §§19-20, AC-12 | F06 | BR09 | outbox/RLS/retention |
-

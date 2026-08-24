@@ -2,8 +2,8 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 123
-- Refresh command: `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
+- Total worklogs: 139
+- Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
 
@@ -12,7 +12,7 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-06-19 | docs | docs-context | .codex | [Worklog - Tối ưu context Codex cho NanoBio](../../docs/worklog/2026-06-19/001-worklog-codex-context-optimization.md) |
 | 2026-06-19 | feature | coding | Dashboard, AI service, lifestyle schedule | [Worklog - AI sinh thêm kế hoạch sau onboarding](../../docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md) |
 | 2026-06-19 | fix | bugfix | AI chat | [Worklog - AI chat retry](../../docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md) |
-| 2026-06-19 | fix UI/copy | bugfix | lib/app_versions/v1/features/**/presentation | [Worklog - Nabihóa copy UI](../../docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md) |
+| 2026-06-19 | fix UI/copy | bugfix | lib/features/**/presentation | [Worklog - Nabihóa copy UI](../../docs/worklog/2026-06-19/004-worklog-ui-nami-copy-polish.md) |
 | 2026-06-19 | fix flow dữ liệu | bugfix | Dashboard, Lifestyle Schedule, Meal Plan, Nutrition | [Worklog - Đồng bộ lịch trình và thực đơn sau khi tạo dữ liệu mới](../../docs/worklog/2026-06-19/005-worklog-generated-plan-refresh.md) |
 | 2026-06-19 | feature Dashboard/UI + data write path | coding | dashboard, daily_health_tracking, lifestyle_schedule, meal_plan, shared/widgets | [Worklog - Dashboard NabiCompanion](../../docs/worklog/2026-06-19/006-worklog-dashboard-nami-companion.md) |
 | 2026-06-19 | review/audit/docs | find-issues | toàn dự án, trọng tâm AI, Features Hub, route guard, onboarding logging, release checks | [Worklog - Release 1.0 bug audit](../../docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md) |
@@ -71,7 +71,7 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-07-02 | docs-context | docs-context | docs/checklist, technical debt audit summary | [Worklog - Technical debt checklist](../../docs/worklog/2026-07-02/001-worklog-technical-debt-checklist.md) |
 | 2026-07-09 | bugfix | bugfix | v2 authentication | [Worklog - Auth validation null](../../docs/worklog/2026-07-09/001-worklog-auth-validation-null.md) |
 | 2026-07-09 | coding | coding | v1 lifestyle schedule, dashboard, localdb, cloud sync, Supabase docs | [Worklog - Daily schedule proof and score](../../docs/worklog/2026-07-09/002-worklog-daily-schedule-proof-score.md) |
-| 2026-07-09 | code + asset integration + test | test | lib/app_versions/v1/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1 | [Worklog - Nabi mascot 30fps](../../docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md) |
+| 2026-07-09 | code + asset integration + test | test | lib/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1 | [Worklog - Nabi mascot 30fps](../../docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md) |
 | 2026-07-10 | bugfix | bugfix | v2 authentication, admin login, Supabase dev seed | [Worklog - Fix auth login sync failure](../../docs/worklog/2026-07-10/001-worklog-auth-login-sync-failure.md) |
 | 2026-07-10 | fix-issues | fix-issues | v1 onboarding, AppLogger | [Worklog - Fix onboarding sensitive snapshot logging](../../docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md) |
 | 2026-07-10 | bugfix | bugfix | config/env, app entrypoints, auth/AI env readers | [Worklog - Fix env tracked and bundled](../../docs/worklog/2026-07-10/003-worklog-env-tracked-and-bundled.md) |
@@ -132,3 +132,19 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-16 | unknown | docs-context | unknown | [Worklog — Lifestyle Schedule item detail](../../docs/worklog/2026-08-16/004-worklog-lifestyle-schedule-item-detail.md) |
 | 2026-08-16 | unknown | docs-context | unknown | [Worklog — Daily Health Hub / Ngày của tôi](../../docs/worklog/2026-08-16/005-worklog-daily-health-hub.md) |
 | 2026-08-17 | coding / asset generation / docs / test | test | UI / Theme / NabiCopy, Nabi v2 asset bundle | [Worklog - Nabi Blue va Blue Wellness cutover](../../docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md) |
+| 2026-08-17 | unknown | docs-context | unknown | [Worklog — Fix project-wide audit](../../docs/worklog/2026-08-17/002-worklog-fix-project-wide-audit.md) |
+| 2026-08-19 | bugfix | bugfix | V1 UI, V2 auth/access, V3 FamilyPlus/Advanced Tracking, Admin, Sale, shared router/theme/design docs | [Worklog - Fix UI UX full audit](../../docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md) |
+| 2026-08-19 | find-issues / UI-UX audit | find-issues | toan bo presentation V1/V2/V3/Sale/Admin + shared UI/Nabi/theme/router/state cross-screen | [Worklog - Flutter UI UX Full Audit](../../docs/worklog/2026-08-19/001-worklog-flutter-ui-ux-full-audit.md) |
+| 2026-08-19 | unknown | docs-context | unknown | [Worklog — Splash Blue Wellness Redesign](../../docs/worklog/2026-08-19/001-worklog-splash-blue-wellness-redesign.md) |
+| 2026-08-22 | unknown | docs-context | unknown | [Worklog — Gemini Live song công cho Trò chuyện bằng giọng nói](../../docs/worklog/2026-08-22/001-worklog-gemini-live-voice.md) |
+| 2026-08-23 | unknown | docs-context | unknown | [Worklog — Sửa Gemini Live Voice và chuẩn bị nghiệm thu Android](../../docs/worklog/2026-08-23/001-worklog-gemini-live-voice-fix.md) |
+| 2026-08-23 | unknown | docs-context | unknown | [Worklog — Voice Plus không giới hạn lượt](../../docs/worklog/2026-08-23/002-worklog-plus-unlimited-voice.md) |
+| 2026-08-23 | unknown | docs-context | unknown | [Worklog — Voice Gemini Live trực tiếp, không Supabase runtime](../../docs/worklog/2026-08-23/003-worklog-direct-gemini-live.md) |
+| 2026-08-23 | supabase-schema | supabase-schema | local/sandbox rebuild, membership Plus fixture, VietQR payment request. | [Worklog - Numbered Supabase local/sandbox bundle](../../docs/worklog/2026-08-23/004-worklog-numbered-supabase-local-sandbox.md) |
+| 2026-08-23 | supabase-schema | supabase-schema | Supabase runtime contract, Storage va Edge Function auth | [Worklog - Supabase runtime setup audit](../../docs/worklog/2026-08-23/005-worklog-supabase-runtime-setup-audit.md) |
+| 2026-08-23 | unknown | docs-context | unknown | [Worklog — Sequential Voice Plus](../../docs/worklog/2026-08-23/006-worklog-sequential-voice-plus.md) |
+| 2026-08-23 | bugfix | bugfix | M07 AI_CHAT / Sequential Voice Plus | [Worklog — AI Voice client-only device runtime](../../docs/worklog/2026-08-23/007-worklog-ai-voice-client-only-device-runtime.md) |
+| 2026-08-23 | coding + docs + Android device acceptance M07 | docs-context | M07 AI_CHAT / Sequential Voice Plus | [Worklog — Tùy chọn tốc độ phản ứng Voice](../../docs/worklog/2026-08-23/008-worklog-ai-voice-reaction-speed-docs.md) |
+| 2026-08-23 | docs-context hỗ trợ coding M07 | docs-context | M07 AI_CHAT / AI_CHAT-F03 Sequential Voice Plus | [Worklog — Voice nghe mỗi lượt tối đa 3 phút](../../docs/worklog/2026-08-23/009-worklog-ai-voice-three-minute-listening-docs.md) |
+| 2026-08-24 | bugfix | bugfix | Lifestyle Schedule / Personal Schedule AI | [Worklog - Personal Schedule AI Regeneration Button](../../docs/worklog/2026-08-24/001-worklog-personal-schedule-ai-regeneration-button.md) |
+| 2026-08-24 | Supabase schema/seed consolidation, tooling, contract test va docs. | supabase-schema | local/sandbox rebuild, membership/payment fixtures, Daily Health Hub, Storage runtime va M31 Sleep Safety. | [Worklog - Supabase two-script consolidation](../../docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md) |

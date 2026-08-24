@@ -6,30 +6,30 @@
 
 ## When To Read
 
-- Historical task type: bugfix/test/docs (2)
 - Historical task type: coding + tests + checklist. (2)
-- Historical task type: Bug fix / Android build toolchain (1)
-- Historical task type: coding / asset generation / docs / test (1)
+- Historical task type: bugfix/test/docs (2)
 - Historical task type: code + asset integration + test (1)
 - Historical task type: coding / test-contract / docs-context (1)
+- Historical task type: Bug fix / Android build toolchain (1)
+- Historical task type: coding / asset generation / docs / test (1)
 
 ## Common Modules
 
-- unknown: 1
-- M07 AI_CHAT, M05 runtime configuration: 1
-- UI / Theme / NabiCopy, Nabi v2 asset bundle: 1
-- android/: 1
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
 - M08 HEALTH_SCORE_HABITS.: 1
+- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
+- lib/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1: 1
 - M02 PERSONAL_SCHEDULE_AI, M07 AI_CHAT: 1
-- lib/app_versions/v1/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1: 1
+- M07 AI_CHAT, M05 runtime configuration: 1
+- unknown: 1
+- android/: 1
+- UI / Theme / NabiCopy, Nabi v2 asset bundle: 1
 
 ## Work Pattern
 
 - Start from the selected workflow, then this task skill, then one domain file.
-- Prefer targeted `rg` and focused tests over broad reads/checks.
+- Prefer targeted source searches and focused tests over broad raw reads.
 - Record exact evidence in the worklog and add the self-review section.
-- Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.
+- Ask before expanding scope when product decisions are missing.
 
 ## Token Optimization
 
@@ -42,7 +42,7 @@
 
 - [Worklog - M08 Health Score Local Draft](../../docs/worklog/2026-06-29/002-worklog-m08-health-score-local-draft.md) - M08 HEALTH_SCORE_HABITS.
 - [Worklog - M15/M16 Admin Permission Hardening](../../docs/worklog/2026-06-29/003-worklog-m15-m16-admin-permission-hardening.md) - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.
-- [Worklog - Nabi mascot 30fps](../../docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md) - lib/app_versions/v1/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1
+- [Worklog - Nabi mascot 30fps](../../docs/worklog/2026-07-09/003-worklog-nabi-mascot-30fps.md) - lib/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1
 - [Worklog - Fix Gemini Android runtime va chat fallback](../../docs/worklog/2026-07-19/002-worklog-gemini-android-runtime-and-chat-fallback.md) - M02 PERSONAL_SCHEDULE_AI, M07 AI_CHAT
 - [Worklog - Fix Chat AI native debug runtime](../../docs/worklog/2026-07-19/003-worklog-chat-ai-native-debug-runtime.md) - M07 AI_CHAT, M05 runtime configuration
 - [Worklog - Coding Nabi Kinetic Aura toàn bộ ứng dụng](../../docs/worklog/2026-08-05/002-worklog-nabi-kinetic-aura-coding.md) - unknown

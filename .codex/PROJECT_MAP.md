@@ -16,7 +16,8 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 - Shared widgets: `lib/shared/widgets/`
 - Tests: `test/`
 - BD/DD docs: `docs/BD/`, `docs/DD/`
-- Supabase config and draft docs: `docs/supabase/config.sql`, `docs/supabase/`
+- Supabase build/seed and draft docs: `docs/supabase/01_build_system.sql`,
+  `docs/supabase/02_seed_data.sql`, `docs/supabase/`
 - Issues/todo/worklog: `docs/issues/`, `docs/todo/`, `docs/worklog/`
 
 ## Workflow Routing
@@ -55,7 +56,8 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 
 Open only when relevant:
 
-- `docs/supabase/config.sql`
+- `docs/supabase/01_build_system.sql`
+- `docs/supabase/02_seed_data.sql`
 - `lib/app_versions/v1/router/v1_router.dart`
 - `lib/app_versions/v1/router/v1_route_guards.dart`
 - `lib/app_versions/v2/router/v2_router.dart`
@@ -95,14 +97,15 @@ executable tests over authored or historical docs.
 - DD module template: `docs/DD/DD_Module_Template/README.md`
 - Auth BD: not present in the current working tree; use M05 `docs/DD/auth_profile_sync/README.md` and the live product-flow BD unless a specific auth BD path is provided.
 - DD checklist: `docs/checklist/checklist_create_DD.md`
-- Supabase rebuild config: `docs/supabase/config.sql`
+- Supabase local/sandbox rebuild: `docs/supabase/01_build_system.sql` then
+  `docs/supabase/02_seed_data.sql`
 - Supabase context: `docs/supabase/README.md`
-- Admin Supabase contract: `docs/supabase/01_schema_rebuild_local_sandbox.sql`
+- Admin Supabase contract: `docs/supabase/01_build_system.sql`
 
 For any Supabase database schema/RLS/RPC/seed/docs change, read
-`docs/supabase/README.md`, `docs/supabase/config.sql`, and the directly related
-`docs/supabase/*.sql` or `*.md` module file before editing. Update
-`docs/supabase/config.sql` in the same change, or record a blocker and do not
-claim the Supabase rebuild path is current.
+`docs/supabase/README.md`, `docs/supabase/01_build_system.sql`,
+`docs/supabase/02_seed_data.sql`, and the directly related module file before
+editing. Update the owning build or seed script in the same change, or record a
+blocker and do not claim the Supabase rebuild path is current.
 
 Legacy product-flow/auth DD folders are not present in the current working tree. Create or update module DDs through the live DD guide/template unless the user provides a specific existing DD path.

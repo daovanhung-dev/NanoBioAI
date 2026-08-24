@@ -3,14 +3,16 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Supabase single-file rebuild config', () {
+  group('Supabase build and seed contract', () {
     late String sql;
 
     setUpAll(() {
-      sql = File('docs/supabase/config.sql').readAsStringSync();
+      final build = File('docs/supabase/01_build_system.sql').readAsStringSync();
+      final seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
+      sql = '$build\n$seed';
     });
 
-    test('is destructive sandbox rebuild entrypoint with auth wipe', () {
+    test('keeps a destructive sandbox build with an Auth wipe', () {
       expect(sql, contains('DESTRUCTIVE LOCAL/SANDBOX SCRIPT ONLY'));
       expect(sql, contains("truncate table auth.users cascade"));
       expect(sql, contains('drop schema if exists public cascade'));
@@ -234,7 +236,7 @@ void main() {
         "'pending_review'",
       ]) {
         expect(module, contains(token), reason: 'module: $token');
-        expect(sql, contains(token), reason: 'config.sql: $token');
+        expect(sql, contains(token), reason: 'rebuild SQL: $token');
       }
 
       expect(create, contains('v_transfer_memo := v_transfer_reference'));
@@ -340,7 +342,7 @@ void main() {
         isFalse,
         reason:
             'get_admin_dashboard_summary returns a status column, so source '
-            'status filters must stay table-qualified in config.sql.',
+            'status filters must stay table-qualified in the build script.',
       );
     });
 
@@ -450,7 +452,7 @@ void main() {
 
   group('Codex Supabase context rules', () {
     test(
-      'require reading docs/supabase and updating config for DB changes',
+      'requires the two Supabase scripts for DB changes',
       () {
         final sources = [
           File('.codex/AGENTS.md').readAsStringSync(),
@@ -460,7 +462,8 @@ void main() {
 
         for (final token in [
           'docs/supabase/README.md',
-          'docs/supabase/config.sql',
+          'docs/supabase/01_build_system.sql',
+          'docs/supabase/02_seed_data.sql',
           'directly related',
           'schema/RLS/RPC/seed',
           'rebuild-ready',

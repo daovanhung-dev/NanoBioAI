@@ -122,6 +122,41 @@ void main() {
     );
   });
 
+  test('Native foreground-service rejection fails safely and closes session', () async {
+    const userId = 'user-1';
+    final repository = _FakeSleepSafetyRepository(
+      userId,
+      nativeStartErrorCode: 'microphone_fgs_not_allowed',
+    );
+    final container = ProviderContainer(
+      overrides: [
+        currentAuthUserIdProvider.overrideWithValue(userId),
+        sleepSafetyRepositoryProvider.overrideWithValue(repository),
+        sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+        sleepSafetyNotificationPermissionProvider.overrideWithValue(
+          () async => true,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(sleepSafetyControllerProvider.notifier);
+    await _waitForPreference(container);
+    await notifier.startMonitoring();
+
+    final viewState = container.read(sleepSafetyControllerProvider);
+    expect(repository.nativeStartCount, 1);
+    expect(repository.savedSessions, hasLength(2));
+    expect(repository.savedSessions.last.status, SleepSafetySessionStatus.failed);
+    expect(
+      repository.savedSessions.last.stopReason,
+      'microphone_fgs_not_allowed',
+    );
+    expect(viewState.monitoringActive, isFalse);
+    expect(viewState.isBusy, isFalse);
+    expect(viewState.errorMessage, contains('Android chưa cho phép'));
+  });
+
 }
 
 Future<void> _waitForPreference(ProviderContainer container) async {
@@ -136,10 +171,12 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   _FakeSleepSafetyRepository(
     this.userId, {
     this.microphoneGranted = true,
+    this.nativeStartErrorCode,
   });
 
   final String userId;
   final bool microphoneGranted;
+  final String? nativeStartErrorCode;
   int rolloutFetchCount = 0;
   int microphonePermissionCount = 0;
   int nativeStartCount = 0;
@@ -183,6 +220,10 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   @override
   Future<void> startNative(Map<String, Object?> config) async {
     nativeStartCount += 1;
+    final errorCode = nativeStartErrorCode;
+    if (errorCode != null) {
+      throw SleepSafetyNativeStartException(errorCode);
+    }
   }
 
   @override

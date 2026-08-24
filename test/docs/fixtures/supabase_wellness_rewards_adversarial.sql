@@ -1,5 +1,6 @@
--- Local/sandbox adversarial smoke test for migration 16.
--- Prerequisite: rebuild the disposable database with docs/supabase/config.sql.
+-- Local/sandbox adversarial smoke test for wellness rewards.
+-- Prerequisite: run docs/supabase/01_build_system.sql, then
+-- docs/supabase/02_seed_data.sql, against a disposable database.
 -- The transaction is always rolled back.
 
 begin;

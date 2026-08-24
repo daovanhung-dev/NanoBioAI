@@ -25,7 +25,7 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - Chưa fix: `.env` thật không được sửa theo quy tắc an toàn, nên môi trường local cần tự thêm `GEMINI_PLAN_*` nếu muốn dùng model pool mới thay vì legacy key.
 - docs/worklog/2026-06-19/002-worklog-ai-generated-plan.md :: - Cần kiểm tra tiếp: chạy thực tế trên thiết bị với API key thật để quan sát tỷ lệ `MODEL_COOLDOWN_SKIP`, `RETRY_EXHAUSTED` và `LOCAL_GEN` trong log.
 - docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - Thêm retry/failover theo model, timeout từng attempt, cooldown model lỗi tạm thời và backoff ngắn.
-- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `lib/app_versions/v1/services/ai/ai_chat_service.dart` - sửa - thêm retry/failover/fallback và model candidates riêng cho chat.
+- docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `lib/services/ai/ai_chat_service.dart` - sửa - thêm retry/failover/fallback và model candidates riêng cho chat.
 - docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `dart format lib\services\ai\ai_chat_service.dart test\services\ai\ai_service_test.dart`: FAIL - timeout sau 120-180 giây.
 - docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `dart --version`: FAIL - timeout sau 30 giây, cho thấy Dart tool đang bị treo ngoài phạm vi code.
 - docs/worklog/2026-06-19/003-worklog-ai-chat-retry.md :: - `flutter test test\services\ai`: FAIL - timeout sau 240 giây, cùng nhóm lỗi môi trường Dart/Flutter đang treo.
@@ -713,3 +713,76 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Chua fix: `.codex` integrity baseline con stale path den `docs/supabase/README.md`, `config.sql` va `11-admin-access-dashboard.sql`; task nay khong duoc phep tai tao Supabase docs.
 - docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Can kiem tra tiep: can user xac nhan CLI/API image fallback voi `OPENAI_API_KEY` da cau hinh, hoac cung cap 5 master RGBA da tach nen. Sau do regenerate/validate bundle, build APK, verify release assets va visual QA.
 - docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md :: - Muc do hoan thanh task: partial; theme cutover hoan tat va co bang chung, asset cutover chua duoc phep chuyen sang CLI fallback.
+- docs/worklog/2026-08-17/002-worklog-fix-project-wide-audit.md :: 5. Implemented M09 30-minute notification defer using existing notification persistence fields; retained legacy `skipped` compatibility without adding a schedule skip state.
+- docs/worklog/2026-08-17/002-worklog-fix-project-wide-audit.md :: ### Blocked in this environment
+- docs/worklog/2026-08-17/002-worklog-fix-project-wide-audit.md :: Strong static source traceability and focused regression tests were added, but executable Flutter evidence is unavailable here. Full validation commands are recorded in todo/fix report.
+- docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md :: - Bo fake onboarding health score va Splash fail-open.
+- docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md :: - `dart format`: SKIPPED/BLOCKED - container khong co Dart executable.
+- docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md :: - `flutter analyze`: SKIPPED/BLOCKED - container khong co Flutter executable.
+- docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md :: - `flutter test`: SKIPPED/BLOCKED - container khong co Flutter executable.
+- docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md :: - quick/full/native check: SKIPPED/BLOCKED - container khong co Flutter/PowerShell project runtime.
+- docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md :: - GitHub branch/push: BLOCKED - connector tra 403 khi tao branch.
+- docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md :: - Chua fix: khong co issue audit nao duoc co y bo qua trong overlay scope.
+- docs/worklog/2026-08-19/001-worklog-fix-ui-ux-audit.md :: - Can kiem tra tiep: analyzer/widget test/debug APK tren workstation co Flutter SDK truoc khi release.
+- docs/worklog/2026-08-19/001-worklog-flutter-ui-ux-full-audit.md :: - `flutter analyze/test/build`: SKIPPED - audit-only, no checkout/runtime edit.
+- docs/worklog/2026-08-19/001-worklog-flutter-ui-ux-full-audit.md :: - `.codex/tools/validate_codex_integrity.ps1`: SKIPPED - no local repository checkout and no `.codex` file modified in artifact package.
+- docs/worklog/2026-08-19/001-worklog-flutter-ui-ux-full-audit.md :: - `git diff --check`: SKIPPED - Git clone unavailable due environment DNS; package contains new docs only.
+- docs/worklog/2026-08-19/001-worklog-flutter-ui-ux-full-audit.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-19/001-worklog-flutter-ui-ux-full-audit.md :: - Chua fix: all BUG-UI-* remain TODO by design.
+- docs/worklog/2026-08-19/001-worklog-flutter-ui-ux-full-audit.md :: - Can kiem tra tiep: runtime/golden/device QA for Potential Issues, especially 320/360px, textScale 1.5, keyboard dialogs, dark mode and rapid double-tap flows.
+- docs/worklog/2026-08-22/001-worklog-gemini-live-voice.md :: session-resumption/GoAway, timeout 15 phút và teardown an toàn.
+- docs/worklog/2026-08-22/001-worklog-gemini-live-voice.md :: | `deno test --allow-net supabase/functions/voice-live-token/handler_test.ts` | BLOCKED — `deno` không có trong môi trường |
+- docs/worklog/2026-08-22/001-worklog-gemini-live-voice.md :: | iOS compile + Android/iOS real-device smoke | BLOCKED — không có Xcode/iOS toolchain hoặc thiết bị trong môi trường |
+- docs/worklog/2026-08-22/001-worklog-gemini-live-voice.md :: - App rời foreground, stop, token/network failure và native interruption đều
+- docs/worklog/2026-08-23/001-worklog-gemini-live-voice-fix.md :: fallback + `MODIFY_AUDIO_SETTINGS`; iOS background fail-safe).
+- docs/worklog/2026-08-23/001-worklog-gemini-live-voice-fix.md :: | Unauthenticated `voice-live-token` probe | FAIL đúng chẩn đoán — HTTP 404, function chưa deploy |
+- docs/worklog/2026-08-23/001-worklog-gemini-live-voice-fix.md :: background và network reset; ghi kết quả pass/fail riêng.
+- docs/worklog/2026-08-23/002-worklog-plus-unlimited-voice.md :: xác định đều fail-closed và không thể mở micro.
+- docs/worklog/2026-08-23/002-worklog-plus-unlimited-voice.md :: (Free khóa, Plus/FamilyPlus mở trang, lỗi quyền fail-closed).
+- docs/worklog/2026-08-23/004-worklog-numbered-supabase-local-sandbox.md :: - Dart/Flutter tests: SKIPPED - môi trường không có Dart hoặc Flutter.
+- docs/worklog/2026-08-23/004-worklog-numbered-supabase-local-sandbox.md :: - Supabase execution: SKIPPED - môi trường không có `psql` hoặc Supabase CLI.
+- docs/worklog/2026-08-23/004-worklog-numbered-supabase-local-sandbox.md :: - `.codex` integrity/history refresh: SKIPPED - môi trường không có PowerShell.
+- docs/worklog/2026-08-23/004-worklog-numbered-supabase-local-sandbox.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-23/004-worklog-numbered-supabase-local-sandbox.md :: - Chua fix: chua co bang chung thuc thi 01-05 va 90-93 tren database local/sandbox do thieu CLI/database runner.
+- docs/worklog/2026-08-23/004-worklog-numbered-supabase-local-sandbox.md :: - Can kiem tra tiep: chay full bundle tren Supabase local disposable, sau do login fixture Plus va mo payment UI de quet QR trong ung dung.
+- docs/worklog/2026-08-23/005-worklog-supabase-runtime-setup-audit.md :: - `deno test --allow-net supabase/functions/delete-account/handler_test.ts`: SKIPPED - Deno khong co trong moi truong.
+- docs/worklog/2026-08-23/005-worklog-supabase-runtime-setup-audit.md :: - `dart format` va Flutter test targeted: SKIPPED - Dart/Flutter khong co trong moi truong.
+- docs/worklog/2026-08-23/005-worklog-supabase-runtime-setup-audit.md :: - `psql`/Supabase CLI smoke va deploy: SKIPPED - CLI khong co va khong co scope moi truong sandbox dang link.
+- docs/worklog/2026-08-23/005-worklog-supabase-runtime-setup-audit.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-23/005-worklog-supabase-runtime-setup-audit.md :: - Chua fix: Chua co bang chung deploy hay smoke tren mot Supabase sandbox that.
+- docs/worklog/2026-08-23/005-worklog-supabase-runtime-setup-audit.md :: - Can kiem tra tiep: Chay 01 den 06, 90 den 94 tren sandbox; deploy `delete-account`; chay Deno va Flutter targeted tests khi toolchain san sang.
+- docs/worklog/2026-08-23/006-worklog-sequential-voice-plus.md :: - Khôi phục auth route + `AiVoiceAccessGate` fail-closed. Guest về login; Free
+- docs/worklog/2026-08-23/006-worklog-sequential-voice-plus.md :: `architecture_version_boundary_test.dart` vẫn có 1 test fail vì ba bridge V1→V2
+- docs/worklog/2026-08-23/006-worklog-sequential-voice-plus.md :: - Chat luong dau ra: tot - luồng tuần tự nhỏ, typed failure, backend enforcement
+- docs/worklog/2026-08-23/006-worklog-sequential-voice-plus.md :: quan nên cần target file và phân biệt baseline architecture failure.
+- docs/worklog/2026-08-23/007-worklog-ai-voice-client-only-device-runtime.md :: - `.codex/tools/update_worklog_learning.ps1`: BLOCKED - moi truong khong co
+- docs/worklog/2026-08-23/007-worklog-ai-voice-client-only-device-runtime.md :: - Architecture boundary test: baseline FAIL ngoai scope Voice do ba import V1->V2
+- docs/worklog/2026-08-23/007-worklog-ai-voice-client-only-device-runtime.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-23/007-worklog-ai-voice-client-only-device-runtime.md :: - Rui ro chap nhan: Gemini key co the bi trich xuat khoi APK; client Plus gate co
+- docs/worklog/2026-08-23/007-worklog-ai-voice-client-only-device-runtime.md :: boundary va khong che giau rui ro key trong APK.
+- docs/worklog/2026-08-23/008-worklog-ai-voice-reaction-speed-docs.md :: 200/500/1.000/2.000 ms sau partial non-empty đầu tiên; final result vẫn
+- docs/worklog/2026-08-23/008-worklog-ai-voice-reaction-speed-docs.md :: - delayed arm threshold sau partial non-empty đầu tiên.
+- docs/worklog/2026-08-23/008-worklog-ai-voice-reaction-speed-docs.md :: - `.codex/tools/update_worklog_learning.ps1`: BLOCKED - môi trường không có
+- docs/worklog/2026-08-23/008-worklog-ai-voice-reaction-speed-docs.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-08-23/008-worklog-ai-voice-reaction-speed-docs.md :: hoàn tất Gemini/TTS và tự nghe tiếp. Đây là external network failure, không
+- docs/worklog/2026-08-23/009-worklog-ai-voice-three-minute-listening-docs.md :: diện nhất quán. Mọi nhắc 60 giây còn lại là baseline cũ, TTS timeout hoặc mốc
+- docs/worklog/2026-08-23/009-worklog-ai-voice-three-minute-listening-docs.md :: - `.codex/tools/validate_codex_integrity.ps1`: BLOCKED - môi trường không có
+- docs/worklog/2026-08-23/009-worklog-ai-voice-three-minute-listening-docs.md :: - `.codex/tools/update_worklog_learning.ps1`: BLOCKED - môi trường không có
+- docs/worklog/2026-08-23/009-worklog-ai-voice-three-minute-listening-docs.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-08-23/009-worklog-ai-voice-three-minute-listening-docs.md :: - Cần kiểm tra tiếp: Android device continuity smoke qua mốc 60 giây; iOS vẫn
+- docs/worklog/2026-08-24/001-worklog-personal-schedule-ai-regeneration-button.md :: - `dart format`: SKIPPED - môi trường thực thi không có `dart`.
+- docs/worklog/2026-08-24/001-worklog-personal-schedule-ai-regeneration-button.md :: - `flutter analyze`: SKIPPED - môi trường thực thi không có `flutter`.
+- docs/worklog/2026-08-24/001-worklog-personal-schedule-ai-regeneration-button.md :: - `flutter test`: SKIPPED - môi trường thực thi không có `flutter`.
+- docs/worklog/2026-08-24/001-worklog-personal-schedule-ai-regeneration-button.md :: - `.codex/tools/update_worklog_learning.ps1`: SKIPPED - phiên chỉ có sparse delivery tree, không có toàn bộ worklog corpus/runtime PowerShell để regenerate an toàn.
+- docs/worklog/2026-08-24/001-worklog-personal-schedule-ai-regeneration-button.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-24/001-worklog-personal-schedule-ai-regeneration-button.md :: - Chua fix: không có lỗi ngoài phạm vi được sửa.
+- docs/worklog/2026-08-24/001-worklog-personal-schedule-ai-regeneration-button.md :: - Can kiem tra tiep: chạy targeted Flutter tests và device UAT trong checkout đầy đủ của repository.
+- docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md :: - Gop schema, RLS, RPC, Storage runtime, M31 rollout va fail-fast system checks vao `01_build_system.sql`.
+- docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md :: - Gop destructive Auth reset, catalog 163 mon an, toan bo fixture, fail-fast seed checks va VietQR rollback smoke vao `02_seed_data.sql`.
+- docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md :: - `python3 tools/validate_docs_source_truth.py`: BLOCKED - chi thieu `docs/audit/source_truth_manifest.json` da khong co tu HEAD.
+- docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md :: - `dart` / `flutter` focused contract tests: SKIPPED - khong co tren PATH trong moi truong hien tai.
+- docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md :: - Chua fix: runtime/RLS/Edge Function can duoc chay tren local/sandbox disposable truoc khi coi la runtime verified.
+- docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md :: - Chua fix: checksum goc `README.md` da stale tu HEAD, khong do thay doi cua phien nay.
+- docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md :: - Chat luong dau ra: tot - chi con hai script SQL co phan dinh ro rang va assertion fail-fast.

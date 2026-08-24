@@ -483,7 +483,7 @@ function Assert-FreshStorageFixtureRun {
       @($proofs | Where-Object { $null -ne $_ }).Count -gt 0) {
     throw (
       'Storage fixture runner is one-shot after a destructive rebuild. ' +
-      'Run config.sql and the opt-in demo profile again before retrying.'
+      'Run 01_build_system.sql, then 02_seed_data.sql and the opt-in demo profile again before retrying.'
     )
   }
 }

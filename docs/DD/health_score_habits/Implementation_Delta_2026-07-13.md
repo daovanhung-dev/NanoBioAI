@@ -43,7 +43,7 @@ ví Điểm chăm sóc thuộc tài khoản và không gộp theo gói gia đìn
 
 Targeted daily/proof analyze sạch; các bundle 59 lifestyle/migration/notification/
 cloud-sync và 50 dashboard test pass. Supabase static contract bundle 40 test,
-full `config.sql` rebuild trên PostgreSQL 18 tạm, local end-to-end reward smoke,
+full local/sandbox rebuild trên PostgreSQL 18 tạm, local end-to-end reward smoke,
 RLS chéo user và direct-ledger rejection đều PASS. Bằng chứng này không thay thế
 Supabase sandbox thật cho health-score/wellness ledger, nên không claim
 production-ready.

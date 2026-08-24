@@ -6,20 +6,20 @@
 
 ## When To Read
 
-- Historical task type: coding/docs/static-validation (1)
 - Historical task type: coding/refactor (1)
+- Historical task type: coding/docs/static-validation (1)
 
 ## Common Modules
 
-- UI/Theme/NabiCopy xuyên V1, V2, V3, Admin và Sale: 1
 - project structure, access version boundary, sale/referral scaffold: 1
+- UI/Theme/NabiCopy xuyên V1, V2, V3, Admin và Sale: 1
 
 ## Work Pattern
 
 - Start from the selected workflow, then this task skill, then one domain file.
-- Prefer targeted `rg` and focused tests over broad reads/checks.
+- Prefer targeted source searches and focused tests over broad raw reads.
 - Record exact evidence in the worklog and add the self-review section.
-- Ask before expanding scope when BD/DD, issue/todo, or product decisions are missing.
+- Ask before expanding scope when product decisions are missing.
 
 ## Token Optimization
 

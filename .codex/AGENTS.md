@@ -142,12 +142,16 @@ Access rules:
 
 - Before any task that changes Supabase database behavior, schema, RLS, RPC,
   seed data, payment/membership/Sale/Admin contracts, or Supabase docs, read
-  `docs/supabase/README.md`, `docs/supabase/config.sql`, and the directly
-  related SQL/MD files under `docs/supabase/`.
+  `docs/supabase/README.md`, `docs/supabase/01_build_system.sql`,
+  `docs/supabase/02_seed_data.sql`, and the directly related SQL/MD files
+  under `docs/supabase/`.
 - Any module or feature change that modifies Supabase schema/RLS/RPC/seed/docs
-  must update `docs/supabase/config.sql` in the same change. This file is the
-  single local/sandbox rebuild entrypoint used after resetting Supabase.
-- If `docs/supabase/config.sql` cannot be updated, record the blocker in the
+  must update the owning canonical script in the same change:
+  `01_build_system.sql` for system objects and runtime contracts, or
+  `02_seed_data.sql` for destructive sandbox reset/fixtures.
+- The only local/sandbox rebuild sequence is `01_build_system.sql` followed by
+  `02_seed_data.sql`; there is no generated aggregate entrypoint.
+- If the owning canonical script cannot be updated, record the blocker in the
   worklog and do not claim the Supabase state is rebuild-ready.
 
 ## UI And Copy

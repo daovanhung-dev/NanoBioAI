@@ -29,7 +29,8 @@ runtime while preserving the existing route and server-side kill switch.
 - Local DB: `lib/core/storage/localdb/` — SQLite v21
 - Android native: `android/app/src/main/kotlin/com/example/nano_app/sleep_safety/`
 - iOS native bridge/runtime: `ios/Runner/AppDelegate.swift`
-- Supabase authored components: `docs/supabase/07_schema_sleep_safety.sql` + `docs/supabase/08_enable_sleep_safety_rollout.sql`
+- Supabase authored component: `docs/supabase/01_build_system.sql` (M31
+  schema, runtime support và rollout).
 - Edge Functions: `supabase/functions/sleep-safety-*`
 - M09 notification bootstrap is reused only for scheduled arming navigation;
   sleep-safety alert actions are native and do not mutate M09 task state.

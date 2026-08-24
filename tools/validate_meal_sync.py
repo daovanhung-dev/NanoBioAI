@@ -18,7 +18,7 @@ from pathlib import Path
 from sync_meal_catalog_sql import build_seed, parse_markdown, slugify
 
 SOURCE = Path("docs/note/Suc_Khoe_Tu_Nha_Bep_Thuc_Don_Theo_Tung_Muc.md")
-SEED = Path("docs/supabase/05_seed_local_sandbox.sql")
+SEED = Path("docs/supabase/02_seed_data.sql")
 ASSET_ROOT = Path("assets/images/meals/pdf_health_book")
 RESOLVER = Path(
     "lib/app_versions/v1/features/meal_plan/presentation/utils/meal_image_resolver.dart"
@@ -55,7 +55,7 @@ def main() -> None:
     canonical_seed = build_seed(seed_text, recipes, EXPECTED_RECIPES)
     if canonical_seed != seed_text:
         raise SystemExit(
-            "05_seed_local_sandbox.sql is out of sync with the canonical Markdown. "
+            "02_seed_data.sql is out of sync with the canonical Markdown. "
             "Run: python tools/sync_meal_catalog_sql.py"
         )
 

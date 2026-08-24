@@ -60,5 +60,6 @@
 
 - Guest Settings now exposes login/register actions, account-only controls are hidden without a session, and authenticated APK/AAB builds use a validated `--dart-define-from-file` launcher.
 - Auth callback, Guest consent, push-before-pull, request ledger `request_id`, durable retry and Admin session isolation are implemented at source level.
-- The local/sandbox rebuild source `docs/supabase/01_schema_rebuild_local_sandbox.sql` contains the final signup trigger contract.
+- The local/sandbox system build source `docs/supabase/01_build_system.sql`
+  contains the final signup trigger contract.
 - Production acceptance remains pending Flutter compile/full tests, Supabase sandbox/RLS/atomic rollback and device evidence.

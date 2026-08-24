@@ -54,7 +54,7 @@ trả về theo `<auth.uid>/<eligibility>/<attempt>.jpg`; client không update/d
 | Eligibility projection | `lib/app_versions/v1/features/lifestyle_schedule/application/schedule_reward_eligibility_projection_store.dart` |
 | Local persistence | `schedule_completion_proofs` DAO/model/table, lifestyle datasource và SQLite migration v14 |
 | UI/controller | lifestyle controller/page và `schedule_proof_gallery_page.dart` |
-| Server contract | `docs/supabase/16-wellness-rewards.sql`, `docs/supabase/16-schedule-proof-storage.md`, `docs/supabase/config.sql` |
+| Server contract | `docs/supabase/01_build_system.sql` (system contract), `docs/supabase/02_seed_data.sql` (sandbox fixture contract) |
 
 SQLite v14 bổ sung proof sidecar và reward projection/cache. Proof là local-owned
 metadata, không được đẩy/xóa như snapshot schedule; wellness ledger cloud là
@@ -67,7 +67,7 @@ server-owned và client chỉ pull/merge read-only.
   bundle: PASS theo evidence của phiên triển khai.
 - Test chuẩn hóa ảnh/EXIF: PASS.
 - Reward client/gateway bundle 38/38: PASS; targeted analyze sạch.
-- Supabase static contract bundle: 40 test PASS. `config.sql` rebuild đầy đủ trên
+- Supabase static contract bundle: 40 test PASS. Full local/sandbox rebuild trên
   PostgreSQL 18 tạm với Auth/Storage stub: PASS.
 - Local backend smoke đã chạy chuỗi register → begin → upload → finalize → undo →
   refinalize → redeem → cancel; smoke RLS chéo người dùng và chặn direct ledger
@@ -79,7 +79,8 @@ trong một dự án Supabase sandbox thật.
 
 ## 5. Acceptance còn phải chạy trước production
 
-- Apply migration 16 và `config.sql` vào local/sandbox với feature flag tắt.
+- Chạy `01_build_system.sql` rồi `02_seed_data.sql` trong local/sandbox với
+  feature flag tắt.
 - Smoke hai tài khoản cho owner path, MIME/size/upsert, direct DML rejection.
 - Smoke exact `window_end`, upload trước hạn/finalize sau hạn, upload sau hạn,
   double tap, retry và hai thiết bị.

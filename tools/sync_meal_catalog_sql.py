@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synchronize the numbered local/sandbox meal seed with the canonical Markdown.
+"""Synchronize the local/sandbox meal seed with the canonical Markdown.
 
 This tool is deliberately source-faithful. It never infers nutrition, allergens,
 meal type, serving size, or contraindications. NanoBio's SQL/SQLite contract uses
@@ -23,7 +23,7 @@ from typing import Iterable
 
 SOURCE_NAME = "Suc_Khoe_Tu_Nha_Bep_Thuc_Don_Theo_Tung_Muc.md"
 DEFAULT_SOURCE = Path("docs/note") / SOURCE_NAME
-DEFAULT_SEED = Path("docs/supabase/05_seed_local_sandbox.sql")
+DEFAULT_SEED = Path("docs/supabase/02_seed_data.sql")
 EXPECTED_RECIPES = 163
 EXPECTED_TOPICS = 64
 EXPECTED_CHAPTERS = 11
@@ -36,6 +36,8 @@ LIST_ITEM_RE = re.compile(r"^[-*]\s+(?P<text>.+?)\s*$")
 STEP_RE = re.compile(r"^\d+[.)]\s+(?P<text>.+?)\s*$")
 INSERT_PREFIX = "insert into public.meal_catalog ("
 SOURCE_MARKER = f"'{SOURCE_NAME}'"
+GENERATED_CATALOG_BEGIN = "-- BEGIN GENERATED MEAL CATALOG"
+GENERATED_CATALOG_END = "-- END GENERATED MEAL CATALOG"
 
 COLUMNS = (
     "code,meal_type,meal_name,description,cooking_instructions,calories,protein,carbs,fat,fiber,water_ml,"
@@ -283,17 +285,60 @@ def validate_counts(recipes: list[Recipe], expected_recipes: int, expected_topic
         raise ValueError(f"Expected {expected_chapters} chapters, found {len(chapters)}")
 
 
-def build_seed(seed_text: str, recipes: list[Recipe], expected_recipes: int) -> str:
-    insert_start = seed_text.find(INSERT_PREFIX)
-    if insert_start < 0:
-        raise ValueError(
-            "Could not locate meal_catalog source block in 05_seed_local_sandbox.sql"
+def generated_catalog_bounds(seed_text: str) -> tuple[int, int, int, int]:
+    """Locate the explicit generated-catalog region without touching its suffix."""
+    begin_matches = list(
+        re.finditer(
+            rf"(?m)^[ \t]*{re.escape(GENERATED_CATALOG_BEGIN)}[ \t]*$",
+            seed_text,
         )
-    commit_pos = seed_text.rfind("\ncommit;")
-    if commit_pos < insert_start:
-        raise ValueError("Could not locate final commit after meal_catalog source block")
+    )
+    end_matches = list(
+        re.finditer(
+            rf"(?m)^[ \t]*{re.escape(GENERATED_CATALOG_END)}[ \t]*$",
+            seed_text,
+        )
+    )
+    if len(begin_matches) != 1 or len(end_matches) != 1:
+        raise ValueError(
+            "Expected exactly one generated meal catalog begin marker and one end marker"
+        )
 
-    old_block = seed_text[insert_start:commit_pos]
+    begin = begin_matches[0]
+    end = end_matches[0]
+    if end.start() <= begin.end():
+        raise ValueError("Generated meal catalog markers are out of order")
+    return begin.start(), begin.end(), end.start(), end.end()
+
+
+def replace_generated_catalog_block(seed_text: str, generated_block: str) -> str:
+    """Replace only the marked catalog body and preserve every trailing check."""
+    _, body_start, body_end, _ = generated_catalog_bounds(seed_text)
+    normalized_block = generated_block.strip()
+    if not normalized_block:
+        raise ValueError("Generated meal catalog cannot be empty")
+    return (
+        seed_text[:body_start]
+        + "\n\n"
+        + normalized_block
+        + "\n\n"
+        + seed_text[body_end:]
+    )
+
+
+def generated_catalog_header() -> str:
+    return (
+        "-- ---------------------------------------------------------------------------\n"
+        "-- Canonical meal catalog generated from docs/note/"
+        f"{SOURCE_NAME}\n"
+        "-- DO NOT hand-edit source-derived fields. Run tools/sync_meal_catalog_sql.py.\n"
+        "-- ---------------------------------------------------------------------------"
+    )
+
+
+def build_seed(seed_text: str, recipes: list[Recipe], expected_recipes: int) -> str:
+    _, body_start, body_end, _ = generated_catalog_bounds(seed_text)
+    old_block = seed_text[body_start:body_end]
     old_inserts = old_block.count(INSERT_PREFIX)
     if old_inserts != expected_recipes:
         raise ValueError(
@@ -303,20 +348,10 @@ def build_seed(seed_text: str, recipes: list[Recipe], expected_recipes: int) -> 
         raise ValueError("Refusing replacement: meal block source_name markers are incomplete")
 
     generated = "\n\n".join(render_insert(recipe) for recipe in recipes)
-    header = (
-        "-- ---------------------------------------------------------------------------\n"
-        "-- Canonical meal catalog generated from docs/note/"
-        f"{SOURCE_NAME}\n"
-        "-- DO NOT hand-edit source-derived fields. Run tools/sync_meal_catalog_sql.py.\n"
-        "-- ---------------------------------------------------------------------------\n\n"
+    return replace_generated_catalog_block(
+        seed_text,
+        generated_catalog_header() + "\n\n" + generated,
     )
-    header_start = seed_text.rfind(
-        "-- ---------------------------------------------------------------------------\n-- Canonical meal catalog generated from docs/note/",
-        0,
-        insert_start,
-    )
-    replace_start = header_start if header_start >= 0 else insert_start
-    return seed_text[:replace_start] + header + generated + seed_text[commit_pos:]
 
 
 def atomic_write(path: Path, text: str) -> None:
@@ -334,7 +369,7 @@ def main() -> int:
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Fail if 05_seed_local_sandbox.sql differs from deterministic output",
+        help="Fail if 02_seed_data.sql differs from deterministic output",
     )
     parser.add_argument("--expected-recipes", type=int, default=EXPECTED_RECIPES)
     parser.add_argument("--expected-topics", type=int, default=EXPECTED_TOPICS)
@@ -354,7 +389,7 @@ def main() -> int:
     if args.check:
         if before != after:
             raise SystemExit(
-                "FAIL: 05_seed_local_sandbox.sql meal catalog is not in canonical generated form"
+                "FAIL: 02_seed_data.sql meal catalog is not in canonical generated form"
             )
         print(
             f"PASS: SQL source fidelity verified ({len(recipes)} recipes, "
@@ -363,7 +398,7 @@ def main() -> int:
         return 0
 
     if before == after:
-        print("No changes: 05_seed_local_sandbox.sql is already canonical")
+        print("No changes: 02_seed_data.sql is already canonical")
         return 0
 
     atomic_write(args.seed, after)

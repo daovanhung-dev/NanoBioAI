@@ -2,11 +2,10 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _configPath = 'docs/supabase/config.sql';
-const _seedPath = 'docs/supabase/05_seed_local_sandbox.sql';
+const _buildPath = 'docs/supabase/01_build_system.sql';
+const _seedPath = 'docs/supabase/02_seed_data.sql';
 const _smokeFixturePath =
     'test/docs/fixtures/supabase_comprehensive_seed_smoke.sql';
-const _seedName = '05_seed_local_sandbox.sql';
 const _fixtureMarker = 'dev-sandbox-comprehensive-v1';
 
 const _schemaOnlyTables = {
@@ -19,6 +18,13 @@ const _schemaOnlyTables = {
   'nutrition_preference_rules',
   'nutrition_profiles',
   'schedule_health_checkins',
+  'sleep_safety_runtime_config',
+  'sleep_safety_preferences',
+  'sleep_safety_sessions',
+  'sleep_safety_events',
+  'sleep_safety_contacts',
+  'sleep_safety_contact_verification_challenges',
+  'sleep_safety_dispatches',
 };
 
 const _legacyAccounts = <_LegacyAccount>[
@@ -42,46 +48,28 @@ const _legacyAccounts = <_LegacyAccount>[
 
 void main() {
   group('Supabase comprehensive local/sandbox seed', () {
-    late String config;
+    late String build;
     late String seed;
 
     setUpAll(() {
-      config = File(_configPath).readAsStringSync();
+      build = File(_buildPath).readAsStringSync();
       seed = File(_seedPath).readAsStringSync();
     });
 
-    test(
-      'mirrors numbered seed exactly once before runtime support',
-      () {
-        final block = _markedBlock(config, _seedName);
-
-        expect(block.beginMatches, hasLength(1));
-        expect(block.endMatches, hasLength(1));
-        expect(
-          _normaliseSql(block.body),
-          _normaliseSql(seed),
-          reason:
-              'The authoritative seed and the config.sql rebuild copy must stay '
-              'byte-equivalent apart from line endings/trailing whitespace.',
-        );
-
-        final runtimeStart = config.indexOf(
-          '-- BEGIN 06_schema_runtime_support.sql',
-        );
-        expect(runtimeStart, greaterThanOrEqualTo(0));
-        expect(
-          block.end.end,
-          lessThan(runtimeStart),
-          reason: 'The numbered seed must run before runtime support.',
-        );
-      },
-    );
+    test('keeps schema and runtime resources out of the seed script', () {
+      expect(build, contains('create table if not exists public.users'));
+      expect(build, contains('insert into storage.buckets'));
+      expect(seed, contains('insert into auth.users'));
+      expect(seed, contains('-- fixture-table: users'));
+      expect(seed, isNot(contains('drop schema if exists public cascade')));
+      expect(seed, isNot(contains('insert into storage.buckets')));
+    });
 
     test(
       'tracks seeded and intentionally schema-only public tables',
       () {
-        final publicTables = _publicTableNames(config);
-        expect(publicTables, hasLength(73));
+        final publicTables = _publicTableNames(build);
+        expect(publicTables, hasLength(80));
 
         final missingTables =
             publicTables
@@ -114,19 +102,14 @@ void main() {
     test('preserves the four stable account UUID/email bindings', () {
       for (final account in _legacyAccounts) {
         expect(
-          _containsLegacySeedTuple(config, account),
-          isTrue,
-          reason: 'config.sql: ${account.email}',
-        );
-        expect(
           _containsLegacySeedTuple(seed, account),
           isTrue,
-          reason: 'numbered seed: ${account.email}',
+          reason: 'seed script: ${account.email}',
         );
       }
     });
 
-    test('keeps the account matrix inside the authoritative numbered seed', () {
+    test('keeps the account matrix inside the authoritative seed script', () {
       final configuredEmails = _devAccountEmails(seed);
 
       expect(
@@ -148,7 +131,7 @@ void main() {
           dotAll: true,
         ).hasMatch(normalizedSeed),
         isTrue,
-        reason: 'The numbered seed must prohibit production use.',
+        reason: 'The seed script must prohibit production use.',
       );
       for (final token in ['free', 'plus', 'sale', 'admin', 'family']) {
         expect(normalizedSeed, contains(token), reason: token);
@@ -156,7 +139,7 @@ void main() {
       expect(normalizedSeed, contains('family_plus'));
     });
 
-    test('keeps fixture rollout defaults explicit in the numbered seed', () {
+    test('keeps fixture rollout defaults explicit in the seed script', () {
       for (final token in [
         'wellness_rewards_rollout',
         'sale_point_conversion',
@@ -175,14 +158,14 @@ void main() {
           'schedule-completion-proofs',
           'sale-payout-proofs',
         ]) {
-          expect(config, contains("'$bucket'"), reason: bucket);
+          expect(build, contains("'$bucket'"), reason: bucket);
           expect(
-            config,
+            build,
             contains("bucket_id = '$bucket'"),
             reason: 'Storage policy for $bucket',
           );
         }
-        expect(config, contains('insert into storage.buckets'));
+        expect(build, contains('insert into storage.buckets'));
       },
     );
 
@@ -193,14 +176,13 @@ void main() {
         final smoke = File(_smokeFixturePath).readAsStringSync();
 
         for (final token in [
-          '05_seed_local_sandbox.sql',
-          'config.sql',
-          'Sandbox runtime (thực thi 01 → 06 rồi 90 → 94): `UNVERIFIED`',
+          '01_build_system.sql',
+          '02_seed_data.sql',
         ]) {
           expect(readme, contains(token), reason: token);
         }
 
-        for (final table in _publicTableNames(config).where(
+        for (final table in _publicTableNames(build).where(
           (table) => !_schemaOnlyTables.contains(table),
         )) {
           expect(smoke, contains("'$table'"), reason: table);
@@ -294,13 +276,13 @@ String _normaliseSql(String source) {
       .trim();
 }
 
-List<String> _publicTableNames(String config) {
+List<String> _publicTableNames(String build) {
   final tables =
       RegExp(
           r'^\s*create\s+table\s+if\s+not\s+exists\s+public\.([a-z_][a-z0-9_]*)\s*\(',
           multiLine: true,
           caseSensitive: false,
-        ).allMatches(config).map((match) => match.group(1)!.toLowerCase()).toSet()
+        ).allMatches(build).map((match) => match.group(1)!.toLowerCase()).toSet()
         ..removeWhere((name) => name.isEmpty);
   return tables.toList();
 }

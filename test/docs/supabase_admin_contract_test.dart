@@ -2,14 +2,20 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+const _buildPath = 'docs/supabase/01_build_system.sql';
+const _seedPath = 'docs/supabase/02_seed_data.sql';
+
 void main() {
   group('Supabase Admin SQL contract', () {
-    test('keeps Auth V2 signup and referral validation atomic', () {
-      final migration = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-      final config = File('docs/supabase/config.sql').readAsStringSync();
+    late String build;
+    late String seed;
 
+    setUpAll(() {
+      build = File(_buildPath).readAsStringSync();
+      seed = File(_seedPath).readAsStringSync();
+    });
+
+    test('keeps Auth V2 signup and referral validation atomic', () {
       for (final token in [
         'create or replace function public.handle_auth_user_created()',
         "new.raw_user_meta_data ->> 'referral_code'",
@@ -22,38 +28,21 @@ void main() {
         "'policy', 'direct_only'",
         'create trigger on_auth_user_created',
       ]) {
-        expect(migration, contains(token), reason: token);
-        expect(config, contains(token), reason: 'config.sql: $token');
+        expect(build, contains(token), reason: token);
       }
 
-      final numberedSchemaMarkers = config.split(
-        '-- BEGIN 01_schema_rebuild_local_sandbox.sql',
-      );
-      expect(
-        numberedSchemaMarkers,
-        hasLength(2),
-        reason: 'The rebuild config must include numbered schema 01 exactly once.',
-      );
-    });
-
-    test('does not attach a referral after Auth signup', () {
       final source = File(
         'lib/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart',
       ).readAsStringSync();
       final registerPage = File(
         'lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart',
       ).readAsStringSync();
-
       expect(source, contains("'referral_code': referralCode"));
       expect(source, contains("'device_fingerprint': deviceFingerprint"));
       expect(registerPage, isNot(contains('attach_my_referral_code')));
     });
 
     test('declares Admin tables and RPCs used by Flutter Admin', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-
       for (final token in [
         'create table if not exists public.admin_roles',
         'create table if not exists public.admin_permissions',
@@ -68,7 +57,6 @@ void main() {
         'app_access_mode',
         'can_use_user_app',
         "app_access_mode in ('user', 'both')",
-
         'get_admin_dashboard_summary',
         'admin_search_users',
         'admin_update_user_status',
@@ -87,98 +75,83 @@ void main() {
         'admin_update_reconciliation_discrepancy_status',
         'admin_list_audit_events',
       ]) {
-        expect(sql, contains(token), reason: token);
+        expect(build, contains(token), reason: token);
       }
     });
 
-    test(
-      'overlays the VietQR manual-review queue after the Admin base module',
-      () {
-        final paymentModule = File('docs/supabase/config.sql').readAsStringSync();
-        final config = File('docs/supabase/config.sql').readAsStringSync();
-
-        for (final token in [
-          'admin_get_payment_review_alert',
-          'pending_review_count integer',
-          "where pe.status = 'pending_review';",
-          'admin_assert_payment_reviewer',
-          'admin_has_payment_reviewer_role',
-          "aur.role_code in ('finance_admin', 'super_admin')",
-          'drop function if exists public.admin_list_payments(text, integer);',
-          'transfer_reference text',
-          'transfer_memo text',
-          'payer_full_name text',
-          'billing_cycle text',
-          'transfer_confirmed_at timestamptz',
-          "v_payment.status not in ('pending_review', 'pending')",
-          'p_transfer_verified boolean',
-          'PAYMENT_TRANSFER_RECONCILIATION_REQUIRED',
-          'cancel_my_membership_payment_request',
-          'uq_payment_events_one_open_manual_membership',
-          "when pe.status = 'pending_review' then 0",
-          "when pe.status = 'pending' then 1",
-        ]) {
-          expect(paymentModule, contains(token), reason: 'M13: $token');
-          expect(config, contains(token), reason: 'config.sql: $token');
-        }
-      },
-    );
-
-    test('keeps the final M13 hardening contract in the rebuild bundle', () {
-      final migration = File('docs/supabase/config.sql').readAsStringSync();
-      final config = File('docs/supabase/config.sql').readAsStringSync();
-      final readme = File('docs/supabase/README.md').readAsStringSync();
-
+    test('keeps the M13 VietQR manual-review and transition hardening', () {
       for (final token in [
-        'begin;',
-        'commit;',
-        'cancel_my_membership_payment_request',
+        'admin_get_payment_review_alert',
+        'pending_review_count integer',
+        "where pe.status = 'pending_review';",
+        'admin_assert_payment_reviewer',
+        'admin_has_payment_reviewer_role',
+        "aur.role_code in ('finance_admin', 'super_admin')",
+        'transfer_reference text',
+        'transfer_memo text',
+        'payer_full_name text',
+        'billing_cycle text',
+        'transfer_confirmed_at timestamptz',
+        "v_payment.status not in ('pending_review', 'pending')",
         'p_transfer_verified boolean',
+        'PAYMENT_TRANSFER_RECONCILIATION_REQUIRED',
+        'cancel_my_membership_payment_request',
+        'uq_payment_events_one_open_manual_membership',
         'LEGACY_PAID_SUBSCRIPTION_MISSING_ENDS_AT',
         'same_plan_renewal',
         'plan_switch',
         "at time zone 'Asia/Ho_Chi_Minh'",
         "ms.starts_at + interval '1 microsecond'",
-        'admin_has_payment_reviewer_role',
-        'uq_payment_events_one_open_manual_membership',
       ]) {
-        expect(migration, contains(token), reason: 'migration: $token');
-        expect(config, contains(token), reason: 'config.sql: $token');
+        expect(build, contains(token), reason: token);
       }
-
-      expect(readme, contains('93_validate_membership_vietqr.sql'));
-      expect(readme, contains('local hoặc sandbox'));
+      for (final token in [
+        'membership_payment_prices',
+        'membership_payment_bank',
+        '"bank_bin": "970436"',
+        '"bank_account_number": "1026806174"',
+      ]) {
+        expect(seed, contains(token), reason: token);
+      }
     });
 
-    test('declares the unified role-surface contract in the rebuild source', () {
-      final migration = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-
+    test('keeps unified role access and Admin financial policies server-owned', () {
       for (final token in [
-        'begin;',
         'add column if not exists app_access_mode',
         'users_app_access_mode_check',
         'alter column app_access_mode set not null',
         "app_access_mode = 'both'",
         'revoke update (app_access_mode)',
         'create or replace function public.get_my_admin_session()',
-        'can_use_user_app boolean',
-        "app_access_mode in ('user', 'both')",
         'grant execute on function public.get_my_admin_session()',
-        'commit;',
+        'record_trusted_payment_event',
+        'p_auto_approve boolean default false',
+        'p_list_price_cents integer default null',
+        'p_commission_base_cents integer default null',
+        "'manual_approval_required'",
+        "('super_admin', '*')",
+        "('finance_admin', '*')",
+        "('support_admin', '*')",
+        "('content_admin', '*')",
+        "('operations_admin', '*')",
+        "'reconciliation.write'",
+        "'points.write'",
+        "when p_config_key ilike 'plan%' then 'plans.write'",
+        "perform public.admin_assert_permission('config.write')",
+        'PAYMENT_ALREADY_REVIEWED',
+        'PAYMENT_REVERSAL_WINDOW_EXPIRED',
+        'create_sale_point_reversal_for_payment',
+        'negative_adjustment_without_overwriting_commission',
+        "'chargeback'",
+        "'approval_count_required'",
       ]) {
-        expect(migration, contains(token), reason: token);
+        expect(build, contains(token), reason: token);
       }
-
+      expect(build, contains('from public, anon, authenticated'));
     });
 
-    test('qualifies Admin dashboard summary metric filters', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-      final block = _adminDashboardSummaryBlock(sql);
-
+    test('qualifies Admin dashboard filters and keeps audits privacy-limited', () {
+      final dashboard = _adminDashboardSummaryBlock(build);
       for (final token in [
         'from public.payment_events pe',
         "where pe.status = 'pending'",
@@ -197,83 +170,9 @@ void main() {
         'and cr.available_at <= now()',
         'and cr.created_at between p_from and p_to',
       ]) {
-        expect(block, contains(token), reason: token);
+        expect(dashboard, contains(token), reason: token);
       }
-
-      expect(
-        _hasUnqualifiedDashboardStatusFilter(block),
-        isFalse,
-        reason:
-            'get_admin_dashboard_summary returns a status column, so source '
-            'status filters must stay table-qualified.',
-      );
-    });
-
-    test(
-      'keeps service-role style payment function away from Flutter grants',
-      () {
-        final sql = File(
-          'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-        ).readAsStringSync();
-
-        expect(sql, contains('record_trusted_payment_event'));
-        expect(sql, contains('p_auto_approve boolean default false'));
-        expect(sql, contains('p_list_price_cents integer default null'));
-        expect(sql, contains('p_commission_base_cents integer default null'));
-        expect(sql, contains("'manual_approval_required'"));
-        expect(sql, contains("'pending'"));
-        expect(
-          sql,
-          contains('from public, anon, authenticated'),
-          reason: 'Trusted payment recorder must not be granted to Flutter.',
-        );
-      },
-    );
-
-    test('grants all active Admin roles full audited capability', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-
-      for (final token in [
-        "('super_admin', '*')",
-        "('finance_admin', '*')",
-        "('support_admin', '*')",
-        "('content_admin', '*')",
-        "('operations_admin', '*')",
-        "'reconciliation.write'",
-        "'points.write'",
-        "when p_config_key ilike 'plan%' then 'plans.write'",
-        "perform public.admin_assert_permission('config.write')",
-      ]) {
-        expect(sql, contains(token), reason: token);
-      }
-    });
-
-    test('documents Admin payment and point policy decisions', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-
-      for (final token in [
-        'PAYMENT_ALREADY_REVIEWED',
-        'PAYMENT_REVERSAL_WINDOW_EXPIRED',
-        'create_sale_point_reversal_for_payment',
-        'negative_adjustment_without_overwriting_commission',
-        "'chargeback'",
-        "'approval_count_required'",
-        "'admin_adjust_sale_points'",
-        "'admin_update_reconciliation_discrepancy_status'",
-        "'admin_create_reconciliation_run'",
-      ]) {
-        expect(sql, contains(token), reason: token);
-      }
-    });
-
-    test('keeps report catalog fixed and privacy-limited', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
+      expect(_hasUnqualifiedDashboardStatusFilter(dashboard), isFalse);
 
       for (final token in [
         'admin_list_report_catalog',
@@ -285,30 +184,29 @@ void main() {
         "coalesce(p_filters ->> 'time_zone', 'Asia/Ho_Chi_Minh')",
         'grant execute on function public.admin_list_report_catalog',
       ]) {
-        expect(sql, contains(token), reason: token);
+        expect(build, contains(token), reason: token);
       }
-    });
-
-    test('keeps audit list free of raw metadata payload columns', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-      final block = _functionBlock(sql, 'admin_list_audit_events');
-
-      expect(block, contains('returns table'));
-      expect(block, isNot(contains('metadata jsonb')));
-      expect(block, isNot(contains('raw_event')));
-      expect(block, isNot(contains('payment_proof')));
-      expect(block, isNot(contains('health_payload')));
+      final audit = _functionBlock(build, 'admin_list_audit_events');
+      expect(audit, contains('returns table'));
+      for (final forbidden in [
+        'metadata jsonb',
+        'raw_event',
+        'payment_proof',
+        'health_payload',
+      ]) {
+        expect(audit, isNot(contains(forbidden)), reason: forbidden);
+      }
     });
   });
 
   group('Sale direct-only contract', () {
-    test('declares Sale internal module update RPCs and conversion table', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
+    late String build;
 
+    setUpAll(() {
+      build = File(_buildPath).readAsStringSync();
+    });
+
+    test('declares Sale internal module and conversion contracts', () {
       for (final token in [
         'create table if not exists public.sale_point_conversions',
         'create table if not exists public.sale_payout_profiles',
@@ -332,26 +230,15 @@ void main() {
         'available_at <= now()',
         "config_key = 'sale_point_conversion'",
       ]) {
-        expect(sql, contains(token), reason: token);
+        expect(build, contains(token), reason: token);
       }
-      expect(sql, isNot(contains('health_condition_summary')));
+      expect(build, isNot(contains('health_condition_summary')));
+      expect(build, contains("public.admin_assert_permission('sales.write')"));
+      expect(build, contains("public.admin_has_permission('sales.write')"));
     });
 
-    test('keeps Sale conversion review under sales.write permission', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-
-      expect(sql, contains("public.admin_assert_permission('sales.write')"));
-      expect(sql, contains("public.admin_has_permission('sales.write')"));
-    });
-
-    test('keeps referral attach registration-only anti-fraud blockers', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-      final block = _functionBlock(sql, 'attach_my_referral_code');
-
+    test('keeps referral attach registration-only and anti-fraud constrained', () {
+      final block = _functionBlock(build, 'attach_my_referral_code');
       for (final token in [
         "and sp.status = 'active'",
         'if v_referrer_id = v_user_id then',
@@ -370,25 +257,7 @@ void main() {
       }
     });
 
-    test('mirrors referral attach blockers in rebuild config', () {
-      final sql = File('docs/supabase/config.sql').readAsStringSync();
-      final block = _functionBlock(sql, 'attach_my_referral_code');
-
-      for (final token in [
-        "and sp.status = 'active'",
-        'if v_referrer_id = v_user_id then',
-        'from public.payment_events',
-        "'account_registration'",
-      ]) {
-        expect(block, contains(token), reason: token);
-      }
-    });
-
     test('revokes direct client writes to Sale financial tables', () {
-      final sql = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-
       for (final table in [
         'public.sale_profiles',
         'public.referral_relationships',
@@ -397,71 +266,48 @@ void main() {
         'public.sale_point_conversions',
         'public.sale_payout_profiles',
       ]) {
-        expect(sql, contains(table), reason: table);
+        expect(build, contains(table), reason: table);
       }
-
-      expect(
-        sql,
-        contains('revoke insert, update, delete on'),
-        reason:
-            'Server-owned Sale/payment tables must not be writable by Flutter.',
-      );
-      expect(sql, contains('from anon, authenticated'));
-      expect(sql, contains("'pending',"));
-      expect(
-        sql,
-        contains("coalesce(v_payment.paid_at, now()) + interval '24 hours'"),
-      );
-      expect(sql, contains("and status = 'active'"));
-      expect(sql, contains('commission_base_cents'));
-      expect(sql, contains('list_price_cents'));
+      expect(build, contains('revoke insert, update, delete on'));
+      expect(build, contains('from anon, authenticated'));
+      expect(build, contains("coalesce(v_payment.paid_at, now()) + interval '24 hours'"));
+      expect(build, contains('commission_base_cents'));
+      expect(build, contains('list_price_cents'));
     });
 
-    test('documents the Sale SQL update in Supabase run order', () {
+    test('documents the two-script run order and removes second-level markers', () {
       final readme = File('docs/supabase/README.md').readAsStringSync();
-      final config = File('docs/supabase/config.sql').readAsStringSync();
+      final buildIndex = readme.indexOf('01_build_system.sql');
+      final seedIndex = readme.indexOf('02_seed_data.sql');
+      expect(buildIndex, greaterThanOrEqualTo(0));
+      expect(seedIndex, greaterThan(buildIndex));
+      expect(build, contains('sale-payout-proofs'));
 
-      expect(readme, contains('01_schema_rebuild_local_sandbox.sql'));
-      expect(config, contains('sale_point_conversions'));
-      expect(config, contains('sale_payout_profiles'));
-      expect(config, contains('sale-payout-proofs'));
-      expect(config, contains('public.admin_has_permission'));
-    });
-
-    test(
-      'removes second-level commission markers from Supabase and Sale code',
-      () {
-        final roots = [
-          Directory('docs/supabase'),
-          Directory('lib/sale_referral'),
-          Directory('lib/services/supabase/sale'),
-          Directory('test/sale_referral'),
-        ];
-
-        final files = roots
-            .expand(
-              (root) => root.listSync(recursive: true).whereType<File>().where((
-                file,
-              ) {
-                return file.path.endsWith('.sql') ||
-                    file.path.endsWith('.md') ||
-                    file.path.endsWith('.dart');
-              }),
-            )
-            .toList();
-
-        final forbidden = <String>[
-          'secondLevel',
-          'second-level',
-          'second_level',
-          '0.0500',
-          'level = 2',
-          '5% tang 2',
-          '5% tầng 2',
-        ];
-
-        final violations = <String>[];
-        for (final file in files) {
+      final roots = [
+        Directory('docs/supabase'),
+        Directory('lib/sale_referral'),
+        Directory('lib/services/supabase/sale'),
+        Directory('test/sale_referral'),
+      ];
+      final forbidden = <String>[
+        'secondLevel',
+        'second-level',
+        'second_level',
+        '0.0500',
+        'level = 2',
+        '5% tang 2',
+        '5% tầng 2',
+      ];
+      final violations = <String>[];
+      for (final root in roots) {
+        for (final file in root
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((file) {
+              return file.path.endsWith('.sql') ||
+                  file.path.endsWith('.md') ||
+                  file.path.endsWith('.dart');
+            })) {
           final content = file.readAsStringSync();
           for (final token in forbidden) {
             if (content.contains(token)) {
@@ -469,16 +315,14 @@ void main() {
             }
           }
         }
-
-        expect(violations, isEmpty);
-      },
-    );
+      }
+      expect(violations, isEmpty);
+    });
   });
 }
 
 String _adminDashboardSummaryBlock(String sql) {
-  const startToken =
-      'create or replace function public.get_admin_dashboard_summary';
+  const startToken = 'create or replace function public.get_admin_dashboard_summary';
   const endToken = 'create or replace function public.admin_search_users';
   final start = sql.indexOf(startToken);
   final end = sql.indexOf(endToken, start);

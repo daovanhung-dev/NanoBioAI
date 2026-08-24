@@ -204,7 +204,7 @@ def render_learned_skills(entries: list[Entry]) -> str:
             "- For dashboard work, read real data through providers/repositories/datasources; do not add production mock data.",
             "- For DD work, preserve IDs but separate implementation status from runtime/sandbox verification and cite reachable source.",
             "- For issue/todo work, keep find issue, create issue, create todo, fix issue, and test as separate modes.",
-            "- For Supabase work, treat numbered SQL 01-06 as source, `config.sql` as generated, and sandbox/staging behavior as unverified until execution evidence exists.",
+            "- For Supabase work, treat `01_build_system.sql` and `02_seed_data.sql` as the local/sandbox source of truth, and keep sandbox/staging behavior unverified until execution evidence exists.",
             "",
             "## Command And Test Patterns",
             "",
@@ -236,9 +236,9 @@ def render_open_risks(entries: list[Entry]) -> str:
             "- Severity: P1",
             "- Status: Needs Verification",
             f"- Updated: {updated}",
-            "- Evidence: `docs/supabase/README.md`; `docs/supabase/94_validate_runtime_support.sql`; `docs/worklog/2026-06-21/002-worklog-supabase-database-draft.md`.",
+            "- Evidence: `docs/supabase/README.md`; `docs/supabase/01_build_system.sql`; `docs/worklog/2026-06-21/002-worklog-supabase-database-draft.md`.",
             "- Impact: Membership, quota, FamilyPlus, sale/referral, payment, and RLS behavior cannot be treated as production-ready until SQL/RLS is executed outside docs.",
-            "- Proposed handling: Run the numbered rebuild in Supabase local/sandbox, record RLS smoke results for at least two users and family scopes, then update this risk with evidence.",
+            "- Proposed handling: Run the build system and seed data scripts in Supabase local/sandbox, record RLS smoke results for at least two users and family scopes, then update this risk with evidence.",
             "- Owner/scope: Backend/Supabase implementation.",
         ]
     ) + "\n"

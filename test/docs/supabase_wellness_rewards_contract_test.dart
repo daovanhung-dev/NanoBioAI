@@ -3,34 +3,22 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Supabase wellness rewards numbered contract', () {
+  group('Supabase wellness rewards build and seed contract', () {
     late String schema;
     late String seed;
     late String runtime;
-    late String config;
 
     setUpAll(() {
-      schema = File(
-        'docs/supabase/01_schema_rebuild_local_sandbox.sql',
-      ).readAsStringSync();
-      seed = File(
-        'docs/supabase/05_seed_local_sandbox.sql',
-      ).readAsStringSync();
-      runtime = File(
-        'docs/supabase/06_schema_runtime_support.sql',
-      ).readAsStringSync();
-      config = File('docs/supabase/config.sql').readAsStringSync();
+      schema = File('docs/supabase/01_build_system.sql').readAsStringSync();
+      seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
+      runtime = schema;
     });
 
-    test('uses schema 01, seed 05 and runtime support 06', () {
-      for (final filename in [
-        '01_schema_rebuild_local_sandbox.sql',
-        '05_seed_local_sandbox.sql',
-        '06_schema_runtime_support.sql',
-      ]) {
-        expect(config.split('-- BEGIN $filename').length - 1, 1);
-        expect(config.split('-- END $filename').length - 1, 1);
-      }
+    test('uses the build for system resources and the seed for fixtures', () {
+      expect(schema, contains('drop schema if exists public cascade'));
+      expect(schema, contains('insert into storage.buckets'));
+      expect(seed, contains('insert into auth.users'));
+      expect(seed, isNot(contains('insert into storage.buckets')));
     });
 
     test('declares server-owned proof, wallet and voucher tables', () {
@@ -49,7 +37,6 @@ void main() {
         'wellness_ledger_append_only',
       ]) {
         expect(schema, contains(token), reason: token);
-        expect(config, contains(token), reason: 'config.sql: $token');
       }
     });
 
@@ -320,23 +307,24 @@ void main() {
 
     test('documents Storage, RLS and sandbox acceptance', () {
       final readme = File('docs/supabase/README.md').readAsStringSync();
-      final runtimeSmoke = File(
-        'docs/supabase/94_validate_runtime_support.sql',
-      ).readAsStringSync();
+      final runtimeSmoke = schema.substring(
+        schema.indexOf('-- BEGIN FAIL-FAST SYSTEM VALIDATION'),
+      );
       final adversarial = File(
         'test/docs/fixtures/supabase_wellness_rewards_adversarial.sql',
       ).readAsStringSync();
 
       for (final token in [
-        '01_schema_rebuild_local_sandbox.sql',
-        '06_schema_runtime_support.sql',
-        '94_validate_runtime_support.sql',
-        'Sandbox runtime (thực thi 01 → 06 rồi 90 → 94): `UNVERIFIED`',
+        '01_build_system.sql',
+        '02_seed_data.sql',
       ]) {
         expect(readme, contains(token), reason: token);
       }
       expect(runtimeSmoke, contains('RUNTIME_STORAGE_BUCKET_INVALID_'));
-      expect(runtimeSmoke.trimRight(), endsWith('rollback;'));
+      expect(runtimeSmoke, contains('RUNTIME_RPC_GRANT_MISSING_upsert_sleep_safety_contact'));
+      expect(runtimeSmoke, contains('RUNTIME_RPC_GRANT_MISSING_delete_sleep_safety_contact'));
+      expect(runtimeSmoke, contains('\nrollback;'));
+      expect(runtimeSmoke, isNot(contains('\ncommit;')));
       for (final token in [
         'MEMBER_SECOND_BATCH_ACCEPTED',
         'MUTATED_GUEST_PLAN_ACCEPTED',

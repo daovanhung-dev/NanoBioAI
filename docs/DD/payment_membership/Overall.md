@@ -31,7 +31,8 @@ Luồng chuẩn:
 - Poll/resume refresh khi chờ duyệt; trusted access + local membership projection refresh sau `succeeded`.
 - Finance/Super-only Admin alert/queue/review, VCB verification confirmation, reason/idempotency/audit.
 - Finite subscription: same-plan renewal, immediate Plus ↔ FamilyPlus switch, calendar month/year.
-- Non-destructive Supabase migration + `config.sql` rebuild contract + acceptance tests.
+- Non-destructive production migration boundary + destructive two-script
+  local/sandbox rebuild contract + acceptance tests.
 
 ### Out of Scope
 

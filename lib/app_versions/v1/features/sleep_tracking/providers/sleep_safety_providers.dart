@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
 
 import '../data/datasources/sleep_safety_cloud_datasource.dart';
 import '../data/datasources/sleep_safety_local_datasource.dart';
 import '../data/datasources/sleep_safety_reminder_service.dart';
 import '../data/gateways/sleep_safety_native_gateway.dart';
+import '../data/gateways/sleep_safety_notification_permission_gateway.dart';
 import '../data/repositories/sleep_safety_repository_impl.dart';
 import '../domain/repositories/sleep_safety_repository.dart';
 import 'sleep_safety_controller.dart';
@@ -19,6 +19,11 @@ final sleepSafetyCloudDatasourceProvider = Provider<SleepSafetyCloudDatasource>(
 
 final sleepSafetyNativeGatewayProvider = Provider<SleepSafetyNativeGateway>(
   (ref) => const MethodChannelSleepSafetyNativeGateway(),
+);
+
+final sleepSafetyNotificationPermissionGatewayProvider =
+    Provider<SleepSafetyNotificationPermissionGateway>(
+  (ref) => const LocalSleepSafetyNotificationPermissionGateway(),
 );
 
 final sleepSafetyReminderServiceProvider = Provider<SleepSafetyReminderService>(
@@ -44,11 +49,13 @@ final sleepSafetyRolloutApprovedProvider = Provider<bool>((ref) {
   return ref.watch(sleepSafetyRolloutProvider).asData?.value ?? false;
 });
 
-/// Injectable boundary so controller tests do not need a platform notification
-/// plugin. Production delegates to the existing notification bootstrap.
+/// Injectable M31-only permission boundary. It never requests exact-alarm
+/// access, so starting microphone monitoring cannot unexpectedly send the user
+/// to Special App Access immediately before foreground-service creation.
 final sleepSafetyNotificationPermissionProvider =
     Provider<Future<bool> Function()>((ref) {
-  return NotificationBootstrap.scheduler.requestPermissions;
+  final gateway = ref.watch(sleepSafetyNotificationPermissionGatewayProvider);
+  return gateway.requestPermission;
 });
 
 final sleepSafetyControllerProvider =
