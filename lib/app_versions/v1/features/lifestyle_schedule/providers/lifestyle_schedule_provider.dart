@@ -12,11 +12,14 @@ import '../application/schedule_reward_eligibility_reconciler.dart';
 import '../application/schedule_reward_online_gateway.dart';
 import '../data/datasources/daily_health_hub_local_datasource.dart';
 import '../data/datasources/lifestyle_schedule_local_datasource.dart';
+import '../data/datasources/schedule_horizon_local_datasource.dart';
 import '../data/repositories/daily_health_hub_repository_impl.dart';
 import '../domain/entities/daily_health_snapshot_entity.dart';
+import '../domain/entities/schedule_horizon.dart';
 import '../domain/repositories/daily_health_hub_repository.dart';
 import '../domain/repositories/lifestyle_schedule_repository.dart';
 import '../domain/repositories/lifestyle_schedule_repository_impl.dart';
+import '../domain/repositories/schedule_horizon_reader.dart';
 import '../domain/services/lifestyle_schedule_window_policy.dart';
 import '../presentation/controllers/daily_health_hub_controller.dart';
 import '../presentation/controllers/lifestyle_schedule_controller.dart';
@@ -47,6 +50,21 @@ final lifestyleScheduleRepositoryProvider =
     datasource: ref.read(lifestyleScheduleLocalDatasourceProvider),
     resolveSubjectId: subjectResolver.resolve,
   );
+});
+
+final scheduleHorizonReaderProvider = Provider<ScheduleHorizonReader>((ref) {
+  return const ScheduleHorizonLocalDatasource();
+});
+
+final scheduleHorizonProvider = FutureProvider.autoDispose<ScheduleHorizon>((
+  ref,
+) async {
+  final subjectResolver = ref.watch(lifestyleScheduleSubjectResolverProvider);
+  final now = ref.watch(lifestyleScheduleClockProvider);
+  final subjectId = await subjectResolver.resolve();
+  return ref
+      .read(scheduleHorizonReaderProvider)
+      .read(userId: subjectId, today: now());
 });
 
 final scheduleProofImageServiceProvider = Provider<ScheduleProofImageService>((
