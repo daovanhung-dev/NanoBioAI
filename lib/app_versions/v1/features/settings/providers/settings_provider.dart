@@ -9,6 +9,10 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/providers/l
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/controllers/meal_plan_controller.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/providers/meal_plan_provider.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/providers/nutrition_provider.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/active_notification_subject.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_navigation_coordinator.dart';
+import 'package:nano_app/features/nabi/data/notifications/nabi_health_reminder_repositories.dart';
 
 import '../data/datasources/settings_local_datasource.dart';
 import '../data/models/settings_preferences_model.dart';
@@ -78,7 +82,14 @@ class SettingsPreferencesController
     });
   }
 
+  /// Legacy Settings switch now acts as the entrypoint into the full M30
+  /// notification manager. The bool remains synchronized so older surfaces and
+  /// M09 behavior keep their existing source-of-truth during rollout.
   Future<void> setPushEnabled(bool value) async {
+    if (value) {
+      final granted = await NotificationBootstrap.requestPermissions();
+      if (!granted) return;
+    }
     await _update((current) async {
       await _datasource.saveBoolPreference(
         SettingsPreferencesModel.keyPushEnabled,
@@ -86,6 +97,24 @@ class SettingsPreferencesController
       );
       return current.copyWith(pushEnabled: value);
     });
+
+    final actor = await resolveActiveNotificationSubject();
+    if (actor != null && actor.trim().isNotEmpty) {
+      final repository = const SqliteNabiHealthReminderPreferencesRepository();
+      final preferences = await repository.loadOrCreate(
+        actorKey: actor,
+        legacyPushEnabled: value,
+      );
+      await repository.save(preferences.copyWith(masterEnabled: value));
+      await NotificationBootstrap.scheduleGeneratedReminders(
+        subjectUserId: actor,
+      );
+    }
+
+    // The existing Settings row already represents the notification menu. Once
+    // the switch is interacted with, route into the detailed manager so the
+    // user can configure categories, quiet hours and voice behavior.
+    NotificationNavigationCoordinator.openNotificationSettings();
   }
 
   Future<void> clearCache() async {

@@ -11,6 +11,8 @@ import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'active_notification_subject.dart';
+import 'nabi_companion_notification_payload.dart';
+import 'nabi_health_reminder_coordinator.dart';
 import 'notification_action_handler.dart';
 import 'notification_navigation_coordinator.dart';
 import 'reminder_notification_scheduler.dart';
@@ -40,6 +42,9 @@ class NotificationBootstrap {
   static bool _launchResponseHandled = false;
 
   static ReminderNotificationScheduler get scheduler => _scheduler;
+
+  static NabiHealthReminderCoordinator _careCoordinator() =>
+      NabiHealthReminderCoordinator(scheduler: _scheduler);
 
   static Future<void> initialize() {
     if (_initialized) return Future<void>.value();
@@ -77,27 +82,49 @@ class NotificationBootstrap {
     }
   }
 
+  static Future<bool> requestPermissions() async {
+    await initialize();
+    return _scheduler.requestPermissions();
+  }
+
   static Future<void> scheduleGeneratedReminders({
     String? subjectUserId,
   }) async {
     await initialize();
+    final subject = await resolveActiveNotificationSubject(
+      requestedSubjectUserId: subjectUserId,
+    );
     final service = await ReminderScheduleService.create(
       scheduler: _scheduler,
-      activeSubjectUserId: () => resolveActiveNotificationSubject(
-        requestedSubjectUserId: subjectUserId,
-      ),
+      activeSubjectUserId: () async => subject,
     );
-    await service.scheduleGeneratedReminders();
+    final coordinator = _careCoordinator();
+    final preferences = await coordinator.loadPreferences(subjectUserId: subject);
+
+    if (preferences?.masterEnabled == true &&
+        preferences?.scheduleEnabled == true) {
+      await service.scheduleGeneratedReminders();
+    } else {
+      await service.clearPendingReminders(subjectUserId: subject);
+    }
+    await coordinator.refresh(subjectUserId: subject);
+  }
+
+  static Future<void> refreshHealthCareReminders({
+    String? subjectUserId,
+  }) async {
+    await initialize();
+    await _careCoordinator().refresh(subjectUserId: subjectUserId);
   }
 
   static Future<void> clearGeneratedReminders({String? subjectUserId}) async {
     await initialize();
-    final service = await ReminderScheduleService.create(scheduler: _scheduler);
-    await service.clearPendingReminders(
-      subjectUserId: await resolveActiveNotificationSubject(
-        requestedSubjectUserId: subjectUserId,
-      ),
+    final subject = await resolveActiveNotificationSubject(
+      requestedSubjectUserId: subjectUserId,
     );
+    final service = await ReminderScheduleService.create(scheduler: _scheduler);
+    await service.clearPendingReminders(subjectUserId: subject);
+    await _careCoordinator().clear(subjectUserId: subject);
   }
 
   static Future<void> handleNotificationResponse(
@@ -105,6 +132,11 @@ class NotificationBootstrap {
   ) async {
     try {
       await initialize();
+      final companion = NabiCompanionNotificationPayload.tryParse(response.payload);
+      if (companion != null) {
+        await _careCoordinator().handleResponse(response, companion);
+        return;
+      }
       if (_isSleepSafetyArmPayload(response.payload)) {
         NotificationNavigationCoordinator.openSleepSafety();
         return;

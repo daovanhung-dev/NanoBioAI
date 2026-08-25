@@ -1,6 +1,7 @@
 package com.nanobioai.app.sleep_safety
 
 import android.Manifest
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -28,6 +29,7 @@ class SleepSafetyForegroundService : Service() {
 
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var notifications: SleepSafetyNotificationFactory
+    private lateinit var alertTone: SleepSafetyAlertTonePlayer
     private var capture: SleepSafetyAudioCapture? = null
     private var detector: SleepSafetyDetector? = null
     private var currentEventId: String? = null
@@ -46,6 +48,7 @@ class SleepSafetyForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         notifications = SleepSafetyNotificationFactory(this)
+        alertTone = SleepSafetyAlertTonePlayer(this)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -154,13 +157,13 @@ class SleepSafetyForegroundService : Service() {
             val notification = notifications.monitoring()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(
-                    SleepSafetyNotificationFactory.NOTIFICATION_ID,
+                    SleepSafetyNotificationFactory.MONITOR_NOTIFICATION_ID,
                     notification,
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE,
                 )
             } else {
                 startForeground(
-                    SleepSafetyNotificationFactory.NOTIFICATION_ID,
+                    SleepSafetyNotificationFactory.MONITOR_NOTIFICATION_ID,
                     notification,
                 )
             }
@@ -294,15 +297,16 @@ class SleepSafetyForegroundService : Service() {
         )
         SleepSafetyRuntimeStatus.currentEvent = eventData
         SleepSafetyNativeEventBus.emit("confirmedSafetyEvent", eventData)
-        val manager = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        alertTone.start()
         manager.notify(
-            SleepSafetyNotificationFactory.NOTIFICATION_ID,
+            SleepSafetyNotificationFactory.ALERT_NOTIFICATION_ID,
             notifications.alert(eventId),
         )
         reminderRunnable = Runnable {
             if (currentEventId == eventId) {
                 manager.notify(
-                    SleepSafetyNotificationFactory.NOTIFICATION_ID,
+                    SleepSafetyNotificationFactory.ALERT_NOTIFICATION_ID,
                     notifications.alert(eventId, true),
                 )
                 SleepSafetyNativeEventBus.emit(
@@ -326,6 +330,7 @@ class SleepSafetyForegroundService : Service() {
         val current = currentEventId ?: return
         if (eventId != null && eventId != current) return
         cancelAlertTimers()
+        stopPersistentAlert()
         SleepSafetyRuntimeStatus.currentEvent =
             SleepSafetyRuntimeStatus.currentEvent?.toMutableMap()?.apply {
                 this["response"] = response
@@ -349,15 +354,15 @@ class SleepSafetyForegroundService : Service() {
             if (SleepSafetyRuntimeStatus.active) {
                 detectionSuppressed = false
                 SleepSafetyRuntimeStatus.phase = "monitoring"
-                val manager =
-                    getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
-                manager.notify(
-                    SleepSafetyNotificationFactory.NOTIFICATION_ID,
-                    notifications.monitoring(),
-                )
                 SleepSafetyNativeEventBus.emit("monitoringReady")
             }
         }, cooldownSeconds * 1000L)
+    }
+
+    private fun stopPersistentAlert() {
+        alertTone.stop()
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        manager.cancel(SleepSafetyNotificationFactory.ALERT_NOTIFICATION_ID)
     }
 
     private fun updateConfig(intent: Intent) {
@@ -401,6 +406,7 @@ class SleepSafetyForegroundService : Service() {
 
     private fun cleanupRuntimeResources() {
         cancelAlertTimers()
+        stopPersistentAlert()
         stopRunnable?.let(handler::removeCallbacks)
         stopRunnable = null
         capture?.stop()

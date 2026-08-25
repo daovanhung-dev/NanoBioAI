@@ -207,6 +207,13 @@ class AppEnv {
       'GEMINI_API_KEY' => const String.fromEnvironment('GEMINI_API_KEY'),
       'GEMINI_MODEL' => const String.fromEnvironment('GEMINI_MODEL'),
       'GEMINI_BASE_URL' => const String.fromEnvironment('GEMINI_BASE_URL'),
+      'GEMINI_CARE_MODEL' => const String.fromEnvironment('GEMINI_CARE_MODEL'),
+      'GEMINI_CARE_FALLBACK_MODELS' => const String.fromEnvironment(
+        'GEMINI_CARE_FALLBACK_MODELS',
+      ),
+      'NABI_AI_CARE_ENABLED' => const String.fromEnvironment(
+        'NABI_AI_CARE_ENABLED',
+      ),
       'GEMINI_PLAN_MODEL' => const String.fromEnvironment('GEMINI_PLAN_MODEL'),
       'GEMINI_PLAN_FALLBACK_MODELS' => const String.fromEnvironment(
         'GEMINI_PLAN_FALLBACK_MODELS',

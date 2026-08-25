@@ -69,6 +69,22 @@ class FoodScanLocalRepository {
           .take(8)
           .join(' + ');
       final nutrition = updated.totalNutrition;
+      final totalWeight = updated.items.fold<double>(
+        0,
+        (sum, item) => sum + item.confirmedWeightGrams,
+      );
+      final sources = updated.items
+          .map((item) => item.nutritionSource.trim())
+          .where((source) => source.isNotEmpty)
+          .toSet();
+      final rawConfidence = updated.items.isEmpty
+          ? updated.analysisConfidence
+          : updated.items.fold<double>(0, (sum, item) => sum + item.confidence) /
+              updated.items.length;
+      final confidence = rawConfidence.isFinite
+          ? rawConfidence.clamp(0.0, 1.0).toDouble()
+          : 0.0;
+      final timestamp = now().toUtc().toIso8601String();
       final log = NutritionLogModel(
         id: logId,
         userId: userId,
@@ -79,6 +95,18 @@ class FoodScanLocalRepository {
         fat: nutrition.fatG,
         mealType: null,
         eatenAt: now().toIso8601String(),
+        servingQuantity: totalWeight > 0 ? totalWeight : null,
+        servingUnit: totalWeight > 0 ? 'g' : null,
+        nutrition: Map<String, dynamic>.from(nutrition.toJson()),
+        nutritionSource: sources.isEmpty
+            ? 'food_scan'
+            : sources.length == 1
+                ? sources.first
+                : 'food_scan_mixed',
+        nutritionConfidence: confidence,
+        notes: 'nutrition_log_from_food_scan',
+        createdAt: timestamp,
+        updatedAt: timestamp,
       );
 
       final committedLogId = await db.transaction<String>((txn) async {
@@ -101,12 +129,22 @@ class FoodScanLocalRepository {
           log.toMap(),
           conflictAlgorithm: ConflictAlgorithm.ignore,
         );
+        if (await _tableExists(txn, 'nutrition_log_details')) {
+          final details = log.toDetailsMap();
+          if (details != null) {
+            await txn.insert(
+              'nutrition_log_details',
+              details,
+              conflictAlgorithm: ConflictAlgorithm.replace,
+            );
+          }
+        }
         return logId;
       });
 
       // nutrition_logs participates in SyncOutboxSchema triggers, so the
-      // committed insert is already durably queued for cloud sync. Only signal
-      // the registered application-level dispatcher to drain it immediately.
+      // committed insert is already durably queued for cloud sync. Rich
+      // micronutrients remain local-only in nutrition_log_details.
       LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
       return result.copyWith(nutritionLogId: committedLogId);
     } catch (error) {
@@ -250,6 +288,14 @@ class FoodScanLocalRepository {
       });
     }
   }
+}
+
+Future<bool> _tableExists(DatabaseExecutor db, String tableName) async {
+  final rows = await db.rawQuery(
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+    [tableName],
+  );
+  return rows.isNotEmpty;
 }
 
 String? _text(Object? value) {

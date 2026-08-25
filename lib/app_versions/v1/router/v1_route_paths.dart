@@ -9,10 +9,13 @@ abstract class V1RoutePaths {
   static const dashboard = '/dashboard';
 
   static const healthTracking = '/health-tracking';
+  static const healthCheckIn = '/health-check-in';
   static const todayTasks = '/today-tasks';
   static const waterTracking = '/water-tracking';
   static const weeklySummary = '/weekly-summary';
   static const personalGoals = '/personal-goals';
+  static const goalReview = '/goal-review';
+  static const profileReview = '/profile-review';
   static const quickCare = '/quick-care';
   static const gentleCare = '/gentle-care';
   static const namiCare = '/nami-care';
@@ -30,5 +33,6 @@ abstract class V1RoutePaths {
   static const aiVoice = '/ai-voice';
 
   static const profile = '/profile';
+  static const notificationSettings = '/notification-settings';
   static const community = '/community';
 }

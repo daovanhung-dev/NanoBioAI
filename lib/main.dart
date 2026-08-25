@@ -23,9 +23,11 @@ import 'services/supabase/cloud_sync/user_data_sync_outbox_refresher.dart';
 import 'services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart';
 import 'app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
+import 'app_versions/v1/services/ai/nabi_care_ai_gateway.dart';
 import 'app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'app_versions/v1/services/notifications/notification_lifecycle_refresher.dart';
 import 'app_versions/v1/services/notifications/notification_startup_scheduler.dart';
+import 'features/nabi/application/care/nabi_care_controller.dart';
 
 const _bootstrapTag = 'APP_BOOTSTRAP';
 
@@ -63,6 +65,9 @@ Future<void> _bootstrapApplication() async {
     ProviderScope(
       observers: const [AppProviderObserver()],
       overrides: [
+        nabiCareAiGatewayProvider.overrideWithValue(
+          GeminiNabiCareAiGateway(),
+        ),
         authBackendAvailabilityProvider.overrideWithValue(
           authBackendAvailability,
         ),

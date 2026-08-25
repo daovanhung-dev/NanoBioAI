@@ -6,6 +6,23 @@ abstract final class SleepSafetyTables {
   static const events = 'sleep_safety_events';
   static const contacts = 'sleep_safety_contacts_cache';
   static const outbox = 'sleep_safety_outbox';
+  static const analyses = 'sleep_safety_night_analyses';
+
+  static const analysisSchema = <String>[
+    '''CREATE TABLE IF NOT EXISTS $analyses (
+      session_id TEXT PRIMARY KEY, user_id TEXT NOT NULL, formula_version TEXT NOT NULL,
+      started_at TEXT NOT NULL, ended_at TEXT, metrics_json TEXT NOT NULL DEFAULT '{}',
+      event_distribution_json TEXT NOT NULL DEFAULT '{}', trend_json TEXT NOT NULL DEFAULT '{}',
+      data_quality_score REAL NOT NULL DEFAULT 0, safety_attention_score REAL NOT NULL DEFAULT 0,
+      sleep_wellness_score REAL NOT NULL DEFAULT 0, morning_checkin_json TEXT,
+      ai_analysis_json TEXT, ai_model TEXT, ai_generated_at TEXT, ai_request_fingerprint TEXT,
+      created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+      FOREIGN KEY(session_id) REFERENCES $sessions(id) ON DELETE CASCADE
+    )''',
+    '''CREATE INDEX IF NOT EXISTS idx_sleep_safety_analysis_user_created ON $analyses(user_id, created_at DESC)''',
+    '''CREATE INDEX IF NOT EXISTS idx_sleep_safety_analysis_user_ai ON $analyses(user_id, ai_generated_at DESC)''',
+  ];
+
   static const schema = <String>[
     '''CREATE TABLE IF NOT EXISTS $preferences (
       user_id TEXT PRIMARY KEY, enabled INTEGER NOT NULL DEFAULT 1,
@@ -41,11 +58,21 @@ abstract final class SleepSafetyTables {
       attempt_count INTEGER NOT NULL DEFAULT 0, next_retry_at TEXT, last_error_code TEXT,
       created_at TEXT NOT NULL, updated_at TEXT NOT NULL
     )''',
+    ...analysisSchema,
     '''CREATE INDEX IF NOT EXISTS idx_sleep_safety_sessions_user_started ON $sessions(user_id, started_at DESC)''',
     '''CREATE INDEX IF NOT EXISTS idx_sleep_safety_events_user_detected ON $events(user_id, detected_at DESC)''',
     '''CREATE INDEX IF NOT EXISTS idx_sleep_safety_outbox_status_due ON $outbox(status, next_retry_at, created_at)''',
   ];
+
   static Future<void> create(DatabaseExecutor db) async {
-    for (final statement in schema) { await db.execute(statement); }
+    for (final statement in schema) {
+      await db.execute(statement);
+    }
+  }
+
+  static Future<void> createAnalysis(DatabaseExecutor db) async {
+    for (final statement in analysisSchema) {
+      await db.execute(statement);
+    }
   }
 }

@@ -13,10 +13,12 @@ class AdminUpgradeAccountPage extends ConsumerStatefulWidget {
   const AdminUpgradeAccountPage({super.key});
 
   @override
-  ConsumerState<AdminUpgradeAccountPage> createState() => _AdminUpgradeAccountPageState();
+  ConsumerState<AdminUpgradeAccountPage> createState() =>
+      _AdminUpgradeAccountPageState();
 }
 
-class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPage> {
+class _AdminUpgradeAccountPageState
+    extends ConsumerState<AdminUpgradeAccountPage> {
   final _search = TextEditingController();
   final _reason = TextEditingController();
   Timer? _debounce;
@@ -42,7 +44,8 @@ class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPag
       child: asyncState.when(
         loading: () => const AdminLoadingView(),
         error: (_, __) => AdminErrorView(
-          onRetry: () => ref.read(adminAccountsControllerProvider.notifier).refresh(),
+          onRetry: () =>
+              ref.read(adminAccountsControllerProvider.notifier).refresh(),
         ),
         data: (state) {
           if (!state.canGrantMembership) {
@@ -61,9 +64,14 @@ class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPag
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Nâng cấp tài khoản', style: Theme.of(context).textTheme.headlineSmall),
+                Text(
+                  'Nâng cấp tài khoản',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
                 const SizedBox(height: 6),
-                const Text('Cấp Plus hoặc FamilyPlus thủ công. Thay đổi chỉ có hiệu lực sau khi backend xác nhận.'),
+                const Text(
+                  'Cấp Plus hoặc FamilyPlus thủ công. Thay đổi chỉ có hiệu lực sau khi backend xác nhận.',
+                ),
                 const SizedBox(height: 18),
                 TextField(
                   controller: _search,
@@ -76,36 +84,44 @@ class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPag
                     _debounce?.cancel();
                     _debounce = Timer(const Duration(milliseconds: 320), () {
                       if (!mounted) return;
-                      ref.read(adminAccountsControllerProvider.notifier).search(value);
+                      ref
+                          .read(adminAccountsControllerProvider.notifier)
+                          .search(value);
                     });
                   },
                 ),
                 const SizedBox(height: 12),
                 if (state.accounts.isNotEmpty)
-                  Card(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 280),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: state.accounts.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final account = state.accounts[index];
-                          return RadioListTile<String>(
-                            value: account.id,
-                            groupValue: _selectedUserId,
-                            onChanged: (value) => setState(() => _selectedUserId = value),
-                            title: Text(account.displayName),
-                            subtitle: Text('${account.email} • ${adminPlanLabel(account.planCode)}'),
-                          );
-                        },
+                  RadioGroup<String>(
+                    groupValue: _selectedUserId,
+                    onChanged: (value) =>
+                        setState(() => _selectedUserId = value),
+                    child: Card(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 280),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: state.accounts.length,
+                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final account = state.accounts[index];
+                            return RadioListTile<String>(
+                              value: account.id,
+                              title: Text(account.displayName),
+                              subtitle: Text(
+                                '${account.email} • ${adminPlanLabel(account.planCode)}',
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   )
                 else
                   const AdminEmptyView(
                     title: 'Chưa chọn được tài khoản',
-                    message: 'Nhập tên hoặc email để tìm người dùng cần cấp gói.',
+                    message:
+                        'Nhập tên hoặc email để tìm người dùng cần cấp gói.',
                   ),
                 if (selected != null) ...[
                   const SizedBox(height: 16),
@@ -115,7 +131,10 @@ class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPag
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text('Tài khoản đã chọn', style: Theme.of(context).textTheme.titleMedium),
+                          Text(
+                            'Tài khoản đã chọn',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
                           const SizedBox(height: 8),
                           Text(selected.displayName),
                           Text(selected.email),
@@ -124,30 +143,45 @@ class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPag
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              AdminStatusChip(label: 'Hiện tại: ${adminPlanLabel(selected.planCode)}'),
+                              AdminStatusChip(
+                                label:
+                                    'Hiện tại: ${adminPlanLabel(selected.planCode)}',
+                              ),
                               if (selected.subscriptionEndsAt != null)
                                 AdminStatusChip(
-                                  label: 'Hết hạn: ${adminFormatDate(selected.subscriptionEndsAt)}',
+                                  label:
+                                      'Hết hạn: ${adminFormatDate(selected.subscriptionEndsAt)}',
                                 ),
                             ],
                           ),
                           const SizedBox(height: 18),
                           DropdownButtonFormField<String>(
-                            value: _planCode,
+                            initialValue: _planCode,
                             decoration: const InputDecoration(
                               labelText: 'Gói mới',
                               border: OutlineInputBorder(),
                             ),
                             items: const [
-                              DropdownMenuItem(value: 'plus', child: Text('Plus')),
-                              DropdownMenuItem(value: 'family_plus', child: Text('FamilyPlus')),
+                              DropdownMenuItem(
+                                value: 'plus',
+                                child: Text('Plus'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'family_plus',
+                                child: Text('FamilyPlus'),
+                              ),
                             ],
                             onChanged: (value) {
-                              if (value != null) setState(() => _planCode = value);
+                              if (value != null) {
+                                setState(() => _planCode = value);
+                              }
                             },
                           ),
                           const SizedBox(height: 14),
-                          Text('Thời hạn', style: Theme.of(context).textTheme.labelLarge),
+                          Text(
+                            'Thời hạn',
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
                           const SizedBox(height: 8),
                           Wrap(
                             spacing: 8,
@@ -157,7 +191,8 @@ class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPag
                                 ChoiceChip(
                                   label: Text('$months tháng'),
                                   selected: _durationMonths == months,
-                                  onSelected: (_) => setState(() => _durationMonths = months),
+                                  onSelected: (_) =>
+                                      setState(() => _durationMonths = months),
                                 ),
                             ],
                           ),
@@ -173,14 +208,22 @@ class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPag
                           ),
                           const SizedBox(height: 18),
                           FilledButton.icon(
-                            onPressed: _submitting ? null : () => _submit(selected!),
+                            onPressed: _submitting
+                                ? null
+                                : () => _submit(selected!),
                             icon: _submitting
                                 ? const SizedBox.square(
                                     dimension: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   )
                                 : const Icon(Icons.workspace_premium_rounded),
-                            label: Text(_submitting ? 'Đang cập nhật...' : 'Xác nhận nâng cấp'),
+                            label: Text(
+                              _submitting
+                                  ? 'Đang cập nhật...'
+                                  : 'Xác nhận nâng cấp',
+                            ),
                           ),
                         ],
                       ),
@@ -208,8 +251,14 @@ class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPag
           'Cấp ${adminPlanLabel(_planCode)} trong $_durationMonths tháng cho ${account.email}?',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Hủy')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Xác nhận')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Xác nhận'),
+          ),
         ],
       ),
     );
@@ -217,12 +266,14 @@ class _AdminUpgradeAccountPageState extends ConsumerState<AdminUpgradeAccountPag
 
     setState(() => _submitting = true);
     try {
-      await ref.read(adminAccountsControllerProvider.notifier).grantMembership(
-        userId: account.id,
-        planCode: _planCode,
-        durationMonths: _durationMonths,
-        reason: _reason.text,
-      );
+      await ref
+          .read(adminAccountsControllerProvider.notifier)
+          .grantMembership(
+            userId: account.id,
+            planCode: _planCode,
+            durationMonths: _durationMonths,
+            reason: _reason.text,
+          );
       if (mounted) {
         _reason.clear();
         showAdminNotice(context, 'Đã cập nhật gói thành viên từ backend.');

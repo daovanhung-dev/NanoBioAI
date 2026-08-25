@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_access_state.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_account_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
@@ -149,5 +150,35 @@ class _AccessRepository implements AdminRepository {
   @override
   Future<AdminMutationResult> runMutation(AdminMutationCommand command) async {
     return const AdminMutationResult(success: true, message: 'ok');
+  }
+
+  @override
+  Future<List<AdminAccountSummary>> searchAccounts({
+    required String query,
+  }) async {
+    return const [];
+  }
+
+  @override
+  Future<AdminCreateAccountResult> createAccount(
+    AdminCreateAccountRequest request,
+  ) async {
+    return AdminCreateAccountResult(
+      success: false,
+      userId: '',
+      email: request.email,
+      message: 'not used in this test',
+    );
+  }
+
+  @override
+  Future<AdminMembershipGrantResult> grantMembership(
+    AdminMembershipGrantRequest request,
+  ) async {
+    return AdminMembershipGrantResult(
+      success: false,
+      message: 'not used in this test',
+      planCode: request.planCode,
+    );
   }
 }

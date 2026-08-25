@@ -52,8 +52,10 @@ class NabiNotificationEngine {
         NabiEligibilityBlockedReason.inactive,
       );
     }
-    if ((definition.effectiveFrom != null && now.isBefore(definition.effectiveFrom!)) ||
-        (definition.effectiveUntil != null && !now.isBefore(definition.effectiveUntil!))) {
+    if ((definition.effectiveFrom != null &&
+            now.isBefore(definition.effectiveFrom!)) ||
+        (definition.effectiveUntil != null &&
+            !now.isBefore(definition.effectiveUntil!))) {
       return NabiEligibilityDecision.blocked(
         definition,
         NabiEligibilityBlockedReason.outsideEffectiveWindow,
@@ -208,7 +210,8 @@ class NabiNotificationEngine {
       'weekly_report_locked' => snapshot.weeklyReportLocked,
       'expert_recommended' => snapshot.expertRecommended,
       'plus_day_7' => snapshot.subscriptionAgeDays == 7,
-      'plus_day_15' => snapshot.subscriptionAgeDays == 15 && snapshot.activityReady,
+      'plus_day_15' =>
+        snapshot.subscriptionAgeDays == 15 && snapshot.activityReady,
       'plus_expiry_5' => snapshot.subscriptionDaysRemaining == 5,
       'plus_expiry_1' => snapshot.subscriptionDaysRemaining == 1,
       'streak_6' => snapshot.streakDays == 6 && !snapshot.todayCompleted,
@@ -222,6 +225,8 @@ class NabiNotificationEngine {
       'partial_day' =>
         (snapshot.partialDay || snapshot.streakLost) &&
             !snapshot.rescueNotificationActive,
+      'ai_care_ready' =>
+        snapshot.variables['care_summary']?.trim().isNotEmpty == true,
       'profile_stale' => snapshot.profileMissing || snapshot.profileAgeDays > 30,
       _ => false,
     };

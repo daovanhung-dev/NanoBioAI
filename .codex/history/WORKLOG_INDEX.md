@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 142
+- Total worklogs: 143
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -151,3 +151,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-24 | Supabase schema/seed consolidation, tooling, contract test va docs. | supabase-schema | local/sandbox rebuild, membership/payment fixtures, Daily Health Hub, Storage runtime va M31 Sleep Safety. | [Worklog - Supabase two-script consolidation](../../docs/worklog/2026-08-24/002-worklog-supabase-two-script-consolidation.md) |
 | 2026-08-24 | docs-context cleanup | test | documentation, historical visual evidence, local build caches | [Worklog - Dọn file và dữ liệu dư thừa an toàn](../../docs/worklog/2026-08-24/003-worklog-redundant-file-cleanup.md) |
 | 2026-08-24 | unknown | docs-context | unknown | [2026-08-24-professional-observability-logging](../../docs/worklog/2026-08-24/2026-08-24-professional-observability-logging.md) |
+| 2026-08-25 | bugfix | bugfix | analyzer/build hygiene, Admin, Nabi notification, sleep tracking, nutrition | [Worklog - Analyzer zero diagnostics](../../docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md) |

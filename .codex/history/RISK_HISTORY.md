@@ -800,3 +800,10 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-24/003-worklog-redundant-file-cleanup.md :: - Can kiem tra tiep: nếu cần retire Nabi V1 rollback hoặc Stitch reference, phải làm thay đổi runtime/design riêng với test build tương ứng.
 - docs/worklog/2026-08-24/2026-08-24-professional-observability-logging.md :: Replace the fragmented terminal logging behavior with one privacy-safe structured logging pipeline that can surface actionable evidence while running the Flutter application. The implementation covers framework and uncaught errors, Riverpod failures, navigation breadcrumbs, HTTP request/response/error timing, Supabase transport/auth operations, SQLite lifecycle/migration/integrity failures, and Gemini AI HTTP/trace activity.
 - docs/worklog/2026-08-24/2026-08-24-professional-observability-logging.md :: - Added a Riverpod `ProviderObserver` for provider failures.
+- docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: - `flutter test` toan repo: FAIL - 99 failure duoc ghi nhan sau hon 1.096 tests,
+- docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: - Chua fix: full test suite van co failure ngoai pham vi batch.
+- docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: - Can kiem tra tiep: tach debt/failure full test suite thanh cac bugfix rieng;
+- docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: - Dang do: full test suite cua repository chua xanh do failure ton dong.
+- docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: - Diem ton token/chua toi uu: full test suite phat ra log rat lon va nhieu failure da biet.
+- docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: co che loc output/failure summary.

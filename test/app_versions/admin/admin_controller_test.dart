@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_account_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/controllers/admin_controller.dart';
@@ -151,33 +152,42 @@ void main() {
       );
     });
 
-    test('requires VCB reconciliation confirmation before payment approval',
-        () async {
-      final repository = _FakeAdminRepository(session: _financeSession());
-      final container = _container(repository);
-      addTearDown(container.dispose);
+    test(
+      'requires VCB reconciliation confirmation before payment approval',
+      () async {
+        final repository = _FakeAdminRepository(session: _financeSession());
+        final container = _container(repository);
+        addTearDown(container.dispose);
 
-      await container.read(adminControllerProvider.future);
-      await expectLater(
-        container.read(adminControllerProvider.notifier).runMutation(
+        await container.read(adminControllerProvider.future);
+        await expectLater(
+          container
+              .read(adminControllerProvider.notifier)
+              .runMutation(
+                section: AdminPanelSection.payments,
+                action: 'approve',
+                targetId: 'payment-id',
+                reason: 'Đã đối chiếu VCB.',
+              ),
+          throwsA(isA<StateError>()),
+        );
+        expect(repository.mutationCalls, isEmpty);
+
+        await container
+            .read(adminControllerProvider.notifier)
+            .runMutation(
               section: AdminPanelSection.payments,
               action: 'approve',
               targetId: 'payment-id',
               reason: 'Đã đối chiếu VCB.',
-            ),
-        throwsA(isA<StateError>()),
-      );
-      expect(repository.mutationCalls, isEmpty);
-
-      await container.read(adminControllerProvider.notifier).runMutation(
-            section: AdminPanelSection.payments,
-            action: 'approve',
-            targetId: 'payment-id',
-            reason: 'Đã đối chiếu VCB.',
-            payload: const {'transfer_verified': true},
-          );
-      expect(repository.mutationCalls.single.payload['transfer_verified'], isTrue);
-    });
+              payload: const {'transfer_verified': true},
+            );
+        expect(
+          repository.mutationCalls.single.payload['transfer_verified'],
+          isTrue,
+        );
+      },
+    );
   });
 }
 
@@ -310,5 +320,35 @@ class _FakeAdminRepository implements AdminRepository {
   Future<AdminMutationResult> runMutation(AdminMutationCommand command) async {
     mutationCalls.add(command);
     return const AdminMutationResult(success: true, message: 'ok');
+  }
+
+  @override
+  Future<List<AdminAccountSummary>> searchAccounts({
+    required String query,
+  }) async {
+    return const [];
+  }
+
+  @override
+  Future<AdminCreateAccountResult> createAccount(
+    AdminCreateAccountRequest request,
+  ) async {
+    return AdminCreateAccountResult(
+      success: false,
+      userId: '',
+      email: request.email,
+      message: 'not used in this test',
+    );
+  }
+
+  @override
+  Future<AdminMembershipGrantResult> grantMembership(
+    AdminMembershipGrantRequest request,
+  ) async {
+    return AdminMembershipGrantResult(
+      success: false,
+      message: 'not used in this test',
+      planCode: request.planCode,
+    );
   }
 }

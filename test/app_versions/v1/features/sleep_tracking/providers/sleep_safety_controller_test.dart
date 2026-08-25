@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/data/gateways/sleep_safety_native_gateway.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/safety_contact.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_event.dart';
+import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_night_analysis.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_preference.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_session.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/repositories/sleep_safety_repository.dart';
@@ -13,31 +14,34 @@ import 'package:nano_app/app_versions/v1/features/sleep_tracking/providers/sleep
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 
 void main() {
-  test('Start consumes resolved rollout state without a second remote fetch', () async {
-    const userId = 'user-1';
-    final repository = _FakeSleepSafetyRepository(userId);
-    final container = ProviderContainer(
-      overrides: [
-        currentAuthUserIdProvider.overrideWithValue(userId),
-        sleepSafetyRepositoryProvider.overrideWithValue(repository),
-        sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
-        sleepSafetyNotificationPermissionProvider.overrideWithValue(
-          () async => true,
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
+  test(
+    'Start consumes resolved rollout state without a second remote fetch',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(userId);
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final notifier = container.read(sleepSafetyControllerProvider.notifier);
-    await _waitForPreference(container);
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
 
-    await notifier.startMonitoring();
+      await notifier.startMonitoring();
 
-    expect(repository.rolloutFetchCount, 0);
-    expect(repository.microphonePermissionCount, 1);
-    expect(repository.nativeStartCount, 1);
-    expect(repository.savedSessions, hasLength(1));
-  });
+      expect(repository.rolloutFetchCount, 0);
+      expect(repository.microphonePermissionCount, 1);
+      expect(repository.nativeStartCount, 1);
+      expect(repository.savedSessions, hasLength(1));
+    },
+  );
 
   test('Start fails closed when resolved rollout state is false', () async {
     const userId = 'user-1';
@@ -125,40 +129,46 @@ void main() {
     );
   });
 
-  test('Native foreground-service rejection fails safely and closes session', () async {
-    const userId = 'user-1';
-    final repository = _FakeSleepSafetyRepository(
-      userId,
-      nativeStartErrorCode: 'microphone_fgs_not_allowed',
-    );
-    final container = ProviderContainer(
-      overrides: [
-        currentAuthUserIdProvider.overrideWithValue(userId),
-        sleepSafetyRepositoryProvider.overrideWithValue(repository),
-        sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
-        sleepSafetyNotificationPermissionProvider.overrideWithValue(
-          () async => true,
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
+  test(
+    'Native foreground-service rejection fails safely and closes session',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        nativeStartErrorCode: 'microphone_fgs_not_allowed',
+      );
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final notifier = container.read(sleepSafetyControllerProvider.notifier);
-    await _waitForPreference(container);
-    await notifier.startMonitoring();
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
 
-    final viewState = container.read(sleepSafetyControllerProvider);
-    expect(repository.nativeStartCount, 1);
-    expect(repository.savedSessions, hasLength(2));
-    expect(repository.savedSessions.last.status, SleepSafetySessionStatus.failed);
-    expect(
-      repository.savedSessions.last.stopReason,
-      'microphone_fgs_not_allowed',
-    );
-    expect(viewState.monitoringActive, isFalse);
-    expect(viewState.isBusy, isFalse);
-    expect(viewState.errorMessage, contains('Android chưa cho phép'));
-  });
+      final viewState = container.read(sleepSafetyControllerProvider);
+      expect(repository.nativeStartCount, 1);
+      expect(repository.savedSessions, hasLength(2));
+      expect(
+        repository.savedSessions.last.status,
+        SleepSafetySessionStatus.failed,
+      );
+      expect(
+        repository.savedSessions.last.stopReason,
+        'microphone_fgs_not_allowed',
+      );
+      expect(viewState.monitoringActive, isFalse);
+      expect(viewState.isBusy, isFalse);
+      expect(viewState.errorMessage, contains('Android chưa cho phép'));
+    },
+  );
 
   test('Live native audio metrics reach transient controller state', () async {
     const userId = 'user-1';
@@ -218,76 +228,80 @@ void main() {
     expect(container.read(sleepSafetyControllerProvider).audioMetrics, isNull);
   });
 
-  test('Calibration safety bypass opens alert and calibration completion does not dismiss it', () async {
-    const userId = 'user-1';
-    final repository = _FakeSleepSafetyRepository(userId);
-    final container = ProviderContainer(
-      overrides: [
-        currentAuthUserIdProvider.overrideWithValue(userId),
-        sleepSafetyRepositoryProvider.overrideWithValue(repository),
-        sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
-        sleepSafetyNotificationPermissionProvider.overrideWithValue(
-          () async => true,
+  test(
+    'Calibration safety bypass opens alert and calibration completion does not dismiss it',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(userId);
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      expect(
+        container.read(sleepSafetyControllerProvider).machine.phase,
+        SleepSafetyPhase.calibrating,
+      );
+
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'calibration-alert-1',
+            'detectedAt': '2026-08-24T04:00:00Z',
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+            'relativeEnergy': 8.0,
+            'baselineDelta': 0.12,
+            'repetitionCount': 1,
+          },
         ),
-      ],
-    );
-    addTearDown(container.dispose);
+      );
+      await Future<void>.delayed(Duration.zero);
 
-    final notifier = container.read(sleepSafetyControllerProvider.notifier);
-    await _waitForPreference(container);
-    await notifier.startMonitoring();
-    repository.emitNative(
-      const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
-    );
-    expect(
-      container.read(sleepSafetyControllerProvider).machine.phase,
-      SleepSafetyPhase.calibrating,
-    );
+      expect(
+        container.read(sleepSafetyControllerProvider).machine.phase,
+        SleepSafetyPhase.awaitingResponse,
+      );
+      expect(
+        container.read(sleepSafetyControllerProvider).currentEvent?.id,
+        'calibration-alert-1',
+      );
 
-    repository.emitNative(
-      const SleepSafetyNativeEvent(
-        type: 'confirmedSafetyEvent',
-        data: {
-          'eventId': 'calibration-alert-1',
-          'detectedAt': '2026-08-24T04:00:00Z',
-          'eventType': 'abnormalScream',
-          'severity': 'high',
-          'confidence': 0.95,
-          'relativeEnergy': 8.0,
-          'baselineDelta': 0.12,
-          'repetitionCount': 1,
-        },
-      ),
-    );
-    await Future<void>.delayed(Duration.zero);
-
-    expect(
-      container.read(sleepSafetyControllerProvider).machine.phase,
-      SleepSafetyPhase.awaitingResponse,
-    );
-    expect(
-      container.read(sleepSafetyControllerProvider).currentEvent?.id,
-      'calibration-alert-1',
-    );
-
-    repository.emitNative(
-      const SleepSafetyNativeEvent(
-        type: 'calibrationCompleted',
-        data: {'noiseFloor': 0.008},
-      ),
-    );
-    await Future<void>.delayed(Duration.zero);
-    expect(
-      container.read(sleepSafetyControllerProvider).machine.phase,
-      SleepSafetyPhase.awaitingResponse,
-    );
-  });
-
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'calibrationCompleted',
+          data: {'noiseFloor': 0.008},
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(
+        container.read(sleepSafetyControllerProvider).machine.phase,
+        SleepSafetyPhase.awaitingResponse,
+      );
+    },
+  );
 }
 
 Future<void> _waitForPreference(ProviderContainer container) async {
   for (var attempt = 0; attempt < 20; attempt++) {
-    if (container.read(sleepSafetyControllerProvider).preference != null) return;
+    if (container.read(sleepSafetyControllerProvider).preference != null) {
+      return;
+    }
     await Future<void>.delayed(Duration.zero);
   }
   fail('SleepSafetyController did not finish initialization.');
@@ -383,6 +397,27 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
 
   @override
   Future<void> updateEvent(String id, Map<String, Object?> values) async {}
+
+  @override
+  Future<List<SleepSafetySession>> listSessions(
+    String userId, {
+    int limit = 14,
+  }) async {
+    return const [];
+  }
+
+  @override
+  Future<List<SleepSafetyEvent>> listEventsForSession(String sessionId) async {
+    return const [];
+  }
+
+  @override
+  Future<SleepNightAnalysis?> getNightAnalysis(String sessionId) async {
+    return null;
+  }
+
+  @override
+  Future<void> saveNightAnalysis(SleepNightAnalysis analysis) async {}
 
   @override
   Future<SafetyContact> saveContact({

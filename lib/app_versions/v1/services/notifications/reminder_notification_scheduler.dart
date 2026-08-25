@@ -59,6 +59,20 @@ class LocalReminderNotificationScheduler
             ),
           ],
         ),
+        DarwinNotificationCategory(
+          NotificationActionIds.nabiCompanionCategoryId,
+          actions: [
+            DarwinNotificationAction.plain(
+              NotificationActionIds.nabiCompanionOpen,
+              'Mở cùng Nabi',
+              options: {DarwinNotificationActionOption.foreground},
+            ),
+            DarwinNotificationAction.plain(
+              NotificationActionIds.nabiCompanionDefer,
+              'Để sau',
+            ),
+          ],
+        ),
       ],
     );
     final settings = InitializationSettings(
@@ -91,12 +105,16 @@ class LocalReminderNotificationScheduler
         return result ?? true;
       case TargetPlatform.iOS:
         final result = await _plugin
-            .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >()
             ?.requestPermissions(alert: true, badge: true, sound: true);
         return result ?? true;
       case TargetPlatform.macOS:
         final result = await _plugin
-            .resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>()
+            .resolvePlatformSpecificImplementation<
+              MacOSFlutterLocalNotificationsPlugin
+            >()
             ?.requestPermissions(alert: true, badge: true, sound: true);
         return result ?? true;
       case TargetPlatform.fuchsia:
@@ -117,7 +135,8 @@ class LocalReminderNotificationScheduler
       return;
     }
     try {
-      final canScheduleExact = await androidPlugin.canScheduleExactNotifications();
+      final canScheduleExact =
+          await androidPlugin.canScheduleExactNotifications();
       if (canScheduleExact ?? false) return;
       final granted = await androidPlugin.requestExactAlarmsPermission();
       if (granted ?? false) {
@@ -198,6 +217,78 @@ class LocalReminderNotificationScheduler
     );
   }
 
+  /// Schedules an M30 health-care reminder without changing the M09 scheduler
+  /// interface used by existing tests/fakes. Voice mode uses a dedicated
+  /// immutable Android channel and a bundled, non-sensitive spoken WAV.
+  Future<void> scheduleNabiCompanionReminder({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledAt,
+    required String payload,
+    required bool voiceEnabled,
+  }) async {
+    await initialize();
+    if (!scheduledAt.isAfter(DateTime.now())) return;
+    final androidScheduleMode = await _resolveAndroidScheduleMode();
+    final androidDetails = AndroidNotificationDetails(
+      voiceEnabled
+          ? NotificationChannels.nabiCareVoiceId
+          : NotificationChannels.nabiCareId,
+      voiceEnabled
+          ? NotificationChannels.nabiCareVoiceName
+          : NotificationChannels.nabiCareName,
+      channelDescription: voiceEnabled
+          ? NotificationChannels.nabiCareVoiceDescription
+          : NotificationChannels.nabiCareDescription,
+      importance: Importance.high,
+      priority: Priority.high,
+      channelAction: AndroidNotificationChannelAction.createIfNotExists,
+      sound: voiceEnabled
+          ? const RawResourceAndroidNotificationSound('nabi_voice_reminder')
+          : null,
+      playSound: true,
+      actions: const [
+        AndroidNotificationAction(
+          NotificationActionIds.nabiCompanionOpen,
+          'Mở cùng Nabi',
+          showsUserInterface: true,
+          cancelNotification: true,
+        ),
+        AndroidNotificationAction(
+          NotificationActionIds.nabiCompanionDefer,
+          'Để sau',
+          showsUserInterface: false,
+          cancelNotification: true,
+        ),
+      ],
+    );
+    final darwinDetails = DarwinNotificationDetails(
+      categoryIdentifier: NotificationActionIds.nabiCompanionCategoryId,
+      sound: voiceEnabled ? 'nabi_voice_reminder.wav' : null,
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tz.TZDateTime.from(scheduledAt, tz.local),
+      NotificationDetails(
+        android: androidDetails,
+        iOS: darwinDetails,
+        macOS: darwinDetails,
+      ),
+      androidScheduleMode: androidScheduleMode,
+      payload: payload,
+    );
+    AppLogger.info(
+      _tag,
+      'Scheduled Nabi companion reminder id=$id voice=$voiceEnabled',
+    );
+  }
+
   Future<AndroidScheduleMode> _resolveAndroidScheduleMode() async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return AndroidScheduleMode.inexactAllowWhileIdle;
@@ -214,7 +305,8 @@ class LocalReminderNotificationScheduler
       return AndroidScheduleMode.inexactAllowWhileIdle;
     }
     try {
-      final canScheduleExact = await androidPlugin.canScheduleExactNotifications();
+      final canScheduleExact =
+          await androidPlugin.canScheduleExactNotifications();
       if (canScheduleExact ?? false) {
         return AndroidScheduleMode.exactAllowWhileIdle;
       }

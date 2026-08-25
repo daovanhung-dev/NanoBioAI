@@ -65,39 +65,35 @@ void main() {
       expect(seed, isNot(contains('insert into storage.buckets')));
     });
 
-    test(
-      'tracks seeded and intentionally schema-only public tables',
-      () {
-        final publicTables = _publicTableNames(build);
-        expect(publicTables, hasLength(80));
+    test('tracks seeded and intentionally schema-only public tables', () {
+      final publicTables = _publicTableNames(build);
+      expect(publicTables, hasLength(80));
 
-        final missingTables =
-            publicTables
-                .where((table) => !_hasFixtureEvidence(seed, table))
-                .toSet();
+      final missingTables = publicTables
+          .where((table) => !_hasFixtureEvidence(seed, table))
+          .toSet();
+      expect(
+        missingTables,
+        equals(_schemaOnlyTables),
+        reason:
+            'New schema-only tables must be classified explicitly until the '
+            'local fixture intentionally covers them.',
+      );
+
+      for (final table in ['auth.users', 'auth.identities']) {
         expect(
-          missingTables,
-          equals(_schemaOnlyTables),
-          reason:
-              'New schema-only tables must be classified explicitly until the '
-              'local fixture intentionally covers them.',
+          RegExp(
+            '\\binsert\\s+into\\s+${RegExp.escape(table)}\\b',
+            caseSensitive: false,
+          ).hasMatch(seed),
+          isTrue,
+          reason: table,
         );
-
-        for (final table in ['auth.users', 'auth.identities']) {
-          expect(
-            RegExp(
-              '\\binsert\\s+into\\s+${RegExp.escape(table)}\\b',
-              caseSensitive: false,
-            ).hasMatch(seed),
-            isTrue,
-            reason: table,
-          );
-        }
-        expect(seed, contains(_fixtureMarker));
-        expect(seed, contains('dev.fixture.'));
-        expect(seed, contains('Asia/Ho_Chi_Minh'));
-      },
-    );
+      }
+      expect(seed, contains(_fixtureMarker));
+      expect(seed, contains('dev.fixture.'));
+      expect(seed, contains('Asia/Ho_Chi_Minh'));
+    });
 
     test('preserves the four stable account UUID/email bindings', () {
       for (final account in _legacyAccounts) {
@@ -175,16 +171,13 @@ void main() {
         final readme = File('docs/supabase/README.md').readAsStringSync();
         final smoke = File(_smokeFixturePath).readAsStringSync();
 
-        for (final token in [
-          '01_build_system.sql',
-          '02_seed_data.sql',
-        ]) {
+        for (final token in ['01_build_system.sql', '02_seed_data.sql']) {
           expect(readme, contains(token), reason: token);
         }
 
-        for (final table in _publicTableNames(build).where(
-          (table) => !_schemaOnlyTables.contains(table),
-        )) {
+        for (final table in _publicTableNames(
+          build,
+        ).where((table) => !_schemaOnlyTables.contains(table))) {
           expect(smoke, contains("'$table'"), reason: table);
         }
 
@@ -214,66 +207,6 @@ class _LegacyAccount {
 
   final String id;
   final String email;
-}
-
-class _MarkedBlock {
-  const _MarkedBlock({
-    required this.beginMatches,
-    required this.endMatches,
-    required this.begin,
-    required this.end,
-    required this.body,
-  });
-
-  final List<RegExpMatch> beginMatches;
-  final List<RegExpMatch> endMatches;
-  final RegExpMatch begin;
-  final RegExpMatch end;
-  final String body;
-}
-
-_MarkedBlock _markedBlock(String source, String moduleName) {
-  final escaped = RegExp.escape(moduleName);
-  final beginPattern = RegExp(
-    '^\\s*--\\s*BEGIN\\s+$escaped\\s*\$',
-    multiLine: true,
-  );
-  final endPattern = RegExp(
-    '^\\s*--\\s*END\\s+$escaped\\s*\$',
-    multiLine: true,
-  );
-  final begins = beginPattern.allMatches(source).toList();
-  final ends = endPattern.allMatches(source).toList();
-  if (begins.length != 1 || ends.length != 1) {
-    throw StateError(
-      'Expected one BEGIN/END marker pair for $moduleName; found '
-      '${begins.length}/${ends.length}.',
-    );
-  }
-  final begin = begins.single;
-  final end = ends.single;
-  if (end.start < begin.end) {
-    throw StateError('END marker appears before BEGIN marker for $moduleName.');
-  }
-  return _MarkedBlock(
-    beginMatches: begins,
-    endMatches: ends,
-    begin: begin,
-    end: end,
-    body: source.substring(begin.end, end.start),
-  );
-}
-
-String _normaliseSql(String source) {
-  final unix = source
-      .replaceFirst('\uFEFF', '')
-      .replaceAll('\r\n', '\n')
-      .replaceAll('\r', '\n');
-  return unix
-      .split('\n')
-      .map((line) => line.replaceFirst(RegExp(r'[ \t]+$'), ''))
-      .join('\n')
-      .trim();
 }
 
 List<String> _publicTableNames(String build) {

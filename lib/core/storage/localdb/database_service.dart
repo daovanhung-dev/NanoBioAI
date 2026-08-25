@@ -40,6 +40,8 @@ import 'migrations/migration_v18.dart';
 import 'migrations/migration_v19.dart';
 import 'migrations/migration_v20.dart';
 import 'migrations/migration_v21.dart';
+import 'migrations/migration_v22.dart';
+import 'migrations/migration_v23.dart';
 import 'seeders/ai_catalog_seeder.dart';
 
 class DatabaseService {
@@ -140,18 +142,12 @@ class DatabaseService {
           final phase = Stopwatch()..start();
           try {
             await MigrationManager.runMigrations(db, oldVersion, newVersion);
-            if (oldVersion < 18 && newVersion >= 18) {
-              await MigrationV18.run(db);
-            }
-            if (oldVersion < 19 && newVersion >= 19) {
-              await MigrationV19.run(db);
-            }
-            if (oldVersion < 20 && newVersion >= 20) {
-              await MigrationV20.run(db);
-            }
-            if (oldVersion < 21 && newVersion >= 21) {
-              await MigrationV21.run(db);
-            }
+            if (oldVersion < 18 && newVersion >= 18) await MigrationV18.run(db);
+            if (oldVersion < 19 && newVersion >= 19) await MigrationV19.run(db);
+            if (oldVersion < 20 && newVersion >= 20) await MigrationV20.run(db);
+            if (oldVersion < 21 && newVersion >= 21) await MigrationV21.run(db);
+            if (oldVersion < 22 && newVersion >= 22) await MigrationV22.run(db);
+            if (oldVersion < 23 && newVersion >= 23) await MigrationV23.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -160,10 +156,7 @@ class DatabaseService {
               operation: 'MIGRATE',
               message: 'Database migration completed',
               duration: phase.elapsed,
-              metadata: {
-                'fromVersion': oldVersion,
-                'toVersion': newVersion,
-              },
+              metadata: {'fromVersion': oldVersion, 'toVersion': newVersion},
             );
           } catch (error, stackTrace) {
             phase.stop();
@@ -175,10 +168,7 @@ class DatabaseService {
               error: error,
               stackTrace: stackTrace,
               duration: phase.elapsed,
-              metadata: {
-                'fromVersion': oldVersion,
-                'toVersion': newVersion,
-              },
+              metadata: {'fromVersion': oldVersion, 'toVersion': newVersion},
             );
             rethrow;
           }
@@ -190,12 +180,10 @@ class DatabaseService {
             await MigrationV18.ensureSchema(db);
             await MigrationV19.ensureSchema(db);
             final version = await db.getVersion();
-            if (version >= 20) {
-              await MigrationV20.assertIntegrity(db);
-            }
-            if (version >= 21) {
-              await MigrationV21.ensureSchema(db);
-            }
+            if (version >= 20) await MigrationV20.assertIntegrity(db);
+            if (version >= 21) await MigrationV21.ensureSchema(db);
+            if (version >= 22) await MigrationV22.ensureSchema(db);
+            if (version >= 23) await MigrationV23.ensureSchema(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -296,6 +284,8 @@ class DatabaseService {
     await db.execute(ExerciseCatalogTable.createCategoryIndex);
     await db.execute(ScheduleTaskCatalogTable.createTable);
     await db.execute(ScheduleTaskCatalogTable.createCategoryIndex);
+    await MigrationV22.ensureSchema(db);
+    await MigrationV23.ensureSchema(db);
     await AiCatalogSeeder.seed(db);
     await SyncOutboxSchema.create(db);
   }

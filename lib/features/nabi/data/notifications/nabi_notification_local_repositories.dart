@@ -5,6 +5,7 @@ import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/tables/nabi_notification_tables.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../../domain/care/nabi_care_notification_definition.dart';
 import '../../domain/notifications/nabi_notification_catalog.dart';
 import '../../domain/notifications/nabi_notification_models.dart';
 import '../../domain/notifications/nabi_notification_repositories.dart';
@@ -15,9 +16,10 @@ class BundledNabiNotificationConfigRepository
 
   @override
   Future<List<NabiNotificationDefinition>> loadActiveDefinitions() async {
-    return NabiNotificationCatalog.definitions
-        .where((definition) => definition.active)
-        .toList(growable: false);
+    return <NabiNotificationDefinition>[
+      ...NabiNotificationCatalog.definitions,
+      NabiCareNotificationDefinition.definition,
+    ].where((definition) => definition.active).toList(growable: false);
   }
 }
 
@@ -46,7 +48,10 @@ class SqliteNabiNotificationStateRepository
       orderBy: 'presented_at DESC',
       limit: 200,
     );
-    return rows.map(_historyFromRow).whereType<NabiNotificationHistoryEntry>().toList();
+    return rows
+        .map(_historyFromRow)
+        .whereType<NabiNotificationHistoryEntry>()
+        .toList();
   }
 
   @override
@@ -179,9 +184,10 @@ class SqliteNabiNotificationStateRepository
     final category = NabiNotificationCategory.values.where(
       (value) => value.name == row['category']?.toString(),
     );
-    final definition = NabiNotificationCatalog.definitions.where(
-      (item) => item.id == notificationId,
-    );
+    final definition = <NabiNotificationDefinition>[
+      ...NabiNotificationCatalog.definitions,
+      NabiCareNotificationDefinition.definition,
+    ].where((item) => item.id == notificationId);
     final resolvedCategory = category.isEmpty
         ? NabiNotificationCategory.care
         : category.first;

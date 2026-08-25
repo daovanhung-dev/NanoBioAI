@@ -4,8 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../application/care/nabi_care_controller.dart';
 import '../../application/nabi_controller.dart';
 import '../../application/nabi_state.dart';
+import '../../application/notifications/nabi_notification_controller.dart';
+import '../../data/nabi_feature_flags.dart';
+import '../../domain/care/nabi_care_models.dart';
+import '../../domain/notifications/nabi_notification_models.dart';
+import '../care/nabi_care_panel.dart';
 import 'nabi_character.dart';
 
 import 'package:nano_app/core/theme/app_semantic_colors.dart';
@@ -44,7 +50,8 @@ class NabiOverlayConfig {
 /// Lớp phủ đặt trên child của AppShell/ShellRoute.
 ///
 /// - Có mặt trên mọi màn hình được bọc bởi [NabiAppShell].
-/// - Chạm: thực hiện đúng vai trò của nút AI Chat cũ.
+/// - Chạm avatar: thực hiện đúng vai trò của nút AI Chat cũ.
+/// - Chạm bubble NaBi Care: mở bảng giải thích dữ liệu/chăm sóc.
 /// - Kéo: người dùng tự đặt vị trí nổi mà không chặn thao tác UI bên dưới.
 /// - Nhấn giữ: thu gọn/mở rộng Nabi trong phiên hiện tại.
 class NabiAssistantOverlay extends ConsumerStatefulWidget {
@@ -58,9 +65,10 @@ class NabiAssistantOverlay extends ConsumerStatefulWidget {
 }
 
 class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
-    with SingleTickerProviderStateMixin {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late Alignment _alignment;
   late final AnimationController _entryController;
+  late final String _sessionId;
   bool _isDragging = false;
   bool _dragMoved = false;
 
@@ -68,14 +76,35 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
   void initState() {
     super.initState();
     _alignment = widget.config.initialAlignment;
+    _sessionId =
+        'nabi-session-${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}';
     _entryController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 340),
     )..forward();
+    WidgetsBinding.instance.addObserver(this);
+
+    if (NabiFeatureFlags.aiCareEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        unawaited(_refreshCare(NabiCareTrigger.appOpen));
+      });
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed &&
+        NabiFeatureFlags.aiCareEnabled &&
+        mounted) {
+      unawaited(_refreshCare(NabiCareTrigger.appResume));
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _entryController.dispose();
     super.dispose();
   }
@@ -83,9 +112,22 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(nabiControllerProvider);
+    final careState = ref.watch(nabiCareControllerProvider);
+    final notificationState = ref.watch(nabiNotificationControllerProvider);
     final enabled = widget.config.isEnabled?.call(context) ?? true;
 
     if (!state.isVisible || !enabled) return const SizedBox.shrink();
+
+    final careResult =
+        NabiFeatureFlags.aiCareEnabled ? careState.result : null;
+    final notificationBody = notificationState.hasNotification
+        ? notificationState.renderedBody
+        : null;
+    final bubbleText =
+        notificationBody ?? careResult?.analysis.summary ?? state.bubbleText;
+    final bubbleTap = notificationState.hasNotification || careResult != null
+        ? _openContextualBubble
+        : null;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -109,11 +151,13 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
                   ),
                   child: _NabiFloatingControl(
                     state: state,
+                    bubbleText: bubbleText,
                     showSpeechBubble: widget.config.showSpeechBubble,
                     characterSize: widget.config.characterSize,
                     isDragging: _isDragging,
                     isRightSide: _alignment.x >= 0,
                     onTap: _dragMoved ? null : _openChat,
+                    onBubbleTap: bubbleTap,
                     onLongPress: () {
                       AppFeedbackService.instance.emit(
                         AppFeedbackType.selection,
@@ -163,6 +207,71 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
     );
   }
 
+  Future<void> _refreshCare(NabiCareTrigger trigger) async {
+    final result = await ref.read(nabiCareControllerProvider.notifier).refresh(
+          trigger: trigger,
+        );
+    if (!mounted || result == null) return;
+
+    // NaBi Care does not send notifications directly. It submits a typed
+    // business snapshot to the existing M30 policy engine so cooldown,
+    // session caps and UI suppression remain centralized.
+    final screenKey = _screenKey();
+    await ref.read(nabiNotificationControllerProvider.notifier).evaluate(
+          snapshot: NabiBusinessSnapshot(
+            actorKey: result.snapshot.actorKey,
+            actorKind: result.snapshot.actorKind,
+            membershipPlan: result.snapshot.membershipPlan,
+            sourceEventId:
+                'nabi-care:${result.fingerprint}:${trigger.name}',
+            occurredAt: DateTime.now(),
+            profileMissing:
+                result.snapshot.dataQuality.missingGroups.contains('profile'),
+            variables: {
+              'care_summary': result.analysis.summary,
+            },
+          ),
+          uiContext: NabiUiContext(
+            sessionId: _sessionId,
+            screenKey: screenKey,
+            screenInstanceId: '$_sessionId:$screenKey',
+          ),
+        );
+  }
+
+  String _screenKey() {
+    try {
+      return GoRouterState.of(context).uri.path;
+    } catch (_) {
+      return 'app_shell';
+    }
+  }
+
+  Future<void> _openContextualBubble() async {
+    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
+    final notificationState = ref.read(nabiNotificationControllerProvider);
+    final careResult = ref.read(nabiCareControllerProvider).result;
+
+    if (notificationState.hasNotification) {
+      await ref.read(nabiNotificationControllerProvider.notifier).reopen();
+    }
+
+    if (!mounted) return;
+    if (careResult != null &&
+        (notificationState.definition?.category ==
+                NabiNotificationCategory.care ||
+            notificationState.definition == null)) {
+      await showNabiCarePanel(context);
+      return;
+    }
+
+    if (notificationState.hasNotification) {
+      await ref
+          .read(nabiNotificationControllerProvider.notifier)
+          .activatePrimary();
+    }
+  }
+
   Future<void> _openChat() async {
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     final controller = ref.read(nabiControllerProvider.notifier);
@@ -192,11 +301,13 @@ class _NabiAssistantOverlayState extends ConsumerState<NabiAssistantOverlay>
 class _NabiFloatingControl extends StatelessWidget {
   const _NabiFloatingControl({
     required this.state,
+    required this.bubbleText,
     required this.showSpeechBubble,
     required this.characterSize,
     required this.isDragging,
     required this.isRightSide,
     required this.onTap,
+    required this.onBubbleTap,
     required this.onLongPress,
     required this.onPanStart,
     required this.onPanUpdate,
@@ -204,11 +315,13 @@ class _NabiFloatingControl extends StatelessWidget {
   });
 
   final NabiState state;
+  final String bubbleText;
   final bool showSpeechBubble;
   final double characterSize;
   final bool isDragging;
   final bool isRightSide;
   final VoidCallback? onTap;
+  final VoidCallback? onBubbleTap;
   final VoidCallback onLongPress;
   final GestureDragStartCallback onPanStart;
   final GestureDragUpdateCallback onPanUpdate;
@@ -256,7 +369,19 @@ class _NabiFloatingControl extends StatelessWidget {
 
     if (!showSpeechBubble || state.isMinimized) return avatar;
 
-    final bubble = Flexible(child: _NabiSpeechBubble(text: state.bubbleText));
+    final bubble = Flexible(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onBubbleTap,
+        child: Semantics(
+          button: onBubbleTap != null,
+          label: onBubbleTap == null
+              ? 'Tin nhắn từ Nabi'
+              : 'Mở chi tiết chăm sóc từ Nabi',
+          child: _NabiSpeechBubble(text: bubbleText),
+        ),
+      ),
+    );
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 286),

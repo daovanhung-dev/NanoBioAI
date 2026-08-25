@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 
 import 'app_log_category.dart';
 import 'app_log_level.dart';

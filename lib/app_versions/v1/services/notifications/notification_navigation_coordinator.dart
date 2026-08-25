@@ -31,11 +31,24 @@ class NotificationNavigationCoordinator {
   }
 
   static void openSleepSafety() {
-    _open(Uri(
-      path: V1RoutePaths.sleepTracking,
-      queryParameters: const {'source': 'scheduled_reminder'},
-    ));
+    _open(
+      Uri(
+        path: V1RoutePaths.sleepTracking,
+        queryParameters: const {'source': 'scheduled_reminder'},
+      ),
+    );
   }
+
+  static void openHealthCheckIn() => _open(Uri(path: V1RoutePaths.healthCheckIn));
+
+  static void openGoalReview() => _open(Uri(path: V1RoutePaths.goalReview));
+
+  static void openProfileReview() => _open(Uri(path: V1RoutePaths.profileReview));
+
+  static void openWaterTracking() => _open(Uri(path: V1RoutePaths.waterTracking));
+
+  static void openNotificationSettings() =>
+      _open(Uri(path: V1RoutePaths.notificationSettings));
 
   static void _open(Uri uri) {
     final navigator = _navigator;

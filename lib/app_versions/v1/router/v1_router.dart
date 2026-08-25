@@ -10,6 +10,8 @@ import 'package:nano_app/app_versions/v1/features/daily_health_tracking/presenta
 import 'package:nano_app/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
 import 'package:nano_app/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart';
+import 'package:nano_app/app_versions/v1/features/goal_review/presentation/pages/goal_review_page.dart';
+import 'package:nano_app/app_versions/v1/features/health_check_in/presentation/pages/health_check_in_page.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/pages/meal_plan_page.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/presentation/pages/nutrition_page.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/presentation/pages/nutrition_profile_editor_page.dart';
@@ -17,7 +19,9 @@ import 'package:nano_app/app_versions/v1/features/onboarding/onboarding.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/pages/onboarding_text_scale_page.dart';
 import 'package:nano_app/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart';
 import 'package:nano_app/app_versions/v1/features/profile/presentation/pages/profile_page.dart';
+import 'package:nano_app/app_versions/v1/features/profile_review/presentation/pages/profile_review_page.dart';
 import 'package:nano_app/app_versions/v1/features/quick_care/presentation/pages/quick_care_page.dart';
+import 'package:nano_app/app_versions/v1/features/settings/presentation/pages/notification_settings_page.dart';
 import 'package:nano_app/app_versions/v1/features/splash/splash.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart';
 import 'package:nano_app/app_versions/v1/features/community/presentation/pages/community_page.dart';
@@ -82,6 +86,11 @@ final v1Routes = <RouteBase>[
     builder: (context, state) => const DailyHealthTrackingPage(),
   ),
   GoRoute(
+    path: V1RoutePaths.healthCheckIn,
+    name: V1RoutePaths.healthCheckIn,
+    builder: (context, state) => const HealthCheckInPage(),
+  ),
+  GoRoute(
     path: V1RoutePaths.todayTasks,
     name: V1RoutePaths.todayTasks,
     builder: (context, state) => const TodayTasksPage(),
@@ -100,6 +109,16 @@ final v1Routes = <RouteBase>[
     path: V1RoutePaths.personalGoals,
     name: V1RoutePaths.personalGoals,
     builder: (context, state) => const PersonalGoalsPage(),
+  ),
+  GoRoute(
+    path: V1RoutePaths.goalReview,
+    name: V1RoutePaths.goalReview,
+    builder: (context, state) => const GoalReviewPage(),
+  ),
+  GoRoute(
+    path: V1RoutePaths.profileReview,
+    name: V1RoutePaths.profileReview,
+    builder: (context, state) => const ProfileReviewPage(),
   ),
   GoRoute(
     path: V1RoutePaths.quickCare,
@@ -169,6 +188,11 @@ final v1Routes = <RouteBase>[
     name: V1RoutePaths.profile,
     redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const ProfilePage(),
+  ),
+  GoRoute(
+    path: V1RoutePaths.notificationSettings,
+    name: V1RoutePaths.notificationSettings,
+    builder: (context, state) => const NotificationSettingsPage(),
   ),
   GoRoute(
     path: V1RoutePaths.community,

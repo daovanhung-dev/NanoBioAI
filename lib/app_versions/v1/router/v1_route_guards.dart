@@ -15,10 +15,13 @@ class V1RouteGuards {
     V1RoutePaths.menu,
     V1RoutePaths.mealPlan,
     V1RoutePaths.healthTracking,
+    V1RoutePaths.healthCheckIn,
     V1RoutePaths.todayTasks,
     V1RoutePaths.waterTracking,
     V1RoutePaths.weeklySummary,
     V1RoutePaths.personalGoals,
+    V1RoutePaths.goalReview,
+    V1RoutePaths.profileReview,
     V1RoutePaths.quickCare,
     V1RoutePaths.gentleCare,
     V1RoutePaths.namiCare,
@@ -32,6 +35,7 @@ class V1RouteGuards {
     V1RoutePaths.nutrition,
     V1RoutePaths.nutritionProfile,
     V1RoutePaths.profile,
+    V1RoutePaths.notificationSettings,
     V1RoutePaths.community,
   };
 
@@ -45,16 +49,20 @@ class V1RouteGuards {
     V1RoutePaths.menu,
     V1RoutePaths.mealPlan,
     V1RoutePaths.healthTracking,
+    V1RoutePaths.healthCheckIn,
     V1RoutePaths.todayTasks,
     V1RoutePaths.waterTracking,
     V1RoutePaths.weeklySummary,
     V1RoutePaths.personalGoals,
+    V1RoutePaths.goalReview,
+    V1RoutePaths.profileReview,
     V1RoutePaths.quickCare,
     V1RoutePaths.gentleCare,
     V1RoutePaths.namiCare,
     V1RoutePaths.bodyMetrics,
     V1RoutePaths.lifestyleSchedule,
     V1RoutePaths.dailyRoutinePreferences,
+    V1RoutePaths.notificationSettings,
     V1RoutePaths.sleepTracking,
     V1RoutePaths.stressTracking,
     AuthRoutePaths.authGate,
@@ -68,21 +76,13 @@ class V1RouteGuards {
 
   static String? authGuard(BuildContext context, GoRouterState state) {
     final user = currentSupabaseUserIdOrNull();
-
-    if (user == null) {
-      return AuthRoutePaths.login;
-    }
-
+    if (user == null) return AuthRoutePaths.login;
     return null;
   }
 
   static String? guestGuard(BuildContext context, GoRouterState state) {
     final user = currentSupabaseUserIdOrNull();
-
-    if (user != null) {
-      return AuthRoutePaths.authGate;
-    }
-
+    if (user != null) return AuthRoutePaths.authGate;
     return null;
   }
 
@@ -92,7 +92,6 @@ class V1RouteGuards {
   ) {
     final user = currentSupabaseUserIdOrNull();
     if (user != null) return null;
-
     return guestRedirectForPath(state.uri.path);
   }
 

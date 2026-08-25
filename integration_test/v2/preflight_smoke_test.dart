@@ -13,7 +13,7 @@ void main() {
   );
 
   testWidgets('v2 entrypoint boots with sandbox configuration', (tester) async {
-    await app.main();
+    app.main();
     await pumpBootFrames(tester);
 
     expect(find.byType(BioAIApp), findsOneWidget);

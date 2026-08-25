@@ -15,7 +15,7 @@ void main() {
   testWidgets('Admin entrypoint boots with sandbox configuration', (
     tester,
   ) async {
-    await app.main();
+    app.main();
     await pumpBootFrames(tester);
 
     expect(find.byType(BioAIApp), findsOneWidget);
@@ -36,7 +36,8 @@ void main() {
           'Chờ các frame bootstrap và xác nhận app root được gắn vào cây widget.',
         ],
         expected: 'Admin boot thành công mà không lộ giá trị cấu hình.',
-        actual: 'BioAIApp hợp nhất được render từ entrypoint thật; giao diện sẽ được chọn theo quyền của phiên đăng nhập.',
+        actual:
+            'BioAIApp hợp nhất được render từ entrypoint thật; giao diện sẽ được chọn theo quyền của phiên đăng nhập.',
       ),
       variant: 'admin',
     );

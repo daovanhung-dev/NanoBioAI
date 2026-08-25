@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_account_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_page.dart';
@@ -23,17 +24,15 @@ void main() {
       routes: [
         GoRoute(
           path: AdminRoutePaths.dashboard,
-          builder: (context, state) =>
-              const AdminWorkspacePage(
-                initialSection: AdminPanelSection.dashboard,
-              ),
+          builder: (context, state) => const AdminWorkspacePage(
+            initialSection: AdminPanelSection.dashboard,
+          ),
         ),
         GoRoute(
           path: AdminRoutePaths.payments,
-          builder: (context, state) =>
-              const AdminWorkspacePage(
-                initialSection: AdminPanelSection.payments,
-              ),
+          builder: (context, state) => const AdminWorkspacePage(
+            initialSection: AdminPanelSection.payments,
+          ),
         ),
       ],
     );
@@ -98,7 +97,10 @@ void main() {
     await _pumpAdminFrames(tester);
 
     expect(repository.mutationCalls, hasLength(1));
-    expect(repository.mutationCalls.single.payload['transfer_verified'], isTrue);
+    expect(
+      repository.mutationCalls.single.payload['transfer_verified'],
+      isTrue,
+    );
     expect(tester.takeException(), isNull);
   });
 }
@@ -189,4 +191,34 @@ class _PaymentReviewRepository implements AdminRepository {
 
   @override
   Stream<void> watchAuthChanges() => const Stream<void>.empty();
+
+  @override
+  Future<List<AdminAccountSummary>> searchAccounts({
+    required String query,
+  }) async {
+    return const [];
+  }
+
+  @override
+  Future<AdminCreateAccountResult> createAccount(
+    AdminCreateAccountRequest request,
+  ) async {
+    return AdminCreateAccountResult(
+      success: false,
+      userId: '',
+      email: request.email,
+      message: 'not used in this test',
+    );
+  }
+
+  @override
+  Future<AdminMembershipGrantResult> grantMembership(
+    AdminMembershipGrantRequest request,
+  ) async {
+    return AdminMembershipGrantResult(
+      success: false,
+      message: 'not used in this test',
+      planCode: request.planCode,
+    );
+  }
 }

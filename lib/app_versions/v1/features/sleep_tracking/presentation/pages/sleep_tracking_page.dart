@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/sleep_safety_session.dart';
 import '../../domain/services/sleep_safety_state_machine.dart';
+import '../../providers/sleep_night_analysis_providers.dart';
 import '../../providers/sleep_safety_providers.dart';
 import '../widgets/sleep_safety_alert_overlay.dart';
 import '../widgets/sleep_safety_audio_level_meter.dart';
 import '../widgets/sleep_safety_disclaimer.dart';
 import '../widgets/sleep_safety_status_card.dart';
+import 'sleep_night_analysis_page.dart';
 import 'sleep_safety_contacts_page.dart';
 import 'sleep_safety_history_page.dart';
 import 'sleep_safety_schedule_page.dart';
@@ -18,10 +20,27 @@ class SleepTrackingPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(sleepSafetyControllerProvider, (previous, next) {
+      final previousEndedAt = previous?.session?.endedAt;
+      final nextEndedAt = next.session?.endedAt;
+      if (previousEndedAt == null && nextEndedAt != null) {
+        ref.invalidate(recentSleepSessionsProvider);
+      }
+    });
     final state = ref.watch(sleepSafetyControllerProvider);
     final controller = ref.read(sleepSafetyControllerProvider.notifier);
     final pref = state.preference;
     final metrics = state.audioMetrics;
+    final recentSessions = ref.watch(recentSleepSessionsProvider).asData?.value ??
+        const <SleepSafetySession>[];
+    final completedSessions = recentSessions
+        .where((session) => session.endedAt != null)
+        .toList(growable: false);
+    final latestSessionId = completedSessions.isNotEmpty
+        ? completedSessions.first.id
+        : (!state.monitoringActive && state.session?.endedAt != null
+            ? state.session?.id
+            : null);
     final startSource =
         GoRouterState.of(context).uri.queryParameters['source'] ==
                 'scheduled_reminder'
@@ -133,9 +152,7 @@ class SleepTrackingPage extends ConsumerWidget {
                         leading: const Icon(Icons.schedule_rounded),
                         title: const Text('Lịch giám sát'),
                         subtitle: Text(
-                          pref.scheduleEnabled
-                              ? 'Đã bật nhắc theo lịch'
-                              : 'Chưa bật',
+                          pref.scheduleEnabled ? 'Đã bật nhắc theo lịch' : 'Chưa bật',
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => Navigator.push(
@@ -161,7 +178,7 @@ class SleepTrackingPage extends ConsumerWidget {
                         leading: const Icon(Icons.history_rounded),
                         title: const Text('Lịch sử cảnh báo'),
                         subtitle: const Text(
-                          'Chỉ lưu metadata, không lưu bản ghi âm',
+                          'Chỉ lưu thông tin sự kiện, không lưu bản ghi âm',
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => Navigator.push(
@@ -172,6 +189,27 @@ class SleepTrackingPage extends ConsumerWidget {
                         ),
                       ),
                       ListTile(
+                        leading: const Icon(Icons.bedtime_rounded),
+                        title: const Text('Phân tích giấc ngủ'),
+                        subtitle: Text(
+                          latestSessionId == null
+                              ? 'Cần ít nhất một phiên giám sát đã kết thúc'
+                              : 'Chỉ số cục bộ, xu hướng 7 đêm và phân tích AI',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        enabled: latestSessionId != null,
+                        onTap: latestSessionId == null
+                            ? null
+                            : () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => SleepNightAnalysisPage(
+                                      sessionId: latestSessionId,
+                                    ),
+                                  ),
+                                ),
+                      ),
+                      ListTile(
                         leading: const Icon(Icons.hearing_rounded),
                         title: const Text('Hiệu chỉnh lại âm thanh phòng'),
                         subtitle: Text(
@@ -179,8 +217,7 @@ class SleepTrackingPage extends ConsumerWidget {
                               ? 'Chưa hiệu chỉnh'
                               : 'Lần gần nhất: ${pref.calibrationUpdatedAt}',
                         ),
-                        onTap:
-                            state.monitoringActive ? controller.recalibrate : null,
+                        onTap: state.monitoringActive ? controller.recalibrate : null,
                       ),
                     ],
                   ),
@@ -195,8 +232,7 @@ class SleepTrackingPage extends ConsumerWidget {
             Positioned.fill(
               child: SleepSafetyAlertOverlay(
                 startedAt: state.machine.alertStartedAt!,
-                dispatching:
-                    state.machine.phase == SleepSafetyPhase.escalating,
+                dispatching: state.machine.phase == SleepSafetyPhase.escalating,
                 onOk: controller.respondOk,
                 onNeedHelp: controller.requestHelp,
               ),

@@ -15,7 +15,8 @@ class DioLogInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    final correlationId = options.extra[_correlationKey]?.toString() ??
+    final correlationId =
+        options.extra[_correlationKey]?.toString() ??
         AppLogger.newCorrelationId('http');
     options.extra[_correlationKey] = correlationId;
     options.extra[_startedAtKey] = DateTime.now().microsecondsSinceEpoch;
@@ -25,7 +26,8 @@ class DioLogInterceptor extends Interceptor {
       category: AppLogCategory.http,
       scope: scope,
       operation: 'REQUEST',
-      message: '${options.method.toUpperCase()} ${LogRedactor.sanitizeUri(options.uri)}',
+      message:
+          '${options.method.toUpperCase()} ${LogRedactor.sanitizeUri(options.uri)}',
       correlationId: correlationId,
       metadata: {
         'method': options.method.toUpperCase(),
@@ -40,7 +42,10 @@ class DioLogInterceptor extends Interceptor {
   }
 
   @override
-  void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
     final options = response.requestOptions;
     final correlationId = options.extra[_correlationKey]?.toString();
     final duration = _durationFor(options);
@@ -49,7 +54,8 @@ class DioLogInterceptor extends Interceptor {
       category: AppLogCategory.http,
       scope: scope,
       operation: 'RESPONSE',
-      message: '${options.method.toUpperCase()} ${LogRedactor.sanitizeUri(options.uri)}',
+      message:
+          '${options.method.toUpperCase()} ${LogRedactor.sanitizeUri(options.uri)}',
       correlationId: correlationId,
       duration: duration,
       metadata: {
@@ -61,24 +67,25 @@ class DioLogInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioException error, ErrorInterceptorHandler handler) {
-    final options = error.requestOptions;
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    final options = err.requestOptions;
     final correlationId = options.extra[_correlationKey]?.toString();
     AppLogger.captureError(
       category: AppLogCategory.http,
       scope: scope,
       operation: 'ERROR',
-      message: '${options.method.toUpperCase()} ${LogRedactor.sanitizeUri(options.uri)}',
-      error: error,
-      stackTrace: error.stackTrace,
+      message:
+          '${options.method.toUpperCase()} ${LogRedactor.sanitizeUri(options.uri)}',
+      error: err,
+      stackTrace: err.stackTrace,
       correlationId: correlationId,
       duration: _durationFor(options),
       metadata: {
-        'statusCode': error.response?.statusCode,
-        'dioType': error.type.name,
+        'statusCode': err.response?.statusCode,
+        'dioType': err.type.name,
       },
     );
-    handler.next(error);
+    handler.next(err);
   }
 
   static Duration? _durationFor(RequestOptions options) {
