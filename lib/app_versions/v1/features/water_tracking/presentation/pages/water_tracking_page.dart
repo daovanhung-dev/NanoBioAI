@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
+import 'package:nano_app/app_versions/v1/features/water_tracking/application/water_tracking_controller.dart';
 import 'package:nano_app/app_versions/v1/features/water_tracking/data/water_tracking_local_store.dart';
+import 'package:nano_app/app_versions/v1/features/water_tracking/data/water_tracking_repository_impl.dart';
+import 'package:nano_app/app_versions/v1/features/water_tracking/domain/water_tracking_snapshot.dart';
+import 'package:nano_app/app_versions/v1/features/water_tracking/providers/water_tracking_providers.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/active_notification_subject.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
 
 class WaterTrackingPage extends ConsumerStatefulWidget {
   const WaterTrackingPage({
     super.key,
-    this.localStore = const SharedPreferencesWaterTrackingLocalStore(),
+    this.localStore,
     DateTime Function()? now,
   }) : now = now ?? DateTime.now;
 
-  final WaterTrackingLocalStore localStore;
+  /// Test/offline compatibility seam. Production resolves the repository from
+  /// Riverpod so hydration amount shares the canonical daily-health write path.
+  final WaterTrackingLocalStore? localStore;
   final DateTime Function() now;
 
   @override
@@ -28,11 +36,20 @@ class _WaterTrackingPageState extends ConsumerState<WaterTrackingPage> {
   Object? _loadError;
   DateTime? _loadedLocalDay;
   late String _stateActorScope;
+  late final WaterTrackingController _controller;
   int _loadGeneration = 0;
 
   @override
   void initState() {
     super.initState();
+    final injectedStore = widget.localStore;
+    _controller = WaterTrackingController(
+      repository: injectedStore == null
+          ? ref.read(waterTrackingRepositoryProvider)
+          : LocalOnlyWaterTrackingRepository(injectedStore),
+      eventSink: ref.read(healthDomainEventSinkProvider),
+      resolveSubjectId: resolveActiveNotificationSubject,
+    );
     _stateActorScope = _actorScope(ref.read(currentAuthUserIdProvider));
     _load(actorScope: _stateActorScope);
   }
@@ -54,7 +71,7 @@ class _WaterTrackingPageState extends ConsumerState<WaterTrackingPage> {
     }
     try {
       final localDay = widget.now();
-      final snapshot = await widget.localStore.load(localDay);
+      final snapshot = await _controller.load(localDay);
       if (!_canApply(loadGeneration, requestedActorScope)) return;
       setState(() {
         _targetMl = snapshot.targetMl;
@@ -87,7 +104,7 @@ class _WaterTrackingPageState extends ConsumerState<WaterTrackingPage> {
 
     setState(() => _isSaving = true);
     try {
-      await widget.localStore.saveTargetMl(target);
+      await _controller.saveTargetMl(target);
       if (!mounted || !_isCurrentActor(actorScope)) return;
       setState(() {
         _targetMl = target;
@@ -111,24 +128,29 @@ class _WaterTrackingPageState extends ConsumerState<WaterTrackingPage> {
     final localDay = widget.now();
     setState(() => _isSaving = true);
     try {
-      var target = _targetMl;
-      var previous = _currentMl;
+      var current = WaterTrackingSnapshot(
+        targetMl: _targetMl,
+        amountMl: _currentMl,
+      );
       if (!_isSameLocalDay(_loadedLocalDay, localDay)) {
-        final snapshot = await widget.localStore.load(localDay);
+        current = await _controller.load(localDay);
         if (!mounted || !_isCurrentActor(actorScope)) return;
-        target = snapshot.targetMl;
-        previous = snapshot.amountMl;
       }
-      final next = (previous + amount).clamp(0, 100000);
-      await widget.localStore.saveAmountMl(localDay, next);
+      final previous = current.amountMl;
+      final updated = await _controller.addWater(
+        localDay: localDay,
+        current: current,
+        amountMl: amount,
+      );
       if (!mounted || !_isCurrentActor(actorScope)) return;
       setState(() {
-        _targetMl = target;
-        _currentMl = next;
+        _targetMl = updated.targetMl;
+        _currentMl = updated.amountMl;
         _loadedLocalDay = localDay;
         _isSaving = false;
       });
-      if (target != null && previous < target && next >= target) {
+      final target = updated.targetMl;
+      if (target != null && previous < target && updated.amountMl >= target) {
         AppFeedbackService.instance.emit(AppFeedbackType.milestone);
       } else {
         AppFeedbackService.instance.emit(AppFeedbackType.selection);
@@ -360,8 +382,8 @@ class _WaterTrackingPageState extends ConsumerState<WaterTrackingPage> {
           message: _currentMl == 0
               ? 'Nabi chưa ghi nhận ly nước nào hôm nay. Mình bắt đầu bằng một ngụm nhỏ nhé.'
               : target != null && _currentMl >= target
-              ? 'Bạn đã chạm mục tiêu do mình chọn hôm nay.'
-              : 'Ghi nhận hôm nay đã được lưu trên thiết bị.',
+                  ? 'Bạn đã chạm mục tiêu do mình chọn hôm nay.'
+                  : 'Ghi nhận hôm nay đã được lưu trên thiết bị.',
         ),
       ),
     ];

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app/app_surface_controller.dart';
@@ -6,8 +8,11 @@ import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v2/app/bio_ai_v2_app.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
-import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/core/health_events/health_domain_event.dart';
+import 'package:nano_app/core/health_events/health_event_type.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
+import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
 
 class BioAIApp extends ConsumerWidget {
   const BioAIApp({super.key});
@@ -29,6 +34,12 @@ class BioAIApp extends ConsumerWidget {
     ref.listen<String?>(currentAuthUserIdProvider, (previous, next) {
       if (previous != null && next == null) {
         ref.read(appSurfaceControllerProvider.notifier).reset();
+      }
+      final nextSubject = next?.trim();
+      if (nextSubject != null &&
+          nextSubject.isNotEmpty &&
+          nextSubject != previous?.trim()) {
+        unawaited(_publishIdentityChanged(ref, nextSubject));
       }
     });
 
@@ -78,6 +89,22 @@ class BioAIApp extends ConsumerWidget {
     }
 
     return const BioAIV2App(key: ValueKey('user-app'));
+  }
+
+  Future<void> _publishIdentityChanged(WidgetRef ref, String subjectId) async {
+    try {
+      await ref.read(healthDomainEventSinkProvider).publish(
+            HealthDomainEvent.create(
+              type: HealthEventType.authIdentityChanged,
+              subjectId: subjectId,
+              sourceFeature: 'app.auth_identity',
+              changedFields: const {'active_subject'},
+            ),
+          );
+    } catch (_) {
+      // Identity resolution itself is authoritative. Refresh orchestration must
+      // never block mounting the authenticated application surface.
+    }
   }
 }
 

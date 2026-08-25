@@ -1,12 +1,9 @@
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class WaterTrackingSnapshot {
-  final int? targetMl;
-  final int amountMl;
+import '../domain/water_tracking_snapshot.dart';
 
-  const WaterTrackingSnapshot({required this.targetMl, required this.amountMl});
-}
+export '../domain/water_tracking_snapshot.dart';
 
 abstract interface class WaterTrackingLocalStore {
   Future<WaterTrackingSnapshot> load(DateTime localDay);

@@ -6,7 +6,14 @@ import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/bio_ai_app.dart';
+import 'app/health_orchestration/health_orchestration_providers.dart';
 import 'app_versions/admin/features/admin_panel/providers/admin_providers.dart';
+import 'app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
+import 'app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
+import 'app_versions/v1/services/ai/nabi_care_ai_gateway.dart';
+import 'app_versions/v1/services/notifications/notification_bootstrap.dart';
+import 'app_versions/v1/services/notifications/notification_lifecycle_refresher.dart';
+import 'app_versions/v1/services/notifications/notification_startup_scheduler.dart';
 import 'app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'core/config/app_env.dart';
 import 'core/config/auth_backend_availability.dart';
@@ -18,16 +25,11 @@ import 'core/utils/logger/app_log_level.dart';
 import 'core/utils/logger/app_logger.dart';
 import 'core/utils/logger/app_provider_observer.dart';
 import 'core/utils/logger/logging_http_client.dart';
+import 'features/nabi/application/care/nabi_care_controller.dart';
+import 'services/health_orchestration/health_domain_event_sink.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox_refresher.dart';
 import 'services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart';
-import 'app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
-import 'app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
-import 'app_versions/v1/services/ai/nabi_care_ai_gateway.dart';
-import 'app_versions/v1/services/notifications/notification_bootstrap.dart';
-import 'app_versions/v1/services/notifications/notification_lifecycle_refresher.dart';
-import 'app_versions/v1/services/notifications/notification_startup_scheduler.dart';
-import 'features/nabi/application/care/nabi_care_controller.dart';
 
 const _bootstrapTag = 'APP_BOOTSTRAP';
 
@@ -67,6 +69,9 @@ Future<void> _bootstrapApplication() async {
       overrides: [
         nabiCareAiGatewayProvider.overrideWithValue(
           GeminiNabiCareAiGateway(),
+        ),
+        healthDomainEventSinkProvider.overrideWith(
+          (ref) => ref.watch(appHealthEventDispatcherProvider),
         ),
         authBackendAvailabilityProvider.overrideWithValue(
           authBackendAvailability,

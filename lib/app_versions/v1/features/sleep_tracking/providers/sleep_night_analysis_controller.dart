@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
+import 'package:nano_app/core/health_events/health_domain_event.dart';
+import 'package:nano_app/core/health_events/health_event_type.dart';
+import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
 
 import '../domain/entities/sleep_morning_checkin.dart';
 import '../domain/entities/sleep_night_analysis.dart';
@@ -105,14 +108,23 @@ class SleepNightAnalysisController extends Notifier<SleepNightAnalysisViewState>
         safetyAttentionScore: calculated.safetyAttentionScore,
         sleepWellnessScore: calculated.sleepWellnessScore,
         morningCheckin: calculated.morningCheckin,
-        aiAnalysisJson: cached?.formulaVersion == calculated.formulaVersion ? cached?.aiAnalysisJson : null,
-        aiModel: cached?.formulaVersion == calculated.formulaVersion ? cached?.aiModel : null,
-        aiGeneratedAt: cached?.formulaVersion == calculated.formulaVersion ? cached?.aiGeneratedAt : null,
-        aiRequestFingerprint: cached?.formulaVersion == calculated.formulaVersion ? cached?.aiRequestFingerprint : null,
+        aiAnalysisJson: cached?.formulaVersion == calculated.formulaVersion
+            ? cached?.aiAnalysisJson
+            : null,
+        aiModel: cached?.formulaVersion == calculated.formulaVersion
+            ? cached?.aiModel
+            : null,
+        aiGeneratedAt: cached?.formulaVersion == calculated.formulaVersion
+            ? cached?.aiGeneratedAt
+            : null,
+        aiRequestFingerprint: cached?.formulaVersion == calculated.formulaVersion
+            ? cached?.aiRequestFingerprint
+            : null,
         createdAt: cached?.createdAt ?? calculated.createdAt,
         updatedAt: calculated.updatedAt,
       );
       await repository.saveNightAnalysis(merged);
+      await _publishSummaryEvent(session.userId, sessionId);
       state = state.copyWith(
         session: session,
         events: events,
@@ -156,12 +168,37 @@ class SleepNightAnalysisController extends Notifier<SleepNightAnalysisViewState>
         updatedAt: DateTime.now(),
       );
       await ref.read(sleepSafetyRepositoryProvider).saveNightAnalysis(updated);
-      state = state.copyWith(analysis: updated, generatingAi: false, clearError: true);
+      state = state.copyWith(
+        analysis: updated,
+        generatingAi: false,
+        clearError: true,
+      );
     } catch (_) {
       state = state.copyWith(
         generatingAi: false,
         errorMessage: 'Phân tích AI chưa hoàn tất. Phần chỉ số cục bộ vẫn dùng bình thường.',
       );
+    }
+  }
+
+  Future<void> _publishSummaryEvent(String userId, String sessionId) async {
+    try {
+      await ref.read(healthDomainEventSinkProvider).publish(
+            HealthDomainEvent.create(
+              type: HealthEventType.sleepSummaryUpdated,
+              subjectId: userId,
+              sourceFeature: 'sleep_tracking.night_analysis',
+              entityId: sessionId,
+              changedFields: const {
+                'metrics',
+                'trend',
+                'sleep_wellness_score',
+                'safety_attention_score',
+              },
+            ),
+          );
+    } catch (_) {
+      // The locally persisted nightly analysis remains authoritative.
     }
   }
 

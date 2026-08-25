@@ -20,7 +20,10 @@ class _BodyMetricsTrendCardState extends State<BodyMetricsTrendCard> {
 
   @override
   Widget build(BuildContext context) {
-    final rows = widget.snapshot.trackingWithinDays(days).reversed.toList(growable: false);
+    final rows = widget.snapshot
+        .trackingWithinDays(days)
+        .reversed
+        .toList(growable: false);
     return NamiCareSurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -29,20 +32,52 @@ class _BodyMetricsTrendCardState extends State<BodyMetricsTrendCard> {
             children: [
               const Expanded(
                 child: NamiCareSectionTitle(
-                  title: 'Xu hướng sức khỏe',
-                  subtitle: 'Chỉ vẽ các ngày có dữ liệu thật, không nội suy.',
+                  title: 'Sức khỏe thay đổi thế nào?',
+                  subtitle:
+                      'Xem cân nặng, giấc ngủ, nước và bước chân của bạn thay đổi theo thời gian.',
                 ),
               ),
-              ChoiceChip(label: const Text('7 ngày'), selected: days == 7, onSelected: (_) => setState(() => days = 7)),
+              ChoiceChip(
+                label: const Text('7 ngày'),
+                selected: days == 7,
+                onSelected: (_) => setState(() => days = 7),
+              ),
               const SizedBox(width: 6),
-              ChoiceChip(label: const Text('30 ngày'), selected: days == 30, onSelected: (_) => setState(() => days = 30)),
+              ChoiceChip(
+                label: const Text('30 ngày'),
+                selected: days == 30,
+                onSelected: (_) => setState(() => days = 30),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          _Series(title: 'Cân nặng', unit: 'kg', values: rows.map((row) => row.weightKg).whereType<double>().toList()),
-          _Series(title: 'Giấc ngủ', unit: 'giờ', values: rows.map((row) => row.sleepHours).whereType<double>().toList()),
-          _Series(title: 'Nước', unit: 'ml', values: rows.map((row) => row.waterMl).whereType<double>().toList()),
-          _Series(title: 'Bước chân', unit: 'bước', values: rows.map((row) => row.steps).whereType<double>().toList()),
+          _Series(
+            title: 'Cân nặng',
+            unit: 'kg',
+            values: rows
+                .map((row) => row.weightKg)
+                .whereType<double>()
+                .toList(),
+          ),
+          _Series(
+            title: 'Giấc ngủ',
+            unit: 'giờ',
+            values: rows
+                .map((row) => row.sleepHours)
+                .whereType<double>()
+                .toList(),
+          ),
+          _Series(
+            title: 'Nước',
+            unit: 'ml',
+            values:
+                rows.map((row) => row.waterMl).whereType<double>().toList(),
+          ),
+          _Series(
+            title: 'Bước chân',
+            unit: 'bước',
+            values: rows.map((row) => row.steps).whereType<double>().toList(),
+          ),
         ],
       ),
     );
@@ -54,7 +89,11 @@ class _Series extends StatelessWidget {
   final String unit;
   final List<double> values;
 
-  const _Series({required this.title, required this.unit, required this.values});
+  const _Series({
+    required this.title,
+    required this.unit,
+    required this.values,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +104,7 @@ class _Series extends StatelessWidget {
           icon: Icons.show_chart_rounded,
           color: AppColors.info,
           title: title,
-          subtitle: 'Chưa đủ dữ liệu để vẽ xu hướng.',
+          subtitle: 'Cần thêm ít nhất 2 lần ghi nhận để xem xu hướng.',
         ),
       );
     }
@@ -77,7 +116,12 @@ class _Series extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('$title • ${values.last.toStringAsFixed(1)} $unit', style: AppTextStyles.bodySmall.copyWith(fontWeight: AppTypography.bold)),
+          Text(
+            '$title • ${values.last.toStringAsFixed(1)} $unit',
+            style: AppTextStyles.bodySmall.copyWith(
+              fontWeight: AppTypography.bold,
+            ),
+          ),
           const SizedBox(height: 8),
           SizedBox(
             height: 54,
@@ -89,7 +133,8 @@ class _Series extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 1),
                       child: FractionallySizedBox(
-                        heightFactor: .18 + .82 * ((value - minValue) / span),
+                        heightFactor:
+                            .18 + .82 * ((value - minValue) / span),
                         alignment: Alignment.bottomCenter,
                         child: Container(
                           decoration: BoxDecoration(

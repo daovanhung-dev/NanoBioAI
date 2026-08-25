@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/active_notification_subject.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'package:nano_app/core/access/local_subject_resolver.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
+import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
 import 'package:nano_app/services/image_picker/image_picker_provider.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
@@ -14,6 +16,7 @@ import '../data/datasources/daily_health_hub_local_datasource.dart';
 import '../data/datasources/lifestyle_schedule_local_datasource.dart';
 import '../data/datasources/schedule_horizon_local_datasource.dart';
 import '../data/repositories/daily_health_hub_repository_impl.dart';
+import '../data/repositories/health_event_lifestyle_schedule_repository.dart';
 import '../domain/entities/daily_health_snapshot_entity.dart';
 import '../domain/entities/schedule_horizon.dart';
 import '../domain/repositories/daily_health_hub_repository.dart';
@@ -46,9 +49,14 @@ final lifestyleScheduleSubjectResolverProvider = Provider<LocalSubjectResolver>(
 final lifestyleScheduleRepositoryProvider =
     Provider<LifestyleScheduleRepository>((ref) {
   final subjectResolver = ref.read(lifestyleScheduleSubjectResolverProvider);
-  return LifestyleScheduleRepositoryImpl(
+  final baseRepository = LifestyleScheduleRepositoryImpl(
     datasource: ref.read(lifestyleScheduleLocalDatasourceProvider),
     resolveSubjectId: subjectResolver.resolve,
+  );
+  return HealthEventLifestyleScheduleRepository(
+    delegate: baseRepository,
+    eventSink: ref.read(healthDomainEventSinkProvider),
+    resolveSubjectId: resolveActiveNotificationSubject,
   );
 });
 

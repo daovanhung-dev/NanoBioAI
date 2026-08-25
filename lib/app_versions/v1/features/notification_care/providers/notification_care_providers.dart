@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/active_notification_subject.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
+import 'package:nano_app/core/health_events/health_domain_event.dart';
+import 'package:nano_app/core/health_events/health_event_type.dart';
+import 'package:nano_app/features/nabi/application/notifications/nabi_health_reminder_planner.dart';
 import 'package:nano_app/features/nabi/data/health_review/sqlite_nabi_health_review_repository.dart';
 import 'package:nano_app/features/nabi/data/notifications/nabi_health_reminder_repositories.dart';
 import 'package:nano_app/features/nabi/domain/health_review/nabi_health_review_models.dart';
 import 'package:nano_app/features/nabi/domain/health_review/nabi_health_review_repository.dart';
-import 'package:nano_app/features/nabi/application/notifications/nabi_health_reminder_planner.dart';
 import 'package:nano_app/features/nabi/domain/notifications/nabi_health_reminder_repositories.dart';
+import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
 
 final nabiHealthReviewRepositoryProvider = Provider<NabiHealthReviewRepository>(
   (_) => const SqliteNabiHealthReviewRepository(),
@@ -73,6 +76,30 @@ abstract base class _ActorScopedReviewController<T> extends AsyncNotifier<T> {
       subjectUserId: actorKey,
     );
   }
+
+  Future<void> publishHealthEvent({
+    required HealthEventType type,
+    required String actorKey,
+    required String sourceFeature,
+    String? entityId,
+    Set<String> changedFields = const <String>{},
+  }) async {
+    try {
+      await ref.read(healthDomainEventSinkProvider).publish(
+            HealthDomainEvent.create(
+              type: type,
+              subjectId: actorKey,
+              sourceFeature: sourceFeature,
+              entityId: entityId,
+              changedFields: changedFields,
+            ),
+          );
+    } catch (_) {
+      // The authoritative write already succeeded. Cross-feature refresh is a
+      // best-effort enhancement and must not turn persisted care data into an
+      // apparent save failure.
+    }
+  }
 }
 
 final class HealthCheckInController
@@ -107,6 +134,17 @@ final class HealthCheckInController
           .read(nabiHealthReminderPreferencesRepositoryProvider)
           .markHealthCheckIn(current.actorKey, now);
       await refreshReminders(current.actorKey);
+      await publishHealthEvent(
+        type: HealthEventType.healthCheckInRecorded,
+        actorKey: current.actorKey,
+        sourceFeature: 'notification_care.health_checkin',
+        entityId: 'health-checkin:${_localDateKey(now)}',
+        changedFields: {
+          'overall_feeling',
+          'condition_statuses',
+          if (note.trim().isNotEmpty) 'note_present',
+        },
+      );
       final conditions = await ref
           .read(nabiHealthReviewRepositoryProvider)
           .loadConditions(current.actorKey);
@@ -150,6 +188,13 @@ final class GoalReviewController
             NabiHealthReminderPlanner.goalReviewPeriodKey(now),
           );
       await refreshReminders(current.actorKey);
+      await publishHealthEvent(
+        type: HealthEventType.goalUpdated,
+        actorKey: current.actorKey,
+        sourceFeature: 'notification_care.goal_review',
+        entityId: NabiHealthReminderPlanner.goalReviewPeriodKey(now),
+        changedFields: const {'goal_codes'},
+      );
       return GoalReviewViewData(
         actorKey: current.actorKey,
         selectedGoalCodes: Set.unmodifiable(goalCodes),
@@ -181,6 +226,12 @@ final class ProfileReviewController
           .read(nabiHealthReminderPreferencesRepositoryProvider)
           .markProfileReview(current.actorKey, now);
       await refreshReminders(current.actorKey);
+      await publishHealthEvent(
+        type: HealthEventType.profileUpdated,
+        actorKey: current.actorKey,
+        sourceFeature: 'notification_care.profile_review',
+        changedFields: const {'mutable_profile'},
+      );
       return ProfileReviewViewData(
         actorKey: current.actorKey,
         profile: profile,
@@ -188,3 +239,8 @@ final class ProfileReviewController
     });
   }
 }
+
+String _localDateKey(DateTime value) =>
+    '${value.year.toString().padLeft(4, '0')}-'
+    '${value.month.toString().padLeft(2, '0')}-'
+    '${value.day.toString().padLeft(2, '0')}';

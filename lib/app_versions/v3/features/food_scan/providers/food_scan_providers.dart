@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
+import 'package:nano_app/core/health_events/health_domain_event.dart';
+import 'package:nano_app/core/health_events/health_event_type.dart';
+import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -252,6 +255,7 @@ class FoodScanController extends Notifier<FoodScanState> {
         healthNeedsRefresh: false,
       );
       ref.invalidate(foodScanHistoryProvider(userId));
+      await _publishConsumedEvent(userId: userId, result: saved);
       return saved;
     } on FoodScanException catch (error) {
       state = state.copyWith(
@@ -259,6 +263,26 @@ class FoodScanController extends Notifier<FoodScanState> {
         errorMessage: error.userMessage,
       );
       return null;
+    }
+  }
+
+  Future<void> _publishConsumedEvent({
+    required String userId,
+    required FoodScanResult result,
+  }) async {
+    try {
+      await ref.read(healthDomainEventSinkProvider).publish(
+            HealthDomainEvent.create(
+              type: HealthEventType.foodScanConfirmedConsumed,
+              subjectId: userId,
+              sourceFeature: 'food_scan',
+              entityId: result.id,
+              changedFields: const {'nutrition_log'},
+            ),
+          );
+    } catch (_) {
+      // The confirmed nutrition log remains authoritative. No image path or AI
+      // analysis is ever copied into the integration event.
     }
   }
 

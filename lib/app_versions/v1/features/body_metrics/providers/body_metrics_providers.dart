@@ -11,11 +11,13 @@ import '../application/body_metrics_analysis_orchestrator.dart';
 import '../data/datasources/body_metrics_local_datasource.dart';
 import '../data/repositories/body_metrics_repository_impl.dart';
 import '../domain/entities/body_metrics_ai_models.dart';
+import '../domain/entities/body_metrics_health_assessment.dart';
 import '../domain/entities/body_metrics_health_report.dart';
 import '../domain/entities/body_metrics_health_snapshot.dart';
 import '../domain/entities/body_metrics_personal_context.dart';
 import '../domain/repositories/body_metrics_repository.dart';
 import '../domain/services/body_metrics_formula_engine.dart';
+import '../domain/services/body_metrics_health_assessment_engine.dart';
 
 final bodyMetricsLocalDatasourceProvider = Provider<BodyMetricsLocalDatasource>(
   (ref) => BodyMetricsLocalDatasource(),
@@ -49,19 +51,29 @@ final bodyMetricsProductAccessReaderProvider = Provider<ProductAccessReader>(
   (ref) => const TrustedProductAccessReader(),
 );
 
-final bodyMetricsAnalysisOrchestratorProvider = Provider<BodyMetricsAnalysisOrchestrator>((ref) {
+final bodyMetricsAnalysisOrchestratorProvider =
+    Provider<BodyMetricsAnalysisOrchestrator>((ref) {
   return BodyMetricsAnalysisOrchestrator(
     aiService: ref.read(bodyMetricsAiServiceProvider),
     accessReader: ref.read(bodyMetricsProductAccessReaderProvider),
   );
 });
 
-enum BodyMetricsStatus { loadingData, ready, calculating, analyzing, partial, success, error }
+enum BodyMetricsStatus {
+  loadingData,
+  ready,
+  calculating,
+  analyzing,
+  partial,
+  success,
+  error,
+}
 
 class BodyMetricsState {
   final BodyMetricsStatus status;
   final BodyMetricsHealthSnapshot? snapshot;
   final BodyMetricsHealthReport? report;
+  final BodyMetricsHealthAssessment? assessment;
   final BodyMetricsAiBundle? aiBundle;
   final int currentAiStage;
   final int totalAiStages;
@@ -72,6 +84,7 @@ class BodyMetricsState {
     required this.status,
     this.snapshot,
     this.report,
+    this.assessment,
     this.aiBundle,
     this.currentAiStage = 0,
     this.totalAiStages = 0,
@@ -79,12 +92,14 @@ class BodyMetricsState {
     this.error,
   });
 
-  const BodyMetricsState.initial() : this(status: BodyMetricsStatus.loadingData);
+  const BodyMetricsState.initial()
+      : this(status: BodyMetricsStatus.loadingData);
 
   BodyMetricsState copyWith({
     BodyMetricsStatus? status,
     BodyMetricsHealthSnapshot? snapshot,
     BodyMetricsHealthReport? report,
+    BodyMetricsHealthAssessment? assessment,
     BodyMetricsAiBundle? aiBundle,
     int? currentAiStage,
     int? totalAiStages,
@@ -96,6 +111,7 @@ class BodyMetricsState {
       status: status ?? this.status,
       snapshot: snapshot ?? this.snapshot,
       report: report ?? this.report,
+      assessment: assessment ?? this.assessment,
       aiBundle: aiBundle ?? this.aiBundle,
       currentAiStage: currentAiStage ?? this.currentAiStage,
       totalAiStages: totalAiStages ?? this.totalAiStages,
@@ -112,7 +128,8 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
   Future<void> load() async {
     state = const BodyMetricsState.initial();
     try {
-      final snapshot = await ref.read(bodyMetricsRepositoryProvider).loadHealthSnapshot();
+      final snapshot =
+          await ref.read(bodyMetricsRepositoryProvider).loadHealthSnapshot();
       if (snapshot == null) {
         state = const BodyMetricsState(
           status: BodyMetricsStatus.error,
@@ -125,12 +142,25 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
         snapshot: snapshot,
       );
       final report = BodyMetricsFormulaEngine.calculate(snapshot);
-      final access = await ref.read(bodyMetricsProductAccessReaderProvider).read();
+      final assessment = BodyMetricsHealthAssessmentEngine.assess(
+        snapshot: snapshot,
+        report: report,
+      );
+      var aiStages = 5;
+      try {
+        final access =
+            await ref.read(bodyMetricsProductAccessReaderProvider).read();
+        aiStages = access.bodyMetricsAiStages;
+      } catch (_) {
+        // Health assessment is local/deterministic. Access lookup only affects
+        // the optional AI stage count and must not block the base dashboard.
+      }
       state = BodyMetricsState(
         status: BodyMetricsStatus.ready,
         snapshot: snapshot,
         report: report,
-        totalAiStages: access.bodyMetricsAiStages,
+        assessment: assessment,
+        totalAiStages: aiStages,
       );
     } catch (_) {
       state = const BodyMetricsState(
@@ -143,7 +173,11 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
   Future<void> analyze() async {
     final snapshot = state.snapshot;
     final report = state.report;
-    if (snapshot == null || report == null || state.status == BodyMetricsStatus.analyzing) return;
+    if (snapshot == null ||
+        report == null ||
+        state.status == BodyMetricsStatus.analyzing) {
+      return;
+    }
     state = state.copyWith(
       status: BodyMetricsStatus.analyzing,
       currentAiStage: 0,
@@ -152,7 +186,8 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
       clearError: true,
     );
     try {
-      final bundle = await ref.read(bodyMetricsAnalysisOrchestratorProvider).analyze(
+      final bundle =
+          await ref.read(bodyMetricsAnalysisOrchestratorProvider).analyze(
         snapshot: snapshot,
         report: report,
         onProgress: (completed, total, stageId) {
@@ -165,7 +200,9 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
         },
       );
       state = state.copyWith(
-        status: bundle.isPartial ? BodyMetricsStatus.partial : BodyMetricsStatus.success,
+        status: bundle.isPartial
+            ? BodyMetricsStatus.partial
+            : BodyMetricsStatus.success,
         aiBundle: bundle,
         currentAiStage: bundle.completedStages,
         totalAiStages: bundle.totalStages,
@@ -173,11 +210,14 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
     } catch (_) {
       state = state.copyWith(
         status: BodyMetricsStatus.partial,
-        error: 'Phân tích AI tạm thời chưa hoàn tất. Các chỉ số đã tính vẫn được giữ nguyên.',
+        error:
+            'Phân tích AI tạm thời chưa hoàn tất. Các chỉ số đã tính vẫn được giữ nguyên.',
       );
     }
   }
 }
 
 final bodyMetricsControllerProvider =
-    NotifierProvider<BodyMetricsController, BodyMetricsState>(BodyMetricsController.new);
+    NotifierProvider<BodyMetricsController, BodyMetricsState>(
+  BodyMetricsController.new,
+);

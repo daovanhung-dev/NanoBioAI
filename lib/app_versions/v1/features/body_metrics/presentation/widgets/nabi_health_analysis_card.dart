@@ -30,10 +30,12 @@ class NabiHealthAnalysisCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           NamiCareSectionTitle(
-            title: 'Nabi nhận thấy',
-            subtitle: bundle == null
-                ? 'AI chỉ diễn giải dữ liệu đã được app tính và tổng hợp.'
-                : '${bundle!.successfulStages}/${bundle!.totalStages} góc nhìn vượt qua kiểm tra an toàn.',
+            title: synthesis == null
+                ? 'Muốn Nabi phân tích sâu hơn?'
+                : 'Nabi phân tích thêm',
+            subtitle: synthesis == null
+                ? 'Nhận định cơ bản phía trên đã có sẵn. Bạn chỉ cần dùng AI khi muốn hiểu sâu hơn và nhận thêm gợi ý cá nhân hóa.'
+                : 'Đây là phần diễn giải bổ sung từ AI; kết luận sức khỏe cơ bản vẫn dựa trên các quy tắc và dữ liệu đã tính sẵn.',
           ),
           const SizedBox(height: AppSpacing.md),
           if (analyzing) ...[
@@ -42,37 +44,54 @@ class NabiHealthAnalysisCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Nabi đang phân tích sức khỏe... $currentStage / $totalStages${stageId == null ? '' : ' • $stageId'}',
-              style: AppTextStyles.bodySmall.copyWith(color: context.semanticColors.textSecondary),
+              'Nabi đang xem kỹ dữ liệu... $currentStage / $totalStages${stageId == null ? '' : ' • $stageId'}',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: context.semanticColors.textSecondary,
+              ),
             ),
           ] else if (synthesis == null) ...[
             const NamiCareInfoTile(
               icon: Icons.auto_awesome_rounded,
               color: AppColors.primary,
-              title: 'Phân tích với Nabi',
-              subtitle: 'Free/Guest dùng năm góc nhìn; Plus/FamilyPlus dùng mười lăm góc nhìn sau khi xác minh quyền server.',
+              title: 'Phân tích sâu theo dữ liệu của bạn',
+              subtitle:
+                  'Nabi sẽ giải thích các điểm nổi bật và gợi ý việc nên ưu tiên. AI không thay thế đánh giá y khoa.',
             ),
           ] else ...[
             NamiCareInfoTile(
               icon: Icons.summarize_rounded,
               color: AppColors.info,
-              title: 'Tổng quan',
+              title: 'Tổng quan từ Nabi',
               subtitle: synthesis.overview,
             ),
             if (synthesis.strengths.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sm),
-              _ListTile(title: 'Điểm đang làm tốt', icon: Icons.check_circle_outline_rounded, items: synthesis.strengths),
+              _ListTile(
+                title: 'Điểm Nabi thấy bạn đang làm tốt',
+                icon: Icons.check_circle_outline_rounded,
+                items: synthesis.strengths,
+              ),
             ],
             if (synthesis.priorities.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sm),
-              _ListTile(title: 'Điều nên ưu tiên', icon: Icons.flag_outlined, items: synthesis.priorities),
+              _ListTile(
+                title: 'Điều Nabi gợi ý ưu tiên',
+                icon: Icons.flag_outlined,
+                items: synthesis.priorities,
+              ),
             ],
           ],
           const SizedBox(height: AppSpacing.md),
           FilledButton.icon(
             onPressed: analyzing ? null : onAnalyze,
             icon: const Icon(Icons.auto_awesome_rounded),
-            label: Text(analyzing ? 'Nabi đang phân tích...' : bundle == null ? 'Phân tích sức khỏe với Nabi' : 'Phân tích lại'),
+            label: Text(
+              analyzing
+                  ? 'Nabi đang phân tích...'
+                  : bundle == null
+                      ? 'Phân tích sâu với Nabi'
+                      : 'Phân tích lại',
+            ),
           ),
         ],
       ),
@@ -85,7 +104,11 @@ class _ListTile extends StatelessWidget {
   final IconData icon;
   final List<String> items;
 
-  const _ListTile({required this.title, required this.icon, required this.items});
+  const _ListTile({
+    required this.title,
+    required this.icon,
+    required this.items,
+  });
 
   @override
   Widget build(BuildContext context) {
