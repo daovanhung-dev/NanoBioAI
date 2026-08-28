@@ -9,7 +9,8 @@ void main() {
     expect(script, contains('SUPABASE_URL'));
     expect(script, contains('SUPABASE_ANON_KEY'));
     expect(script, contains('AUTH_EMAIL_REDIRECT_URL'));
-    expect(script, contains('GEMINI_API_KEY'));
+    expect(script, isNot(contains('GEMINI_API_KEY')));
+    expect(script, contains('trusted backend'));
     expect(script, contains('prepare_dart_defines.ps1'));
     expect(script, contains('--dart-define-from-file='));
     expect(script, isNot(contains(r'--dart-define=$key=')));

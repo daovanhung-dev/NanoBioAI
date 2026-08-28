@@ -10,7 +10,6 @@ import 'app/health_orchestration/health_orchestration_providers.dart';
 import 'app_versions/admin/features/admin_panel/providers/admin_providers.dart';
 import 'app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
-import 'app_versions/v1/services/ai/nabi_care_ai_gateway.dart';
 import 'app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'app_versions/v1/services/notifications/notification_lifecycle_refresher.dart';
 import 'app_versions/v1/services/notifications/notification_startup_scheduler.dart';
@@ -25,7 +24,6 @@ import 'core/utils/logger/app_log_level.dart';
 import 'core/utils/logger/app_logger.dart';
 import 'core/utils/logger/app_provider_observer.dart';
 import 'core/utils/logger/logging_http_client.dart';
-import 'features/nabi/application/care/nabi_care_controller.dart';
 import 'services/health_orchestration/health_domain_event_sink.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox_refresher.dart';
@@ -60,16 +58,12 @@ Future<void> _bootstrapApplication() async {
   );
 
   await AppEnv.loadOptionalDotEnv();
-  _logRuntimeConfigStatus();
   final authBackendAvailability = await _initializeSupabaseIfConfigured();
 
   runApp(
     ProviderScope(
       observers: const [AppProviderObserver()],
       overrides: [
-        nabiCareAiGatewayProvider.overrideWithValue(
-          GeminiNabiCareAiGateway(),
-        ),
         healthDomainEventSinkProvider.overrideWith(
           (ref) => ref.watch(appHealthEventDispatcherProvider),
         ),
@@ -107,21 +101,6 @@ Future<void> _bootstrapApplication() async {
   );
 
   unawaited(_startPostLaunchServices(authBackendAvailability));
-}
-
-void _logRuntimeConfigStatus() {
-  final geminiConfigSource = AppEnv.valueSource('GEMINI_API_KEY');
-  AppLogger.event(
-    level: AppLogLevel.info,
-    category: AppLogCategory.app,
-    scope: _bootstrapTag,
-    operation: 'RUNTIME_CONFIG',
-    message: 'Gemini runtime configuration resolved',
-    metadata: {
-      'present': geminiConfigSource != AppEnvValueSource.missing,
-      'source': geminiConfigSource.name,
-    },
-  );
 }
 
 Future<AuthBackendAvailability> _initializeSupabaseIfConfigured() async {

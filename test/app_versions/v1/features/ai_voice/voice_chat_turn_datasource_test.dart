@@ -41,7 +41,7 @@ void main() {
         expect(result, 'Nabi trả lời ngắn gọn.');
         expect(
           capturedUrl,
-          '${GeminiRestClient.defaultBaseUrl}/models/'
+          'https://test.invalid/models/'
           'gemini-voice-model:generateContent',
         );
         expect(capturedHeaders?['x-goog-api-key'], 'local-test-key');
@@ -336,7 +336,7 @@ void main() {
     });
   });
 
-  test('Voice provider wires the direct Gemini datasource', () {
+  test('Voice provider wires the backend-backed Gemini datasource', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 

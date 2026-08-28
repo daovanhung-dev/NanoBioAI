@@ -10,7 +10,8 @@ void main() {
     expect(script, contains('SUPABASE_URL'));
     expect(script, contains('SUPABASE_ANON_KEY'));
     expect(script, contains('AUTH_EMAIL_REDIRECT_URL'));
-    expect(script, contains('GEMINI_API_KEY'));
+    expect(script, isNot(contains('GEMINI_API_KEY')));
+    expect(script, contains('trusted backend'));
     expect(script, contains('prepare_dart_defines.ps1'));
     expect(script, contains('--dart-define-from-file='));
     expect(script, isNot(contains(r'--dart-define=$key=')));
@@ -61,17 +62,15 @@ void main() {
     );
   });
 
-  test('Android debug runs have a local Gemini config fallback', () {
+  test('Android debug runs do not require a local provider key', () {
     final gradle = File('android/app/build.gradle.kts').readAsStringSync();
     final activity = File(
       'android/app/src/main/kotlin/com/example/nano_app/MainActivity.kt',
     ).readAsStringSync();
 
-    expect(gradle, contains('rootProject.file("../.env")'));
-    expect(gradle, contains('getByName("debug")'));
-    expect(gradle, contains('GEMINI_API_KEY'));
-    expect(activity, contains('com.example.nano_app/runtime_config'));
-    expect(activity, contains('getPrivateRuntimeConfig'));
-    expect(activity, contains('BuildConfig.GEMINI_API_KEY'));
+    expect(gradle, isNot(contains('GEMINI_API_KEY')));
+    expect(activity, isNot(contains('com.example.nano_app/runtime_config')));
+    expect(activity, isNot(contains('getPrivateRuntimeConfig')));
+    expect(activity, isNot(contains('BuildConfig.GEMINI_API_KEY')));
   });
 }

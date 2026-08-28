@@ -1,337 +1,196 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/app_versions/v2/features/payments/payments.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:nano_app/app_versions/v2/features/payments/domain/entities/store_membership_purchase.dart';
+import 'package:nano_app/app_versions/v2/features/payments/domain/repositories/membership_store_billing_repository.dart';
+import 'package:nano_app/app_versions/v2/features/payments/presentation/pages/membership_payment_page.dart';
+import 'package:nano_app/app_versions/v2/features/payments/providers/membership_store_billing_providers.dart';
 
 void main() {
-  testWidgets('uses a valid initial plan and falls back to Plus', (
+  testWidgets('normalizes the selected plan and renders Play product details', (
     tester,
   ) async {
-    Future<void> pumpWithPlan(String? planCode) {
-      return tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            membershipPaymentCurrentUserIdProvider.overrideWithValue('user-1'),
-            membershipPaymentRepositoryProvider.overrideWithValue(
-              _FakeMembershipPaymentRepository(),
-            ),
-            membershipPaymentPayerProfileRepositoryProvider.overrideWithValue(
-              const _FakePayerProfileRepository('Nguyễn Thanh An'),
-            ),
-          ],
-          child: MaterialApp(
-            home: MembershipPaymentPage(initialPlanCode: planCode),
-          ),
+    final repository = _FakeStoreBillingRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _TestApp(
+        repository: repository,
+        page: const MembershipPaymentPage(initialPlanCode: 'family_plus'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final selectors = tester.widgetList<DropdownButtonFormField<String>>(
+      find.byType(DropdownButtonFormField<String>),
+    );
+    expect(selectors.first.initialValue, 'family_plus');
+    expect(selectors.last.initialValue, 'monthly');
+    expect(find.text('FamilyPlus tháng'), findsOneWidget);
+    expect(find.text('129.000 đ'), findsOneWidget);
+    expect(find.textContaining('Google Play'), findsWidgets);
+    expect(find.textContaining('VietQR'), findsNothing);
+  });
+
+  testWidgets(
+    'launches purchase and completes only after trusted verification',
+    (tester) async {
+      final repository = _FakeStoreBillingRepository();
+      addTearDown(repository.dispose);
+
+      await tester.pumpWidget(_TestApp(repository: repository));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Đăng ký 99.000 đ'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(repository.purchaseCallCount, 1);
+      expect(repository.lastProduct, StoreMembershipProduct.plusMonthly);
+      expect(repository.completeCallCount, 0);
+
+      repository.emit(
+        const StoreMembershipPurchase(
+          productId: 'nanobio_plus_monthly',
+          purchaseIdentity: 'order-1',
+          serverVerificationData: 'opaque-token',
+          status: StorePurchaseStatus.purchased,
         ),
       );
-    }
+      await tester.pump();
 
-    await pumpWithPlan('family_plus');
-    await tester.pumpAndSettle();
-    final familyPlanSelector = tester
-        .widgetList<DropdownButtonFormField<String>>(
-          find.byType(DropdownButtonFormField<String>),
-        )
-        .first;
-    expect(familyPlanSelector.initialValue, 'family_plus');
+      expect(repository.verifyCallCount, 1);
+      expect(repository.completeCallCount, 1);
+      expect(find.textContaining('Đã xác minh giao dịch'), findsOneWidget);
+    },
+  );
 
-    await pumpWithPlan('vip');
-    await tester.pumpAndSettle();
-    final fallbackPlanSelector = tester
-        .widgetList<DropdownButtonFormField<String>>(
-          find.byType(DropdownButtonFormField<String>),
-        )
-        .first;
-    expect(fallbackPlanSelector.initialValue, 'plus');
-  });
-
-  testWidgets('shows server-provided VietQR details and confirms a transfer', (
+  testWidgets('keeps a pending Play transaction unacknowledged', (
     tester,
   ) async {
-    final repository = _FakeMembershipPaymentRepository(
-      currentRequest: _request(status: 'awaiting_transfer'),
-    );
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          membershipPaymentCurrentUserIdProvider.overrideWithValue('user-1'),
-          membershipPaymentRepositoryProvider.overrideWithValue(repository),
-          membershipPaymentPayerProfileRepositoryProvider.overrideWithValue(
-            const _FakePayerProfileRepository('Nguyễn Thanh An'),
-          ),
-        ],
-        child: const MaterialApp(home: MembershipPaymentPage()),
+    final repository = _FakeStoreBillingRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(_TestApp(repository: repository));
+    await tester.pumpAndSettle();
+
+    repository.emit(
+      const StoreMembershipPurchase(
+        productId: 'nanobio_plus_monthly',
+        purchaseIdentity: 'order-pending',
+        serverVerificationData: 'opaque-token',
+        status: StorePurchaseStatus.pending,
       ),
     );
-    await tester.pumpAndSettle();
-
-    expect(find.byType(QrImageView), findsOneWidget);
-    expect(find.text('NB12AB34CD56EF'), findsWidgets);
-    expect(find.text('NB12AB34CD56EF NGUYEN AN'), findsNothing);
-    expect(find.text('1026806174'), findsOneWidget);
-    expect(find.text('Lê Phú Thạch'), findsOneWidget);
-    expect(find.text('Nguyễn Thanh An'), findsOneWidget);
-
-    String? copiedMemo;
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      SystemChannels.platform,
-      (call) async {
-        if (call.method == 'Clipboard.setData') {
-          copiedMemo = (call.arguments as Map<Object?, Object?>)['text']
-              ?.toString();
-        }
-        return null;
-      },
-    );
-    addTearDown(() {
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        null,
-      );
-    });
-
-    final confirmButton = find.text('Đã chuyển khoản').first;
-    await tester.drag(find.byType(ListView), const Offset(0, -700));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Sao chép nội dung'));
     await tester.pump();
-    expect(copiedMemo, 'NB12AB34CD56EF');
-    await tester.tap(confirmButton);
-    await tester.pumpAndSettle();
-    expect(find.text('Xác nhận đã chuyển khoản'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 50));
 
-    await tester.tap(find.text('Đã chuyển khoản').last);
-    await tester.pumpAndSettle();
+    expect(find.textContaining('đang chờ Google Play'), findsOneWidget);
+    expect(repository.verifyCallCount, 0);
+    expect(repository.completeCallCount, 0);
+  });
+}
 
-    expect(repository.confirmCallCount, 1);
-    expect(find.textContaining('chờ duyệt'), findsWidgets);
+class _TestApp extends StatelessWidget {
+  final MembershipStoreBillingRepository repository;
+  final MembershipPaymentPage page;
+
+  const _TestApp({
+    required this.repository,
+    this.page = const MembershipPaymentPage(),
   });
 
-  testWidgets('blocks QR rendering for a non-canonical transfer reference', (
-    tester,
-  ) async {
-    final repository = _FakeMembershipPaymentRepository(
-      currentRequest: _request(
-        status: 'awaiting_transfer',
-        transferReference: 'NB12AB34CD56EG',
-      ),
-    );
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          membershipPaymentCurrentUserIdProvider.overrideWithValue('user-1'),
-          membershipPaymentRepositoryProvider.overrideWithValue(repository),
-          membershipPaymentPayerProfileRepositoryProvider.overrideWithValue(
-            const _FakePayerProfileRepository('Nguyễn Thanh An'),
-          ),
-        ],
-        child: const MaterialApp(home: MembershipPaymentPage()),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byType(QrImageView), findsNothing);
-    expect(find.text('Đã chuyển khoản'), findsNothing);
-    expect(
-      find.textContaining('Chưa tải đủ thông tin nhận tiền'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('blocks QR creation when the local payer name is blank', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          membershipPaymentCurrentUserIdProvider.overrideWithValue('user-1'),
-          membershipPaymentRepositoryProvider.overrideWithValue(
-            _FakeMembershipPaymentRepository(),
-          ),
-          membershipPaymentPayerProfileRepositoryProvider.overrideWithValue(
-            const _FakePayerProfileRepository(null),
-          ),
-        ],
-        child: const MaterialApp(home: MembershipPaymentPage()),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text(
-        'Bạn cần cập nhật họ và tên trong hồ sơ trước khi tạo mã thanh toán.',
-      ),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('Tạo mã thanh toán'));
-    await tester.pumpAndSettle();
-    expect(find.byType(QrImageView), findsNothing);
-  });
-
-  testWidgets('allows cancellation only before transfer confirmation', (
-    tester,
-  ) async {
-    final repository = _FakeMembershipPaymentRepository(
-      currentRequest: _request(status: 'awaiting_transfer'),
-    );
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          membershipPaymentCurrentUserIdProvider.overrideWithValue('user-1'),
-          membershipPaymentRepositoryProvider.overrideWithValue(repository),
-          membershipPaymentPayerProfileRepositoryProvider.overrideWithValue(
-            const _FakePayerProfileRepository('Nguyễn Thanh An'),
-          ),
-        ],
-        child: const MaterialApp(home: MembershipPaymentPage()),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final cancelButton = find.text('Hủy yêu cầu').first;
-    await tester.drag(find.byType(ListView), const Offset(0, -700));
-    await tester.pumpAndSettle();
-    await tester.tap(cancelButton);
-    await tester.pumpAndSettle();
-    expect(find.text('Hủy yêu cầu thanh toán'), findsOneWidget);
-
-    await tester.tap(find.text('Hủy yêu cầu').last);
-    await tester.pumpAndSettle();
-
-    expect(repository.cancelCallCount, 1);
-    expect(repository.currentRequest?.normalizedStatus, 'cancelled');
-    expect(find.textContaining('đã được hủy'), findsWidgets);
-  });
-
-  testWidgets('refreshes pending review on app resume and every 30 seconds', (
-    tester,
-  ) async {
-    final repository = _FakeMembershipPaymentRepository(
-      currentRequest: _request(status: 'pending_review'),
-      fetchResponses: [
-        _request(status: 'pending_review'),
-        _request(status: 'pending_review'),
-        _request(status: 'succeeded'),
+  @override
+  Widget build(BuildContext context) {
+    return ProviderScope(
+      overrides: [
+        membershipStoreBillingRepositoryProvider.overrideWithValue(repository),
       ],
+      child: MaterialApp(home: page),
     );
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          membershipPaymentCurrentUserIdProvider.overrideWithValue('user-1'),
-          membershipPaymentRepositoryProvider.overrideWithValue(repository),
-          membershipPaymentPayerProfileRepositoryProvider.overrideWithValue(
-            const _FakePayerProfileRepository('Nguyễn Thanh An'),
-          ),
-          membershipPaymentApprovedProjectionRefreshProvider.overrideWithValue(
-            () async {},
-          ),
-        ],
-        child: const MaterialApp(home: MembershipPaymentPage()),
+  }
+}
+
+class _FakeStoreBillingRepository implements MembershipStoreBillingRepository {
+  final StreamController<StoreMembershipPurchase> _updates =
+      StreamController<StoreMembershipPurchase>.broadcast();
+  int purchaseCallCount = 0;
+  int verifyCallCount = 0;
+  int completeCallCount = 0;
+  StoreMembershipProduct? lastProduct;
+
+  final Storefront storefront = Storefront(
+    isAvailable: true,
+    products: [
+      StoreProductDetails(
+        product: StoreMembershipProduct.plusMonthly,
+        title: 'Plus tháng',
+        description: 'Trợ lý sức khỏe nâng cao',
+        displayPrice: '99.000 đ',
+        rawPrice: 99000,
+        currencyCode: 'VND',
       ),
-    );
-    await tester.pumpAndSettle();
-    expect(repository.fetchCallCount, 1);
-    expect(find.text('Hủy yêu cầu'), findsNothing);
-    expect(find.byType(QrImageView), findsNothing);
-
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pump();
-    await tester.pumpAndSettle();
-    expect(repository.fetchCallCount, 2);
-
-    await tester.pump(const Duration(seconds: 30));
-    await tester.pumpAndSettle();
-    expect(repository.fetchCallCount, 3);
-    expect(find.textContaining('đã được duyệt'), findsWidgets);
-  });
-}
-
-class _FakeMembershipPaymentRepository implements MembershipPaymentRepository {
-  MembershipPaymentRequest? currentRequest;
-  final List<MembershipPaymentRequest?>? fetchResponses;
-  int confirmCallCount = 0;
-  int cancelCallCount = 0;
-  int fetchCallCount = 0;
-  int _fetchResponseIndex = 0;
-
-  _FakeMembershipPaymentRepository({this.currentRequest, this.fetchResponses});
+      StoreProductDetails(
+        product: StoreMembershipProduct.plusYearly,
+        title: 'Plus năm',
+        description: 'Trợ lý sức khỏe nâng cao',
+        displayPrice: '999.000 đ',
+        rawPrice: 999000,
+        currencyCode: 'VND',
+      ),
+      StoreProductDetails(
+        product: StoreMembershipProduct.familyPlusMonthly,
+        title: 'FamilyPlus tháng',
+        description: 'Chia sẻ cho gia đình',
+        displayPrice: '129.000 đ',
+        rawPrice: 129000,
+        currencyCode: 'VND',
+      ),
+      StoreProductDetails(
+        product: StoreMembershipProduct.familyPlusYearly,
+        title: 'FamilyPlus năm',
+        description: 'Chia sẻ cho gia đình',
+        displayPrice: '1.290.000 đ',
+        rawPrice: 1290000,
+        currencyCode: 'VND',
+      ),
+    ],
+  );
 
   @override
-  Future<MembershipPaymentRequest> createRequest(
-    CreateMembershipPaymentRequestCommand command,
+  Stream<StoreMembershipPurchase> get purchaseUpdates => _updates.stream;
+
+  @override
+  Future<Storefront> loadStorefront() async => storefront;
+
+  @override
+  Future<bool> purchase(StoreMembershipProduct product) async {
+    purchaseCallCount++;
+    lastProduct = product;
+    return true;
+  }
+
+  @override
+  Future<void> restorePurchases() async {}
+
+  @override
+  Future<StorePurchaseVerificationResult> verifyPurchase(
+    StoreMembershipPurchase purchase,
   ) async {
-    return currentRequest ??= _request(
-      status: 'awaiting_transfer',
-      planCode: command.planCode,
-      billingCycle: command.billingCycle,
+    verifyCallCount++;
+    return const StorePurchaseVerificationResult(
+      status: StoreVerificationStatus.verified,
+      planCode: 'plus',
     );
   }
 
   @override
-  Future<MembershipPaymentRequest> confirmTransfer(
-    String paymentEventId,
-  ) async {
-    confirmCallCount++;
-    return currentRequest = _request(
-      status: 'pending_review',
-      id: paymentEventId,
-    );
+  Future<void> completePurchase(StoreMembershipPurchase purchase) async {
+    completeCallCount++;
   }
 
-  @override
-  Future<MembershipPaymentRequest> cancelRequest(String paymentEventId) async {
-    cancelCallCount++;
-    return currentRequest = _request(status: 'cancelled', id: paymentEventId);
-  }
+  void emit(StoreMembershipPurchase purchase) => _updates.add(purchase);
 
-  @override
-  Future<MembershipPaymentRequest?> fetchCurrentRequest() async {
-    fetchCallCount++;
-    final responses = fetchResponses;
-    if (responses != null && responses.isNotEmpty) {
-      final index = _fetchResponseIndex;
-      _fetchResponseIndex++;
-      return currentRequest =
-          responses[index < responses.length ? index : responses.length - 1];
-    }
-    return currentRequest;
-  }
-}
-
-class _FakePayerProfileRepository
-    implements MembershipPaymentPayerProfileRepository {
-  final String? fullName;
-
-  const _FakePayerProfileRepository(this.fullName);
-
-  @override
-  Future<String?> readFullName(String userId) async => fullName;
-}
-
-MembershipPaymentRequest _request({
-  required String status,
-  String id = 'payment-1',
-  String planCode = 'plus',
-  String billingCycle = 'monthly',
-  String transferReference = 'NB12AB34CD56EF',
-}) {
-  return MembershipPaymentRequest.fromMap({
-    'payment_event_id': id,
-    'plan_code': planCode,
-    'billing_cycle': billingCycle,
-    'status': status,
-    'amount_cents': 399000,
-    'currency': 'VND',
-    'transfer_reference': transferReference,
-    'transfer_memo': '$transferReference NGUYEN AN',
-    'payer_full_name': 'Nguyễn Thanh An',
-    'bank_code': 'VCB',
-    'bank_name': 'Vietcombank',
-    'bank_bin': '970436',
-    'bank_account_number': '1026806174',
-    'bank_account_name': 'LE PHU THACH',
-    'bank_account_display_name': 'Lê Phú Thạch',
-  });
+  Future<void> dispose() => _updates.close();
 }

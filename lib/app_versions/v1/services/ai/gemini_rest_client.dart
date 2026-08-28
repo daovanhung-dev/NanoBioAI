@@ -177,7 +177,26 @@ class GeminiApiException implements Exception {
   }
 }
 
-class GeminiRestClient {
+/// Common AI text contract shared by local test doubles and the production
+/// Supabase Edge Function client. Production app code must use the latter so
+/// provider credentials never ship in the Android bundle.
+abstract interface class AiTextClient {
+  Future<String> generateText({
+    required String model,
+    required List<GeminiContent> contents,
+    required GeminiGenerationConfig generationConfig,
+    String? systemInstruction,
+  });
+
+  Stream<String> streamText({
+    required String model,
+    required List<GeminiContent> contents,
+    required GeminiGenerationConfig generationConfig,
+    String? systemInstruction,
+  });
+}
+
+class GeminiRestClient implements AiTextClient {
   static const String defaultBaseUrl =
       'https://generativelanguage.googleapis.com/v1beta';
 
@@ -192,11 +211,12 @@ class GeminiRestClient {
     Dio? dio,
     GeminiHttpPost? post,
     GeminiHttpStreamPost? streamPost,
-  }) : _apiKey = _requireText(apiKey, 'GEMINI_API_KEY'),
+  }) : _apiKey = _requireText(apiKey, 'provider credential'),
        _baseUrl = _normalizeBaseUrl(baseUrl),
        _post = post ?? _createDioPost(dio),
        _streamPost = streamPost ?? _createDioStreamPost(dio);
 
+  @override
   Future<String> generateText({
     required String model,
     required List<GeminiContent> contents,
@@ -229,6 +249,7 @@ class GeminiRestClient {
 
   /// True Gemini SSE streaming. Each yielded string is an incremental text
   /// fragment from `streamGenerateContent?alt=sse`.
+  @override
   Stream<String> streamText({
     required String model,
     required List<GeminiContent> contents,
@@ -366,10 +387,7 @@ class GeminiRestClient {
   }
 
   static GeminiHttpPost _createDioPost(Dio? injectedDio) {
-    final dio = attachDioLogging(
-      injectedDio ?? _newDio(),
-      scope: 'Gemini',
-    );
+    final dio = attachDioLogging(injectedDio ?? _newDio(), scope: 'Gemini');
     return ({
       required String url,
       required Map<String, String> headers,
@@ -412,10 +430,7 @@ class GeminiRestClient {
   }
 
   static GeminiHttpStreamPost _createDioStreamPost(Dio? injectedDio) {
-    final dio = attachDioLogging(
-      injectedDio ?? _newDio(),
-      scope: 'Gemini',
-    );
+    final dio = attachDioLogging(injectedDio ?? _newDio(), scope: 'Gemini');
     return ({
       required String url,
       required Map<String, String> headers,

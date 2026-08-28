@@ -12,7 +12,6 @@ $EnvPath = if ([System.IO.Path]::IsPathRooted($EnvFile)) {
 } else {
     Join-Path $ProjectRoot $EnvFile
 }
-
 if (-not (Test-Path -LiteralPath $EnvPath -PathType Leaf)) {
     throw "Không tìm thấy file cấu hình: $EnvPath"
 }
@@ -35,44 +34,34 @@ foreach ($rawLine in [System.IO.File]::ReadAllLines($EnvPath)) {
     $values[$key] = $value
 }
 
-$apiKey = [string]$values["GEMINI_API_KEY"]
-if ([string]::IsNullOrWhiteSpace($apiKey)) {
-    throw "GEMINI_API_KEY đang thiếu hoặc rỗng."
+$supabaseUrl = [string]$values["SUPABASE_URL"]
+$anonKey = [string]$values["SUPABASE_ANON_KEY"]
+if ([string]::IsNullOrWhiteSpace($supabaseUrl) -or
+    [string]::IsNullOrWhiteSpace($anonKey)) {
+    throw "SUPABASE_URL và SUPABASE_ANON_KEY là bắt buộc để kiểm tra AI backend."
 }
 
-$baseUrl = [string]$values["GEMINI_BASE_URL"]
-if ([string]::IsNullOrWhiteSpace($baseUrl)) {
-    $baseUrl = "https://generativelanguage.googleapis.com/v1beta"
-}
-$baseUrl = $baseUrl.TrimEnd('/')
-
-$models = New-Object System.Collections.Generic.List[string]
-foreach ($candidate in @(
-    [string]$values["GEMINI_CHAT_MODEL"],
-    [string]$values["GEMINI_MODEL"],
-    "gemini-3.5-flash",
-    "gemini-3.1-flash-lite"
-)) {
-    if (-not [string]::IsNullOrWhiteSpace($candidate) -and
-        -not $models.Contains($candidate.Trim())) {
-        $models.Add($candidate.Trim())
-    }
+$model = [string]$values["GEMINI_MODEL"]
+if ([string]::IsNullOrWhiteSpace($model)) {
+    $model = "gemini-2.5-flash"
 }
 
 $headers = @{
-    "x-goog-api-key" = $apiKey
+    "Authorization" = "Bearer $anonKey"
+    "apikey" = $anonKey
     "Content-Type" = "application/json"
     "Accept" = "application/json"
 }
 
 $body = @{
+    model = $model
     contents = @(
         @{
             role = "user"
             parts = @(@{ text = "Hãy trả lời đúng một câu tiếng Việt chào người dùng." })
         }
     )
-    generationConfig = @{
+    generation_config = @{
         candidateCount = 1
         maxOutputTokens = 80
         temperature = 0.2
@@ -80,40 +69,23 @@ $body = @{
     }
 } | ConvertTo-Json -Depth 8 -Compress
 
-$lastError = $null
-foreach ($model in $models) {
-    $endpoint = "$baseUrl/models/$([System.Uri]::EscapeDataString($model)):generateContent"
-    try {
-        $response = Invoke-RestMethod `
-            -Method Post `
-            -Uri $endpoint `
-            -Headers $headers `
-            -Body $body `
-            -TimeoutSec 30
-
-        $text = [string]$response.candidates[0].content.parts[0].text
-        if ([string]::IsNullOrWhiteSpace($text)) {
-            throw "Gemini trả về response rỗng."
-        }
-
-        Write-Host "Kết nối Gemini thành công với model: $model"
-        Write-Host "Độ dài phản hồi: $($text.Trim().Length) ký tự."
-        exit 0
-    } catch {
-        $lastError = $_
-        $statusCode = $null
-        try {
-            $statusCode = [int]$_.Exception.Response.StatusCode
-        } catch {
-            $statusCode = $null
-        }
-
-        if ($statusCode -eq 401 -or $statusCode -eq 403) {
-            throw "Gemini từ chối API key ($statusCode). Hãy tạo/cấp quyền lại khóa trong Google AI Studio."
-        }
-
-        Write-Warning "Model $model chưa dùng được; đang thử model tiếp theo."
+$endpoint = "$($supabaseUrl.TrimEnd('/'))/functions/v1/nabi-ai-generate"
+try {
+    $response = Invoke-RestMethod -Method Post -Uri $endpoint -Headers $headers -Body $body -TimeoutSec 30
+    $text = [string]$response.text
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        throw "AI backend trả về response rỗng."
     }
-}
 
-throw "Không model Gemini nào kết nối thành công. Lỗi cuối: $($lastError.Exception.Message)"
+    Write-Host "Kết nối AI backend thành công."
+    Write-Host "Độ dài phản hồi: $($text.Trim().Length) ký tự."
+    exit 0
+} catch {
+    $statusCode = $null
+    try {
+        $statusCode = [int]$_.Exception.Response.StatusCode
+    } catch {
+        $statusCode = $null
+    }
+    throw "AI backend chưa sẵn sàng (HTTP $statusCode). Lỗi chi tiết không được in để tránh lộ dữ liệu."
+}

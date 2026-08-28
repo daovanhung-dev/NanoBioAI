@@ -8,6 +8,7 @@ import 'ai_exceptions.dart';
 import 'ai_trace_logger.dart';
 import 'ai_vietnamese_text_validator.dart';
 import 'gemini_rest_client.dart';
+import 'nabi_ai_backend_client.dart';
 
 typedef AIChatTextGenerator =
     Future<String> Function({
@@ -37,8 +38,10 @@ class AIChatPreparedStream {
   final void Function() _onAccepted;
   bool _accepted = false;
 
-  AIChatPreparedStream({required this.stream, required void Function() onAccepted})
-    : _onAccepted = onAccepted;
+  AIChatPreparedStream({
+    required this.stream,
+    required void Function() onAccepted,
+  }) : _onAccepted = onAccepted;
 
   void accept() {
     if (_accepted) return;
@@ -58,7 +61,7 @@ class AIChatService {
   late final Future<void> Function(Duration) _delay;
   late final Random _random;
   late final AIChatTextGenerator? _textGenerator;
-  late final GeminiRestClient? _geminiClient;
+  late final AiTextClient? _aiClient;
   late final DateTime Function() _now;
   late final Duration _modelCooldown;
   final Map<String, DateTime> _modelCooldownUntil = {};
@@ -70,6 +73,7 @@ class AIChatService {
     Random? random,
     AIChatTextGenerator? textGenerator,
     GeminiRestClient? geminiClient,
+    AiTextClient? aiClient,
     DateTime Function()? now,
     Duration? modelCooldown,
   }) {
@@ -79,19 +83,12 @@ class AIChatService {
     _now = now ?? DateTime.now;
     _modelCooldown = modelCooldown ?? AIChatRetryPolicy.modelCooldown;
 
-    final needsRuntimeClient = _textGenerator == null && geminiClient == null;
-    final apiKey = apiKeyOverride != null
-        ? _cleanEnv(apiKeyOverride)
-        : (needsRuntimeClient ? _env('GEMINI_API_KEY') : null);
-    final hasRuntimeClient =
-        geminiClient != null || (apiKey != null && apiKey.isNotEmpty);
-    _geminiClient = _textGenerator == null && hasRuntimeClient
-        ? geminiClient ??
-              GeminiRestClient(
-                apiKey: apiKey!,
-                baseUrl: _env('GEMINI_BASE_URL'),
-              )
+    _aiClient = _textGenerator == null
+        ? aiClient ??
+              geminiClient ??
+              (apiKeyOverride == null ? const NabiAiBackendClient() : null)
         : null;
+    final hasRuntimeClient = _aiClient != null;
 
     final resolvedModelNames =
         modelNames ??
@@ -120,7 +117,7 @@ class AIChatService {
         AITraceLogger.nextTraceId('ai-chat-init'),
         'AIChatService.constructor',
         'MISSING_API_KEY',
-        'Chat AI is unavailable because GEMINI_API_KEY is missing.',
+        'Chat AI is unavailable because the provider credential is missing.',
         data: {'reason': 'missing_api_key'},
         location: StackTrace.current,
       );
@@ -245,7 +242,7 @@ class AIChatService {
       final buffer = StringBuffer();
 
       try {
-        final client = _geminiClient;
+        final client = _aiClient;
         if (client == null) {
           throw StateError('Missing Gemini REST client for ${entry.name}');
         }
@@ -391,9 +388,9 @@ class AIChatService {
             location: StackTrace.current,
           );
 
-          final text = await operation(entry).timeout(
-            AIChatRetryPolicy.perAttemptTimeout,
-          );
+          final text = await operation(
+            entry,
+          ).timeout(AIChatRetryPolicy.perAttemptTimeout);
           final responseText = _validatedResponse(text);
           final validation = _AIChatValidationResult(
             text: responseText,
@@ -524,7 +521,7 @@ class AIChatService {
       return textGenerator(modelName: entry.name, message: message);
     }
 
-    final client = _geminiClient;
+    final client = _aiClient;
     if (client == null) {
       throw StateError('Missing Gemini REST client for ${entry.name}');
     }
@@ -581,8 +578,7 @@ class AIChatService {
   List<String> _modelNames() =>
       _models.map((entry) => entry.name).toList(growable: false);
 
-  bool get _hasRuntimeTextSource =>
-      _textGenerator != null || _geminiClient != null;
+  bool get _hasRuntimeTextSource => _textGenerator != null || _aiClient != null;
 
   Never _throwMissingConfiguration({
     required String traceId,
@@ -593,7 +589,7 @@ class AIChatService {
       traceId,
       method,
       'MISSING_API_KEY',
-      'Chat AI is unavailable because GEMINI_API_KEY is missing.',
+      'Chat AI is unavailable because the provider credential is missing.',
       data: {'reason': 'missing_api_key', 'models': _modelNames()},
       location: StackTrace.current,
     );
@@ -616,7 +612,10 @@ class AIChatService {
       Error.throwWithStackTrace(const AINetworkException(), stackTrace);
     }
     if (AIModelUnavailableException.matches(error)) {
-      Error.throwWithStackTrace(const AIModelUnavailableException(), stackTrace);
+      Error.throwWithStackTrace(
+        const AIModelUnavailableException(),
+        stackTrace,
+      );
     }
     if (AIOverloadedException.matches(error)) {
       Error.throwWithStackTrace(const AIOverloadedException(), stackTrace);
@@ -629,11 +628,6 @@ class AIChatService {
   }
 
   static String? _env(String key) => AppEnv.maybeString(key);
-
-  static String? _cleanEnv(String? value) {
-    final cleaned = value?.trim();
-    return cleaned == null || cleaned.isEmpty ? null : cleaned;
-  }
 
   static String _validatedResponse(String? rawText) {
     final text = rawText?.trim() ?? '';
@@ -699,10 +693,7 @@ class _PendingStreamTurn {
     final entry = _entry;
     if (entry == null || _modelMessage.isEmpty) return;
     _remembered = true;
-    entry.rememberTurn(
-      userMessage: userMessage,
-      modelMessage: _modelMessage,
-    );
+    entry.rememberTurn(userMessage: userMessage, modelMessage: _modelMessage);
   }
 }
 

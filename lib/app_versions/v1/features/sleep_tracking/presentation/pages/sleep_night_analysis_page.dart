@@ -558,7 +558,7 @@ class _AiCard extends StatelessWidget {
             Text(
               configured
                   ? 'AI chỉ nhận dữ liệu tổng hợp của phiên này.'
-                  : 'Chưa cấu hình GEMINI_API_KEY. Các công thức cục bộ phía trên vẫn hoạt động.',
+                  : 'Dịch vụ AI chưa sẵn sàng. Các công thức cục bộ phía trên vẫn hoạt động.',
             ),
             if (sections.isNotEmpty) ...[
               const SizedBox(height: 16),

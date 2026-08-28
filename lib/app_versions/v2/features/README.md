@@ -15,7 +15,7 @@ thay thế V1. `v2RouterProvider` compose `v1Routes`, `v2Routes` và `v3Routes`.
 | `health_scoring` | `Implemented` | SQLite data, calculator, providers và route `/v2/health-score`. |
 | `home` | `Implemented` shell | Route `/v2`; shell không chứng minh mọi child feature hoàn chỉnh. |
 | `membership_entitlement` | `Implemented` | Effective access đọc trusted Supabase contract. |
-| `payments` | `Partial` | Manual membership payment/VietQR request flow; approval thuộc backend/Admin. |
+| `payments` | `Partial` | Google Play consumer membership checkout; entitlement chỉ sau server verification. Manual reconciliation remains backend/Admin-only. |
 | `personal_schedule_quota` | `Source-only` marker | Marker class vẫn `planned`; guard thật nằm ở `GeneratedPlanService` và trusted quota gateway. |
 | `usage_quota` | `Implemented` contract | Trusted check/commit quota gateway được AI chat/plan runtime dùng. |
 | `wellness_rewards` | `Partial` | Route, repository, local/remote datasource và secure voucher storage có source; RPC runtime chưa được suy ra là PASS. |

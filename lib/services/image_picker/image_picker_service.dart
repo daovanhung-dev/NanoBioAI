@@ -100,17 +100,11 @@ class ImagePickerService {
     }
   }
 
-  /// Pick image from gallery
-  /// Requests photo library permission before opening gallery
-  /// Returns XFile if successful, null if cancelled or permission denied
+  /// Pick one image through the platform system picker.
+  /// The picker grants access only to the user-selected item, so no broad
+  /// photo-library permission is requested.
   Future<XFile?> pickFromGallery() async {
     try {
-      final permissionStatus = await Permission.photos.request();
-
-      if (permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
-        return null;
-      }
-
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1920,

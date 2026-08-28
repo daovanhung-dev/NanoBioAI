@@ -1,0 +1,79 @@
+import { createNabiAiGenerateHandler } from "./handler.ts";
+
+function request(body: Record<string, unknown>, headers?: Record<string, string>) {
+  return new Request("https://example.test/nabi-ai-generate", {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-forwarded-for": "127.0.0.1", ...headers },
+    body: JSON.stringify(body),
+  });
+}
+
+const validBody = {
+  model: "gemini-2.5-flash",
+  contents: [{ role: "user", parts: [{ text: "Xin chào" }] }],
+  generation_config: { maxOutputTokens: 128, temperature: 0.2 },
+  system_instruction: "Trả lời an toàn.",
+};
+
+Deno.test("validates and delegates a bounded AI request", async () => {
+  let captured: unknown;
+  const handler = createNabiAiGenerateHandler({
+    authenticate: async () => "user-a",
+    rateLimit: async () => true,
+    generate: async (input) => {
+      captured = input;
+      return "Nabi trả lời.";
+    },
+  });
+  const response = await handler(request(validBody));
+  if (response.status !== 200) throw new Error(`expected 200, got ${response.status}`);
+  const body = await response.json();
+  if (body.success !== true || body.text !== "Nabi trả lời.") throw new Error("response was not normalized");
+  if ((captured as { userId: string }).userId !== "user-a") throw new Error("user context missing");
+});
+
+Deno.test("allows guest generation but applies the same rate-limit gate", async () => {
+  let seenKey = "";
+  const handler = createNabiAiGenerateHandler({
+    authenticate: async () => null,
+    rateLimit: async (key) => {
+      seenKey = key;
+      return false;
+    },
+    generate: async () => "should not run",
+  });
+  const response = await handler(request(validBody));
+  if (response.status !== 429 || seenKey !== "ip:127.0.0.1") throw new Error("guest rate limit was not enforced");
+});
+
+Deno.test("rejects malformed or oversized requests without invoking provider", async () => {
+  let invoked = false;
+  const handler = createNabiAiGenerateHandler({
+    authenticate: async () => null,
+    rateLimit: async () => true,
+    generate: async () => {
+      invoked = true;
+      return "unexpected";
+    },
+  });
+  const malformed = await handler(request({ ...validBody, contents: [] }));
+  if (malformed.status !== 400) throw new Error(`expected 400, got ${malformed.status}`);
+  const oversized = await handler(request({
+    ...validBody,
+    contents: [{ role: "user", parts: [{ text: "x".repeat(50_000) }] }],
+  }));
+  if (oversized.status !== 413 || invoked) throw new Error("unsafe request reached provider");
+});
+
+Deno.test("does not return false success when provider fails", async () => {
+  const handler = createNabiAiGenerateHandler({
+    authenticate: async () => "user-a",
+    rateLimit: async () => true,
+    generate: async () => {
+      throw new Error("provider down");
+    },
+  });
+  const response = await handler(request(validBody));
+  if (response.status !== 502) throw new Error(`expected 502, got ${response.status}`);
+});
+

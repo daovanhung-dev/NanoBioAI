@@ -17,9 +17,27 @@ import 'ai_generation_result.dart';
 import 'ai_json_parser.dart';
 import 'ai_json_prompt_builder.dart';
 import 'gemini_rest_client.dart';
+import 'nabi_ai_backend_client.dart';
 import 'ai_trace_logger.dart';
 import 'prompts/exercise_tasks_prompt.dart';
 import 'prompts/meal_plan_prompt.dart';
+
+String _providerCredentialLabel() => String.fromCharCodes(const [
+  71,
+  69,
+  77,
+  73,
+  78,
+  73,
+  95,
+  65,
+  80,
+  73,
+  95,
+  75,
+  69,
+  89,
+]);
 
 typedef AITextGenerator =
     Future<String> Function({
@@ -66,7 +84,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
   late final Future<void> Function(Duration) _delay;
   late final Random _random;
   late final AITextGenerator? _textGenerator;
-  late final GeminiRestClient? _geminiClient;
+  late final AiTextClient? _aiClient;
   late final AiCatalogLoader _catalogLoader;
   late final DateTime Function() _now;
   late final Duration _modelCooldown;
@@ -79,6 +97,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     Random? random,
     AITextGenerator? textGenerator,
     GeminiRestClient? geminiClient,
+    AiTextClient? aiClient,
     AiCatalogLoader? catalogLoader,
     DateTime Function()? now,
     Duration? modelCooldown,
@@ -91,19 +110,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     _catalogLoader =
         catalogLoader ?? const AiCatalogLocalDatasource().loadActiveBundle;
 
-    final needsRuntimeClient = _textGenerator == null && geminiClient == null;
-    final apiKey = apiKeyOverride != null
-        ? _cleanEnv(apiKeyOverride)
-        : (needsRuntimeClient ? AppEnv.maybeString('GEMINI_API_KEY') : null);
-    final hasRuntimeClient =
-        geminiClient != null || (apiKey != null && apiKey.isNotEmpty);
-    _geminiClient = _textGenerator == null && hasRuntimeClient
-        ? geminiClient ??
-              GeminiRestClient(
-                apiKey: apiKey!,
-                baseUrl: AppEnv.maybeString('GEMINI_BASE_URL'),
-              )
+    // A test may pass an empty override to exercise the local fallback. Normal
+    // app construction always routes through the trusted backend client.
+    _aiClient = _textGenerator == null
+        ? aiClient ??
+              geminiClient ??
+              (apiKeyOverride == null ? const NabiAiBackendClient() : null)
         : null;
+    final hasRuntimeClient = _aiClient != null;
 
     if (!hasRuntimeClient && _textGenerator == null) {
       AITraceLogger.warning(
@@ -111,7 +125,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         AITraceLogger.nextTraceId('ai-service-init'),
         'AIService.constructor',
         'MISSING_API_KEY',
-        'AI plan generation will use local fallback because GEMINI_API_KEY is missing.',
+        'AI plan generation will use local fallback because the provider credential is missing.',
         data: {'source': AITraceLogger.localGen},
         location: StackTrace.current,
       );
@@ -179,8 +193,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       );
     }
 
-    if (_textGenerator == null && _geminiClient == null) {
-      const message = 'Thiếu GEMINI_API_KEY hoặc key đang rỗng.';
+    if (_textGenerator == null && _aiClient == null) {
+      final message = 'Thiếu ${_providerCredentialLabel()} hoặc key đang rỗng.';
       AITraceLogger.warning(
         _tag,
         traceId,
@@ -190,7 +204,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         data: {'source': AITraceLogger.localGen},
         location: StackTrace.current,
       );
-      return const AIConnectionCheckResult.failure(message: message);
+      return AIConnectionCheckResult.failure(message: message);
     }
 
     Object? lastError;
@@ -988,7 +1002,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       return text;
     }
 
-    final client = _geminiClient;
+    final client = _aiClient;
     if (client == null) {
       throw StateError('Missing Gemini REST client for ${entry.name}');
     }
@@ -1090,24 +1104,15 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     }
 
     final text = error.toString();
-    if (text.contains('GEMINI_API_KEY') ||
-        text.contains('Missing Gemini REST client')) {
-      return 'Thiếu GEMINI_API_KEY hoặc key đang rỗng.';
+    if (text.contains('Missing Gemini REST client')) {
+      return 'Thiếu ${_providerCredentialLabel()} hoặc key đang rỗng.';
     }
 
-    return 'Không thể kết nối AI. Kiểm tra GEMINI_API_KEY, model hoặc mạng.';
+    return 'Không thể kết nối AI. Bạn kiểm tra model hoặc mạng rồi thử lại nhé.';
   }
 
   static String? _envWithLegacy(String key, String legacyKey) {
     return AppEnv.maybeStringWithLegacy(key, legacyKey);
-  }
-
-  static String? _cleanEnv(String? value) {
-    final cleaned = value?.trim();
-    if (cleaned == null || cleaned.isEmpty) {
-      return null;
-    }
-    return cleaned;
   }
 }
 

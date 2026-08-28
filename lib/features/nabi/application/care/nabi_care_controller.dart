@@ -6,6 +6,7 @@ import '../../domain/care/nabi_care_models.dart';
 import '../../domain/care/nabi_care_repository.dart';
 import 'nabi_care_ai_analyzer.dart';
 import 'nabi_care_orchestrator.dart';
+import 'package:nano_app/app_versions/v1/services/ai/nabi_care_ai_gateway.dart';
 
 enum NabiCareLoadStatus { idle, loading, ready, error }
 
@@ -43,7 +44,7 @@ final nabiCareRepositoryProvider = Provider<NabiCareRepository>(
 );
 
 final nabiCareAiGatewayProvider = Provider<NabiCareAiGateway>(
-  (_) => const _UnavailableNabiCareAiGateway(),
+  (_) => GeminiNabiCareAiGateway(),
 );
 
 final nabiCareOrchestratorProvider = Provider<NabiCareOrchestrator>((ref) {
@@ -55,9 +56,7 @@ final nabiCareOrchestratorProvider = Provider<NabiCareOrchestrator>((ref) {
 });
 
 final nabiCareControllerProvider =
-    NotifierProvider<NabiCareController, NabiCareState>(
-  NabiCareController.new,
-);
+    NotifierProvider<NabiCareController, NabiCareState>(NabiCareController.new);
 
 class NabiCareController extends Notifier<NabiCareState> {
   @override
@@ -81,15 +80,10 @@ class NabiCareController extends Notifier<NabiCareState> {
     );
 
     try {
-      final result = await ref.read(nabiCareOrchestratorProvider).evaluate(
-            subjectId: subjectId,
-            trigger: trigger,
-            force: force,
-          );
-      state = NabiCareState(
-        status: NabiCareLoadStatus.ready,
-        result: result,
-      );
+      final result = await ref
+          .read(nabiCareOrchestratorProvider)
+          .evaluate(subjectId: subjectId, trigger: trigger, force: force);
+      state = NabiCareState(status: NabiCareLoadStatus.ready, result: result);
       return result;
     } catch (_) {
       state = state.copyWith(
@@ -108,28 +102,12 @@ class NabiCareController extends Notifier<NabiCareState> {
     if (result == null) return;
 
     try {
-      await ref.read(nabiCareOrchestratorProvider).feedback(
-            result: result,
-            feedback: feedback,
-            actionId: actionId,
-          );
+      await ref
+          .read(nabiCareOrchestratorProvider)
+          .feedback(result: result, feedback: feedback, actionId: actionId);
       state = state.copyWith(lastFeedback: feedback);
     } catch (_) {
       state = state.copyWith(errorCode: 'care_feedback_failed');
     }
-  }
-}
-
-class _UnavailableNabiCareAiGateway implements NabiCareAiGateway {
-  const _UnavailableNabiCareAiGateway();
-
-  @override
-  Future<String> generateAnalysis({
-    required Map<String, Object?> payload,
-    required String systemInstruction,
-  }) {
-    throw StateError(
-      'Nabi Care AI gateway is not composed at the application root.',
-    );
   }
 }

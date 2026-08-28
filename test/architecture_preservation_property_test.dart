@@ -86,8 +86,8 @@ void main() {
       test(
         'FOR ALL AI service calls, Gemini API integration works identically',
         () {
-          // OBSERVATION: ai_service.dart delegates to a Gemini client.
-          // INVARIANT: Gemini integration and parsing behavior must remain available
+          // OBSERVATION: ai_service.dart delegates to an AI transport.
+          // INVARIANT: production generation remains available through the trusted backend.
 
           final aiServiceFile = File(
             'lib/app_versions/v1/services/ai/ai_service.dart',
@@ -96,17 +96,15 @@ void main() {
 
           final content = aiServiceFile.readAsStringSync();
 
-          // Verify Gemini API setup is preserved through the REST client.
           expect(
-            content.contains('GeminiRestClient'),
+            content.contains('AiTextClient') || content.contains('aiClient'),
             isTrue,
-            reason: 'Must use the Gemini REST client',
+            reason: 'Must use the shared AI transport contract',
           );
-
           expect(
-            content.contains('GEMINI_API_KEY'),
+            content.contains('nabi_ai_backend_client'),
             isTrue,
-            reason: 'Must use API key from environment',
+            reason: 'Production AI must use the trusted backend transport',
           );
 
           expect(

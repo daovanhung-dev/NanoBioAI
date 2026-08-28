@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:nano_app/core/config/app_env.dart';
 import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
 
 import '../../domain/entities/sleep_night_analysis.dart';
 import '../models/sleep_analysis_ai_models.dart';
@@ -26,13 +27,10 @@ class SleepAnalysisAIService {
        _textGenerator = textGenerator,
        _client = textGenerator != null
            ? client
-           : client ??
-                 _buildClient(
-                   apiKeyOverride ?? AppEnv.maybeString('GEMINI_API_KEY'),
-                 );
+           : client ?? const NabiAiBackendClient();
 
   final String _model;
-  final GeminiRestClient? _client;
+  final AiTextClient? _client;
   final SleepAiTextGenerator? _textGenerator;
 
   bool get isConfigured => _textGenerator != null || _client != null;
@@ -75,15 +73,6 @@ class SleepAnalysisAIService {
       model: _model,
       generatedAt: DateTime.now(),
       sections: sections,
-    );
-  }
-
-  static GeminiRestClient? _buildClient(String? rawKey) {
-    final key = _clean(rawKey);
-    if (key == null) return null;
-    return GeminiRestClient(
-      apiKey: key,
-      baseUrl: AppEnv.maybeString('GEMINI_BASE_URL'),
     );
   }
 

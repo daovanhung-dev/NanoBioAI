@@ -1,15 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/core/payments/viet_qr_payload_builder.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../domain/entities/membership_payment_models.dart';
-import '../../providers/membership_payment_providers.dart';
+import '../../domain/entities/store_membership_purchase.dart';
+import '../../providers/membership_store_billing_providers.dart';
 
+/// Consumer membership checkout for Android Play-distributed builds.
+///
+/// Manual bank-transfer requests remain in the data layer for controlled
+/// back-office/non-Play use, but are intentionally not reachable here.
 class MembershipPaymentPage extends ConsumerStatefulWidget {
   final String? initialPlanCode;
 
@@ -22,383 +23,189 @@ class MembershipPaymentPage extends ConsumerStatefulWidget {
 
 class _MembershipPaymentPageState extends ConsumerState<MembershipPaymentPage>
     with WidgetsBindingObserver {
-  String _planCode = 'plus';
+  late String _planCode;
   String _billingCycle = 'monthly';
-  bool _submitting = false;
-  bool _pendingReviewRefreshInFlight = false;
-  String? _message;
-  String? _lastObservedRequestId;
-  String? _lastObservedRequestStatus;
-  Timer? _pendingReviewTimer;
 
   @override
   void initState() {
     super.initState();
-    _planCode = normalizeMembershipPaymentPlanCode(widget.initialPlanCode);
+    _planCode = _normalizePlanCode(widget.initialPlanCode);
     WidgetsBinding.instance.addObserver(this);
-    ref.listenManual<AsyncValue<MembershipPaymentViewState>>(
-      membershipPaymentControllerProvider,
-      (_, next) => _handlePaymentRequestState(next.value?.request),
-      fireImmediately: true,
-    );
   }
 
   @override
   void didUpdateWidget(covariant MembershipPaymentPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final previousPlan = normalizeMembershipPaymentPlanCode(
-      oldWidget.initialPlanCode,
-    );
-    final nextPlan = normalizeMembershipPaymentPlanCode(widget.initialPlanCode);
-    if (previousPlan == nextPlan ||
-        ref
-                .read(membershipPaymentControllerProvider)
-                .value
-                ?.request
-                ?.isActive ==
-            true) {
-      return;
-    }
-    setState(() => _planCode = nextPlan);
+    final nextPlan = _normalizePlanCode(widget.initialPlanCode);
+    if (nextPlan != _planCode) setState(() => _planCode = nextPlan);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(_refreshPendingReview());
+      unawaited(
+        ref
+            .read(membershipStoreBillingControllerProvider.notifier)
+            .loadStorefront(),
+      );
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _pendingReviewTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final paymentState = ref.watch(membershipPaymentControllerProvider);
-    final colors = context.semanticColors;
-    final viewState = paymentState.value;
-    final request = viewState?.request;
-    final isInitialLoading = paymentState.isLoading && viewState == null;
-    final hasActiveRequest = request?.isActive == true;
+    final state = ref.watch(membershipStoreBillingControllerProvider);
+    final selectedProduct = StoreMembershipProduct.fromSelection(
+      planCode: _planCode,
+      billingCycle: _billingCycle,
+    );
+    final selectedDetails = selectedProduct == null
+        ? null
+        : state.storefront?.productFor(selectedProduct);
+    final isBusy = switch (state.status) {
+      MembershipStoreBillingStatus.loading ||
+      MembershipStoreBillingStatus.purchasing ||
+      MembershipStoreBillingStatus.restoring ||
+      MembershipStoreBillingStatus.awaitingVerification ||
+      MembershipStoreBillingStatus.pending => true,
+      _ => false,
+    };
+    final canPurchase =
+        selectedProduct != null &&
+        selectedDetails != null &&
+        state.status == MembershipStoreBillingStatus.ready;
 
     return MedicalPageScaffold(
-      backgroundColor: colors.background,
+      backgroundColor: context.semanticColors.background,
       appBar: AppBar(
-        title: const Text('Thanh toán gói thành viên'),
-        backgroundColor: colors.background,
+        title: const Text('Nâng cấp thành viên'),
+        backgroundColor: context.semanticColors.background,
         elevation: 0,
         actions: [
           IconButton(
             tooltip: 'Làm mới',
-            onPressed: _submitting ? null : _refresh,
+            onPressed: isBusy
+                ? null
+                : () => ref
+                      .read(membershipStoreBillingControllerProvider.notifier)
+                      .loadStorefront(),
             icon: const Icon(Icons.refresh_rounded),
           ),
         ],
       ),
-      body: AppStateSwitcher(
-        alignment: Alignment.topCenter,
-        child: ListView(
-          key: ValueKey(
-            'payment-${paymentState.isLoading}-${paymentState.hasError}-${request?.status ?? 'none'}-${_message ?? ''}',
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
+        children: [
+          Text('Chọn gói phù hợp với bạn', style: AppTextStyles.heading2),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Thanh toán được xử lý an toàn qua Google Play. Gói chỉ được cập nhật sau khi giao dịch được xác minh.',
+            style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
           ),
-          padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
-          children: [
-            Text('Nâng cấp gói của bạn', style: AppTextStyles.heading2),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Quét mã QR, chuyển đúng số tiền và nội dung. Gói chỉ được mở sau khi yêu cầu được duyệt.',
-              style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+          const SizedBox(height: AppSpacing.sectionSpacing),
+          _PlanSelector(
+            planCode: _planCode,
+            billingCycle: _billingCycle,
+            isDisabled: isBusy,
+            onPlanChanged: (value) {
+              if (value != null) setState(() => _planCode = value);
+            },
+            onBillingCycleChanged: (value) {
+              if (value != null) setState(() => _billingCycle = value);
+            },
+          ),
+          const SizedBox(height: AppSpacing.sectionSpacing),
+          if (state.status == MembershipStoreBillingStatus.loading) ...[
+            const LinearProgressIndicator(),
+            const SizedBox(height: AppSpacing.md),
+            const _StatusCard(message: 'Đang tải các gói đăng ký…'),
+          ] else if (state.status ==
+              MembershipStoreBillingStatus.unavailable) ...[
+            _StatusCard(
+              message:
+                  state.message ??
+                  'Google Play chưa sẵn sàng trên thiết bị này.',
+              isError: true,
+              action: state.retryable
+                  ? TextButton(
+                      onPressed: () => ref
+                          .read(
+                            membershipStoreBillingControllerProvider.notifier,
+                          )
+                          .loadStorefront(),
+                      child: const Text('Thử lại'),
+                    )
+                  : null,
             ),
-            if (isInitialLoading) ...[
-              const SizedBox(height: AppSpacing.md),
-              const LinearProgressIndicator(),
-            ],
-            if (paymentState.hasError) ...[
-              const SizedBox(height: AppSpacing.md),
-              const _FeedbackCard(
-                message:
-                    'Chưa tải được yêu cầu thanh toán. Bạn vẫn có thể thử tạo mã mới hoặc làm mới trang.',
-                isError: true,
-              ),
-            ],
-            if (!hasActiveRequest) ...[
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              _PlanSelector(
-                planCode: _planCode,
-                billingCycle: _billingCycle,
-                isDisabled: _submitting || isInitialLoading,
-                onPlanChanged: (value) {
-                  AppFeedbackService.instance.emit(AppFeedbackType.selection);
-                  setState(() => _planCode = value ?? _planCode);
-                },
-                onBillingCycleChanged: (value) {
-                  AppFeedbackService.instance.emit(AppFeedbackType.selection);
-                  setState(() => _billingCycle = value ?? _billingCycle);
-                },
-              ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              FilledButton.icon(
-                onPressed: _submitting || isInitialLoading
-                    ? null
-                    : _createRequest,
-                icon: _submitting
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.qr_code_rounded),
-                label: const Text('Tạo mã thanh toán'),
-              ),
-            ],
-            if (_message != null) ...[
-              const SizedBox(height: AppSpacing.md),
-              _FeedbackCard(message: _message!, isError: false),
-            ],
-            if (request != null) ...[
-              const SizedBox(height: AppSpacing.sectionSpacing),
-              _PaymentRequestPanel(
-                request: request,
-                payerFullName: viewState?.payerFullNameForDisplay,
-                isSubmitting: _submitting,
-                onConfirmTransfer: _confirmTransfer,
-                onCancelRequest: _cancelRequest,
-              ),
-            ],
+          ] else if (state.message != null && !canPurchase) ...[
+            _StatusCard(
+              message: state.message!,
+              isError: state.status == MembershipStoreBillingStatus.error,
+              action: state.retryable
+                  ? TextButton(
+                      onPressed: () => ref
+                          .read(
+                            membershipStoreBillingControllerProvider.notifier,
+                          )
+                          .loadStorefront(),
+                      child: const Text('Thử lại'),
+                    )
+                  : null,
+            ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _refresh() async {
-    if (_submitting) return;
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    setState(() {
-      _submitting = true;
-      _message = null;
-    });
-    try {
-      await ref.read(membershipPaymentControllerProvider.notifier).refresh();
-    } on MembershipPaymentException catch (error) {
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      if (mounted) setState(() => _message = error.safeMessage);
-    } catch (_) {
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      if (mounted) {
-        setState(
-          () => _message = 'Chưa tải được yêu cầu thanh toán. Bạn hãy thử lại.',
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
-  }
-
-  Future<void> _createRequest() async {
-    if (_submitting) return;
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    setState(() {
-      _submitting = true;
-      _message = null;
-    });
-
-    try {
-      final request = await ref
-          .read(membershipPaymentControllerProvider.notifier)
-          .createRequest(planCode: _planCode, billingCycle: _billingCycle);
-      if (!mounted) return;
-
-      if (request.canRenderVietQr) {
-        AppFeedbackService.instance.emit(AppFeedbackType.success);
-        setState(
-          () => _message =
-              'Mã thanh toán đã sẵn sàng. Bạn hãy chuyển đúng số tiền và nội dung hiển thị.',
-        );
-      } else if (request.isPendingReview) {
-        setState(
-          () => _message =
-              'Yêu cầu trước của bạn đang chờ duyệt. Không tạo thêm mã mới.',
-        );
-      } else {
-        setState(() => _message = 'Yêu cầu thanh toán đã được cập nhật.');
-      }
-    } on MembershipPaymentException catch (error) {
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      if (mounted) setState(() => _message = error.safeMessage);
-    } catch (_) {
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      if (mounted) {
-        setState(
-          () => _message = 'Chưa tạo được mã thanh toán. Bạn hãy thử lại sau.',
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
-  }
-
-  Future<void> _confirmTransfer() async {
-    if (_submitting) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận đã chuyển khoản'),
-        content: const Text(
-          'Bạn đã chuyển đúng số tiền và đúng nội dung hiển thị ở trên?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Kiểm tra lại'),
+          if (selectedDetails != null) ...[
+            _StoreProductCard(details: selectedDetails),
+            const SizedBox(height: AppSpacing.md),
+          ],
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: canPurchase
+                  ? () => ref
+                        .read(membershipStoreBillingControllerProvider.notifier)
+                        .purchase(selectedProduct)
+                  : null,
+              icon: isBusy
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.shopping_bag_outlined),
+              label: Text(
+                selectedDetails == null
+                    ? 'Gói chưa sẵn sàng'
+                    : 'Đăng ký ${selectedDetails.displayPrice}',
+              ),
+            ),
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Đã chuyển khoản'),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: isBusy
+                  ? null
+                  : () => ref
+                        .read(membershipStoreBillingControllerProvider.notifier)
+                        .restorePurchases(),
+              icon: const Icon(Icons.restore_rounded),
+              label: const Text('Khôi phục giao dịch'),
+            ),
           ),
+          if (state.status == MembershipStoreBillingStatus.success) ...[
+            const SizedBox(height: AppSpacing.md),
+            const _StatusCard(
+              message:
+                  'Giao dịch đã được xác minh. Gói của bạn sẽ được cập nhật ngay.',
+            ),
+          ],
         ],
       ),
     );
-    if (confirmed != true || !mounted) return;
-
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    setState(() {
-      _submitting = true;
-      _message = null;
-    });
-    try {
-      await ref
-          .read(membershipPaymentControllerProvider.notifier)
-          .confirmTransfer();
-      if (mounted) {
-        setState(
-          () => _message =
-              'Đã gửi yêu cầu duyệt. Gói sẽ được mở sau khi được duyệt.',
-        );
-      }
-    } on MembershipPaymentException catch (error) {
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      if (mounted) setState(() => _message = error.safeMessage);
-    } catch (_) {
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      if (mounted) {
-        setState(
-          () => _message = 'Chưa gửi được yêu cầu duyệt. Bạn hãy thử lại.',
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
-  }
-
-  Future<void> _cancelRequest() async {
-    if (_submitting) return;
-    final shouldCancel = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Hủy yêu cầu thanh toán'),
-        content: const Text(
-          'Bạn có chắc muốn hủy yêu cầu này? Bạn chỉ có thể hủy trước khi xác nhận đã chuyển khoản.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Giữ yêu cầu'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Hủy yêu cầu'),
-          ),
-        ],
-      ),
-    );
-    if (shouldCancel != true || !mounted) return;
-
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    setState(() {
-      _submitting = true;
-      _message = null;
-    });
-    try {
-      await ref
-          .read(membershipPaymentControllerProvider.notifier)
-          .cancelRequest();
-      if (mounted) {
-        AppFeedbackService.instance.emit(AppFeedbackType.success);
-        setState(
-          () => _message =
-              'Yêu cầu thanh toán đã được hủy. Bạn có thể tạo yêu cầu mới khi sẵn sàng.',
-        );
-      }
-    } on MembershipPaymentException catch (error) {
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      if (mounted) setState(() => _message = error.safeMessage);
-    } catch (_) {
-      AppFeedbackService.instance.emit(AppFeedbackType.error);
-      if (mounted) {
-        setState(
-          () => _message = 'Chưa hủy được yêu cầu thanh toán. Bạn hãy thử lại.',
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
-  }
-
-  void _syncPendingReviewPolling(MembershipPaymentRequest? request) {
-    if (request?.isPendingReview != true) {
-      _pendingReviewTimer?.cancel();
-      _pendingReviewTimer = null;
-      return;
-    }
-    if (_pendingReviewTimer != null) return;
-    _pendingReviewTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => unawaited(_refreshPendingReview()),
-    );
-  }
-
-  void _handlePaymentRequestState(MembershipPaymentRequest? request) {
-    final requestId = request?.id.trim();
-    final status = request?.normalizedStatus;
-    final changedToSucceeded =
-        requestId != null &&
-        requestId.isNotEmpty &&
-        requestId == _lastObservedRequestId &&
-        status == 'succeeded' &&
-        _lastObservedRequestStatus != 'succeeded';
-    _lastObservedRequestId = requestId;
-    _lastObservedRequestStatus = status;
-    if (changedToSucceeded) {
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
-    }
-    _syncPendingReviewPolling(request);
-  }
-
-  Future<void> _refreshPendingReview() async {
-    if (!mounted || _submitting || _pendingReviewRefreshInFlight) return;
-    final request = ref
-        .read(membershipPaymentControllerProvider)
-        .value
-        ?.request;
-    if (request?.isPendingReview != true) {
-      _syncPendingReviewPolling(request);
-      return;
-    }
-
-    _pendingReviewRefreshInFlight = true;
-    try {
-      await ref
-          .read(membershipPaymentControllerProvider.notifier)
-          .refresh(preserveVisibleStateOnError: true);
-    } catch (_) {
-      // Background refresh intentionally preserves the usable payment state.
-    } finally {
-      _pendingReviewRefreshInFlight = false;
-    }
   }
 }
 
@@ -445,313 +252,68 @@ class _PlanSelector extends StatelessWidget {
   }
 }
 
-class _PaymentRequestPanel extends StatelessWidget {
-  final MembershipPaymentRequest request;
-  final String? payerFullName;
-  final bool isSubmitting;
-  final Future<void> Function() onConfirmTransfer;
-  final Future<void> Function() onCancelRequest;
+class _StoreProductCard extends StatelessWidget {
+  final StoreProductDetails details;
 
-  const _PaymentRequestPanel({
-    required this.request,
-    required this.payerFullName,
-    required this.isSubmitting,
-    required this.onConfirmTransfer,
-    required this.onCancelRequest,
-  });
+  const _StoreProductCard({required this.details});
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    final transferMemo = request.transferMemoForPayment;
-    final qrPayload = request.canRenderVietQr
-        ? VietQrPayloadBuilder.build(
-            bankBin: request.bankBin,
-            accountNumber: request.bankAccountNumber,
-            accountName: request.bankAccountName,
-            amount: request.amountCents,
-            transferMemo: transferMemo,
-          )
-        : null;
-    final accountOwner =
-        request.bankAccountDisplayName ?? request.bankAccountName;
-    final bankName = _bankLabel(request);
-
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: context.semanticColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: colors.border),
+        border: Border.all(color: context.semanticColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Yêu cầu ${_paymentStatusLabel(request.status)}',
-            style: AppTextStyles.labelLarge,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            '${_planLabel(request.planCode)} / '
-            '${_billingCycleLabel(request.billingCycle)}',
-            style: AppTextStyles.bodyMedium,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Số tiền: ${_formatMoney(request.amountCents, request.currency)}',
-            style: AppTextStyles.heading4,
-          ),
-          if (payerFullName?.trim().isNotEmpty == true) ...[
-            const SizedBox(height: AppSpacing.md),
-            _DetailRow(label: 'Họ và tên', value: payerFullName!),
+          Text(details.title, style: AppTextStyles.labelLarge),
+          if (details.description.trim().isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(details.description, style: AppTextStyles.bodyMedium),
           ],
-          if (transferMemo != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            _DetailRow(label: 'Mã đối soát', value: transferMemo),
-          ],
-          if (request.isAwaitingTransfer) ...[
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Bạn hãy chuyển đúng số tiền và nội dung dưới đây, rồi nhấn “Đã chuyển khoản”.',
-              style: AppTextStyles.bodyMedium.copyWith(height: 1.4),
-            ),
-          ],
-          if (request.isPendingReview) ...[
-            const SizedBox(height: AppSpacing.md),
-            const _FeedbackCard(
-              message:
-                  'Yêu cầu của bạn đang chờ duyệt. Gói sẽ được mở sau khi được duyệt.',
-              isError: false,
-            ),
-          ],
-          if (request.isSucceeded) ...[
-            const SizedBox(height: AppSpacing.md),
-            const _FeedbackCard(
-              message: 'Yêu cầu đã được duyệt. Gói của bạn đã được cập nhật.',
-              isError: false,
-            ),
-          ],
-          if (request.reviewReason != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            _FeedbackCard(
-              message: request.reviewReason!,
-              isError:
-                  request.normalizedStatus == 'failed' ||
-                  request.normalizedStatus == 'rejected',
-            ),
-          ],
-          if (request.isAwaitingTransfer && qrPayload != null) ...[
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            Center(
-              child: Semantics(
-                label: 'Mã QR thanh toán',
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                  color: Colors.white,
-                  child: QrImageView(
-                    data: qrPayload,
-                    size: 220,
-                    backgroundColor: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            if (bankName != null)
-              _DetailRow(label: 'Ngân hàng', value: bankName),
-            if (request.bankAccountNumber != null)
-              _DetailRow(
-                label: 'Số tài khoản',
-                value: request.bankAccountNumber!,
-              ),
-            if (accountOwner != null)
-              _DetailRow(label: 'Chủ tài khoản', value: accountOwner),
-            if (transferMemo != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text('Nội dung chuyển khoản', style: AppTextStyles.labelLarge),
-              const SizedBox(height: AppSpacing.xs),
-              SelectableText(
-                transferMemo,
-                style: AppTextStyles.heading4.copyWith(letterSpacing: 0.7),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              FilledButton.tonalIcon(
-                onPressed: () => _copyTransferMemo(context, transferMemo),
-                icon: const Icon(Icons.copy_rounded),
-                label: const Text('Sao chép nội dung'),
-              ),
-            ],
-          ] else if (request.isAwaitingTransfer) ...[
-            const SizedBox(height: AppSpacing.md),
-            const _FeedbackCard(
-              message:
-                  'Máy chủ chưa trả đủ thông tin để tạo mã thanh toán. Hãy làm mới trước khi chuyển khoản.',
-              isError: true,
-            ),
-          ],
-          if (request.canCancel) ...[
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: isSubmitting ? null : onCancelRequest,
-                icon: const Icon(Icons.cancel_outlined),
-                label: const Text('Hủy yêu cầu'),
-              ),
-            ),
-          ],
-          if (request.canConfirmTransfer && qrPayload != null) ...[
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: isSubmitting ? null : onConfirmTransfer,
-                icon: isSubmitting
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.task_alt_rounded),
-                label: const Text('Đã chuyển khoản'),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Future<void> _copyTransferMemo(BuildContext context, String memo) async {
-    AppFeedbackService.instance.emit(AppFeedbackType.selection);
-    await Clipboard.setData(ClipboardData(text: memo));
-    if (context.mounted) {
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã sao chép nội dung chuyển khoản.')),
-      );
-    }
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _DetailRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 132,
-            child: Text(label, style: AppTextStyles.bodySmall),
-          ),
-          Expanded(
-            child: SelectableText(value, style: AppTextStyles.bodyMedium),
-          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(details.displayPrice, style: AppTextStyles.heading3),
         ],
       ),
     );
   }
 }
 
-class _FeedbackCard extends StatelessWidget {
+class _StatusCard extends StatelessWidget {
   final String message;
   final bool isError;
+  final Widget? action;
 
-  const _FeedbackCard({required this.message, required this.isError});
+  const _StatusCard({required this.message, this.isError = false, this.action});
 
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    final color = isError ? colors.error : colors.primary;
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+        color: isError ? colors.errorSoft : colors.primarySoft,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
-      child: Text(
-        message,
-        style: AppTextStyles.bodyMedium.copyWith(color: color, height: 1.4),
+      child: Row(
+        children: [
+          Icon(
+            isError ? Icons.info_outline_rounded : Icons.check_circle_outline,
+            color: isError ? colors.error : colors.primary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(child: Text(message)),
+          if (action != null) action!,
+        ],
       ),
     );
   }
 }
 
-String _planLabel(String code) {
-  switch (code.trim().toLowerCase()) {
-    case 'plus':
-      return 'Plus';
-    case 'family_plus':
-    case 'familyplus':
-      return 'FamilyPlus';
-    default:
-      return 'Gói thành viên';
-  }
-}
-
-String _billingCycleLabel(String code) {
-  switch (code.trim().toLowerCase()) {
-    case 'monthly':
-      return 'Hằng tháng';
-    case 'yearly':
-      return 'Hằng năm';
-    default:
-      return 'Chu kỳ chưa xác định';
-  }
-}
-
-String _paymentStatusLabel(String status) {
-  switch (status.trim().toLowerCase()) {
-    case 'awaiting_transfer':
-      return 'chờ chuyển khoản';
-    case 'pending_review':
-      return 'chờ duyệt';
-    case 'succeeded':
-    case 'approved':
-      return 'đã được duyệt';
-    case 'paid':
-      return 'đã thanh toán';
-    case 'failed':
-    case 'rejected':
-      return 'bị từ chối';
-    case 'cancelled':
-    case 'canceled':
-      return 'đã hủy';
-    case 'refunded':
-      return 'đã hoàn tiền';
-    case 'pending':
-    case 'requested':
-      return 'đang xử lý';
-    default:
-      return 'đang được xử lý';
-  }
-}
-
-String? _bankLabel(MembershipPaymentRequest request) {
-  final bankName = request.bankName?.trim();
-  final bankCode = request.bankCode?.trim();
-  if (bankName == null || bankName.isEmpty) return bankCode;
-  if (bankCode == null || bankCode.isEmpty || bankCode == bankName) {
-    return bankName;
-  }
-  return '$bankName ($bankCode)';
-}
-
-String _formatMoney(int amount, String currency) {
-  final sign = amount < 0 ? '-' : '';
-  final digits = amount.abs().toString();
-  final buffer = StringBuffer();
-  for (var index = 0; index < digits.length; index++) {
-    final remaining = digits.length - index;
-    buffer.write(digits[index]);
-    if (remaining > 1 && remaining % 3 == 1) buffer.write('.');
-  }
-  return '$sign$buffer ${currency.trim().isEmpty ? 'VND' : currency}';
+String _normalizePlanCode(String? value) {
+  final normalized = value?.trim().toLowerCase();
+  return normalized == 'family_plus' ? 'family_plus' : 'plus';
 }

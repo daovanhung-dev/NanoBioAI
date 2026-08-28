@@ -1,5 +1,6 @@
 import 'package:nano_app/core/config/app_env.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
+import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AccountSecurityService {
@@ -50,6 +51,7 @@ class AccountSecurityService {
       deleteAccountFunctionName,
       body: const {'confirm': true},
     );
+    await DatabaseService.deleteDatabaseFile();
     await AppPrefs.setOnboardingCompleted(false);
     await client.auth.signOut();
   }

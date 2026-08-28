@@ -19,8 +19,7 @@ $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
 $requiredRuntimeKeys = @(
   "SUPABASE_URL",
   "SUPABASE_ANON_KEY",
-  "AUTH_EMAIL_REDIRECT_URL",
-  "GEMINI_API_KEY"
+  "AUTH_EMAIL_REDIRECT_URL"
 )
 
 function Resolve-RepoFile {
@@ -161,7 +160,7 @@ $resolvedEnvFile = Resolve-RepoFile -Path $EnvFile -Label "Environment"
 $resolvedEntryPoint = Resolve-RepoFile -Path $EntryPoint -Label "Entry point"
 Assert-RuntimeEnvironment -Path $resolvedEnvFile
 
-Write-Host "Authentication and AI environment validation passed."
+Write-Host "Authentication environment validation passed. AI uses the trusted backend."
 if ($ValidateOnly) {
   Write-Host "Validation-only mode completed; Flutter was not started."
   return

@@ -4,12 +4,14 @@ import 'package:nano_app/core/config/app_env.dart';
 import 'package:nano_app/features/nabi/domain/care/nabi_care_repository.dart';
 
 import 'gemini_rest_client.dart';
+import 'nabi_ai_backend_client.dart';
 
-typedef NabiCareTextGenerator = Future<String> Function({
-  required String model,
-  required String prompt,
-  required String systemInstruction,
-});
+typedef NabiCareTextGenerator =
+    Future<String> Function({
+      required String model,
+      required String prompt,
+      required String systemInstruction,
+    });
 
 class GeminiNabiCareAiGateway implements NabiCareAiGateway {
   static const _defaultModels = <String>[
@@ -17,27 +19,29 @@ class GeminiNabiCareAiGateway implements NabiCareAiGateway {
     'gemini-2.5-flash-lite',
   ];
 
-  final GeminiRestClient? _client;
+  final AiTextClient? _client;
   final NabiCareTextGenerator? _textGenerator;
   final List<String> _models;
 
   GeminiNabiCareAiGateway({
     GeminiRestClient? client,
+    AiTextClient? aiClient,
     NabiCareTextGenerator? textGenerator,
     String? apiKeyOverride,
     List<String>? modelNames,
-  })  : _textGenerator = textGenerator,
-        _models = _resolveModels(modelNames),
-        _client = textGenerator != null
-            ? client
-            : client ?? _runtimeClient(apiKeyOverride);
+  }) : _textGenerator = textGenerator,
+       _models = _resolveModels(modelNames),
+       _client = textGenerator != null
+           ? aiClient ?? client
+           : aiClient ?? client ?? _runtimeClient(apiKeyOverride);
 
   @override
   Future<String> generateAnalysis({
     required Map<String, Object?> payload,
     required String systemInstruction,
   }) async {
-    final prompt = '''
+    final prompt =
+        '''
 Phân tích snapshot NaBi Care bên dưới và trả về đúng một JSON object theo schema
 đã mô tả trong system instruction. Không dùng markdown.
 
@@ -60,7 +64,7 @@ ${jsonEncode(payload)}
         final client = _client;
         if (client == null) {
           throw const NabiCareAiUnavailableException(
-            'GEMINI_API_KEY is not configured.',
+            'AI backend is not configured.',
           );
         }
 
@@ -92,15 +96,8 @@ ${jsonEncode(payload)}
     );
   }
 
-  static GeminiRestClient? _runtimeClient(String? apiKeyOverride) {
-    final apiKey =
-        _clean(apiKeyOverride) ?? _clean(AppEnv.maybeString('GEMINI_API_KEY'));
-    if (apiKey == null) return null;
-
-    return GeminiRestClient(
-      apiKey: apiKey,
-      baseUrl: AppEnv.maybeString('GEMINI_BASE_URL'),
-    );
+  static AiTextClient? _runtimeClient(String? apiKeyOverride) {
+    return const NabiAiBackendClient();
   }
 
   static List<String> _resolveModels(List<String>? override) {
@@ -110,15 +107,16 @@ ${jsonEncode(payload)}
 
     final carePrimary = _clean(AppEnv.maybeString('GEMINI_CARE_MODEL'));
     final legacyPrimary = _clean(AppEnv.maybeString('GEMINI_MODEL'));
-    final fallbackCsv =
-        _clean(AppEnv.maybeString('GEMINI_CARE_FALLBACK_MODELS'));
+    final fallbackCsv = _clean(
+      AppEnv.maybeString('GEMINI_CARE_FALLBACK_MODELS'),
+    );
     final fallback = fallbackCsv == null
         ? const <String>[]
         : fallbackCsv
-            .split(',')
-            .map((item) => item.trim())
-            .where((item) => item.isNotEmpty)
-            .toList(growable: false);
+              .split(',')
+              .map((item) => item.trim())
+              .where((item) => item.isNotEmpty)
+              .toList(growable: false);
 
     return _dedupe([
       carePrimary ?? legacyPrimary ?? _defaultModels.first,

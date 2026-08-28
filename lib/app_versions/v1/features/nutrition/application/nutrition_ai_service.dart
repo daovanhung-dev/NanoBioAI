@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
 import 'package:nano_app/core/config/app_env.dart';
 
 import '../domain/entities/nutrition_intelligence_entity.dart';
@@ -33,11 +34,10 @@ class NutritionAiService {
     try {
       final raw = textGenerator != null
           ? await textGenerator!(prompt).timeout(const Duration(seconds: 20))
-          : await _generateWithGemini(prompt).timeout(const Duration(seconds: 25));
-      return validator.parse(
-        raw,
-        allowedEvidenceCodes: allowedEvidence,
-      );
+          : await _generateWithGemini(
+              prompt,
+            ).timeout(const Duration(seconds: 25));
+      return validator.parse(raw, allowedEvidenceCodes: allowedEvidence);
     } catch (_) {
       return NutritionAiReport.fallback(
         missingData: intelligence.dataQuality.missingData,
@@ -116,7 +116,8 @@ Trả duy nhất JSON đúng schema:
         'health:steps',
       'data:quality',
       for (final item in intelligence.coverage)
-        if (item.actual != null || item.planned != null) 'nutrient:${item.code}',
+        if (item.actual != null || item.planned != null)
+          'nutrient:${item.code}',
       ...snapshot.allergyCodes,
       ...snapshot.avoidanceCodes,
       ...snapshot.symptomCodes,
@@ -126,14 +127,7 @@ Trả duy nhất JSON đúng schema:
   }
 
   Future<String> _generateWithGemini(String prompt) async {
-    final apiKey = AppEnv.maybeString('GEMINI_API_KEY');
-    if (apiKey == null || apiKey.trim().isEmpty) {
-      throw StateError('Missing Gemini runtime configuration');
-    }
-    final client = GeminiRestClient(
-      apiKey: apiKey,
-      baseUrl: AppEnv.maybeString('GEMINI_BASE_URL'),
-    );
+    final client = const NabiAiBackendClient();
     Object? lastError;
     for (final model in _modelCandidates().take(3)) {
       try {

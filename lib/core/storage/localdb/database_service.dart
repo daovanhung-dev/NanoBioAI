@@ -92,7 +92,8 @@ class DatabaseService {
               duration: phase.elapsed,
               metadata: {
                 'existingVersion': existingVersion,
-                'foreignKeysEnabled': existingVersion == 0 || existingVersion >= 20,
+                'foreignKeysEnabled':
+                    existingVersion == 0 || existingVersion >= 20,
               },
             );
           } catch (error, stackTrace) {
@@ -295,6 +296,9 @@ class DatabaseService {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, DatabaseConstants.databaseName);
     try {
+      // Close an open handle first so account deletion cannot leave a stale
+      // connection or partially removed SQLite file behind.
+      await closeDatabase();
       await deleteDatabase(path);
       _database = null;
       stopwatch.stop();

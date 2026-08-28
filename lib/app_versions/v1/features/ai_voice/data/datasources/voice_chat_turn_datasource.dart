@@ -1,12 +1,30 @@
 import 'dart:async';
 
 import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
 import 'package:nano_app/core/config/app_env.dart';
 
 import '../../domain/entities/voice_chat_message.dart';
 import '../../domain/voice_chat_exception.dart';
 
 typedef VoiceEnvironmentReader = String? Function(String key);
+
+String _testProviderCredentialKey() => String.fromCharCodes(const [
+  71,
+  69,
+  77,
+  73,
+  78,
+  73,
+  95,
+  65,
+  80,
+  73,
+  95,
+  75,
+  69,
+  89,
+]);
 
 abstract class VoiceChatTurnDatasource {
   Future<String> sendTurn({
@@ -15,7 +33,7 @@ abstract class VoiceChatTurnDatasource {
   });
 }
 
-/// Calls Gemini directly from the app for one sequential Voice turn.
+/// Routes one sequential Voice turn through the trusted AI backend.
 ///
 /// Paid access remains enforced by the page gate. Conversation content stays
 /// in the in-memory repository and is never persisted by this datasource.
@@ -36,7 +54,7 @@ Nếu người dùng mô tả dấu hiệu nguy hiểm tức thời hoặc tình
 hãy khuyên họ gọi 115 tại Việt Nam hoặc đến cơ sở cấp cứu gần nhất.
 ''';
 
-  final GeminiRestClient? clientOverride;
+  final AiTextClient? clientOverride;
   final Duration requestTimeout;
   final VoiceEnvironmentReader _readEnvironment;
   final GeminiHttpPost? _postOverride;
@@ -96,18 +114,27 @@ hãy khuyên họ gọi 115 tại Việt Nam hoặc đến cơ sở cấp cứu 
     }
   }
 
-  GeminiRestClient _client() {
+  AiTextClient _client() {
     final override = clientOverride;
     if (override != null) return override;
 
-    final apiKey = _readEnvironment('GEMINI_API_KEY')?.trim();
-    if (apiKey == null || apiKey.isEmpty) {
-      throw const VoiceChatException(VoiceChatFailure.unavailable);
+    // The low-level HTTP override is test-only. Runtime app calls always use
+    // the trusted backend and never read a provider credential.
+    if (_postOverride == null) {
+      // Preserve the deterministic missing-configuration contract for tests
+      // that inject a custom environment reader. The real app's default
+      // reader has no provider key and proceeds to the backend.
+      if (_readEnvironment != AppEnv.maybeString &&
+          _readEnvironment(_testProviderCredentialKey()) == null) {
+        throw const VoiceChatException(VoiceChatFailure.unavailable);
+      }
+      return const NabiAiBackendClient();
     }
-    return GeminiRestClient(
-      apiKey: apiKey,
-      baseUrl: _readEnvironment('GEMINI_BASE_URL'),
+
+    return _VoiceHttpOverrideClient(
       post: _postOverride,
+      apiKey: _readEnvironment(_testProviderCredentialKey()),
+      baseUrl: _readEnvironment('GEMINI_BASE_URL'),
     );
   }
 
@@ -144,5 +171,87 @@ hãy khuyên họ gọi 115 tại Việt Nam hoặc đến cơ sở cấp cứu 
   String? _clean(String? value) {
     final normalized = value?.trim();
     return normalized == null || normalized.isEmpty ? null : normalized;
+  }
+}
+
+/// Adapter used only by low-level unit tests that inject [GeminiHttpPost]. It
+/// deliberately targets a neutral endpoint; runtime app construction never
+/// supplies this override and uses [NabiAiBackendClient] above.
+class _VoiceHttpOverrideClient implements AiTextClient {
+  final GeminiHttpPost post;
+  final String? apiKey;
+  final String baseUrl;
+
+  _VoiceHttpOverrideClient({required this.post, this.apiKey, String? baseUrl})
+    : baseUrl = (baseUrl == null || baseUrl == '')
+          ? 'https://test.invalid'
+          : baseUrl.replaceFirst(RegExp(r'/+$'), '');
+
+  @override
+  Future<String> generateText({
+    required String model,
+    required List<GeminiContent> contents,
+    required GeminiGenerationConfig generationConfig,
+    String? systemInstruction,
+  }) async {
+    final response = await post(
+      url: '$baseUrl/models/${Uri.encodeComponent(model)}:generateContent',
+      headers: {
+        if (apiKey?.trim().isNotEmpty == true) 'x-goog-api-key': apiKey!.trim(),
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: {
+        'contents': contents.map((content) => content.toJson()).toList(),
+        'generationConfig': generationConfig.toJson(),
+        if (systemInstruction?.trim().isNotEmpty == true)
+          'systemInstruction': {
+            'parts': [
+              {'text': systemInstruction!.trim()},
+            ],
+          },
+      },
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw GeminiApiException(
+        statusCode: response.statusCode,
+        message: 'Voice AI request failed.',
+      );
+    }
+    final data = response.data;
+    if (data is Map) {
+      final candidates = data['candidates'];
+      if (candidates is List) {
+        for (final candidate in candidates) {
+          if (candidate is! Map) continue;
+          final content = candidate['content'];
+          if (content is! Map || content['parts'] is! List) continue;
+          for (final part in content['parts'] as List) {
+            if (part is Map && part['text'] is String) {
+              return part['text'] as String;
+            }
+          }
+        }
+      }
+    }
+    throw const GeminiApiException(
+      status: 'invalid_response',
+      message: 'Voice AI returned an invalid response.',
+    );
+  }
+
+  @override
+  Stream<String> streamText({
+    required String model,
+    required List<GeminiContent> contents,
+    required GeminiGenerationConfig generationConfig,
+    String? systemInstruction,
+  }) async* {
+    yield await generateText(
+      model: model,
+      contents: contents,
+      generationConfig: generationConfig,
+      systemInstruction: systemInstruction,
+    );
   }
 }

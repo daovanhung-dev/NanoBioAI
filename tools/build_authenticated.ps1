@@ -20,8 +20,7 @@ $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
 $requiredRuntimeKeys = @(
   "SUPABASE_URL",
   "SUPABASE_ANON_KEY",
-  "AUTH_EMAIL_REDIRECT_URL",
-  "GEMINI_API_KEY"
+  "AUTH_EMAIL_REDIRECT_URL"
 )
 
 function Resolve-RepoFile {
@@ -181,8 +180,8 @@ $flutterArguments = @(
   "--dart-define-from-file=$definesFile"
 )
 
-Write-Host "Authentication and AI environment validation passed."
-Write-Host "Building $Target ($Mode) with account and AI access enabled."
+Write-Host "Authentication environment validation passed. AI uses the trusted backend."
+Write-Host "Building $Target ($Mode) with account and backend AI access enabled."
 Push-Location $repoRoot
 try {
   Invoke-FlutterBuild -Arguments $flutterArguments

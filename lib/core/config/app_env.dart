@@ -2,13 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Safe origin information for diagnostics. Never use this to expose values.
-enum AppEnvValueSource {
-  dartDefine,
-  dotEnv,
-  nativeBuildConfig,
-  bundledPublicConfig,
-  missing,
-}
+enum AppEnvValueSource { dartDefine, dotEnv, bundledPublicConfig, missing }
 
 class AppEnv {
   AppEnv._();
@@ -20,13 +14,7 @@ class AppEnv {
     'AUTH_EMAIL_REDIRECT_URL',
     'AUTH_CONFIRM_EMAIL_REQUIRED',
   };
-  static const Set<String> _nativePrivateKeys = {'GEMINI_API_KEY'};
-  static const MethodChannel _nativeRuntimeConfigChannel = MethodChannel(
-    'com.example.nano_app/runtime_config',
-  );
-
   static Map<String, String> _bundledAuthValues = const {};
-  static Map<String, String> _nativeRuntimeValues = const {};
 
   static Future<void> loadOptionalDotEnv({
     String fileName = '.env',
@@ -39,7 +27,6 @@ class AppEnv {
       // it through --dart-define-from-file or provide a legacy dotenv asset.
     }
 
-    await _loadNativeRuntimeConfig();
     await _loadBundledPublicAuthConfig(bundledAuthFileName);
   }
 
@@ -56,7 +43,6 @@ class AppEnv {
     return switch (valueSource(key)) {
       AppEnvValueSource.dartDefine => _clean(_fromDartDefine(key)),
       AppEnvValueSource.dotEnv => _clean(_fromDotEnv(key)),
-      AppEnvValueSource.nativeBuildConfig => _clean(_nativeRuntimeValues[key]),
       AppEnvValueSource.bundledPublicConfig => _clean(_bundledAuthValues[key]),
       AppEnvValueSource.missing => null,
     };
@@ -69,9 +55,6 @@ class AppEnv {
       return AppEnvValueSource.dartDefine;
     }
     if (_clean(_fromDotEnv(key)) != null) return AppEnvValueSource.dotEnv;
-    if (_clean(_nativeRuntimeValues[key]) != null) {
-      return AppEnvValueSource.nativeBuildConfig;
-    }
     if (_clean(_bundledAuthValues[key]) != null) {
       return AppEnvValueSource.bundledPublicConfig;
     }
@@ -102,35 +85,6 @@ class AppEnv {
 
   static void clearBundledAuthConfigForTesting() {
     _bundledAuthValues = const {};
-  }
-
-  static void clearNativeRuntimeConfigForTesting() {
-    _nativeRuntimeValues = const {};
-  }
-
-  static Future<void> _loadNativeRuntimeConfig() async {
-    try {
-      final raw = await _nativeRuntimeConfigChannel.invokeMethod<Object?>(
-        'getPrivateRuntimeConfig',
-      );
-      if (raw is! Map) {
-        _nativeRuntimeValues = const {};
-        return;
-      }
-
-      final values = <String, String>{};
-      for (final entry in raw.entries) {
-        final key = entry.key.toString();
-        if (!_nativePrivateKeys.contains(key)) continue;
-
-        final value = _clean(entry.value?.toString());
-        if (value != null) values[key] = value;
-      }
-      _nativeRuntimeValues = Map.unmodifiable(values);
-    } catch (_) {
-      // Non-Android platforms and tests have no native runtime config channel.
-      _nativeRuntimeValues = const {};
-    }
   }
 
   static Future<void> _loadBundledPublicAuthConfig(String fileName) async {
@@ -204,9 +158,7 @@ class AppEnv {
       'ONBOARDING_AI_DEV_CHECK_ENABLED' => const String.fromEnvironment(
         'ONBOARDING_AI_DEV_CHECK_ENABLED',
       ),
-      'GEMINI_API_KEY' => const String.fromEnvironment('GEMINI_API_KEY'),
       'GEMINI_MODEL' => const String.fromEnvironment('GEMINI_MODEL'),
-      'GEMINI_BASE_URL' => const String.fromEnvironment('GEMINI_BASE_URL'),
       'GEMINI_CARE_MODEL' => const String.fromEnvironment('GEMINI_CARE_MODEL'),
       'GEMINI_CARE_FALLBACK_MODELS' => const String.fromEnvironment(
         'GEMINI_CARE_FALLBACK_MODELS',

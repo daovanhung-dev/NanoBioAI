@@ -5,6 +5,8 @@ import '../../../services/ai/ai_chat_service.dart';
 import '../domain/repositories/ai_chat_repository.dart';
 import '../domain/repositories/ai_chat_repository_impl.dart';
 
+export '../presentation/controllers/ai_content_report_controller.dart';
+
 final aiChatRepositoryProvider = Provider<AIChatRepository>((ref) {
   final service = ref.watch(aiChatServiceProvider);
   return AIChatRepositoryImpl(

@@ -68,8 +68,6 @@ $allowedKeys = @(
     "AUTH_EMAIL_REDIRECT_URL",
     "AUTH_CONFIRM_EMAIL_REQUIRED",
     "ONBOARDING_AI_DEV_CHECK_ENABLED",
-    "GEMINI_API_KEY",
-    "GEMINI_BASE_URL",
     "GEMINI_MODEL",
     "GEMINI_PLAN_MODEL",
     "GEMINI_PLAN_FALLBACK_MODELS",
@@ -82,26 +80,6 @@ $allowedKeys = @(
 $resolvedEnvFile = Resolve-ProjectPath $EnvFile
 $resolvedOutputFile = Resolve-ProjectPath $OutputFile
 $envValues = Read-DotEnvFile $resolvedEnvFile
-
-$apiKey = [string]$envValues["GEMINI_API_KEY"]
-if ([string]::IsNullOrWhiteSpace($apiKey)) {
-    throw "GEMINI_API_KEY đang thiếu hoặc rỗng trong $resolvedEnvFile"
-}
-if ($apiKey.Trim().Length -lt 20) {
-    throw "GEMINI_API_KEY có định dạng quá ngắn. Hãy tạo lại khóa trong Google AI Studio."
-}
-
-if ($envValues.Contains("GEMINI_BASE_URL") -and
-    -not [string]::IsNullOrWhiteSpace([string]$envValues["GEMINI_BASE_URL"])) {
-    $baseUri = $null
-    if (-not [System.Uri]::TryCreate(
-        ([string]$envValues["GEMINI_BASE_URL"]).Trim(),
-        [System.UriKind]::Absolute,
-        [ref]$baseUri
-    ) -or $baseUri.Scheme -ne "https") {
-        throw "GEMINI_BASE_URL phải là URL HTTPS hợp lệ."
-    }
-}
 
 $defines = [ordered]@{}
 foreach ($key in $allowedKeys) {

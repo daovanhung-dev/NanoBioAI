@@ -8,7 +8,10 @@ yêu cầu body `{ "confirm": true }`, lấy người dùng từ JWT và chỉ g
 để xóa chính người dùng đó. Khóa service role chỉ tồn tại trong Edge runtime.
 
 Schema `public.users.id` đã có khóa ngoại `on delete cascade` tới `auth.users`,
-nên Supabase Auth xử lý việc xóa các dữ liệu phụ thuộc theo ràng buộc server.
+nên Supabase Auth xử lý dữ liệu phụ thuộc theo ràng buộc server. Trước khi row
+profile bị xóa, trigger `anonymize_deleted_user_records` giữ purchase ledger
+không gắn user để reconciliation và thay snapshot/note/installation của
+`ai_content_reports` bằng dữ liệu ẩn danh; không giữ nội dung người dùng.
 
 Deploy vào môi trường đã link project:
 

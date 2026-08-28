@@ -53,7 +53,8 @@ class SleepNightAnalysisViewState {
   );
 }
 
-class SleepNightAnalysisController extends Notifier<SleepNightAnalysisViewState> {
+class SleepNightAnalysisController
+    extends Notifier<SleepNightAnalysisViewState> {
   @override
   SleepNightAnalysisViewState build() {
     ref.watch(currentAuthUserIdProvider);
@@ -61,10 +62,16 @@ class SleepNightAnalysisController extends Notifier<SleepNightAnalysisViewState>
     return SleepNightAnalysisViewState(aiConfigured: ai.isConfigured);
   }
 
-  Future<void> load(String sessionId, {SleepMorningCheckin? checkinOverride}) async {
+  Future<void> load(
+    String sessionId, {
+    SleepMorningCheckin? checkinOverride,
+  }) async {
     if (state.loading) return;
     final aiConfigured = ref.read(sleepAnalysisAIServiceProvider).isConfigured;
-    state = SleepNightAnalysisViewState(loading: true, aiConfigured: aiConfigured);
+    state = SleepNightAnalysisViewState(
+      loading: true,
+      aiConfigured: aiConfigured,
+    );
     final repository = ref.read(sleepSafetyRepositoryProvider);
     final calculator = ref.read(sleepNightAnalysisServiceProvider);
     try {
@@ -117,7 +124,8 @@ class SleepNightAnalysisController extends Notifier<SleepNightAnalysisViewState>
         aiGeneratedAt: cached?.formulaVersion == calculated.formulaVersion
             ? cached?.aiGeneratedAt
             : null,
-        aiRequestFingerprint: cached?.formulaVersion == calculated.formulaVersion
+        aiRequestFingerprint:
+            cached?.formulaVersion == calculated.formulaVersion
             ? cached?.aiRequestFingerprint
             : null,
         createdAt: cached?.createdAt ?? calculated.createdAt,
@@ -136,7 +144,8 @@ class SleepNightAnalysisController extends Notifier<SleepNightAnalysisViewState>
     } catch (_) {
       state = state.copyWith(
         loading: false,
-        errorMessage: 'Nabi chưa tạo được phân tích cho phiên này. Bạn thử lại nhé.',
+        errorMessage:
+            'Nabi chưa tạo được phân tích cho phiên này. Bạn thử lại nhé.',
       );
     }
   }
@@ -153,7 +162,8 @@ class SleepNightAnalysisController extends Notifier<SleepNightAnalysisViewState>
     final ai = ref.read(sleepAnalysisAIServiceProvider);
     if (!ai.isConfigured) {
       state = state.copyWith(
-        errorMessage: 'Chưa cấu hình GEMINI_API_KEY nên Nabi chỉ hiển thị phân tích cục bộ.',
+        errorMessage:
+            'Dịch vụ AI chưa sẵn sàng nên Nabi chỉ hiển thị phân tích cục bộ.',
       );
       return;
     }
@@ -176,14 +186,17 @@ class SleepNightAnalysisController extends Notifier<SleepNightAnalysisViewState>
     } catch (_) {
       state = state.copyWith(
         generatingAi: false,
-        errorMessage: 'Phân tích AI chưa hoàn tất. Phần chỉ số cục bộ vẫn dùng bình thường.',
+        errorMessage:
+            'Phân tích AI chưa hoàn tất. Phần chỉ số cục bộ vẫn dùng bình thường.',
       );
     }
   }
 
   Future<void> _publishSummaryEvent(String userId, String sessionId) async {
     try {
-      await ref.read(healthDomainEventSinkProvider).publish(
+      await ref
+          .read(healthDomainEventSinkProvider)
+          .publish(
             HealthDomainEvent.create(
               type: HealthEventType.sleepSummaryUpdated,
               subjectId: userId,

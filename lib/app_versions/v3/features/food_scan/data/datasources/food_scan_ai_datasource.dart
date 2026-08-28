@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
 import 'package:nano_app/core/config/app_env.dart';
 
 import '../../application/food_scan_prompts.dart';
@@ -32,7 +33,7 @@ class FoodVisionAnalysis {
 }
 
 class FoodScanAiDatasource {
-  final GeminiRestClient? clientOverride;
+  final AiTextClient? clientOverride;
   final String? modelOverride;
 
   const FoodScanAiDatasource({this.clientOverride, this.modelOverride});
@@ -147,21 +148,10 @@ class FoodScanAiDatasource {
     }
   }
 
-  GeminiRestClient _client() {
+  AiTextClient _client() {
     final override = clientOverride;
     if (override != null) return override;
-    final apiKey = AppEnv.maybeString('GEMINI_API_KEY');
-    if (apiKey == null || apiKey.isEmpty) {
-      throw const FoodScanException(
-        code: 'MISSING_AI_CONFIG',
-        userMessage:
-            'Nabi chưa được cấu hình AI trên thiết bị này. Bạn thử lại sau khi cấu hình GEMINI_API_KEY.',
-      );
-    }
-    return GeminiRestClient(
-      apiKey: apiKey,
-      baseUrl: AppEnv.maybeString('GEMINI_BASE_URL'),
-    );
+    return const NabiAiBackendClient();
   }
 
   String _model() {
@@ -197,8 +187,9 @@ class FoodScanAiDatasource {
         inputType: inputType,
         imageQuality: _readString(json['image_quality']) ?? 'unknown',
         imageQualityReason: _readString(json['image_quality_reason']) ?? '',
-        confidence:
-            (_readDouble(json['analysis_confidence']) ?? 0).clamp(0, 1).toDouble(),
+        confidence: (_readDouble(json['analysis_confidence']) ?? 0)
+            .clamp(0, 1)
+            .toDouble(),
         items: const [],
         assumptions: _readStrings(json['assumptions']),
         warnings: _readStrings(json['warnings']),
@@ -218,8 +209,9 @@ class FoodScanAiDatasource {
       inputType: inputType,
       imageQuality: _readString(json['image_quality']) ?? 'unknown',
       imageQualityReason: _readString(json['image_quality_reason']) ?? '',
-      confidence:
-          (_readDouble(json['analysis_confidence']) ?? 0).clamp(0, 1).toDouble(),
+      confidence: (_readDouble(json['analysis_confidence']) ?? 0)
+          .clamp(0, 1)
+          .toDouble(),
       items: items.take(20).toList(growable: false),
       assumptions: _readStrings(json['assumptions']),
       warnings: _readStrings(json['warnings']),
@@ -254,7 +246,7 @@ class FoodScanAiDatasource {
     if (error.isAuthenticationFailure) {
       return FoodScanException(
         code: 'AI_AUTHENTICATION',
-        userMessage: 'Cấu hình AI chưa hợp lệ. Vui lòng kiểm tra GEMINI_API_KEY.',
+        userMessage: 'Dịch vụ AI chưa sẵn sàng. Bạn thử lại sau nhé.',
         cause: error,
       );
     }

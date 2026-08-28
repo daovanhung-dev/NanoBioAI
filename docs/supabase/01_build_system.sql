@@ -718,6 +718,35 @@ create table if not exists public.ai_recommendations (
     created_at timestamptz not null default now()
 );
 
+create table if not exists public.ai_content_reports (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid references public.users (id) on delete set null,
+    installation_id text,
+    message_id text not null,
+    message_role text not null default 'assistant' check (message_role = 'assistant'),
+    reason_code text not null check (
+      reason_code in ('incorrect', 'unsafe', 'inappropriate', 'privacy', 'other')
+    ),
+    note text,
+    message_snapshot text not null,
+    app_version text not null default 'unknown',
+    moderation_status text not null default 'pending' check (
+      moderation_status in ('pending', 'reviewing', 'resolved', 'dismissed')
+    ),
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    constraint ai_content_reports_message_id_length check (char_length(message_id) between 1 and 160),
+    constraint ai_content_reports_note_length check (note is null or char_length(note) <= 500),
+    constraint ai_content_reports_snapshot_length check (char_length(message_snapshot) between 1 and 4000),
+    constraint ai_content_reports_app_version_length check (char_length(app_version) between 1 and 64)
+);
+
+create index if not exists idx_ai_content_reports_status_created
+  on public.ai_content_reports (moderation_status, created_at desc);
+create index if not exists idx_ai_content_reports_user_created
+  on public.ai_content_reports (user_id, created_at desc)
+  where user_id is not null;
+
 create table if not exists public.personal_schedule_ai_requests (
     request_id text primary key,
     user_id uuid not null references public.users (id) on delete cascade,
@@ -981,6 +1010,46 @@ begin
 end;
 $$;
 
+alter table public.ai_content_reports enable row level security;
+revoke all on public.ai_content_reports from anon, authenticated;
+drop trigger if exists trg_ai_content_reports_updated_at on public.ai_content_reports;
+create trigger trg_ai_content_reports_updated_at
+  before update on public.ai_content_reports
+  for each row execute function public.set_updated_at();
+
+-- Account deletion keeps only non-reusable operational evidence. Purchase
+-- ledger rows remain for financial reconciliation with their user relation
+-- removed; AI reports are anonymized and their free-form content is erased.
+create or replace function public.anonymize_deleted_user_records()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  update public.google_play_purchase_ledger
+  set user_id = null, updated_at = now()
+  where user_id = old.id;
+
+  update public.ai_content_reports
+  set
+    user_id = null,
+    installation_id = null,
+    message_id = 'deleted-account',
+    note = null,
+    message_snapshot = '[deleted-account]'
+  where user_id = old.id;
+
+  return old;
+end;
+$$;
+
+revoke all on function public.anonymize_deleted_user_records() from public, anon, authenticated;
+drop trigger if exists trg_users_anonymize_deleted_records on public.users;
+create trigger trg_users_anonymize_deleted_records
+  before delete on public.users
+  for each row execute function public.anonymize_deleted_user_records();
+
 alter table public.personal_schedule_ai_requests enable row level security;
 
 drop policy if exists personal_schedule_ai_requests_select_own on public.personal_schedule_ai_requests;
@@ -1093,6 +1162,39 @@ create table if not exists public.membership_subscriptions (
   constraint membership_subscription_period_valid
     check (ends_at is null or ends_at > starts_at)
 );
+
+-- Google Play Billing purchase ledger. The client can submit a purchase for
+-- verification, but only this trusted function can write a verified row or
+-- change a membership subscription. Tokens are stored as a one-way hash so a
+-- deleted account does not leave a reusable purchase credential behind.
+create table if not exists public.google_play_purchase_ledger (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.users(id) on delete set null,
+  provider text not null default 'google_play'
+    check (provider = 'google_play'),
+  package_name text not null,
+  product_id text not null,
+  base_plan_id text,
+  purchase_token_hash text not null,
+  order_id text,
+  purchase_state text not null
+    check (purchase_state in ('pending', 'verified', 'canceled', 'expired', 'refunded', 'revoked', 'rejected')),
+  verification_status text not null default 'pending'
+    check (verification_status in ('pending', 'verified', 'rejected')),
+  purchase_started_at timestamptz,
+  entitlement_ends_at timestamptz,
+  acknowledged boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (provider, purchase_token_hash)
+);
+
+create index if not exists idx_google_play_purchase_ledger_user
+  on public.google_play_purchase_ledger (user_id, created_at desc);
+
+create index if not exists idx_google_play_purchase_ledger_order
+  on public.google_play_purchase_ledger (provider, order_id)
+  where order_id is not null;
 
 create index if not exists idx_membership_subscriptions_user_status on public.membership_subscriptions (
     user_id,
@@ -1250,6 +1352,179 @@ drop trigger if exists trg_membership_subscriptions_sync_user on public.membersh
 create trigger trg_membership_subscriptions_sync_user
   after insert or update or delete on public.membership_subscriptions
   for each row execute function public.sync_user_subscription_tier();
+
+create or replace function public.finalize_google_play_purchase(
+  p_user_id uuid,
+  p_package_name text,
+  p_product_id text,
+  p_purchase_token_hash text,
+  p_order_id text,
+  p_purchase_state text,
+  p_purchase_started_at timestamptz,
+  p_entitlement_ends_at timestamptz,
+  p_acknowledged boolean default false
+)
+returns table(status text, plan_code public.nb_membership_plan, expires_at timestamptz)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_plan public.nb_membership_plan;
+  v_ledger public.google_play_purchase_ledger%rowtype;
+  v_provider_subscription_id text;
+begin
+  if p_user_id is null
+     or nullif(btrim(p_package_name), '') is null
+     or nullif(btrim(p_product_id), '') is null
+     or nullif(btrim(p_purchase_token_hash), '') is null
+     or nullif(btrim(p_purchase_state), '') is null then
+    raise exception using errcode = '22023', message = 'INVALID_GOOGLE_PLAY_PURCHASE';
+  end if;
+
+  if p_package_name <> 'com.nanobioai.app' then
+    raise exception using errcode = '22023', message = 'GOOGLE_PLAY_PACKAGE_MISMATCH';
+  end if;
+
+  v_plan := case p_product_id
+    when 'nanobio_plus_monthly' then 'plus'::public.nb_membership_plan
+    when 'nanobio_plus_yearly' then 'plus'::public.nb_membership_plan
+    when 'nanobio_family_plus_monthly' then 'family_plus'::public.nb_membership_plan
+    when 'nanobio_family_plus_yearly' then 'family_plus'::public.nb_membership_plan
+    else null
+  end;
+  if v_plan is null then
+    raise exception using errcode = '22023', message = 'GOOGLE_PLAY_PRODUCT_UNKNOWN';
+  end if;
+
+  select * into v_ledger
+  from public.google_play_purchase_ledger
+  where provider = 'google_play'
+    and purchase_token_hash = p_purchase_token_hash
+  for update;
+
+  if found and v_ledger.user_id is not null and v_ledger.user_id <> p_user_id then
+    raise exception using errcode = '42501', message = 'GOOGLE_PLAY_PURCHASE_USER_MISMATCH';
+  end if;
+
+  if found and v_ledger.verification_status = 'verified' then
+    return query select
+      'verified'::text,
+      case
+        when coalesce(v_ledger.product_id, p_product_id) like 'nanobio_family_plus_%'
+          then 'family_plus'::public.nb_membership_plan
+        else v_plan
+      end,
+      v_ledger.entitlement_ends_at;
+    return;
+  end if;
+
+  insert into public.google_play_purchase_ledger (
+    user_id,
+    package_name,
+    product_id,
+    purchase_token_hash,
+    order_id,
+    purchase_state,
+    verification_status,
+    purchase_started_at,
+    entitlement_ends_at,
+    acknowledged
+  ) values (
+    p_user_id,
+    p_package_name,
+    p_product_id,
+    p_purchase_token_hash,
+    nullif(btrim(p_order_id), ''),
+    p_purchase_state,
+    case
+      when p_purchase_state = 'verified' then 'verified'
+      when p_purchase_state = 'pending' then 'pending'
+      else 'rejected'
+    end,
+    p_purchase_started_at,
+    p_entitlement_ends_at,
+    coalesce(p_acknowledged, false)
+  )
+  on conflict (provider, purchase_token_hash) do update set
+    user_id = excluded.user_id,
+    package_name = excluded.package_name,
+    product_id = excluded.product_id,
+    order_id = coalesce(excluded.order_id, public.google_play_purchase_ledger.order_id),
+    purchase_state = excluded.purchase_state,
+    verification_status = excluded.verification_status,
+    purchase_started_at = excluded.purchase_started_at,
+    entitlement_ends_at = excluded.entitlement_ends_at,
+    acknowledged = excluded.acknowledged,
+    updated_at = now()
+  returning * into v_ledger;
+
+  if p_purchase_state = 'verified' then
+    v_provider_subscription_id := 'google-play:' || p_purchase_token_hash;
+    insert into public.membership_subscriptions (
+      user_id,
+      plan_code,
+      status,
+      source,
+      starts_at,
+      ends_at,
+      current_period_start,
+      current_period_end,
+      provider,
+      provider_subscription_id,
+      metadata
+    ) values (
+      p_user_id,
+      v_plan,
+      'active',
+      'payment_provider',
+      coalesce(p_purchase_started_at, now()),
+      p_entitlement_ends_at,
+      coalesce(p_purchase_started_at, now()),
+      p_entitlement_ends_at,
+      'google_play',
+      v_provider_subscription_id,
+      jsonb_build_object('product_id', p_product_id, 'order_id', nullif(btrim(p_order_id), ''))
+    )
+    on conflict (provider, provider_subscription_id) do update set
+      plan_code = excluded.plan_code,
+      status = excluded.status,
+      ends_at = excluded.ends_at,
+      current_period_start = excluded.current_period_start,
+      current_period_end = excluded.current_period_end,
+      metadata = excluded.metadata,
+      updated_at = now();
+
+    return query select 'verified'::text, v_plan, p_entitlement_ends_at;
+    return;
+  end if;
+
+  if p_purchase_state in ('canceled', 'expired', 'refunded', 'revoked') then
+    update public.membership_subscriptions
+    set
+      status = case
+        when p_purchase_state = 'expired' then 'expired'
+        else 'canceled'
+      end,
+      ends_at = least(coalesce(ends_at, now()), now()),
+      current_period_end = least(coalesce(current_period_end, now()), now()),
+      updated_at = now()
+    where provider = 'google_play'
+      and provider_subscription_id = 'google-play:' || p_purchase_token_hash;
+    return query select 'rejected'::text, v_plan, p_entitlement_ends_at;
+    return;
+  end if;
+
+  return query select 'pending'::text, v_plan, p_entitlement_ends_at;
+end;
+$$;
+
+revoke all on function public.finalize_google_play_purchase(
+  uuid, text, text, text, text, text, timestamptz, timestamptz, boolean
+) from public, anon, authenticated;
+grant execute on function public.finalize_google_play_purchase(
+  uuid, text, text, text, text, text, timestamptz, timestamptz, boolean
+) to service_role;
 
 create or replace view public.effective_user_access
 with (security_invoker = true)
@@ -1646,6 +1921,7 @@ begin
     'membership_plans',
     'plan_entitlements',
     'membership_subscriptions',
+    'google_play_purchase_ledger',
     'usage_quota_rules',
     'usage_quota_counters'
   ]
@@ -1665,6 +1941,8 @@ alter table public.membership_plans enable row level security;
 alter table public.plan_entitlements enable row level security;
 
 alter table public.membership_subscriptions enable row level security;
+
+alter table public.google_play_purchase_ledger enable row level security;
 
 alter table public.usage_quota_rules enable row level security;
 
@@ -1696,6 +1974,14 @@ select to authenticated using (
         )
     );
 
+drop policy if exists google_play_purchase_ledger_select_own
+  on public.google_play_purchase_ledger;
+
+create policy google_play_purchase_ledger_select_own
+  on public.google_play_purchase_ledger for select to authenticated using (
+    user_id = (select auth.uid())
+  );
+
 drop policy if exists usage_quota_counters_select_own on public.usage_quota_counters;
 
 create policy usage_quota_counters_select_own on public.usage_quota_counters for
@@ -1717,6 +2003,8 @@ select to authenticated using (
 grant
 select on public.membership_plans, public.plan_entitlements, public.membership_subscriptions, public.usage_quota_rules, public.usage_quota_counters, public.usage_events, public.effective_user_access to authenticated;
 
+grant select on public.google_play_purchase_ledger to authenticated;
+
 revoke
 insert
 ,
@@ -1724,6 +2012,7 @@ update,
 delete on public.membership_plans,
 public.plan_entitlements,
 public.membership_subscriptions,
+public.google_play_purchase_ledger,
 public.usage_quota_rules,
 public.usage_quota_counters,
 public.usage_events
@@ -2290,12 +2579,7 @@ select to authenticated using (
 grant
 select on public.family_groups, public.family_members to authenticated;
 
-revoke
-insert
-,
-update,
-delete on public.family_groups,
-public.family_members
+revoke insert, update, delete on public.family_groups, public.family_members
 from anon, authenticated;
 
 revoke all on function public.assert_current_user_familyplus() from public, anon, authenticated;
@@ -3235,8 +3519,7 @@ create table if not exists public.admin_user_roles (
     primary key (user_id, role_code, scope)
 );
 
-revoke
-update (app_access_mode) on public.users
+revoke update (app_access_mode) on public.users
 from anon, authenticated;
 
 create table if not exists public.admin_audit_events (

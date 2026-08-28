@@ -7,6 +7,7 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/repositories/auth_
 import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_route_state_resolver.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_validators.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
+import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/services/supabase/auth/supabase_auth_error_translator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -203,7 +204,9 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<void> requestAccountDeletion() async {
     try {
       await datasource.requestAccountDeletion();
+      await DatabaseService.deleteDatabaseFile();
       await AppPrefs.setOnboardingCompleted(false);
+      await datasource.signOut();
     } on AuthException catch (error) {
       throw _mapAuthException(error);
     } catch (_) {

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
 import 'package:nano_app/core/config/app_env.dart';
 
 import '../domain/entities/basic_health_calculator_models.dart';
@@ -38,11 +39,16 @@ class BodyMetricsAiService {
             'Hãy dùng thực đơn và lịch trình thêm vài ngày để Nabi có đủ dữ liệu cho dự báo xu hướng.',
       );
     }
-    final prompt = '''
+    final prompt =
+        '''
 Bạn là Nabi, trợ lý wellness. Chỉ diễn giải dữ liệu app đã tính; không chẩn đoán, không kê thuốc, không phát minh số liệu.
 BMI category: ${report.bmiCategory}
 Formula version: ${report.formulaVersion}
-Data completeness bucket: ${dataCompleteness >= .75 ? 'cao' : dataCompleteness >= .45 ? 'vua' : 'thap'}
+Data completeness bucket: ${dataCompleteness >= .75
+            ? 'cao'
+            : dataCompleteness >= .45
+            ? 'vua'
+            : 'thap'}
 Plan data available: ${scenario.hasEnoughPlanData}
 Không xuất chữ số trong narrative.
 Trả JSON: {"current_status":"...","after_thirty_days":"...","confidence":"thap|vua|cao","factors":["..."],"assumptions":["..."]}
@@ -56,14 +62,7 @@ Trả JSON: {"current_status":"...","after_thirty_days":"...","confidence":"thap
   }
 
   Future<String> _generateWithGemini(String prompt) async {
-    final apiKey = AppEnv.maybeString('GEMINI_API_KEY');
-    if (apiKey == null || apiKey.trim().isEmpty) {
-      throw StateError('Missing Gemini runtime configuration');
-    }
-    final client = GeminiRestClient(
-      apiKey: apiKey,
-      baseUrl: AppEnv.maybeString('GEMINI_BASE_URL'),
-    );
+    final client = const NabiAiBackendClient();
     Object? lastError;
     for (final model in _modelCandidates().take(3)) {
       try {
@@ -99,7 +98,9 @@ Trả JSON: {"current_status":"...","after_thirty_days":"...","confidence":"thap
     final result = <String>[];
     for (final value in values) {
       final normalized = value?.trim();
-      if (normalized != null && normalized.isNotEmpty && !result.contains(normalized)) {
+      if (normalized != null &&
+          normalized.isNotEmpty &&
+          !result.contains(normalized)) {
         result.add(normalized);
       }
     }
@@ -115,10 +116,14 @@ Trả JSON: {"current_status":"...","after_thirty_days":"...","confidence":"thap
         .replaceAll(RegExp(r'\s*```$'), '')
         .trim();
     final decoded = jsonDecode(cleaned);
-    if (decoded is! Map) throw const FormatException('AI body metrics payload is not an object');
+    if (decoded is! Map) {
+      throw const FormatException('AI body metrics payload is not an object');
+    }
     String narrative(Object? value) {
       final text = value?.toString().trim() ?? '';
-      if (text.length < 8 || text.length > 420 || RegExp(r'\d').hasMatch(text)) {
+      if (text.length < 8 ||
+          text.length > 420 ||
+          RegExp(r'\d').hasMatch(text)) {
         throw const FormatException('Unsafe legacy narrative');
       }
       final normalized = text.toLowerCase();
@@ -141,10 +146,14 @@ Trả JSON: {"current_status":"...","after_thirty_days":"...","confidence":"thap
       }
       return text;
     }
+
     List<String> list(Object? value) => value is List
         ? value.take(5).map(narrative).toList(growable: false)
         : const [];
-    final confidence = switch (decoded['confidence']?.toString().trim().toLowerCase()) {
+    final confidence = switch (decoded['confidence']
+        ?.toString()
+        .trim()
+        .toLowerCase()) {
       'cao' => 'cao',
       'vua' || 'vừa' => 'vừa',
       _ => 'thấp',

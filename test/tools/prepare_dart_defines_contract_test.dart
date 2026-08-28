@@ -9,27 +9,22 @@ void main() {
     () {
       final script = File('tools/prepare_dart_defines.ps1').readAsStringSync();
 
-      expect(script, contains('GEMINI_API_KEY'));
+      expect(script, isNot(contains('GEMINI_API_KEY')));
       expect(script, contains('ConvertTo-Json'));
       expect(script, contains('nanobio_defines.json'));
-      expect(script, contains('without printing secret values'));
+      expect(script, contains('giá trị bí mật không được in ra terminal'));
       expect(script, isNot(contains(r'Write-Host $values')));
     },
   );
 
-  test(
-    'generated defines contain the local Gemini key without exposing it',
-    () {
-      final definesFile = File('.dart_tool/nanobio_defines.json');
-      if (!definesFile.existsSync()) {
-        return;
-      }
+  test('generated defines never contain a provider key', () {
+    final definesFile = File('.dart_tool/nanobio_defines.json');
+    if (!definesFile.existsSync()) {
+      return;
+    }
 
-      final values =
-          jsonDecode(definesFile.readAsStringSync()) as Map<String, dynamic>;
-      final key = values['GEMINI_API_KEY'] as String?;
-      expect(key, isNotNull);
-      expect(key, isNotEmpty);
-    },
-  );
+    final values =
+        jsonDecode(definesFile.readAsStringSync()) as Map<String, dynamic>;
+    expect(values.containsKey('GEMINI_API_KEY'), isFalse);
+  });
 }

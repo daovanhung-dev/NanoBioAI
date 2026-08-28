@@ -14,6 +14,7 @@ void main() {
         expect(source, contains('functions.invoke'));
         expect(source, contains('AUTH_DELETE_ACCOUNT_FUNCTION'));
         expect(source, contains('delete-account'));
+        expect(source, contains('DatabaseService.deleteDatabaseFile'));
         expect(source, isNot(contains('auth.admin')));
         expect(source.toLowerCase(), isNot(contains('service_role')));
         expect(source.toLowerCase(), isNot(contains('service-role')));

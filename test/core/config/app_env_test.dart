@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/config/app_env.dart';
@@ -9,13 +8,11 @@ void main() {
   setUp(() {
     dotenv.clean();
     AppEnv.clearBundledAuthConfigForTesting();
-    AppEnv.clearNativeRuntimeConfigForTesting();
   });
 
   tearDown(() {
     dotenv.clean();
     AppEnv.clearBundledAuthConfigForTesting();
-    AppEnv.clearNativeRuntimeConfigForTesting();
   });
 
   group('AppEnv', () {
@@ -51,35 +48,6 @@ void main() {
       expect(AppEnv.valueSource('UNKNOWN_KEY'), AppEnvValueSource.missing);
       expect(AppEnv.maybeSupabaseConfig(), isNull);
     });
-
-    test(
-      'uses Android debug build config when dotenv is unavailable',
-      () async {
-        const channel = MethodChannel('com.example.nano_app/runtime_config');
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(channel, (call) async {
-              if (call.method == 'getPrivateRuntimeConfig') {
-                return {'GEMINI_API_KEY': 'native-debug-key'};
-              }
-              return null;
-            });
-        addTearDown(() {
-          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-              .setMockMethodCallHandler(channel, null);
-        });
-
-        await AppEnv.loadOptionalDotEnv(
-          fileName: 'missing.env',
-          bundledAuthFileName: 'missing-auth.env',
-        );
-
-        expect(AppEnv.maybeString('GEMINI_API_KEY'), 'native-debug-key');
-        expect(
-          AppEnv.valueSource('GEMINI_API_KEY'),
-          AppEnvValueSource.nativeBuildConfig,
-        );
-      },
-    );
 
     test(
       'loads bundled public Supabase config for a plain app build',
