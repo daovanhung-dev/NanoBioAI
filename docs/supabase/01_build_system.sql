@@ -3782,7 +3782,7 @@ begin
       v_attempt := v_attempt + 1;
       v_transfer_reference := concat(
         'NB',
-        upper(encode(gen_random_bytes(6), 'hex'))
+        upper(encode(extensions.gen_random_bytes(6), 'hex'))
       );
       v_transfer_memo := concat(
         v_transfer_reference,
@@ -6197,7 +6197,7 @@ begin
       v_attempt := v_attempt + 1;
       v_transfer_reference := concat(
         'NB',
-        upper(encode(gen_random_bytes(6), 'hex'))
+        upper(encode(extensions.gen_random_bytes(6), 'hex'))
       );
       -- VietQR content must be the immutable NB reconciliation key only.
       v_transfer_memo := v_transfer_reference;
@@ -9377,7 +9377,7 @@ begin
   end if;
 
   select encode(
-    digest(string_agg(parsed.schedule_item_id::text, ',' order by parsed.schedule_item_id), 'sha256'),
+    extensions.digest(string_agg(parsed.schedule_item_id::text, ',' order by parsed.schedule_item_id), 'sha256'),
     'hex'
   )
   into v_manifest_hash
@@ -9489,8 +9489,8 @@ begin
     count(*)::integer,
     count(distinct lsi.schedule_date)::integer,
     array_agg(lsi.id order by lsi.id),
-    encode(digest(string_agg(lsi.id::text, ',' order by lsi.id), 'sha256'), 'hex'),
-    encode(digest(string_agg(
+    encode(extensions.digest(string_agg(lsi.id::text, ',' order by lsi.id), 'sha256'), 'hex'),
+    encode(extensions.digest(string_agg(
       jsonb_build_array(
         lsi.id,
         lsi.schedule_date,
@@ -11438,7 +11438,7 @@ begin
   select
     v_offer.id,
     normalized.code_value,
-    encode(digest(upper(normalized.code_value), 'sha256'), 'hex'),
+    encode(extensions.digest(upper(normalized.code_value), 'sha256'), 'hex'),
     v_expiry,
     auth.uid(),
     btrim(p_idempotency_key)
@@ -13735,7 +13735,7 @@ begin
       raise exception using errcode = 'P0001', message = 'schedule_item_not_found';
     end if;
     if v_source_id is null
-       or v_source_id !~ '^manual_health\|[0-9a-fA-F-]{36}\|(quick_complete|hydration|mood_stress|sleep_checkin|weight_checkin)\|[01]\|(once|daily|weekdays|weekends)$'
+       or v_source_id !~ '^manual_health\\|[0-9a-fA-F-]{36}\\|(quick_complete|hydration|mood_stress|sleep_checkin|weight_checkin)\\|[01]\\|(once|daily|weekdays|weekends)$'
        or split_part(v_source_id, '|', 3) <> v_action then
       raise exception using errcode = 'P0001', message = 'manual_health_task_invalid';
     end if;
@@ -13801,7 +13801,7 @@ begin
 
   if v_item.source_type = 'manual_health_task' then
     if v_item.source_id is null
-       or v_item.source_id !~ '^manual_health\|[0-9a-fA-F-]{36}\|(quick_complete|hydration|mood_stress|sleep_checkin|weight_checkin)\|[01]\|(once|daily|weekdays|weekends)$'
+       or v_item.source_id !~ '^manual_health\\|[0-9a-fA-F-]{36}\\|(quick_complete|hydration|mood_stress|sleep_checkin|weight_checkin)\\|[01]\\|(once|daily|weekdays|weekends)$'
        or split_part(v_item.source_id, '|', 3) <> v_action then
       raise exception using errcode = 'P0001', message = 'health_action_mismatch';
     end if;
@@ -14571,7 +14571,7 @@ create table if not exists public.sleep_safety_contacts (
   user_id uuid not null references public.users(id) on delete cascade,
   name text not null check (char_length(btrim(name)) between 1 and 80),
   relationship text not null check (char_length(btrim(relationship)) between 1 and 60),
-  phone_e164 text not null check (phone_e164 ~ '^\+[1-9][0-9]{7,14}$'),
+  phone_e164 text not null check (phone_e164 ~ '^\\+[1-9][0-9]{7,14}$'),
   priority integer not null check (priority between 1 and 3),
   verification_status text not null default 'pending'
     check (verification_status in ('pending', 'verified', 'failed', 'revoked')),
@@ -14653,7 +14653,7 @@ begin
   if p_priority not between 1 and 3 then
     raise exception 'sleep_safety_priority_invalid';
   end if;
-  if p_phone_e164 !~ '^\+[1-9][0-9]{7,14}$' then
+  if p_phone_e164 !~ '^\\+[1-9][0-9]{7,14}$' then
     raise exception 'sleep_safety_phone_invalid';
   end if;
 
