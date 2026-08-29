@@ -53,8 +53,8 @@ không có cấu hình thì các capability đó không được xem là hoạt 
 | Khu vực | Trạng thái theo source |
 | --- | --- |
 | V1 guest/basic | `Implemented` cho onboarding 9 bước, hồ sơ/local data, dashboard, lịch, meal plan, tracking cơ bản và notification. |
-| V1 AI plan | `Implemented`: Gemini REST khi có key; local catalog fallback cho luồng tạo plan. |
-| V1 AI chat/voice | `Partial`: route cần đăng nhập; chat cần Gemini config và quota backend, voice còn có membership access gate. |
+| V1 AI plan | `Implemented`: gửi yêu cầu giới hạn qua Edge Function `nabi-ai-generate`; có local catalog fallback cho luồng tạo plan khi backend chưa sẵn sàng. |
+| V1 AI chat/voice | `Partial`: route cần đăng nhập; chat/voice cần AI backend và quota backend, voice còn có membership access gate. |
 | V1 planned UI | `Placeholder`: sleep, stress, community; personal goals chỉ là preview không lưu. |
 | V2 authenticated | `Implemented/Partial`: auth, merge/cloud sync, entitlement, quota, health score, payment request và Wellness Rewards có đường runtime; cần backend để kiểm chứng end-to-end. |
 | M20-M29 | `Placeholder`: catalog và access/upgrade/coming-soon UI; chưa có business storage/flow cho từng module. |
@@ -68,17 +68,18 @@ Chi tiết và evidence path xem `SYSTEM_FEATURES_DOCUMENTATION.md`.
 
 ## AI transport và cấu hình
 
-Runtime dùng client REST nội bộ tại
-`lib/app_versions/v1/services/ai/gemini_rest_client.dart` với endpoint
-`models/{model}:generateContent` và header `x-goog-api-key`. Dự án **không khai
-báo Gemini Dart SDK** (`google_generative_ai`) trong `pubspec.yaml`.
+Runtime production gửi yêu cầu AI có giới hạn tới Supabase Edge Function
+`nabi-ai-generate` qua `NabiAiBackendClient`. Edge Function mới gọi Gemini;
+`GeminiRestClient` chỉ còn là seam cho test hoặc tooling được inject rõ ràng.
+Dự án **không khai báo Gemini Dart SDK** (`google_generative_ai`) trong
+`pubspec.yaml`.
 
-Nguồn cấu hình được `AppEnv` xét theo thứ tự:
-
-1. `--dart-define` / `--dart-define-from-file`.
-2. dotenv tùy chọn nếu môi trường có thể nạp file.
-3. Android native `BuildConfig` cho `GEMINI_API_KEY`.
-4. `assets/config/auth.env` chỉ cho public auth configuration.
+Ứng dụng chỉ cần cấu hình public Supabase (`SUPABASE_URL` và
+`SUPABASE_ANON_KEY`) từ Dart define, dotenv khả dụng ở môi trường cục bộ, hoặc
+`assets/config/auth.env`. `GEMINI_API_KEY` phải được đặt làm secret của Edge
+Function và không được truyền qua Dart define, Android `BuildConfig`, asset hay
+APK. Sau khi thay đổi backend, deploy `nabi-ai-generate` tới đúng Supabase
+project rồi chạy kiểm tra kết nối trong `tools/test_gemini_connection.ps1`.
 
 Không commit API key, service-role key, session token hoặc `.env` thật.
 

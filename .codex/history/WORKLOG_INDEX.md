@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 144
+- Total worklogs: 145
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -153,3 +153,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-24 | unknown | docs-context | unknown | [2026-08-24-professional-observability-logging](../../docs/worklog/2026-08-24/2026-08-24-professional-observability-logging.md) |
 | 2026-08-25 | bugfix | bugfix | analyzer/build hygiene, Admin, Nabi notification, sleep tracking, nutrition | [Worklog - Analyzer zero diagnostics](../../docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md) |
 | 2026-08-29 | unknown | docs-context | unknown | [Worklog — Google Play full remediation](../../docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md) |
+| 2026-08-29 | docs-context | docs-context | docs/tasks, release evidence Google Play | [Worklog - Hoàn thiện Google Play Final Pass execution plan](../../docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md) |

@@ -4,18 +4,21 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _buildPath = 'docs/supabase/01_build_system.sql';
 const _seedPath = 'docs/supabase/02_seed_data.sql';
+const _aiRuntimePath = 'docs/supabase/03_ai_runtime_enablement.sql';
 
 void main() {
-  group('Supabase two-script rebuild contract', () {
+  group('Supabase rebuild and AI preflight contract', () {
     late String build;
     late String seed;
+    late String aiRuntime;
 
     setUpAll(() {
       build = File(_buildPath).readAsStringSync();
       seed = File(_seedPath).readAsStringSync();
+      aiRuntime = File(_aiRuntimePath).readAsStringSync();
     });
 
-    test('keeps exactly two authoritative SQL scripts', () {
+    test('keeps two authoritative rebuild scripts and one optional preflight', () {
       final sqlFiles = Directory('docs/supabase')
           .listSync(followLinks: false)
           .whereType<File>()
@@ -24,23 +27,52 @@ void main() {
           .toList()
         ..sort();
 
-      expect(sqlFiles, ['01_build_system.sql', '02_seed_data.sql']);
+      expect(sqlFiles, [
+        '01_build_system.sql',
+        '02_seed_data.sql',
+        '03_ai_runtime_enablement.sql',
+      ]);
     });
 
-    test('documents the destructive build followed by the seed script', () {
+    test('documents the destructive rebuild followed by the optional preflight', () {
       final readme = File('docs/supabase/README.md').readAsStringSync();
       final buildIndex = readme.indexOf('01_build_system.sql');
       final seedIndex = readme.indexOf('02_seed_data.sql');
+      final aiRuntimeIndex = readme.indexOf('03_ai_runtime_enablement.sql');
 
       expect(buildIndex, greaterThanOrEqualTo(0));
       expect(seedIndex, greaterThan(buildIndex));
+      expect(aiRuntimeIndex, greaterThan(seedIndex));
       expect(readme, contains('ON_ERROR_STOP'));
+      expect(readme, contains('không thuộc rebuild sequence'));
       expect(build, contains('DESTRUCTIVE LOCAL/SANDBOX SCRIPT ONLY'));
       expect(build, contains('drop schema if exists public cascade'));
       expect(seed, contains('DEV/SANDBOX ONLY'));
       expect(seed, contains('truncate table auth.users cascade'));
       expect(seed, contains('insert into auth.users'));
       expect(seed, isNot(contains('drop schema if exists public cascade')));
+    });
+
+    test('keeps the AI preflight read-only and provider-secret free', () {
+      for (final token in [
+        'OPTIONAL AI RUNTIME PREFLIGHT (READ ONLY)',
+        'begin read only;',
+        'AI_RUNTIME_TABLE_MISSING_',
+        'AI_RUNTIME_RPC_MISSING_',
+        'AI_RUNTIME_RLS_MISSING_',
+        'AI_RUNTIME_QUOTA_RULE_MISSING_',
+        'rollback;',
+      ]) {
+        expect(aiRuntime, contains(token), reason: token);
+      }
+
+      final mutatingStatement = RegExp(
+        r'^\s*(?:drop\s+schema|truncate|create\s+table|alter\s+table|insert\s+into|update\s+|delete\s+from|grant\s+|revoke\s+)',
+        caseSensitive: false,
+        multiLine: true,
+      );
+      expect(mutatingStatement.hasMatch(aiRuntime), isFalse);
+      expect(aiRuntime.toLowerCase(), isNot(contains('gemini_api_key')));
     });
 
     test('keeps M31 rollout in the build without granting membership', () {
@@ -91,6 +123,12 @@ void main() {
         'DAILY_HEALTH_HUB_RPC_MISSING_',
         'DAILY_HEALTH_HUB_GRANT_INVALID',
         'DAILY_HEALTH_HUB_ELIGIBILITY_NULLABILITY_INVALID',
+        'AI_RUNTIME_TABLE_MISSING_',
+        'AI_RUNTIME_RPC_MISSING_',
+        'AI_RUNTIME_RLS_MISSING_',
+        'AI_RUNTIME_RLS_POLICY_MISSING_',
+        'AI_RUNTIME_REPORT_GRANT_INVALID',
+        'AI_RUNTIME_ANON_RPC_GRANT_INVALID_',
       ]) {
         expect(build, contains(token), reason: token);
       }

@@ -1,68 +1,48 @@
-# NanoBio — Fix kết nối AI Chat
+# NanoBio — Kết nối AI Chat
 
-## Nguyên nhân đã xác định
+> Ghi chú current source (2026-08-29): hướng dẫn direct Gemini key trước đây
+> đã được thay thế bằng transport backend-only để không đóng gói provider key
+> trong ứng dụng.
 
-Màn hình AI Chat hiển thị thông báo “Nabi chưa sẵn sàng trò chuyện AI” khi
-`AIChatService` không nhận được `GEMINI_API_KEY` ở runtime. File `.env` đặt tại
-root dự án không tự xuất hiện trong APK; chạy `flutter run` hoặc build APK mà
-không truyền Dart define sẽ làm cấu hình Gemini bị thiếu dù `.env` có dữ liệu.
+## Luồng hiện tại
 
-## Cách chạy đúng trên Windows
+```text
+Flutter -> Supabase Edge Function `nabi-ai-generate` -> Gemini
+```
 
-Đặt `.env` tại root dự án, sau đó chạy:
+`AIChatService` gọi `NabiAiBackendClient` trong production. `GEMINI_API_KEY`
+không được đọc từ `.env`, Dart define, Android `BuildConfig` hoặc Flutter asset
+cho ứng dụng phát hành. Key chỉ tồn tại ở Edge Function secret.
+
+## Cấu hình và triển khai đúng
+
+1. Cấp `SUPABASE_URL` và `SUPABASE_ANON_KEY` công khai của đúng project cho
+   app build/runtime.
+2. Với quyền quản trị Supabase, đặt provider key ở server và deploy function:
+
+```bash
+supabase secrets set GEMINI_API_KEY=... --project-ref "$SUPABASE_PROJECT_REF"
+supabase functions deploy nabi-ai-generate --project-ref "$SUPABASE_PROJECT_REF"
+```
+
+3. Xác minh từ môi trường có cấu hình public Supabase bằng:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/test_gemini_connection.ps1
-powershell -ExecutionPolicy Bypass -File tools/run_ai_chat.ps1
 ```
 
-Chạy trên thiết bị cụ thể:
+Script chỉ báo trạng thái/độ dài phản hồi, không in secret. Nó gọi Edge
+Function nên chỉ chạy sau khi đã có quyền và chấp nhận một request kiểm tra.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/run_ai_chat.ps1 -DeviceId 220333QPG
-```
+## Khi ứng dụng báo không thể kết nối
 
-Script sẽ:
+- HTTP `404` ở `/functions/v1/nabi-ai-generate` nghĩa là function chưa có ở
+  project đang được cấu hình hoặc app đang trỏ nhầm project; Gemini key chưa
+  được dùng tới ở bước này.
+- HTTP `502` sau khi function đã tồn tại cần được kiểm tra trong Edge Function
+  logs: secret provider thiếu/sai, model server-side không khả dụng, quota hoặc
+  provider tạm thời lỗi.
+- Không sửa bằng cách đưa `GEMINI_API_KEY` vào APK. Điều đó trái với contract
+  bảo mật hiện tại và không sửa deployment phía server.
 
-1. Đọc và chuẩn hóa `.env`, kể cả dòng có khoảng trắng quanh dấu `=`.
-2. Kiểm tra `GEMINI_API_KEY` mà không in giá trị ra terminal.
-3. Tạo `.dart_tool/nanobio_defines.json` ngoài source control.
-4. Chạy Flutter với `--dart-define-from-file`.
-
-## Build APK có cấu hình Gemini
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/build_ai_chat_apk.ps1 -Mode debug
-```
-
-APK debug nằm tại đường dẫn build mặc định của Flutter. Không dùng trực tiếp:
-
-```powershell
-flutter build apk --debug
-```
-
-Lệnh trực tiếp phía trên không truyền API key vào runtime và sẽ tái hiện bug.
-
-## Xử lý lỗi sau bản sửa
-
-| Trạng thái | Thông báo ứng dụng |
-|---|---|
-| Thiếu cấu hình runtime | Nabi chưa sẵn sàng trò chuyện AI |
-| API key bị từ chối | Khóa AI chưa hợp lệ |
-| Mất mạng/TLS/timeout kết nối | Không thể kết nối với AI |
-| Model không tồn tại hoặc bị thu hồi | Mô hình AI hiện chưa khả dụng |
-| Quota/429/5xx | AI đang quá tải |
-| Response rỗng hoặc không hợp lệ | Nabi chưa nhận được câu trả lời phù hợp |
-
-Model chính lấy từ `GEMINI_CHAT_MODEL`, sau đó dùng `GEMINI_MODEL` để tương
-thích cấu hình cũ. Fallback mặc định là `gemini-3.5-flash` và
-`gemini-3.1-flash-lite`; model trùng lặp được loại bỏ.
-
-## Bảo mật
-
-- Không đóng gói `.env` thật trong ZIP bàn giao.
-- Không thêm `.env` vào Flutter assets.
-- Không hard-code API key trong Dart.
-- Không log API key, raw prompt hoặc raw response.
-- API key đã từng chia sẻ qua hội thoại nên cần thu hồi và tạo khóa mới trước
-  khi phát hành cho người dùng thực.
+Không commit provider key, service-role key, session token hoặc `.env` thật.

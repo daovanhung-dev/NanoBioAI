@@ -5,15 +5,20 @@ chạy các file rebuild/seed trên staging hoặc production.
 
 ## Nguồn tin cậy
 
-Tại HEAD hiện tại, bộ rebuild canonical chỉ gồm hai file:
+Tại HEAD hiện tại, bộ rebuild canonical vẫn chỉ gồm hai file:
 
 1. `01_build_system.sql` — schema, RLS, RPC và runtime contracts.
 2. `02_seed_data.sql` — cấu hình/catalog và fixture sandbox không nhạy cảm.
 
-Không có các file `01_schema_rebuild_local_sandbox.sql` đến `06_*`,
-`config.sql`, hoặc các script xác minh được nhắc trong tài liệu cũ. Không tạo
-file giả để bù cho đường dẫn lịch sử; cập nhật chính cặp canonical này khi
-schema/runtime thay đổi.
+`03_ai_runtime_enablement.sql` là preflight AI tùy chọn, chỉ đọc và không
+thuộc rebuild sequence. Chạy file này sau cặp canonical để xác minh database
+AI chat, tạo lịch, phản hồi nội dung và quota đã sẵn sàng; nó không tạo schema,
+seed, Edge Function hay provider credential.
+
+Không có các file `01_schema_rebuild_local_sandbox.sql` đến `06_*` hoặc
+`config.sql`. Không tạo file giả để bù cho đường dẫn lịch sử; cập nhật cặp
+canonical khi schema/runtime thay đổi, và chỉ cập nhật preflight khi contract
+AI thay đổi.
 
 ## Thứ tự chạy
 
@@ -31,6 +36,15 @@ psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f docs/supabase/02_seed_data.sql
 Chỉ ghi nhận `PASS` khi cả hai lệnh thực sự chạy thành công trên cùng một
 sandbox. Đọc SQL hoặc chạy contract test tĩnh không thay thế được runtime
 evidence.
+
+Nếu cần xác minh AI database sau rebuild, chạy thêm preflight tùy chọn này:
+
+```bash
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f docs/supabase/03_ai_runtime_enablement.sql
+```
+
+Preflight chỉ xác minh PostgreSQL; endpoint AI và provider vẫn cần được deploy
+riêng.
 
 ## Google Play Billing
 
@@ -52,6 +66,17 @@ AI runtime dùng Edge Function `nabi-ai-generate`. Gemini API key chỉ được
 ở secret của Edge Function; Flutter chỉ gửi prompt đã giới hạn kích thước và
 không nhận/ghi credential nhà cung cấp. `report-ai-content` cho phép guest gửi
 phản hồi có giới hạn tốc độ và lưu qua service role.
+
+Trước khi deploy `nabi-ai-generate`, export key ở shell an toàn (không commit
+vào repo), rồi đặt secret vào đúng Supabase project:
+
+```bash
+supabase secrets set GEMINI_API_KEY="$GEMINI_API_KEY" --project-ref "$SUPABASE_PROJECT_REF"
+```
+
+Một preflight SQL `PASS` không chứng minh Edge route đã tồn tại hoặc provider
+key hợp lệ. Sau deploy, chạy `tools/test_gemini_connection.ps1` với cấu hình
+đúng project để kiểm tra endpoint thực.
 
 ## Edge Functions bắt buộc
 

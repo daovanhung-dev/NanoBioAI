@@ -808,7 +808,13 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: - Diem ton token/chua toi uu: full test suite phat ra log rat lon va nhieu failure da biet.
 - docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: co che loc output/failure summary.
 - docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: cleanup plugin fails. Legal links now accept HTTPS URLs only.
-- docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: shutdown stream error. Failures are recorded in `/tmp/nanobio-full-test-before.txt`
+- docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: known shutdown stream error. Failures are recorded in
 - docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: in this workspace, so those states remain externally blocked/open.
 - docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: repository has pre-existing SQLite/toolchain and stale-contract failures.
 - docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: account/device first, then rerun only the blocked runtime gates before a full
+- docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md :: `BLOCKED_EXTERNAL`/`FAIL`, không chuyển source evidence thành runtime PASS.
+- docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md :: - Flutter analyze/test/build: SKIPPED - chỉ thay đổi tài liệu kế hoạch/worklog.
+- docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md :: - Chưa fix: release vẫn `NO-GO`; chưa có public legal URLs, Play Console,
+- docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md :: - Cần kiểm tra tiếp: khi user xác nhận execution, bắt đầu Phase 0; chạy validator
+- docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md :: các gate mở được ghi rõ là `BLOCKED_EXTERNAL`, `FAIL` hoặc `PLANNED`.
