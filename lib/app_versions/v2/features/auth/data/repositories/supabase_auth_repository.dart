@@ -1,3 +1,4 @@
+import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'package:nano_app/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_callback_result.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_commands.dart';
@@ -9,6 +10,7 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_vali
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nano_app/services/supabase/auth/supabase_auth_error_translator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -202,17 +204,58 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> requestAccountDeletion() async {
+    var deletionAccepted = false;
     try {
+      final userId = datasource.client.auth.currentUser?.id;
       await datasource.requestAccountDeletion();
+      deletionAccepted = true;
+      if (userId != null && userId.trim().isNotEmpty) {
+        try {
+          await NotificationBootstrap.clearGeneratedReminders(
+            subjectUserId: userId,
+          );
+        } catch (error, stackTrace) {
+          AppLogger.error(
+            'AUTH_REPOSITORY',
+            'Failed to clear account notification schedules',
+            error,
+            stackTrace,
+          );
+        }
+      }
       await DatabaseService.deleteDatabaseFile();
-      await AppPrefs.setOnboardingCompleted(false);
-      await datasource.signOut();
+      await AppPrefs.clearAll();
+      try {
+        await const FlutterSecureStorage().deleteAll();
+      } catch (error, stackTrace) {
+        AppLogger.error(
+          'AUTH_REPOSITORY',
+          'Failed to clear secure account state',
+          error,
+          stackTrace,
+        );
+      }
     } on AuthException catch (error) {
       throw _mapAuthException(error);
     } catch (_) {
       throw _genericFailure(
         'Nabi chưa thể gửi yêu cầu xóa tài khoản lúc này. Mình thử lại sau một chút nhé.',
       );
+    } finally {
+      // Sign out even when local cleanup fails, but keep a failed server
+      // deletion retryable by leaving the still-valid session intact.
+      if (deletionAccepted) {
+        try {
+          await datasource.signOut();
+        } catch (error, stackTrace) {
+          AppLogger.error(
+            'AUTH_REPOSITORY',
+            'Sign-out after account deletion failed',
+            error,
+            stackTrace,
+          );
+        }
+      }
     }
   }
 

@@ -59,7 +59,8 @@ class MealDetailContent {
   final String sourceLabel;
 
   bool get hasRecipe => ingredients.isNotEmpty || cookingSteps.isNotEmpty;
-  bool get hasWarnings => allergenTags.isNotEmpty || avoidConditionTags.isNotEmpty;
+  bool get hasWarnings =>
+      allergenTags.isNotEmpty || avoidConditionTags.isNotEmpty;
   bool get isEstimated => nutritionStatus == 'estimated_from_ingredients';
 }
 
@@ -68,6 +69,7 @@ abstract final class MealDetailContentFormatter {
     final detail = meal.catalogDetail;
     final detailStatus = detail?.nutritionStatus.trim() ?? '';
     final snapshotStatus = meal.nutritionStatus.trim();
+    final catalogClaimsReviewed = detail?.isPlanEligible != false;
     final useCatalogNutrition =
         detail != null && detailStatus != 'missing_source_data';
 
@@ -78,35 +80,38 @@ abstract final class MealDetailContentFormatter {
     final fiber = useCatalogNutrition ? detail.fiber : meal.fiber;
     final waterMl = useCatalogNutrition ? detail.waterMl : meal.waterMl;
     final sugarG = useCatalogNutrition ? detail.sugarG : meal.sugarG;
-    final saturatedFatG =
-        useCatalogNutrition ? detail.saturatedFatG : meal.saturatedFatG;
+    final saturatedFatG = useCatalogNutrition
+        ? detail.saturatedFatG
+        : meal.saturatedFatG;
     final sodiumMg = useCatalogNutrition ? detail.sodiumMg : meal.sodiumMg;
-    final cholesterolMg =
-        useCatalogNutrition ? detail.cholesterolMg : meal.cholesterolMg;
-    final potassiumMg =
-        useCatalogNutrition ? detail.potassiumMg : meal.potassiumMg;
+    final cholesterolMg = useCatalogNutrition
+        ? detail.cholesterolMg
+        : meal.cholesterolMg;
+    final potassiumMg = useCatalogNutrition
+        ? detail.potassiumMg
+        : meal.potassiumMg;
     final calciumMg = useCatalogNutrition ? detail.calciumMg : meal.calciumMg;
     final ironMg = useCatalogNutrition ? detail.ironMg : meal.ironMg;
     final effectiveStatus = detailStatus.isNotEmpty && useCatalogNutrition
         ? detailStatus
         : snapshotStatus.isNotEmpty
-            ? snapshotStatus
-            : _hasAnyNutrition(
-                calories: calories,
-                protein: protein,
-                carbs: carbs,
-                fat: fat,
-                fiber: fiber,
-                sugarG: sugarG,
-                saturatedFatG: saturatedFatG,
-                sodiumMg: sodiumMg,
-                cholesterolMg: cholesterolMg,
-                potassiumMg: potassiumMg,
-                calciumMg: calciumMg,
-                ironMg: ironMg,
-              )
-                ? 'snapshot'
-                : 'missing_source_data';
+        ? snapshotStatus
+        : _hasAnyNutrition(
+            calories: calories,
+            protein: protein,
+            carbs: carbs,
+            fat: fat,
+            fiber: fiber,
+            sugarG: sugarG,
+            saturatedFatG: saturatedFatG,
+            sodiumMg: sodiumMg,
+            cholesterolMg: cholesterolMg,
+            potassiumMg: potassiumMg,
+            calciumMg: calciumMg,
+            ironMg: ironMg,
+          )
+        ? 'snapshot'
+        : 'missing_source_data';
 
     final ingredients = _preferList(detail?.ingredients, meal.ingredients);
     final cookingSteps = _preferList(
@@ -118,8 +123,15 @@ abstract final class MealDetailContentFormatter {
 
     return MealDetailContent(
       mealName: _prefer(detail?.mealName, meal.mealName),
-      description: _prefer(detail?.description, meal.description),
-      topicName: _prefer(detail?.healthTopicName, meal.topicName),
+      // Unreviewed source recipes may carry condition-specific claims. Keep
+      // their cooking/provenance data available for an already persisted meal,
+      // but do not render those claims in the release UI.
+      description: catalogClaimsReviewed
+          ? _prefer(detail?.description, meal.description)
+          : '',
+      topicName: catalogClaimsReviewed
+          ? _prefer(detail?.healthTopicName, meal.topicName)
+          : '',
       servingSize: _prefer(detail?.servingSize, meal.servingSize),
       calories: calories,
       protein: protein,
@@ -138,7 +150,8 @@ abstract final class MealDetailContentFormatter {
       nutritionLabel: effectiveStatus == 'estimated_from_ingredients'
           ? 'Dinh dưỡng ước tính • 1 khẩu phần'
           : 'Dinh dưỡng • 1 khẩu phần',
-      showNutrition: effectiveStatus != 'missing_source_data' &&
+      showNutrition:
+          effectiveStatus != 'missing_source_data' &&
           _hasAnyNutrition(
             calories: calories,
             protein: protein,
@@ -155,13 +168,14 @@ abstract final class MealDetailContentFormatter {
           ),
       ingredients: ingredients,
       cookingSteps: cookingSteps,
-      benefits: _prefer(detail?.benefits, meal.benefits),
+      benefits: catalogClaimsReviewed
+          ? _prefer(detail?.benefits, meal.benefits)
+          : '',
       allergenTags: _preferList(detail?.allergenTags, meal.allergenTags),
-      avoidConditionTags: _preferList(
-        detail?.avoidConditionTags,
-        meal.conditionTags,
-      ),
-      sourceLabel: _sourceLabel(detail, meal),
+      avoidConditionTags: catalogClaimsReviewed
+          ? _preferList(detail?.avoidConditionTags, meal.conditionTags)
+          : const <String>[],
+      sourceLabel: catalogClaimsReviewed ? _sourceLabel(detail, meal) : '',
     );
   }
 
@@ -170,8 +184,12 @@ abstract final class MealDetailContentFormatter {
     return value.isNotEmpty ? value : fallback.trim();
   }
 
-  static List<String> _preferList(List<String>? primary, List<String> fallback) {
-    final values = primary
+  static List<String> _preferList(
+    List<String>? primary,
+    List<String> fallback,
+  ) {
+    final values =
+        primary
             ?.map((value) => value.trim())
             .where((value) => value.isNotEmpty)
             .toList(growable: false) ??
@@ -188,12 +206,9 @@ abstract final class MealDetailContentFormatter {
       .split(RegExp(r'[\n;•]+'))
       .map(
         (line) => line.trim().replaceFirst(
-              RegExp(
-                r'^(?:bước\s*)?\d+[\.)\-:]?\s*',
-                caseSensitive: false,
-              ),
-              '',
-            ),
+          RegExp(r'^(?:bước\s*)?\d+[\.)\-:]?\s*', caseSensitive: false),
+          '',
+        ),
       )
       .where((line) => line.isNotEmpty)
       .toList(growable: false);

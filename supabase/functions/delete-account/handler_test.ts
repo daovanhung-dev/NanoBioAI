@@ -60,6 +60,23 @@ Deno.test("deletes only the authenticated account and returns no account data", 
   assertFalse(responseText.includes("user-1"));
 });
 
+Deno.test("does not delete auth when owned storage cleanup fails", async () => {
+  let deleteCalls = 0;
+  const handler = createDeleteAccountHandler(dependencies({
+    deleteOwnedStorage: () => Promise.reject(new Error("storage unavailable")),
+    deleteAccount: () => {
+      deleteCalls++;
+      return Promise.resolve();
+    },
+  }));
+
+  const response = await handler(request({ body: { confirm: true } }));
+
+  assertEquals(response.status, 503);
+  assertEquals(await response.json(), { error: "account_deletion_unavailable" });
+  assertEquals(deleteCalls, 0);
+});
+
 Deno.test("keeps service-role failures private", async () => {
   const handler = createDeleteAccountHandler(dependencies({
     deleteAccount: () => Promise.reject(new Error("service-role-must-not-leak")),

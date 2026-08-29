@@ -24,26 +24,35 @@ class MealCandidateSelector {
           .map((item) => _normalize(item.symptomType)),
     }..removeWhere((item) => item.isEmpty);
 
-    final candidates = catalog.where((meal) {
-      if (!meal.isActive) return false;
-      if (_isFixtureCode(meal.code)) return false;
-      if (excludedCodes.contains(meal.code)) return false;
+    final candidates =
+        catalog
+            .where((meal) {
+              if (!meal.isActive) return false;
+              // Source-imported recipes can contain condition-specific or otherwise
+              // unreviewed health claims. They remain in the cache for provenance and
+              // previously generated-plan hydration, but must never be offered for a
+              // new plan or replacement until a reviewer explicitly marks them
+              // plan-eligible.
+              if (!meal.isPlanEligible) return false;
+              if (_isFixtureCode(meal.code)) return false;
+              if (excludedCodes.contains(meal.code)) return false;
 
-      // Full-plan generation intentionally forwards every active Supabase meal
-      // to the AI. The user's health profile is part of the prompt, so catalog
-      // approval/eligibility flags do not remove codes before AI analysis.
-      if (!isSlotScopedSelection) return true;
+              // Full-plan generation forwards only reviewed meals to the AI. The
+              // user's health profile remains part of the prompt for personalization,
+              // but cannot turn an unreviewed source recipe into an eligible one.
+              if (!isSlotScopedSelection) return true;
 
-      // Manual replacement remains slot-aware and keeps local safety checks.
-      if (meal.mealType != normalizedType &&
-          meal.mealType != 'unclassified') {
-        return false;
-      }
-      if (_conflictsWithRestrictions(meal, restrictions)) return false;
-      if (_conflictsWithConditions(meal, conditionTokens)) return false;
-      return true;
-    }).toList(growable: false)
-      ..sort((left, right) => left.code.compareTo(right.code));
+              // Manual replacement remains slot-aware and keeps local safety checks.
+              if (meal.mealType != normalizedType &&
+                  meal.mealType != 'unclassified') {
+                return false;
+              }
+              if (_conflictsWithRestrictions(meal, restrictions)) return false;
+              if (_conflictsWithConditions(meal, conditionTokens)) return false;
+              return true;
+            })
+            .toList(growable: false)
+          ..sort((left, right) => left.code.compareTo(right.code));
     return candidates;
   }
 
@@ -103,7 +112,6 @@ class MealCandidateSelector {
     }
     return false;
   }
-
 
   bool _isFixtureCode(String code) {
     return code.trim().toLowerCase().startsWith('fixture-');

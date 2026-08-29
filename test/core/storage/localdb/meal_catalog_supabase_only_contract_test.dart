@@ -29,7 +29,7 @@ void main() {
       'lib/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart',
     ).readAsStringSync();
 
-    expect(mainSource, contains('_refreshRequiredMealCatalog'));
+    expect(mainSource, contains('_prepareMealCatalogForOnboarding'));
     expect(
       mainSource,
       contains('MealCatalogCacheRefreshService.refreshFromInitializedSupabase'),

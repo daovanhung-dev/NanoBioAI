@@ -58,7 +58,7 @@ void main() {
         controllerSource,
         contains('extends AsyncNotifier<AuthRouteState>'),
       );
-      expect(controllerSource, contains('ref.watch(v2AuthChangesProvider)'));
+      expect(controllerSource, contains('ref.listen(v2AuthChangesProvider'));
       expect(controllerSource, contains('resolveAuthRouteState'));
       expect(controllerSource, contains('userDataSyncControllerProvider'));
       expect(controllerSource, contains('AuthSignOutResult'));

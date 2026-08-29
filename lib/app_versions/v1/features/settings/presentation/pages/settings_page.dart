@@ -17,12 +17,14 @@ import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
+import 'package:nano_app/core/config/app_env.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
 import 'package:nano_app/core/theme/primitives/button.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_participation_page.dart';
 import 'package:nano_app/services/supabase/auth/account_security_provider.dart';
 import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'dev_database_viewer_page.dart';
 
@@ -215,14 +217,11 @@ class SettingsView extends ConsumerWidget {
                                 title: 'Cỡ chữ',
                                 subtitle:
                                     textScale?.preset.label ?? 'Tiêu chuẩn',
-                                onTap: () =>
-                                    _showTextScaleSheet(context, ref),
+                                onTap: () => _showTextScaleSheet(context, ref),
                               ),
                               const _DividerLine(),
                               _MenuItem(
-                                key: const Key(
-                                  'settings_experience_feedback',
-                                ),
+                                key: const Key('settings_experience_feedback'),
                                 icon: Icons.motion_photos_auto_rounded,
                                 title: 'Hiệu ứng & phản hồi',
                                 subtitle: _experienceSubtitle(experience),
@@ -283,6 +282,8 @@ class SettingsView extends ConsumerWidget {
                             ),
                           ],
                           const SizedBox(height: AppSpacing.sectionSpacing),
+                          const _LegalLinksSection(),
+                          const SizedBox(height: AppSpacing.sectionSpacing),
                           const _SectionTitle('Nabi & Sức khỏe'),
                           const SizedBox(height: AppSpacing.md),
                           _MenuCard(
@@ -316,8 +317,7 @@ class SettingsView extends ConsumerWidget {
                                     : 'Đăng nhập để đồng bộ dữ liệu khi đổi thiết bị',
                                 onTap: isAuthenticated
                                     ? () => _showDataSyncSheet(context)
-                                    : () =>
-                                          context.push(AuthRoutePaths.login),
+                                    : () => context.push(AuthRoutePaths.login),
                               ),
                             ],
                           ),
@@ -327,8 +327,7 @@ class SettingsView extends ConsumerWidget {
                               email: dashboard?.email.trim().isEmpty == false
                                   ? dashboard!.email
                                   : null,
-                              onLogout: () =>
-                                  _confirmLogout(context, ref),
+                              onLogout: () => _confirmLogout(context, ref),
                               onDeleteAccount: () =>
                                   _confirmDeleteAccount(context, ref),
                             ),
@@ -605,9 +604,10 @@ class SettingsView extends ConsumerWidget {
         'Đang chờ bạn xác nhận dữ liệu khách',
       UserDataSyncStatus.pendingUpload =>
         '${state.pendingCount} thay đổi đang chờ đồng bộ',
-      UserDataSyncStatus.success => state.lastSuccessAt == null
-          ? 'Đã đồng bộ'
-          : 'Đồng bộ gần nhất: ${_formatSyncTime(state.lastSuccessAt!)}',
+      UserDataSyncStatus.success =>
+        state.lastSuccessAt == null
+            ? 'Đã đồng bộ'
+            : 'Đồng bộ gần nhất: ${_formatSyncTime(state.lastSuccessAt!)}',
       UserDataSyncStatus.error =>
         state.safeError ?? 'Đồng bộ chưa hoàn tất, dữ liệu vẫn được giữ',
       UserDataSyncStatus.idle => fallback,
@@ -790,9 +790,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
               controller: _confirm,
               obscureText: true,
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(
-                labelText: 'Nhập lại mật khẩu',
-              ),
+              decoration: const InputDecoration(labelText: 'Nhập lại mật khẩu'),
               validator: (value) {
                 final error = _validatePassword(value);
                 if (error != null) return error;
@@ -890,11 +888,10 @@ class _SaleSettingsEntry extends StatelessWidget {
               title: 'Tham gia cùng Nabi',
               subtitle: switch (state.status) {
                 SaleStatus.pending => 'Yêu cầu đang chờ duyệt',
-                SaleStatus.suspended =>
-                  'Quyền cộng tác viên đang tạm dừng',
+                SaleStatus.suspended => 'Quyền cộng tác viên đang tạm dừng',
                 SaleStatus.closed => 'Quyền cộng tác viên đã đóng',
-                SaleStatus.none || SaleStatus.active =>
-                  'Đọc điều lệ trước khi tham gia',
+                SaleStatus.none ||
+                SaleStatus.active => 'Đọc điều lệ trước khi tham gia',
               },
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -1083,6 +1080,66 @@ class _SectionTitle extends StatelessWidget {
     title,
     style: AppTextStyles.heading3.copyWith(fontWeight: FontWeight.w700),
   );
+}
+
+class _LegalLinksSection extends StatelessWidget {
+  const _LegalLinksSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final privacyUrl = _validHttpUrl(AppEnv.maybeString('PRIVACY_POLICY_URL'));
+    final deletionUrl = _validHttpUrl(
+      AppEnv.maybeString('ACCOUNT_DELETION_URL'),
+    );
+    if (privacyUrl == null && deletionUrl == null) {
+      // A release must wire public HTTPS URLs; do not render dead links in
+      // development builds where that configuration is intentionally absent.
+      return const SizedBox.shrink();
+    }
+    final items = <Widget>[
+      const _SectionTitle('Pháp lý & dữ liệu'),
+      const SizedBox(height: AppSpacing.md),
+      _MenuCard(
+        children: [
+          if (privacyUrl != null)
+            _MenuItem(
+              icon: Icons.policy_outlined,
+              title: 'Chính sách bảo mật',
+              subtitle: 'Cách NanoBio thu thập, dùng và xóa dữ liệu',
+              onTap: () => _openUrl(context, privacyUrl),
+            ),
+          if (privacyUrl != null && deletionUrl != null) const _DividerLine(),
+          if (deletionUrl != null)
+            _MenuItem(
+              icon: Icons.delete_outline_rounded,
+              title: 'Xóa tài khoản ngoài ứng dụng',
+              subtitle: 'Gửi yêu cầu ngay cả khi bạn không mở được app',
+              onTap: () => _openUrl(context, deletionUrl),
+            ),
+        ],
+      ),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: items,
+    );
+  }
+
+  static Uri? _validHttpUrl(String? raw) {
+    final uri = Uri.tryParse(raw?.trim() ?? '');
+    if (uri == null || uri.scheme != 'https' || uri.host.trim().isEmpty) {
+      return null;
+    }
+    return uri;
+  }
+
+  static Future<void> _openUrl(BuildContext context, Uri uri) async {
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (opened || !context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Chưa mở được liên kết. Bạn thử lại nhé.')),
+    );
+  }
 }
 
 class _MenuCard extends StatelessWidget {

@@ -1,6 +1,6 @@
-import 'dart:developer' as developer;
-
-import 'package:flutter/foundation.dart';
+import 'package:nano_app/core/utils/logger/app_log_category.dart';
+import 'package:nano_app/core/utils/logger/app_log_level.dart';
+import 'package:nano_app/core/utils/logger/app_logger.dart';
 
 /// Admin-specific logger for debugging and troubleshooting.
 ///
@@ -40,8 +40,8 @@ abstract class AdminLogger {
       message,
       data: {
         if (data != null) ...data,
-        if (error != null) 'error': error.toString(),
-        if (stackTrace != null) 'stackTrace': stackTrace.toString(),
+        if (error != null) 'errorType': error.runtimeType.toString(),
+        if (stackTrace != null) 'stackTracePresent': true,
       },
     );
   }
@@ -61,8 +61,8 @@ abstract class AdminLogger {
       data: {
         if (params != null) 'params': _sanitize(params),
         if (result != null) 'result': _sanitize(result),
-        if (error != null) 'error': error.toString(),
-        if (stackTrace != null) 'stackTrace': stackTrace.toString(),
+        if (error != null) 'errorType': error.runtimeType.toString(),
+        if (stackTrace != null) 'stackTracePresent': true,
         if (duration != null) 'duration_ms': duration.inMilliseconds,
       },
     );
@@ -129,58 +129,27 @@ abstract class AdminLogger {
         'reason': reason,
         if (payload != null) 'payload': _sanitize(payload),
         if (result != null) 'result': _sanitize(result),
-        if (error != null) 'error': error.toString(),
+        if (error != null) 'errorType': error.runtimeType.toString(),
       },
     );
   }
 
   static void _log(String level, String message, {Map<String, Object?>? data}) {
-    final timestamp = DateTime.now().toIso8601String();
-    final dataStr = data != null && data.isNotEmpty
-        ? '\n  Data: ${_formatData(data)}'
-        : '';
-
-    final logMessage = '[$_tag] [$level] $message$dataStr';
-
-    // Print to console in debug mode
-    if (kDebugMode) {
-      // ignore: avoid_print
-      print('[$timestamp] $logMessage');
-    }
-
-    // Send to DevTools timeline
-    developer.log(
-      message,
-      time: DateTime.now(),
-      name: '$_tag.$level',
-      level: _levelToInt(level),
-      error: data?['error'],
-      stackTrace: data?['stackTrace'] is StackTrace
-          ? data!['stackTrace'] as StackTrace
-          : null,
+    final sanitized = data == null
+        ? const <String, Object?>{}
+        : Map<String, Object?>.from(_sanitize(data) as Map);
+    AppLogger.event(
+      level: switch (level) {
+        'ERROR' || 'RPC-ERROR' || 'MUTATION-ERROR' => AppLogLevel.error,
+        'WARN' => AppLogLevel.warn,
+        _ => AppLogLevel.info,
+      },
+      category: AppLogCategory.app,
+      scope: _tag,
+      operation: level,
+      message: message,
+      metadata: sanitized,
     );
-  }
-
-  static int _levelToInt(String level) {
-    return switch (level) {
-      'ERROR' || 'RPC-ERROR' || 'MUTATION-ERROR' => 1000, // Severe
-      'WARN' => 900, // Warning
-      _ => 800, // Info
-    };
-  }
-
-  static String _formatData(Map<String, Object?> data) {
-    return data.entries
-        .map((e) => '${e.key}=${_formatValue(e.value)}')
-        .join(', ');
-  }
-
-  static String _formatValue(Object? value) {
-    if (value == null) return 'null';
-    if (value is String) return '"$value"';
-    if (value is Map) return '{${value.length} entries}';
-    if (value is List) return '[${value.length} items]';
-    return value.toString();
   }
 
   /// Sanitize sensitive data before logging

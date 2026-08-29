@@ -22,6 +22,9 @@ void main() {
     expect(index, contains('auth.getUser()'));
     expect(index, contains('auth.admin.deleteUser(userId)'));
     expect(index, contains('SUPABASE_SERVICE_ROLE_KEY'));
+    expect(index, contains('schedule-completion-proofs'));
+    expect(index, contains('deleteOwnedStorage'));
+    expect(index, contains('.remove('));
     expect(client, contains("body: const {'confirm': true}"));
   });
 }

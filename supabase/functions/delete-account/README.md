@@ -4,8 +4,11 @@ Lifecycle: `Current`. Implementation: `Static-verified` at baseline `25018e8`;
 deployment and Supabase runtime remain `Sandbox-unverified` unless rerun.
 
 Hàm này phục vụ thao tác xóa tài khoản từ Flutter. Nó bắt buộc JWT hợp lệ,
-yêu cầu body `{ "confirm": true }`, lấy người dùng từ JWT và chỉ gọi Admin API
-để xóa chính người dùng đó. Khóa service role chỉ tồn tại trong Edge runtime.
+yêu cầu body `{ "confirm": true }`, lấy người dùng từ JWT, dọn object thuộc
+prefix của người dùng trong bucket `schedule-completion-proofs`, rồi chỉ gọi
+Admin API để xóa chính người dùng đó. Khóa service role chỉ tồn tại trong Edge
+runtime. Nếu dọn Storage thất bại, auth/data không bị xóa và người dùng có thể
+thử lại.
 
 Schema `public.users.id` đã có khóa ngoại `on delete cascade` tới `auth.users`,
 nên Supabase Auth xử lý dữ liệu phụ thuộc theo ràng buộc server. Trước khi row

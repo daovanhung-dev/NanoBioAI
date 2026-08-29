@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
+import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_vietnamese_text_validator.dart';
 
@@ -70,6 +71,19 @@ void main() {
           isTrue,
         );
       }
+    },
+  );
+
+  test(
+    'catalog rows without an explicit review flag are not plan eligible',
+    () {
+      final item = MealCatalogItemModel.fromMap(const {
+        'code': 'imported_without_review',
+        'meal_type': 'breakfast',
+        'meal_name': 'Món nhập khẩu',
+      });
+
+      expect(item.isPlanEligible, isFalse);
     },
   );
 }

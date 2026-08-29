@@ -13,6 +13,8 @@ class AppEnv {
     'SUPABASE_ANON_KEY',
     'AUTH_EMAIL_REDIRECT_URL',
     'AUTH_CONFIRM_EMAIL_REQUIRED',
+    'PRIVACY_POLICY_URL',
+    'ACCOUNT_DELETION_URL',
   };
   static Map<String, String> _bundledAuthValues = const {};
 
@@ -154,6 +156,12 @@ class AppEnv {
       ),
       'AUTH_EMAIL_REDIRECT_URL' => const String.fromEnvironment(
         'AUTH_EMAIL_REDIRECT_URL',
+      ),
+      'PRIVACY_POLICY_URL' => const String.fromEnvironment(
+        'PRIVACY_POLICY_URL',
+      ),
+      'ACCOUNT_DELETION_URL' => const String.fromEnvironment(
+        'ACCOUNT_DELETION_URL',
       ),
       'ONBOARDING_AI_DEV_CHECK_ENABLED' => const String.fromEnvironment(
         'ONBOARDING_AI_DEV_CHECK_ENABLED',

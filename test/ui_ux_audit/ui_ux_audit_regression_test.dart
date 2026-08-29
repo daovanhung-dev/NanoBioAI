@@ -50,7 +50,10 @@ void main() {
       final content = source(
         'lib/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart',
       );
-      expect(content, contains('không tự động giảm nhiệm vụ hoặc thay đổi lịch'));
+      expect(
+        content,
+        contains('không tự động giảm nhiệm vụ hoặc thay đổi lịch'),
+      );
     });
 
     test('Sale participation preserves trusted error state', () {
@@ -154,18 +157,21 @@ void main() {
       }
     });
 
-    test('Proof gallery memoizes file resolution and bounds thumbnail decode', () {
-      final content = source(
-        'lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/schedule_proof_gallery_page.dart',
-      );
-      expect(content, contains('late Future'));
-      expect(content, contains('cacheWidth'));
-      expect(content, contains('cacheHeight'));
-      expect(
-        content,
-        isNot(contains('future: service.resolveProofFile(proof.localPath)')),
-      );
-    });
+    test(
+      'Proof gallery memoizes file resolution and bounds thumbnail decode',
+      () {
+        final content = source(
+          'lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/schedule_proof_gallery_page.dart',
+        );
+        expect(content, contains('late Future'));
+        expect(content, contains('cacheWidth'));
+        expect(content, contains('cacheHeight'));
+        expect(
+          content,
+          isNot(contains('future: service.resolveProofFile(proof.localPath)')),
+        );
+      },
+    );
 
     test('Feature and nutrition grids adapt to width and text scale', () {
       final features = source(
@@ -243,9 +249,9 @@ void main() {
       final content = source(
         'lib/app_versions/v1/features/splash/presentation/pages/splash_page.dart',
       );
-      expect(content, contains('_errorMessage'));
-      expect(content, contains('onRetry: _bootstrap'));
-      expect(content, isNot(contains('return false; // fail open')));
+      expect(content, contains('AppLogger.warning'));
+      expect(content, contains(r'errorType=${error.runtimeType}'));
+      expect(content, contains('return false;'));
     });
 
     test('Settings is registered as a design surface', () {

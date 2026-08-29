@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/router/router.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/features/nabi/domain/nabi_animation_type.dart';
 import 'package:nano_app/features/nabi/presentation/widgets/nabi_animation_player.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
@@ -62,6 +63,7 @@ class SplashPage extends ConsumerStatefulWidget {
 }
 
 class _SplashPageState extends ConsumerState<SplashPage> {
+  static const _tag = 'SPLASH';
   bool _hasNavigated = false;
   _BootStage _bootStage = _BootStage.preparing;
 
@@ -114,18 +116,22 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   Future<void> _initializeSafely() async {
     try {
       await ref.read(splashProvider.notifier).initialize();
-    } catch (error, stackTrace) {
-      debugPrint('Splash initialization failed: $error');
-      debugPrintStack(stackTrace: stackTrace);
+    } catch (error) {
+      AppLogger.warning(
+        _tag,
+        'Splash initialization failed; errorType=${error.runtimeType}',
+      );
     }
   }
 
   Future<bool> _readOnboardingCompletedSafely() async {
     try {
       return await AppPrefs.isOnboardingCompleted();
-    } catch (error, stackTrace) {
-      debugPrint('Unable to read onboarding state: $error');
-      debugPrintStack(stackTrace: stackTrace);
+    } catch (error) {
+      AppLogger.warning(
+        _tag,
+        'Unable to read onboarding state; errorType=${error.runtimeType}',
+      );
       return false;
     }
   }
@@ -151,7 +157,6 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
@@ -165,10 +170,10 @@ class _SplashPageState extends ConsumerState<SplashPage> {
               width: constraints.maxWidth,
               height: constraints.maxHeight,
             );
-            final minContentHeight = (constraints.maxHeight -
-                    (layout.verticalPadding * 2))
-                .clamp(0.0, double.infinity)
-                .toDouble();
+            final minContentHeight =
+                (constraints.maxHeight - (layout.verticalPadding * 2))
+                    .clamp(0.0, double.infinity)
+                    .toDouble();
 
             return SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
@@ -198,7 +203,6 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       ),
     );
   }
-
 }
 
 class _SplashLayout {
@@ -230,21 +234,22 @@ class _SplashLayout {
       horizontalPadding: width < 360
           ? AppSpacing.compactPagePadding
           : isExpanded
-              ? AppSpacing.pagePaddingLarge
-              : AppSpacing.pagePadding,
-      verticalPadding:
-          isCompact ? AppSpacing.compactPagePadding : AppSpacing.pagePadding,
+          ? AppSpacing.pagePaddingLarge
+          : AppSpacing.pagePadding,
+      verticalPadding: isCompact
+          ? AppSpacing.compactPagePadding
+          : AppSpacing.pagePadding,
       maxContentWidth: isExpanded ? 560 : 480,
       nabiSize: isCompact
           ? 142
           : isExpanded
-              ? 210
-              : 184,
+          ? 210
+          : 184,
       brandFontSize: isCompact
           ? 34
           : isExpanded
-              ? 44
-              : 40,
+          ? 44
+          : 40,
     );
   }
 }
@@ -317,10 +322,7 @@ class _SplashExperience extends StatelessWidget {
                 ? AppSpacing.lg
                 : AppSpacing.sectionSpacingLarge,
           ),
-          _BootIndicator(
-            stage: stage,
-            compact: layout.isCompact,
-          ),
+          _BootIndicator(stage: stage, compact: layout.isCompact),
         ],
       ),
     );
@@ -387,10 +389,7 @@ class _NabiHero extends StatelessWidget {
 }
 
 class _BootIndicator extends StatelessWidget {
-  const _BootIndicator({
-    required this.stage,
-    required this.compact,
-  });
+  const _BootIndicator({required this.stage, required this.compact});
 
   final _BootStage stage;
   final bool compact;
@@ -417,11 +416,7 @@ class _BootIndicator extends StatelessWidget {
                 key: ValueKey(stage),
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    stage.icon,
-                    color: accent,
-                    size: compact ? 17 : 19,
-                  ),
+                  Icon(stage.icon, color: accent, size: compact ? 17 : 19),
                   const SizedBox(width: AppSpacing.sm),
                   Flexible(
                     child: Text(

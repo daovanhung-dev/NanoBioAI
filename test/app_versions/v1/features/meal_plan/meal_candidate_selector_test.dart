@@ -6,7 +6,7 @@ import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 void main() {
   const selector = MealCandidateSelector();
 
-  test('full-plan generation keeps active Supabase meals except fixtures', () {
+  test('full-plan generation keeps only active reviewed meals', () {
     final candidates = selector.eligibleMeals(
       catalog: <MealCatalogItemModel>[
         _meal(code: 'approved'),
@@ -21,7 +21,7 @@ void main() {
 
     expect(
       candidates.map((item) => item.code),
-      orderedEquals(['approved', 'draft', 'reference', 'unclassified']),
+      orderedEquals(['approved', 'draft', 'unclassified']),
     );
   });
 

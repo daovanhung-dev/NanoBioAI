@@ -73,12 +73,11 @@ class NotificationBootstrap {
       if (details?.didNotificationLaunchApp == true && response != null) {
         await handleNotificationResponse(response);
       }
-    } catch (error, stackTrace) {
+    } catch (error) {
       AppLogger.warning(
         _tag,
         'Cannot restore notification navigation; errorType=${error.runtimeType}',
       );
-      debugPrint(stackTrace.toString());
     }
   }
 
@@ -99,7 +98,9 @@ class NotificationBootstrap {
       activeSubjectUserId: () async => subject,
     );
     final coordinator = _careCoordinator();
-    final preferences = await coordinator.loadPreferences(subjectUserId: subject);
+    final preferences = await coordinator.loadPreferences(
+      subjectUserId: subject,
+    );
 
     if (preferences?.masterEnabled == true &&
         preferences?.scheduleEnabled == true) {
@@ -132,7 +133,9 @@ class NotificationBootstrap {
   ) async {
     try {
       await initialize();
-      final companion = NabiCompanionNotificationPayload.tryParse(response.payload);
+      final companion = NabiCompanionNotificationPayload.tryParse(
+        response.payload,
+      );
       if (companion != null) {
         await _careCoordinator().handleResponse(response, companion);
         return;
@@ -173,12 +176,11 @@ class NotificationBootstrap {
     final timezoneName = await _resolveTimezoneName();
     try {
       tz.setLocalLocation(tz.getLocation(timezoneName));
-    } catch (error, stackTrace) {
+    } catch (error) {
       AppLogger.warning(
         _tag,
-        'Unknown timezone "$timezoneName". Fallback to $_fallbackTimezone. Error: $error',
+        'Unknown timezone "$timezoneName". Fallback to $_fallbackTimezone. errorType=${error.runtimeType}',
       );
-      debugPrint(stackTrace.toString());
       tz.setLocalLocation(tz.getLocation(_fallbackTimezone));
     }
     _timezoneInitialized = true;
@@ -197,12 +199,11 @@ class NotificationBootstrap {
         return _fallbackTimezone;
       }
       return identifier;
-    } catch (error, stackTrace) {
+    } catch (error) {
       AppLogger.warning(
         _tag,
-        'Cannot resolve device timezone. Fallback to $_fallbackTimezone. Error: $error',
+        'Cannot resolve device timezone. Fallback to $_fallbackTimezone. errorType=${error.runtimeType}',
       );
-      debugPrint(stackTrace.toString());
       return _fallbackTimezone;
     }
   }

@@ -4,7 +4,6 @@ import 'package:nano_app/core/storage/localdb/daos/health_tracking_logs_dao.dart
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 
 import '../domain/water_tracking_repository.dart';
-import '../domain/water_tracking_snapshot.dart';
 import 'water_tracking_local_store.dart';
 
 /// Production repository: the user-selected target remains a local preference,

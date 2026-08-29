@@ -7,6 +7,8 @@ const jsonHeaders = {
 
 export type DeleteAccountDependencies = {
   authenticate: (authorization: string | null) => Promise<string | null>;
+  /** Remove account-owned objects before deleting the auth subject. */
+  deleteOwnedStorage?: (userId: string) => Promise<void>;
   deleteAccount: (userId: string) => Promise<void>;
 };
 
@@ -33,6 +35,11 @@ export function createDeleteAccountHandler(
     }
 
     try {
+      // Storage objects are not covered by Postgres foreign-key cascades. Keep
+      // the deletion operation all-or-nothing from the caller's perspective:
+      // if owned-object cleanup cannot be completed, do not remove auth/data
+      // and ask the user to retry.
+      await dependencies.deleteOwnedStorage?.(userId);
       await dependencies.deleteAccount(userId);
       return jsonResponse({ deleted: true });
     } catch (_) {

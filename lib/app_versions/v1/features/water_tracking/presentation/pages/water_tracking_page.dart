@@ -5,7 +5,6 @@ import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widg
 import 'package:nano_app/app_versions/v1/features/water_tracking/application/water_tracking_controller.dart';
 import 'package:nano_app/app_versions/v1/features/water_tracking/data/water_tracking_local_store.dart';
 import 'package:nano_app/app_versions/v1/features/water_tracking/data/water_tracking_repository_impl.dart';
-import 'package:nano_app/app_versions/v1/features/water_tracking/domain/water_tracking_snapshot.dart';
 import 'package:nano_app/app_versions/v1/features/water_tracking/providers/water_tracking_providers.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/active_notification_subject.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';

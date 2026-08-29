@@ -12,19 +12,21 @@ class AiCatalogBundle {
   });
 
   Map<String, MealCatalogItemModel> get mealsByCode => {
-        for (final item in meals) item.code: item,
-      };
+    for (final item in meals) item.code: item,
+  };
   Map<String, ExerciseCatalogItemModel> get exercisesByCode => {
-        for (final item in exercises) item.code: item,
-      };
+    for (final item in exercises) item.code: item,
+  };
   Map<String, ScheduleTaskCatalogItemModel> get scheduleTasksByCode => {
-        for (final item in scheduleTasks) item.code: item,
-      };
+    for (final item in scheduleTasks) item.code: item,
+  };
 
   List<MealCatalogItemModel> mealsForType(String mealType) {
     final type = mealType.trim().toLowerCase();
     return meals
-        .where((item) => item.mealType == type || item.mealType == 'unclassified')
+        .where(
+          (item) => item.mealType == type || item.mealType == 'unclassified',
+        )
         .toList(growable: false);
   }
 }
@@ -150,20 +152,24 @@ class MealCatalogItemModel {
       ingredients: _readStringList(map['ingredients_json']),
       cookingSteps: parsedSteps.isEmpty && cookingInstructions.isNotEmpty
           ? cookingInstructions
-              .split(RegExp(r'\n+'))
-              .map((value) => value.trim())
-              .where((value) => value.isNotEmpty)
-              .toList(growable: false)
+                .split(RegExp(r'\n+'))
+                .map((value) => value.trim())
+                .where((value) => value.isNotEmpty)
+                .toList(growable: false)
           : parsedSteps,
       benefits: _readString(map['benefits']),
       servingSize: _readString(map['serving_size']),
       allergenTags: _readStringList(map['allergen_tags_json']),
       avoidConditionTags: _readStringList(map['avoid_condition_tags_json']),
       nutritionStatus: _readStringOr(map['nutrition_status'], 'approved'),
-      constraintMetadataStatus:
-          _readStringOr(map['constraint_metadata_status'], 'approved'),
+      constraintMetadataStatus: _readStringOr(
+        map['constraint_metadata_status'],
+        'approved',
+      ),
       metadataStatus: _readStringOr(map['metadata_status'], 'approved'),
-      isPlanEligible: _readBool(map['is_plan_eligible'], fallback: true),
+      // Imported/remote rows must opt in explicitly after professional
+      // review. Missing metadata is therefore withheld from plan generation.
+      isPlanEligible: _readBool(map['is_plan_eligible']),
       sourceName: _readString(map['source_name']),
       sourcePage: _readNullableInt(map['source_page']),
       sourceChapter: _readString(map['source_chapter']),
@@ -212,8 +218,10 @@ class MealCatalogItemModel {
       servingSize: _readString(json['serving_size']),
       allergenTags: _readStringList(json['allergen_tags']),
       avoidConditionTags: _readStringList(json['avoid_condition_tags']),
-      nutritionStatus:
-          _readStringOr(json['nutrition_status'], 'missing_source_data'),
+      nutritionStatus: _readStringOr(
+        json['nutrition_status'],
+        'missing_source_data',
+      ),
       constraintMetadataStatus: _readStringOr(
         json['constraint_metadata_status'],
         'awaiting_professional_review',
@@ -298,50 +306,50 @@ class MealCatalogItemModel {
   }
 
   Map<String, Object?> toMap() => {
-        'code': code,
-        'meal_type': mealType,
-        'meal_name': mealName,
-        'description': description,
-        'cooking_instructions': cookingInstructions,
-        'calories': calories,
-        'protein': protein,
-        'carbs': carbs,
-        'fat': fat,
-        'fiber': fiber,
-        'water_ml': waterMl,
-        'sugar_g': sugarG,
-        'saturated_fat_g': saturatedFatG,
-        'sodium_mg': sodiumMg,
-        'cholesterol_mg': cholesterolMg,
-        'potassium_mg': potassiumMg,
-        'calcium_mg': calciumMg,
-        'iron_mg': ironMg,
-        'health_topic_code': healthTopicCode,
-        'health_topic_name': healthTopicName,
-        'health_topic_description': healthTopicDescription,
-        'chapter_number': chapterNumber,
-        'chapter_name': chapterName,
-        'ingredients_json': jsonEncode(ingredients),
-        'cooking_steps_json': jsonEncode(cookingSteps),
-        'benefits': benefits,
-        'serving_size': servingSize,
-        'allergen_tags_json': jsonEncode(allergenTags),
-        'avoid_condition_tags_json': jsonEncode(avoidConditionTags),
-        'nutrition_status': nutritionStatus,
-        'constraint_metadata_status': constraintMetadataStatus,
-        'metadata_status': metadataStatus,
-        'is_plan_eligible': isPlanEligible ? 1 : 0,
-        'source_name': sourceName,
-        'source_page': sourcePage,
-        'source_chapter': sourceChapter,
-        'source_topic': sourceTopic,
-        'source_recipe_order': sourceRecipeOrder,
-        'source_hash': sourceHash,
-        'version': version,
-        'is_active': isActive ? 1 : 0,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'code': code,
+    'meal_type': mealType,
+    'meal_name': mealName,
+    'description': description,
+    'cooking_instructions': cookingInstructions,
+    'calories': calories,
+    'protein': protein,
+    'carbs': carbs,
+    'fat': fat,
+    'fiber': fiber,
+    'water_ml': waterMl,
+    'sugar_g': sugarG,
+    'saturated_fat_g': saturatedFatG,
+    'sodium_mg': sodiumMg,
+    'cholesterol_mg': cholesterolMg,
+    'potassium_mg': potassiumMg,
+    'calcium_mg': calciumMg,
+    'iron_mg': ironMg,
+    'health_topic_code': healthTopicCode,
+    'health_topic_name': healthTopicName,
+    'health_topic_description': healthTopicDescription,
+    'chapter_number': chapterNumber,
+    'chapter_name': chapterName,
+    'ingredients_json': jsonEncode(ingredients),
+    'cooking_steps_json': jsonEncode(cookingSteps),
+    'benefits': benefits,
+    'serving_size': servingSize,
+    'allergen_tags_json': jsonEncode(allergenTags),
+    'avoid_condition_tags_json': jsonEncode(avoidConditionTags),
+    'nutrition_status': nutritionStatus,
+    'constraint_metadata_status': constraintMetadataStatus,
+    'metadata_status': metadataStatus,
+    'is_plan_eligible': isPlanEligible ? 1 : 0,
+    'source_name': sourceName,
+    'source_page': sourcePage,
+    'source_chapter': sourceChapter,
+    'source_topic': sourceTopic,
+    'source_recipe_order': sourceRecipeOrder,
+    'source_hash': sourceHash,
+    'version': version,
+    'is_active': isActive ? 1 : 0,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
 }
 
 class ExerciseCatalogItemModel {
@@ -393,20 +401,20 @@ class ExerciseCatalogItemModel {
       );
 
   Map<String, Object?> toMap() => {
-        'code': code,
-        'category': category,
-        'title': title,
-        'description': description,
-        'unit': unit,
-        'encouragement': encouragement,
-        'min_target': minTarget,
-        'max_target': maxTarget,
-        'default_target': defaultTarget,
-        'intensity_level': intensityLevel,
-        'is_active': isActive ? 1 : 0,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'code': code,
+    'category': category,
+    'title': title,
+    'description': description,
+    'unit': unit,
+    'encouragement': encouragement,
+    'min_target': minTarget,
+    'max_target': maxTarget,
+    'default_target': defaultTarget,
+    'intensity_level': intensityLevel,
+    'is_active': isActive ? 1 : 0,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
 }
 
 class ScheduleTaskCatalogItemModel {
@@ -458,20 +466,20 @@ class ScheduleTaskCatalogItemModel {
       );
 
   Map<String, Object?> toMap() => {
-        'code': code,
-        'category': category,
-        'title': title,
-        'description': description,
-        'start_time': startTime,
-        'end_time': endTime,
-        'target_value': targetValue,
-        'unit': unit,
-        'encouragement': encouragement,
-        'sort_order': sortOrder,
-        'is_active': isActive ? 1 : 0,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'code': code,
+    'category': category,
+    'title': title,
+    'description': description,
+    'start_time': startTime,
+    'end_time': endTime,
+    'target_value': targetValue,
+    'unit': unit,
+    'encouragement': encouragement,
+    'sort_order': sortOrder,
+    'is_active': isActive ? 1 : 0,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
 }
 
 String _readString(Object? value) => value?.toString().trim() ?? '';
@@ -479,23 +487,27 @@ String _readStringOr(Object? value, String fallback) {
   final text = _readString(value);
   return text.isEmpty ? fallback : text;
 }
+
 int _readIntOr(Object? value, int fallback) {
   if (value == null) return fallback;
   final parsed = _readInt(value);
   return parsed == 0 && value.toString().trim() != '0' ? fallback : parsed;
 }
+
 int? _readNullableInt(Object? value) {
   if (value == null) return null;
   if (value is int) return value;
   if (value is num) return value.toInt();
   return int.tryParse(value.toString());
 }
+
 double? _readNullableDouble(Object? value) {
   if (value == null) return null;
   if (value is num) return value.toDouble();
   final text = value.toString().trim();
   return text.isEmpty ? null : double.tryParse(text);
 }
+
 List<String> _readStringList(Object? value) {
   if (value == null) return const [];
   if (value is List) {
@@ -521,16 +533,19 @@ List<String> _readStringList(Object? value) {
       .where((item) => item.isNotEmpty)
       .toList(growable: false);
 }
+
 int _readInt(Object? value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
   return int.tryParse(value?.toString() ?? '') ?? 0;
 }
+
 double _readDouble(Object? value) {
   if (value is double) return value;
   if (value is num) return value.toDouble();
   return double.tryParse(value?.toString() ?? '') ?? 0;
 }
+
 bool _readBool(Object? value, {bool fallback = false}) {
   if (value == null) return fallback;
   if (value is bool) return value;

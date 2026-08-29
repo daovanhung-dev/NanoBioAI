@@ -807,3 +807,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: - Dang do: full test suite cua repository chua xanh do failure ton dong.
 - docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: - Diem ton token/chua toi uu: full test suite phat ra log rat lon va nhieu failure da biet.
 - docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md :: co che loc output/failure summary.
+- docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: cleanup plugin fails. Legal links now accept HTTPS URLs only.
+- docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: shutdown stream error. Failures are recorded in `/tmp/nanobio-full-test-before.txt`
+- docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: in this workspace, so those states remain externally blocked/open.
+- docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: repository has pre-existing SQLite/toolchain and stale-contract failures.
+- docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md :: account/device first, then rerun only the blocked runtime gates before a full

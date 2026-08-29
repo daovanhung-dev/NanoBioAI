@@ -1,70 +1,30 @@
-# NanoBio AI Chat — runtime configuration
+# NanoBio AI Chat — release transport
 
-Lifecycle: `Current source note`. Baseline: `25018e8`. Runtime uses the internal
-`GeminiRestClient` over REST; `pubspec.yaml` does not declare a Gemini Dart SDK.
+Lifecycle: `Current source note`. Production Flutter code sends bounded AI
+requests to the `nabi-ai-generate` Supabase Edge Function. The Gemini provider
+credential is an Edge Function secret and is not read from Flutter runtime
+configuration or Android `BuildConfig`.
 
-## Root cause
+`GeminiRestClient` remains a transport seam for unit tests and explicitly
+injected local tooling. It is not constructed by the production providers.
+`AIChatService`, NaBi Care, Sleep Analysis and Food Scan use
+`NabiAiBackendClient` unless a test supplies an explicit fake/client.
 
-`AIChatService` chỉ tạo Gemini REST client khi `AppEnv` resolve được
-`GEMINI_API_KEY`. Nếu key bị thiếu, UI nhận
-`AIConfigurationUnavailableException` và hiển thị:
+If the backend is unavailable or the function returns an invalid response, the
+app fails closed with user-safe copy or a deterministic local fallback where
+that feature's contract permits it. No client-side Gemini key, provider secret,
+or unrestricted provider endpoint is bundled in the release artifact.
 
-> Nabi chưa sẵn sàng trò chuyện lúc này. Bạn thử lại sau một chút nhé.
+## Backend transport contract
 
-`.env` tại root dự án không được đóng gói thành Flutter asset. Trước bản vá
-này, Android native fallback chỉ điền `BuildConfig.GEMINI_API_KEY` cho build
-`debug`; `profile`/`release` giữ chuỗi rỗng khi chạy/build trực tiếp mà không
-truyền Dart define. Gradle cũng dùng `Properties.load`, trong khi các script
-của dự án chấp nhận dotenv dạng `export KEY=value`, BOM và quoted values.
-Những format đó có thể làm native fallback không tìm thấy key dù `.env` có
-cấu hình.
+- Function: `supabase/functions/nabi-ai-generate/index.ts`
+- Authentication: Supabase session JWT, verified in the Edge runtime.
+- Provider authentication: `GEMINI_API_KEY` Edge Function secret only.
+- Request limits: bounded body, content count, prompt length, and response length.
+- Tests: `supabase/functions/nabi-ai-generate/handler_test.ts` plus Flutter fake
+  transport tests; deployed runtime evidence remains a release gate.
 
-## Sau bản vá
-
-Android resolve private Gemini runtime config theo thứ tự:
-
-1. Gradle property `GEMINI_API_KEY`.
-2. Process environment `GEMINI_API_KEY`.
-3. File local, untracked `.env` ở root repository.
-
-Giá trị fallback được đưa vào `BuildConfig` cho mọi Android build type
-(debug/profile/release). `AppEnv` vẫn ưu tiên `--dart-define`, vì vậy các
-script canonical không đổi hành vi. `.env` không được thêm vào Flutter assets,
-không được commit và giá trị key không được log.
-
-## Chạy trên Windows
-
-Khuyến nghị tiếp tục dùng script canonical:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/test_gemini_connection.ps1
-powershell -ExecutionPolicy Bypass -File tools/run_ai_chat.ps1
-```
-
-Hoặc app runtime chuẩn:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1
-```
-
-Build APK bằng script AI Chat:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/build_ai_chat_apk.ps1 -Mode debug
-```
-
-Sau bản vá, plain Android `flutter run`, `flutter run --profile`,
-`flutter run --release` và `flutter build apk` cũng có native fallback nếu
-Gradle/environment/local `.env` cung cấp `GEMINI_API_KEY`.
-
-Sau khi thay đổi `.env`, cần **stop app và rebuild**, không chỉ hot reload,
-vì `BuildConfig` được tạo ở build time.
-
-## Gemini transport
-
-- Endpoint: Gemini REST `models/{model}:generateContent`.
-- Authentication: header `x-goog-api-key`.
-- Model chính: `GEMINI_CHAT_MODEL`, fallback tương thích là `GEMINI_MODEL`.
-- Chat history: tối đa 16 message đã xác nhận.
-- Không thêm response vào context nếu request/quota commit thất bại.
-- Automated tests dùng fake transport; không gọi Gemini thật.
+Do not add a `GEMINI_API_KEY` asset, Gradle property, Dart define in a release
+profile, or native `BuildConfig` field. If local development needs a provider
+credential, keep it outside the repository and use only an explicit test or
+backend environment.

@@ -15,6 +15,13 @@ void main() {
         expect(source, contains('AUTH_DELETE_ACCOUNT_FUNCTION'));
         expect(source, contains('delete-account'));
         expect(source, contains('DatabaseService.deleteDatabaseFile'));
+        expect(
+          source,
+          contains('NotificationBootstrap.clearGeneratedReminders'),
+        );
+        expect(source, contains('AppPrefs.clearAll'));
+        expect(source, contains('FlutterSecureStorage'));
+        expect(source, contains('client.auth.signOut'));
         expect(source, isNot(contains('auth.admin')));
         expect(source.toLowerCase(), isNot(contains('service_role')));
         expect(source.toLowerCase(), isNot(contains('service-role')));

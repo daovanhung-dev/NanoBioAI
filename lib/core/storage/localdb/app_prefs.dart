@@ -7,8 +7,7 @@ class AppPrefs {
   static const String _cloudPullRetryPendingKey = 'cloud_pull_retry_pending';
   static const String _pendingGuestSyncAuthUserIdKey =
       'pending_guest_sync_auth_user_id';
-  static const String _pendingGuestSyncActionKey =
-      'pending_guest_sync_action';
+  static const String _pendingGuestSyncActionKey = 'pending_guest_sync_action';
 
   static Future<void> setOnboardingCompleted(bool value) async {
     final prefs = await SharedPreferences.getInstance();
@@ -95,5 +94,15 @@ class AppPrefs {
   static Future<bool> isCloudPullRetryPending() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_cloudPullRetryPendingKey) ?? false;
+  }
+
+  /// Removes every locally persisted preference after an account deletion.
+  ///
+  /// Settings are intentionally device-local, but clearing the store prevents
+  /// an unauthenticated launch from restoring account-scoped onboarding,
+  /// sync, or notification state from the deleted account.
+  static Future<void> clearAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 }
