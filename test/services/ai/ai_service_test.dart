@@ -938,12 +938,7 @@ void main() {
             primaryModel: null,
             fallbackModelsCsv: null,
           ),
-          [
-            'gemini-3.1-flash-lite',
-            'gemini-3.5-flash',
-            'gemini-2.5-flash-lite',
-            'gemini-2.5-flash',
-          ],
+          ['gemini-2.5-flash'],
         );
       },
     );
@@ -973,12 +968,7 @@ void main() {
           primaryModel: 'gemini-custom',
           fallbackModelsCsv: ' , ',
         ),
-        [
-          'gemini-custom',
-          'gemini-3.5-flash',
-          'gemini-2.5-flash-lite',
-          'gemini-2.5-flash',
-        ],
+        ['gemini-custom'],
       );
     });
   });

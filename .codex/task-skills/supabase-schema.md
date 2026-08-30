@@ -2,11 +2,11 @@
 
 - Canonical key: supabase-schema
 - Workflow: .codex/workflows/supabase-schema.md
-- Generated from 18 worklog(s).
+- Generated from 19 worklog(s).
 
 ## When To Read
 
-- Historical task type: supabase-schema (2)
+- Historical task type: supabase-schema (3)
 - Historical task type: docs/coding (1)
 - Historical task type: docs-context / audit checklist (1)
 - Historical task type: coding + Supabase schema draft + UI Sale + test/docs. (1)

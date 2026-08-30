@@ -1117,12 +1117,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
 }
 
 class AIModelCandidates {
-  static const defaultPrimaryModel = 'gemini-3.1-flash-lite';
-  static const defaultFallbackModels = [
-    'gemini-3.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemini-2.5-flash',
-  ];
+  // Keep plan generation aligned with the server allowlist. This is the
+  // model verified against the deployed Edge Function with the full plan
+  // output budget.
+  static const defaultPrimaryModel = 'gemini-2.5-flash';
+  static const defaultFallbackModels = <String>[];
 
   const AIModelCandidates._();
 

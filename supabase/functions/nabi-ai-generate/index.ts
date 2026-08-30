@@ -28,7 +28,9 @@ Deno.serve(createNabiAiGenerateHandler({
   },
   rateLimit: async (key) => {
     const now = Date.now();
-    const recent = (rateWindows.get(key) || []).filter((timestamp) => now - timestamp < rateWindowMs);
+    const recent = (rateWindows.get(key) || []).filter(
+      (timestamp) => now - timestamp < rateWindowMs,
+    );
     if (recent.length >= rateLimitPerWindow) {
       rateWindows.set(key, recent);
       return false;
@@ -41,26 +43,68 @@ Deno.serve(createNabiAiGenerateHandler({
 }));
 
 async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
+  const startedAt = Date.now();
   const model = allowedModels.has(input.model) ? input.model : defaultModel;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-goog-api-key": geminiApiKey,
-    },
-    body: JSON.stringify({
-      contents: input.contents,
-      generationConfig: input.generationConfig,
-      ...(input.systemInstruction
-        ? { systemInstruction: { parts: [{ text: input.systemInstruction }] } }
-        : {}),
-    }),
-  });
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${
+    encodeURIComponent(model)
+  }:generateContent`;
+
+  console.info(JSON.stringify({
+    component: "gemini-provider",
+    event: "PROVIDER_REQUEST_START",
+    traceId: input.traceId,
+    model,
+    modelFallback: input.model !== model,
+  }));
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-goog-api-key": geminiApiKey,
+      },
+      body: JSON.stringify({
+        contents: input.contents,
+        generationConfig: input.generationConfig,
+        ...(input.systemInstruction
+          ? {
+            systemInstruction: { parts: [{ text: input.systemInstruction }] },
+          }
+          : {}),
+      }),
+    });
+  } catch {
+    console.error(JSON.stringify({
+      component: "gemini-provider",
+      event: "PROVIDER_NETWORK_FAILURE",
+      traceId: input.traceId,
+      model,
+      modelFallback: input.model !== model,
+      errorCode: "provider_network_error",
+      durationMs: Date.now() - startedAt,
+    }));
+    throw new Error("provider_network_error");
+  }
+
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error(`provider_${response.status}`);
+    const errorCode = `provider_${response.status}`;
+    console.error(JSON.stringify({
+      component: "gemini-provider",
+      event: "PROVIDER_HTTP_FAILURE",
+      traceId: input.traceId,
+      model,
+      modelFallback: input.model !== model,
+      statusCode: response.status,
+      errorCode,
+      durationMs: Date.now() - startedAt,
+    }));
+    throw new Error(errorCode);
   }
+
+  const responseSummary = summarizeProviderPayload(payload);
   const candidates = payload?.candidates;
   const fragments: string[] = [];
   if (Array.isArray(candidates)) {
@@ -73,14 +117,96 @@ async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
       }
     }
   }
+
   const text = fragments.join("").trim();
-  if (!text) throw new Error("provider_empty_response");
+  if (!text) {
+    console.error(JSON.stringify({
+      component: "gemini-provider",
+      event: "PROVIDER_EMPTY_RESPONSE",
+      traceId: input.traceId,
+      model,
+      modelFallback: input.model !== model,
+      statusCode: response.status,
+      errorCode: "provider_empty_response",
+      ...responseSummary,
+      durationMs: Date.now() - startedAt,
+    }));
+    throw new Error("provider_empty_response");
+  }
+
+  console.info(JSON.stringify({
+    component: "gemini-provider",
+    event: "PROVIDER_REQUEST_SUCCESS",
+    traceId: input.traceId,
+    model,
+    modelFallback: input.model !== model,
+    statusCode: response.status,
+    responseLength: text.length,
+    ...responseSummary,
+    durationMs: Date.now() - startedAt,
+  }));
   return text;
+}
+
+function summarizeProviderPayload(payload: unknown): Record<string, unknown> {
+  const candidates = isRecord(payload) && Array.isArray(payload.candidates)
+    ? payload.candidates
+    : [];
+  let contentPartCount = 0;
+  let textPartCount = 0;
+  let thoughtPartCount = 0;
+  let finishReason: string | null = null;
+
+  for (const candidate of candidates) {
+    if (!isRecord(candidate)) continue;
+    if (finishReason == null) {
+      finishReason = safeProviderLabel(candidate.finishReason);
+    }
+    const content = candidate.content;
+    if (!isRecord(content) || !Array.isArray(content.parts)) continue;
+    for (const part of content.parts) {
+      if (!isRecord(part)) continue;
+      contentPartCount++;
+      if (part.thought === true) thoughtPartCount++;
+      if (typeof part.text === "string" && part.text.trim()) textPartCount++;
+    }
+  }
+
+  const promptFeedback = isRecord(payload) && isRecord(payload.promptFeedback)
+    ? payload.promptFeedback
+    : null;
+  return {
+    candidateCount: candidates.length,
+    contentPartCount,
+    textPartCount,
+    thoughtPartCount,
+    finishReason,
+    blockReason: promptFeedback == null
+      ? null
+      : safeProviderLabel(promptFeedback.blockReason),
+  };
+}
+
+function safeProviderLabel(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  return /^[A-Za-z][A-Za-z0-9_.-]{0,79}$/.test(normalized) ? normalized : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object" && !Array.isArray(value);
 }
 
 function requiredEnvironment(name: string): string {
   const value = Deno.env.get(name)?.trim();
-  if (!value) throw new Error(`Missing required Edge Function secret: ${name}`);
+  if (!value) {
+    console.error(JSON.stringify({
+      component: "nabi-ai-generate",
+      event: "CONFIGURATION_FAILURE",
+      errorCode: "missing_required_secret",
+      secretName: name,
+    }));
+    throw new Error(`Missing required Edge Function secret: ${name}`);
+  }
   return value;
 }
-

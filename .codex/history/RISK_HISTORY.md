@@ -818,3 +818,20 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md :: - Chưa fix: release vẫn `NO-GO`; chưa có public legal URLs, Play Console,
 - docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md :: - Cần kiểm tra tiếp: khi user xác nhận execution, bắt đầu Phase 0; chạy validator
 - docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md :: các gate mở được ghi rõ là `BLOCKED_EXTERNAL`, `FAIL` hoặc `PLANNED`.
+- docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md :: - `pwsh -NoProfile -ExecutionPolicy Bypass -File tools/test_gemini_connection.ps1`: SKIPPED - `pwsh` khong co trong workspace.
+- docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: SKIPPED - `powershell` khong co trong workspace.
+- docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`: SKIPPED - `powershell` khong co trong workspace; khong sua thu cong cac file generated history/task-skill.
+- docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md :: - Flutter/Dart/Supabase CLI targeted validation: SKIPPED - executable khong co trong PATH.
+- docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md :: - Chua fix: Edge Function chua co tai Supabase project dang duoc app cau hinh, hoac project target chua dung.
+- docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md :: - Can kiem tra tiep: dat Edge secret, deploy function vao dung project, roi chay live check va test Flutter.
+- docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md :: - Muc do hoan thanh task: partial - khong the tu deploy khi thieu quyen backend.
+- docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md :: - docs/supabase/01_build_system.sql - sua - hardening quota RPC va fail-fast AI
+- docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md :: SKIPPED - powershell khong co trong PATH.
+- docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md :: SKIPPED - powershell khong co trong PATH; khong sua thu cong generated history.
+- docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md :: - dart test test/docs/supabase_two_script_rebuild_contract_test.dart: SKIPPED -
+- docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md :: - Con rui ro: nabi-ai-generate hien gio khong tu goi quota RPC; direct Edge
+- docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md :: - Muc do hoan thanh task: partial ve van hanh - file SQL da tao, nhung provider
+- docs/worklog/2026-08-30/001-worklog-ai-generation-after-onboarding.md :: - `personal_schedule_ai_requests`: `initial_guest`, `failed`,
+- docs/worklog/2026-08-30/001-worklog-ai-generation-after-onboarding.md :: - failure matched `_ensureMealSlotsAvailable()`.

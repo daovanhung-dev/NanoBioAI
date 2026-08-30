@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 145
+- Total worklogs: 148
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -154,3 +154,6 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-25 | bugfix | bugfix | analyzer/build hygiene, Admin, Nabi notification, sleep tracking, nutrition | [Worklog - Analyzer zero diagnostics](../../docs/worklog/2026-08-25/001-worklog-analyzer-zero-diagnostics.md) |
 | 2026-08-29 | unknown | docs-context | unknown | [Worklog — Google Play full remediation](../../docs/worklog/2026-08-29/001-worklog-google-play-full-remediation.md) |
 | 2026-08-29 | docs-context | docs-context | docs/tasks, release evidence Google Play | [Worklog - Hoàn thiện Google Play Final Pass execution plan](../../docs/worklog/2026-08-29/002-worklog-google-play-final-pass-plan-completion.md) |
+| 2026-08-29 | bugfix | bugfix | M05 AI / runtime configuration / Supabase Edge Function | [Worklog - Chan doan ket noi AI backend](../../docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md) |
+| 2026-08-29 | supabase-schema | supabase-schema | M05 AI / quota / Supabase runtime contract | [Worklog - AI runtime SQL preflight](../../docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md) |
+| 2026-08-30 | unknown | docs-context | unknown | [Worklog: fix AI generation after onboarding](../../docs/worklog/2026-08-30/001-worklog-ai-generation-after-onboarding.md) |

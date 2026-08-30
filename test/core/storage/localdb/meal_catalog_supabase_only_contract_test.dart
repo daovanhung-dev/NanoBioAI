@@ -12,15 +12,15 @@ void main() {
     expect(source, contains('bool planEligibleOnly = false'));
   });
 
-  test('Supabase refresh replaces the complete local meal cache', () {
+  test('Supabase refresh preserves reviewed local meals', () {
     final source = File(
       'lib/services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart',
     ).readAsStringSync();
 
     expect(source, contains(".from('meal_catalog')"));
     expect(source, contains(".eq('is_active', true)"));
-    expect(source, contains('replaceMeals(remoteItems)'));
-    expect(source, isNot(contains('upsertMeals(remoteItems)')));
+    expect(source, contains('upsertMeals(remoteItems)'));
+    expect(source, isNot(contains('replaceMeals(remoteItems)')));
   });
 
   test('meal generation entry points refresh Supabase before generation', () {
@@ -41,7 +41,7 @@ void main() {
     );
   });
 
-  test('legacy local seeds cannot survive a successful Supabase refresh', () {
+  test('reviewed local seeds survive a successful Supabase refresh', () {
     final daoSource = File(
       'lib/core/storage/localdb/daos/ai_catalog_dao.dart',
     ).readAsStringSync();
@@ -49,7 +49,7 @@ void main() {
       'lib/services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart',
     ).readAsStringSync();
 
-    expect(daoSource, contains('txn.delete(MealCatalogTable.tableName)'));
-    expect(refreshSource, contains('replaceMeals(remoteItems)'));
+    expect(daoSource, contains('upsertMeals'));
+    expect(refreshSource, contains('upsertMeals(remoteItems)'));
   });
 }

@@ -22,8 +22,15 @@ import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
   test(
     'generateNextPlan blocks unauthenticated users before AI or DB writes',
     () async {
@@ -916,7 +923,83 @@ class _FakeCatalogDatasource extends AiCatalogLocalDatasource {
   Future<AiCatalogBundle> loadActiveBundle() async {
     const now = '2026-01-01T00:00:00.000';
     return const AiCatalogBundle(
-      meals: [],
+      meals: [
+        MealCatalogItemModel(
+          code: 'fake_breakfast',
+          mealType: 'breakfast',
+          mealName: 'Bữa sáng mẫu',
+          description: 'Món mẫu cho test.',
+          cookingInstructions: 'Chuẩn bị món mẫu.',
+          calories: 300,
+          protein: 10,
+          carbs: 35,
+          fat: 8,
+          fiber: 4,
+          waterMl: 250,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        MealCatalogItemModel(
+          code: 'fake_morning_snack',
+          mealType: 'morning_snack',
+          mealName: 'Bữa phụ sáng mẫu',
+          description: 'Món mẫu cho test.',
+          cookingInstructions: 'Chuẩn bị món mẫu.',
+          calories: 300,
+          protein: 10,
+          carbs: 35,
+          fat: 8,
+          fiber: 4,
+          waterMl: 250,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        MealCatalogItemModel(
+          code: 'fake_lunch',
+          mealType: 'lunch',
+          mealName: 'Bữa trưa mẫu',
+          description: 'Món mẫu cho test.',
+          cookingInstructions: 'Chuẩn bị món mẫu.',
+          calories: 300,
+          protein: 10,
+          carbs: 35,
+          fat: 8,
+          fiber: 4,
+          waterMl: 250,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        MealCatalogItemModel(
+          code: 'fake_afternoon_snack',
+          mealType: 'afternoon_snack',
+          mealName: 'Bữa phụ chiều mẫu',
+          description: 'Món mẫu cho test.',
+          cookingInstructions: 'Chuẩn bị món mẫu.',
+          calories: 300,
+          protein: 10,
+          carbs: 35,
+          fat: 8,
+          fiber: 4,
+          waterMl: 250,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        MealCatalogItemModel(
+          code: 'fake_dinner',
+          mealType: 'dinner',
+          mealName: 'Bữa tối mẫu',
+          description: 'Món mẫu cho test.',
+          cookingInstructions: 'Chuẩn bị món mẫu.',
+          calories: 300,
+          protein: 10,
+          carbs: 35,
+          fat: 8,
+          fiber: 4,
+          waterMl: 250,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ],
       exercises: [],
       scheduleTasks: [
         ScheduleTaskCatalogItemModel(

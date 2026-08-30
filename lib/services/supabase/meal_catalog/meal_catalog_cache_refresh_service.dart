@@ -107,7 +107,12 @@ class MealCatalogCacheRefreshService {
     }
 
     final database = await DatabaseService.database;
-    await AiCatalogDao(database).replaceMeals(remoteItems);
+    // Supabase also contains source-imported rows that are intentionally not
+    // plan eligible yet. Do not replace the cache with that projection: doing
+    // so removes the reviewed built-in catalog that guest onboarding needs.
+    // Keep both datasets locally; MealCandidateSelector remains the final
+    // safety gate for new plans.
+    await AiCatalogDao(database).upsertMeals(remoteItems);
     return remoteItems.length;
   }
 

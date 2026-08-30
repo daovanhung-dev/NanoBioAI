@@ -40,22 +40,50 @@ void main() {
     ]);
   });
 
-  test('active bundle includes active non-plan-eligible Supabase rows', () async {
-    final dao = AiCatalogDao(database);
-    await dao.replaceMeals([
-      _meal(
+  test(
+    'active bundle includes active non-plan-eligible Supabase rows',
+    () async {
+      final dao = AiCatalogDao(database);
+      await dao.replaceMeals([
+        _meal(
+          'src_reference',
+          mealType: 'unclassified',
+          isPlanEligible: false,
+          metadataStatus: 'source_imported',
+        ),
+        _meal('inactive', isActive: false),
+      ]);
+
+      final meals = await dao.getActiveMeals();
+
+      expect(meals.map((item) => item.code), ['src_reference']);
+    },
+  );
+
+  test(
+    'merging remote source rows preserves the reviewed local catalog',
+    () async {
+      final dao = AiCatalogDao(database);
+      await dao.upsertMeals([_meal('local_reviewed', mealType: 'breakfast')]);
+
+      await dao.upsertMeals([
+        _meal(
+          'src_reference',
+          mealType: 'unclassified',
+          isPlanEligible: false,
+          metadataStatus: 'source_imported',
+        ),
+      ]);
+
+      final eligible = await dao.getActiveMeals(planEligibleOnly: true);
+      final allActive = await dao.getActiveMeals();
+      expect(eligible.map((item) => item.code), ['local_reviewed']);
+      expect(allActive.map((item) => item.code), [
+        'local_reviewed',
         'src_reference',
-        mealType: 'unclassified',
-        isPlanEligible: false,
-        metadataStatus: 'source_imported',
-      ),
-      _meal('inactive', isActive: false),
-    ]);
-
-    final meals = await dao.getActiveMeals();
-
-    expect(meals.map((item) => item.code), ['src_reference']);
-  });
+      ]);
+    },
+  );
 }
 
 MealCatalogItemModel _meal(
