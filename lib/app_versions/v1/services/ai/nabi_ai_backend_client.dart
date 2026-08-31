@@ -11,10 +11,12 @@ class NabiAiBackendClient implements AiTextClient {
 
   final SupabaseClient? clientOverride;
   final String functionName;
+  final String? operation;
 
   const NabiAiBackendClient({
     this.clientOverride,
     this.functionName = 'nabi-ai-generate',
+    this.operation,
   });
 
   SupabaseClient? get _client {
@@ -54,6 +56,7 @@ class NabiAiBackendClient implements AiTextClient {
     final stopwatch = Stopwatch()..start();
     final baseMetadata = <String, Object?>{
       'functionName': functionName,
+      if (operation != null) 'operation': operation,
       'model': model,
       'contentsCount': contents.length,
       'maxOutputTokens': generationConfig.maxOutputTokens,
@@ -104,6 +107,7 @@ class NabiAiBackendClient implements AiTextClient {
         headers: {'x-ai-trace-id': traceId},
         body: {
           'model': model,
+          if (operation != null) 'operation': operation,
           'contents': contents.map((content) => content.toJson()).toList(),
           'generation_config': generationConfig.toJson(),
           if (systemInstruction != null)

@@ -39,7 +39,7 @@ class FoodScanAiDatasource {
   const FoodScanAiDatasource({this.clientOverride, this.modelOverride});
 
   Future<FoodVisionAnalysis> analyzeImage(String imagePath) async {
-    final client = _client();
+    final client = _client(operation: 'vision');
     final file = File(imagePath);
     if (!await file.exists()) {
       throw const FoodScanException(
@@ -97,7 +97,7 @@ class FoodScanAiDatasource {
     }
 
     try {
-      final text = await _client().generateText(
+      final text = await _client(operation: 'health').generateText(
         model: _model(),
         contents: [
           GeminiContent.user(
@@ -148,16 +148,19 @@ class FoodScanAiDatasource {
     }
   }
 
-  AiTextClient _client() {
+  AiTextClient _client({required String operation}) {
     final override = clientOverride;
     if (override != null) return override;
-    return const NabiAiBackendClient();
+    return NabiAiBackendClient(
+      functionName: 'food-scan-analyze',
+      operation: operation,
+    );
   }
 
   String _model() {
     final model = modelOverride?.trim();
     if (model != null && model.isNotEmpty) return model;
-    return AppEnv.maybeString('GEMINI_MODEL') ?? 'gemini-3.1-flash-lite';
+    return AppEnv.maybeString('GEMINI_MODEL') ?? 'gemini-2.5-flash';
   }
 
   FoodVisionAnalysis _parseVision(String source) {

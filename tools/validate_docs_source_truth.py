@@ -575,7 +575,7 @@ def validate_core_contracts(errors: list[str]) -> None:
         "lib/app_versions/v1/services/ai/gemini_rest_client.dart": ":generateContent",
         "lib/app_versions/v1/services/ai/ai_chat_service.dart": "gemini-3.1-flash-lite",
         "lib/app_versions/v1/services/ai/ai_service.dart": "gemini-3.1-flash-lite",
-        "lib/app_versions/v1/features/ai_voice/data/datasources/voice_chat_turn_datasource.dart": "gemini-3.5-flash",
+        "lib/app_versions/v1/features/ai_voice/data/datasources/voice_chat_turn_datasource.dart": "gemini-2.5-flash",
         "lib/app_versions/v1/services/ai/nabi_ai_backend_client.dart": "nabi-ai-generate",
         "android/app/build.gradle.kts": 'applicationId = "com.nanobioai.app"',
         "android/app/src/main/AndroidManifest.xml": 'android:scheme="nanobio" android:host="auth" android:pathPrefix="/callback"',

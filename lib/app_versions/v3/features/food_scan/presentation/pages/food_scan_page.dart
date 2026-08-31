@@ -50,9 +50,9 @@ class FoodScanPage extends ConsumerWidget {
         ),
         FoodScanAccessStatus.plusRequired => _AccessRequired(
           icon: Icons.workspace_premium_rounded,
-          title: 'Dành riêng cho Plus',
+          title: 'Dành riêng cho Plus và FamilyPlus',
           message:
-              'Food Scan phân tích ảnh, dinh dưỡng và mức độ phù hợp với sức khỏe không giới hạn cho tài khoản Plus.',
+              'Food Scan phân tích ảnh, dinh dưỡng và mức độ phù hợp với sức khỏe không giới hạn cho tài khoản Plus hoặc FamilyPlus.',
           actionLabel: membershipUpgradeActionLabel(MembershipUpgradePlan.plus),
           onAction: () => openMembershipUpgrade(
             context,
@@ -912,4 +912,3 @@ class _MessageCard extends StatelessWidget {
 List<Object?> _reviewReasons(Object? value) {
   return value is List ? List<Object?>.from(value) : const <Object?>[];
 }
-

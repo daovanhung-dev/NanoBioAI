@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
@@ -16,10 +17,24 @@ class PreparedFoodScanImage {
 }
 
 class FoodScanImageService {
-  final ImagePickerService pickerService;
+  /// Keep the base64 request below the Edge Function's image and body limits.
+  /// The remaining budget is reserved for the prompt and JSON envelope.
+  static const maxEncodedBytes = 900000;
+  static const _initialJpegQuality = 84;
+  static const _minimumJpegQuality = 50;
+  static const _minimumDimension = 640;
 
-  FoodScanImageService({ImagePickerService? pickerService})
-      : pickerService = pickerService ?? ImagePickerService();
+  final ImagePickerService pickerService;
+  final Future<Directory> Function() _rootDirectory;
+  final DateTime Function() _now;
+
+  FoodScanImageService({
+    ImagePickerService? pickerService,
+    Future<Directory> Function()? rootDirectory,
+    DateTime Function()? now,
+  }) : pickerService = pickerService ?? ImagePickerService(),
+       _rootDirectory = rootDirectory ?? getApplicationDocumentsDirectory,
+       _now = now ?? DateTime.now;
 
   Future<PreparedFoodScanImage?> pickCamera({required String userId}) async {
     try {
@@ -79,16 +94,17 @@ class FoodScanImageService {
             : img.copyResize(normalized, height: maxDimension);
       }
 
-      // Re-encoding into a new JPEG intentionally removes the source EXIF/GPS.
-      final encoded = img.encodeJpg(normalized, quality: 84);
-      final appDir = await getApplicationDocumentsDirectory();
+      // Do not carry source metadata into the local copy or the AI request.
+      normalized.exif.clear();
+      final encoded = _encodeWithinRequestLimit(normalized);
+      final appDir = await _rootDirectory();
       final safeUser = _safeSegment(userId);
       final targetDir = Directory(
         path.join(appDir.path, 'food_scans', safeUser),
       );
       await targetDir.create(recursive: true);
       final filename =
-          'food_scan_${DateTime.now().toUtc().microsecondsSinceEpoch}.jpg';
+          'food_scan_${_now().toUtc().microsecondsSinceEpoch}.jpg';
       final target = File(path.join(targetDir.path, filename));
       await target.writeAsBytes(encoded, flush: true);
       return PreparedFoodScanImage(path: target.path);
@@ -114,5 +130,40 @@ class FoodScanImageService {
   String _safeSegment(String value) {
     final safe = value.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
     return safe.isEmpty ? 'user' : safe;
+  }
+
+  List<int> _encodeWithinRequestLimit(img.Image source) {
+    var candidate = source;
+    var quality = _initialJpegQuality;
+    var encoded = img.encodeJpg(candidate, quality: quality);
+
+    while (encoded.length > maxEncodedBytes) {
+      if (quality > _minimumJpegQuality) {
+        quality = math.max(_minimumJpegQuality, quality - 8);
+      } else {
+        final currentDimension = math.max(candidate.width, candidate.height);
+        if (currentDimension <= _minimumDimension) break;
+
+        final nextDimension = math.max(
+          _minimumDimension,
+          (currentDimension * 0.8).round(),
+        );
+        candidate = candidate.width >= candidate.height
+            ? img.copyResize(candidate, width: nextDimension)
+            : img.copyResize(candidate, height: nextDimension);
+        candidate.exif.clear();
+        quality = 72;
+      }
+      encoded = img.encodeJpg(candidate, quality: quality);
+    }
+
+    if (encoded.length > maxEncodedBytes) {
+      throw const FoodScanException(
+        code: 'IMAGE_TOO_LARGE',
+        userMessage:
+            'Ảnh món ăn vẫn quá lớn sau khi tối ưu. Bạn thử chụp gần hơn hoặc chọn ảnh khác nhé.',
+      );
+    }
+    return encoded;
   }
 }

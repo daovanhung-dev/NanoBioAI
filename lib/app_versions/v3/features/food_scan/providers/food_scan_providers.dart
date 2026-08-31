@@ -20,7 +20,11 @@ final foodScanAccessProvider = FutureProvider<FoodScanAccess>((ref) async {
     );
   }
   final access = await ref.watch(effectiveAccessProvider.future);
-  if (access == null || !access.isPlus) {
+  // Food Scan is a paid capability for both individual Plus and FamilyPlus.
+  // Keep this aligned with the server-side entitlement check in
+  // `food-scan-analyze`; checking only `isPlus` strands FamilyPlus users on
+  // the upgrade screen before a request can ever reach the Edge Function.
+  if (access == null || !access.hasPaidAccess) {
     return FoodScanAccess(
       userId: userId,
       status: FoodScanAccessStatus.plusRequired,

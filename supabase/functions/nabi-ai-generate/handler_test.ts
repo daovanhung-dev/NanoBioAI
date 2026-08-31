@@ -1,4 +1,7 @@
-import { createNabiAiGenerateHandler } from "./handler.ts";
+import {
+  createNabiAiGenerateHandler,
+  resolveGeminiProviderRequest,
+} from "./handler.ts";
 
 function request(
   body: Record<string, unknown>,
@@ -22,6 +25,87 @@ const validBody = {
   generation_config: { maxOutputTokens: 128, temperature: 0.2 },
   system_instruction: "Trả lời an toàn.",
 };
+
+const providerInput = {
+  model: "gemini-3.5-flash",
+  contents: validBody.contents,
+  generationConfig: {
+    maxOutputTokens: 256,
+    thinkingConfig: { thinkingLevel: "MINIMAL" },
+  },
+  systemInstruction: null,
+  userId: null,
+  ip: "127.0.0.1",
+  traceId: "test-ai-trace-001",
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+Deno.test("normalizes fallback model and config as one provider request", () => {
+  const resolved = resolveGeminiProviderRequest(
+    providerInput,
+    new Set(["gemini-2.5-flash"]),
+    "gemini-2.5-flash",
+  );
+  if (resolved.model !== "gemini-2.5-flash" || !resolved.modelFallback) {
+    throw new Error(
+      "unapproved model was not resolved to the canonical fallback",
+    );
+  }
+  if (resolved.generationConfig.maxOutputTokens !== 256) {
+    throw new Error("generic generation config was not preserved");
+  }
+  if ("thinkingConfig" in resolved.generationConfig) {
+    throw new Error("Gemini 2.5 request still contains thinkingConfig");
+  }
+  if (!("thinkingConfig" in providerInput.generationConfig)) {
+    throw new Error("normalization mutated the incoming config");
+  }
+});
+
+Deno.test("preserves thinking level for a model family that supports it", () => {
+  const resolved = resolveGeminiProviderRequest(
+    providerInput,
+    new Set(["gemini-3.5-flash"]),
+    "gemini-2.5-flash",
+  );
+  if (resolved.model !== "gemini-3.5-flash" || resolved.modelFallback) {
+    throw new Error("allowed model was unexpectedly replaced");
+  }
+  const thinkingConfig = resolved.generationConfig.thinkingConfig;
+  if (
+    !isRecord(thinkingConfig) ||
+    thinkingConfig.thinkingLevel !== "MINIMAL"
+  ) {
+    throw new Error("supported model lost its thinking level");
+  }
+});
+
+Deno.test("keeps compatible thinking budget while stripping thinking level", () => {
+  const resolved = resolveGeminiProviderRequest(
+    {
+      ...providerInput,
+      generationConfig: {
+        maxOutputTokens: 256,
+        thinkingConfig: { thinkingLevel: "MINIMAL", thinkingBudget: 128 },
+      },
+    },
+    new Set(["gemini-2.5-flash"]),
+    "gemini-2.5-flash",
+  );
+  const thinkingConfig = resolved.generationConfig.thinkingConfig;
+  if (
+    !isRecord(thinkingConfig) ||
+    thinkingConfig.thinkingLevel !== undefined ||
+    thinkingConfig.thinkingBudget !== 128
+  ) {
+    throw new Error(
+      "Gemini 2.5 config normalization changed compatible fields",
+    );
+  }
+});
 
 Deno.test("validates and delegates a bounded AI request with trace correlation", async () => {
   let captured: unknown;

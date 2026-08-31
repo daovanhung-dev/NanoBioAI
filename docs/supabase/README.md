@@ -67,6 +67,13 @@ AI runtime dùng Edge Function `nabi-ai-generate`. Gemini API key chỉ được
 không nhận/ghi credential nhà cung cấp. `report-ai-content` cho phép guest gửi
 phản hồi có giới hạn tốc độ và lưu qua service role.
 
+Food Scan dùng Edge Function riêng `food-scan-analyze` cho hai operation
+`vision` và `health`. Function xác thực JWT, kiểm tra quyền Plus/FamilyPlus
+qua `effective_user_access`, giới hạn request theo user, rồi chuyển tiếp tạm
+thời tới Gemini. Ảnh và kết quả Food Scan không được lưu ở Edge Function; app
+tiếp tục lưu kết quả local và chỉ tạo nutrition log sau khi người dùng xác
+nhận đã ăn.
+
 Trước khi deploy `nabi-ai-generate`, export key ở shell an toàn (không commit
 vào repo), rồi đặt secret vào đúng Supabase project:
 
@@ -101,6 +108,7 @@ supabase functions deploy admin-create-account --project-ref "$SUPABASE_PROJECT_
 supabase functions deploy admin-grant-membership --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy google-play-verify-purchase --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy nabi-ai-generate --project-ref "$SUPABASE_PROJECT_REF"
+supabase functions deploy food-scan-analyze --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy report-ai-content --project-ref "$SUPABASE_PROJECT_REF"
 ```
 

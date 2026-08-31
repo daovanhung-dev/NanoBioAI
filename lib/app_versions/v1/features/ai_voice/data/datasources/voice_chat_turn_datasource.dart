@@ -38,7 +38,7 @@ abstract class VoiceChatTurnDatasource {
 /// Paid access remains enforced by the page gate. Conversation content stays
 /// in the in-memory repository and is never persisted by this datasource.
 class GeminiVoiceChatTurnDatasource implements VoiceChatTurnDatasource {
-  static const defaultModel = 'gemini-3.5-flash';
+  static const defaultModel = 'gemini-2.5-flash';
   static const maxInputCharacters = 6000;
   static const maxHistoryMessageCharacters = 6000;
   static const maxResponseCharacters = 2000;
@@ -93,7 +93,6 @@ hãy khuyên họ gọi 115 tại Việt Nam hoặc đến cơ sở cấp cứu 
             generationConfig: const GeminiGenerationConfig(
               candidateCount: null,
               maxOutputTokens: maxOutputTokens,
-              thinkingLevel: 'MINIMAL',
             ),
             systemInstruction: systemInstruction,
           )

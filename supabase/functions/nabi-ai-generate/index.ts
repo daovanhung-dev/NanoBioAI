@@ -1,6 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-import { createNabiAiGenerateHandler, NabiAiGenerateInput } from "./handler.ts";
+import {
+  createNabiAiGenerateHandler,
+  NabiAiGenerateInput,
+  resolveGeminiProviderRequest,
+} from "./handler.ts";
 
 const supabaseUrl = requiredEnvironment("SUPABASE_URL");
 const supabaseAnonKey = requiredEnvironment("SUPABASE_ANON_KEY");
@@ -44,7 +48,12 @@ Deno.serve(createNabiAiGenerateHandler({
 
 async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
   const startedAt = Date.now();
-  const model = allowedModels.has(input.model) ? input.model : defaultModel;
+  const providerRequest = resolveGeminiProviderRequest(
+    input,
+    allowedModels,
+    defaultModel,
+  );
+  const { model, generationConfig, modelFallback } = providerRequest;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${
     encodeURIComponent(model)
   }:generateContent`;
@@ -54,7 +63,7 @@ async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
     event: "PROVIDER_REQUEST_START",
     traceId: input.traceId,
     model,
-    modelFallback: input.model !== model,
+    modelFallback,
   }));
 
   let response: Response;
@@ -67,7 +76,7 @@ async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
       },
       body: JSON.stringify({
         contents: input.contents,
-        generationConfig: input.generationConfig,
+        generationConfig,
         ...(input.systemInstruction
           ? {
             systemInstruction: { parts: [{ text: input.systemInstruction }] },
@@ -81,7 +90,7 @@ async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
       event: "PROVIDER_NETWORK_FAILURE",
       traceId: input.traceId,
       model,
-      modelFallback: input.model !== model,
+      modelFallback,
       errorCode: "provider_network_error",
       durationMs: Date.now() - startedAt,
     }));
@@ -96,7 +105,7 @@ async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
       event: "PROVIDER_HTTP_FAILURE",
       traceId: input.traceId,
       model,
-      modelFallback: input.model !== model,
+      modelFallback,
       statusCode: response.status,
       errorCode,
       durationMs: Date.now() - startedAt,
@@ -125,7 +134,7 @@ async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
       event: "PROVIDER_EMPTY_RESPONSE",
       traceId: input.traceId,
       model,
-      modelFallback: input.model !== model,
+      modelFallback,
       statusCode: response.status,
       errorCode: "provider_empty_response",
       ...responseSummary,
@@ -139,7 +148,7 @@ async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
     event: "PROVIDER_REQUEST_SUCCESS",
     traceId: input.traceId,
     model,
-    modelFallback: input.model !== model,
+    modelFallback,
     statusCode: response.status,
     responseLength: text.length,
     ...responseSummary,

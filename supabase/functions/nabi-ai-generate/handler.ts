@@ -1,3 +1,8 @@
+import {
+  normalizeGenerationConfigForModel as normalizeProviderConfig,
+  resolveGeminiProviderRequest as resolveProviderRequest,
+} from "../_shared/gemini_provider.ts";
+
 export type NabiAiGenerateInput = {
   model: string;
   contents: unknown[];
@@ -13,6 +18,37 @@ export type NabiAiGenerateDeps = {
   rateLimit: (key: string) => Promise<boolean>;
   generate: (input: NabiAiGenerateInput) => Promise<string>;
 };
+
+export type NabiAiProviderRequest = {
+  model: string;
+  generationConfig: Record<string, unknown>;
+  modelFallback: boolean;
+};
+
+/**
+ * Resolves the provider model and its compatible generation config together.
+ * The Edge Function must never send a config authored for a rejected model to
+ * the fallback model unchanged.
+ */
+export function resolveGeminiProviderRequest(
+  input: NabiAiGenerateInput,
+  allowedModels: ReadonlySet<string>,
+  defaultModel: string,
+): NabiAiProviderRequest {
+  return resolveProviderRequest(input, allowedModels, defaultModel);
+}
+
+/**
+ * Removes only the Gemini 3 thinking-level setting when the final provider
+ * model is Gemini 2.5. Generic generation fields and a compatible
+ * thinkingBudget remain intact.
+ */
+export function normalizeGenerationConfigForModel(
+  model: string,
+  generationConfig: Record<string, unknown>,
+): Record<string, unknown> {
+  return normalizeProviderConfig(model, generationConfig);
+}
 
 const MAX_REQUEST_BYTES = 1_500_000;
 const MAX_CONTENTS = 24;

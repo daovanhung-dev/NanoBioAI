@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 148
+- Total worklogs: 151
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -157,3 +157,6 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-29 | bugfix | bugfix | M05 AI / runtime configuration / Supabase Edge Function | [Worklog - Chan doan ket noi AI backend](../../docs/worklog/2026-08-29/003-worklog-ai-backend-route-diagnosis.md) |
 | 2026-08-29 | supabase-schema | supabase-schema | M05 AI / quota / Supabase runtime contract | [Worklog - AI runtime SQL preflight](../../docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md) |
 | 2026-08-30 | unknown | docs-context | unknown | [Worklog: fix AI generation after onboarding](../../docs/worklog/2026-08-30/001-worklog-ai-generation-after-onboarding.md) |
+| 2026-08-31 | bugfix | bugfix | M07 AI_CHAT / Sequential AI Voice | [Worklog - AI Voice backend model/config regression](../../docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md) |
+| 2026-08-31 | coding / deploy / test | supabase-schema | V3 Food Scan, AI runtime, Supabase Edge Functions | [Worklog - Food Scan Edge Function](../../docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md) |
+| 2026-08-31 | bugfix | bugfix | V3 Food Scan / AI backend / membership gate | [Worklog - Food Scan không dùng được](../../docs/worklog/2026-08-31/003-worklog-food-scan-unavailable-fix.md) |

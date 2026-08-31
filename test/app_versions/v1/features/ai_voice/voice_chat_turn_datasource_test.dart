@@ -68,7 +68,6 @@ void main() {
           ],
           'generationConfig': {
             'maxOutputTokens': 256,
-            'thinkingConfig': {'thinkingLevel': 'MINIMAL'},
           },
           'systemInstruction': {
             'parts': [
@@ -79,7 +78,7 @@ void main() {
       },
     );
 
-    test('resolves model as chat, general, then Gemini 3.5 default', () async {
+    test('resolves model as chat, general, then canonical Gemini 2.5 default', () async {
       final cases = <({Map<String, String> environment, String expected})>[
         (
           environment: {

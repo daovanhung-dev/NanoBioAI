@@ -835,3 +835,21 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-29/004-worklog-ai-runtime-sql-preflight.md :: - Muc do hoan thanh task: partial ve van hanh - file SQL da tao, nhung provider
 - docs/worklog/2026-08-30/001-worklog-ai-generation-after-onboarding.md :: - `personal_schedule_ai_requests`: `initial_guest`, `failed`,
 - docs/worklog/2026-08-30/001-worklog-ai-generation-after-onboarding.md :: - failure matched `_ensureMealSlotsAvailable()`.
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: - `python3 tools/validate_docs_source_truth.py`: FAIL - baseline thiếu `docs/audit/source_truth_manifest.json`.
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: - `flutter test ...`: SKIPPED - Flutter chưa cài.
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: - `flutter analyze ...`: SKIPPED - Flutter chưa cài.
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: - `dart format ...`: SKIPPED - Dart chưa cài.
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: - `flutter build apk --debug`: SKIPPED - Flutter chưa cài.
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: - Hai smoke thử nghiệm với `maxOutputTokens=16/32`: FAIL HTTP 502 do giới hạn output quá thấp; không phải cấu hình Voice theo plan.
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: - Chua fix: Flutter targeted suite, Android debug build và physical E2E bằng tài khoản Plus/FamilyPlus thật.
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: - Can kiem tra tiep: Flutter/Dart validation, Android physical acceptance và theo dõi trace remote nếu device gặp lỗi.
+- docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md :: - Muc do hoan thanh task: PARTIAL; phần code/static đã hoàn tất, các gate cần toolchain, remote và thiết bị thật còn pending.
+- docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL - baseline thiếu `docs/audit/source_truth_manifest.json` và còn stale paths lịch sử ngoài phạm vi task.
+- docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md :: - `python3 tools/validate_docs_source_truth.py`: FAIL - baseline thiếu `docs/audit/source_truth_manifest.json`.
+- docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md :: - Chưa fix: chưa có access token Plus để chạy remote `vision` và `health` thành công.
+- docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md :: - Cần kiểm tra tiếp: chạy authorized smoke test và Flutter test/analyze trên
+- docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md :: - Mức độ hoàn thành task: partial - đã tạo và deploy; success path cần token Plus.
+- docs/worklog/2026-08-31/003-worklog-food-scan-unavailable-fix.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-31/003-worklog-food-scan-unavailable-fix.md :: - Muc do hoan thanh task: partial - fix đã deploy; success path cần token paid và Flutter SDK để xác nhận cuối.

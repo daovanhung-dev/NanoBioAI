@@ -18,7 +18,8 @@ class FoodScanException implements Exception {
   const FoodScanException.plusRequired()
       : this(
           code: 'PLUS_REQUIRED',
-          userMessage: 'Quét món ăn là quyền lợi dành riêng cho gói Plus.',
+          userMessage:
+              'Quét món ăn là quyền lợi dành riêng cho gói Plus hoặc FamilyPlus.',
         );
 
   const FoodScanException.notFood()
