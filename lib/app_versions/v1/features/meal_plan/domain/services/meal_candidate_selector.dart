@@ -28,18 +28,12 @@ class MealCandidateSelector {
         catalog
             .where((meal) {
               if (!meal.isActive) return false;
-              // Source-imported recipes can contain condition-specific or otherwise
-              // unreviewed health claims. They remain in the cache for provenance and
-              // previously generated-plan hydration, but must never be offered for a
-              // new plan or replacement until a reviewer explicitly marks them
-              // plan-eligible.
-              if (!meal.isPlanEligible) return false;
               if (_isFixtureCode(meal.code)) return false;
               if (excludedCodes.contains(meal.code)) return false;
 
-              // Full-plan generation forwards only reviewed meals to the AI. The
-              // user's health profile remains part of the prompt for personalization,
-              // but cannot turn an unreviewed source recipe into an eligible one.
+              // The meal catalog is a Supabase mirror. Source-imported recipes
+              // are valid inputs for plan generation; safety restrictions below
+              // still apply to slot-scoped replacement.
               if (!isSlotScopedSelection) return true;
 
               // Manual replacement remains slot-aware and keeps local safety checks.

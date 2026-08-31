@@ -7,8 +7,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 void main() {
   setUpAll(sqfliteFfiInit);
 
-  test('database version is 19', () {
-    expect(DatabaseVersion.currentVersion, 19);
+  test('database version includes migration v19', () {
+    expect(DatabaseVersion.currentVersion, greaterThanOrEqualTo(19));
   });
 
   test('migration v19 creates durable health reward check-in outbox', () async {

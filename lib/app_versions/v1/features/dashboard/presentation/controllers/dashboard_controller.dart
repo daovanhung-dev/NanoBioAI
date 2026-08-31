@@ -128,11 +128,22 @@ class DashboardController extends AsyncNotifier<void> {
   }
 
   Future<void> _refreshRequiredSupabaseMealCatalog() async {
-    final count =
-        await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
-    if (count <= 0) {
-      throw StateError('Supabase meal_catalog has no active meals.');
+    try {
+      final count =
+          await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
+      if (count > 0 ||
+          await MealCatalogCacheRefreshService.hasUsableLocalCatalog()) {
+        return;
+      }
+    } catch (_) {
+      if (await MealCatalogCacheRefreshService.hasUsableLocalCatalog()) {
+        return;
+      }
     }
+
+    throw StateError(
+      'Nabi chưa có dữ liệu thực đơn để tạo lịch mới.',
+    );
   }
 
   String _memberPlanRequestId(String userId) {

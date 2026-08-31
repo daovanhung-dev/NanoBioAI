@@ -853,3 +853,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md :: - Mức độ hoàn thành task: partial - đã tạo và deploy; success path cần token Plus.
 - docs/worklog/2026-08-31/003-worklog-food-scan-unavailable-fix.md :: ## Loi/Rui ro
 - docs/worklog/2026-08-31/003-worklog-food-scan-unavailable-fix.md :: - Muc do hoan thanh task: partial - fix đã deploy; success path cần token paid và Flutter SDK để xác nhận cuối.
+- docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md :: - `pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL - manifest source-truth thieu va path stale da ton tai truoc phien.
+- docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md :: - Edge Function deploy: SKIPPED - khong sua Edge Function; function khong doc/chon meal catalog.
+- docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md :: ## Loi/Rui ro
+- docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md :: - Chua fix: Flutter/Dart checks chua chay duoc do thieu SDK trong moi truong.
+- docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md :: - Can kiem tra tiep: chay targeted Flutter tests/analyze va test onboarding/generated-plan tren Android khi co SDK; xac nhan migration v24 tren thiet bi nang cap.

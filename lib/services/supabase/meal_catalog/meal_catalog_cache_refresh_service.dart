@@ -101,18 +101,17 @@ class MealCatalogCacheRefreshService {
   Future<int> refresh() async {
     final remoteItems = await remoteDatasource.fetchActiveCatalog();
     if (remoteItems.isEmpty) {
-      // A transient empty response must never destroy the bundled/cached
-      // catalog used by guest onboarding.
+      // A transient empty response must never destroy the last successful
+      // Supabase mirror used by onboarding or plan generation.
       return 0;
     }
 
     final database = await DatabaseService.database;
-    // Supabase also contains source-imported rows that are intentionally not
-    // plan eligible yet. Do not replace the cache with that projection: doing
-    // so removes the reviewed built-in catalog that guest onboarding needs.
-    // Keep both datasets locally; MealCandidateSelector remains the final
-    // safety gate for new plans.
-    await AiCatalogDao(database).upsertMeals(remoteItems);
+    // The local table is a cache of the remote source, never a second meal
+    // catalog. Replacing atomically removes bundled/legacy rows and ensures
+    // that a deterministic fallback can only use data previously fetched from
+    // Supabase.
+    await AiCatalogDao(database).replaceMeals(remoteItems);
     return remoteItems.length;
   }
 
@@ -120,11 +119,10 @@ class MealCatalogCacheRefreshService {
     final database = await DatabaseService.database;
     final items = await AiCatalogDao(
       database,
-    ).getActiveMeals(planEligibleOnly: true);
+    ).getActiveMeals(planEligibleOnly: false);
     return items.any(
       (item) =>
           item.isActive &&
-          item.isPlanEligible &&
           item.code.trim().isNotEmpty &&
           item.mealName.trim().isNotEmpty,
     );

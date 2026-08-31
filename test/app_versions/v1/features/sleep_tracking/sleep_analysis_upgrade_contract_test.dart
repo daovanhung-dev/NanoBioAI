@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('SQLite v23 wires v22 and v23 migrations and forbids raw audio columns', () {
+  test('SQLite v24 wires v22 and v23 migrations and forbids raw audio columns', () {
     final version = File('lib/core/storage/localdb/database_version.dart').readAsStringSync();
     final service = File('lib/core/storage/localdb/database_service.dart').readAsStringSync();
     final tables = File('lib/core/storage/localdb/tables/sleep_safety_tables.dart').readAsStringSync();
 
-    expect(version, contains('currentVersion = 23'));
+    expect(version, contains('currentVersion = 24'));
     expect(service, contains('MigrationV22.run'));
     expect(service, contains('MigrationV23.run'));
     expect(service, contains('MigrationV22.ensureSchema'));

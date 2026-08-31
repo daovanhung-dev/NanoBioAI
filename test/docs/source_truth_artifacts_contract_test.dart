@@ -92,7 +92,7 @@ void main() {
       'lib/app_versions/v2/router/v2_router.dart',
     ).readAsStringSync();
 
-    expect(databaseVersion, contains('currentVersion = 21'));
+    expect(databaseVersion, contains('currentVersion = 24'));
     expect(onboarding, contains('totalSteps = 9'));
     for (final token in ['...v1Routes', '...v2Routes', '...v3Routes']) {
       expect(router, contains(token), reason: token);

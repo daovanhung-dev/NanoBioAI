@@ -42,6 +42,7 @@ import 'migrations/migration_v20.dart';
 import 'migrations/migration_v21.dart';
 import 'migrations/migration_v22.dart';
 import 'migrations/migration_v23.dart';
+import 'migrations/migration_v24.dart';
 import 'seeders/ai_catalog_seeder.dart';
 
 class DatabaseService {
@@ -149,6 +150,7 @@ class DatabaseService {
             if (oldVersion < 21 && newVersion >= 21) await MigrationV21.run(db);
             if (oldVersion < 22 && newVersion >= 22) await MigrationV22.run(db);
             if (oldVersion < 23 && newVersion >= 23) await MigrationV23.run(db);
+            if (oldVersion < 24 && newVersion >= 24) await MigrationV24.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,

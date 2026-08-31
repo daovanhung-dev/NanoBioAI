@@ -5,7 +5,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Canonical Work Types Seen
 
 - docs-context - Context and docs update: 50 worklog(s)
-- bugfix - Direct bugfix: 30 worklog(s)
+- bugfix - Direct bugfix: 31 worklog(s)
 - coding - Coding: 29 worklog(s)
 - supabase-schema - Supabase schema and RLS: 20 worklog(s)
 - test - Test and verification: 9 worklog(s)

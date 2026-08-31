@@ -61,7 +61,7 @@ thay vì diễn giải như mô tả hành vi.
 - Supabase là tùy chọn cho guest bootstrap; chức năng cloud/auth cần backend
   hợp lệ.
 - AI gọi Gemini REST qua Dio; dự án không khai báo Gemini Dart SDK.
-- SQLite hiện ở `DatabaseVersion.currentVersion = 20`.
+- SQLite hiện ở `DatabaseVersion.currentVersion = 24`.
 - Onboarding runtime có 9 bước.
 
 Chi tiết từng capability và bằng chứng file nằm trong

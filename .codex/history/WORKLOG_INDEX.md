@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 151
+- Total worklogs: 152
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -160,3 +160,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-31 | bugfix | bugfix | M07 AI_CHAT / Sequential AI Voice | [Worklog - AI Voice backend model/config regression](../../docs/worklog/2026-08-31/001-worklog-ai-voice-backend-regression.md) |
 | 2026-08-31 | coding / deploy / test | supabase-schema | V3 Food Scan, AI runtime, Supabase Edge Functions | [Worklog - Food Scan Edge Function](../../docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md) |
 | 2026-08-31 | bugfix | bugfix | V3 Food Scan / AI backend / membership gate | [Worklog - Food Scan không dùng được](../../docs/worklog/2026-08-31/003-worklog-food-scan-unavailable-fix.md) |
+| 2026-08-31 | bugfix | bugfix | AI / Meal Plan / SQLite catalog / Supabase cache | [Worklog - Supabase-only meal catalog](../../docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md) |

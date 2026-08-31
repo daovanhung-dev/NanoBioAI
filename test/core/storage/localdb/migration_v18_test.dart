@@ -15,8 +15,8 @@ void main() {
 
   tearDown(() => database.close());
 
-  test('database version is 18', () {
-    expect(DatabaseVersion.currentVersion, 18);
+  test('database version includes migration v18', () {
+    expect(DatabaseVersion.currentVersion, greaterThanOrEqualTo(18));
   });
 
   test('V18 schema is idempotent and preserves existing meal rows', () async {

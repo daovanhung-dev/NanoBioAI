@@ -12,15 +12,15 @@ void main() {
     expect(source, contains('bool planEligibleOnly = false'));
   });
 
-  test('Supabase refresh preserves reviewed local meals', () {
+  test('Supabase refresh replaces the local meal mirror', () {
     final source = File(
       'lib/services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart',
     ).readAsStringSync();
 
     expect(source, contains(".from('meal_catalog')"));
     expect(source, contains(".eq('is_active', true)"));
-    expect(source, contains('upsertMeals(remoteItems)'));
-    expect(source, isNot(contains('replaceMeals(remoteItems)')));
+    expect(source, contains('replaceMeals(remoteItems)'));
+    expect(source, isNot(contains('upsertMeals(remoteItems)')));
   });
 
   test('meal generation entry points refresh Supabase before generation', () {
@@ -41,7 +41,25 @@ void main() {
     );
   });
 
-  test('reviewed local seeds survive a successful Supabase refresh', () {
+  test('Supabase-only cache fallback accepts source rows without review flag', () {
+    final refreshSource = File(
+      'lib/services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart',
+    ).readAsStringSync();
+
+    expect(refreshSource, contains('getActiveMeals(planEligibleOnly: false)'));
+    expect(refreshSource, isNot(contains('getActiveMeals(planEligibleOnly: true)')));
+  });
+
+  test('meal seeding does not create an app-owned meal catalog', () {
+    final seederSource = File(
+      'lib/core/storage/localdb/seeders/ai_catalog_seeder.dart',
+    ).readAsStringSync();
+
+    expect(seederSource, isNot(contains('AiCatalogSeedData.meals')));
+    expect(seederSource, isNot(contains('SourceMealCatalogLoader')));
+  });
+
+  test('meal DAO can replace the cache with remote rows', () {
     final daoSource = File(
       'lib/core/storage/localdb/daos/ai_catalog_dao.dart',
     ).readAsStringSync();
@@ -49,7 +67,7 @@ void main() {
       'lib/services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart',
     ).readAsStringSync();
 
-    expect(daoSource, contains('upsertMeals'));
-    expect(refreshSource, contains('upsertMeals(remoteItems)'));
+    expect(daoSource, contains('replaceMeals'));
+    expect(refreshSource, contains('replaceMeals(remoteItems)'));
   });
 }

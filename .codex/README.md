@@ -40,7 +40,7 @@ Doc `.codex/history/OPEN_RISKS.md` chi khi task cham release readiness, auth, Su
   `lib/app_versions/v1/services/ai/gemini_rest_client.dart` and no Gemini Dart
   SDK is declared.
 - Local notifications `19.5.0`, timezone `0.10.1`, flutter_timezone `5.1.0`.
-- SQLite database version: `DatabaseVersion.currentVersion = 20`.
+- SQLite database version: `DatabaseVersion.currentVersion = 24`.
 - Product access map: `v1` guest/basic, `v2` authenticated capabilities, `v3`
   partial paid-gated flows plus source-only planned markers, `sale_referral`
   independent.

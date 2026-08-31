@@ -212,7 +212,7 @@ void main() {
     expect(logNames.where((name) => name == 'oxygen_saturation'), hasLength(1));
   });
 
-  test('migration v8 creates and seeds AI catalog tables once', () async {
+  test('migration v8 creates non-meal AI catalog tables once', () async {
     await MigrationManager.runMigrations(db, 7, 8);
     await MigrationManager.runMigrations(db, 7, 8);
 
@@ -235,7 +235,7 @@ void main() {
       await db.rawQuery('SELECT COUNT(*) FROM schedule_task_catalog'),
     );
 
-    expect(mealCount, 40);
+    expect(mealCount, 0);
     expect(exerciseCount, 16);
     expect(scheduleCount, 3);
 
