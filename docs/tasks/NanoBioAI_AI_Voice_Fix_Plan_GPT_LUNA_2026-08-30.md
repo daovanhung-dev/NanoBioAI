@@ -1,11 +1,13 @@
+![1788174309973](image/NanoBioAI_AI_Voice_Fix_Plan_GPT_LUNA_2026-08-30/1788174309973.png)
+
 # NanoBioAI — Kế hoạch fix AI Voice cho GPT LUNA
 
-**Ngày lập:** 2026-08-30  
-**Repository canonical:** `daovanhung-dev/NanoBioAI`  
-**Baseline khảo sát:** branch `main`, commit gần nhất khi lập kế hoạch: `696172ac95b0dd3f0e5f4685d8b47f8f22277379`  
-**Module:** M07 `AI_CHAT` / Sequential AI Voice  
-**Loại công việc:** Direct bugfix + AI backend compatibility + Android physical-device verification  
-**Trạng thái:** **PLAN ONLY — CHƯA ĐƯỢC PHÉP SỬA CODE/DEPLOY cho đến khi người dùng xác nhận plan.**  
+**Ngày lập:** 2026-08-30
+**Repository canonical:** `daovanhung-dev/NanoBioAI`
+**Baseline khảo sát:** branch `main`, commit gần nhất khi lập kế hoạch: `696172ac95b0dd3f0e5f4685d8b47f8f22277379`
+**Module:** M07 `AI_CHAT` / Sequential AI Voice
+**Loại công việc:** Direct bugfix + AI backend compatibility + Android physical-device verification
+**Trạng thái:** **PLAN ONLY — CHƯA ĐƯỢC PHÉP SỬA CODE/DEPLOY cho đến khi người dùng xác nhận plan.**
 **Agent thực thi mục tiêu:** **GPT LUNA**
 
 ---
@@ -1444,23 +1446,23 @@ Không rollback toàn transport.
 
 # 17. Automated regression matrix bắt buộc
 
-| Nhóm | Yêu cầu |
-|---|---|
-| Access gate | Free blocked, Plus allowed, wrong user blocked |
-| STT init | permission, unavailable, status start |
-| STT endpointing | 200/500/1000/2000 delayed-arm |
-| STT lifecycle | stop/cancel/terminal timeout/no concurrent start |
-| Voice controller | listening -> thinking -> speaking -> listening |
-| Voice controller | Stop ở từng phase |
-| Voice repository | bounded history, reset session |
-| Voice datasource | bounded message/history/response |
-| Voice model | canonical model resolve |
-| Voice config | 2.5 request không chứa thinkingLevel |
-| Edge fallback | fallback model + config normalize cùng nhau |
-| Edge errors | 400/429/5xx safe mapping |
-| Backend client | function invocation contract |
-| Security | no provider key in client |
-| Build | Android debug APK PASS |
+| Nhóm            | Yêu cầu                                        |
+| ---------------- | ------------------------------------------------ |
+| Access gate      | Free blocked, Plus allowed, wrong user blocked   |
+| STT init         | permission, unavailable, status start            |
+| STT endpointing  | 200/500/1000/2000 delayed-arm                    |
+| STT lifecycle    | stop/cancel/terminal timeout/no concurrent start |
+| Voice controller | listening -> thinking -> speaking -> listening   |
+| Voice controller | Stop ở từng phase                              |
+| Voice repository | bounded history, reset session                   |
+| Voice datasource | bounded message/history/response                 |
+| Voice model      | canonical model resolve                          |
+| Voice config     | 2.5 request không chứa thinkingLevel           |
+| Edge fallback    | fallback model + config normalize cùng nhau     |
+| Edge errors      | 400/429/5xx safe mapping                         |
+| Backend client   | function invocation contract                     |
+| Security         | no provider key in client                        |
+| Build            | Android debug APK PASS                           |
 
 ---
 

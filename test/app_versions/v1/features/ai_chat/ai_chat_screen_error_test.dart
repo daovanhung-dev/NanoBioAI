@@ -7,7 +7,6 @@ import 'package:nano_app/app_versions/v1/features/ai_chat/domain/repositories/ai
 import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/providers/ai_chat_providers.dart';
 import 'package:nano_app/core/membership/membership_upgrade_route.dart';
-import 'package:nano_app/features/nabi/nabi.dart';
 import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
 
 void main() {
@@ -26,14 +25,7 @@ void main() {
     );
     await tester.pump();
 
-    final nabiAvatar = find.byWidgetPredicate((widget) {
-      if (widget is! Image) return false;
-      final provider = widget.image;
-      return provider is AssetImage &&
-          provider.assetName ==
-              NabiAssetCatalog.staticAssetPath('core/nabi_idle_happy.png');
-    });
-    expect(nabiAvatar, findsWidgets);
+    expect(find.byIcon(Icons.auto_awesome_rounded), findsWidgets);
 
     await tester.enterText(find.byType(TextField), 'Nabi ơi');
     await tester.pump();

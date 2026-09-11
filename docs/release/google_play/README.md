@@ -43,15 +43,16 @@ open until evidence is attached:
 - Supabase local/sandbox rebuild plus two-session RLS, replay, deletion and
   Edge Function runtime tests.
 
-Latest local artifact check (2026-08-29):
+Latest local artifact check (2026-09-01, run `20260831T210948Z-a1ef0ed`):
 
 - `flutter build appbundle --release` produced
-  `build/app/outputs/bundle/release/app-release.aab` (128.5 MB; 128,455,021 bytes).
-- SHA-256: `94077ccc9b274369f342c05831579273ca2bfbfb55c86d09ddcae42dfff0830e`.
+  `build/app/outputs/bundle/release/app-release.aab` (128.4 MB; 128,427,356 bytes).
+- SHA-256: `dbcf473c27d27ab36fe5dd130170dbba287609538cf4ec32866c41b992eb22ee`.
 - Package is `com.nanobioai.app`, version `1.0.0` (versionCode `1`),
   minSdk `24`, compileSdk `36`, and targetSdk `36`.
-- The AAB is locally signed by `CN=NanoBioAI, OU=Development, O=NanoBio,
-  L=Hanoi, ST=Hanoi, C=VN`; its native ELF `LOAD` segments are aligned at
+- The release variant built with the local signing configuration available;
+  the AAB itself is not evidence of Play App Signing. Its native ELF `LOAD`
+  segments are aligned at
   0x4000 or 0x10000 for arm64-v8a, armeabi-v7a and x86_64 (no segment below
   16 KB).
 - `strings` on the arm64 `libapp.so` contains the trusted `nabi-ai-generate`
@@ -63,15 +64,19 @@ Latest local artifact check (2026-08-29):
 
 Do not change these entries to PASS based only on static source inspection.
 
-Policy references checked on 2026-08-29: [Billing deprecation
+Policy references checked on 2026-09-01: [Play Billing deprecation
 FAQ](https://developer.android.com/google/play/billing/deprecation-faq),
+[Payments policy](https://support.google.com/googleplay/android-developer/answer/10281818),
+[Target API policy](https://support.google.com/googleplay/android-developer/answer/11926878),
 [Health apps declaration](https://support.google.com/googleplay/android-developer/answer/14738291),
 [account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111),
 [foreground-service requirements](https://support.google.com/googleplay/android-developer/answer/13392821),
-[Data Safety guidance](https://support.google.com/googleplay/answer/11416267), and
+[Data Safety guidance](https://support.google.com/googleplay/android-developer/answer/10787469), and
 [16 KB page-size guidance](https://developer.android.com/guide/practices/page-sizes).
 
 The final repository-only handoff archive is
-`docs/release/google_play/NanoBioAI_GOOGLE_PLAY_REMEDIATION_20260829.zip`.
-It excludes the AAB, ignored signing material, caches and the user-provided
-plan document.
+`docs/release/google_play/NanoBioAI_GOOGLE_PLAY_FINAL_PASS_SOURCE_READY_20260901.zip`.
+It contains only the execution source/docs/test allowlist and excludes the
+worklog runtime record, AAB, ignored signing material, caches, logs and the
+user-provided plan document. Hash, size and extraction evidence are recorded in
+the final worklog.

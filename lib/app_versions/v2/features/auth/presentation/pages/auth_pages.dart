@@ -343,6 +343,8 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   }
 
   Future<void> _submit() async {
+    if (_loading) return;
+
     if (!(_formKey.currentState?.validate() ?? false)) {
       AppFeedbackService.instance.emit(AppFeedbackType.warning);
       return;

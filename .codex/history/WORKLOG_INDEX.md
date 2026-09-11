@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 152
+- Total worklogs: 154
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -161,3 +161,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-08-31 | coding / deploy / test | supabase-schema | V3 Food Scan, AI runtime, Supabase Edge Functions | [Worklog - Food Scan Edge Function](../../docs/worklog/2026-08-31/002-worklog-food-scan-edge-function.md) |
 | 2026-08-31 | bugfix | bugfix | V3 Food Scan / AI backend / membership gate | [Worklog - Food Scan không dùng được](../../docs/worklog/2026-08-31/003-worklog-food-scan-unavailable-fix.md) |
 | 2026-08-31 | bugfix | bugfix | AI / Meal Plan / SQLite catalog / Supabase cache | [Worklog - Supabase-only meal catalog](../../docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md) |
+| 2026-09-01 | fix-issues / release-hardening. | fix-issues | unknown | [Worklog - Google Play final pass](../../docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md) |
+| 2026-09-11 | bugfix va runtime acceptance | supabase-schema | Auth V2, Supabase signup atomic, Android device run | [Worklog - Debug va sua signup Auth V2 tren Android that](../../docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md) |

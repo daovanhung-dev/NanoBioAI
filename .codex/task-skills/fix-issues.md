@@ -2,16 +2,18 @@
 
 - Canonical key: fix-issues
 - Workflow: .codex/workflows/fix-issues.md
-- Generated from 2 worklog(s).
+- Generated from 3 worklog(s).
 
 ## When To Read
 
 - Historical task type: fix-issues (2)
+- Historical task type: fix-issues / release-hardening. (1)
 
 ## Common Modules
 
 - AI Chat service: 1
 - v1 onboarding, AppLogger: 1
+- unknown: 1
 
 ## Work Pattern
 
@@ -31,3 +33,4 @@
 
 - [Worklog - Fix AI Chat dotenv uninitialized](../../docs/worklog/2026-06-19/011-worklog-fix-ai-chat-dotenv-uninitialized.md) - AI Chat service
 - [Worklog - Fix onboarding sensitive snapshot logging](../../docs/worklog/2026-07-10/002-worklog-onboarding-sensitive-snapshot-logging.md) - v1 onboarding, AppLogger
+- [Worklog - Google Play final pass](../../docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md) - unknown

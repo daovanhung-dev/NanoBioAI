@@ -11,10 +11,61 @@ import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/core/config/auth_backend_availability.dart';
 
 void main() {
-  test('auth stream event during sign in does not rebuild auth route state', () async {
+  test(
+    'auth stream event during sign in does not rebuild auth route state',
+    () async {
+      final authChanges = StreamController<String?>.broadcast();
+      final repository = _RaceAuthRepository(
+        onSignInEvent: () => authChanges.add('session-user-id'),
+      );
+      final syncRepository = _NoopCloudSyncRepository();
+
+      final container = ProviderContainer(
+        overrides: [
+          authBackendAvailabilityProvider.overrideWithValue(
+            AuthBackendAvailability.ready,
+          ),
+          v2AuthRepositoryProvider.overrideWithValue(repository),
+          authenticatedUserDataSyncRepositoryProvider.overrideWithValue(
+            syncRepository,
+          ),
+          v2AuthChangesProvider.overrideWith((ref) => authChanges.stream),
+        ],
+      );
+      addTearDown(() async {
+        container.dispose();
+        await authChanges.close();
+      });
+
+      await container.read(v2AuthControllerProvider.future);
+      expect(repository.resolveCalls, 1);
+
+      await container
+          .read(v2AuthControllerProvider.notifier)
+          .signInWithEmail(
+            const LoginCommand(
+              email: 'dev.free@nanobio.local',
+              password: 'NanoBio@123456',
+            ),
+          );
+      await Future<void>.delayed(Duration.zero);
+
+      final state = container.read(v2AuthControllerProvider).requireValue;
+      expect(state.status, AuthRouteStatus.authenticatedReady);
+      expect(container.read(currentAuthUserIdProvider), 'session-user-id');
+
+      // Initial build + the explicit post-sign-in resolve. The auth stream event
+      // must not create a third competing resolve while sign-in is in flight.
+      expect(repository.resolveCalls, 2);
+    },
+  );
+
+  test('repeated sign up calls share one in-flight operation', () async {
     final authChanges = StreamController<String?>.broadcast();
+    final signupGate = Completer<RegistrationResult>();
     final repository = _RaceAuthRepository(
-      onSignInEvent: () => authChanges.add('session-user-id'),
+      onSignInEvent: () {},
+      signupGate: signupGate,
     );
     final syncRepository = _NoopCloudSyncRepository();
 
@@ -36,34 +87,35 @@ void main() {
     });
 
     await container.read(v2AuthControllerProvider.future);
-    expect(repository.resolveCalls, 1);
+    final controller = container.read(v2AuthControllerProvider.notifier);
+    const command = RegisterCommand(
+      email: 'signup@example.com',
+      password: 'NanoBio@123456',
+      confirmPassword: 'NanoBio@123456',
+      fullName: 'Test User',
+      acceptedTerms: true,
+    );
 
-    await container
-        .read(v2AuthControllerProvider.notifier)
-        .signInWithEmail(
-          const LoginCommand(
-            email: 'dev.free@nanobio.local',
-            password: 'NanoBio@123456',
-          ),
-        );
-    await Future<void>.delayed(Duration.zero);
+    final first = controller.signUpWithEmail(command);
+    final second = controller.signUpWithEmail(command);
 
-    final state = container.read(v2AuthControllerProvider).requireValue;
-    expect(state.status, AuthRouteStatus.authenticatedReady);
-    expect(container.read(currentAuthUserIdProvider), 'session-user-id');
+    expect(repository.signUpCalls, 1);
+    signupGate.complete(RegistrationResult.sessionReady);
 
-    // Initial build + the explicit post-sign-in resolve. The auth stream event
-    // must not create a third competing resolve while sign-in is in flight.
+    expect(await first, RegistrationResult.sessionReady);
+    expect(await second, RegistrationResult.sessionReady);
     expect(repository.resolveCalls, 2);
   });
 }
 
 class _RaceAuthRepository implements AuthRepository {
-  _RaceAuthRepository({required this.onSignInEvent});
+  _RaceAuthRepository({required this.onSignInEvent, this.signupGate});
 
   final void Function() onSignInEvent;
+  final Completer<RegistrationResult>? signupGate;
   bool signedIn = false;
   int resolveCalls = 0;
+  int signUpCalls = 0;
 
   @override
   Stream<String?> watchAuthChanges() => const Stream<String?>.empty();
@@ -88,6 +140,8 @@ class _RaceAuthRepository implements AuthRepository {
 
   @override
   Future<RegistrationResult> signUpWithEmail(RegisterCommand command) async {
+    signUpCalls++;
+    if (signupGate != null) return signupGate!.future;
     signedIn = true;
     return RegistrationResult.sessionReady;
   }

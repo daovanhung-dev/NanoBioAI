@@ -7,17 +7,17 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - docs-context - Context and docs update: 50 worklog(s)
 - bugfix - Direct bugfix: 31 worklog(s)
 - coding - Coding: 29 worklog(s)
-- supabase-schema - Supabase schema and RLS: 20 worklog(s)
+- supabase-schema - Supabase schema and RLS: 21 worklog(s)
 - test - Test and verification: 9 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - find-issues - Review and find issues: 3 worklog(s)
-- fix-issues - Fix documented issue: 2 worklog(s)
+- fix-issues - Fix documented issue: 3 worklog(s)
 - refactor-scaffold - Scaffold refactor: 2 worklog(s)
 - create-todo - Create todo docs: 1 worklog(s)
 
 ## Frequent Modules
 
-- unknown: 36
+- unknown: 37
 - .codex: 2
 - docs/issues, docs/todo: 2
 - authentication: 2

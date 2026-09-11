@@ -22,7 +22,6 @@ import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

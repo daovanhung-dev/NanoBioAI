@@ -858,3 +858,19 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md :: ## Loi/Rui ro
 - docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md :: - Chua fix: Flutter/Dart checks chua chay duoc do thieu SDK trong moi truong.
 - docs/worklog/2026-08-31/004-worklog-meal-catalog-supabase-only.md :: - Can kiem tra tiep: chay targeted Flutter tests/analyze va test onboarding/generated-plan tren Android khi co SDK; xac nhan migration v24 tren thiet bi nang cap.
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: | Full Flutter suite với alias test-only `libsqlite3.so.0` | `1144 PASS / 79 FAIL`, timeout 600s tại teardown; NO-GO |
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: | `pwsh ... validate_codex_integrity.ps1` | FAIL baseline: thiếu `docs/audit/source_truth_manifest.json` và còn stale paths lịch sử |
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: - AAB local build: `PASS`; Play App Signing/internal track: `BLOCKED_EXTERNAL`.
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: - Supabase local/sandbox rebuild/RLS/runtime: `BLOCKED_EXTERNAL`.
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: - Public legal URLs and final legal review: `BLOCKED_EXTERNAL`.
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: - Health/Data Safety/FGS Console declarations: `BLOCKED_EXTERNAL`.
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: - Full regression suite: `NO-GO` until 79 failures and teardown issue are
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: ## Rủi ro và việc cần tiếp tục
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: UI failures và `auth_controller_sync_failure_test` shutdown stream.
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: - Mức độ hoàn thành: partial / release verify blocked external.
+- docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md :: failure list bằng test path rồi sửa từng nhóm có owner, không mass-skip.
+- docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md :: - `flutter test test/app_versions/v2/features/auth/auth_pages_smoke_test.dart`: FAIL baseline 2 test do Flutter `ListTile` assertion; khong phai signup runtime.
+- docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL baseline - thieu `docs/audit/source_truth_manifest.json` va mot so backticked path cu trong generated history/task-skill; khong phat sinh tu patch signup.
+- docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md :: ## Loi/Rui ro
+- docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md :: - Chua fix: chua co inbox de xac nhan email va test tiep dang nhap/onboarding sau confirmation.
+- docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md :: - Can kiem tra tiep: baseline ListTile assertion va auth-stream timeout neu muon dong bo full test suite rieng.

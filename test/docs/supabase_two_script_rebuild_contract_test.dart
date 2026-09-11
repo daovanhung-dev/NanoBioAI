@@ -18,40 +18,52 @@ void main() {
       aiRuntime = File(_aiRuntimePath).readAsStringSync();
     });
 
-    test('keeps two authoritative rebuild scripts and one optional preflight', () {
-      final sqlFiles = Directory('docs/supabase')
-          .listSync(followLinks: false)
-          .whereType<File>()
-          .where((file) => file.path.endsWith('.sql'))
-          .map((file) => file.uri.pathSegments.last)
-          .toList()
-        ..sort();
+    test(
+      'keeps two authoritative rebuild scripts and one optional preflight',
+      () {
+        final sqlFiles =
+            Directory('docs/supabase')
+                .listSync(followLinks: false)
+                .whereType<File>()
+                .where((file) => file.path.endsWith('.sql'))
+                .map((file) => file.uri.pathSegments.last)
+                .toList()
+              ..sort();
 
-      expect(sqlFiles, [
-        '01_build_system.sql',
-        '02_seed_data.sql',
-        '03_ai_runtime_enablement.sql',
-      ]);
-    });
+        expect(sqlFiles, [
+          '01_build_system.sql',
+          '02_seed_data.sql',
+          '03_ai_runtime_enablement.sql',
+        ]);
+      },
+    );
 
-    test('documents the destructive rebuild followed by the optional preflight', () {
-      final readme = File('docs/supabase/README.md').readAsStringSync();
-      final buildIndex = readme.indexOf('01_build_system.sql');
-      final seedIndex = readme.indexOf('02_seed_data.sql');
-      final aiRuntimeIndex = readme.indexOf('03_ai_runtime_enablement.sql');
+    test(
+      'documents the destructive rebuild followed by the optional preflight',
+      () {
+        final readme = File('docs/supabase/README.md').readAsStringSync();
+        final buildIndex = readme.indexOf('01_build_system.sql');
+        final seedIndex = readme.indexOf('02_seed_data.sql');
+        final aiRuntimeIndex = readme.indexOf('03_ai_runtime_enablement.sql');
 
-      expect(buildIndex, greaterThanOrEqualTo(0));
-      expect(seedIndex, greaterThan(buildIndex));
-      expect(aiRuntimeIndex, greaterThan(seedIndex));
-      expect(readme, contains('ON_ERROR_STOP'));
-      expect(readme, contains('không thuộc rebuild sequence'));
-      expect(build, contains('DESTRUCTIVE LOCAL/SANDBOX SCRIPT ONLY'));
-      expect(build, contains('drop schema if exists public cascade'));
-      expect(seed, contains('DEV/SANDBOX ONLY'));
-      expect(seed, contains('truncate table auth.users cascade'));
-      expect(seed, contains('insert into auth.users'));
-      expect(seed, isNot(contains('drop schema if exists public cascade')));
-    });
+        expect(buildIndex, greaterThanOrEqualTo(0));
+        expect(seedIndex, greaterThan(buildIndex));
+        expect(aiRuntimeIndex, greaterThan(seedIndex));
+        expect(readme, contains('ON_ERROR_STOP'));
+        expect(
+          readme,
+          matches(
+            RegExp(r'không\s+thuộc\s+rebuild sequence', caseSensitive: false),
+          ),
+        );
+        expect(build, contains('DESTRUCTIVE LOCAL/SANDBOX SCRIPT ONLY'));
+        expect(build, contains('drop schema if exists public cascade'));
+        expect(seed, contains('DEV/SANDBOX ONLY'));
+        expect(seed, contains('truncate table auth.users cascade'));
+        expect(seed, contains('insert into auth.users'));
+        expect(seed, isNot(contains('drop schema if exists public cascade')));
+      },
+    );
 
     test('keeps the AI preflight read-only and provider-secret free', () {
       for (final token in [
@@ -77,7 +89,10 @@ void main() {
 
     test('keeps M31 rollout in the build without granting membership', () {
       final marker = 'SLEEP_SAFETY_RUNTIME_CONFIG_MISSING';
-      final transactionStart = build.lastIndexOf('begin;', build.indexOf(marker));
+      final transactionStart = build.lastIndexOf(
+        'begin;',
+        build.indexOf(marker),
+      );
       final transactionEnd = build.indexOf('commit;', build.indexOf(marker));
       expect(transactionStart, greaterThanOrEqualTo(0));
       expect(transactionEnd, greaterThan(transactionStart));
@@ -96,7 +111,9 @@ void main() {
     });
 
     test('keeps runtime Storage and M31 contact RPCs in the build', () {
-      final systemValidation = build.indexOf('-- BEGIN FAIL-FAST SYSTEM VALIDATION');
+      final systemValidation = build.indexOf(
+        '-- BEGIN FAIL-FAST SYSTEM VALIDATION',
+      );
       final sleepSafetySchema = build.indexOf(
         'create table if not exists public.sleep_safety_runtime_config',
       );
@@ -135,46 +152,50 @@ void main() {
       expect(seed, isNot(contains('insert into storage.buckets')));
     });
 
-    test('keeps generated catalog data and fail-fast checks inside the seed', () {
-      const catalogBegin = '-- BEGIN GENERATED MEAL CATALOG';
-      const catalogEnd = '-- END GENERATED MEAL CATALOG';
-      const validationBegin = '-- BEGIN FAIL-FAST SEED VALIDATION';
-      const vietQrBegin = '-- BEGIN ROLLBACK-ONLY VIETQR SMOKE';
-      final catalogStart = seed.indexOf(catalogBegin);
-      final catalogEndIndex = seed.indexOf(catalogEnd);
-      final validationStart = seed.indexOf(validationBegin);
-      final commitIndex = seed.indexOf('commit;');
-      final vietQrStart = seed.indexOf(vietQrBegin);
+    test(
+      'keeps generated catalog data and fail-fast checks inside the seed',
+      () {
+        const catalogBegin = '-- BEGIN GENERATED MEAL CATALOG';
+        const catalogEnd = '-- END GENERATED MEAL CATALOG';
+        const validationBegin = '-- BEGIN FAIL-FAST SEED VALIDATION';
+        const vietQrBegin = '-- BEGIN ROLLBACK-ONLY VIETQR SMOKE';
+        final catalogStart = seed.indexOf(catalogBegin);
+        final catalogEndIndex = seed.indexOf(catalogEnd);
+        final validationStart = seed.indexOf(validationBegin);
+        final commitIndex = seed.indexOf('commit;');
+        final vietQrStart = seed.indexOf(vietQrBegin);
 
-      expect(catalogStart, greaterThanOrEqualTo(0));
-      expect(catalogEndIndex, greaterThan(catalogStart));
-      expect(validationStart, greaterThan(catalogEndIndex));
-      expect(commitIndex, greaterThan(validationStart));
-      expect(vietQrStart, greaterThan(commitIndex));
+        expect(catalogStart, greaterThanOrEqualTo(0));
+        expect(catalogEndIndex, greaterThan(catalogStart));
+        expect(validationStart, greaterThan(catalogEndIndex));
+        expect(commitIndex, greaterThan(validationStart));
+        expect(vietQrStart, greaterThan(commitIndex));
 
-      final catalog = seed.substring(catalogStart, catalogEndIndex);
-      expect(
-        RegExp(r'insert into public\.meal_catalog', caseSensitive: false)
-            .allMatches(catalog)
-            .length,
-        163,
-      );
-      for (final token in [
-        'MEAL_CATALOG_RECIPE_COUNT_MISMATCH',
-        'MEAL_CATALOG_TOPIC_COUNT_MISMATCH',
-        'MEAL_CATALOG_CHAPTER_COUNT_MISMATCH',
-        'MEAL_CATALOG_SOURCE_FIELDS_INCOMPLETE',
-        'MEAL_CATALOG_UNAPPROVED_METADATA_STATE',
-        'MEAL_CATALOG_DUPLICATE_SOURCE_HASH',
-        'MEAL_NUTRITION_ESTIMATED_REQUIRED_FIELDS_MISSING',
-        'MEAL_NUTRITION_NEGATIVE_VALUE',
-        'MEAL_NUTRITION_ESTIMATED_ALL_ZERO',
-        'MEAL_NUTRITION_MACRO_CALORIE_SANITY_FAILED',
-        'MEAL_NUTRITION_STATUS_UNSUPPORTED',
-      ]) {
-        expect(seed, contains(token), reason: token);
-      }
-    });
+        final catalog = seed.substring(catalogStart, catalogEndIndex);
+        expect(
+          RegExp(
+            r'insert into public\.meal_catalog',
+            caseSensitive: false,
+          ).allMatches(catalog).length,
+          163,
+        );
+        for (final token in [
+          'MEAL_CATALOG_RECIPE_COUNT_MISMATCH',
+          'MEAL_CATALOG_TOPIC_COUNT_MISMATCH',
+          'MEAL_CATALOG_CHAPTER_COUNT_MISMATCH',
+          'MEAL_CATALOG_SOURCE_FIELDS_INCOMPLETE',
+          'MEAL_CATALOG_UNAPPROVED_METADATA_STATE',
+          'MEAL_CATALOG_DUPLICATE_SOURCE_HASH',
+          'MEAL_NUTRITION_ESTIMATED_REQUIRED_FIELDS_MISSING',
+          'MEAL_NUTRITION_NEGATIVE_VALUE',
+          'MEAL_NUTRITION_ESTIMATED_ALL_ZERO',
+          'MEAL_NUTRITION_MACRO_CALORIE_SANITY_FAILED',
+          'MEAL_NUTRITION_STATUS_UNSUPPORTED',
+        ]) {
+          expect(seed, contains(token), reason: token);
+        }
+      },
+    );
 
     test('keeps VietQR smoke server-issued, idempotent, and rollback-only', () {
       const smokeMarker = '-- BEGIN ROLLBACK-ONLY VIETQR SMOKE';

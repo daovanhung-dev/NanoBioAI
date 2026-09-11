@@ -18,7 +18,7 @@ void main() {
       'nanobio_food_scan_source_',
     );
     service = FoodScanImageService(
-      imagePickerService: ImagePickerService(),
+      pickerService: ImagePickerService(),
       rootDirectory: () async => root,
       now: () => DateTime.utc(2026, 8, 31, 1, 2, 3),
     );
@@ -29,28 +29,34 @@ void main() {
     await sourceDirectory.delete(recursive: true);
   });
 
-  test('prepares a local JPEG within the Edge Function payload budget', () async {
-    final source = File(path.join(sourceDirectory.path, 'meal.png'));
-    final rawImage = image_codec.Image(width: 2400, height: 1200);
-    image_codec.fill(rawImage, color: image_codec.ColorRgb8(20, 160, 120));
-    await source.writeAsBytes(image_codec.encodePng(rawImage));
+  test(
+    'prepares a local JPEG within the Edge Function payload budget',
+    () async {
+      final source = File(path.join(sourceDirectory.path, 'meal.png'));
+      final rawImage = image_codec.Image(width: 2400, height: 1200);
+      image_codec.fill(rawImage, color: image_codec.ColorRgb8(20, 160, 120));
+      await source.writeAsBytes(image_codec.encodePng(rawImage));
 
-    final prepared = await service.prepare(
-      XFile(source.path),
-      userId: 'user/1',
-    );
-    final saved = File(prepared.path);
-    final decoded = image_codec.decodeJpg(await saved.readAsBytes());
+      final prepared = await service.prepare(
+        XFile(source.path),
+        userId: 'user/1',
+      );
+      final saved = File(prepared.path);
+      final decoded = image_codec.decodeJpg(await saved.readAsBytes());
 
-    expect(prepared.mimeType, 'image/jpeg');
-    expect(prepared.path, contains('food_scans${Platform.pathSeparator}user_1'));
-    expect(decoded, isNotNull);
-    expect(decoded!.width, 1536);
-    expect(decoded.height, 768);
-    expect(decoded.exif.isEmpty, isTrue);
-    expect(
-      await saved.length(),
-      lessThanOrEqualTo(FoodScanImageService.maxEncodedBytes),
-    );
-  });
+      expect(prepared.mimeType, 'image/jpeg');
+      expect(
+        prepared.path,
+        contains('food_scans${Platform.pathSeparator}user_1'),
+      );
+      expect(decoded, isNotNull);
+      expect(decoded!.width, 1536);
+      expect(decoded.height, 768);
+      expect(decoded.exif.isEmpty, isTrue);
+      expect(
+        await saved.length(),
+        lessThanOrEqualTo(FoodScanImageService.maxEncodedBytes),
+      );
+    },
+  );
 }
